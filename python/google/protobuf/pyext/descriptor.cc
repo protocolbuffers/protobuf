@@ -1488,7 +1488,7 @@ class ErrorCollectorImpl
 static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   char* filepath;
   std::vector<std::string> include_paths;
-  PyArg_ParseTuple(filename, "yO&$", &filepath, &ParseBytesSequence, &include_paths);
+  PyArg_ParseTuple(filename, "yO&|", &filepath, &ParseBytesSequence, &include_paths);
 
   // TODO: Consider making ErrorCollector own these vectors.
   std::vector<ProtocError> errors;
@@ -1500,16 +1500,27 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   for (const auto& include_path : include_paths) {
     source_tree->MapPath("", include_path);
   }
-  ::google::protobuf::compiler::Importer importer(source_tree.get(),
-                                                error_collector.get());
-  const ::google::protobuf::FileDescriptor* parsed_file =
-      importer.Import(filepath);
+  // ::google::protobuf::compiler::Importer importer(source_tree.get(),
+  //                                               error_collector.get());
+
+  // const ::google::protobuf::FileDescriptor* parsed_file =
+  //     importer.Import(filepath);
+
+  // TODO: Need to figure out lifetime of this object.
+  ::google::protobuf::compiler::SourceTreeDescriptorDatabase database(source_tree.get());
+  database.RecordErrorsTo(error_collector.get());
+  // TODO: This overrides the ErrorCollector. That's double plus ungood.
+  // TODO: Figure out the life cycle of this object.
+  PyDescriptorPool * py_descriptor_pool = ::google::protobuf::python::cdescriptor_pool::PyDescriptorPool_NewWithDatabase(&database);
+  const ::google::protobuf::FileDescriptor* parsed_file = py_descriptor_pool->pool->FindFileByName(filepath);
+
   if (parsed_file == NULL) {
     PyErr_SetString(PyExc_RuntimeError, "Was unable to parse protocol buffer definition.");
     return NULL;
   }
   return PyFileDescriptor_FromDescriptor(parsed_file);
 }
+
 static PyGetSetDef Getters[] = {
   { "pool", (getter)GetPool, NULL, "pool"},
   { "name", (getter)GetName, NULL, "name"},

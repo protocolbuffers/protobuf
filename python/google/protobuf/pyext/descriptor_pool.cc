@@ -150,7 +150,10 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
   return cpool;
 }
 
-static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
+// TODO: Remove
+#include <iostream>
+
+PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
     DescriptorDatabase* database) {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == NULL) {
@@ -163,7 +166,8 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
   } else {
     cpool->pool = new DescriptorPool();
   }
-
+  // TODO: Remove
+  std::cout << "Registering " << database << " in global map" << std::endl;
   if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
     // Should never happen -- would indicate an internal error / bug.
     PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");

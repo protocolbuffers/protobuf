@@ -87,6 +87,7 @@ extern PyTypeObject PyDescriptorPool_Type;
 
 namespace cdescriptor_pool {
 
+PyDescriptorPool* PyDescriptorPool_NewWithDatabase(DescriptorDatabase* database);
 
 // The functions below are also exposed as methods of the DescriptorPool type.
 
