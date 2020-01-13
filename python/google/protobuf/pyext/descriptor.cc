@@ -45,6 +45,7 @@
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/stubs/hash.h>
+#include <google/protobuf/compiler/importer.h>
 
 #if PY_MAJOR_VERSION >= 3
   #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
@@ -1421,6 +1422,94 @@ static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
   return CopyToPythonProto<FileDescriptorProto>(_GetDescriptor(self), target);
 }
 
+static int ParseBytesSequence(PyObject* py_sequence, std::vector<std::string>* sequence) {
+  if (!PySequence_Check(py_sequence)) {
+    PyErr_SetString(PyExc_ValueError, "Expected object supporting the Sequence protocol.");
+    return 0;
+  }
+  sequence->reserve(PySequence_Length(py_sequence));
+  for (Py_ssize_t i = 0; i < PySequence_Length(py_sequence); ++i) {
+    PyObject* elem = PySequence_GetItem(py_sequence, i);
+    if (!elem) {
+      PyErr_SetString(PyExc_LookupError, "Was unable to extract elements from sequence.");
+      return 0;
+    }
+    // TODO: Interpolate for better error message.
+    if (!PyBytes_Check(elem)) {
+      PyErr_SetString(PyExc_ValueError, "Expected element of bytes type in sequence.");
+      return 0;
+    }
+    std::string c_elem(PyBytes_AsString(elem));
+    sequence->push_back(c_elem);
+  }
+  return 1;
+}
+
+// TODO: Figure out where to permanently put this class.
+// TODO: This name absolutely cannot remain the same. ParseError?
+struct ProtocError {
+  std::string filename;
+  int line;
+  int column;
+  std::string message;
+
+  ProtocError() {}
+  ProtocError(std::string filename, int line, int column, std::string message)
+      : filename(filename), line(line), column(column), message(message) {}
+};
+
+typedef ProtocError ProtocWarning;
+
+// TODO: Figure out where to permanently put this class.
+class ErrorCollectorImpl
+    : public ::google::protobuf::compiler::MultiFileErrorCollector {
+ public:
+  ErrorCollectorImpl(std::vector<ProtocError>* errors,
+                     std::vector<ProtocWarning>* warnings)
+      : errors_(errors), warnings_(warnings) {}
+
+  void AddError(const std::string& filename, int line, int column,
+                const std::string& message) {
+    errors_->emplace_back(filename, line, column, message);
+  }
+
+  void AddWarning(const std::string& filename, int line, int column,
+                  const std::string& message) {
+    warnings_->emplace_back(filename, line, column, message);
+  }
+
+ private:
+  std::vector<ProtocError>* errors_;
+  std::vector<ProtocWarning>* warnings_;
+};
+
+// TODO: Rename to something more in line with the CPython API style?
+// PyFileDescriptor_FromFile?
+static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
+  char* filepath;
+  std::vector<std::string> include_paths;
+  PyArg_ParseTuple(filename, "yO&$", &filepath, &ParseBytesSequence, &include_paths);
+
+  // TODO: Consider making ErrorCollector own these vectors.
+  std::vector<ProtocError> errors;
+  std::vector<ProtocError> warnings;
+  std::unique_ptr<ErrorCollectorImpl> error_collector(
+      new ErrorCollectorImpl(&errors, &warnings));
+  std::unique_ptr<::google::protobuf::compiler::DiskSourceTree> source_tree(
+      new ::google::protobuf::compiler::DiskSourceTree());
+  for (const auto& include_path : include_paths) {
+    source_tree->MapPath("", include_path);
+  }
+  ::google::protobuf::compiler::Importer importer(source_tree.get(),
+                                                error_collector.get());
+  const ::google::protobuf::FileDescriptor* parsed_file =
+      importer.Import(filepath);
+  if (parsed_file == NULL) {
+    PyErr_SetString(PyExc_RuntimeError, "Was unable to parse protocol buffer definition.");
+    return NULL;
+  }
+  return PyFileDescriptor_FromDescriptor(parsed_file);
+}
 static PyGetSetDef Getters[] = {
   { "pool", (getter)GetPool, NULL, "pool"},
   { "name", (getter)GetName, NULL, "name"},
@@ -1446,6 +1535,8 @@ static PyGetSetDef Getters[] = {
 static PyMethodDef Methods[] = {
   { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS, },
   { "CopyToProto", (PyCFunction)CopyToProto, METH_O, },
+  // TODO: See about only making this available on PyFileDescriptor.
+  { "FromFile", (PyCFunction)FromFile, METH_STATIC | METH_VARARGS },
   {NULL}
 };
 
@@ -1820,6 +1911,7 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
 static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
   return CopyToPythonProto<MethodDescriptorProto>(_GetDescriptor(self), target);
 }
+
 
 static PyGetSetDef Getters[] = {
   { "name", (getter)GetName, NULL, "Name", NULL},
