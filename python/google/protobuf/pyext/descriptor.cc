@@ -1514,6 +1514,7 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   PyDescriptorPool * py_descriptor_pool = ::google::protobuf::python::cdescriptor_pool::PyDescriptorPool_NewWithDatabase(&database);
   const ::google::protobuf::FileDescriptor* parsed_file = py_descriptor_pool->pool->FindFileByName(filepath);
 
+  // TODO: Make error logging actually nice.
   if (parsed_file == NULL) {
     PyErr_SetString(PyExc_RuntimeError, "Was unable to parse protocol buffer definition.");
     return NULL;

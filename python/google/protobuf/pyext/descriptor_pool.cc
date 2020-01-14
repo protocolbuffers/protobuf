@@ -65,6 +65,8 @@ namespace python {
 static std::unordered_map<const DescriptorPool*, PyDescriptorPool*>*
     descriptor_pool_map;
 
+#include <iostream>
+
 namespace cdescriptor_pool {
 
 // Collects errors that occur during proto file building to allow them to be
@@ -86,6 +88,8 @@ class BuildFileErrorCollector : public DescriptorPool::ErrorCollector {
     // As this only happens on failure and will result in the program not
     // running at all, no effort is made to optimize this string manipulation.
     error_message += ("  " + element_name + ": " + message + "\n");
+    // TODO: Replace with proper error messages.
+    std::cerr << "Errors: " << error_message << std::flush;
   }
 
   void Clear() {
@@ -150,9 +154,6 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
   return cpool;
 }
 
-// TODO: Remove
-#include <iostream>
-
 PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
     DescriptorDatabase* database) {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
@@ -166,8 +167,6 @@ PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
   } else {
     cpool->pool = new DescriptorPool();
   }
-  // TODO: Remove
-  std::cout << "Registering " << database << " in global map" << std::endl;
   if (!descriptor_pool_map->insert(std::make_pair(cpool->pool, cpool)).second) {
     // Should never happen -- would indicate an internal error / bug.
     PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
