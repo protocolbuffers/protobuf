@@ -120,12 +120,12 @@ string PROTOC_EXPORT OneofNameCapitalized(const OneofDescriptor* descriptor);
 
 // Returns a symbol that can be used in C code to refer to an Objective C
 // class without initializing the class.
-string PROTOC_EXPORT ObjCClassSymbolReference(const string& className);
+string PROTOC_EXPORT ObjCClassSymbolReference(const string& class_name);
 
 // Defines a symbol that can be used in C code to refer to an Objective C
 // class without initializing the class. Use a corresponding
 // ObjCClassSymbolReference to reference it.
-string PROTOC_EXPORT ObjCClassSymbolDefinition(const string& className);
+string PROTOC_EXPORT ObjCClassSymbolDefinition(const string& class_name);
 
 inline bool HasFieldPresence(const FileDescriptor* file) {
   return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
