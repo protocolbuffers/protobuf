@@ -48,6 +48,7 @@ import functools
 from google.protobuf.internal import api_implementation
 
 _TEST_PROTO_FILE = "google/protobuf/internal/test_messages_proto3_dynamic.proto"
+_BROKEN_PROTO = "google/protobuf/internal/broken_test.proto"
 
 _UNINTENTIONAL_PUBLIC_SYMBOLS = ('enum_type_wrapper',)
 
@@ -181,6 +182,15 @@ class RuntimeImportTest(unittest.TestCase):
         static_symbols = _run_in_subprocess(_get_static_module_symbols)
         dynamic_symbols = _run_in_subprocess(_get_dynamic_module_symbols)
         self.assertSequenceEqual(set(static_symbols), set(dynamic_symbols))
+
+    def testSyntaxError(self):
+        with self.assertRaises(SyntaxError) as cm:
+            protos = protobuf.protos(_BROKEN_PROTO)
+        self.assertIn(_BROKEN_PROTO, str(cm.exception))
+        # Line number of first error.
+        self.assertIn("35", str(cm.exception))
+        # Line number of second error.
+        self.assertIn("39", str(cm.exception))
 
     # TODO: Test transitive imports.
     # TODO: Instantiate a message.

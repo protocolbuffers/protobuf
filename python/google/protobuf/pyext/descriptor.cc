@@ -34,6 +34,8 @@
 #include <frameobject.h>
 #include <string>
 #include <unordered_map>
+#include <sstream>
+#include <numeric>
 
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -1456,6 +1458,12 @@ struct ProtocError {
   ProtocError() {}
   ProtocError(std::string filename, int line, int column, std::string message)
       : filename(filename), line(line), column(column), message(message) {}
+
+  std::string msg() const {
+    std::stringstream ss;
+    ss << filename << ":" << line << ":" << column << ": " << message;
+    return ss.str();
+  }
 };
 
 typedef ProtocError ProtocWarning;
@@ -1483,6 +1491,7 @@ class ErrorCollectorImpl
   std::vector<ProtocWarning>* warnings_;
 };
 
+
 // TODO: Rename to something more in line with the CPython API style?
 // PyFileDescriptor_FromFile?
 static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
@@ -1490,6 +1499,7 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   std::vector<std::string> include_paths;
   PyArg_ParseTuple(filename, "yO&|", &filepath, &ParseBytesSequence, &include_paths);
 
+  // TODO: Strip off as many namespace prefixes as possible.
   // TODO: Consider making ErrorCollector own these vectors.
   std::vector<ProtocError> errors;
   std::vector<ProtocError> warnings;
@@ -1506,15 +1516,24 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   // TODO: Need to figure out lifetime of this object.
   ::google::protobuf::compiler::SourceTreeDescriptorDatabase database(source_tree.get());
   database.RecordErrorsTo(error_collector.get());
-  // TODO: This overrides the ErrorCollector. That's double plus ungood.
   // TODO: Figure out the life cycle of this object.
   PyDescriptorPool * py_descriptor_pool = ::google::protobuf::python::cdescriptor_pool::PyDescriptorPool_NewWithDatabase(&database);
   parsed_file = py_descriptor_pool->pool->FindFileByName(filepath);
   Py_END_ALLOW_THREADS;
-  // TODO: Make error logging actually nice.
   if (parsed_file == NULL) {
-    PyErr_SetString(PyExc_RuntimeError, "Was unable to parse protocol buffer definition.");
+    if (errors.size() > 0) {
+      std::string error_msg = std::accumulate(errors.cbegin(), errors.cend(), std::string("Failed to parse ") + filepath,
+        [](std::string a, const ProtocError& b) {
+          return std::move(a) + "\n" + b.msg();
+        });
+      PyErr_SetString(PyExc_SyntaxError, error_msg.c_str());
+    } else {
+      PyErr_SetString(PyExc_RuntimeError, "Was unable to parse protocol buffer definition.");
+    }
     return NULL;
+  }
+  for (const auto& warning : warnings)  {
+    PyErr_WarnEx(PyExc_SyntaxWarning, warning.msg().c_str(), 1);
   }
   return PyFileDescriptor_FromDescriptor(parsed_file);
 }

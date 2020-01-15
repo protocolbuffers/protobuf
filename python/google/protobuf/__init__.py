@@ -105,7 +105,6 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
           file_descriptor = _message.FileDescriptor.FromFile(self._protobuf_path.encode('ascii'),
                                                              [path.encode('ascii') for path in sys.path])
           setattr(module, 'DESCRIPTOR', file_descriptor)
-          sys.stderr.write("file_descriptor type: {}\n".format(type(file_descriptor))); sys.stderr.flush()
           _sym_db.RegisterFileDescriptor(file_descriptor)
           for enum_name, enum_descriptor in file_descriptor.enum_types_by_name.iteritems():
               setattr(module, enum_name, enum_type_wrapper.EnumTypeWrapper(enum_descriptor))
