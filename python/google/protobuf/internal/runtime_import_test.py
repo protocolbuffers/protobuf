@@ -169,6 +169,14 @@ def _get_dynamic_module_symbols():
     protos = protobuf.protos(_TEST_PROTO_FILE, include_paths=["../src/"])
     return [symbol for symbol in dir(protos) if not symbol.startswith("_")]
 
+def _test_proto_module_imported_once():
+    protos = protobuf.protos("google/protobuf/internal/simple_test.proto")
+    complicated_protos = protobuf.protos("google/protobuf/internal/complicated_test.proto")
+    simple_message = protos.SimpleMessage()
+    complicated_message = complicated_protos.ComplicatedMessage()
+    assert (simple_message.simpler_message.simplest_message.__class__ is
+            complicated_message.simplest_message.__class__)
+
 
 @unittest.skipIf(sys.version_info.major < 3, "Not supported on Python 2.")
 @unittest.skipIf(api_implementation.Type() != "cpp", "Not supported on pure Python implementation.")
@@ -191,6 +199,9 @@ class RuntimeImportTest(unittest.TestCase):
         self.assertIn("35", str(cm.exception))
         # Line number of second error.
         self.assertIn("39", str(cm.exception))
+
+    def testProtoModuleImportedOnce(self):
+        _run_in_subprocess(_test_proto_module_imported_once)
 
     # TODO: Test transitive imports.
     # TODO: Instantiate a message.

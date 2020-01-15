@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package google.protobuf.internal.complicated;
+
+import "google/protobuf/internal/simplest_test.proto";
+
+message ComplicatedMessage {
+  bool yes = 1;
+  bool no = 2;
+  bool why = 3;
+  google.protobuf.internal.simplest.SimplestMessage simplest_message = 4;
+};

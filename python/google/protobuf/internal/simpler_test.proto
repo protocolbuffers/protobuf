@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package google.protobuf.internal.simpler;
+
+import "google/protobuf/internal/simplest_test.proto";
+
+message SimplerMessage {
+  int64 do_i_even_exist = 1;
+  google.protobuf.internal.simplest.SimplestMessage simplest_message = 2;
+};
+

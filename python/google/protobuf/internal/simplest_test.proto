@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package google.protobuf.internal.simplest;
+
+message SimplestMessage {
+  int64 i_definitely_dont_exist = 1;
+};
+
