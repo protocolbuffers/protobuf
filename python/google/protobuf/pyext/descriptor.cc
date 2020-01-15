@@ -1497,14 +1497,11 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
       new ErrorCollectorImpl(&errors, &warnings));
   std::unique_ptr<::google::protobuf::compiler::DiskSourceTree> source_tree(
       new ::google::protobuf::compiler::DiskSourceTree());
+  const ::google::protobuf::FileDescriptor* parsed_file;
+  Py_BEGIN_ALLOW_THREADS;
   for (const auto& include_path : include_paths) {
     source_tree->MapPath("", include_path);
   }
-  // ::google::protobuf::compiler::Importer importer(source_tree.get(),
-  //                                               error_collector.get());
-
-  // const ::google::protobuf::FileDescriptor* parsed_file =
-  //     importer.Import(filepath);
 
   // TODO: Need to figure out lifetime of this object.
   ::google::protobuf::compiler::SourceTreeDescriptorDatabase database(source_tree.get());
@@ -1512,8 +1509,8 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   // TODO: This overrides the ErrorCollector. That's double plus ungood.
   // TODO: Figure out the life cycle of this object.
   PyDescriptorPool * py_descriptor_pool = ::google::protobuf::python::cdescriptor_pool::PyDescriptorPool_NewWithDatabase(&database);
-  const ::google::protobuf::FileDescriptor* parsed_file = py_descriptor_pool->pool->FindFileByName(filepath);
-
+  parsed_file = py_descriptor_pool->pool->FindFileByName(filepath);
+  Py_END_ALLOW_THREADS;
   // TODO: Make error logging actually nice.
   if (parsed_file == NULL) {
     PyErr_SetString(PyExc_RuntimeError, "Was unable to parse protocol buffer definition.");
