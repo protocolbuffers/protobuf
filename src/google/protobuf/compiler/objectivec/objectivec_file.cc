@@ -424,13 +424,13 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     printer->Print(
         "#pragma clang diagnostic ignored \"-Wdirect-ivar-access\"\n");
   }
-  if (fwd_decls.size() > 0) {
+  if (!fwd_decls.empty()) {
     printer->Print(
       "#pragma clang diagnostic ignored \"-Wdollar-in-identifier-extension\"\n");
   }
   printer->Print(
       "\n");
-  if (fwd_decls.size() > 0) {
+  if (!fwd_decls.empty()) {
     printer->Print(
         "#pragma mark - Objective C Class references\n"
         "// This somewhat arcane code forces linkage of classes from static archives by\n"
@@ -442,7 +442,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   for (const auto& i : fwd_decls) {
     printer->Print("$value$\n", "value", i);
   }
-  if (fwd_decls.size() > 0) {
+  if (!fwd_decls.empty()) {
     printer->Print("\n");
   }
   printer->Print(
