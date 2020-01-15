@@ -147,8 +147,6 @@ if sys.version_info[0] > 2:
         with _augmented_syspath(include_paths):
           module_name = _proto_file_to_module_name(module_suffix,
                                                    protobuf_path)
-          import sys; sys.stderr.write("Attempting to load {}\n".format(module_name)); sys.stderr.flush()
-          import sys; sys.stderr.write("sys.path: {}\n".format(sys.path)); sys.stderr.flush()
           module = importlib.import_module(module_name)
           return module
       return protos_impl

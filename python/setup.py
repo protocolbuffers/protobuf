@@ -8,6 +8,7 @@ import pkg_resources
 import re
 import subprocess
 import sys
+import shutil
 import sysconfig
 import platform
 
@@ -111,6 +112,8 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/packed_field_test.proto", False)
   generate_proto("google/protobuf/internal/test_bad_identifiers.proto", False)
   generate_proto("google/protobuf/pyext/python.proto", False)
+  shutil.copy("../src/google/protobuf/test_messages_proto3.proto",
+              "google/protobuf/test_messages_proto3_dynamic.proto")
 
 
 class clean(_clean):
