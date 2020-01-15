@@ -47,6 +47,8 @@ import functools
 
 from google.protobuf.internal import api_implementation
 
+_TEST_PROTO_FILE = "google/protobuf/internal/test_messages_proto3_dynamic.proto"
+
 _UNINTENTIONAL_PUBLIC_SYMBOLS = ('enum_type_wrapper',)
 
 # These classes allow the collection of the information pertaining to a file
@@ -159,14 +161,11 @@ def _get_static_module_symbols():
     return [symbol for symbol in dir(test_messages_proto3_pb2) if _is_public_symbol(symbol)]
 
 def _get_dynamic_module_record():
-    from google import protobuf
-    # TODO: Make pulling this in part of setup.py.
-    protos = protobuf.protos("google/protobuf/internal/test_messages_proto3_dynamic.proto", include_paths=["../src/"])
+    protos = protobuf.protos(_TEST_PROTO_FILE, include_paths=["../src/"])
     return ProtoFile.FromFileDescriptor(protos.DESCRIPTOR)
 
 def _get_dynamic_module_symbols():
-    from google import protobuf
-    protos = protobuf.protos("google/protobuf/internal/test_messages_proto3_dynamic.proto", include_paths=["../src/"])
+    protos = protobuf.protos(_TEST_PROTO_FILE, include_paths=["../src/"])
     return [symbol for symbol in dir(protos) if not symbol.startswith("_")]
 
 
@@ -183,6 +182,15 @@ class RuntimeImportTest(unittest.TestCase):
         dynamic_symbols = _run_in_subprocess(_get_dynamic_module_symbols)
         self.assertSequenceEqual(set(static_symbols), set(dynamic_symbols))
 
+    # TODO: Test transitive imports.
+    # TODO: Instantiate a message.
+
+@unittest.skipIf(sys.version_info.major != 2, "Not supported on Python 2.")
+@unittest.skipIf(api_implementation.Type() == "cpp", "Not supported on pure Python implementation.")
+class RuntimeImportGracefulFailureTest(unittest.TestCase):
+    def testGracefulFailure(self):
+        with self.assertRaises(NotImplementedError):
+            protos = protobuf.protos(_TEST_PROTO_FILE)
 
 if __name__ == '__main__':
     unittest.main()
