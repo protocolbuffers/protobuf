@@ -45,6 +45,8 @@ import collections
 import multiprocessing
 import functools
 
+from google.protobuf.internal import api_implementation
+
 _UNINTENTIONAL_PUBLIC_SYMBOLS = ('enum_type_wrapper',)
 
 # These classes allow the collection of the information pertaining to a file
@@ -168,14 +170,14 @@ def _get_dynamic_module_symbols():
     return [symbol for symbol in dir(protos) if not symbol.startswith("_")]
 
 
+@unittest.skipIf(sys.version_info.major < 3, "Not supported on Python 2.")
+@unittest.skipIf(api_implementation.Type() != "cpp", "Not supported on pure Python implementation.")
 class RuntimeImportTest(unittest.TestCase):
-    @unittest.skipIf(sys.version_info.major < 3, "Not supported on Python 2.")
     def testFileDescriptorContentsIdentical(self):
         static_record = _run_in_subprocess(_get_static_module_record)
         dynamic_record = _run_in_subprocess(_get_dynamic_module_record)
         self.assertEqual(static_record, dynamic_record)
 
-    @unittest.skipIf(sys.version_info.major < 3, "Not supported on Python 2.")
     def testModuleContentsIdentical(self):
         static_symbols = _run_in_subprocess(_get_static_module_symbols)
         dynamic_symbols = _run_in_subprocess(_get_dynamic_module_symbols)

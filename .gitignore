@@ -57,6 +57,7 @@ python/**/*.egg
 python/.eggs/
 python/.tox
 python/build/
+python/google/protobuf/internal/test_messages_proto3_dynamic.proto
 
 src/js_embed
 src/protoc
@@ -206,3 +207,6 @@ cmake/cmake-build-debug/
 # IntelliJ
 .idea
 *.iml
+
+# TODO: Remove.
+util/python/*.h
