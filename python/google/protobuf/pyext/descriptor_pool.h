@@ -34,11 +34,60 @@
 #include <Python.h>
 
 #include <unordered_map>
+#include <string>
+#include <vector>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/compiler/importer.h>
 
 namespace google {
 namespace protobuf {
 namespace python {
+
+// TODO: Make private to this TU?
+// TODO: Figure out where to permanently put this class.
+// TODO: This name absolutely cannot remain the same. ParseError?
+struct ProtocError {
+  std::string filename;
+  int line;
+  int column;
+  std::string message;
+
+  ProtocError();
+  ProtocError(std::string filename, int line, int column, std::string message);
+
+  std::string msg() const;
+};
+
+typedef ProtocError ProtocWarning;
+
+// TODO: Thread safety?
+// TODO: Figure out where to permanently put this class.
+class PyErrorCollector
+    : public ::google::protobuf::compiler::MultiFileErrorCollector {
+ public:
+  void AddError(const std::string& filename, int line, int column,
+                const std::string& message);
+
+  void AddWarning(const std::string& filename, int line, int column,
+                  const std::string& message);
+
+  std::string Errors() const;
+  std::string Warnings() const;
+  size_t WarningCount() const;
+
+  void Clear();
+
+ private:
+  std::vector<ProtocError> errors_;
+  std::vector<ProtocWarning> warnings_;
+};
+
+
+// TODO: Make these members of PyDescriptorPool. And retrieve them in other
+// translation units via member acces after retrieving the DefaultPool.
+extern PyErrorCollector g_py_error_collector;
+extern ::google::protobuf::compiler::DiskSourceTree g_source_tree;
+extern ::google::protobuf::compiler::SourceTreeDescriptorDatabase* g_descriptor_database;
 
 struct PyMessageFactory;
 
@@ -86,8 +135,6 @@ typedef struct PyDescriptorPool {
 extern PyTypeObject PyDescriptorPool_Type;
 
 namespace cdescriptor_pool {
-
-PyDescriptorPool* PyDescriptorPool_NewWithDatabase(DescriptorDatabase* database);
 
 // The functions below are also exposed as methods of the DescriptorPool type.
 

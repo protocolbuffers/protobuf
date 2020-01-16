@@ -47,7 +47,6 @@
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/stubs/hash.h>
-#include <google/protobuf/compiler/importer.h>
 
 #if PY_MAJOR_VERSION >= 3
   #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
@@ -1447,51 +1446,6 @@ static int ParseBytesSequence(PyObject* py_sequence, std::vector<std::string>* s
   return 1;
 }
 
-// TODO: Figure out where to permanently put this class.
-// TODO: This name absolutely cannot remain the same. ParseError?
-struct ProtocError {
-  std::string filename;
-  int line;
-  int column;
-  std::string message;
-
-  ProtocError() {}
-  ProtocError(std::string filename, int line, int column, std::string message)
-      : filename(filename), line(line), column(column), message(message) {}
-
-  std::string msg() const {
-    std::stringstream ss;
-    ss << filename << ":" << line << ":" << column << ": " << message;
-    return ss.str();
-  }
-};
-
-typedef ProtocError ProtocWarning;
-
-// TODO: Figure out where to permanently put this class.
-class ErrorCollectorImpl
-    : public ::google::protobuf::compiler::MultiFileErrorCollector {
- public:
-  ErrorCollectorImpl(std::vector<ProtocError>* errors,
-                     std::vector<ProtocWarning>* warnings)
-      : errors_(errors), warnings_(warnings) {}
-
-  void AddError(const std::string& filename, int line, int column,
-                const std::string& message) {
-    errors_->emplace_back(filename, line, column, message);
-  }
-
-  void AddWarning(const std::string& filename, int line, int column,
-                  const std::string& message) {
-    warnings_->emplace_back(filename, line, column, message);
-  }
-
- private:
-  std::vector<ProtocError>* errors_;
-  std::vector<ProtocWarning>* warnings_;
-};
-
-
 // TODO: Rename to something more in line with the CPython API style?
 // PyFileDescriptor_FromFile?
 static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
@@ -1499,42 +1453,23 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   std::vector<std::string> include_paths;
   PyArg_ParseTuple(filename, "yO&|", &filepath, &ParseBytesSequence, &include_paths);
 
-  // TODO: Strip off as many namespace prefixes as possible.
-  // TODO: Consider making ErrorCollector own these vectors.
-  std::vector<ProtocError> errors;
-  std::vector<ProtocError> warnings;
-  std::unique_ptr<ErrorCollectorImpl> error_collector(
-      new ErrorCollectorImpl(&errors, &warnings));
-  std::unique_ptr<::google::protobuf::compiler::DiskSourceTree> source_tree(
-      new ::google::protobuf::compiler::DiskSourceTree());
   const ::google::protobuf::FileDescriptor* parsed_file;
   Py_BEGIN_ALLOW_THREADS;
   for (const auto& include_path : include_paths) {
-    source_tree->MapPath("", include_path);
+    g_source_tree.MapPath("", include_path);
   }
-
-  // TODO: Need to figure out lifetime of this object.
-  ::google::protobuf::compiler::SourceTreeDescriptorDatabase database(source_tree.get());
-  database.RecordErrorsTo(error_collector.get());
-  // TODO: Figure out the life cycle of this object.
-  PyDescriptorPool * py_descriptor_pool = ::google::protobuf::python::cdescriptor_pool::PyDescriptorPool_NewWithDatabase(&database);
-  parsed_file = py_descriptor_pool->pool->FindFileByName(filepath);
+  // TODO: Wrap this function and add it to descriptor_pool.h?
+  parsed_file = GetDefaultDescriptorPool()->pool->FindFileByName(filepath);
   Py_END_ALLOW_THREADS;
-  if (parsed_file == NULL) {
-    if (errors.size() > 0) {
-      std::string error_msg = std::accumulate(errors.cbegin(), errors.cend(), std::string("Failed to parse ") + filepath,
-        [](std::string a, const ProtocError& b) {
-          return std::move(a) + "\n" + b.msg();
-        });
-      PyErr_SetString(PyExc_SyntaxError, error_msg.c_str());
-    } else {
-      PyErr_SetString(PyExc_RuntimeError, "Was unable to parse protocol buffer definition.");
-    }
+  if (parsed_file == nullptr) {
+    std::string error_msg = std::string("Failed to parse ") + filepath + g_py_error_collector.Errors();
+    PyErr_SetString(PyExc_SyntaxError, error_msg.c_str());
     return NULL;
   }
-  for (const auto& warning : warnings)  {
-    PyErr_WarnEx(PyExc_SyntaxWarning, warning.msg().c_str(), 1);
+  if (g_py_error_collector.WarningCount() > 0) {
+    PyErr_WarnEx(PyExc_SyntaxWarning, g_py_error_collector.Warnings().c_str(), 1);
   }
+  g_py_error_collector.Clear();
   return PyFileDescriptor_FromDescriptor(parsed_file);
 }
 
@@ -1611,6 +1546,9 @@ PyTypeObject PyFileDescriptor_Type = {
     0,                                     // tp_new
     PyObject_GC_Del,                       // tp_free
 };
+
+
+
 
 PyObject* PyFileDescriptor_FromDescriptor(
     const FileDescriptor* file_descriptor) {

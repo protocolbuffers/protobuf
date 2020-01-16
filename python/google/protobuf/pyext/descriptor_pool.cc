@@ -31,6 +31,8 @@
 // Implements the DescriptorPool, which collects all descriptors.
 
 #include <unordered_map>
+#include <numeric>
+#include <sstream>
 
 #include <Python.h>
 
@@ -65,7 +67,60 @@ namespace python {
 static std::unordered_map<const DescriptorPool*, PyDescriptorPool*>*
     descriptor_pool_map;
 
-#include <iostream>
+PyErrorCollector g_py_error_collector;
+
+// TODO: Consider making this a custom SourceTree with the ability to remove a
+// mapping.
+::google::protobuf::compiler::DiskSourceTree g_source_tree;
+::google::protobuf::compiler::SourceTreeDescriptorDatabase* g_descriptor_database = nullptr;
+
+// TODO: Figure out where to put this permanently.
+ProtocError::ProtocError() {}
+
+ProtocError::ProtocError(std::string filename, int line, int column, std::string message)
+    : filename(filename), line(line), column(column), message(message) {}
+
+std::string ProtocError::msg() const {
+    std::stringstream ss;
+    ss << filename << ":" << line << ":" << column << ": " << message;
+    return ss.str();
+}
+
+// TODO: Figure out where to permanently put this class.
+
+void PyErrorCollector::AddError(const std::string& filename, int line, int column,
+              const std::string& message) {
+  errors_.emplace_back(filename, line, column, message);
+}
+
+void PyErrorCollector::AddWarning(const std::string& filename, int line, int column,
+                const std::string& message) {
+  warnings_.emplace_back(filename, line, column, message);
+}
+
+std::string PyErrorCollector::Errors() const {
+ return std::accumulate(errors_.cbegin(), errors_.cend(), std::string(),
+   [](std::string a, const ProtocError& b) {
+     return std::move(a) + "\n" + b.msg();
+   });
+}
+
+// TODO: Dedupe with Errors().
+std::string PyErrorCollector::Warnings() const {
+ return std::accumulate(warnings_.cbegin(), warnings_.cend(), std::string(),
+   [](std::string a, const ProtocError& b) {
+     return std::move(a) + "\n" + b.msg();
+   });
+}
+
+size_t PyErrorCollector::WarningCount() const {
+  return warnings_.size();
+}
+
+void PyErrorCollector::Clear() {
+  errors_.clear();
+  warnings_.clear();
+}
 
 namespace cdescriptor_pool {
 
@@ -136,13 +191,16 @@ static PyDescriptorPool* _CreateDescriptorPool() {
 // Ownership of the underlay is not transferred, its pointer should
 // stay alive.
 // TODO: Extend to also set a DiskSourceTreeDatabase.
-static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
-    const DescriptorPool* underlay) {
+static PyDescriptorPool* PyDescriptorPool_NewWithUnderlayAndDatabase(
+    const DescriptorPool* underlay, DescriptorDatabase* database) {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == NULL) {
     return NULL;
   }
-  cpool->pool = new DescriptorPool(underlay);
+  cpool->error_collector = new BuildFileErrorCollector();
+  cpool->pool = new DescriptorPool(database, cpool->error_collector);
+  // TODO: Replace with a new constructor.
+  cpool->pool->internal_set_underlay(underlay);
   cpool->underlay = underlay;
 
   if (!descriptor_pool_map->insert(
@@ -155,7 +213,7 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
   return cpool;
 }
 
-PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
+static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
     DescriptorDatabase* database) {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == NULL) {
@@ -733,8 +791,11 @@ bool InitDescriptorPool() {
   // is used as underlay.
   descriptor_pool_map =
       new std::unordered_map<const DescriptorPool*, PyDescriptorPool*>;
-  python_generated_pool = cdescriptor_pool::PyDescriptorPool_NewWithUnderlay(
-      DescriptorPool::generated_pool());
+  // TODO: Deallocate this at the end of the module's lifespan.
+  g_descriptor_database = new ::google::protobuf::compiler::SourceTreeDescriptorDatabase(&g_source_tree);
+  g_descriptor_database->RecordErrorsTo(&g_py_error_collector);
+  python_generated_pool = cdescriptor_pool::PyDescriptorPool_NewWithUnderlayAndDatabase(
+      DescriptorPool::generated_pool(), g_descriptor_database);
   if (python_generated_pool == NULL) {
     delete descriptor_pool_map;
     return false;

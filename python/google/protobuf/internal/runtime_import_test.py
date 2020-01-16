@@ -185,24 +185,24 @@ def _test_proto_module_imported_once():
 @unittest.skipIf(sys.version_info.major < 3, "Not supported on Python 2.")
 @unittest.skipIf(api_implementation.Type() != "cpp", "Not supported on pure Python implementation.")
 class RuntimeImportTest(unittest.TestCase):
-    # def testFileDescriptorContentsIdentical(self):
-    #     static_record = _run_in_subprocess(_get_static_module_record)
-    #     dynamic_record = _run_in_subprocess(_get_dynamic_module_record)
-    #     self.assertEqual(static_record, dynamic_record)
+    def testFileDescriptorContentsIdentical(self):
+        static_record = _run_in_subprocess(_get_static_module_record)
+        dynamic_record = _run_in_subprocess(_get_dynamic_module_record)
+        self.assertEqual(static_record, dynamic_record)
 
-    # def testModuleContentsIdentical(self):
-    #     static_symbols = _run_in_subprocess(_get_static_module_symbols)
-    #     dynamic_symbols = _run_in_subprocess(_get_dynamic_module_symbols)
-    #     self.assertSequenceEqual(set(static_symbols), set(dynamic_symbols))
+    def testModuleContentsIdentical(self):
+        static_symbols = _run_in_subprocess(_get_static_module_symbols)
+        dynamic_symbols = _run_in_subprocess(_get_dynamic_module_symbols)
+        self.assertSequenceEqual(set(static_symbols), set(dynamic_symbols))
 
-    # def testSyntaxError(self):
-    #     with self.assertRaises(SyntaxError) as cm:
-    #         protos = protobuf.protos(_BROKEN_PROTO)
-    #     self.assertIn(_BROKEN_PROTO, str(cm.exception))
-    #     # Line number of first error.
-    #     self.assertIn("35", str(cm.exception))
-    #     # Line number of second error.
-    #     self.assertIn("39", str(cm.exception))
+    def testSyntaxError(self):
+        with self.assertRaises(SyntaxError) as cm:
+            protos = protobuf.protos(_BROKEN_PROTO)
+        self.assertIn(_BROKEN_PROTO, str(cm.exception))
+        # Line number of first error.
+        self.assertIn("35", str(cm.exception))
+        # Line number of second error.
+        self.assertIn("39", str(cm.exception))
 
     def testProtoModuleImportedOnce(self):
         _run_in_subprocess(_test_proto_module_imported_once)
