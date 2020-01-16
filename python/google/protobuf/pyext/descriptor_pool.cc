@@ -135,6 +135,7 @@ static PyDescriptorPool* _CreateDescriptorPool() {
 //
 // Ownership of the underlay is not transferred, its pointer should
 // stay alive.
+// TODO: Extend to also set a DiskSourceTreeDatabase.
 static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
     const DescriptorPool* underlay) {
   PyDescriptorPool* cpool = _CreateDescriptorPool();

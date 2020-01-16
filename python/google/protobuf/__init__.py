@@ -48,8 +48,10 @@ def protos(*args, **kwargs):
 
 from google.protobuf.internal import api_implementation as _api_implementation
 
+# TODO: Pull as much of this as possible out into a separate file.
 if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
-  from google.protobuf.pyext import _message
+  from google.protobuf.pyext import _message as _pyext_message
+  from google.protobuf import message as _message
   import contextlib
   import importlib
   import importlib.machinery
@@ -99,11 +101,33 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
           return ".".join(
               components[:-1] + [os.path.splitext(components[-1])[0]])
 
-      # TODO: Validate this against the code generator code.
+      @staticmethod
+      def _register_message(sym_db, message_descriptor, module_name):
+          nested_dict = {
+              '__module__': module_name,
+              'DESCRIPTOR': message_descriptor,
+          }
+          for nested_type_desc in message_descriptor.nested_types:
+              nested_type = ProtoLoader._register_message(sym_db, nested_type_desc, module_name)
+              nested_dict[nested_type_desc.name] = nested_type
+          for nested_enum_desc in message_descriptor.enum_types:
+              sym_db.RegisterEnumDescriptor(nested_enum_desc)
+          message_type = (
+                  _reflection.GeneratedProtocolMessageType(
+                          message_descriptor.name, (_message.Message,), nested_dict))
+          sym_db.RegisterMessage(message_type)
+          return message_type
+
       def exec_module(self, module):
-          assert module.__name__ == self._module_name
-          file_descriptor = _message.FileDescriptor.FromFile(self._protobuf_path.encode('ascii'),
+          file_descriptor = _pyext_message.FileDescriptor.FromFile(self._protobuf_path.encode('ascii'),
                                                              [path.encode('ascii') for path in sys.path])
+          # TODO: Why reparse if we don't have to? Need some sort of per-process
+          # cache. Perhaps DescriptorPool? But we can't have a single one. It
+          # has to be keyed on the import paths.
+          for dependency in file_descriptor.dependencies:
+              module_name = _proto_file_to_module_name(_PROTO_MODULE_SUFFIX, dependency.name)
+              if module_name not in sys.modules:
+                  importlib.import_module(module_name)
           setattr(module, 'DESCRIPTOR', file_descriptor)
           _sym_db.RegisterFileDescriptor(file_descriptor)
           for enum_name, enum_descriptor in file_descriptor.enum_types_by_name.iteritems():
@@ -112,14 +136,8 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
               for enum_value in enum_descriptor.values:
                   setattr(module, enum_value.name, enum_value.number)
           for name, message_descriptor in file_descriptor.message_types_by_name.iteritems():
-              message_type = _reflection.GeneratedProtocolMessageType(message_descriptor.name, tuple(),
-                                                                      {'DESCRIPTOR': message_descriptor,
-                                                                      '__module__': module.__name__, })
-              _sym_db.RegisterMessage(message_type)
+              message_type = ProtoLoader._register_message(_sym_db, message_descriptor, module.__name__)
               setattr(module, name, message_type)
-              # TODO: Nested types
-              # TODO: Nested enums
-          # Add to symbol DB? What happens if I don't?
 
   class ProtoFinder(importlib.abc.MetaPathFinder):
 
