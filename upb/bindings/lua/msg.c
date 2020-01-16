@@ -2,6 +2,8 @@
 ** lupb_msg -- Message/Array/Map objects in Lua/C that wrap upb/msg.h
 */
 
+#include "upb/msg.h"
+
 #include <float.h>
 #include <math.h>
 #include <stddef.h>
@@ -10,141 +12,240 @@
 
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
-#include "upb/handlers.h"
-#include "upb/legacy_msg_reflection.h"
-#include "upb/msg.h"
+#include "upb/reflection.h"
 
 #include "upb/port_def.inc"
 
 /*
- * Message/Array/Map objects can be constructed in one of two ways:
+ * Message/Map/Array objects.  These objects form a directed graph: a message
+ * can contain submessages, arrays, and maps, which can then point to other
+ * messages.  This graph can technically be cyclic, though this is an error and
+ * a cyclic graph cannot be serialized.  So it's better to think of this as a
+ * tree of objects.
  *
- * 1. To point to existing msg/array/map data inside an arena.
- * 2. To create and uniquely own some brand new data.
+ * The actual data exists at the upb level (upb_msg, upb_map, upb_array),
+ * independently of Lua.  The upb objects contain all the canonical data and
+ * edges between objects.  Lua wrapper objects expose the upb objects to Lua,
+ * but ultimately they are just wrappers.  They pass through all reads and
+ * writes to the underlying upb objects.
  *
- * Case (1) is for when we've parsed some data into an arena (which is faster
- * than parsing directly into Lua objects) or when we're pointing at some
- * read-only data (like custom options in a def).
+ * Each upb object lives in a upb arena.  We have a Lua object to wrap the upb
+ * arena, but arenas are never exposed to the user.  The Lua arena object just
+ * serves to own the upb arena and free it at the proper time, once the Lua GC
+ * has determined that there are no more references to anything that lives in
+ * that arena.  All wrapper objects strongly reference the arena to which they
+ * belong.
  *
- * Case (2) is for when a user creates the object directly in Lua.
+ * A global object cache stores a mapping of C pointer (upb_msg*, upb_array*,
+ * upb_map*) to a corresponding Lua wrapper.  These references are weak so that
+ * the wrappers can be collected if they are no longer needed.  A new wrapper
+ * object can always be recreated later.
  *
- * We use the userval of container objects (Message/Array/Map) to store
- * references to sub-objects (Strings/Messages/Arrays/Maps).  But we need to
- * keep the userval in sync with the underlying upb_msg/upb_array/upb_map.
- * We populate the userval lazily from the underlying data.
+ *                    arena
+ *                 +->group
+ *                 |
+ *                 V        +-----+
+ *            lupb_arena    |cache|-weak-+
+ *                 |  ^     +-----+      |
+ *                 |  |                  V
+ * Lua level       |  +------------lupb_msg
+ * ----------------|-----------------|-------------------------------------------
+ * upb level       |                 |
+ *                 |            +----V------------------------------+
+ *                 +->upb_arena | upb_msg  ...(empty arena storage) |
+ *                              +-----------------------------------+
  *
- * This means that no one may remove/replace any String/Message/Array/Map
- * field/entry in the underlying upb_{msg,array,map} behind our back.  It's ok
- * for entries to be added or for primitives to be modified, but *replacing*
- * sub-containers is not.
+ * If the user creates a reference between two objects that have different
+ * arenas, we need to merge the arenas into a single, bigger arena group.  The
+ * arena group will reference both arenas, and will inherit the longest lifetime
+ * of anything in the arena.
  *
- * Luckily parse/merge follow this rule.  However clear does not, so it's not
- * safe to clear behind our back.
+ *                                              arena
+ *                 +--------------------------->group<-----------------+
+ *                 |                                                   |
+ *                 V                           +-----+                 V
+ *            lupb_arena                +-weak-|cache|-weak-+     lupb_arena
+ *                 |  ^                 |      +-----+      |        ^   |
+ *                 |  |                 V                   V        |   |
+ * Lua level       |  +------------lupb_msg              lupb_msg----+   |
+ * ----------------|-----------------|-------------------------|---------|-------
+ * upb level       |                 |                         |         |
+ *                 |            +----V----+               +----V----+    V
+ *                 +->upb_arena | upb_msg |               | upb_msg | upb_arena
+ *                              +------|--+               +--^------+
+ *                                     +---------------------+
+ * Key invariants:
+ *   1. every wrapper references the arena that contains it.
+ *   2. every arena group references all arenas that own upb objects reachable
+ *      from that arena.  In other words, when a wrapper references an arena,
+ *      this is sufficient to ensure that any upb object reachable from that
+ *      wrapper will stay alive.
+ *
+ * Additionally, every message object contains a strong reference to the
+ * corresponding Descriptor object.  Likewise, array/map objects reference a
+ * Descriptor object if they are typed to store message values.
+ *
+ * (The object cache could be per-arena-group.  This would keep individual cache
+ * tables smaller, and when an arena group is freed the entire cache table(s) could
+ * be collected in one fell swoop.  However this makes merging another arena
+ * into the group an O(n) operation, since all entries would need to be copied
+ * from the existing cache table.)
  */
 
 #define LUPB_ARENA "lupb.arena"
-
-#define LUPB_MSGCLASS "lupb.msgclass"
-#define LUPB_MSGFACTORY "lupb.msgfactory"
-
 #define LUPB_ARRAY "lupb.array"
 #define LUPB_MAP "lupb.map"
 #define LUPB_MSG "lupb.msg"
-#define LUPB_STRING "lupb.string"
 
-static int lupb_msg_pushnew(lua_State *L, int narg);
+#define LUPB_ARENA_INDEX 1
+#define LUPB_MSGDEF_INDEX 2  /* For msg, and map/array that store msg */
 
-/* Lazily creates the uservalue if it doesn't exist. */
-static void lupb_getuservalue(lua_State *L, int index) {
-  lua_getuservalue(L, index);
-  if (lua_isnil(L, -1)) {
-    /* Lazily create and set userval. */
-    lua_pop(L, 1);  /* nil. */
-    lua_pushvalue(L, index); /* userdata copy. */
-    lua_newtable(L);
-    lua_setuservalue(L, -2);
-    lua_pop(L, 1);  /* userdata copy. */
-    lua_getuservalue(L, index);
-  }
-  assert(!lua_isnil(L, -1));
+static void lupb_msg_newmsgwrapper(lua_State *L, int narg, upb_msgval val);
+static upb_msg *lupb_msg_check(lua_State *L, int narg);
+
+static upb_fieldtype_t lupb_checkfieldtype(lua_State *L, int narg) {
+  uint32_t n = lupb_checkuint32(L, narg);
+  bool ok = n >= UPB_TYPE_BOOL && n <= UPB_TYPE_BYTES;
+  luaL_argcheck(L, ok, narg, "invalid field type");
+  return n;
 }
 
-static void lupb_uservalseti(lua_State *L, int userdata, int index, int val) {
-  lupb_getuservalue(L, userdata);
-  lua_pushvalue(L, val);
-  lua_rawseti(L, -2, index);
-  lua_pop(L, 1);  /* Uservalue. */
-}
+char cache_key;
 
-static void lupb_uservalgeti(lua_State *L, int userdata, int index) {
-  lupb_getuservalue(L, userdata);
-  lua_rawgeti(L, -1, index);
-  lua_insert(L, -2);
-  lua_pop(L, 1);  /* Uservalue. */
-}
+/* lupb_cacheinit()
+ *
+ * Creates the global cache used by lupb_cacheget() and lupb_cacheset().
+ */
+static void lupb_cacheinit(lua_State *L) {
+  /* Create our object cache. */
+  lua_newtable(L);
 
-/* Pushes a new userdata with the given metatable. */
-static void *lupb_newuserdata(lua_State *L, size_t size, const char *type) {
-  void *ret = lua_newuserdata(L, size);
-
-  /* Set metatable. */
-  luaL_getmetatable(L, type);
-  UPB_ASSERT(!lua_isnil(L, -1));  /* Should have been created by luaopen_upb. */
+  /* Cache metatable gives the cache weak values */
+  lua_createtable(L, 0, 1);
+  lua_pushstring(L, "v");
+  lua_setfield(L, -2, "__mode");
   lua_setmetatable(L, -2);
 
-  /* We don't set a uservalue here -- we lazily create it later if necessary. */
-
-  return ret;
+  /* Set cache in the registry. */
+  lua_rawsetp(L, LUA_REGISTRYINDEX, &cache_key);
 }
 
+/* lupb_cacheget()
+ *
+ * Pushes cache[key] and returns true if this key is present in the cache.
+ * Otherwise returns false and leaves nothing on the stack.
+ */
+static bool lupb_cacheget(lua_State *L, const void *key) {
+  if (key == NULL) {
+    lua_pushnil(L);
+    return true;
+  }
+
+  lua_rawgetp(L, LUA_REGISTRYINDEX, &cache_key);
+  lua_rawgetp(L, -1, key);
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 2);  /* Pop table, nil. */
+    return false;
+  } else {
+    lua_replace(L, -2);  /* Replace cache table. */
+    return true;
+  }
+}
+
+/* lupb_cacheset()
+ *
+ * Sets cache[key] = val, where "val" is the value at the top of the stack.
+ * Does not pop the value.
+ */
+static void lupb_cacheset(lua_State *L, const void *key) {
+  lua_rawgetp(L, LUA_REGISTRYINDEX, &cache_key);
+  lua_pushvalue(L, -2);
+  lua_rawsetp(L, -2, key);
+  lua_pop(L, 1);  /* Pop table. */
+}
 
 /* lupb_arena *****************************************************************/
 
-/* lupb_arena only exists to wrap a upb_arena.  It is never exposed to users;
- * it is an internal memory management detail.  Other objects refer to this
- * object from their userdata to keep the arena-owned data alive. */
+/* lupb_arena only exists to wrap a upb_arena.  It is never exposed to users; it
+ * is an internal memory management detail.  Other wrapper objects refer to this
+ * object from their userdata to keep the arena-owned data alive.
+ *
+ * The arena userval is a table representing the arena group.  Every arena in
+ * the group points to the same table, and the table references all arenas in
+ * the group.
+ */
+
+#define LUPB_ARENAGROUP_INDEX 1
 
 typedef struct {
   upb_arena *arena;
 } lupb_arena;
 
-upb_arena *lupb_arena_check(lua_State *L, int narg) {
+static upb_arena *lupb_arena_check(lua_State *L, int narg) {
   lupb_arena *a = luaL_checkudata(L, narg, LUPB_ARENA);
-  return a ? a->arena : NULL;
+  return a->arena;
 }
 
-int lupb_arena_new(lua_State *L) {
-  lupb_arena *a = lupb_newuserdata(L, sizeof(lupb_arena), LUPB_ARENA);
-
-  /* TODO(haberman): use Lua alloc func as block allocator?  Would need to
-   * verify that all cases of upb_malloc in msg/table are longjmp-safe. */
+upb_arena *lupb_arena_pushnew(lua_State *L) {
+  lupb_arena *a = lupb_newuserdata(L, sizeof(lupb_arena), 1, LUPB_ARENA);
   a->arena = upb_arena_new();
 
-  return 1;
+  /* Create arena group table and add this arena to it. */
+  lua_createtable(L, 0, 1);
+  lua_pushvalue(L, -2);
+  lua_rawseti(L, -2, 1);
+
+  /* Set arena group as this object's userval. */
+  lua_setiuservalue(L, -2, LUPB_ARENAGROUP_INDEX);
+
+  return a->arena;
 }
 
-char lupb_arena_cache_key;
+/**
+ * lupb_arena_merge()
+ *
+ * Merges |from| into |to| so that there is a single arena group that contains
+ * both, and both arenas will point at this new table. */
+static void lupb_arena_merge(lua_State *L, int to, int from) {
+  int i, from_count, to_count;
+  lua_getiuservalue(L, to, LUPB_ARENAGROUP_INDEX);
+  lua_getiuservalue(L, from, LUPB_ARENAGROUP_INDEX);
 
-/* Returns the global lupb_arena func that was created in our luaopen().
- * Callers can be guaranteed that it will be alive as long as |L| is.
- * TODO(haberman): we shouldn't use a global arena!  We should have
- * one arena for a parse, or per independently-created message. */
-upb_arena *lupb_arena_get(lua_State *L) {
-  upb_arena *arena;
+  if (lua_rawequal(L, -1, -2)) {
+    /* These arenas are already in the same group. */
+    lua_pop(L, 2);
+    return;
+  }
 
-  lua_pushlightuserdata(L, &lupb_arena_cache_key);
-  lua_gettable(L, LUA_REGISTRYINDEX);
-  arena = lua_touserdata(L, -1);
-  UPB_ASSERT(arena);
+  to_count = lua_rawlen(L, -2);
+  from_count = lua_rawlen(L, -1);
+
+  /* Add everything in |from|'s arena group. */
+  for (i = 1; i <= from_count; i++) {
+    lua_rawgeti(L, -1, i);
+    lua_rawseti(L, -3, i + to_count);
+  }
+
+  /* Make |from| point to |to|'s table. */
   lua_pop(L, 1);
-
-  return arena;
+  lua_setiuservalue(L, from, LUPB_ARENAGROUP_INDEX);
 }
 
-static void lupb_arena_initsingleton(lua_State *L) {
-  lua_pushlightuserdata(L, &lupb_arena_cache_key);
-  lupb_arena_new(L);
-  lua_settable(L, LUA_REGISTRYINDEX);
+/**
+ * lupb_arena_addobj()
+ *
+ * Creates a reference from the arena in |narg| to the object at the top of the
+ * stack, and pops it.  This will guarantee that the object lives as long as
+ * the arena.
+ *
+ * This is mainly useful for pinning strings we have parsed protobuf data from.
+ * It will allow us to point directly to string data in the original string. */
+static void lupb_arena_addobj(lua_State *L, int narg) {
+  lua_getiuservalue(L, narg, LUPB_ARENAGROUP_INDEX);
+  int n = lua_rawlen(L, -1);
+  lua_pushvalue(L, -2);
+  lua_rawseti(L, -2, n + 1);
+  lua_pop(L, 2);  /* obj, arena group. */
 }
 
 static int lupb_arena_gc(lua_State *L) {
@@ -158,353 +259,139 @@ static const struct luaL_Reg lupb_arena_mm[] = {
   {NULL, NULL}
 };
 
-
-/* lupb_msgfactory ************************************************************/
-
-/* Userval contains a map of:
- *   [1] -> SymbolTable (to keep GC-reachable)
- *   [const upb_msgdef*] -> [lupb_msgclass userdata]
+/* lupb_arenaget()
+ *
+ * Returns the arena from the given message, array, or map object.
  */
-
-#define LUPB_MSGFACTORY_SYMTAB 1
-
-typedef struct lupb_msgfactory {
-  upb_msgfactory *factory;
-} lupb_msgfactory;
-
-static int lupb_msgclass_pushnew(lua_State *L, int factory,
-                                 const upb_msgdef *md);
-
-/* lupb_msgfactory helpers. */
-
-static lupb_msgfactory *lupb_msgfactory_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, LUPB_MSGFACTORY);
+static upb_arena *lupb_arenaget(lua_State *L, int narg) {
+  upb_arena *arena;
+  lua_getiuservalue(L, narg, LUPB_ARENA_INDEX);
+  arena = lupb_arena_check(L, -1);
+  lua_pop(L, 1);
+  return arena;
 }
-
-static void lupb_msgfactory_pushmsgclass(lua_State *L, int narg,
-                                         const upb_msgdef *md) {
-  lupb_getuservalue(L, narg);
-  lua_pushlightuserdata(L, (void*)md);
-  lua_rawget(L, -2);
-
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 1);
-    /* TODO: verify md is in symtab? */
-    lupb_msgclass_pushnew(L, narg, md);
-
-    /* Set in userval. */
-    lua_pushlightuserdata(L, (void*)md);
-    lua_pushvalue(L, -2);
-    lua_rawset(L, -4);
-  }
-}
-
-static int lupb_msgfactory_gc(lua_State *L) {
-  lupb_msgfactory *lfactory = lupb_msgfactory_check(L, 1);
-
-  if (lfactory->factory) {
-    upb_msgfactory_free(lfactory->factory);
-    lfactory->factory = NULL;
-  }
-
-  return 0;
-}
-
-/* lupb_msgfactory Public API. */
-
-/**
- * lupb_msgfactory_new()
- *
- * Handles:
- *   msgfactory = upb.MessageFactory(symtab)
- *
- * Creates a new, empty MessageFactory for the given SymbolTable.
- * Message classes will be created on demand when the user calls
- * msgfactory.get_message_class().
- */
-static int lupb_msgfactory_new(lua_State *L) {
-  const upb_symtab *symtab = lupb_symtab_check(L, 1);
-
-  lupb_msgfactory *lmsgfactory =
-      lupb_newuserdata(L, sizeof(lupb_msgfactory), LUPB_MSGFACTORY);
-  lmsgfactory->factory = upb_msgfactory_new(symtab);
-  lupb_uservalseti(L, -1, LUPB_MSGFACTORY_SYMTAB, 1);
-
-  return 1;
-}
-
-/**
- * lupb_msgfactory_getmsgclass()
- *
- * Handles:
- *   MessageClass = factory.get_message_class(message_name)
- */
-static int lupb_msgfactory_getmsgclass(lua_State *L) {
-  lupb_msgfactory *lfactory = lupb_msgfactory_check(L, 1);
-  const upb_symtab *symtab = upb_msgfactory_symtab(lfactory->factory);
-  const upb_msgdef *m = upb_symtab_lookupmsg(symtab, luaL_checkstring(L, 2));
-
-  if (!m) {
-    luaL_error(L, "No such message type: %s\n", lua_tostring(L, 2));
-  }
-
-  lupb_msgfactory_pushmsgclass(L, 1, m);
-
-  return 1;
-}
-
-static const struct luaL_Reg lupb_msgfactory_m[] = {
-  {"get_message_class", lupb_msgfactory_getmsgclass},
-  {NULL, NULL}
-};
-
-static const struct luaL_Reg lupb_msgfactory_mm[] = {
-  {"__gc", lupb_msgfactory_gc},
-  {NULL, NULL}
-};
-
-
-/* lupb_msgclass **************************************************************/
-
-/* Userval contains a map of:
- *   [1] -> MessageFactory (to keep GC-reachable)
- *   [const upb_msgdef*] -> [lupb_msgclass userdata]
- */
-
-#define LUPB_MSGCLASS_FACTORY 1
-
-struct lupb_msgclass {
-  const upb_msglayout *layout;
-  const upb_msgdef *msgdef;
-  const lupb_msgfactory *lfactory;
-};
-
-/* Type-checks for assigning to a message field. */
-static upb_msgval lupb_array_typecheck(lua_State *L, int narg, int msg,
-                                       const upb_fielddef *f);
-static upb_msgval lupb_map_typecheck(lua_State *L, int narg, int msg,
-                                     const upb_fielddef *f);
-static const lupb_msgclass *lupb_msg_getsubmsgclass(lua_State *L, int narg,
-                                                    const upb_fielddef *f);
-static const lupb_msgclass *lupb_msg_msgclassfor(lua_State *L, int narg,
-                                                 const upb_msgdef *md);
-
-const lupb_msgclass *lupb_msgclass_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, LUPB_MSGCLASS);
-}
-
-const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg) {
-  return lupb_msgclass_check(L, narg)->layout;
-}
-
-const upb_msgdef *lupb_msgclass_getmsgdef(const lupb_msgclass *lmsgclass) {
-  return lmsgclass->msgdef;
-}
-
-upb_msgfactory *lupb_msgclass_getfactory(const lupb_msgclass *lmsgclass) {
-  return lmsgclass->lfactory->factory;
-}
-
-/**
- * lupb_msgclass_typecheck()
- *
- * Verifies that the expected msgclass matches the actual.  If not, raises a Lua
- * error.
- */
-static void lupb_msgclass_typecheck(lua_State *L, const lupb_msgclass *expected,
-                                    const lupb_msgclass *actual) {
-  if (expected != actual) {
-    luaL_error(L, "Message had incorrect type, expected '%s', got '%s'",
-               upb_msgdef_fullname(expected->msgdef),
-               upb_msgdef_fullname(actual->msgdef));
-  }
-}
-
-static const lupb_msgclass *lupb_msgclass_msgclassfor(lua_State *L, int narg,
-                                                      const upb_msgdef *md) {
-  lupb_uservalgeti(L, narg, LUPB_MSGCLASS_FACTORY);
-  lupb_msgfactory_pushmsgclass(L, -1, md);
-  return lupb_msgclass_check(L, -1);
-}
-
-/**
- * lupb_msgclass_getsubmsgclass()
- *
- * Given a MessageClass at index |narg| and the submessage field |f|, returns
- * the message class for this field.
- *
- * Currently we do a hash table lookup for this.  If we wanted we could try to
- * optimize this by caching these pointers in our msgclass, in an array indexed
- * by field index.  We would still need to fall back to calling msgclassfor(),
- * unless we wanted to eagerly create message classes for all submessages.  But
- * for big schemas that might be a lot of things to build, and we might end up
- * not using most of them. */
-static const lupb_msgclass *lupb_msgclass_getsubmsgclass(lua_State *L, int narg,
-                                                         const upb_fielddef *f) {
-  if (upb_fielddef_type(f) != UPB_TYPE_MESSAGE) {
-    return NULL;
-  }
-
-  return lupb_msgclass_msgclassfor(L, narg, upb_fielddef_msgsubdef(f));
-}
-
-static int lupb_msgclass_pushnew(lua_State *L, int factory,
-                                 const upb_msgdef *md) {
-  const lupb_msgfactory *lfactory = lupb_msgfactory_check(L, factory);
-  lupb_msgclass *lmc = lupb_newuserdata(L, sizeof(*lmc), LUPB_MSGCLASS);
-
-  lupb_uservalseti(L, -1, LUPB_MSGCLASS_FACTORY, factory);
-  lmc->layout = upb_msgfactory_getlayout(lfactory->factory, md);
-  lmc->lfactory = lfactory;
-  lmc->msgdef = md;
-
-  return 1;
-}
-
-/* MessageClass Public API. */
-
-/**
- * lupb_msgclass_call()
- *
- * Handles:
- *   msg = MessageClass()
- *
- * Creates a new message from the given MessageClass.
- */
-static int lupb_msgclass_call(lua_State *L) {
-  lupb_msg_pushnew(L, 1);
-  return 1;
-}
-
-static const struct luaL_Reg lupb_msgclass_mm[] = {
-  {"__call", lupb_msgclass_call},
-  {NULL, NULL}
-};
-
 
 /* upb <-> Lua type conversion ************************************************/
 
-static bool lupb_istypewrapped(upb_fieldtype_t type) {
-  return type == UPB_TYPE_STRING || type == UPB_TYPE_BYTES ||
-         type == UPB_TYPE_MESSAGE;
-}
+/* Whether string data should be copied into the containing arena.  We can
+ * avoid a copy if the string data is only needed temporarily (like for a map
+ * lookup).
+ */
+typedef enum {
+  LUPB_COPY,  /* Copy string data into the arena. */
+  LUPB_REF    /* Reference the Lua copy of the string data. */
+} lupb_copy_t;
 
+/**
+ * lupb_tomsgval()
+ *
+ * Converts the given Lua value |narg| to a upb_msgval.
+ */
 static upb_msgval lupb_tomsgval(lua_State *L, upb_fieldtype_t type, int narg,
-                                const lupb_msgclass *lmsgclass) {
+                                int container, lupb_copy_t copy) {
+  upb_msgval ret;
   switch (type) {
     case UPB_TYPE_INT32:
     case UPB_TYPE_ENUM:
-      return upb_msgval_int32(lupb_checkint32(L, narg));
+      ret.int32_val = lupb_checkint32(L, narg);
+      break;
     case UPB_TYPE_INT64:
-      return upb_msgval_int64(lupb_checkint64(L, narg));
+      ret.int64_val = lupb_checkint64(L, narg);
+      break;
     case UPB_TYPE_UINT32:
-      return upb_msgval_uint32(lupb_checkuint32(L, narg));
+      ret.uint32_val = lupb_checkuint32(L, narg);
+      break;
     case UPB_TYPE_UINT64:
-      return upb_msgval_uint64(lupb_checkuint64(L, narg));
+      ret.uint64_val = lupb_checkuint64(L, narg);
+      break;
     case UPB_TYPE_DOUBLE:
-      return upb_msgval_double(lupb_checkdouble(L, narg));
+      ret.double_val = lupb_checkdouble(L, narg);
+      break;
     case UPB_TYPE_FLOAT:
-      return upb_msgval_float(lupb_checkfloat(L, narg));
+      ret.float_val = lupb_checkfloat(L, narg);
+      break;
     case UPB_TYPE_BOOL:
-      return upb_msgval_bool(lupb_checkbool(L, narg));
+      ret.bool_val = lupb_checkbool(L, narg);
+      break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
       size_t len;
       const char *ptr = lupb_checkstring(L, narg, &len);
-      return upb_msgval_makestr(ptr, len);
+      switch (copy) {
+        case LUPB_COPY: {
+          upb_arena *arena = lupb_arenaget(L, container);
+          char *data = upb_arena_malloc(arena, len);
+          memcpy(data, ptr, len);
+          ret.str_val = upb_strview_make(data, len);
+          break;
+        }
+        case LUPB_REF:
+          ret.str_val = upb_strview_make(ptr, len);
+          break;
+      }
+      break;
     }
     case UPB_TYPE_MESSAGE:
-      UPB_ASSERT(lmsgclass);
-      return upb_msgval_msg(lupb_msg_checkmsg(L, narg, lmsgclass));
+      ret.msg_val = lupb_msg_check(L, narg);
+      /* Typecheck message. */
+      lua_getiuservalue(L, container, LUPB_MSGDEF_INDEX);
+      lua_getiuservalue(L, narg, LUPB_MSGDEF_INDEX);
+      luaL_argcheck(L, lua_rawequal(L, -1, -2), narg, "message type mismatch");
+      lua_pop(L, 2);
+      break;
   }
-  UPB_UNREACHABLE();
+  return ret;
 }
 
-static void lupb_pushmsgval(lua_State *L, upb_fieldtype_t type,
+static void lupb_pushmsgval(lua_State *L, int container, upb_fieldtype_t type,
                             upb_msgval val) {
   switch (type) {
     case UPB_TYPE_INT32:
     case UPB_TYPE_ENUM:
-      lupb_pushint32(L, upb_msgval_getint32(val));
+      lupb_pushint32(L, val.int32_val);
       return;
     case UPB_TYPE_INT64:
-      lupb_pushint64(L, upb_msgval_getint64(val));
+      lupb_pushint64(L, val.int64_val);
       return;
     case UPB_TYPE_UINT32:
-      lupb_pushuint32(L, upb_msgval_getuint32(val));
+      lupb_pushuint32(L, val.uint32_val);
       return;
     case UPB_TYPE_UINT64:
-      lupb_pushuint64(L, upb_msgval_getuint64(val));
+      lupb_pushuint64(L, val.uint64_val);
       return;
     case UPB_TYPE_DOUBLE:
-      lupb_pushdouble(L, upb_msgval_getdouble(val));
+      lua_pushnumber(L, val.double_val);
       return;
     case UPB_TYPE_FLOAT:
-      lupb_pushfloat(L, upb_msgval_getfloat(val));
+      lua_pushnumber(L, val.float_val);
       return;
     case UPB_TYPE_BOOL:
-      lua_pushboolean(L, upb_msgval_getbool(val));
+      lua_pushboolean(L, val.bool_val);
       return;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
+      lua_pushlstring(L, val.str_val.data, val.str_val.size);
+      return;
     case UPB_TYPE_MESSAGE:
-      break;  /* Shouldn't call this function. */
+      assert(container);
+      if (!lupb_cacheget(L, val.msg_val)) {
+        lupb_msg_newmsgwrapper(L, container, val);
+      }
+      return;
   }
-  UPB_UNREACHABLE();
+  LUPB_UNREACHABLE();
 }
 
 
 /* lupb_array *****************************************************************/
 
-/* A strongly typed array.  Implemented by wrapping upb_array.
- *
- * - we only allow integer indices.
- * - all entries must have the correct type.
- * - we do not allow "holes" in the array; you can only assign to an existing
- *   index or one past the end (which will grow the array by one).
- *
- * For string/submessage entries we keep in the userval:
- *
- *   [number index] -> [lupb_string/lupb_msg userdata]
- */
-
 typedef struct {
-  /* Only needed for array of message.  This wastes space in the non-message
-   * case but simplifies the code.  Could optimize away if desired. */
-  const lupb_msgclass *lmsgclass;
   upb_array *arr;
   upb_fieldtype_t type;
 } lupb_array;
 
-#define ARRAY_MSGCLASS_INDEX 0
-
 static lupb_array *lupb_array_check(lua_State *L, int narg) {
   return luaL_checkudata(L, narg, LUPB_ARRAY);
-}
-
-/**
- * lupb_array_typecheck()
- *
- * Verifies that the lupb_array object at index |narg| can be safely assigned
- * to the field |f| of the lupb_msg object at index |msg|.  If this is safe,
- * returns a upb_msgval representing the array.  Otherwise, throws a Lua error.
- */
-static upb_msgval lupb_array_typecheck(lua_State *L, int narg, int msg,
-                                       const upb_fielddef *f) {
-  lupb_array *larray = lupb_array_check(L, narg);
-
-  if (upb_array_type(larray->arr) != upb_fielddef_type(f) ||
-      lupb_msg_getsubmsgclass(L, msg, f) != larray->lmsgclass) {
-    luaL_error(L, "Array had incorrect type (expected: %d, got: %d)",
-               (int)upb_fielddef_type(f), (int)upb_array_type(larray->arr));
-  }
-
-  if (upb_array_type(larray->arr) == UPB_TYPE_MESSAGE) {
-    lupb_msgclass_typecheck(L, lupb_msg_getsubmsgclass(L, msg, f),
-                            larray->lmsgclass);
-  }
-
-  return upb_msgval_arr(larray->arr);
 }
 
 /**
@@ -513,72 +400,91 @@ static upb_msgval lupb_array_typecheck(lua_State *L, int narg, int msg,
  * Checks the array index at Lua stack index |narg| to verify that it is an
  * integer between 1 and |max|, inclusively.  Also corrects it to be zero-based
  * for C.
- *
- * We use "int" because of lua_rawseti/lua_rawgeti -- can re-evaluate if we want
- * arrays bigger than 2^31.
  */
 static int lupb_array_checkindex(lua_State *L, int narg, uint32_t max) {
   uint32_t n = lupb_checkuint32(L, narg);
-  if (n == 0 || n > max || n > INT_MAX) {
-    luaL_error(L, "Invalid array index: expected between 1 and %d", (int)max);
-  }
-  return n - 1;  /* Lua uses 1-based indexing. :( */
+  luaL_argcheck(L, n != 0 && n <= max, narg, "invalid array index");
+  return n - 1;  /* Lua uses 1-based indexing. */
 }
 
 /* lupb_array Public API */
 
+/* lupb_array_new():
+ *
+ * Handles:
+ *   Array(upb.TYPE_INT32)
+ *   Array(message_type)
+ */
 static int lupb_array_new(lua_State *L) {
   lupb_array *larray;
-  upb_fieldtype_t type;
-  const lupb_msgclass *lmsgclass = NULL;
+  upb_arena *arena;
 
   if (lua_type(L, 1) == LUA_TNUMBER) {
-    type = lupb_checkfieldtype(L, 1);
+    upb_fieldtype_t type = lupb_checkfieldtype(L, 1);
+    larray = lupb_newuserdata(L, sizeof(*larray), 1, LUPB_ARRAY);
+    larray->type = type;
   } else {
-    type = UPB_TYPE_MESSAGE;
-    lmsgclass = lupb_msgclass_check(L, 1);
-    lupb_uservalseti(L, -1, ARRAY_MSGCLASS_INDEX, 1);  /* GC-root lmsgclass. */
+    lupb_msgdef_check(L, 1);
+    larray = lupb_newuserdata(L, sizeof(*larray), 2, LUPB_ARRAY);
+    larray->type = UPB_TYPE_MESSAGE;
+    lua_pushvalue(L, 1);
+    lua_setiuservalue(L, -2, LUPB_MSGDEF_INDEX);
   }
 
-  larray = lupb_newuserdata(L, sizeof(*larray), LUPB_ARRAY);
-  larray->type = type;
-  larray->lmsgclass = lmsgclass;
-  larray->arr = upb_array_new(lupb_arena_get(L));
+  arena = lupb_arena_pushnew(L);
+  lua_setiuservalue(L, -2, LUPB_ARENA_INDEX);
+
+  larray->arr = upb_array_new(arena, larray->type);
+  lupb_cacheset(L, larray->arr);
 
   return 1;
 }
 
+/* lupb_array_newindex():
+ *
+ * Handles:
+ *   array[idx] = val
+ *
+ * idx can be within the array or one past the end to extend.
+ */
 static int lupb_array_newindex(lua_State *L) {
   lupb_array *larray = lupb_array_check(L, 1);
-  upb_fieldtype_t type = upb_array_type(larray->arr);
-  uint32_t n = lupb_array_checkindex(L, 2, upb_array_size(larray->arr) + 1);
-  upb_msgval msgval = lupb_tomsgval(L, type, 3, larray->lmsgclass);
+  size_t size = upb_array_size(larray->arr);
+  uint32_t n = lupb_array_checkindex(L, 2, size + 1);
+  upb_msgval msgval = lupb_tomsgval(L, larray->type, 3, 1, LUPB_COPY);
 
-  upb_array_set(larray->arr, larray->type, n, msgval, lupb_arena_get(L));
-
-  if (lupb_istypewrapped(type)) {
-    lupb_uservalseti(L, 1, n, 3);
+  if (n == size) {
+    upb_array_append(larray->arr, msgval, lupb_arenaget(L, 1));
+  } else {
+    upb_array_set(larray->arr, n, msgval);
   }
 
   return 0;  /* 1 for chained assignments? */
 }
 
+/* lupb_array_index():
+ *
+ * Handles:
+ *   array[idx] -> val
+ *
+ * idx must be within the array.
+ */
 static int lupb_array_index(lua_State *L) {
   lupb_array *larray = lupb_array_check(L, 1);
-  upb_array *array = larray->arr;
-  uint32_t n = lupb_array_checkindex(L, 2, upb_array_size(array));
-  upb_fieldtype_t type = upb_array_type(array);
+  size_t size = upb_array_size(larray->arr);
+  uint32_t n = lupb_array_checkindex(L, 2, size);
+  upb_msgval val = upb_array_get(larray->arr, n);
 
-  if (lupb_istypewrapped(type)) {
-    lupb_uservalgeti(L, 1, n);
-  } else {
-    lupb_pushmsgval(L, upb_array_type(array),
-                    upb_array_get(array, larray->type, n));
-  }
+  lupb_pushmsgval(L, 1, larray->type, val);
 
   return 1;
 }
 
+/* lupb_array_len():
+ *
+ * Handles:
+ *   #array -> len
+ */
 static int lupb_array_len(lua_State *L) {
   lupb_array *larray = lupb_array_check(L, 1);
   lua_pushnumber(L, upb_array_size(larray->arr));
@@ -595,61 +501,16 @@ static const struct luaL_Reg lupb_array_mm[] = {
 
 /* lupb_map *******************************************************************/
 
-/* A map object.  Implemented by wrapping upb_map.
- *
- * When the value type is string/bytes/message, the userval consists of:
- *
- *   [Lua number/string] -> [lupb_string/lupb_msg userdata]
- *
- * For other value types we don't use the userdata.
- */
-
 typedef struct {
-  const lupb_msgclass *value_lmsgclass;
   upb_map *map;
+  upb_fieldtype_t key_type;
+  upb_fieldtype_t value_type;
 } lupb_map;
 
-#define MAP_MSGCLASS_INDEX 0
-
-/* lupb_map internal functions */
+#define MAP_MSGDEF_INDEX 1
 
 static lupb_map *lupb_map_check(lua_State *L, int narg) {
-  return luaL_checkudata(L, narg, LUPB_ARRAY);
-}
-
-/**
- * lupb_map_typecheck()
- *
- * Checks that the lupb_map at index |narg| can be safely assigned to the
- * field |f| of the message at index |msg|.  If so, returns a upb_msgval for
- * this map.  Otherwise, raises a Lua error.
- */
-static upb_msgval lupb_map_typecheck(lua_State *L, int narg, int msg,
-                                     const upb_fielddef *f) {
-  lupb_map *lmap = lupb_map_check(L, narg);
-  upb_map *map = lmap->map;
-  const upb_msgdef *entry = upb_fielddef_msgsubdef(f);
-  const upb_fielddef *key_field = upb_msgdef_itof(entry, UPB_MAPENTRY_KEY);
-  const upb_fielddef *value_field = upb_msgdef_itof(entry, UPB_MAPENTRY_VALUE);
-
-  UPB_ASSERT(entry && key_field && value_field);
-
-  if (upb_map_keytype(map) != upb_fielddef_type(key_field)) {
-    luaL_error(L, "Map key type invalid");
-  }
-
-  if (upb_map_valuetype(map) != upb_fielddef_type(value_field)) {
-    luaL_error(L, "Map had incorrect value type (expected: %s, got: %s)",
-               upb_fielddef_type(value_field), upb_map_valuetype(map));
-  }
-
-  if (upb_map_valuetype(map) == UPB_TYPE_MESSAGE) {
-    lupb_msgclass_typecheck(
-        L, lupb_msg_msgclassfor(L, msg, upb_fielddef_msgsubdef(value_field)),
-        lmap->value_lmsgclass);
-  }
-
-  return upb_msgval_map(map);
+  return luaL_checkudata(L, narg, LUPB_MAP);
 }
 
 /* lupb_map Public API */
@@ -659,28 +520,29 @@ static upb_msgval lupb_map_typecheck(lua_State *L, int narg, int msg,
  *
  * Handles:
  *   new_map = upb.Map(key_type, value_type)
+ *   new_map = upb.Map(key_type, value_msgdef)
  */
 static int lupb_map_new(lua_State *L) {
+  upb_arena *arena;
   lupb_map *lmap;
-  upb_fieldtype_t key_type = lupb_checkfieldtype(L, 1);
-  upb_fieldtype_t value_type;
-  const lupb_msgclass *value_lmsgclass = NULL;
 
   if (lua_type(L, 2) == LUA_TNUMBER) {
-    value_type = lupb_checkfieldtype(L, 2);
+    lmap = lupb_newuserdata(L, sizeof(*lmap), 1, LUPB_MAP);
+    lmap->value_type = lupb_checkfieldtype(L, 2);
   } else {
-    value_type = UPB_TYPE_MESSAGE;
+    lupb_msgdef_check(L, 2);
+    lmap = lupb_newuserdata(L, sizeof(*lmap), 2, LUPB_MAP);
+    lmap->value_type = UPB_TYPE_MESSAGE;
+    lua_pushvalue(L, 2);
+    lua_setiuservalue(L, -2, MAP_MSGDEF_INDEX);
   }
 
-  lmap = lupb_newuserdata(L, sizeof(*lmap), LUPB_MAP);
+  arena = lupb_arena_pushnew(L);
+  lua_setiuservalue(L, -2, LUPB_ARENA_INDEX);
 
-  if (value_type == UPB_TYPE_MESSAGE) {
-    value_lmsgclass = lupb_msgclass_check(L, 2);
-    lupb_uservalseti(L, -1, MAP_MSGCLASS_INDEX, 2);  /* GC-root lmsgclass. */
-  }
-
-  lmap->value_lmsgclass = value_lmsgclass;
-  lmap->map = upb_map_new(key_type, value_type, lupb_arena_get(L));
+  lmap->key_type = lupb_checkfieldtype(L, 1);
+  lmap->map = upb_map_new(arena, lmap->key_type, lmap->value_type);
+  lupb_cacheset(L, lmap->map);
 
   return 1;
 }
@@ -693,28 +555,13 @@ static int lupb_map_new(lua_State *L) {
  */
 static int lupb_map_index(lua_State *L) {
   lupb_map *lmap = lupb_map_check(L, 1);
-  upb_map *map = lmap->map;
-  upb_fieldtype_t valtype = upb_map_valuetype(map);
-  /* We don't always use "key", but this call checks the key type. */
-  upb_msgval key = lupb_tomsgval(L, upb_map_keytype(map), 2, NULL);
+  upb_msgval key = lupb_tomsgval(L, lmap->key_type, 2, 1, LUPB_REF);
+  upb_msgval val;
 
-  if (lupb_istypewrapped(valtype)) {
-    /* Userval contains the full map, lookup there by key. */
-    lupb_getuservalue(L, 1);
-    lua_pushvalue(L, 2);
-    lua_rawget(L, -2);
-
-    if (lua_isnil(L, -1)) {
-      /* TODO: lazy read from upb_map */
-    }
+  if (upb_map_get(lmap->map, key, &val)) {
+    lupb_pushmsgval(L, 1, lmap->value_type, val);
   } else {
-    /* Lookup in upb_map. */
-    upb_msgval val;
-    if (upb_map_get(map, key, &val)) {
-      lupb_pushmsgval(L, upb_map_valuetype(map), val);
-    } else {
-      lua_pushnil(L);
-    }
+    lua_pushnil(L);
   }
 
   return 1;
@@ -742,80 +589,52 @@ static int lupb_map_len(lua_State *L) {
 static int lupb_map_newindex(lua_State *L) {
   lupb_map *lmap = lupb_map_check(L, 1);
   upb_map *map = lmap->map;
-  upb_msgval key = lupb_tomsgval(L, upb_map_keytype(map), 2, NULL);
+  upb_msgval key = lupb_tomsgval(L, lmap->key_type, 2, 1, LUPB_REF);
 
   if (lua_isnil(L, 3)) {
-    /* Delete from map. */
-    upb_map_del(map, key);
-
-    if (lupb_istypewrapped(upb_map_valuetype(map))) {
-      /* Delete in userval. */
-      lupb_getuservalue(L, 1);
-      lua_pushvalue(L, 2);
-      lua_pushnil(L);
-      lua_rawset(L, -3);
-      lua_pop(L, 1);
-    }
+    upb_map_delete(map, key);
   } else {
-    /* Set in map. */
-    upb_msgval val =
-        lupb_tomsgval(L, upb_map_valuetype(map), 3, lmap->value_lmsgclass);
-
-    upb_map_set(map, key, val, NULL);
-
-    if (lupb_istypewrapped(upb_map_valuetype(map))) {
-      /* Set in userval. */
-      lupb_getuservalue(L, 1);
-      lua_pushvalue(L, 2);
-      lua_pushvalue(L, 3);
-      lua_rawset(L, -3);
-      lua_pop(L, 1);
-    }
+    upb_msgval val = lupb_tomsgval(L, lmap->value_type, 3, 1, LUPB_COPY);
+    upb_map_set(map, key, val, lupb_arenaget(L, 1));
   }
 
   return 0;
 }
 
-/* upb_mapiter [[[ */
-
 static int lupb_mapiter_next(lua_State *L) {
-  upb_mapiter *i = lua_touserdata(L, lua_upvalueindex(1));
-  lupb_map *lmap = lupb_map_check(L, 1);
-  upb_map *map = lmap->map;
+  int map = lua_upvalueindex(2);
+  size_t *iter = lua_touserdata(L, lua_upvalueindex(1));
+  lupb_map *lmap = lupb_map_check(L, map);
 
-  if (upb_mapiter_done(i)) {
+  if (upb_mapiter_next(lmap->map, iter)) {
+    upb_msgval key = upb_mapiter_key(lmap->map, *iter);
+    upb_msgval val = upb_mapiter_value(lmap->map, *iter);
+    lupb_pushmsgval(L, map, lmap->key_type, key);
+    lupb_pushmsgval(L, map, lmap->value_type, val);
+    return 2;
+  } else {
     return 0;
   }
 
-  lupb_pushmsgval(L, upb_map_keytype(map), upb_mapiter_key(i));
-  lupb_pushmsgval(L, upb_map_valuetype(map), upb_mapiter_value(i));
-  upb_mapiter_next(i);
-
-  return 2;
 }
 
+/**
+ * lupb_map_pairs()
+ *
+ * Handles:
+ *   pairs(map)
+ */
 static int lupb_map_pairs(lua_State *L) {
-  lupb_map *lmap = lupb_map_check(L, 1);
+  lupb_map_check(L, 1);
+  size_t *iter = lua_newuserdata(L, sizeof(*iter));
 
-  if (lupb_istypewrapped(upb_map_keytype(lmap->map)) ||
-      lupb_istypewrapped(upb_map_valuetype(lmap->map))) {
-    /* Complex key or value type.
-     * Sync upb_map to userval if necessary, then iterate over userval. */
+  *iter = UPB_MAP_BEGIN;
+  lua_pushvalue(L, 1);
 
-    /* TODO: Lua tables don't know how many entries they have, gah!. */
-    return 1;
-  } else {
-    /* Simple key and value type, iterate over the upb_map directly. */
-    upb_mapiter *i = lua_newuserdata(L, upb_mapiter_sizeof());
+  /* Upvalues are [iter, lupb_map]. */
+  lua_pushcclosure(L, &lupb_mapiter_next, 2);
 
-    upb_mapiter_begin(i, lmap->map);
-    lua_pushvalue(L, 1);
-
-    /* Upvalues are [upb_mapiter, lupb_map]. */
-    lua_pushcclosure(L, &lupb_mapiter_next, 2);
-
-    return 1;
-  }
+  return 1;
 }
 
 /* upb_mapiter ]]] */
@@ -831,100 +650,119 @@ static const struct luaL_Reg lupb_map_mm[] = {
 
 /* lupb_msg *******************************************************************/
 
-/* A message object.  Implemented by wrapping upb_msg.
- *
- * Our userval contains:
- *
- * - [0] -> our message class
- * - [lupb_fieldindex(f)] -> [lupb_{string,array,map,msg} userdata]
- *
- * Fields with scalar number/bool types don't go in the userval.
- */
-
-#define LUPB_MSG_MSGCLASSINDEX 0
-#define LUPB_MSG_ARENA -1
-
-int lupb_fieldindex(const upb_fielddef *f) {
-  return upb_fielddef_index(f) + 1;  /* 1-based Lua arrays. */
-}
-
-
 typedef struct {
-  const lupb_msgclass *lmsgclass;
   upb_msg *msg;
 } lupb_msg;
 
 /* lupb_msg helpers */
 
-static bool in_userval(const upb_fielddef *f) {
-  return lupb_istypewrapped(upb_fielddef_type(f)) || upb_fielddef_isseq(f) ||
-         upb_fielddef_ismap(f);
-}
-
-lupb_msg *lupb_msg_check(lua_State *L, int narg) {
+static upb_msg *lupb_msg_check(lua_State *L, int narg) {
   lupb_msg *msg = luaL_checkudata(L, narg, LUPB_MSG);
-  if (!msg->lmsgclass) luaL_error(L, "called into dead msg");
-  return msg;
+  return msg->msg;
 }
 
-const upb_msg *lupb_msg_checkmsg(lua_State *L, int narg,
-                                 const lupb_msgclass *lmsgclass) {
-  lupb_msg *lmsg = lupb_msg_check(L, narg);
-  lupb_msgclass_typecheck(L, lmsgclass, lmsg->lmsgclass);
-  return lmsg->msg;
-}
-
-upb_msg *lupb_msg_checkmsg2(lua_State *L, int narg,
-                            const upb_msglayout **layout) {
-  lupb_msg *lmsg = lupb_msg_check(L, narg);
-  *layout = lmsg->lmsgclass->layout;
-  return lmsg->msg;
-}
-
-const upb_msgdef *lupb_msg_checkdef(lua_State *L, int narg) {
-  return lupb_msg_check(L, narg)->lmsgclass->msgdef;
-}
-
-static const upb_fielddef *lupb_msg_checkfield(lua_State *L,
-                                               const lupb_msg *msg,
-                                               int fieldarg) {
+static const upb_fielddef *lupb_msg_checkfield(lua_State *L, int msg,
+                                               int field) {
   size_t len;
-  const char *fieldname = luaL_checklstring(L, fieldarg, &len);
-  const upb_msgdef *msgdef = msg->lmsgclass->msgdef;
-  const upb_fielddef *f = upb_msgdef_ntof(msgdef, fieldname, len);
+  const char *fieldname = luaL_checklstring(L, field, &len);
+  const upb_msgdef *m;
+  const upb_fielddef *f;
 
-  if (!f) {
-    const char *msg = lua_pushfstring(L, "no such field: %s", fieldname);
-    luaL_argerror(L, fieldarg, msg);
-    return NULL;  /* Never reached. */
+  lua_getiuservalue(L, msg, LUPB_MSGDEF_INDEX);
+  m = lupb_msgdef_check(L, -1);
+  f = upb_msgdef_ntof(m, fieldname, len);
+  if (f == NULL) {
+    luaL_error(L, "no such field '%s'", fieldname);
   }
+  lua_pop(L, 1);
 
   return f;
 }
 
-static const lupb_msgclass *lupb_msg_msgclassfor(lua_State *L, int narg,
-                                                 const upb_msgdef *md) {
-  lupb_uservalgeti(L, narg, LUPB_MSG_MSGCLASSINDEX);
-  return lupb_msgclass_msgclassfor(L, -1, md);
+/**
+ * lupb_msg_newmsgwrapper()
+ *
+ * Creates a new wrapper for a message, copying the arena and msgdef references
+ * from |narg| (which should be an array or map).
+ */
+static void lupb_msg_newmsgwrapper(lua_State *L, int narg, upb_msgval val) {
+  lupb_msg *lmsg = lupb_newuserdata(L, sizeof(*lmsg), 2, LUPB_MSG);
+  lmsg->msg = (upb_msg*)val.msg_val;  /* XXX: cast isn't great. */
+  lupb_cacheset(L, lmsg->msg);
+
+  /* Copy both arena and msgdef into the wrapper. */
+  lua_getiuservalue(L, narg, LUPB_ARENA_INDEX);
+  lua_setiuservalue(L, -2, LUPB_ARENA_INDEX);
+  lua_getiuservalue(L, narg, LUPB_MSGDEF_INDEX);
+  lua_setiuservalue(L, -2, LUPB_MSGDEF_INDEX);
 }
 
-static const lupb_msgclass *lupb_msg_getsubmsgclass(lua_State *L, int narg,
-                                                    const upb_fielddef *f) {
-  lupb_uservalgeti(L, narg, LUPB_MSG_MSGCLASSINDEX);
-  return lupb_msgclass_getsubmsgclass(L, -1, f);
+/**
+ * lupb_msg_newud()
+ *
+ * Creates the Lua userdata for a new wrapper object, adding a reference to
+ * the msgdef if necessary.
+ */
+static void *lupb_msg_newud(lua_State *L, int narg, size_t size,
+                            const char *type, const upb_fielddef *f) {
+  if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
+    /* Wrapper needs a reference to the msgdef. */
+    void* ud = lupb_newuserdata(L, size, 2, type);
+    lua_getiuservalue(L, narg, LUPB_MSGDEF_INDEX);
+    lupb_msgdef_pushsubmsgdef(L, f);
+    lua_setiuservalue(L, -2, LUPB_MSGDEF_INDEX);
+    return ud;
+  } else {
+    return lupb_newuserdata(L, size, 1, type);
+  }
 }
 
-int lupb_msg_pushref(lua_State *L, int msgclass, upb_msg *msg) {
-  const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, msgclass);
-  lupb_msg *lmsg = lupb_newuserdata(L, sizeof(lupb_msg), LUPB_MSG);
+/**
+ * lupb_msg_newwrapper()
+ *
+ * Creates a new Lua wrapper object to wrap the given array, map, or message.
+ */
+static void lupb_msg_newwrapper(lua_State *L, int narg, const upb_fielddef *f,
+                                upb_mutmsgval val) {
+  if (upb_fielddef_ismap(f)) {
+    const upb_msgdef *entry = upb_fielddef_msgsubdef(f);
+    const upb_fielddef *key_f = upb_msgdef_itof(entry, UPB_MAPENTRY_KEY);
+    const upb_fielddef *val_f = upb_msgdef_itof(entry, UPB_MAPENTRY_VALUE);
+    lupb_map *lmap = lupb_msg_newud(L, narg, sizeof(*lmap), LUPB_MAP, val_f);
+    lmap->key_type = upb_fielddef_type(key_f);
+    lmap->value_type = upb_fielddef_type(val_f);
+    lmap->map = val.map;
+  } else if (upb_fielddef_isseq(f)) {
+    lupb_array *larr = lupb_msg_newud(L, narg, sizeof(*larr), LUPB_ARRAY, f);
+    larr->type = upb_fielddef_type(f);
+    larr->arr = val.array;
+  } else {
+    lupb_msg *lmsg = lupb_msg_newud(L, narg, sizeof(*lmsg), LUPB_MSG, f);
+    lmsg->msg = val.msg;
+  }
 
-  lmsg->lmsgclass = lmsgclass;
-  lmsg->msg = msg;
+  /* Copy arena ref to new wrapper.  This may be a different arena than the
+   * underlying data was originally constructed from, but if so both arenas
+   * must be in the same group. */
+  lua_getiuservalue(L, narg, LUPB_ARENA_INDEX);
+  lua_setiuservalue(L, -2, LUPB_ARENA_INDEX);
 
-  lupb_uservalseti(L, -1, LUPB_MSG_MSGCLASSINDEX, msgclass);
-  lupb_uservalseti(L, -1, LUPB_MSG_ARENA, -2);
+  lupb_cacheset(L, val.msg);
+}
 
-  return 1;
+/**
+ * lupb_msg_typechecksubmsg()
+ *
+ * Typechecks the given array, map, or msg against this upb_fielddef.
+ */
+static void lupb_msg_typechecksubmsg(lua_State *L, int narg, int msgarg,
+                                     const upb_fielddef *f) {
+  /* Typecheck this map's msgdef against this message field. */
+  lua_getiuservalue(L, narg, LUPB_MSGDEF_INDEX);
+  lua_getiuservalue(L, msgarg, LUPB_MSGDEF_INDEX);
+  lupb_msgdef_pushsubmsgdef(L, f);
+  luaL_argcheck(L, lua_rawequal(L, -1, -2), narg, "message type mismatch");
+  lua_pop(L, 2);
 }
 
 /* lupb_msg Public API */
@@ -934,15 +772,31 @@ int lupb_msg_pushref(lua_State *L, int msgclass, upb_msg *msg) {
  *
  * Handles:
  *   new_msg = MessageClass()
+ *   new_msg = MessageClass{foo = "bar", baz = 3, quux = {foo = 3}}
  */
-static int lupb_msg_pushnew(lua_State *L, int narg) {
-  const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, narg);
-  lupb_msg *lmsg = lupb_newuserdata(L, sizeof(lupb_msg), LUPB_MSG);
+int lupb_msg_pushnew(lua_State *L) {
+  int argcount = lua_gettop(L);
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  lupb_msg *lmsg = lupb_newuserdata(L, sizeof(lupb_msg), 2, LUPB_MSG);
+  upb_arena *arena = lupb_arena_pushnew(L);
 
-  lmsg->lmsgclass = lmsgclass;
-  lmsg->msg = upb_msg_new(lmsgclass->layout, lupb_arena_get(L));
+  lua_setiuservalue(L, -2, LUPB_ARENA_INDEX);
+  lua_pushvalue(L, 1);
+  lua_setiuservalue(L, -2, LUPB_MSGDEF_INDEX);
 
-  lupb_uservalseti(L, -1, LUPB_MSG_MSGCLASSINDEX, narg);
+  lmsg->msg = upb_msg_new(m, arena);
+  lupb_cacheset(L, lmsg->msg);
+
+  if (argcount > 1) {
+    /* Set initial fields from table. */
+    int msg = lua_gettop(L);
+    lua_pushnil(L);
+    while (lua_next(L, 2) != 0) {
+      lua_pushvalue(L, -2);  /* now stack is key, val, key */
+      lua_insert(L, -3);  /* now stack is key, key, val */
+      lua_settable(L, msg);
+    }
+  }
 
   return 1;
 }
@@ -956,33 +810,20 @@ static int lupb_msg_pushnew(lua_State *L, int narg) {
  *   msg[field_descriptor]  # (for extensions) (TODO)
  */
 static int lupb_msg_index(lua_State *L) {
-  lupb_msg *lmsg = lupb_msg_check(L, 1);
-  const upb_fielddef *f = lupb_msg_checkfield(L, lmsg, 2);
-  const upb_msglayout *l = lmsg->lmsgclass->layout;
-  int field_index = upb_fielddef_index(f);
+  upb_msg *msg = lupb_msg_check(L, 1);
+  const upb_fielddef *f = lupb_msg_checkfield(L, 1, 2);
 
-  if (in_userval(f)) {
-    lupb_uservalgeti(L, 1, lupb_fieldindex(f));
-
-    if (lua_isnil(L, -1)) {
-      /* Check if we need to lazily create wrapper. */
-      if (upb_fielddef_isseq(f)) {
-        /* TODO(haberman) */
-      } else if (upb_fielddef_issubmsg(f)) {
-        /* TODO(haberman) */
-      } else {
-        UPB_ASSERT(upb_fielddef_isstring(f));
-        if (upb_msg_has(lmsg->msg, field_index, l)) {
-          upb_msgval val = upb_msg_get(lmsg->msg, field_index, l);
-          lua_pop(L, 1);
-          lua_pushlstring(L, val.str.data, val.str.size);
-          lupb_uservalseti(L, 1, lupb_fieldindex(f), -1);
-        }
-      }
+  if (upb_fielddef_isseq(f) || upb_fielddef_issubmsg(f)) {
+    /* Wrapped type; get or create wrapper. */
+    upb_arena *arena = upb_fielddef_isseq(f) ? lupb_arenaget(L, 1) : NULL;
+    upb_mutmsgval val = upb_msg_mutable(msg, f, arena);
+    if (!lupb_cacheget(L, val.msg)) {
+      lupb_msg_newwrapper(L, 1, f, val);
     }
   } else {
-    upb_msgval val = upb_msg_get(lmsg->msg, field_index, l);
-    lupb_pushmsgval(L, upb_fielddef_type(f), val);
+    /* Value type, just push value and return .*/
+    upb_msgval val = upb_msg_get(msg, f);
+    lupb_pushmsgval(L, 0, upb_fielddef_type(f), val);
   }
 
   return 1;
@@ -997,37 +838,53 @@ static int lupb_msg_index(lua_State *L) {
  *   msg[field_descriptor] = bar  # (for extensions) (TODO)
  */
 static int lupb_msg_newindex(lua_State *L) {
-  lupb_msg *lmsg = lupb_msg_check(L, 1);
-  const upb_fielddef *f = lupb_msg_checkfield(L, lmsg, 2);
-  upb_fieldtype_t type = upb_fielddef_type(f);
-  int field_index = upb_fielddef_index(f);
+  upb_msg *msg = lupb_msg_check(L, 1);
+  const upb_fielddef *f = lupb_msg_checkfield(L, 1, 2);
   upb_msgval msgval;
+  bool merge_arenas = true;
 
-  /* Typecheck and get msgval. */
-
-  if (upb_fielddef_isseq(f)) {
-    msgval = lupb_array_typecheck(L, 3, 1, f);
-  } else if (upb_fielddef_ismap(f)) {
-    msgval = lupb_map_typecheck(L, 3, 1, f);
-  } else {
-    const lupb_msgclass *lmsgclass = NULL;
-
-    if (type == UPB_TYPE_MESSAGE) {
-      lmsgclass = lupb_msg_getsubmsgclass(L, 1, f);
+  if (upb_fielddef_ismap(f)) {
+    lupb_map *lmap = lupb_map_check(L, 3);
+    const upb_msgdef *entry = upb_fielddef_msgsubdef(f);
+    const upb_fielddef *key_f = upb_msgdef_itof(entry, UPB_MAPENTRY_KEY);
+    const upb_fielddef *val_f = upb_msgdef_itof(entry, UPB_MAPENTRY_VALUE);
+    upb_fieldtype_t key_type = upb_fielddef_type(key_f);
+    upb_fieldtype_t value_type = upb_fielddef_type(val_f);
+    luaL_argcheck(L, lmap->key_type == key_type, 3, "key type mismatch");
+    luaL_argcheck(L, lmap->value_type == value_type, 3, "value type mismatch");
+    if (value_type == UPB_TYPE_MESSAGE) {
+      lupb_msg_typechecksubmsg(L, 3, 1, val_f);
     }
-
-    msgval = lupb_tomsgval(L, type, 3, lmsgclass);
+    msgval.map_val = lmap->map;
+  } else if (upb_fielddef_isseq(f)) {
+    lupb_array *larr = lupb_array_check(L, 3);
+    upb_fieldtype_t type = upb_fielddef_type(f);
+    luaL_argcheck(L, larr->type == type, 3, "array type mismatch");
+    if (type == UPB_TYPE_MESSAGE) {
+      lupb_msg_typechecksubmsg(L, 3, 1, f);
+    }
+    msgval.array_val = larr->arr;
+  } else if (upb_fielddef_issubmsg(f)) {
+    upb_msg *msg = lupb_msg_check(L, 3);
+    lupb_msg_typechecksubmsg(L, 3, 1, f);
+    msgval.msg_val = msg;
+  } else {
+    msgval = lupb_tomsgval(L, upb_fielddef_type(f), 3, 1, LUPB_COPY);
+    merge_arenas = false;
   }
 
-  /* Set in upb_msg and userval (if necessary). */
-
-  upb_msg_set(lmsg->msg, field_index, msgval, lmsg->lmsgclass->layout);
-
-  if (in_userval(f)) {
-    lupb_uservalseti(L, 1, lupb_fieldindex(f), 3);
+  if (merge_arenas) {
+    lua_getiuservalue(L, 1, LUPB_ARENA_INDEX);
+    lua_getiuservalue(L, 3, LUPB_ARENA_INDEX);
+    lupb_arena_merge(L, lua_absindex(L, -2), lua_absindex(L, -1));
+    lua_pop(L, 2);
   }
 
-  return 0;  /* 1 for chained assignments? */
+  upb_msg_set(msg, f, msgval, lupb_arenaget(L, 1));
+
+  /* Return the new value for chained assignments. */
+  lua_pushvalue(L, 3);
+  return 1;
 }
 
 static const struct luaL_Reg lupb_msg_mm[] = {
@@ -1039,22 +896,89 @@ static const struct luaL_Reg lupb_msg_mm[] = {
 
 /* lupb_msg toplevel **********************************************************/
 
+/**
+ * lupb_decode()
+ *
+ * Handles:
+ *   msg = upb.decode(MessageClass, bin_string)
+ */
+static int lupb_decode(lua_State *L) {
+  size_t len;
+  const upb_msgdef *m = lupb_msgdef_check(L, 1);
+  const char *pb = lua_tolstring(L, 2, &len);
+  const upb_msglayout *layout = upb_msgdef_layout(m);
+  upb_msg *msg;
+  upb_arena *arena;
+  bool ok;
+
+  /* Create message. */
+  lua_pushcfunction(L, &lupb_msg_pushnew);
+  lua_pushvalue(L, 1);
+  lua_call(L, 1, 1);
+  msg = lupb_msg_check(L, -1);
+
+  lua_getiuservalue(L, -1, LUPB_ARENA_INDEX);
+  arena = lupb_arena_check(L, -1);
+
+  /* Pin string data so we can reference it. */
+  lua_pushvalue(L, 2);
+  lupb_arena_addobj(L, -2);
+  lua_pop(L, 1);
+
+  ok = upb_decode(pb, len, msg, layout, arena);
+
+  if (!ok) {
+    lua_pushstring(L, "Error decoding protobuf.");
+    return lua_error(L);
+  }
+
+  return 1;
+}
+
+/**
+ * lupb_encode()
+ *
+ * Handles:
+ *   bin_string = upb.encode(msg)
+ */
+static int lupb_encode(lua_State *L) {
+  const upb_msg *msg = lupb_msg_check(L, 1);
+  const upb_msglayout *layout;
+  upb_arena *arena = lupb_arena_pushnew(L);
+  size_t size;
+  char *result;
+
+  lua_getiuservalue(L, 1, LUPB_MSGDEF_INDEX);
+  layout = upb_msgdef_layout(lupb_msgdef_check(L, -1));
+  lua_pop(L, 1);
+
+  result = upb_encode(msg, (const void*)layout, arena, &size);
+
+  if (!result) {
+    lua_pushstring(L, "Error encoding protobuf.");
+    return lua_error(L);
+  }
+
+  lua_pushlstring(L, result, size);
+
+  return 1;
+}
+
 static const struct luaL_Reg lupb_msg_toplevel_m[] = {
   {"Array", lupb_array_new},
   {"Map", lupb_map_new},
-  {"MessageFactory", lupb_msgfactory_new},
+  {"decode", lupb_decode},
+  {"encode", lupb_encode},
   {NULL, NULL}
 };
 
 void lupb_msg_registertypes(lua_State *L) {
   lupb_setfuncs(L, lupb_msg_toplevel_m);
 
-  lupb_register_type(L, LUPB_ARENA,      NULL,              lupb_arena_mm);
-  lupb_register_type(L, LUPB_MSGCLASS,   NULL,              lupb_msgclass_mm);
-  lupb_register_type(L, LUPB_MSGFACTORY, lupb_msgfactory_m, lupb_msgfactory_mm);
-  lupb_register_type(L, LUPB_ARRAY,      NULL,              lupb_array_mm);
-  lupb_register_type(L, LUPB_MAP,        NULL,              lupb_map_mm);
-  lupb_register_type(L, LUPB_MSG,        NULL,              lupb_msg_mm);
+  lupb_register_type(L, LUPB_ARENA, NULL, lupb_arena_mm);
+  lupb_register_type(L, LUPB_ARRAY, NULL, lupb_array_mm);
+  lupb_register_type(L, LUPB_MAP,   NULL, lupb_map_mm);
+  lupb_register_type(L, LUPB_MSG,   NULL, lupb_msg_mm);
 
-  lupb_arena_initsingleton(L);
+  lupb_cacheinit(L);
 }

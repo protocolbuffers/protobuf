@@ -5,6 +5,19 @@ load(":upb_proto_library.bzl", "GeneratedSrcsInfo")
 def _librule(name):
     return name + "_lib"
 
+runfiles_init = """\
+# --- begin runfiles.bash initialization v2 ---
+# Copy-pasted from the Bazel Bash runfiles library v2.
+set -uo pipefail; f=bazel_tools/tools/bash/runfiles/runfiles.bash
+source "${RUNFILES_DIR:-/dev/null}/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "${RUNFILES_MANIFEST_FILE:-/dev/null}" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$0.runfiles/$f" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  source "$(grep -sm1 "^$f " "$0.exe.runfiles_manifest" | cut -f2- -d' ')" 2>/dev/null || \
+  { echo>&2 "ERROR: cannot find $f"; exit 1; }; f=; set -e
+# --- end runfiles.bash initialization v2 ---
+"""
+
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
     #   ../com_google_protobuf/google/protobuf/descriptor.proto
@@ -26,42 +39,6 @@ def _get_real_roots(files):
             roots[real_root] = True
     return roots.keys()
 
-def lua_cclibrary(name, srcs, hdrs = [], deps = [], luadeps = []):
-    lib_rule = name + "_lib"
-    so_rule = "lib" + name + ".so"
-    so_file = _remove_prefix(name, "lua/") + ".so"
-
-    native.cc_library(
-        name = _librule(name),
-        hdrs = hdrs,
-        srcs = srcs,
-        deps = deps + [_librule(dep) for dep in luadeps] + ["@lua//:liblua_headers"],
-    )
-
-    native.cc_binary(
-        name = so_rule,
-        linkshared = True,
-        deps = [_librule(name)],
-        linkopts = select({
-            ":darwin": [
-                "-undefined dynamic_lookup",
-            ],
-            "//conditions:default": [],
-        }),
-    )
-
-    native.genrule(
-        name = name + "_copy",
-        srcs = [":" + so_rule],
-        outs = [so_file],
-        cmd = "cp $< $@",
-    )
-
-    native.filegroup(
-        name = name,
-        data = [so_file],
-    )
-
 def _remove_prefix(str, prefix):
     if not str.startswith(prefix):
         fail("%s doesn't start with %s" % (str, prefix))
@@ -72,53 +49,13 @@ def _remove_suffix(str, suffix):
         fail("%s doesn't end with %s" % (str, suffix))
     return str[:-len(suffix)]
 
-def lua_library(name, srcs, strip_prefix, luadeps = []):
-    outs = [_remove_prefix(src, strip_prefix + "/") for src in srcs]
-    native.genrule(
-        name = name + "_copy",
-        srcs = srcs,
-        outs = outs,
-        cmd = "cp $(SRCS) $(@D)",
-    )
-
-    native.filegroup(
-        name = name,
-        data = outs + luadeps,
-    )
-
 def make_shell_script(name, contents, out):
-    contents = contents.replace("$", "$$")
+    contents = (runfiles_init + contents).replace("$", "$$")
     native.genrule(
         name = "gen_" + name,
         outs = [out],
         cmd = "(cat <<'HEREDOC'\n%s\nHEREDOC\n) > $@" % contents,
     )
-
-def _lua_binary_or_test(name, luamain, luadeps, rule):
-    script = name + ".sh"
-
-    make_shell_script(
-        name = "gen_" + name,
-        out = script,
-        contents = """
-BASE=$(dirname $(rlocation upb/upb_c.so))
-export LUA_CPATH="$BASE/?.so"
-export LUA_PATH="$BASE/?.lua"
-$(rlocation lua/lua) $(rlocation upb/tools/upbc.lua) "$@"
-""",
-    )
-
-    rule(
-        name = name,
-        srcs = [script],
-        data = ["@lua//:lua", luamain] + luadeps,
-    )
-
-def lua_binary(name, luamain, luadeps = []):
-    _lua_binary_or_test(name, luamain, luadeps, native.sh_binary)
-
-def lua_test(name, luamain, luadeps = []):
-    _lua_binary_or_test(name, luamain, luadeps, native.sh_test)
 
 def generated_file_staleness_test(name, outs, generated_pattern):
     """Tests that checked-in file(s) match the contents of generated file(s).

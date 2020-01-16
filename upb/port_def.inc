@@ -28,6 +28,9 @@
 #define UPB_SIZE(size32, size64) size64
 #endif
 
+/* These macros aren't really "port", they are helper macros that we don't want
+ * to leak.
+ */
 #define UPB_FIELD_AT(msg, fieldtype, offset) \
   *(fieldtype*)((const char*)(msg) + offset)
 
@@ -39,6 +42,8 @@
 #define UPB_WRITE_ONEOF(msg, fieldtype, offset, value, case_offset, case_val) \
   UPB_FIELD_AT(msg, int, case_offset) = case_val;                             \
   UPB_FIELD_AT(msg, fieldtype, offset) = value;
+
+#define UPB_MAPTYPE_STRING 0
 
 /* UPB_INLINE: inline if possible, emit standalone code if required. */
 #ifdef __cplusplus

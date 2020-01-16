@@ -20,103 +20,91 @@
 ** domain of [u]int64 values.
 */
 
+#include "upb/bindings/lua/upb.h"
+
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "lauxlib.h"
-#include "upb/bindings/lua/upb.h"
-#include "upb/handlers.h"
-#include "upb/msg.h"
 
+#include "lauxlib.h"
+#include "upb/msg.h"
 
 /* Lua compatibility code *****************************************************/
 
-/* Lua 5.1 and Lua 5.2 have slightly incompatible APIs.  A little bit of
- * compatibility code can help hide the difference.  Not too many people still
- * use Lua 5.1 but LuaJIT uses the Lua 5.1 API in some ways. */
-
-#if LUA_VERSION_NUM == 501
-
-/* taken from lua 5.2's source. */
-void *luaL_testudata(lua_State *L, int ud, const char *tname) {
-  void *p = lua_touserdata(L, ud);
-  if (p != NULL) {  /* value is a userdata? */
-    if (lua_getmetatable(L, ud)) {  /* does it have a metatable? */
-      luaL_getmetatable(L, tname);  /* get correct metatable */
-      if (!lua_rawequal(L, -1, -2))  /* not the same? */
-        p = NULL;  /* value is a userdata with wrong metatable */
-      lua_pop(L, 2);  /* remove both metatables */
-      return p;
-    }
-  }
-  return NULL;  /* value is not a userdata with a metatable */
-}
-
-static void lupb_newlib(lua_State *L, const char *name, const luaL_Reg *funcs) {
-  luaL_register(L, name, funcs);
-}
-
-#elif LUA_VERSION_NUM == 502
-
-int luaL_typerror(lua_State *L, int narg, const char *tname) {
-  const char *msg = lua_pushfstring(L, "%s expected, got %s",
-                                    tname, luaL_typename(L, narg));
-  return luaL_argerror(L, narg, msg);
-}
-
-static void lupb_newlib(lua_State *L, const char *name, const luaL_Reg *funcs) {
-  /* Lua 5.2 modules are not expected to set a global variable, so "name" is
-   * unused. */
-  UPB_UNUSED(name);
-
-  /* Can't use luaL_newlib(), because funcs is not the actual array.
-   * Could (micro-)optimize this a bit to count funcs for initial table size. */
-  lua_createtable(L, 0, 8);
-  luaL_setfuncs(L, funcs, 0);
-}
-
-#else
-#error Only Lua 5.1 and 5.2 are supported
-#endif
-
 /* Shims for upcoming Lua 5.3 functionality. */
-bool lua_isinteger(lua_State *L, int argn) {
-  UPB_UNUSED(L);
-  UPB_UNUSED(argn);
+static bool lua_isinteger(lua_State *L, int argn) {
+  LUPB_UNUSED(L);
+  LUPB_UNUSED(argn);
   return false;
 }
 
 
 /* Utility functions **********************************************************/
 
-/* We store our module table in the registry, keyed by ptr.
- * For more info about the motivation/rationale, see this thread:
- *   http://thread.gmane.org/gmane.comp.lang.lua.general/110632 */
-bool lupb_openlib(lua_State *L, void *ptr, const char *name,
-                  const luaL_Reg *funcs) {
-  /* Lookup cached module table. */
-  lua_pushlightuserdata(L, ptr);
-  lua_rawget(L, LUA_REGISTRYINDEX);
-  if (!lua_isnil(L, -1)) {
-    return true;
-  }
-
-  lupb_newlib(L, name, funcs);
-
-  /* Save module table in cache. */
-  lua_pushlightuserdata(L, ptr);
-  lua_pushvalue(L, -2);
-  lua_rawset(L, LUA_REGISTRYINDEX);
-
-  return false;
-}
-
 void lupb_checkstatus(lua_State *L, upb_status *s) {
   if (!upb_ok(s)) {
     lua_pushstring(L, upb_status_errmsg(s));
     lua_error(L);
   }
+}
+
+/* Pushes a new userdata with the given metatable. */
+void *lupb_newuserdata(lua_State *L, size_t size, int n, const char *type) {
+#if LUA_VERSION_NUM >= 504
+  void *ret = lua_newuserdatauv(L, size, n);
+#else
+  void *ret = lua_newuserdata(L, size);
+  lua_createtable(L, 0, n);
+  lua_setuservalue(L, -2);
+#endif
+
+  /* Set metatable. */
+  luaL_getmetatable(L, type);
+  assert(!lua_isnil(L, -1));  /* Should have been created by luaopen_upb. */
+  lua_setmetatable(L, -2);
+
+  return ret;
+}
+
+#if LUA_VERSION_NUM < 504
+int lua_setiuservalue(lua_State *L, int index, int n) {
+  lua_getuservalue(L, index);
+  lua_insert(L, -2);
+  lua_rawseti(L, -2, n);
+  lua_pop(L, 1);
+  return 1;
+}
+
+int lua_getiuservalue(lua_State *L, int index, int n) {
+  lua_getuservalue(L, index);
+  lua_rawgeti(L, -1, n);
+  lua_replace(L, -2);
+  return 1;
+}
+#endif
+
+void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
+                        const luaL_Reg *mm) {
+  luaL_newmetatable(L, name);
+
+  if (mm) {
+    lupb_setfuncs(L, mm);
+  }
+
+  if (m) {
+    /* Methods go in the mt's __index method.  This implies that you can'
+     * implement __index and also have methods. */
+    lua_getfield(L, -1, "__index");
+    lupb_assert(L, lua_isnil(L, -1));
+    lua_pop(L, 1);
+
+    lua_createtable(L, 0, 0);
+    lupb_setfuncs(L, m);
+    lua_setfield(L, -2, "__index");
+  }
+
+  lua_pop(L, 1);  /* The mt. */
 }
 
 /* Scalar type mapping ********************************************************/
@@ -204,42 +192,16 @@ void lupb_pushfloat(lua_State *L, float d) {
   lua_pushnumber(L, d);
 }
 
+/* Library entry point ********************************************************/
 
-static const struct luaL_Reg lupb_toplevel_m[] = {
-  {NULL, NULL}
-};
-
-void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
-                        const luaL_Reg *mm) {
-  luaL_newmetatable(L, name);
-
-  if (mm) {
-    lupb_setfuncs(L, mm);
-  }
-
-  if (m) {
-    /* Methods go in the mt's __index method.  This implies that you can'
-     * implement __index and also have methods. */
-    lua_getfield(L, -1, "__index");
-    lupb_assert(L, lua_isnil(L, -1));
-    lua_pop(L, 1);
-
-    lua_createtable(L, 0, 0);
-    lupb_setfuncs(L, m);
-    lua_setfield(L, -2, "__index");
-  }
-
-  lua_pop(L, 1);  /* The mt. */
-}
-
-int luaopen_upb_c(lua_State *L) {
-  static char module_key;
-  if (lupb_openlib(L, &module_key, "upb_c", lupb_toplevel_m)) {
-    return 1;
-  }
-
+int luaopen_lupb(lua_State *L) {
+#if LUA_VERSION_NUM == 501
+  const struct luaL_Reg funcs[] = {{NULL, NULL}};
+  luaL_register(L, "upb_c", funcs);
+#else
+  lua_createtable(L, 0, 8);
+#endif
   lupb_def_registertypes(L);
   lupb_msg_registertypes(L);
-
   return 1;  /* Return package table. */
 }

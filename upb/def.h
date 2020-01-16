@@ -123,6 +123,7 @@ bool upb_fielddef_hassubdef(const upb_fielddef *f);
 bool upb_fielddef_haspresence(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
+const upb_msglayout_field *upb_fielddef_layout(const upb_fielddef *f);
 
 /* Internal only. */
 uint32_t upb_fielddef_selectorbase(const upb_fielddef *f);
@@ -425,6 +426,7 @@ const upb_oneofdef *upb_msgdef_ntoo(const upb_msgdef *m, const char *name,
                                     size_t len);
 int upb_msgdef_numfields(const upb_msgdef *m);
 int upb_msgdef_numoneofs(const upb_msgdef *m);
+const upb_msglayout *upb_msgdef_layout(const upb_msgdef *m);
 
 UPB_INLINE const upb_oneofdef *upb_msgdef_ntooz(const upb_msgdef *m,
                                                const char *name) {
@@ -851,9 +853,10 @@ const upb_filedef *upb_symtab_addfile(
 
 /* For generated code only: loads a generated descriptor. */
 typedef struct upb_def_init {
-  struct upb_def_init **deps;
+  struct upb_def_init **deps;     /* Dependencies of this file. */
+  const upb_msglayout **layouts;  /* Pre-order layouts of all messages. */
   const char *filename;
-  upb_strview descriptor;
+  upb_strview descriptor;         /* Serialized descriptor. */
 } upb_def_init;
 
 bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init);

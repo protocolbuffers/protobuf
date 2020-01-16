@@ -70,6 +70,7 @@ static bool upb_encode_reserve(upb_encstate *e, size_t bytes) {
 
 /* Writes the given bytes to the buffer, handling reserve/advance. */
 static bool upb_put_bytes(upb_encstate *e, const void *data, size_t len) {
+  if (len == 0) return true;
   CHK(upb_encode_reserve(e, len));
   memcpy(e->ptr, data, len);
   return true;
@@ -130,114 +131,18 @@ static bool upb_put_tag(upb_encstate *e, int field_number, int wire_type) {
 static bool upb_put_fixedarray(upb_encstate *e, const upb_array *arr,
                                size_t size) {
   size_t bytes = arr->len * size;
-  return upb_put_bytes(e, arr->data, bytes) && upb_put_varint(e, bytes);
+  const void* data = _upb_array_constptr(arr);
+  return upb_put_bytes(e, data, bytes) && upb_put_varint(e, bytes);
 }
 
 bool upb_encode_message(upb_encstate *e, const char *msg,
                         const upb_msglayout *m, size_t *size);
 
-static bool upb_encode_array(upb_encstate *e, const char *field_mem,
-                             const upb_msglayout *m,
-                             const upb_msglayout_field *f) {
-  const upb_array *arr = *(const upb_array**)field_mem;
-
-  if (arr == NULL || arr->len == 0) {
-    return true;
-  }
-
-#define VARINT_CASE(ctype, encode) { \
-  ctype *start = arr->data; \
-  ctype *ptr = start + arr->len; \
-  size_t pre_len = e->limit - e->ptr; \
-  do { \
-    ptr--; \
-    CHK(upb_put_varint(e, encode)); \
-  } while (ptr != start); \
-  CHK(upb_put_varint(e, e->limit - e->ptr - pre_len)); \
-} \
-break; \
-do { ; } while(0)
-
-  switch (f->descriptortype) {
-    case UPB_DESCRIPTOR_TYPE_DOUBLE:
-      CHK(upb_put_fixedarray(e, arr, sizeof(double)));
-      break;
-    case UPB_DESCRIPTOR_TYPE_FLOAT:
-      CHK(upb_put_fixedarray(e, arr, sizeof(float)));
-      break;
-    case UPB_DESCRIPTOR_TYPE_SFIXED64:
-    case UPB_DESCRIPTOR_TYPE_FIXED64:
-      CHK(upb_put_fixedarray(e, arr, sizeof(uint64_t)));
-      break;
-    case UPB_DESCRIPTOR_TYPE_FIXED32:
-    case UPB_DESCRIPTOR_TYPE_SFIXED32:
-      CHK(upb_put_fixedarray(e, arr, sizeof(uint32_t)));
-      break;
-    case UPB_DESCRIPTOR_TYPE_INT64:
-    case UPB_DESCRIPTOR_TYPE_UINT64:
-      VARINT_CASE(uint64_t, *ptr);
-    case UPB_DESCRIPTOR_TYPE_UINT32:
-      VARINT_CASE(uint32_t, *ptr);
-    case UPB_DESCRIPTOR_TYPE_INT32:
-    case UPB_DESCRIPTOR_TYPE_ENUM:
-      VARINT_CASE(int32_t, (int64_t)*ptr);
-    case UPB_DESCRIPTOR_TYPE_BOOL:
-      VARINT_CASE(bool, *ptr);
-    case UPB_DESCRIPTOR_TYPE_SINT32:
-      VARINT_CASE(int32_t, upb_zzencode_32(*ptr));
-    case UPB_DESCRIPTOR_TYPE_SINT64:
-      VARINT_CASE(int64_t, upb_zzencode_64(*ptr));
-    case UPB_DESCRIPTOR_TYPE_STRING:
-    case UPB_DESCRIPTOR_TYPE_BYTES: {
-      upb_strview *start = arr->data;
-      upb_strview *ptr = start + arr->len;
-      do {
-        ptr--;
-        CHK(upb_put_bytes(e, ptr->data, ptr->size) &&
-            upb_put_varint(e, ptr->size) &&
-            upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
-      } while (ptr != start);
-      return true;
-    }
-    case UPB_DESCRIPTOR_TYPE_GROUP: {
-      void **start = arr->data;
-      void **ptr = start + arr->len;
-      const upb_msglayout *subm = m->submsgs[f->submsg_index];
-      do {
-        size_t size;
-        ptr--;
-        CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_END_GROUP) &&
-            upb_encode_message(e, *ptr, subm, &size) &&
-            upb_put_tag(e, f->number, UPB_WIRE_TYPE_START_GROUP));
-      } while (ptr != start);
-      return true;
-    }
-    case UPB_DESCRIPTOR_TYPE_MESSAGE: {
-      void **start = arr->data;
-      void **ptr = start + arr->len;
-      const upb_msglayout *subm = m->submsgs[f->submsg_index];
-      do {
-        size_t size;
-        ptr--;
-        CHK(upb_encode_message(e, *ptr, subm, &size) &&
-            upb_put_varint(e, size) &&
-            upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
-      } while (ptr != start);
-      return true;
-    }
-  }
-#undef VARINT_CASE
-
-  /* We encode all primitive arrays as packed, regardless of what was specified
-   * in the .proto file.  Could special case 1-sized arrays. */
-  CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
-  return true;
-}
-
-static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
+static bool upb_encode_scalarfield(upb_encstate *e, const void *_field_mem,
                                    const upb_msglayout *m,
                                    const upb_msglayout_field *f,
                                    bool skip_zero_value) {
+  const char *field_mem = _field_mem;
 #define CASE(ctype, type, wire_type, encodeval) do { \
   ctype val = *(ctype*)field_mem; \
   if (skip_zero_value && val == 0) { \
@@ -309,6 +214,138 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
   UPB_UNREACHABLE();
 }
 
+static bool upb_encode_array(upb_encstate *e, const char *field_mem,
+                             const upb_msglayout *m,
+                             const upb_msglayout_field *f) {
+  const upb_array *arr = *(const upb_array**)field_mem;
+
+  if (arr == NULL || arr->len == 0) {
+    return true;
+  }
+
+#define VARINT_CASE(ctype, encode) { \
+  const ctype *start = _upb_array_constptr(arr); \
+  const ctype *ptr = start + arr->len; \
+  size_t pre_len = e->limit - e->ptr; \
+  do { \
+    ptr--; \
+    CHK(upb_put_varint(e, encode)); \
+  } while (ptr != start); \
+  CHK(upb_put_varint(e, e->limit - e->ptr - pre_len)); \
+} \
+break; \
+do { ; } while(0)
+
+  switch (f->descriptortype) {
+    case UPB_DESCRIPTOR_TYPE_DOUBLE:
+      CHK(upb_put_fixedarray(e, arr, sizeof(double)));
+      break;
+    case UPB_DESCRIPTOR_TYPE_FLOAT:
+      CHK(upb_put_fixedarray(e, arr, sizeof(float)));
+      break;
+    case UPB_DESCRIPTOR_TYPE_SFIXED64:
+    case UPB_DESCRIPTOR_TYPE_FIXED64:
+      CHK(upb_put_fixedarray(e, arr, sizeof(uint64_t)));
+      break;
+    case UPB_DESCRIPTOR_TYPE_FIXED32:
+    case UPB_DESCRIPTOR_TYPE_SFIXED32:
+      CHK(upb_put_fixedarray(e, arr, sizeof(uint32_t)));
+      break;
+    case UPB_DESCRIPTOR_TYPE_INT64:
+    case UPB_DESCRIPTOR_TYPE_UINT64:
+      VARINT_CASE(uint64_t, *ptr);
+    case UPB_DESCRIPTOR_TYPE_UINT32:
+      VARINT_CASE(uint32_t, *ptr);
+    case UPB_DESCRIPTOR_TYPE_INT32:
+    case UPB_DESCRIPTOR_TYPE_ENUM:
+      VARINT_CASE(int32_t, (int64_t)*ptr);
+    case UPB_DESCRIPTOR_TYPE_BOOL:
+      VARINT_CASE(bool, *ptr);
+    case UPB_DESCRIPTOR_TYPE_SINT32:
+      VARINT_CASE(int32_t, upb_zzencode_32(*ptr));
+    case UPB_DESCRIPTOR_TYPE_SINT64:
+      VARINT_CASE(int64_t, upb_zzencode_64(*ptr));
+    case UPB_DESCRIPTOR_TYPE_STRING:
+    case UPB_DESCRIPTOR_TYPE_BYTES: {
+      const upb_strview *start = _upb_array_constptr(arr);
+      const upb_strview *ptr = start + arr->len;
+      do {
+        ptr--;
+        CHK(upb_put_bytes(e, ptr->data, ptr->size) &&
+            upb_put_varint(e, ptr->size) &&
+            upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
+      } while (ptr != start);
+      return true;
+    }
+    case UPB_DESCRIPTOR_TYPE_GROUP: {
+      const void *const*start = _upb_array_constptr(arr);
+      const void *const*ptr = start + arr->len;
+      const upb_msglayout *subm = m->submsgs[f->submsg_index];
+      do {
+        size_t size;
+        ptr--;
+        CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_END_GROUP) &&
+            upb_encode_message(e, *ptr, subm, &size) &&
+            upb_put_tag(e, f->number, UPB_WIRE_TYPE_START_GROUP));
+      } while (ptr != start);
+      return true;
+    }
+    case UPB_DESCRIPTOR_TYPE_MESSAGE: {
+      const void *const*start = _upb_array_constptr(arr);
+      const void *const*ptr = start + arr->len;
+      const upb_msglayout *subm = m->submsgs[f->submsg_index];
+      do {
+        size_t size;
+        ptr--;
+        CHK(upb_encode_message(e, *ptr, subm, &size) &&
+            upb_put_varint(e, size) &&
+            upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
+      } while (ptr != start);
+      return true;
+    }
+  }
+#undef VARINT_CASE
+
+  /* We encode all primitive arrays as packed, regardless of what was specified
+   * in the .proto file.  Could special case 1-sized arrays. */
+  CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
+  return true;
+}
+
+static bool upb_encode_map(upb_encstate *e, const char *field_mem,
+                           const upb_msglayout *m,
+                           const upb_msglayout_field *f) {
+  const upb_map *map = *(const upb_map**)field_mem;
+  const upb_msglayout *entry = m->submsgs[f->submsg_index];
+  const upb_msglayout_field *key_field = &entry->fields[0];
+  const upb_msglayout_field *val_field = &entry->fields[1];
+  upb_strtable_iter i;
+  if (map == NULL) {
+    return true;
+  }
+
+  upb_strtable_begin(&i, &map->table);
+  for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+    size_t pre_len = e->limit - e->ptr;
+    size_t size;
+    upb_strview key = upb_strtable_iter_key(&i);
+    const upb_value val = upb_strtable_iter_value(&i);
+    const void *keyp =
+        map->key_size == UPB_MAPTYPE_STRING ? (void *)&key : key.data;
+    const void *valp =
+        map->val_size == UPB_MAPTYPE_STRING ? upb_value_getptr(val) : &val;
+
+    CHK(upb_encode_scalarfield(e, valp, entry, val_field, false));
+    CHK(upb_encode_scalarfield(e, keyp, entry, key_field, false));
+    size = (e->limit - e->ptr) - pre_len;
+    CHK(upb_put_varint(e, size));
+    CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
+  }
+
+  return true;
+}
+
+
 bool upb_encode_message(upb_encstate *e, const char *msg,
                         const upb_msglayout *m, size_t *size) {
   int i;
@@ -316,11 +353,19 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
   const char *unknown;
   size_t unknown_size;
 
+  unknown = upb_msg_getunknown(msg, &unknown_size);
+
+  if (unknown) {
+    upb_put_bytes(e, unknown, unknown_size);
+  }
+
   for (i = m->field_count - 1; i >= 0; i--) {
     const upb_msglayout_field *f = &m->fields[i];
 
     if (f->label == UPB_LABEL_REPEATED) {
       CHK(upb_encode_array(e, msg + f->offset, m, f));
+    } else if (f->label == UPB_LABEL_MAP) {
+      CHK(upb_encode_map(e, msg + f->offset, m, f));
     } else {
       bool skip_empty = false;
       if (f->presence == 0) {
@@ -339,12 +384,6 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
       }
       CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, skip_empty));
     }
-  }
-
-  unknown = upb_msg_getunknown(msg, &unknown_size);
-
-  if (unknown) {
-    upb_put_bytes(e, unknown, unknown_size);
   }
 
   *size = (e->limit - e->ptr) - pre_len;

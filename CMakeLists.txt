@@ -65,7 +65,6 @@ add_library(port
 add_library(upb
   upb/decode.c
   upb/encode.c
-  upb/generated_util.h
   upb/msg.c
   upb/msg.h
   upb/table.c
@@ -81,9 +80,9 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   upb)
 add_library(reflection
   upb/def.c
-  upb/msgfactory.c
+  upb/reflection.c
   upb/def.h
-  upb/msgfactory.h)
+  upb/reflection.h)
 target_link_libraries(reflection
   descriptor_upbproto
   port
@@ -92,14 +91,6 @@ target_link_libraries(reflection
 add_library(table INTERFACE)
 target_link_libraries(table INTERFACE
   port
-  upb)
-add_library(legacy_msg_reflection
-  upb/msg.h
-  upb/legacy_msg_reflection.c
-  upb/legacy_msg_reflection.h)
-target_link_libraries(legacy_msg_reflection
-  port
-  table
   upb)
 add_library(handlers
   upb/handlers.c

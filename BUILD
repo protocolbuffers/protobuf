@@ -2,10 +2,6 @@ load(
     "//bazel:build_defs.bzl",
     "generated_file_staleness_test",
     "licenses",  # copybara:strip_for_google3
-    "lua_binary",
-    "lua_cclibrary",
-    "lua_library",
-    "lua_test",
     "make_shell_script",
     "upb_amalgamation",
 )
@@ -13,6 +9,10 @@ load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
+)
+load(
+    "//:upb/bindings/lua/lua_proto_library.bzl",
+    "lua_proto_library",
 )
 
 licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
@@ -32,6 +32,7 @@ CPPOPTS = [
 COPTS = CPPOPTS + [
     # copybara:strip_for_google3_begin
     "-pedantic",
+    "-Werror=pedantic",
     "-Wstrict-prototypes",
     # copybara:strip_end
 ]
@@ -70,7 +71,6 @@ cc_library(
     srcs = [
         "upb/decode.c",
         "upb/encode.c",
-        "upb/generated_util.h",
         "upb/msg.c",
         "upb/msg.h",
         "upb/table.c",
@@ -99,7 +99,6 @@ cc_library(
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/generated_util.h",
         "upb/msg.h",
         "upb/port_def.inc",
         "upb/port_undef.inc",
@@ -124,11 +123,11 @@ cc_library(
     name = "reflection",
     srcs = [
         "upb/def.c",
-        "upb/msgfactory.c",
+        "upb/reflection.c",
     ],
     hdrs = [
         "upb/def.h",
-        "upb/msgfactory.h",
+        "upb/reflection.h",
     ],
     copts = select({
         ":windows": [],
@@ -155,24 +154,6 @@ cc_library(
 )
 
 # Legacy C/C++ Libraries (not recommended for new code) ########################
-
-cc_library(
-    name = "legacy_msg_reflection",
-    srcs = [
-        "upb/msg.h",
-        "upb/legacy_msg_reflection.c",
-    ],
-    hdrs = ["upb/legacy_msg_reflection.h"],
-    copts = select({
-        ":windows": [],
-        "//conditions:default": COPTS
-    }),
-    deps = [
-        ":port",
-        ":table",
-        ":upb",
-    ],
-)
 
 cc_library(
     name = "handlers",
@@ -355,6 +336,15 @@ cc_test(
         ":port",
         ":upb",
         ":upb_pb",
+        ":upb_test",
+    ],
+)
+
+cc_test(
+    name = "test_generated_code",
+    srcs = ["tests/test_generated_code.c"],
+    deps = [
+        ":test_messages_proto3_proto_upb",
         ":upb_test",
     ],
 )
@@ -563,6 +553,7 @@ sh_test(
         ":conformance_upb",
         "@com_google_protobuf//:conformance_test_runner",
     ],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
 # copybara:strip_for_google3_begin
@@ -602,10 +593,10 @@ cc_library(
     }),
 )
 
-# Lua libraries. ###############################################################
+# Lua ##########################################################################
 
-lua_cclibrary(
-    name = "lua/upb_c",
+cc_library(
+    name = "lupb",
     srcs = [
         "upb/bindings/lua/def.c",
         "upb/bindings/lua/msg.c",
@@ -615,48 +606,56 @@ lua_cclibrary(
         "upb/bindings/lua/upb.h",
     ],
     deps = [
-        "legacy_msg_reflection",
-        "upb",
-        "upb_pb",
+        ":reflection",
+        ":upb",
+        "@lua//:liblua",
     ],
 )
 
-lua_library(
-    name = "lua/upb",
-    srcs = ["upb/bindings/lua/upb.lua"],
-    luadeps = ["lua/upb_c"],
-    strip_prefix = "upb/bindings/lua",
-)
-
-lua_cclibrary(
-    name = "lua/upb/pb_c",
-    srcs = ["upb/bindings/lua/upb/pb.c"],
-    luadeps = ["lua/upb_c"],
-    deps = ["upb_pb"],
-)
-
-lua_library(
-    name = "lua/upb/pb",
-    srcs = ["upb/bindings/lua/upb/pb.lua"],
-    luadeps = [
-        "lua/upb",
-        "lua/upb/pb_c",
+cc_test(
+    name = "test_lua",
+    linkstatic = 1,
+    srcs = ["tests/bindings/lua/main.c"],
+    data = [
+        "@com_google_protobuf//:conformance_proto",
+        "@com_google_protobuf//:descriptor_proto",
+        ":descriptor_proto_lua",
+        ":test_messages_proto3_proto_lua",
+        "tests/bindings/lua/test_upb.lua",
+        "third_party/lunit/console.lua",
+        "third_party/lunit/lunit.lua",
+        "upb/bindings/lua/upb.lua",
     ],
-    strip_prefix = "upb/bindings/lua",
+    deps = [
+        ":lupb",
+        "@lua//:liblua",
+    ]
 )
 
-# Lua tests. ###################################################################
-
-lua_test(
-    name = "lua/test_upb",
-    luadeps = ["lua/upb"],
-    luamain = "tests/bindings/lua/test_upb.lua",
+cc_binary(
+    name = "protoc-gen-lua",
+    srcs = ["upb/bindings/lua/upbc.cc"],
+    copts = select({
+        ":windows": [],
+        "//conditions:default": CPPOPTS
+    }),
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protoc_lib"
+    ],
 )
 
-lua_test(
-    name = "lua/test_upb_pb",
-    luadeps = ["lua/upb/pb"],
-    luamain = "tests/bindings/lua/test_upb.pb.lua",
+lua_proto_library(
+    name = "descriptor_proto_lua",
+    visibility = ["//visibility:public"],
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
+lua_proto_library(
+    name = "test_messages_proto3_proto_lua",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
 )
 
 # Test the CMake build #########################################################
@@ -683,6 +682,7 @@ sh_test(
     name = "cmake_build",
     srcs = ["run_cmake_build.sh"],
     data = [":cmake_files"],
+    deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
 # Generated files ##############################################################

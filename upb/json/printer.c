@@ -6,6 +6,7 @@
 #include "upb/json/printer.h"
 
 #include <ctype.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
@@ -208,28 +209,26 @@ static size_t fmt_bool(bool val, char* buf, size_t length) {
   return n;
 }
 
-static size_t fmt_int64_as_number(long long val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%lld", val);
+static size_t fmt_int64_as_number(int64_t val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "%" PRId64, val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
-static size_t fmt_uint64_as_number(
-    unsigned long long val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%llu", val);
+static size_t fmt_uint64_as_number(uint64_t val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "%" PRIu64, val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
-static size_t fmt_int64_as_string(long long val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "\"%lld\"", val);
+static size_t fmt_int64_as_string(int64_t val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "\"%" PRId64 "\"", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
-static size_t fmt_uint64_as_string(
-    unsigned long long val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "\"%llu\"", val);
+static size_t fmt_uint64_as_string(uint64_t val, char* buf, size_t length) {
+  size_t n = _upb_snprintf(buf, length, "\"%" PRIu64 "\"", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
