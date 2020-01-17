@@ -699,30 +699,13 @@ class SecondaryDescriptorFromDescriptorDB(DescriptorPoolTestBase,
 
 class ProtoFile(object):
 
-  def __init__(self, name, package, messages, enums=None, dependencies=None,
+  def __init__(self, name, package, messages, dependencies=None,
                public_dependencies=None):
     self.name = name
     self.package = package
     self.messages = messages
-    self.enums = enums or []
     self.dependencies = dependencies or []
     self.public_dependencies = public_dependencies or []
-
-  @staticmethod
-  def FromFileDescriptor(file_descriptor):
-    reurn ProtoFile(file_descriptor.name, file_descriptor.package,
-                    [MessageType.FromDescriptor(descriptor) for descriptor in file_descriptor.message_types_by_name.values()],
-                    enums=[EnumType.FromEnumDescriptor(descriptor) for descriptor in file_descriptor.enum_types_by_name.values()],
-                    dependencies=file_descriptor.dependencies,
-                    public_dependencies=file_descriptor.public_dependencies)
-
-  def __eq__(self, other):
-    return (self.name == other.name and
-            self.package == other.package and
-            self.messages == other.messages and
-            self.enums == other.enums and
-            self.dependencies == other.dependencies and
-            self.public_dependencies == other.dependencies)
 
   def CheckFile(self, test, pool):
     file_desc = pool.FindFileByName(self.name)
@@ -736,18 +719,10 @@ class ProtoFile(object):
       msg_type.CheckType(test, None, name, file_desc)
 
 
-
 class EnumType(object):
 
   def __init__(self, values):
     self.values = values
-
-  @staticmethod
-  def FromEnumDescriptor(enum_descriptor):
-    return EnumType([(value_descriptor.name, value_descriptor.number) for value_descriptor in enum_descriptor.values])
-
-  def __eq__(self, other):
-    return self.values == other.values
 
   def CheckType(self, test, msg_desc, name, file_desc):
     enum_desc = msg_desc.enum_types_by_name[name]

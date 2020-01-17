@@ -39,6 +39,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/compiler/importer.h>
 
+#include <iostream>
+
 namespace google {
 namespace protobuf {
 namespace python {
@@ -106,9 +108,9 @@ public:
   InProcessDescriptorDatabase(::google::protobuf::DescriptorDatabase* fallback_db);
 
   // Registers a FileDescriptorProto in the database. If the same entry is
-  // present in the fallback_db, this will take precedence. The pointer is
-  // expected to remain valid for the lifetime of this database instance.
-  void Register(FileDescriptorProto* proto);
+  // present in the fallback_db, this will take precedence. Takes ownership of
+  // the FileDescriptorProto.
+  void Register(FileDescriptorProto&& proto);
 
   // TODO: Accept an error collector?
 
@@ -126,7 +128,7 @@ public:
                                    FileDescriptorProto* output) override;
 
 private:
-  std::unordered_map<std::string, FileDescriptorProto*> fd_protos_;
+  std::unordered_map<std::string, FileDescriptorProto> fd_protos_;
   ::google::protobuf::DescriptorDatabase* fallback_db_;
 };
 
@@ -136,7 +138,8 @@ private:
 // translation units via member acces after retrieving the DefaultPool.
 extern PyErrorCollector g_py_error_collector;
 extern ::google::protobuf::compiler::DiskSourceTree g_source_tree;
-extern ::google::protobuf::compiler::SourceTreeDescriptorDatabase* g_descriptor_database;
+extern ::google::protobuf::compiler::SourceTreeDescriptorDatabase* g_disk_database;
+extern InProcessDescriptorDatabase* g_descriptor_database;
 
 struct PyMessageFactory;
 

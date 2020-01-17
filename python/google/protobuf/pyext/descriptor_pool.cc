@@ -72,7 +72,8 @@ PyErrorCollector g_py_error_collector;
 // TODO: Consider making this a custom SourceTree with the ability to remove a
 // mapping.
 ::google::protobuf::compiler::DiskSourceTree g_source_tree;
-::google::protobuf::compiler::SourceTreeDescriptorDatabase* g_descriptor_database = nullptr;
+::google::protobuf::compiler::SourceTreeDescriptorDatabase* g_disk_database = nullptr;
+InProcessDescriptorDatabase* g_descriptor_database = nullptr;
 
 // TODO: Figure out where to put this permanently.
 ProtocError::ProtocError() {}
@@ -126,24 +127,29 @@ void PyErrorCollector::Clear() {
 InProcessDescriptorDatabase::InProcessDescriptorDatabase(
     ::google::protobuf::DescriptorDatabase* fallback_db) : fallback_db_(fallback_db){}
 
-void InProcessDescriptorDatabase::Register(FileDescriptorProto* proto) {
-  GOOGLE_CHECK(proto->has_name()) << "Cannot call Register on a FileDescriptorProto without a name.";
-  fd_protos_[proto->name()] = proto;
+void InProcessDescriptorDatabase::Register(FileDescriptorProto&& proto) {
+  GOOGLE_CHECK(proto.has_name()) << "Cannot call Register on a FileDescriptorProto without a name.";
+  std::cerr << "Registering " << proto.name() << " in InProcessDescriptorDatabase" << std::flush << std::endl;
+  fd_protos_[proto.name()] = std::move(proto);
 }
 
 bool InProcessDescriptorDatabase::FindFileByName(
     const std::string& filename,
     FileDescriptorProto* output)
 {
-  using iterator = std::unordered_map<std::string, FileDescriptorProto*>::iterator;
+  std::cerr << "InProcessDescriptorDatabase being queried for " << filename << std::endl << std::flush;
+  using iterator = decltype(fd_protos_)::iterator;
   iterator iter = fd_protos_.find(filename);
   if (iter != fd_protos_.end()) {
-    *output = *iter->second;
+    *output = iter->second;
+    std::cerr << "  Found in in-process cache." << std::flush << std::endl;
     return true;
   }
   if (fallback_db_ != nullptr && fallback_db_->FindFileByName(filename, output)) {
+    std::cerr << "  Found in fallback db." << std::flush << std::endl;
     return true;
   }
+  std::cerr << "  Not found." << std::flush << std::endl;
   // TODO: Error collection.
   return false;
 }
@@ -703,11 +709,24 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
         generated_file, serialized_pb);
   }
 
+  GOOGLE_CHECK(file_proto.has_name()) << "It doesn't have a name D:";
+  std::string file_name = file_proto.name();
+
   BuildFileErrorCollector error_collector;
-  const FileDescriptor* descriptor =
-      self->pool->BuildFileCollectingErrors(file_proto,
-                                            &error_collector);
+  const FileDescriptor* descriptor;
+  // TODO: Maybe this should be abstracted out somehow.
+  if (self == GetDefaultDescriptorPool()) {
+    g_descriptor_database->Register(std::move(file_proto));
+    // TODO: Figure out what to do about protos that don't have a name.
+    descriptor = self->pool->FindFileByName(file_name);
+  } else {
+    descriptor =
+        self->pool->BuildFileCollectingErrors(file_proto,
+                                              &error_collector);
+  }
+
   if (descriptor == NULL) {
+    std::cerr << "Failed to find " << file_name << std::flush << std::endl;
     PyErr_Format(PyExc_TypeError,
                  "Couldn't build proto file into descriptor pool!\n%s",
                  error_collector.error_message.c_str());
@@ -830,8 +849,10 @@ bool InitDescriptorPool() {
   descriptor_pool_map =
       new std::unordered_map<const DescriptorPool*, PyDescriptorPool*>;
   // TODO: Deallocate this at the end of the module's lifespan.
-  g_descriptor_database = new ::google::protobuf::compiler::SourceTreeDescriptorDatabase(&g_source_tree);
-  g_descriptor_database->RecordErrorsTo(&g_py_error_collector);
+  g_disk_database = new ::google::protobuf::compiler::SourceTreeDescriptorDatabase(&g_source_tree);
+  g_disk_database->RecordErrorsTo(&g_py_error_collector);
+  g_descriptor_database = new InProcessDescriptorDatabase(g_disk_database);
+  std::cerr << "Descriptor database located at " << g_descriptor_database << std::endl << std::flush;
   python_generated_pool = cdescriptor_pool::PyDescriptorPool_NewWithUnderlayAndDatabase(
       DescriptorPool::generated_pool(), g_descriptor_database);
   if (python_generated_pool == NULL) {
