@@ -1446,9 +1446,8 @@ static int ParseBytesSequence(PyObject* py_sequence, std::vector<std::string>* s
   return 1;
 }
 
-// TODO: Rename to something more in line with the CPython API style?
-// PyFileDescriptor_FromFile?
 static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
+  PyDescriptorPool* default_pool = GetDefaultDescriptorPool();
   char* filepath;
   std::vector<std::string> include_paths;
   PyArg_ParseTuple(filename, "yO&|", &filepath, &ParseBytesSequence, &include_paths);
@@ -1456,20 +1455,19 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   const ::google::protobuf::FileDescriptor* parsed_file;
   Py_BEGIN_ALLOW_THREADS;
   for (const auto& include_path : include_paths) {
-    g_source_tree.MapPath("", include_path);
+    default_pool->disk_source_tree->MapPath("", include_path);
   }
-  // TODO: Wrap this function and add it to descriptor_pool.h?
-  parsed_file = GetDefaultDescriptorPool()->pool->FindFileByName(filepath);
+  parsed_file = default_pool->pool->FindFileByName(filepath);
   Py_END_ALLOW_THREADS;
   if (parsed_file == nullptr) {
-    std::string error_msg = std::string("Failed to parse ") + filepath + g_py_error_collector.Errors();
+    std::string error_msg = std::string("Failed to parse ") + filepath + default_pool->file_error_collector->Errors();
     PyErr_SetString(PyExc_SyntaxError, error_msg.c_str());
     return NULL;
   }
-  if (g_py_error_collector.WarningCount() > 0) {
-    PyErr_WarnEx(PyExc_SyntaxWarning, g_py_error_collector.Warnings().c_str(), 1);
+  if (default_pool->file_error_collector->WarningCount() > 0) {
+    PyErr_WarnEx(PyExc_SyntaxWarning, default_pool->file_error_collector->Warnings().c_str(), 1);
   }
-  g_py_error_collector.Clear();
+  default_pool->file_error_collector->Clear();
   return PyFileDescriptor_FromDescriptor(parsed_file);
 }
 

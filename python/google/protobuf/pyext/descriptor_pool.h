@@ -133,14 +133,6 @@ private:
 };
 
 
-
-// TODO: Make these members of PyDescriptorPool. And retrieve them in other
-// translation units via member acces after retrieving the DefaultPool.
-extern PyErrorCollector g_py_error_collector;
-extern ::google::protobuf::compiler::DiskSourceTree g_source_tree;
-extern ::google::protobuf::compiler::SourceTreeDescriptorDatabase* g_disk_database;
-extern InProcessDescriptorDatabase* g_descriptor_database;
-
 struct PyMessageFactory;
 
 // The (meta) type of all Messages classes.
@@ -176,6 +168,28 @@ typedef struct PyDescriptorPool {
   // TODO(amauryfa): Don't create the Factory from the DescriptorPool, but
   // use the one passed while creating message classes. And remove this member.
   PyMessageFactory* py_message_factory;
+
+  // A DescriptorDatabase instance that allows both instantiation of descriptors
+  // from in-process strings (as in generated code) and from files on disk (as
+  // with runtime imports of ".proto" files). This database is always set on the
+  // default descriptor pool. Can be NULL. This member is mutually
+  // exclusive with database. If this attribute is set, file_error_collector,
+  // source_tree, and disk_database must also be set. This poiner is owned.
+  InProcessDescriptorDatabase* in_process_database;
+
+  // The error collector to be used when parsing files. Can be NULL. Will always
+  // be set on the default descriptor pool. This pointer is owned.
+  PyErrorCollector* file_error_collector;
+
+  // The disk source tree used to search for ".proto" files. Can be NULL. Will
+  // always be set on the default descriptor pool. This pointer is owned.
+  ::google::protobuf::compiler::DiskSourceTree* disk_source_tree;
+
+  // The DiskSourceTree to be used to find protos on the filesystem. Can be
+  // NULL. Will always be set on the default descriptor pool. This pointer is
+  // owned.
+  ::google::protobuf::compiler::SourceTreeDescriptorDatabase* disk_database;
+
 
   // Cache the options for any kind of descriptor.
   // Descriptor pointers are owned by the DescriptorPool above.

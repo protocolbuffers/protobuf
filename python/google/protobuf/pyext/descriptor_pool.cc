@@ -67,14 +67,6 @@ namespace python {
 static std::unordered_map<const DescriptorPool*, PyDescriptorPool*>*
     descriptor_pool_map;
 
-PyErrorCollector g_py_error_collector;
-
-// TODO: Consider making this a custom SourceTree with the ability to remove a
-// mapping.
-::google::protobuf::compiler::DiskSourceTree g_source_tree;
-::google::protobuf::compiler::SourceTreeDescriptorDatabase* g_disk_database = nullptr;
-InProcessDescriptorDatabase* g_descriptor_database = nullptr;
-
 // TODO: Figure out where to put this permanently.
 ProtocError::ProtocError() {}
 
@@ -218,28 +210,31 @@ static PyDescriptorPool* _CreateDescriptorPool() {
     return NULL;
   }
 
+  cpool->in_process_database = nullptr;
+  cpool->file_error_collector = nullptr;
+  cpool->disk_source_tree = nullptr;
+  cpool->disk_database = nullptr;
+
   PyObject_GC_Track(cpool);
 
   return cpool;
 }
 
-// Create a Python DescriptorPool, using the given pool as an underlay:
-// new messages will be added to a custom pool, not to the underlay.
-//
 // Ownership of the underlay is not transferred, its pointer should
-// stay alive.
-// TODO: Extend to also set a DiskSourceTreeDatabase.
-static PyDescriptorPool* PyDescriptorPool_NewWithUnderlayAndDatabase(
-    const DescriptorPool* underlay, DescriptorDatabase* database) {
+static PyDescriptorPool* PyDescriptorPool_NewDefault() {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == NULL) {
     return NULL;
   }
+  cpool->underlay = DescriptorPool::generated_pool();
+  cpool->file_error_collector = new PyErrorCollector;
+  cpool->disk_source_tree = new ::google::protobuf::compiler::DiskSourceTree;
+  cpool->disk_database = new ::google::protobuf::compiler::SourceTreeDescriptorDatabase(cpool->disk_source_tree);
+  cpool->disk_database->RecordErrorsTo(cpool->file_error_collector);
+  cpool->in_process_database = new InProcessDescriptorDatabase(cpool->disk_database);
   cpool->error_collector = new BuildFileErrorCollector();
-  cpool->pool = new DescriptorPool(database, cpool->error_collector);
-  // TODO: Replace with a new constructor.
-  cpool->pool->internal_set_underlay(underlay);
-  cpool->underlay = underlay;
+  cpool->pool = new DescriptorPool(cpool->in_process_database, cpool->error_collector);
+  cpool->pool->internal_set_underlay(cpool->underlay);
 
   if (!descriptor_pool_map->insert(
       std::make_pair(cpool->pool, cpool)).second) {
@@ -269,6 +264,7 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
     PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
     return NULL;
   }
+
 
   return cpool;
 }
@@ -302,6 +298,10 @@ static void Dealloc(PyObject* pself) {
   delete self->database;
   delete self->pool;
   delete self->error_collector;
+  delete self->in_process_database;
+  delete self->file_error_collector;
+  delete self->disk_source_tree;
+  delete self->disk_database;
   Py_TYPE(self)->tp_free(pself);
 }
 
@@ -708,9 +708,8 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
 
   BuildFileErrorCollector error_collector;
   const FileDescriptor* descriptor;
-  // TODO: Maybe this should be abstracted out somehow.
-  if (self == GetDefaultDescriptorPool()) {
-    g_descriptor_database->Register(std::move(file_proto));
+  if (self->in_process_database != nullptr) {
+    self->in_process_database->Register(std::move(file_proto));
     // TODO: Figure out what to do about protos that don't have a name.
     descriptor = self->pool->FindFileByName(file_name);
   } else {
@@ -841,12 +840,7 @@ bool InitDescriptorPool() {
   // is used as underlay.
   descriptor_pool_map =
       new std::unordered_map<const DescriptorPool*, PyDescriptorPool*>;
-  // TODO: Deallocate this at the end of the module's lifespan.
-  g_disk_database = new ::google::protobuf::compiler::SourceTreeDescriptorDatabase(&g_source_tree);
-  g_disk_database->RecordErrorsTo(&g_py_error_collector);
-  g_descriptor_database = new InProcessDescriptorDatabase(g_disk_database);
-  python_generated_pool = cdescriptor_pool::PyDescriptorPool_NewWithUnderlayAndDatabase(
-      DescriptorPool::generated_pool(), g_descriptor_database);
+  python_generated_pool = cdescriptor_pool::PyDescriptorPool_NewDefault();
   if (python_generated_pool == NULL) {
     delete descriptor_pool_map;
     return false;
