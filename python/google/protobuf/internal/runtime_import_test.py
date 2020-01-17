@@ -174,10 +174,6 @@ def _test_proto_module_imported_once():
     complicated_protos = protobuf.protos("google/protobuf/internal/complicated_test.proto")
     simple_message = protos.SimpleMessage()
     complicated_message = complicated_protos.ComplicatedMessage()
-    sys.stderr.write("************ A: {}\n".format(simple_message.simpler_message.simplest_message.__class__)); sys.stderr.flush()
-    sys.stderr.write("************ B: {}\n".format(complicated_message.simplest_message.__class__)); sys.stderr.flush()
-    sys.stderr.write("************ A: {}\n".format(id(simple_message.simpler_message.simplest_message.__class__))); sys.stderr.flush()
-    sys.stderr.write("************ B: {}\n".format(id(complicated_message.simplest_message.__class__))); sys.stderr.flush()
     assert (simple_message.simpler_message.simplest_message.__class__ is
             complicated_message.simplest_message.__class__)
 
