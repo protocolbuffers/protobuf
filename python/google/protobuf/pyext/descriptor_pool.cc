@@ -703,20 +703,21 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
         generated_file, serialized_pb);
   }
 
-  GOOGLE_CHECK(file_proto.has_name()) << "It doesn't have a name D:";
+  GOOGLE_CHECK(file_proto.has_name()) << "Cannot build protos without a name.";
   std::string file_name = file_proto.name();
-
-  BuildFileErrorCollector error_collector;
   const FileDescriptor* descriptor;
+  BuildFileErrorCollector error_collector;
+
+  Py_BEGIN_ALLOW_THREADS;
   if (self->in_process_database != nullptr) {
     self->in_process_database->Register(std::move(file_proto));
-    // TODO: Figure out what to do about protos that don't have a name.
     descriptor = self->pool->FindFileByName(file_name);
   } else {
     descriptor =
         self->pool->BuildFileCollectingErrors(file_proto,
                                               &error_collector);
   }
+  Py_END_ALLOW_THREADS;
 
   if (descriptor == NULL) {
     PyErr_Format(PyExc_TypeError,
