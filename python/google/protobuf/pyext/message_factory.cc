@@ -136,8 +136,6 @@ static int GcClear(PyObject* pself) {
   return 0;
 }
 
-#include <iostream>
-
 // Add a message class to our database.
 int RegisterMessageClass(PyMessageFactory* self,
                          const Descriptor* message_descriptor,
@@ -146,7 +144,6 @@ int RegisterMessageClass(PyMessageFactory* self,
   typedef PyMessageFactory::ClassesByMessageMap::iterator iterator;
   std::pair<iterator, bool> ret = self->classes_by_descriptor->insert(
       std::make_pair(message_descriptor, message_class));
-  std::cerr << "Registering descriptor " << message_descriptor->name() << " (" << message_descriptor << ")" << std::endl << std::flush;
   if (!ret.second) {
     // Update case: DECREF the previous value.
     Py_DECREF(ret.first->second);

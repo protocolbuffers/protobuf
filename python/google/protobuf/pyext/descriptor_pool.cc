@@ -122,6 +122,44 @@ void PyErrorCollector::Clear() {
   warnings_.clear();
 }
 
+
+InProcessDescriptorDatabase::InProcessDescriptorDatabase(
+    ::google::protobuf::DescriptorDatabase* fallback_db) : fallback_db_(fallback_db){}
+
+void InProcessDescriptorDatabase::Register(FileDescriptorProto* proto) {
+  GOOGLE_CHECK(proto->has_name()) << "Cannot call Register on a FileDescriptorProto without a name.";
+  fd_protos_[proto->name()] = proto;
+}
+
+bool InProcessDescriptorDatabase::FindFileByName(
+    const std::string& filename,
+    FileDescriptorProto* output)
+{
+  using iterator = std::unordered_map<std::string, FileDescriptorProto*>::iterator;
+  iterator iter = fd_protos_.find(filename);
+  if (iter != fd_protos_.end()) {
+    *output = *iter->second;
+    return true;
+  }
+  if (fallback_db_ != nullptr && fallback_db_->FindFileByName(filename, output)) {
+    return true;
+  }
+  // TODO: Error collection.
+  return false;
+}
+
+bool InProcessDescriptorDatabase::FindFileContainingSymbol(const std::string& symbol_name,
+                              FileDescriptorProto* output) {
+  return false;
+}
+
+// Note: Always returns false to indicate that the operation is not supported.
+bool InProcessDescriptorDatabase::FindFileContainingExtension(const std::string& containing_type,
+                                 int field_number,
+                                 FileDescriptorProto* output) {
+  return false;
+}
+
 namespace cdescriptor_pool {
 
 // Collects errors that occur during proto file building to allow them to be

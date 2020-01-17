@@ -82,6 +82,55 @@ class PyErrorCollector
   std::vector<ProtocWarning> warnings_;
 };
 
+// An implementation of DescriptorDatabase which returns FileDescriptorProtos
+// already present in the process.
+//
+// NOTE: This class circumvents the inability to call DescriptorPool::BuildFile
+// on a DescriptorPool with an associated DescriptorDatabase. As it recommends,
+// this class enables "get(ting) your file into the DescriptorDatabase", while
+// still allowing pre-serialized protos to be cross-linked with protos loaded
+// from disk.
+//
+// This DescriptorDatabase is meant to be used with a DiskSourceTreeDatabase
+// used as the fallback_database though, in theory, any DescriptorDatabase
+// should work.
+//
+class InProcessDescriptorDatabase
+  : public ::google::protobuf::DescriptorDatabase {
+
+public:
+  InProcessDescriptorDatabase() = default;
+
+  // If non-NULL, fallback_db will be checked if a FileDescriptorProto hasn't
+  // already been registered in the DB.
+  InProcessDescriptorDatabase(::google::protobuf::DescriptorDatabase* fallback_db);
+
+  // Registers a FileDescriptorProto in the database. If the same entry is
+  // present in the fallback_db, this will take precedence. The pointer is
+  // expected to remain valid for the lifetime of this database instance.
+  void Register(FileDescriptorProto* proto);
+
+  // TODO: Accept an error collector?
+
+  // Implements DescriptorDatabase
+  bool FindFileByName(const std::string& filename,
+                      FileDescriptorProto* output) override;
+
+  // Note: Always returns false to indicate that the operation is not supported.
+  bool FindFileContainingSymbol(const std::string& symbol_name,
+                                FileDescriptorProto* output) override;
+
+  // Note: Always returns false to indicate that the operation is not supported.
+  bool FindFileContainingExtension(const std::string& containing_type,
+                                   int field_number,
+                                   FileDescriptorProto* output) override;
+
+private:
+  std::unordered_map<std::string, FileDescriptorProto*> fd_protos_;
+  ::google::protobuf::DescriptorDatabase* fallback_db_;
+};
+
+
 
 // TODO: Make these members of PyDescriptorPool. And retrieve them in other
 // translation units via member acces after retrieving the DefaultPool.
