@@ -225,6 +225,19 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   return cpool;
 }
 
+/* Initializes a PyDescriptorPool like the default descriptor pool.
+ *
+ * This method returns a PyDescriptorPool able to cross-link protos
+ * originating from the C++ generated pool, from Python space as
+ * FileDescriptorProtos in memory (like for generated pb2 files) or from the
+ * filesystem as .proto files.
+ *
+ * This method adds a database to enable the latter two cases and an underlay
+ * DescriptorPool to handle the former case. BuildFile must not be called on the
+ * a this object's underlying DescriptorPool object. Instead, objects should be
+ * registered into its in-process database using the Register method. Then,
+ * FileDescriptor objects may be obtained by calling FindFileByName.
+ */
 static PyDescriptorPool* PyDescriptorPool_NewDefault() {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == NULL) {

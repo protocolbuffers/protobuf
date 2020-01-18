@@ -1496,7 +1496,6 @@ static PyGetSetDef Getters[] = {
 static PyMethodDef Methods[] = {
   { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS, },
   { "CopyToProto", (PyCFunction)CopyToProto, METH_O, },
-  // TODO: See about only making this available on PyFileDescriptor.
   { "FromFile", (PyCFunction)FromFile, METH_STATIC | METH_VARARGS },
   {NULL}
 };
@@ -1544,9 +1543,6 @@ PyTypeObject PyFileDescriptor_Type = {
     0,                                     // tp_new
     PyObject_GC_Del,                       // tp_free
 };
-
-
-
 
 PyObject* PyFileDescriptor_FromDescriptor(
     const FileDescriptor* file_descriptor) {
@@ -1875,7 +1871,6 @@ static PyObject* GetOptions(PyBaseDescriptor *self) {
 static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
   return CopyToPythonProto<MethodDescriptorProto>(_GetDescriptor(self), target);
 }
-
 
 static PyGetSetDef Getters[] = {
   { "name", (getter)GetName, NULL, "Name", NULL},
