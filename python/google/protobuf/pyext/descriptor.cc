@@ -1435,7 +1435,6 @@ static int ParseBytesSequence(PyObject* py_sequence, std::vector<std::string>* s
       PyErr_SetString(PyExc_LookupError, "Was unable to extract elements from sequence.");
       return 0;
     }
-    // TODO: Interpolate for better error message.
     if (!PyBytes_Check(elem)) {
       PyErr_SetString(PyExc_ValueError, "Expected element of bytes type in sequence.");
       return 0;
@@ -1452,7 +1451,7 @@ static PyObject* FromFile(PyBaseDescriptor *self, PyObject *filename) {
   std::vector<std::string> include_paths;
   PyArg_ParseTuple(filename, "yO&|", &filepath, &ParseBytesSequence, &include_paths);
 
-  const ::google::protobuf::FileDescriptor* parsed_file;
+  const FileDescriptor* parsed_file;
   Py_BEGIN_ALLOW_THREADS;
   for (const auto& include_path : include_paths) {
     default_pool->disk_source_tree->MapPath("", include_path);
