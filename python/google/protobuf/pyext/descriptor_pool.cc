@@ -67,19 +67,16 @@ namespace python {
 static std::unordered_map<const DescriptorPool*, PyDescriptorPool*>*
     descriptor_pool_map;
 
-// TODO: Figure out where to put this permanently.
-ProtocError::ProtocError() {}
+ParseError::ParseError() {}
 
-ProtocError::ProtocError(std::string filename, int line, int column, std::string message)
+ParseError::ParseError(std::string filename, int line, int column, std::string message)
     : filename(filename), line(line), column(column), message(message) {}
 
-std::string ProtocError::msg() const {
+std::string ParseError::msg() const {
     std::stringstream ss;
     ss << filename << ":" << line << ":" << column << ": " << message;
     return ss.str();
 }
-
-// TODO: Figure out where to permanently put this class.
 
 void PyErrorCollector::AddError(const std::string& filename, int line, int column,
               const std::string& message) {
@@ -93,15 +90,14 @@ void PyErrorCollector::AddWarning(const std::string& filename, int line, int col
 
 std::string PyErrorCollector::Errors() const {
  return std::accumulate(errors_.cbegin(), errors_.cend(), std::string(),
-   [](std::string a, const ProtocError& b) {
+   [](std::string a, const ParseError& b) {
      return std::move(a) + "\n" + b.msg();
    });
 }
 
-// TODO: Dedupe with Errors().
 std::string PyErrorCollector::Warnings() const {
  return std::accumulate(warnings_.cbegin(), warnings_.cend(), std::string(),
-   [](std::string a, const ProtocError& b) {
+   [](std::string a, const ParseError& b) {
      return std::move(a) + "\n" + b.msg();
    });
 }
@@ -137,7 +133,6 @@ bool InProcessDescriptorDatabase::FindFileByName(
   if (fallback_db_ != nullptr && fallback_db_->FindFileByName(filename, output)) {
     return true;
   }
-  // TODO: Error collection.
   return false;
 }
 
@@ -174,7 +169,6 @@ class BuildFileErrorCollector : public DescriptorPool::ErrorCollector {
     // As this only happens on failure and will result in the program not
     // running at all, no effort is made to optimize this string manipulation.
     error_message += ("  " + element_name + ": " + message + "\n");
-    // TODO: Replace with proper error messages.
   }
 
   void Clear() {

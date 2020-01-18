@@ -45,25 +45,21 @@ namespace google {
 namespace protobuf {
 namespace python {
 
-// TODO: Make private to this TU?
-// TODO: Figure out where to permanently put this class.
-// TODO: This name absolutely cannot remain the same. ParseError?
-struct ProtocError {
+struct ParseError {
   std::string filename;
   int line;
   int column;
   std::string message;
 
-  ProtocError();
-  ProtocError(std::string filename, int line, int column, std::string message);
+  ParseError();
+  ParseError(std::string filename, int line, int column, std::string message);
 
   std::string msg() const;
 };
 
-typedef ProtocError ProtocWarning;
+typedef ParseError ParseWarning;
 
 // TODO: Thread safety?
-// TODO: Figure out where to permanently put this class.
 class PyErrorCollector
     : public ::google::protobuf::compiler::MultiFileErrorCollector {
  public:
@@ -80,8 +76,8 @@ class PyErrorCollector
   void Clear();
 
  private:
-  std::vector<ProtocError> errors_;
-  std::vector<ProtocWarning> warnings_;
+  std::vector<ParseError> errors_;
+  std::vector<ParseWarning> warnings_;
 };
 
 // An implementation of DescriptorDatabase which returns FileDescriptorProtos
@@ -111,8 +107,6 @@ public:
   // present in the fallback_db, this will take precedence. Takes ownership of
   // the FileDescriptorProto.
   void Register(FileDescriptorProto&& proto);
-
-  // TODO: Accept an error collector?
 
   // Implements DescriptorDatabase
   bool FindFileByName(const std::string& filename,

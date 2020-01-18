@@ -82,8 +82,6 @@ const EnumDescriptor* PyEnumDescriptor_AsDescriptor(PyObject* obj);
 const FileDescriptor* PyFileDescriptor_AsDescriptor(PyObject* obj);
 const ServiceDescriptor* PyServiceDescriptor_AsDescriptor(PyObject* obj);
 
-
-
 // Returns the raw C++ pointer.
 const void* PyDescriptor_AsVoidPtr(PyObject* obj);
 
