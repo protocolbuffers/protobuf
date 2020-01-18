@@ -60,15 +60,15 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
 
     _PROTO_MODULE_SUFFIX = "_pb2"
 
-    def _module_name_to_proto_file(suffix, module_name):
+    def _module_name_to_proto_file(module_name):
         components = module_name.split(".")
-        proto_name = components[-1][:-1 * len(suffix)]
+        proto_name = components[-1][:-1 * len(_PROTO_MODULE_SUFFIX)]
         return os.path.sep.join(components[:-1] + [proto_name + ".proto"])
 
-    def _proto_file_to_module_name(suffix, proto_file):
+    def _proto_file_to_module_name(proto_file):
         components = proto_file.split(os.path.sep)
         proto_base_name = os.path.splitext(components[-1])[0]
-        return ".".join(components[:-1] + [proto_base_name + suffix])
+        return ".".join(components[:-1] + [proto_base_name + _PROTO_MODULE_SUFFIX])
 
     @contextlib.contextmanager
     def _augmented_syspath(new_paths):
@@ -82,8 +82,7 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
 
     class ProtoLoader(importlib.abc.Loader):
 
-        def __init__(self, suffix, module_name, protobuf_path):
-            self._suffix = suffix
+        def __init__(self, module_name, protobuf_path):
             self._module_name = module_name
             self._protobuf_path = protobuf_path
 
@@ -118,7 +117,7 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
             file_descriptor = _pyext_message.FileDescriptor.FromFile(self._protobuf_path.encode('ascii'),
                                                                [path.encode('ascii') for path in sys.path])
             for dependency in file_descriptor.dependencies:
-                module_name = _proto_file_to_module_name(_PROTO_MODULE_SUFFIX, dependency.name)
+                module_name = _proto_file_to_module_name(dependency.name)
                 if module_name not in sys.modules:
                     importlib.import_module(module_name)
             setattr(module, 'DESCRIPTOR', file_descriptor)
@@ -132,11 +131,8 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
 
     class ProtoFinder(importlib.abc.MetaPathFinder):
 
-        def __init__(self, suffix):
-            self._suffix = suffix
-
         def find_spec(self, fullname, path, target=None):
-            filepath = _module_name_to_proto_file(self._suffix, fullname)
+            filepath = _module_name_to_proto_file(fullname)
             for search_path in sys.path:
                 try:
                     prospective_path = os.path.join(search_path, filepath)
@@ -144,38 +140,14 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
                 except (FileNotFoundError, NotADirectoryError):
                     continue
                 else:
-                    # TODO: ProtoLoader singleton?
                     return importlib.machinery.ModuleSpec(
                         fullname,
-                        ProtoLoader(self._suffix, fullname, filepath))
+                        ProtoLoader(fullname, filepath))
 
-    def _import(module_suffix):
-      def protos_impl(protobuf_path, include_paths=None):
+    def protos(protobuf_path, include_paths=None):
         with _augmented_syspath(include_paths):
-          module_name = _proto_file_to_module_name(module_suffix,
-                                                   protobuf_path)
-          module = importlib.import_module(module_name)
-          return module
-      return protos_impl
+            module_name = _proto_file_to_module_name(protobuf_path)
+            module = importlib.import_module(module_name)
+            return module
 
-    # TODO: Take another look at the docstrings.
-    def get_import_machinery(module_suffix):
-      """Get the objects needed to create message types at runtime.
-      Args:
-        module_suffix: A Text object appended to the proto's name in order to
-          form a module name. For example, for vanilla protocol buffers, this
-          will be "_pb2" and for gRPC it will be "_pb2_grpc".
-      Returns:
-        A tuple with two components:
-         1. An instance of importlib.abc.MetaPathFinder capable of importing
-           .proto files with module names derived using the module_suffix
-           argument. (e.g. capable of importing "foo.proto" as foo_pb2). It is
-           expected that this object be addeed to sys.meta_path.
-         2. A function with the same signature as google.protobuf.protos      """
-      return ProtoFinder(module_suffix), _import(module_suffix)
-
-    # TODO: Now that we no longer depend on a code_generator parameter, make
-    # this signature easier to grok.
-    finder, protos = get_import_machinery(_PROTO_MODULE_SUFFIX)
-
-    sys.meta_path.extend([finder])
+    sys.meta_path.extend([ProtoFinder()])
