@@ -62,6 +62,10 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+using ::google::protobuf::compiler::DiskSourceTree;
+using ::google::protobuf::compiler::SourceTreeDescriptorDatabase;
+using ::google::protobuf::DescriptorDatabase;
+
 // A map to cache Python Pools per C++ pointer.
 // Pointers are not owned here, and belong to the PyDescriptorPool.
 static std::unordered_map<const DescriptorPool*, PyDescriptorPool*>*
@@ -80,43 +84,50 @@ std::string ParseError::msg() const {
 
 void PyErrorCollector::AddError(const std::string& filename, int line, int column,
               const std::string& message) {
+  MutexLock(&this->mutex_);
   errors_.emplace_back(filename, line, column, message);
 }
 
 void PyErrorCollector::AddWarning(const std::string& filename, int line, int column,
                 const std::string& message) {
+  MutexLock(&this->mutex_);
   warnings_.emplace_back(filename, line, column, message);
 }
 
 std::string PyErrorCollector::Errors() const {
- return std::accumulate(errors_.cbegin(), errors_.cend(), std::string(),
+  MutexLock(&this->mutex_);
+  return std::accumulate(errors_.cbegin(), errors_.cend(), std::string(),
    [](std::string a, const ParseError& b) {
      return std::move(a) + "\n" + b.msg();
    });
 }
 
 std::string PyErrorCollector::Warnings() const {
- return std::accumulate(warnings_.cbegin(), warnings_.cend(), std::string(),
+  MutexLock(&this->mutex_);
+  return std::accumulate(warnings_.cbegin(), warnings_.cend(), std::string(),
    [](std::string a, const ParseError& b) {
      return std::move(a) + "\n" + b.msg();
    });
 }
 
 size_t PyErrorCollector::WarningCount() const {
+  MutexLock(&this->mutex_);
   return warnings_.size();
 }
 
 void PyErrorCollector::Clear() {
+  MutexLock(&this->mutex_);
   errors_.clear();
   warnings_.clear();
 }
 
 
 InProcessDescriptorDatabase::InProcessDescriptorDatabase(
-    ::google::protobuf::DescriptorDatabase* fallback_db) : fallback_db_(fallback_db){}
+    DescriptorDatabase* fallback_db) : fallback_db_(fallback_db){}
 
 void InProcessDescriptorDatabase::Register(FileDescriptorProto&& proto) {
   GOOGLE_CHECK(proto.has_name()) << "Cannot call Register on a FileDescriptorProto without a name.";
+  MutexLock(&this->mutex_);
   fd_protos_[proto.name()] = std::move(proto);
 }
 
@@ -221,8 +232,8 @@ static PyDescriptorPool* PyDescriptorPool_NewDefault() {
   }
   cpool->underlay = DescriptorPool::generated_pool();
   cpool->file_error_collector = new PyErrorCollector;
-  cpool->disk_source_tree = new ::google::protobuf::compiler::DiskSourceTree;
-  cpool->disk_database = new ::google::protobuf::compiler::SourceTreeDescriptorDatabase(cpool->disk_source_tree);
+  cpool->disk_source_tree = new DiskSourceTree;
+  cpool->disk_database = new SourceTreeDescriptorDatabase(cpool->disk_source_tree);
   cpool->disk_database->RecordErrorsTo(cpool->file_error_collector);
   cpool->in_process_database = new InProcessDescriptorDatabase(cpool->disk_database);
   cpool->error_collector = new BuildFileErrorCollector();

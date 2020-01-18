@@ -38,8 +38,7 @@
 #include <vector>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/compiler/importer.h>
-
-#include <iostream>
+#include <google/protobuf/stubs/mutex.h>
 
 namespace google {
 namespace protobuf {
@@ -59,7 +58,6 @@ struct ParseError {
 
 typedef ParseError ParseWarning;
 
-// TODO: Thread safety?
 class PyErrorCollector
     : public ::google::protobuf::compiler::MultiFileErrorCollector {
  public:
@@ -78,6 +76,7 @@ class PyErrorCollector
  private:
   std::vector<ParseError> errors_;
   std::vector<ParseWarning> warnings_;
+  mutable Mutex mutex_;
 };
 
 // An implementation of DescriptorDatabase which returns FileDescriptorProtos
@@ -93,6 +92,7 @@ class PyErrorCollector
 // used as the fallback_database though, in theory, any DescriptorDatabase
 // should work.
 //
+// All methods of this class are thread-safe besides the constructor.
 class InProcessDescriptorDatabase
   : public ::google::protobuf::DescriptorDatabase {
 
@@ -108,7 +108,7 @@ public:
   // the FileDescriptorProto.
   void Register(FileDescriptorProto&& proto);
 
-  // Implements DescriptorDatabase
+  // The next three methods implement DescriptorDatabase.
   bool FindFileByName(const std::string& filename,
                       FileDescriptorProto* output) override;
 
@@ -124,6 +124,7 @@ public:
 private:
   std::unordered_map<std::string, FileDescriptorProto> fd_protos_;
   ::google::protobuf::DescriptorDatabase* fallback_db_;
+  mutable ::google::protobuf::internal::Mutex mutex_;
 };
 
 
