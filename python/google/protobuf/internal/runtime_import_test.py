@@ -153,13 +153,17 @@ def _is_public_symbol(symbol):
             symbol not in _UNINTENTIONAL_PUBLIC_SYMBOLS)
 
 
+def _get_public_symbols(module):
+    return [symbol for symbol in dir(module) if _is_public_symbol(symbol)]
+
+
 def _get_static_module_record():
     from google.protobuf import test_messages_proto3_pb2
     return ProtoFile.FromFileDescriptor(test_messages_proto3_pb2.DESCRIPTOR)
 
 def _get_static_module_symbols():
     from google.protobuf import test_messages_proto3_pb2
-    return [symbol for symbol in dir(test_messages_proto3_pb2) if _is_public_symbol(symbol)]
+    return _get_public_symbols(test_messages_proto3_pb2)
 
 def _get_dynamic_module_record():
     protos = protobuf.protos(_TEST_PROTO_FILE, include_paths=["../src/"])
@@ -167,7 +171,7 @@ def _get_dynamic_module_record():
 
 def _get_dynamic_module_symbols():
     protos = protobuf.protos(_TEST_PROTO_FILE, include_paths=["../src/"])
-    return [symbol for symbol in dir(protos) if not symbol.startswith("_")]
+    return _get_public_symbols(protos)
 
 def _test_proto_module_imported_once():
     protos = protobuf.protos("google/protobuf/internal/simple_test.proto")
@@ -177,21 +181,30 @@ def _test_proto_module_imported_once():
     assert (simple_message.simpler_message.simplest_message.__class__ is
             complicated_message.simplest_message.__class__)
 
+def _test_static_dynamic_combo():
+    from google.protobuf.internal import complicated_test_pb2
+    protos = protobuf.protos("google/protobuf/internal/simple_test.proto")
+    static_message = complicated_test_pb2.ComplicatedMessage()
+    dynamic_message = protos.SimpleMessage()
+    assert (dynamic_message.simpler_message.simplest_message.__class__ is
+            static_message.simplest_message.__class__)
+
 
 @unittest.skipIf(sys.version_info.major < 3, "Not supported on Python 2.")
 @unittest.skipIf(api_implementation.Type() != "cpp", "Not supported on pure Python implementation.")
 class RuntimeImportTest(unittest.TestCase):
-    def testFileDescriptorContentsIdentical(self):
+
+    def test_file_descriptor_contents_identical(self):
         static_record = _run_in_subprocess(_get_static_module_record)
         dynamic_record = _run_in_subprocess(_get_dynamic_module_record)
         self.assertEqual(static_record, dynamic_record)
 
-    def testModuleContentsIdentical(self):
+    def test_module_contents_identical(self):
         static_symbols = _run_in_subprocess(_get_static_module_symbols)
         dynamic_symbols = _run_in_subprocess(_get_dynamic_module_symbols)
         self.assertSequenceEqual(set(static_symbols), set(dynamic_symbols))
 
-    def testSyntaxError(self):
+    def test_syntax_error(self):
         with self.assertRaises(SyntaxError) as cm:
             protos = protobuf.protos(_BROKEN_PROTO)
         self.assertIn(_BROKEN_PROTO, str(cm.exception))
@@ -200,17 +213,16 @@ class RuntimeImportTest(unittest.TestCase):
         # Line number of second error.
         self.assertIn("39", str(cm.exception))
 
-    def testProtoModuleImportedOnce(self):
+    def test_proto_module_imported_once(self):
         _run_in_subprocess(_test_proto_module_imported_once)
 
-    # TODO: Add test comparing sym_db entries.
-    # TODO: Test transitive imports.
-    # TODO: Instantiate a message.
+    def test_static_dynamic_combo(self):
+        _run_in_subprocess(_test_static_dynamic_combo)
 
 @unittest.skipIf(sys.version_info.major != 2, "Not supported on Python 2.")
 @unittest.skipIf(api_implementation.Type() == "cpp", "Not supported on pure Python implementation.")
 class RuntimeImportGracefulFailureTest(unittest.TestCase):
-    def testGracefulFailure(self):
+    def test_graceful_failure(self):
         with self.assertRaises(NotImplementedError):
             protos = protobuf.protos(_TEST_PROTO_FILE)
 

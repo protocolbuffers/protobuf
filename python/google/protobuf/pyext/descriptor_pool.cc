@@ -220,7 +220,6 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   return cpool;
 }
 
-// Ownership of the underlay is not transferred, its pointer should
 static PyDescriptorPool* PyDescriptorPool_NewDefault() {
   PyDescriptorPool* cpool = _CreateDescriptorPool();
   if (cpool == NULL) {
@@ -264,7 +263,6 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
     PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
     return NULL;
   }
-
 
   return cpool;
 }

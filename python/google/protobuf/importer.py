@@ -57,9 +57,6 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
 
     from google.protobuf.internal import enum_type_wrapper
     from google.protobuf import reflection as _reflection
-    from google.protobuf import symbol_database as _symbol_database
-
-    _sym_db = _symbol_database.Default()
 
     _PROTO_MODULE_SUFFIX = "_pb2"
 
@@ -99,23 +96,25 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
                 components[:-1] + [os.path.splitext(components[-1])[0]])
 
         @staticmethod
-        def _register_message(sym_db, message_descriptor, module_name):
+        def _register_message(message_descriptor, module_name):
             nested_dict = {
                 '__module__': module_name,
                 'DESCRIPTOR': message_descriptor,
             }
             for nested_type_desc in message_descriptor.nested_types:
-                nested_type = ProtoLoader._register_message(sym_db, nested_type_desc, module_name)
+                nested_type = ProtoLoader._register_message(nested_type_desc, module_name)
                 nested_dict[nested_type_desc.name] = nested_type
-            for nested_enum_desc in message_descriptor.enum_types:
-                sym_db.RegisterEnumDescriptor(nested_enum_desc)
             message_type = (
                     _reflection.GeneratedProtocolMessageType(
                             message_descriptor.name, (_message.Message,), nested_dict))
-            sym_db.RegisterMessage(message_type)
             return message_type
 
         def exec_module(self, module):
+            """Instantiate a module identical to the generated version.
+
+            This method does not register symbols in the symbol database, as
+            this feature is not available for the Python implementation.
+            """
             file_descriptor = _pyext_message.FileDescriptor.FromFile(self._protobuf_path.encode('ascii'),
                                                                [path.encode('ascii') for path in sys.path])
             for dependency in file_descriptor.dependencies:
@@ -123,14 +122,12 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
                 if module_name not in sys.modules:
                     importlib.import_module(module_name)
             setattr(module, 'DESCRIPTOR', file_descriptor)
-            _sym_db.RegisterFileDescriptor(file_descriptor)
             for enum_name, enum_descriptor in file_descriptor.enum_types_by_name.iteritems():
                 setattr(module, enum_name, enum_type_wrapper.EnumTypeWrapper(enum_descriptor))
-                _sym_db.RegisterEnumDescriptor(enum_descriptor)
                 for enum_value in enum_descriptor.values:
                     setattr(module, enum_value.name, enum_value.number)
             for name, message_descriptor in file_descriptor.message_types_by_name.iteritems():
-                message_type = ProtoLoader._register_message(_sym_db, message_descriptor, module.__name__)
+                message_type = ProtoLoader._register_message(message_descriptor, module.__name__)
                 setattr(module, name, message_type)
 
     class ProtoFinder(importlib.abc.MetaPathFinder):

@@ -41,3 +41,5 @@ if __name__ != '__main__':
 
 
 from google.protobuf.importer import protos
+
+__all__ = ('protos',)
