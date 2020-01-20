@@ -530,6 +530,7 @@ java_EXTRA_DIST=                                                                
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
 
 objectivec_EXTRA_DIST=                                                       \
+  objectivec/.clang-format                                                   \
   objectivec/DevTools/check_version_stamps.sh                                \
   objectivec/DevTools/compile_testing_protos.sh                              \
   objectivec/DevTools/full_mac_build.sh                                      \
