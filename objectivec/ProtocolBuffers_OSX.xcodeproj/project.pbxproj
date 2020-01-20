@@ -165,6 +165,7 @@
 		8B42494D1A92A16600BC1EC6 /* timestamp.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = timestamp.proto; path = ../src/google/protobuf/timestamp.proto; sourceTree = "<group>"; };
 		8B79657814992E3E002FFBFC /* GPBRootObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBRootObject.h; sourceTree = "<group>"; };
 		8B79657914992E3E002FFBFC /* GPBRootObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBRootObject.m; sourceTree = "<group>"; };
+		8B79A0BA23D2C050004CF533 /* objectivec */ = {isa = PBXFileReference; lastKnownFileType = folder; name = objectivec; path = ../src/google/protobuf/compiler/objectivec; sourceTree = "<group>"; };
 		8B7E6A7414893DBA00F8884A /* unittest_custom_options.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = unittest_custom_options.proto; path = ../../src/google/protobuf/unittest_custom_options.proto; sourceTree = "<group>"; };
 		8B7E6A7514893DBA00F8884A /* unittest_embed_optimize_for.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = unittest_embed_optimize_for.proto; path = ../../src/google/protobuf/unittest_embed_optimize_for.proto; sourceTree = "<group>"; };
 		8B7E6A7614893DBA00F8884A /* unittest_empty.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = unittest_empty.proto; path = ../../src/google/protobuf/unittest_empty.proto; sourceTree = "<group>"; };
@@ -331,6 +332,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				8B79A0BA23D2C050004CF533 /* objectivec */,
 				080E96DDFE201D6D7F000001 /* Core Source */,
 				7461B6940F94FDDD00A0C422 /* Tests */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,

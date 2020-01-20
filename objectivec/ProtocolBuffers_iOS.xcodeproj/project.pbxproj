@@ -150,6 +150,7 @@
 		7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUtilitiesTests.m; sourceTree = "<group>"; };
 		7461B6BC0F94FDF900A0C422 /* GPBWireFormatTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBWireFormatTests.m; sourceTree = "<group>"; };
 		8B09AAF614B663A7007B4184 /* unittest_objc.proto */ = {isa = PBXFileReference; lastKnownFileType = text; path = unittest_objc.proto; sourceTree = "<group>"; };
+		8B0E464123D63DBD00DBF1BB /* objectivec */ = {isa = PBXFileReference; lastKnownFileType = folder; name = objectivec; path = ../src/google/protobuf/compiler/objectivec; sourceTree = "<group>"; };
 		8B210CCD159383D60032D72D /* golden_message */ = {isa = PBXFileReference; lastKnownFileType = file; path = golden_message; sourceTree = "<group>"; };
 		8B210CCF159386920032D72D /* golden_packed_fields_message */ = {isa = PBXFileReference; lastKnownFileType = file; path = golden_packed_fields_message; sourceTree = "<group>"; };
 		8B35468621A61EB2000BD30D /* unittest_objc_options.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = unittest_objc_options.proto; sourceTree = "<group>"; };
@@ -335,6 +336,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				8B0E464123D63DBD00DBF1BB /* objectivec */,
 				080E96DDFE201D6D7F000001 /* Core Source */,
 				7461B6940F94FDDD00A0C422 /* Tests */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
