@@ -30,17 +30,15 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
 
-#pragma mark - Objective C Class references
-// This somewhat arcane code forces linkage of classes from static archives by
-// adding a concrete reference to the classes.
-// We don't use `[Foo class]` because we need a static value for our initializer.
-// This also has the added benefit of reducing size in that we don't have to
-// encode the class names and look them up at runtime.
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBAny;
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBEnumValue;
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBField;
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBOption;
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBSourceContext;
+#pragma mark - Objective C Class declarations
+// Forward declarations of Objective C classes that we can use as
+// static values in struct initializers.
+// We don't use [Foo class] because it is not a static value.
+GPBObjCClassDeclaration(GPBAny);
+GPBObjCClassDeclaration(GPBEnumValue);
+GPBObjCClassDeclaration(GPBField);
+GPBObjCClassDeclaration(GPBOption);
+GPBObjCClassDeclaration(GPBSourceContext);
 
 #pragma mark - GPBTypeRoot
 
@@ -139,7 +137,7 @@ typedef struct GPBType__storage_ {
       },
       {
         .name = "fieldsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBField),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBField),
         .number = GPBType_FieldNumber_FieldsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBType__storage_, fieldsArray),
@@ -157,7 +155,7 @@ typedef struct GPBType__storage_ {
       },
       {
         .name = "optionsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBOption),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBOption),
         .number = GPBType_FieldNumber_OptionsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBType__storage_, optionsArray),
@@ -166,7 +164,7 @@ typedef struct GPBType__storage_ {
       },
       {
         .name = "sourceContext",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBSourceContext),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBSourceContext),
         .number = GPBType_FieldNumber_SourceContext,
         .hasIndex = 1,
         .offset = (uint32_t)offsetof(GPBType__storage_, sourceContext),
@@ -312,7 +310,7 @@ typedef struct GPBField__storage_ {
       },
       {
         .name = "optionsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBOption),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBOption),
         .number = GPBField_FieldNumber_OptionsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBField__storage_, optionsArray),
@@ -535,7 +533,7 @@ typedef struct GPBEnum__storage_ {
       },
       {
         .name = "enumvalueArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBEnumValue),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBEnumValue),
         .number = GPBEnum_FieldNumber_EnumvalueArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBEnum__storage_, enumvalueArray),
@@ -544,7 +542,7 @@ typedef struct GPBEnum__storage_ {
       },
       {
         .name = "optionsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBOption),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBOption),
         .number = GPBEnum_FieldNumber_OptionsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBEnum__storage_, optionsArray),
@@ -553,7 +551,7 @@ typedef struct GPBEnum__storage_ {
       },
       {
         .name = "sourceContext",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBSourceContext),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBSourceContext),
         .number = GPBEnum_FieldNumber_SourceContext,
         .hasIndex = 1,
         .offset = (uint32_t)offsetof(GPBEnum__storage_, sourceContext),
@@ -641,7 +639,7 @@ typedef struct GPBEnumValue__storage_ {
       },
       {
         .name = "optionsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBOption),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBOption),
         .number = GPBEnumValue_FieldNumber_OptionsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBEnumValue__storage_, optionsArray),
@@ -697,7 +695,7 @@ typedef struct GPBOption__storage_ {
       },
       {
         .name = "value",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBAny),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBAny),
         .number = GPBOption_FieldNumber_Value,
         .hasIndex = 1,
         .offset = (uint32_t)offsetof(GPBOption__storage_, value),

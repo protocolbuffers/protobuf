@@ -52,8 +52,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["storage_type"] = message_type;
   (*variables)["group_or_message"] =
       (descriptor->type() == FieldDescriptor::TYPE_GROUP) ? "Group" : "Message";
-  (*variables)["dataTypeSpecific_value"] =
-      ObjCClassSymbolReference(message_type);
+  (*variables)["dataTypeSpecific_value"] = ObjCClass(message_type);
 }
 
 }  // namespace
@@ -75,7 +74,7 @@ void MessageFieldGenerator::DetermineForwardDeclarations(
 
 void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
     std::set<string>* fwd_decls) const {
-  fwd_decls->insert(ObjCClassSymbolDefinition(variable("storage_type")));
+  fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 
 bool MessageFieldGenerator::WantsHasProperty(void) const {
@@ -108,7 +107,7 @@ void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
 
 void RepeatedMessageFieldGenerator::DetermineObjectiveCClassDefinitions(
     std::set<string>* fwd_decls) const {
-  fwd_decls->insert(ObjCClassSymbolDefinition(variable("storage_type")));
+  fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 
 }  // namespace objectivec

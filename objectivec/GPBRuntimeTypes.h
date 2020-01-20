@@ -144,8 +144,8 @@ typedef struct GPBExtensionRange {
 } GPBExtensionRange;
 
 /**
- A type to represent a reference to an Objective C class.
+ A type to represent an Objective C class.
  This is actually an `objc_class` but the runtime headers will not allow us to
- reference `objc_class`.
+ reference `objc_class`, so we have defined our own.
 */
-typedef struct GPBObjcClassReference GPBObjcClassReference;
+typedef struct GPBObjcClass_t GPBObjcClass_t;
