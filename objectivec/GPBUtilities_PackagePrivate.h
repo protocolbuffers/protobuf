@@ -35,13 +35,22 @@
 #import "GPBDescriptor_PackagePrivate.h"
 
 // Macros for stringifying library symbols. These are used in the generated
-// PB descriptor classes wherever a library symbol name is represented as a
-// string. See README.google for more information.
+// GPB descriptor classes wherever a library symbol name is represented as a
+// string.
 #define GPBStringify(S) #S
 #define GPBStringifySymbol(S) GPBStringify(S)
 
 #define GPBNSStringify(S) @#S
 #define GPBNSStringifySymbol(S) GPBNSStringify(S)
+
+// Macros for generating a Class from a class name. These are used in
+// the generated GPB descriptor classes wherever an Objective C class
+// reference is needed for a generated class.
+#define GPBObjCClassSymbol(name) OBJC_CLASS_$_##name
+#define GPBObjCClass(name) \
+    ((__bridge Class)&(GPBObjCClassSymbol(name)))
+#define GPBObjCClassDeclaration(name) \
+    extern const GPBObjcClass_t GPBObjCClassSymbol(name)
 
 // Constant to internally mark when there is no has bit.
 #define GPBNoHasBit INT32_MAX

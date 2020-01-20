@@ -254,7 +254,7 @@ void MessageGenerator::DetermineObjectiveCClassDefinitions(std::set<string>* fwd
   const Descriptor* containing_descriptor = descriptor_->containing_type();
   if (containing_descriptor != NULL) {
     string containing_class = ClassName(containing_descriptor);
-    fwd_decls->insert(ObjCClassSymbolDefinition(containing_class));
+    fwd_decls->insert(ObjCClassDeclaration(containing_class));
   }
 }
 
@@ -582,7 +582,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     }
     if (descriptor_->containing_type() != NULL) {
       string containing_class = ClassName(descriptor_->containing_type());
-      string parent_class_ref = ObjCClassSymbolReference(containing_class);
+      string parent_class_ref = ObjCClass(containing_class);
       printer->Print(
           "    [localDescriptor setupContainingMessageClass:$parent_class_ref$];\n",
           "parent_class_ref", parent_class_ref);

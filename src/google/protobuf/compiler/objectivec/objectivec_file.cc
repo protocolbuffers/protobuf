@@ -432,12 +432,10 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
       "\n");
   if (!fwd_decls.empty()) {
     printer->Print(
-        "#pragma mark - Objective C Class references\n"
-        "// This somewhat arcane code forces linkage of classes from static archives by\n"
-        "// adding a concrete reference to the classes.\n"
-        "// We don't use `[Foo class]` because we need a static value for our initializer.\n"
-        "// This also has the added benefit of reducing size in that we don't have to\n"
-        "// encode the class names and look them up at runtime.\n");
+        "#pragma mark - Objective C Class declarations\n"
+        "// Forward declarations of Objective C classes that we can use as\n"
+        "// static values in struct initializers.\n"
+        "// We don't use [Foo class] because it is not a static value.\n");
   }
   for (const auto& i : fwd_decls) {
     printer->Print("$value$\n", "value", i);

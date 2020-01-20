@@ -85,7 +85,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   std::map<string, string> vars;
   vars["root_class_and_method_name"] = root_class_and_method_name_;
   const string containing_type = ClassName(descriptor_->containing_type());
-  vars["extended_type"] = ObjCClassSymbolReference(containing_type);
+  vars["extended_type"] = ObjCClass(containing_type);
   vars["number"] = StrCat(descriptor_->number());
 
   std::vector<string> options;
@@ -99,7 +99,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
   if (objc_type == OBJECTIVECTYPE_MESSAGE) {
     std::string message_type = ClassName(descriptor_->message_type());
-    vars["type"] = ObjCClassSymbolReference(message_type);
+    vars["type"] = ObjCClass(message_type);
   } else {
     vars["type"] = "Nil";
   }
@@ -136,11 +136,11 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
 void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
     std::set<string>* fwd_decls) {
   string extended_type = ClassName(descriptor_->containing_type());
-  fwd_decls->insert(ObjCClassSymbolDefinition(extended_type));
+  fwd_decls->insert(ObjCClassDeclaration(extended_type));
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
   if (objc_type == OBJECTIVECTYPE_MESSAGE) {
     string message_type = ClassName(descriptor_->message_type());
-    fwd_decls->insert(ObjCClassSymbolDefinition(message_type));
+    fwd_decls->insert(ObjCClassDeclaration(message_type));
   }
 }
 

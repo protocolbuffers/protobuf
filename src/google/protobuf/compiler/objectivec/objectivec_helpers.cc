@@ -585,17 +585,12 @@ string OneofNameCapitalized(const OneofDescriptor* descriptor) {
   return result;
 }
 
-static string ObjCClassSymbolName(const string& class_name) {
-  return string("OBJC_CLASS_$_") + class_name;
+string ObjCClass(const string& class_name) {
+  return string("GPBObjCClass(") + class_name + ")";
 }
 
-string ObjCClassSymbolReference(const string& class_name) {
-  return "((__bridge Class)&" + ObjCClassSymbolName(class_name) + ")";
-}
-
-string ObjCClassSymbolDefinition(const string& class_name) {
-  const string &ref = ObjCClassSymbolName(class_name);
-  return "extern const GPBObjcClassReference " + ref + ";";
+string ObjCClassDeclaration(const string& class_name) {
+  return string("GPBObjCClassDeclaration(") + class_name + ");";
 }
 
 string UnCamelCaseFieldName(const string& name, const FieldDescriptor* field) {

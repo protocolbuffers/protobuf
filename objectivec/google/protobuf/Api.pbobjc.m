@@ -28,16 +28,14 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
 
-#pragma mark - Objective C Class references
-// This somewhat arcane code forces linkage of classes from static archives by
-// adding a concrete reference to the classes.
-// We don't use `[Foo class]` because we need a static value for our initializer.
-// This also has the added benefit of reducing size in that we don't have to
-// encode the class names and look them up at runtime.
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBMethod;
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBMixin;
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBOption;
-extern const GPBObjcClassReference OBJC_CLASS_$_GPBSourceContext;
+#pragma mark - Objective C Class declarations
+// Forward declarations of Objective C classes that we can use as
+// static values in struct initializers.
+// We don't use [Foo class] because it is not a static value.
+GPBObjCClassDeclaration(GPBMethod);
+GPBObjCClassDeclaration(GPBMixin);
+GPBObjCClassDeclaration(GPBOption);
+GPBObjCClassDeclaration(GPBSourceContext);
 
 #pragma mark - GPBApiRoot
 
@@ -103,7 +101,7 @@ typedef struct GPBApi__storage_ {
       },
       {
         .name = "methodsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBMethod),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBMethod),
         .number = GPBApi_FieldNumber_MethodsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBApi__storage_, methodsArray),
@@ -112,7 +110,7 @@ typedef struct GPBApi__storage_ {
       },
       {
         .name = "optionsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBOption),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBOption),
         .number = GPBApi_FieldNumber_OptionsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBApi__storage_, optionsArray),
@@ -130,7 +128,7 @@ typedef struct GPBApi__storage_ {
       },
       {
         .name = "sourceContext",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBSourceContext),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBSourceContext),
         .number = GPBApi_FieldNumber_SourceContext,
         .hasIndex = 2,
         .offset = (uint32_t)offsetof(GPBApi__storage_, sourceContext),
@@ -139,7 +137,7 @@ typedef struct GPBApi__storage_ {
       },
       {
         .name = "mixinsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBMixin),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBMixin),
         .number = GPBApi_FieldNumber_MixinsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBApi__storage_, mixinsArray),
@@ -260,7 +258,7 @@ typedef struct GPBMethod__storage_ {
       },
       {
         .name = "optionsArray",
-        .dataTypeSpecific.clazz = ((__bridge Class)&OBJC_CLASS_$_GPBOption),
+        .dataTypeSpecific.clazz = GPBObjCClass(GPBOption),
         .number = GPBMethod_FieldNumber_OptionsArray,
         .hasIndex = GPBNoHasBit,
         .offset = (uint32_t)offsetof(GPBMethod__storage_, optionsArray),

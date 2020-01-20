@@ -177,7 +177,7 @@ void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->FindFieldByName("value");
   if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
-    fwd_decls->insert(ObjCClassSymbolDefinition(
+    fwd_decls->insert(ObjCClassDeclaration(
         value_field_generator_->variable("storage_type")));
   }
 }
