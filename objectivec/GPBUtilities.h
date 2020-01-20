@@ -94,6 +94,7 @@ void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field);
 
 //%PDDM-EXPAND GPB_ACCESSORS()
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 
 //
@@ -384,6 +385,7 @@ void GPBSetMessageMapField(GPBMessage *self,
                            GPBFieldDescriptor *field,
                            id dictionary);
 
+// clang-format on
 //%PDDM-EXPAND-END GPB_ACCESSORS()
 
 /**

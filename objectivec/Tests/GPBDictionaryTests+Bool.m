@@ -42,6 +42,7 @@
 
 //%PDDM-EXPAND BOOL_TESTS_FOR_POD_VALUE(UInt32, uint32_t, 100U, 101U)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool -> UInt32
 
@@ -345,8 +346,10 @@
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND BOOL_TESTS_FOR_POD_VALUE(Int32, int32_t, 200, 201)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool -> Int32
 
@@ -650,8 +653,10 @@
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND BOOL_TESTS_FOR_POD_VALUE(UInt64, uint64_t, 300U, 301U)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool -> UInt64
 
@@ -955,8 +960,10 @@
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND BOOL_TESTS_FOR_POD_VALUE(Int64, int64_t, 400, 401)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool -> Int64
 
@@ -1260,8 +1267,10 @@
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND BOOL_TESTS_FOR_POD_VALUE(Bool, BOOL, NO, YES)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool -> Bool
 
@@ -1565,8 +1574,10 @@
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND BOOL_TESTS_FOR_POD_VALUE(Float, float, 500.f, 501.f)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool -> Float
 
@@ -1870,8 +1881,10 @@
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND BOOL_TESTS_FOR_POD_VALUE(Double, double, 600., 601.)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool -> Double
 
@@ -2175,8 +2188,10 @@
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND TESTS_FOR_BOOL_KEY_OBJECT_VALUE(Object, NSString*, @"abc", @"def")
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool -> Object
 
@@ -2445,6 +2460,7 @@
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND-END (8 expansions)
 
 

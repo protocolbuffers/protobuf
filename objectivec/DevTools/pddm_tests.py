@@ -394,6 +394,7 @@ class TestParsingSource(unittest.TestCase):
 class TestProcessingSource(unittest.TestCase):
 
   def testBasics(self):
+    self.maxDiff = None
     input_str = u"""
 //%PDDM-IMPORT-DEFINES ImportFile
 foo
@@ -417,18 +418,24 @@ baz
 foo
 //%PDDM-EXPAND mumble(abc)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 abc: doAbc(int abc);
+// clang-format on
 //%PDDM-EXPAND-END mumble(abc)
 bar
 //%PDDM-EXPAND mumble(def)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 def: doDef(int def);
+// clang-format on
 //%PDDM-EXPAND mumble(ghi)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 ghi: doGhi(int ghi);
+// clang-format on
 //%PDDM-EXPAND-END (2 expansions)
 baz
 //%PDDM-DEFINE mumble(a_)

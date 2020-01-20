@@ -177,6 +177,7 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
 
 //%PDDM-EXPAND _WRITE_DECLS()
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 /**
  * Write a double for the given field number.
@@ -527,7 +528,8 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeStringArray:(int32_t)fieldNumber values:(NSArray<NSString*> *)values;
+- (void)writeStringArray:(int32_t)fieldNumber
+                  values:(NSArray<NSString*> *)values;
 /**
  * Write a NSString without any tag.
  *
@@ -548,7 +550,8 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray<GPBMessage*> *)values;
+- (void)writeMessageArray:(int32_t)fieldNumber
+                   values:(NSArray<GPBMessage*> *)values;
 /**
  * Write a GPBMessage without any tag.
  *
@@ -569,7 +572,8 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray<NSData*> *)values;
+- (void)writeBytesArray:(int32_t)fieldNumber
+                 values:(NSArray<NSData*> *)values;
 /**
  * Write a NSData without any tag.
  *
@@ -591,7 +595,8 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray<GPBMessage*> *)values;
+- (void)writeGroupArray:(int32_t)fieldNumber
+                 values:(NSArray<GPBMessage*> *)values;
 /**
  * Write a GPBMessage without any tag (but does write the endGroup tag).
  *
@@ -615,7 +620,8 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
  * @param fieldNumber The field number assigned to the values.
  * @param values      The values to write out.
  **/
-- (void)writeUnknownGroupArray:(int32_t)fieldNumber values:(NSArray<GPBUnknownFieldSet*> *)values;
+- (void)writeUnknownGroupArray:(int32_t)fieldNumber
+                        values:(NSArray<GPBUnknownFieldSet*> *)values;
 /**
  * Write a GPBUnknownFieldSet without any tag (but does write the endGroup tag).
  *
@@ -625,6 +631,7 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
 - (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
                          value:(GPBUnknownFieldSet *)value;
 
+// clang-format on
 //%PDDM-EXPAND-END _WRITE_DECLS()
 
 /**
@@ -690,7 +697,8 @@ NS_ASSUME_NONNULL_END
 //% * @param fieldNumber The field number assigned to the values.
 //% * @param values      The values to write out.
 //% **/
-//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray<##TYPE##*> *)values;
+//%- (void)write##NAME##Array:(int32_t)fieldNumber
+//%           NAME$S values:(NSArray<##TYPE##*> *)values;
 //%/**
 //% * Write a TYPE without any tag.
 //% *
@@ -714,7 +722,8 @@ NS_ASSUME_NONNULL_END
 //% * @param fieldNumber The field number assigned to the values.
 //% * @param values      The values to write out.
 //% **/
-//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray<##TYPE##*> *)values;
+//%- (void)write##NAME##Array:(int32_t)fieldNumber
+//%           NAME$S values:(NSArray<##TYPE##*> *)values;
 //%/**
 //% * Write a TYPE without any tag (but does write the endGroup tag).
 //% *

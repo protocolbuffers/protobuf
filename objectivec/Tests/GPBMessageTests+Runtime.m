@@ -382,6 +382,7 @@
 //%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message2 message])
 //%PDDM-EXPAND PROTO2_TEST_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
   {  // optionalInt32 :: 1
     Message2 *msg = [[Message2 alloc] init];
@@ -735,6 +736,7 @@
     [msg release];
   }
 
+// clang-format on
 //%PDDM-EXPAND-END PROTO2_TEST_HAS_FIELDS()
 }
 
@@ -796,6 +798,7 @@
 //%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message3 message])
 //%PDDM-EXPAND PROTO3_TEST_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
   {  // optionalInt32
     Message3 *msg = [[Message3 alloc] init];
@@ -995,6 +998,7 @@
     [msg release];
   }
 
+// clang-format on
 //%PDDM-EXPAND-END PROTO3_TEST_HAS_FIELDS()
 }
 

@@ -482,13 +482,14 @@ class SourceFile(object):
         if self._macro_collection:
           # Always add a blank line, seems to read better. (If need be, add an
           # option to the EXPAND to indicate if this should be done.)
-          result.extend([_GENERATED_CODE_LINE, ''])
+          result.extend([_GENERATED_CODE_LINE, '// clang-format off', ''])
           macro = line[directive_len:].strip()
           try:
             expand_result = self._macro_collection.Expand(macro)
             # Since expansions are line oriented, strip trailing whitespace
             # from the lines.
             lines = [x.rstrip() for x in expand_result.split('\n')]
+            lines.append('// clang-format on')
             result.append('\n'.join(lines))
           except PDDMError as e:
             raise PDDMError('%s\n...while expanding "%s" from the section'
@@ -503,7 +504,6 @@ class SourceFile(object):
       else:
         result.append('//%%PDDM-EXPAND-END (%s expansions)' %
                       len(captured_lines))
-
       return result
 
   class DefinitionSection(SectionBase):
