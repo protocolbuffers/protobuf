@@ -243,4 +243,14 @@ class DescriptorsTest extends TestBase
         }
         return $fieldDescMap;
     }
+
+    #########################################################
+    # Test oneof descriptor.
+    #########################################################
+    public function testIsInitialized()
+    {
+        new TestDescriptorsMessage();
+        $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
+        $this->assertTrue($pool->isFileInitialized("proto/test_descriptors.proto"));
+    }
 }

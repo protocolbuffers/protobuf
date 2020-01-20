@@ -251,6 +251,7 @@ EnumDescriptorInternal* get_class_enumdesc(const char* klass) {
 }
 
 void add_file(const char* file) {
+  printf("File registered: %s\n", file);
   upb_strtable_insert(&file_persistent, file, upb_value_ptr(NULL));
 }
 
