@@ -44,7 +44,7 @@ namespace Google.Protobuf
     public class CodedOutputWriterTest : CodedOutputTestBase
     {
         [Test]
-        public void WriteWholeMessage_VaryingSpanSizes()
+        public void WriteWholeMessage_VaryingSegmentSizes()
         {
             TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
 

@@ -43,7 +43,7 @@ namespace Google.Protobuf
     public class CodedInputReaderTest : CodedInputTestBase
     {
         [Test]
-        public void ReadWholeMessage_VaryingBlockSizes()
+        public void ReadWholeMessage_VaryingSegmentSizes()
         {
             TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
 

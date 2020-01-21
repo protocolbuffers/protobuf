@@ -206,7 +206,7 @@ namespace Google.Protobuf
         [Test]
         public void WriteLargeBytes()
         {
-            byte[] data = new byte[2048];
+            byte[] data = new byte[1024 * 100];
             for (int i = 0; i < data.Length; i++)
             {
                 data[i] = (byte)i;

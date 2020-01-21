@@ -203,8 +203,10 @@ namespace Google.Protobuf
 
             if (span.Length < length + buffered)
             {
-                // String doesn't fit in the remaining buffer. Refresh buffer without specifying a size
-                // to get the default sized buffer
+                // String doesn't fit in the remaining buffer.
+
+                // Refresh span with default size.
+                // We don't want to specify an exact size because a very large span won't be pooled.
                 EnsureMore();
 
                 if (span.Length < length + buffered)
@@ -669,6 +671,8 @@ namespace Google.Protobuf
             {
                 while (source.Length > 0)
                 {
+                    // Refresh span with default size.
+                    // We don't want to specify an exact size because a very large span won't be pooled.
                     EnsureMore();
 
                     var writable = Math.Min(source.Length, span.Length);
