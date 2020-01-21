@@ -34,6 +34,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using Google.Protobuf.Buffers;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
@@ -41,6 +42,24 @@ namespace Google.Protobuf
 {
     public class CodedInputReaderTest : CodedInputTestBase
     {
+        [Test]
+        public void ReadWholeMessage_VaryingBlockSizes()
+        {
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
+
+            byte[] rawBytes = message.ToByteArray();
+            Assert.AreEqual(rawBytes.Length, message.CalculateSize());
+            TestAllTypes message2 = TestAllTypes.Parser.ParseFrom(new ReadOnlySequence<byte>(rawBytes));
+            Assert.AreEqual(message, message2);
+
+            // Try different block sizes.
+            for (int blockSize = 1; blockSize < 256; blockSize *= 2)
+            {
+                message2 = TestAllTypes.Parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(rawBytes, blockSize));
+                Assert.AreEqual(message, message2);
+            }
+        }
+
         [Test]
         public void ReadMaliciouslyLargeBlob()
         {

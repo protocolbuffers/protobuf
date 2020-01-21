@@ -36,12 +36,32 @@ using System.Buffers;
 using System.IO;
 using System.Text;
 using Google.Protobuf.Buffers;
+using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
 namespace Google.Protobuf
 {
     public class CodedOutputWriterTest : CodedOutputTestBase
     {
+        [Test]
+        public void WriteWholeMessage_VaryingSpanSizes()
+        {
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
+
+            byte[] rawBytes = message.ToByteArray();
+
+            // Try different block sizes.
+            for (int blockSize = 1; blockSize < 256; blockSize *= 2)
+            {
+                ArrayBufferWriter<byte> rawOutput = new ArrayBufferWriter<byte>(1024);
+                CodedOutputWriter output = new CodedOutputWriter(new MaxSizeHintBufferWriter<byte>(rawOutput, blockSize));
+
+                message.WriteTo(ref output);
+                output.Flush();
+                Assert.AreEqual(rawBytes, rawOutput.WrittenSpan.ToArray());
+            }
+        }
+
         [Test]
         public void TestCodedInputOutputPosition()
         {
@@ -222,7 +242,7 @@ namespace Google.Protobuf
             output.WriteString(value);
             output.Flush();
 
-            CodedInputReader input = new CodedInputReader(ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(rawOutput.WrittenSpan.ToArray()));
+            CodedInputReader input = new CodedInputReader(ReadOnlySequenceFactory.CreateWithContent(rawOutput.WrittenSpan.ToArray()));
             Assert.AreEqual(value, input.ReadString());
         }
 
@@ -234,7 +254,7 @@ namespace Google.Protobuf
             output.WriteBytes(value);
             output.Flush();
 
-            CodedInputReader input = new CodedInputReader(ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(rawOutput.WrittenSpan.ToArray()));
+            CodedInputReader input = new CodedInputReader(ReadOnlySequenceFactory.CreateWithContent(rawOutput.WrittenSpan.ToArray()));
             Assert.AreEqual(value, input.ReadBytes());
         }
 

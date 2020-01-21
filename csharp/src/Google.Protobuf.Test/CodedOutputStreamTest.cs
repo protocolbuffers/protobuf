@@ -41,7 +41,7 @@ namespace Google.Protobuf
     public class CodedOutputStreamTest : CodedOutputTestBase
     {
         [Test]
-        public void WriteWholeMessage_VaryingBlockSizes()
+        public void WriteWholeMessage_VaryingSegementSizes()
         {
             TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
 

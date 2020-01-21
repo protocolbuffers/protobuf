@@ -67,7 +67,7 @@ namespace Google.Protobuf
             assert(parsedBuffer);
 
             // Load content as multiple segments
-            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(bytes));
+            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
             assert(parsedBuffer);
 #endif
             assert(parsedStream);
@@ -83,7 +83,7 @@ namespace Google.Protobuf
             assert(parsedBuffer);
 
             // Load content as multiple segments
-            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(bytes));
+            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
             assert(parsedBuffer);
 #endif
             assert(parsedStream);
@@ -131,7 +131,7 @@ namespace Google.Protobuf
             additionalAssert?.Invoke(parsedBuffer);
 
             // Load content as multiple segments
-            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(bufferWriter.WrittenMemory.ToArray()));
+            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bufferWriter.WrittenMemory.ToArray()));
             Assert.AreEqual(message, parsedBuffer);
             additionalAssert?.Invoke(parsedBuffer);
 #endif

@@ -40,91 +40,33 @@ using System.Threading.Tasks;
 
 namespace Google.Protobuf.Buffers
 {
-    /// <summary>
-    /// ReadOnlySequenceFactory is originally from corefx, and has been contributed to Protobuf
-    /// https://github.com/dotnet/corefx/blob/e99ec129cfd594d53f4390bf97d1d736cff6f860/src/System.Memory/tests/ReadOnlyBuffer/ReadOnlySequenceFactory.byte.cs
-    /// </summary>
-    internal abstract class ReadOnlySequenceFactory
+    internal static class ReadOnlySequenceFactory
     {
-        public static ReadOnlySequenceFactory ArrayFactory { get; } = new ArrayTestSequenceFactory();
-        public static ReadOnlySequenceFactory MemoryFactory { get; } = new MemoryTestSequenceFactory();
-        public static ReadOnlySequenceFactory SingleSegmentFactory { get; } = new SingleSegmentTestSequenceFactory();
-        public static ReadOnlySequenceFactory SegmentPerByteFactory { get; } = new BytePerSegmentTestSequenceFactory();
-
-        public abstract ReadOnlySequence<byte> CreateOfSize(int size);
-        public abstract ReadOnlySequence<byte> CreateWithContent(byte[] data);
-
-        public ReadOnlySequence<byte> CreateWithContent(string data)
+        public static ReadOnlySequence<byte> CreateWithContent(byte[] data, int segmentSize = 1)
         {
-            return CreateWithContent(Encoding.ASCII.GetBytes(data));
-        }
+            var segments = new List<byte[]>();
 
-        internal class ArrayTestSequenceFactory : ReadOnlySequenceFactory
-        {
-            public override ReadOnlySequence<byte> CreateOfSize(int size)
+            segments.Add(new byte[0]);
+            var currentIndex = 0;
+            while (currentIndex < data.Length)
             {
-                return new ReadOnlySequence<byte>(new byte[size + 20], 10, size);
-            }
-
-            public override ReadOnlySequence<byte> CreateWithContent(byte[] data)
-            {
-                var startSegment = new byte[data.Length + 20];
-                Array.Copy(data, 0, startSegment, 10, data.Length);
-                return new ReadOnlySequence<byte>(startSegment, 10, data.Length);
-            }
-        }
-
-        internal class MemoryTestSequenceFactory : ReadOnlySequenceFactory
-        {
-            public override ReadOnlySequence<byte> CreateOfSize(int size)
-            {
-                return CreateWithContent(new byte[size]);
-            }
-
-            public override ReadOnlySequence<byte> CreateWithContent(byte[] data)
-            {
-                var startSegment = new byte[data.Length + 20];
-                Array.Copy(data, 0, startSegment, 10, data.Length);
-                return new ReadOnlySequence<byte>(new Memory<byte>(startSegment, 10, data.Length));
-            }
-        }
-
-        internal class SingleSegmentTestSequenceFactory : ReadOnlySequenceFactory
-        {
-            public override ReadOnlySequence<byte> CreateOfSize(int size)
-            {
-                return CreateWithContent(new byte[size]);
-            }
-
-            public override ReadOnlySequence<byte> CreateWithContent(byte[] data)
-            {
-                return CreateSegments(data);
-            }
-        }
-
-        internal class BytePerSegmentTestSequenceFactory : ReadOnlySequenceFactory
-        {
-            public override ReadOnlySequence<byte> CreateOfSize(int size)
-            {
-                return CreateWithContent(new byte[size]);
-            }
-
-            public override ReadOnlySequence<byte> CreateWithContent(byte[] data)
-            {
-                var segments = new List<byte[]>();
-
-                segments.Add(new byte[0]);
-                foreach (var b in data)
+                var segment = new List<byte>();
+                for (; currentIndex < Math.Min(currentIndex + segmentSize, data.Length); currentIndex++)
                 {
-                    segments.Add(new[] { b });
-                    segments.Add(new byte[0]);
+                    segment.Add(data[currentIndex]);
                 }
-
-                return CreateSegments(segments.ToArray());
+                segments.Add(segment.ToArray());
+                segments.Add(new byte[0]);
             }
+
+            return CreateSegments(segments.ToArray());
         }
 
-        public static ReadOnlySequence<byte> CreateSegments(params byte[][] inputs)
+        /// <summary>
+        /// Originally from corefx, and has been contributed to Protobuf
+        /// https://github.com/dotnet/corefx/blob/e99ec129cfd594d53f4390bf97d1d736cff6f860/src/System.Memory/tests/ReadOnlyBuffer/ReadOnlySequenceFactory.byte.cs
+        /// </summary>
+        private static ReadOnlySequence<byte> CreateSegments(params byte[][] inputs)
         {
             if (inputs == null || inputs.Length == 0)
             {
