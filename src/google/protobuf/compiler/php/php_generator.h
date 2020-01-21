@@ -44,6 +44,7 @@ namespace compiler {
 namespace php {
 
 class PROTOC_EXPORT Generator : public CodeGenerator {
+ public:
   virtual bool Generate(
       const FileDescriptor* file,
       const string& parameter,
@@ -54,6 +55,15 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                    const std::string& parameter,
                    GeneratorContext* generator_context,
                    std::string* error) const override;
+ private:
+  bool Generate(
+      const FileDescriptor* file,
+      bool is_descriptor,
+      bool aggregate_metadata,
+      const string& aggregate_metadata_class,
+      const std::set<string>& aggregate_metadata_prefixes,
+      GeneratorContext* generator_context,
+      string* error) const;
 };
 
 // To skip reserved keywords in php, some generated classname are prefixed.
