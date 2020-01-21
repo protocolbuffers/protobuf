@@ -59,6 +59,8 @@ namespace Google.Protobuf
 
         protected abstract void AssertWriteString(string value);
 
+        protected abstract void AssertWriteBytes(ByteString value);
+
         protected abstract void AssertWriteFloat(byte[] data, float value);
 
         protected abstract void AssertWriteDouble(byte[] data, double value);
@@ -187,6 +189,30 @@ namespace Google.Protobuf
             byte[] bytes = { 0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01 };
 
             AssertWriteEnum(bytes, (int)SampleEnum.NegativeValue);
+        }
+
+        [Test]
+        public void WriteSmallBytes()
+        {
+            byte[] data = new byte[32];
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = (byte)i;
+            }
+
+            AssertWriteBytes(ByteString.CopyFrom(data));
+        }
+
+        [Test]
+        public void WriteLargeBytes()
+        {
+            byte[] data = new byte[2048];
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = (byte)i;
+            }
+
+            AssertWriteBytes(ByteString.CopyFrom(data));
         }
 
         [Test]

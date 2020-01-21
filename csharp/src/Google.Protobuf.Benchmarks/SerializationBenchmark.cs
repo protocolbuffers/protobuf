@@ -33,9 +33,11 @@
 using BenchmarkDotNet.Attributes;
 using Benchmarks;
 using Google.Protobuf.Buffers;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 
 namespace Google.Protobuf.Benchmarks
@@ -97,6 +99,15 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
+        public void WriteToPipeWriter()
+        {
+            foreach (var subTest in subTests)
+            {
+                subTest.WriteToPipeWriter();
+            }
+        }
+
+        [Benchmark]
         public void ToByteArray()
         {
             foreach (var subTest in subTests)
@@ -140,6 +151,7 @@ namespace Google.Protobuf.Benchmarks
             private readonly ReadOnlySequence<byte> readOnlySequence;
             private readonly ByteString data;
             private readonly IBufferMessage message;
+            private readonly Pipe pipe;
 
             public SubTest(ByteString data, IBufferMessage message)
             {
@@ -147,16 +159,25 @@ namespace Google.Protobuf.Benchmarks
                 bufferWriter = new Google.Protobuf.Buffers.ArrayBufferWriter<byte>();
                 sourceStream = new MemoryStream(data.ToByteArray());
                 readOnlySequence = new ReadOnlySequence<byte>(data.ToByteArray());
+                pipe = new Pipe();
                 this.data = data;
                 this.message = message;
             }
-
-            public void Reset() => destinationStream.Position = 0;
 
             public void WriteToStream()
             {
                 destinationStream.Position = 0;
                 message.WriteTo(destinationStream);
+            }
+
+            public void WriteToPipeWriter()
+            {
+                var writer = new CodedOutputWriter(pipe.Writer);
+                message.WriteTo(ref writer);
+
+                pipe.Writer.Complete();
+                pipe.Reader.Complete();
+                pipe.Reset();
             }
 
             public void WriteToBufferWriter()

@@ -201,6 +201,7 @@ namespace Google.Protobuf
         [TestCase("--1")]
 #if !NETCOREAPP3_0
         // .NET Core 3.0 returns infinity
+        // https://github.com/dotnet/docs/issues/14705
         [TestCase("-1.7977e308")]
         [TestCase("1.7977e308")]
 #endif

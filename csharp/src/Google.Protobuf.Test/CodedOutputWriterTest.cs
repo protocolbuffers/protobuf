@@ -218,12 +218,24 @@ namespace Google.Protobuf
         {
             ArrayBufferWriter<byte> rawOutput = new ArrayBufferWriter<byte>(1024);
             // Limit the max span size to force string to be written in multiple parts
-            CodedOutputWriter output = new CodedOutputWriter(new MaxSizeHintBufferWriter<byte>(rawOutput, 1024));
+            CodedOutputWriter output = new CodedOutputWriter(new MaxSizeHintBufferWriter<byte>(rawOutput, 128));
             output.WriteString(value);
             output.Flush();
 
             CodedInputReader input = new CodedInputReader(ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(rawOutput.WrittenSpan.ToArray()));
             Assert.AreEqual(value, input.ReadString());
+        }
+
+        protected override void AssertWriteBytes(ByteString value)
+        {
+            ArrayBufferWriter<byte> rawOutput = new ArrayBufferWriter<byte>(1024);
+            // Limit the max span size to force bytes to be written in multiple parts
+            CodedOutputWriter output = new CodedOutputWriter(new MaxSizeHintBufferWriter<byte>(rawOutput, 128));
+            output.WriteBytes(value);
+            output.Flush();
+
+            CodedInputReader input = new CodedInputReader(ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent(rawOutput.WrittenSpan.ToArray()));
+            Assert.AreEqual(value, input.ReadBytes());
         }
 
         protected override void AssertWriteFloat(byte[] data, float value)

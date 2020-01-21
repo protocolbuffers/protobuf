@@ -54,12 +54,22 @@ namespace Google.Protobuf.Buffers
 
         public Memory<T> GetMemory(int sizeHint = 0)
         {
-            return bufferWriter.GetMemory(Math.Min(sizeHint, maxSizeHint));
+            if (sizeHint == 0)
+            {
+                sizeHint = maxSizeHint;
+            }
+            // IBufferWriter contract defines that when a size is specified then that is the minimum size returned
+            return bufferWriter.GetMemory(sizeHint);
         }
 
         public Span<T> GetSpan(int sizeHint = 0)
         {
-            return bufferWriter.GetSpan(Math.Min(sizeHint, maxSizeHint));
+            if (sizeHint == 0)
+            {
+                sizeHint = maxSizeHint;
+            }
+            // IBufferWriter contract defines that when a size is specified then that is the minimum size returned
+            return bufferWriter.GetSpan(sizeHint);
         }
     }
 }

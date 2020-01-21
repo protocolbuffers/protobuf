@@ -201,78 +201,100 @@ namespace Google.Protobuf
             int length = Encoding.UTF8.GetByteCount(value);
             WriteLength(length);
 
-            Ensure(length);
-            Span<byte> buffer = span.Slice(buffered);
-
-            if (buffer.Length >= length)
+            if (span.Length < length + buffered)
             {
-                // Can write string to a single buffer
+                // String doesn't fit in the remaining buffer. Refresh buffer without specifying a size
+                // to get the default sized buffer
+                EnsureMore();
 
-                if (length == value.Length) // Must be all ASCII...
+                if (span.Length < length + buffered)
                 {
-                    for (int i = 0; i < length; i++)
-                    {
-                        buffer[i] = (byte)value[i];
-                    }
-
-                    buffered += length;
+                    // String doesn't fit in refreshed buffer. Write across multiple
+                    WriteStringMultiBuffer(value);
                 }
                 else
                 {
-                    ReadOnlySpan<char> source = value.AsSpan();
-
-                    int bytesUsed;
-
-                    unsafe
-                    {
-                        fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
-                        fixed (byte* destinationBytes = &MemoryMarshal.GetReference(buffer))
-                        {
-                            bytesUsed = Encoding.UTF8.GetBytes(sourceChars, source.Length, destinationBytes, buffer.Length);
-                        }
-                    }
-
-                    buffered += bytesUsed;
+                    // String now fits in refreshed buffer
+                    WriteStringSingleBuffer(value, length);
                 }
             }
             else
             {
-                // The destination byte array might not be large enough so multiple writes are sometimes required
-                if (encoder == null)
+                // String fits in remaining buffer space
+                WriteStringSingleBuffer(value, length);
+            }
+        }
+
+        private void WriteStringSingleBuffer(string value, int length)
+        {
+            // Can write string to a single buffer
+            Span<byte> buffer = span.Slice(buffered);
+
+            if (length == value.Length)
+            {
+                // Fast path when all content is ASCII
+                for (int i = 0; i < length; i++)
                 {
-                    encoder = Encoding.UTF8.GetEncoder();
+                    buffer[i] = (byte)value[i];
                 }
 
+                buffered += length;
+            }
+            else
+            {
                 ReadOnlySpan<char> source = value.AsSpan();
-                int written = 0;
 
-                while (true)
+                int bytesUsed;
+
+                unsafe
                 {
-                    int bytesUsed;
-                    int charsUsed;
-
-                    unsafe
+                    fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
+                    fixed (byte* destinationBytes = &MemoryMarshal.GetReference(buffer))
                     {
-                        fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
-                        fixed (byte* destinationBytes = &MemoryMarshal.GetReference(buffer))
-                        {
-                            encoder.Convert(sourceChars, source.Length, destinationBytes, buffer.Length, false, out charsUsed, out bytesUsed, out _);
-                        }
+                        bytesUsed = Encoding.UTF8.GetBytes(sourceChars, source.Length, destinationBytes, buffer.Length);
                     }
-
-                    source = source.Slice(charsUsed);
-                    written += bytesUsed;
-
-                    buffered += bytesUsed;
-
-                    if (source.Length == 0)
-                    {
-                        break;
-                    }
-
-                    Ensure(length - written);
-                    buffer = span.Slice(buffered);
                 }
+
+                buffered += bytesUsed;
+            }
+        }
+
+        private void WriteStringMultiBuffer(string value)
+        {
+            // The destination byte array might not be large enough so multiple writes are sometimes required
+            if (encoder == null)
+            {
+                encoder = Encoding.UTF8.GetEncoder();
+            }
+
+            ReadOnlySpan<char> source = value.AsSpan();
+            int written = 0;
+
+            while (true)
+            {
+                int bytesUsed;
+                int charsUsed;
+
+                unsafe
+                {
+                    fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
+                    fixed (byte* destinationBytes = &MemoryMarshal.GetReference(span))
+                    {
+                        encoder.Convert(sourceChars, source.Length, destinationBytes, span.Length, false, out charsUsed, out bytesUsed, out _);
+                    }
+                }
+
+                source = source.Slice(charsUsed);
+                written += bytesUsed;
+
+                buffered += bytesUsed;
+
+                if (source.Length == 0)
+                {
+                    break;
+                }
+
+                EnsureMore();
             }
         }
 
@@ -636,14 +658,24 @@ namespace Google.Protobuf
         /// <param name="source">The buffer to copy into this writer.</param>
         private void WriteMultiBuffer(ReadOnlySpan<byte> source)
         {
-            while (source.Length > 0)
-            {
-                Ensure(source.Length);
+            Span<byte> buffer = span.Slice(buffered);
 
-                var writable = Math.Min(source.Length, span.Length);
-                source.Slice(0, writable).CopyTo(span.Slice(buffered));
-                source = source.Slice(writable);
-                buffered += writable;
+            if (buffer.Length >= source.Length)
+            {
+                source.CopyTo(buffer);
+                buffered += source.Length;
+            }
+            else
+            {
+                while (source.Length > 0)
+                {
+                    EnsureMore();
+
+                    var writable = Math.Min(source.Length, span.Length);
+                    source.Slice(0, writable).CopyTo(span);
+                    source = source.Slice(writable);
+                    buffered += writable;
+                }
             }
         }
 

@@ -295,6 +295,17 @@ namespace Google.Protobuf
             Assert.AreEqual(data, rawOutput.ToArray());
         }
 
+        protected override void AssertWriteBytes(ByteString value)
+        {
+            MemoryStream rawOutput = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(rawOutput);
+            output.WriteBytes(value);
+            output.Flush();
+
+            CodedInputStream input = new CodedInputStream(rawOutput.ToArray());
+            Assert.AreEqual(value, input.ReadBytes());
+        }
+
         protected override void AssertWriteString(string value)
         {
             MemoryStream rawOutput = new MemoryStream();
