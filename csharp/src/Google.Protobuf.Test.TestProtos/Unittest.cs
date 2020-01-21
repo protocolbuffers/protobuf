@@ -5023,7 +5023,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   }
 
   /// <summary>
-  /// This proto includes a recusively nested message.
+  /// This proto includes a recursively nested message.
   /// </summary>
   public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes>
   #if !GOOGLE_PROTOBUF_DISABLE_BUFFER_SERIALIZATION
