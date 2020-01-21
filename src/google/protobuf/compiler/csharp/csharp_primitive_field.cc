@@ -164,6 +164,11 @@ void PrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$property_name$ = input.Read$capitalized_type_name$();\n");
 }
 
+void PrimitiveFieldGenerator::GenerateBufferParsingCode(io::Printer* printer) {
+  // same code as if parsing from CodedInputStream
+  GenerateParsingCode(printer);
+}
+
 void PrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
@@ -171,6 +176,11 @@ void PrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
     "  output.WriteRawTag($tag_bytes$);\n"
     "  output.Write$capitalized_type_name$($property_name$);\n"
     "}\n");
+}
+
+void PrimitiveFieldGenerator::GenerateBufferSerializationCode(io::Printer* printer) {
+  // same code as if serializing to CodedOutputStream
+  GenerateSerializationCode(printer);
 }
 
 void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

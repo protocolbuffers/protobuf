@@ -123,6 +123,11 @@ void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   }
 }
 
+void MessageFieldGenerator::GenerateBufferParsingCode(io::Printer* printer) {
+  // same code as if parsing from CodedInputStream
+  GenerateParsingCode(printer);
+}
+
 void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
     printer->Print(
@@ -140,6 +145,11 @@ void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
       "  output.WriteRawTag($end_tag_bytes$);\n"
       "}\n");
   }
+}
+
+void MessageFieldGenerator::GenerateBufferSerializationCode(io::Printer* printer) {
+  // same code as if serializing to CodedOutputStream
+  GenerateSerializationCode(printer);
 }
 
 void MessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

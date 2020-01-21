@@ -161,14 +161,6 @@ void FieldGeneratorBase::GenerateExtensionCode(io::Printer* printer) {
   // and repeated fields need this default is to not generate any code
 }
 
-void FieldGeneratorBase::GenerateBufferParsingCode(io::Printer* printer) {
-  GenerateParsingCode(printer);
-}
-
-void FieldGeneratorBase::GenerateBufferSerializationCode(io::Printer* printer) {
-  GenerateSerializationCode(printer);
-}
-
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
   if (descriptor_->options().deprecated()) {
     printer->Print("[global::System.ObsoleteAttribute]\n");
