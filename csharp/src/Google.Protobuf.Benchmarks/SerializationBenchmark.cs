@@ -126,6 +126,15 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
+        public void ParseFromNewByteString()
+        {
+            foreach (var subTest in subTests)
+            {
+                subTest.ParseFromNewByteString(parser);
+            }
+        }
+
+        [Benchmark]
         public void ParseFromStream()
         {
             foreach (var subTest in subTests)
@@ -190,6 +199,8 @@ namespace Google.Protobuf.Benchmarks
             public void ToByteArray() => message.ToByteArray();
 
             public void ParseFromByteString(MessageParser parser) => parser.ParseFrom(data);
+
+            public void ParseFromNewByteString(MessageParser parser) => parser.ParseFrom(readOnlySequence.ToArray());
 
             public void ParseFromStream(MessageParser parser)
             {

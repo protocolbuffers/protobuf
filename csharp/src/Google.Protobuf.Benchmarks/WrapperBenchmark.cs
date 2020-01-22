@@ -65,6 +65,12 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
+        public ManyWrapperFieldsMessage ParseWrapperFieldsFromNewByteArray()
+        {
+            return ManyWrapperFieldsMessage.Parser.ParseFrom(manyWrapperFieldsReadOnlySequence.ToArray());
+        }
+
+        [Benchmark]
         public ManyWrapperFieldsMessage ParseWrapperFieldsFromReadOnlySequence()
         {
             var input = new CodedInputReader(manyWrapperFieldsReadOnlySequence);
@@ -75,6 +81,12 @@ namespace Google.Protobuf.Benchmarks
         public ManyPrimitiveFieldsMessage ParsePrimitiveFieldsFromByteArray()
         {
             return ManyPrimitiveFieldsMessage.Parser.ParseFrom(manyPrimitiveFieldsByteArray);
+        }
+
+        [Benchmark]
+        public ManyPrimitiveFieldsMessage ParsePrimitiveFieldsFromNewByteArray()
+        {
+            return ManyPrimitiveFieldsMessage.Parser.ParseFrom(manyPrimitiveFieldsByteArray.ToArray());
         }
 
         [Benchmark]
