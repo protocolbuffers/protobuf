@@ -60,7 +60,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const FileDescriptor* file,
       bool is_descriptor,
       bool aggregate_metadata,
-      const string& aggregate_metadata_class,
       const std::set<string>& aggregate_metadata_prefixes,
       GeneratorContext* generator_context,
       string* error) const;

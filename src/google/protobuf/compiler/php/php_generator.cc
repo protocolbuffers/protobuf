@@ -101,6 +101,9 @@ std::string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
 std::string BinaryToHex(const string& binary);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
+void GenerateAddFilesToPool(const FileDescriptor* file,
+                            const std::set<string>& aggregate_metadata_prefixes,
+                            io::Printer* printer);
 void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message,
                                int is_descriptor);
 void GenerateMessageConstructorDocComment(io::Printer* printer,
@@ -933,23 +936,19 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
   }
 }
 
-void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
-                           bool aggregate_metadata,
-                           string aggregate_metadata_class,
-                           io::Printer* printer) {
+void GenerateAddFileToPool(
+    const FileDescriptor* file,
+    bool is_descriptor,
+    bool aggregate_metadata,
+    const std::set<string>& aggregate_metadata_prefixes,
+    io::Printer* printer) {
   printer->Print(
       "public static $is_initialized = false;\n\n"
       "public static function initOnce() {\n");
   Indent(printer);
 
   if (aggregate_metadata) {
-    printer->Print(
-        "if (static::$is_initialized == true) {\n"
-        "  return;\n"
-        "}\n"
-        "\\^name^::initOnce();\n"
-        "static::$is_initialized = true;\n",
-        "name", aggregate_metadata_class);
+    GenerateAddFilesToPool(file, aggregate_metadata_prefixes, printer);
   } else {
     printer->Print(
         "$pool = \\Google\\Protobuf\\Internal\\"
@@ -1083,35 +1082,28 @@ static bool NeedsAggregate(
   return within_aggregate_list && has_aggregate_metadata_prefix;
 }
 
-void GenerateAddFilesToPool(
-    const std::vector<const FileDescriptor*>& files,
-    string aggregate_metadata_class,
-    std::set<string> aggregate_metadata_prefixes,
-    io::Printer* printer) {
-  int lastindex = aggregate_metadata_class.find_last_of("\\");
-
-  if (lastindex != string::npos) {
-    printer->Print(
-        "namespace ^name^;\n\n",
-        "name", aggregate_metadata_class.substr(0, lastindex));
-
-    printer->Print(
-        "class ^name^\n"
-        "{\n",
-        "name", aggregate_metadata_class.substr(lastindex + 1));
+static bool NeedsUnwrapping(
+    const FileDescriptor* file,
+    const std::set<string>& aggregate_metadata_prefixes) {
+  bool has_aggregate_metadata_prefix = false;
+  if (aggregate_metadata_prefixes.empty()) {
+    has_aggregate_metadata_prefix = true;
   } else {
-    printer->Print(
-        "class ^name^\n"
-        "{\n",
-        "name", aggregate_metadata_class);
+    for (const auto& prefix : aggregate_metadata_prefixes) {
+      if (HasPrefixString(file->package(), prefix)) {
+        has_aggregate_metadata_prefix = true;
+        break;
+      }
+    }
   }
-  Indent(printer);
 
-  printer->Print(
-      "public static $is_initialized = false;\n\n"
-      "public static function initOnce() {\n");
-  Indent(printer);
+  return has_aggregate_metadata_prefix;
+}
 
+void GenerateAddFilesToPool(
+    const FileDescriptor* file,
+    const std::set<string>& aggregate_metadata_prefixes,
+    io::Printer* printer) {
   printer->Print(
       "$pool = \\Google\\Protobuf\\Internal\\"
       "DescriptorPool::getGeneratedPool();\n"
@@ -1125,10 +1117,8 @@ void GenerateAddFilesToPool(
   std::set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
   
-  for (auto file : files) {
-    AnalyzeDependencyForFile(
-        file, &nodes_without_dependency, &deps, &dependency_count);
-  }
+  AnalyzeDependencyForFile(
+      file, &nodes_without_dependency, &deps, &dependency_count);
 
   while (!nodes_without_dependency.empty()) {
     auto file = *nodes_without_dependency.begin();
@@ -1142,8 +1132,7 @@ void GenerateAddFilesToPool(
       }
     }
 
-    bool needs_aggregate =
-        NeedsAggregate(file, files, aggregate_metadata_prefixes);
+    bool needs_aggregate = NeedsUnwrapping(file, aggregate_metadata_prefixes);
 
     if (needs_aggregate) {
       auto file_proto = sorted_file_set.add_file();
@@ -1197,11 +1186,6 @@ void GenerateAddFilesToPool(
 
   printer->Print(
       "static::$is_initialized = true;\n");
-  Outdent(printer);
-  printer->Print("}\n");
-
-  Outdent(printer);
-  printer->Print("}\n\n");
 }
 
 void GenerateUseDeclaration(bool is_descriptor, io::Printer* printer) {
@@ -1250,7 +1234,7 @@ std::string FilenameToClassname(const string& filename) {
 void GenerateMetadataFile(const FileDescriptor* file,
                           bool is_descriptor,
                           bool aggregate_metadata,
-                          string aggregate_metadata_class,
+                          const std::set<string>& aggregate_metadata_prefixes,
                           GeneratorContext* generator_context) {
   std::string filename = GeneratedMetadataFileName(file, is_descriptor);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
@@ -1280,26 +1264,10 @@ void GenerateMetadataFile(const FileDescriptor* file,
   Indent(&printer);
 
   GenerateAddFileToPool(file, is_descriptor, aggregate_metadata,
-                        aggregate_metadata_class, &printer);
+                        aggregate_metadata_prefixes, &printer);
 
   Outdent(&printer);
   printer.Print("}\n\n");
-}
-
-void GenerateMetadataFileForAll(
-    const std::vector<const FileDescriptor*>& files,
-    const string& aggregate_metadata_class,
-    std::set<string> aggregate_metadata_prefixes,
-    GeneratorContext* generator_context) {
-  const auto components = Split(aggregate_metadata_class, "\\");
-  string aggregate_metadata_file = StrCat(JoinStrings(components, "/"), ".php");
-  std::unique_ptr<io::ZeroCopyOutputStream> output(
-      generator_context->Open(aggregate_metadata_file));
-  io::Printer printer(output.get(), '^');
-
-  GenerateHeadForAggregateMetadataFile(&printer);
-  GenerateAddFilesToPool(files, aggregate_metadata_class,
-                         aggregate_metadata_prefixes, &printer);
 }
 
 template <typename DescriptorType>
@@ -1606,10 +1574,10 @@ void GenerateServiceFile(const FileDescriptor* file,
 
 void GenerateFile(const FileDescriptor* file, bool is_descriptor,
                   bool aggregate_metadata,
-                  string aggregate_metadata_class,
+                  const std::set<string>& aggregate_metadata_prefixes,
                   GeneratorContext* generator_context) {
   GenerateMetadataFile(file, is_descriptor, aggregate_metadata,
-                       aggregate_metadata_class, generator_context);
+                       aggregate_metadata_prefixes, generator_context);
 
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessageFile(file, file->message_type(i), is_descriptor,
@@ -1879,7 +1847,7 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
 bool Generator::Generate(const FileDescriptor* file, const string& parameter,
                          GeneratorContext* generator_context,
                          string* error) const {
-  return Generate(file, false, false, "", std::set<string>(),
+  return Generate(file, false, false, std::set<string>(),
                   generator_context, error);
 }
 
@@ -1887,7 +1855,6 @@ bool Generator::Generate(
     const FileDescriptor* file,
     bool is_descriptor,
     bool aggregate_metadata,
-    const string& aggregate_metadata_class,
     const std::set<string>& aggregate_metadata_prefixes,
     GeneratorContext* generator_context,
     string* error) const {
@@ -1911,7 +1878,7 @@ bool Generator::Generate(
   }
 
   GenerateFile(file, is_descriptor, aggregate_metadata,
-               aggregate_metadata_class, generator_context);
+               aggregate_metadata_prefixes, generator_context);
 
   return true;
 }
@@ -1921,7 +1888,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                             GeneratorContext* generator_context,
                             std::string* error) const {
   bool is_descriptor = false;
-  string aggregate_metadata_class;
+  bool aggregate_metadata = false;
   std::set<string> aggregate_metadata_prefixes;
 
   for (const auto& option : Split(parameter, ",")) {
@@ -1929,8 +1896,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
       string options_string = option_pair[1];
       const auto options = Split(options_string, "#", false);
-      aggregate_metadata_class = options[0];
-      GOOGLE_LOG(INFO) << aggregate_metadata_class;
+      aggregate_metadata = true;
       for (int i = 0; i < options.size(); i++) {
         aggregate_metadata_prefixes.insert(options[i]);
         GOOGLE_LOG(INFO) << options[i];
@@ -1941,19 +1907,10 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     }
   }
 
-  if (!aggregate_metadata_class.empty()) {
-    GenerateMetadataFileForAll(
-        files, aggregate_metadata_class,
-        aggregate_metadata_prefixes, generator_context);
-  }
-
   for (auto file : files) {
-    bool aggregate_metadata =
-        !aggregate_metadata_class.empty() &&
-        NeedsAggregate(file, files, aggregate_metadata_prefixes);
     if (!Generate(
              file, is_descriptor, aggregate_metadata,
-             aggregate_metadata_class, aggregate_metadata_prefixes,
+             aggregate_metadata_prefixes,
              generator_context, error)) {
       return false;
     }
