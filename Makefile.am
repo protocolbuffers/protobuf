@@ -538,25 +538,19 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/DevTools/pddm_tests.py                                          \
   objectivec/generate_well_known_types.sh                                    \
   objectivec/google/protobuf/Any.pbobjc.h                                    \
-  objectivec/google/protobuf/Any.pbobjc.m                                    \
   objectivec/google/protobuf/Api.pbobjc.h                                    \
-  objectivec/google/protobuf/Api.pbobjc.m                                    \
   objectivec/google/protobuf/Duration.pbobjc.h                               \
-  objectivec/google/protobuf/Duration.pbobjc.m                               \
   objectivec/google/protobuf/Empty.pbobjc.h                                  \
-  objectivec/google/protobuf/Empty.pbobjc.m                                  \
   objectivec/google/protobuf/FieldMask.pbobjc.h                              \
-  objectivec/google/protobuf/FieldMask.pbobjc.m                              \
   objectivec/google/protobuf/SourceContext.pbobjc.h                          \
-  objectivec/google/protobuf/SourceContext.pbobjc.m                          \
   objectivec/google/protobuf/Struct.pbobjc.h                                 \
-  objectivec/google/protobuf/Struct.pbobjc.m                                 \
   objectivec/google/protobuf/Timestamp.pbobjc.h                              \
-  objectivec/google/protobuf/Timestamp.pbobjc.m                              \
   objectivec/google/protobuf/Type.pbobjc.h                                   \
-  objectivec/google/protobuf/Type.pbobjc.m                                   \
   objectivec/google/protobuf/Wrappers.pbobjc.h                               \
-  objectivec/google/protobuf/Wrappers.pbobjc.m                               \
+  objectivec/GPBAny.pbobjc.h                                                 \
+  objectivec/GPBAny.pbobjc.m                                                 \
+  objectivec/GPBApi.pbobjc.h                                                 \
+  objectivec/GPBApi.pbobjc.m                                                 \
   objectivec/GPBArray.h                                                      \
   objectivec/GPBArray.m                                                      \
   objectivec/GPBArray_PackagePrivate.h                                       \
@@ -573,10 +567,16 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBDictionary.h                                                 \
   objectivec/GPBDictionary.m                                                 \
   objectivec/GPBDictionary_PackagePrivate.h                                  \
+  objectivec/GPBDuration.pbobjc.h                                            \
+  objectivec/GPBDuration.pbobjc.m                                            \
+  objectivec/GPBEmpty.pbobjc.h                                               \
+  objectivec/GPBEmpty.pbobjc.m                                               \
   objectivec/GPBExtensionInternals.h                                         \
   objectivec/GPBExtensionInternals.m                                         \
   objectivec/GPBExtensionRegistry.h                                          \
   objectivec/GPBExtensionRegistry.m                                          \
+  objectivec/GPBFieldMask.pbobjc.h                                           \
+  objectivec/GPBFieldMask.pbobjc.m                                           \
   objectivec/GPBMessage.h                                                    \
   objectivec/GPBMessage.m                                                    \
   objectivec/GPBMessage_PackagePrivate.h                                     \
@@ -587,6 +587,14 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBRootObject.m                                                 \
   objectivec/GPBRootObject_PackagePrivate.h                                  \
   objectivec/GPBRuntimeTypes.h                                               \
+  objectivec/GPBSourceContext.pbobjc.h                                       \
+  objectivec/GPBSourceContext.pbobjc.m                                       \
+  objectivec/GPBStruct.pbobjc.h                                              \
+  objectivec/GPBStruct.pbobjc.m                                              \
+  objectivec/GPBTimestamp.pbobjc.h                                           \
+  objectivec/GPBTimestamp.pbobjc.m                                           \
+  objectivec/GPBType.pbobjc.h                                                \
+  objectivec/GPBType.pbobjc.m                                                \
   objectivec/GPBUnknownField.h                                               \
   objectivec/GPBUnknownField.m                                               \
   objectivec/GPBUnknownField_PackagePrivate.h                                \
@@ -600,6 +608,8 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBWellKnownTypes.m                                             \
   objectivec/GPBWireFormat.h                                                 \
   objectivec/GPBWireFormat.m                                                 \
+  objectivec/GPBWrappers.pbobjc.h                                            \
+  objectivec/GPBWrappers.pbobjc.m                                            \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.pbxproj                   \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist \
