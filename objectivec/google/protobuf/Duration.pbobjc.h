@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
  * which is a @c GPBExtensionRegistry that includes all the extensions defined by
  * this file and all files that it depends on.
  **/
-@interface GPBDurationRoot : GPBRootObject
+GPB_FINAL @interface GPBDurationRoot : GPBRootObject
 @end
 
 #pragma mark - GPBDuration
@@ -115,7 +115,7 @@ typedef GPB_ENUM(GPBDuration_FieldNumber) {
  * be expressed in JSON format as "3.000000001s", and 3 seconds and 1
  * microsecond should be expressed in JSON format as "3.000001s".
  **/
-@interface GPBDuration : GPBMessage
+GPB_FINAL @interface GPBDuration : GPBMessage
 
 /**
  * Signed seconds of the span of time. Must be from -315,576,000,000

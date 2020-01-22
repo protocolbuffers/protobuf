@@ -76,7 +76,7 @@ BOOL GPBNullValue_IsValidValue(int32_t value);
  * which is a @c GPBExtensionRegistry that includes all the extensions defined by
  * this file and all files that it depends on.
  **/
-@interface GPBStructRoot : GPBRootObject
+GPB_FINAL @interface GPBStructRoot : GPBRootObject
 @end
 
 #pragma mark - GPBStruct
@@ -95,7 +95,7 @@ typedef GPB_ENUM(GPBStruct_FieldNumber) {
  *
  * The JSON representation for `Struct` is JSON object.
  **/
-@interface GPBStruct : GPBMessage
+GPB_FINAL @interface GPBStruct : GPBMessage
 
 /** Unordered map of dynamically typed values. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableDictionary<NSString*, GPBValue*> *fields;
@@ -133,7 +133,7 @@ typedef GPB_ENUM(GPBValue_Kind_OneOfCase) {
  *
  * The JSON representation for `Value` is JSON value.
  **/
-@interface GPBValue : GPBMessage
+GPB_FINAL @interface GPBValue : GPBMessage
 
 /** The kind of value. */
 @property(nonatomic, readonly) GPBValue_Kind_OneOfCase kindOneOfCase;
@@ -186,7 +186,7 @@ typedef GPB_ENUM(GPBListValue_FieldNumber) {
  *
  * The JSON representation for `ListValue` is JSON array.
  **/
-@interface GPBListValue : GPBMessage
+GPB_FINAL @interface GPBListValue : GPBMessage
 
 /** Repeated field of dynamically typed values. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBValue*> *valuesArray;

@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
  * which is a @c GPBExtensionRegistry that includes all the extensions defined by
  * this file and all files that it depends on.
  **/
-@interface GPBWrappersRoot : GPBRootObject
+GPB_FINAL @interface GPBWrappersRoot : GPBRootObject
 @end
 
 #pragma mark - GPBDoubleValue
@@ -59,7 +59,7 @@ typedef GPB_ENUM(GPBDoubleValue_FieldNumber) {
  *
  * The JSON representation for `DoubleValue` is JSON number.
  **/
-@interface GPBDoubleValue : GPBMessage
+GPB_FINAL @interface GPBDoubleValue : GPBMessage
 
 /** The double value. */
 @property(nonatomic, readwrite) double value;
@@ -77,7 +77,7 @@ typedef GPB_ENUM(GPBFloatValue_FieldNumber) {
  *
  * The JSON representation for `FloatValue` is JSON number.
  **/
-@interface GPBFloatValue : GPBMessage
+GPB_FINAL @interface GPBFloatValue : GPBMessage
 
 /** The float value. */
 @property(nonatomic, readwrite) float value;
@@ -95,7 +95,7 @@ typedef GPB_ENUM(GPBInt64Value_FieldNumber) {
  *
  * The JSON representation for `Int64Value` is JSON string.
  **/
-@interface GPBInt64Value : GPBMessage
+GPB_FINAL @interface GPBInt64Value : GPBMessage
 
 /** The int64 value. */
 @property(nonatomic, readwrite) int64_t value;
@@ -113,7 +113,7 @@ typedef GPB_ENUM(GPBUInt64Value_FieldNumber) {
  *
  * The JSON representation for `UInt64Value` is JSON string.
  **/
-@interface GPBUInt64Value : GPBMessage
+GPB_FINAL @interface GPBUInt64Value : GPBMessage
 
 /** The uint64 value. */
 @property(nonatomic, readwrite) uint64_t value;
@@ -131,7 +131,7 @@ typedef GPB_ENUM(GPBInt32Value_FieldNumber) {
  *
  * The JSON representation for `Int32Value` is JSON number.
  **/
-@interface GPBInt32Value : GPBMessage
+GPB_FINAL @interface GPBInt32Value : GPBMessage
 
 /** The int32 value. */
 @property(nonatomic, readwrite) int32_t value;
@@ -149,7 +149,7 @@ typedef GPB_ENUM(GPBUInt32Value_FieldNumber) {
  *
  * The JSON representation for `UInt32Value` is JSON number.
  **/
-@interface GPBUInt32Value : GPBMessage
+GPB_FINAL @interface GPBUInt32Value : GPBMessage
 
 /** The uint32 value. */
 @property(nonatomic, readwrite) uint32_t value;
@@ -167,7 +167,7 @@ typedef GPB_ENUM(GPBBoolValue_FieldNumber) {
  *
  * The JSON representation for `BoolValue` is JSON `true` and `false`.
  **/
-@interface GPBBoolValue : GPBMessage
+GPB_FINAL @interface GPBBoolValue : GPBMessage
 
 /** The bool value. */
 @property(nonatomic, readwrite) BOOL value;
@@ -185,7 +185,7 @@ typedef GPB_ENUM(GPBStringValue_FieldNumber) {
  *
  * The JSON representation for `StringValue` is JSON string.
  **/
-@interface GPBStringValue : GPBMessage
+GPB_FINAL @interface GPBStringValue : GPBMessage
 
 /** The string value. */
 @property(nonatomic, readwrite, copy, null_resettable) NSString *value;
@@ -203,7 +203,7 @@ typedef GPB_ENUM(GPBBytesValue_FieldNumber) {
  *
  * The JSON representation for `BytesValue` is JSON string.
  **/
-@interface GPBBytesValue : GPBMessage
+GPB_FINAL @interface GPBBytesValue : GPBMessage
 
 /** The bytes value. */
 @property(nonatomic, readwrite, copy, null_resettable) NSData *value;
