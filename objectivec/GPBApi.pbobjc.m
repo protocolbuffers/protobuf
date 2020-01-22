@@ -8,19 +8,19 @@
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <protobuf/GPBProtocolBuffers_RuntimeSupport.h>
+ #import <Protobuf/GPBProtocolBuffers_RuntimeSupport.h>
 #else
  #import "GPBProtocolBuffers_RuntimeSupport.h"
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <protobuf/Api.pbobjc.h>
- #import <protobuf/SourceContext.pbobjc.h>
- #import <protobuf/Type.pbobjc.h>
+ #import <Protobuf/GPBApi.pbobjc.h>
+ #import <Protobuf/GPBSourceContext.pbobjc.h>
+ #import <Protobuf/GPBType.pbobjc.h>
 #else
- #import "google/protobuf/Api.pbobjc.h"
- #import "google/protobuf/SourceContext.pbobjc.h"
- #import "google/protobuf/Type.pbobjc.h"
+ #import "GPBApi.pbobjc.h"
+ #import "GPBSourceContext.pbobjc.h"
+ #import "GPBType.pbobjc.h"
 #endif
 // @@protoc_insertion_point(imports)
 
