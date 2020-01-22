@@ -910,10 +910,10 @@ const upb_pbdecodermethod *upb_pbcodecache_get(upb_pbcodecache *c,
   } else {
     g = mgroup_new(h, c->lazy);
     ok = upb_inttable_insertptr(&c->groups, md, upb_value_constptr(g));
-    UPB_ASSERT(ok);
+    UPB_ASSUME(ok);
   }
 
   ok = upb_inttable_lookupptr(&g->methods, h, &v);
-  UPB_ASSERT(ok);
+  UPB_ASSUME(ok);
   return upb_value_getptr(v);
 }

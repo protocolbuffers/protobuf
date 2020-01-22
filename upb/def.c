@@ -1331,7 +1331,7 @@ static bool create_fielddef(
           break;
         }
       }
-      assert(found);
+      UPB_ASSERT(found);
     }
   } else {
     /* extension field. */
