@@ -189,6 +189,16 @@ def _test_static_dynamic_combo():
     assert (dynamic_message.simpler_message.simplest_message.__class__ is
             static_message.simplest_message.__class__)
 
+def _test_source_code_info():
+    from google.protobuf import descriptor_pb2
+    protos = protobuf.protos("google/protobuf/internal/simple_test.proto")
+    file_descriptor_proto = descriptor_pb2.FileDescriptorProto()
+    protos.DESCRIPTOR.CopyToProto(file_descriptor_proto)
+    protos.DESCRIPTOR.CopySourceCodeInfoToProto(file_descriptor_proto)
+    assert file_descriptor_proto.HasField("source_code_info")
+    assert len(file_descriptor_proto.source_code_info.location) > 0
+
+
 
 @unittest.skipIf(sys.version_info.major < 3, "Not supported on Python 2.")
 @unittest.skipIf(api_implementation.Type() != "cpp", "Not supported on pure Python implementation.")
@@ -218,6 +228,9 @@ class RuntimeImportTest(unittest.TestCase):
 
     def test_static_dynamic_combo(self):
         _run_in_subprocess(_test_static_dynamic_combo)
+
+    def test_source_code_info(self):
+        _run_in_subprocess(_test_source_code_info)
 
 @unittest.skipIf(sys.version_info.major != 2, "Not supported on Python 2.")
 @unittest.skipIf(api_implementation.Type() == "cpp", "Not supported on pure Python implementation.")

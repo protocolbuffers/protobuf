@@ -1423,6 +1423,24 @@ static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
   return CopyToPythonProto<FileDescriptorProto>(_GetDescriptor(self), target);
 }
 
+static PyObject* CopySourceCodeInfoToProto(PyFileDescriptor *self, PyObject *target) {
+  const Descriptor* self_descriptor = FileDescriptorProto::default_instance().GetDescriptor();
+  CMessage* message = reinterpret_cast<CMessage*>(target);
+  if (!PyObject_TypeCheck(target, CMessage_Type) ||
+      message->message->GetDescriptor() != self_descriptor) {
+    PyErr_Format(PyExc_TypeError, "Not a %s message",
+                 self_descriptor->full_name().c_str());
+    return NULL;
+  }
+  cmessage::AssureWritable(message);
+  FileDescriptorProto* descriptor_message =
+      static_cast<FileDescriptorProto*>(message->message);
+  Py_BEGIN_ALLOW_THREADS;
+  _GetDescriptor(self)->CopySourceCodeInfoTo(descriptor_message);
+  Py_END_ALLOW_THREADS;
+  Py_RETURN_NONE;
+}
+
 static int ParseBytesSequence(PyObject* py_sequence, std::vector<std::string>* sequence) {
   if (!PySequence_Check(py_sequence)) {
     PyErr_SetString(PyExc_ValueError, "Expected object supporting the Sequence protocol.");
@@ -1495,6 +1513,7 @@ static PyGetSetDef Getters[] = {
 static PyMethodDef Methods[] = {
   { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS, },
   { "CopyToProto", (PyCFunction)CopyToProto, METH_O, },
+  { "CopySourceCodeInfoToProto", (PyCFunction)CopySourceCodeInfoToProto, METH_O, },
   { "FromFile", (PyCFunction)FromFile, METH_STATIC | METH_VARARGS },
   {NULL}
 };

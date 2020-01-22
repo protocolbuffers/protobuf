@@ -1371,14 +1371,20 @@ const FileDescriptor* DescriptorPool::FindFileByName(
     tables_->known_bad_files_.clear();
   }
   const FileDescriptor* result = tables_->FindFile(name);
-  if (result != nullptr) return result;
+  if (result != nullptr) {
+    return result;
+  }
   if (underlay_ != nullptr) {
     result = underlay_->FindFileByName(name);
-    if (result != nullptr) return result;
+    if (result != nullptr) {
+      return result;
+    }
   }
   if (TryFindFileInFallbackDatabase(name)) {
     result = tables_->FindFile(name);
-    if (result != nullptr) return result;
+    if (result != nullptr) {
+      return result;
+    }
   }
   return nullptr;
 }
@@ -1845,9 +1851,13 @@ EnumDescriptor::FindReservedRangeContainingNumber(int number) const {
 
 bool DescriptorPool::TryFindFileInFallbackDatabase(
     const std::string& name) const {
-  if (fallback_database_ == nullptr) return false;
+  if (fallback_database_ == nullptr) {
+    return false;
+  }
 
-  if (tables_->known_bad_files_.count(name) > 0) return false;
+  if (tables_->known_bad_files_.count(name) > 0) {
+    return false;
+  }
 
   FileDescriptorProto file_proto;
   if (!fallback_database_->FindFileByName(name, &file_proto) ||
