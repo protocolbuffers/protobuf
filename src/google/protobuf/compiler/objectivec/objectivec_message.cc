@@ -334,7 +334,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
   }
 
   printer->Print(
-      "$comments$$deprecated_attribute$@interface $classname$ : GPBMessage\n\n",
+      "$comments$$deprecated_attribute$GPB_FINAL @interface $classname$ : GPBMessage\n\n",
       "classname", class_name_,
       "deprecated_attribute", deprecated_attribute_,
       "comments", message_comments);

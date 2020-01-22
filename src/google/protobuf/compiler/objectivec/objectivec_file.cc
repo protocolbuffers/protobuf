@@ -303,7 +303,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       " * which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
       " * this file and all files that it depends on.\n"
       " **/\n"
-      "@interface $root_class_name$ : GPBRootObject\n"
+      "GPB_FINAL @interface $root_class_name$ : GPBRootObject\n"
       "@end\n"
       "\n",
       "root_class_name", root_class_name_);

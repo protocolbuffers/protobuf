@@ -115,6 +115,11 @@
 // Meant to be used internally by generated code.
 #define GPB_METHOD_FAMILY_NONE __attribute__((objc_method_family(none)))
 
+// Prevent subclassing of generated proto classes.
+#ifndef GPB_FINAL
+#define GPB_FINAL __attribute__((objc_subclassing_restricted))
+#endif  // GPB_FINAL
+
 // ----------------------------------------------------------------------------
 // These version numbers are all internal to the ObjC Protobuf runtime; they
 // are used to ensure compatibility between the generated sources and the

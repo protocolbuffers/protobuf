@@ -51,7 +51,7 @@ NS_ASSUME_NONNULL_BEGIN
  * which is a @c GPBExtensionRegistry that includes all the extensions defined by
  * this file and all files that it depends on.
  **/
-@interface GPBApiRoot : GPBRootObject
+GPB_FINAL @interface GPBApiRoot : GPBRootObject
 @end
 
 #pragma mark - GPBApi
@@ -77,7 +77,7 @@ typedef GPB_ENUM(GPBApi_FieldNumber) {
  * this message itself. See https://cloud.google.com/apis/design/glossary for
  * detailed terminology.
  **/
-@interface GPBApi : GPBMessage
+GPB_FINAL @interface GPBApi : GPBMessage
 
 /**
  * The fully qualified name of this interface, including package name
@@ -163,7 +163,7 @@ typedef GPB_ENUM(GPBMethod_FieldNumber) {
 /**
  * Method represents a method of an API interface.
  **/
-@interface GPBMethod : GPBMessage
+GPB_FINAL @interface GPBMethod : GPBMessage
 
 /** The simple name of this method. */
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;
@@ -289,7 +289,7 @@ typedef GPB_ENUM(GPBMixin_FieldNumber) {
  *       ...
  *     }
  **/
-@interface GPBMixin : GPBMessage
+GPB_FINAL @interface GPBMixin : GPBMessage
 
 /** The fully qualified name of the interface which is included. */
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;

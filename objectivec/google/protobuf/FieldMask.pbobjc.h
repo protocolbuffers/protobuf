@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
  * which is a @c GPBExtensionRegistry that includes all the extensions defined by
  * this file and all files that it depends on.
  **/
-@interface GPBFieldMaskRoot : GPBRootObject
+GPB_FINAL @interface GPBFieldMaskRoot : GPBRootObject
 @end
 
 #pragma mark - GPBFieldMask
@@ -255,7 +255,7 @@ typedef GPB_ENUM(GPBFieldMask_FieldNumber) {
  * request should verify the included field paths, and return an
  * `INVALID_ARGUMENT` error if any path is unmappable.
  **/
-@interface GPBFieldMask : GPBMessage
+GPB_FINAL @interface GPBFieldMask : GPBMessage
 
 /** The set of field mask paths. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<NSString*> *pathsArray;

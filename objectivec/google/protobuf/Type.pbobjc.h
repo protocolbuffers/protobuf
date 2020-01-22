@@ -183,7 +183,7 @@ BOOL GPBField_Cardinality_IsValidValue(int32_t value);
  * which is a @c GPBExtensionRegistry that includes all the extensions defined by
  * this file and all files that it depends on.
  **/
-@interface GPBTypeRoot : GPBRootObject
+GPB_FINAL @interface GPBTypeRoot : GPBRootObject
 @end
 
 #pragma mark - GPBType
@@ -200,7 +200,7 @@ typedef GPB_ENUM(GPBType_FieldNumber) {
 /**
  * A protocol buffer message type.
  **/
-@interface GPBType : GPBMessage
+GPB_FINAL @interface GPBType : GPBMessage
 
 /** The fully qualified message name. */
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;
@@ -260,7 +260,7 @@ typedef GPB_ENUM(GPBField_FieldNumber) {
 /**
  * A single field of a message type.
  **/
-@interface GPBField : GPBMessage
+GPB_FINAL @interface GPBField : GPBMessage
 
 /** The field type. */
 @property(nonatomic, readwrite) GPBField_Kind kind;
@@ -339,7 +339,7 @@ typedef GPB_ENUM(GPBEnum_FieldNumber) {
 /**
  * Enum type definition.
  **/
-@interface GPBEnum : GPBMessage
+GPB_FINAL @interface GPBEnum : GPBMessage
 
 /** Enum type name. */
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;
@@ -387,7 +387,7 @@ typedef GPB_ENUM(GPBEnumValue_FieldNumber) {
 /**
  * Enum value definition.
  **/
-@interface GPBEnumValue : GPBMessage
+GPB_FINAL @interface GPBEnumValue : GPBMessage
 
 /** Enum value name. */
 @property(nonatomic, readwrite, copy, null_resettable) NSString *name;
@@ -413,7 +413,7 @@ typedef GPB_ENUM(GPBOption_FieldNumber) {
  * A protocol buffer option, which can be attached to a message, field,
  * enumeration, etc.
  **/
-@interface GPBOption : GPBMessage
+GPB_FINAL @interface GPBOption : GPBMessage
 
 /**
  * The option's name. For protobuf built-in options (options defined in
