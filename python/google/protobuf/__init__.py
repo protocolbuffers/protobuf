@@ -38,7 +38,6 @@ if __name__ != '__main__':
   except ImportError:
     __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
-
 from google.protobuf.importer import protos
 
 __all__ = ('protos',)

@@ -27,8 +27,8 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Contains functions enabling instantiation of Messages directly from a
+
 ".proto" file.
 """
 
@@ -36,8 +36,11 @@ __author__ = 'rbellevi@google.com (Richard Belleville)'
 
 import sys
 
+
 def protos(*args, **kwargs):
-  raise NotImplementedError("The protos function is only available on a 3.X interpreter.")
+  raise NotImplementedError(
+      'The protos function is only available on a 3.X interpreter.')
+
 
 from google.protobuf.internal import api_implementation as _api_implementation
 
@@ -45,8 +48,11 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
   try:
     from google.protobuf.pyext import _message as _pyext_message
   except ImportError as e:
+
     def protos(*args, **kwargs):
-      raise NotImplementedError("The protos function is only available when using the cpp implementation")
+      raise NotImplementedError(
+          'The protos function is only available when using the cpp implementation'
+      )
   else:
     from google.protobuf import message as _message
     import contextlib
@@ -60,101 +66,105 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
 
     _sym_db = _symbol_database.Default()
 
-    _PROTO_MODULE_SUFFIX = "_pb2"
+    _PROTO_MODULE_SUFFIX = '_pb2'
 
     def _module_name_to_proto_file(module_name):
-        components = module_name.split(".")
-        proto_name = components[-1][:-1 * len(_PROTO_MODULE_SUFFIX)]
-        return os.path.sep.join(components[:-1] + [proto_name + ".proto"])
+      components = module_name.split('.')
+      proto_name = components[-1][:-1 * len(_PROTO_MODULE_SUFFIX)]
+      return os.path.sep.join(components[:-1] + [proto_name + '.proto'])
 
     def _proto_file_to_module_name(proto_file):
-        components = proto_file.split(os.path.sep)
-        proto_base_name = os.path.splitext(components[-1])[0]
-        return ".".join(components[:-1] + [proto_base_name + _PROTO_MODULE_SUFFIX])
+      components = proto_file.split(os.path.sep)
+      proto_base_name = os.path.splitext(components[-1])[0]
+      return '.'.join(components[:-1] +
+                      [proto_base_name + _PROTO_MODULE_SUFFIX])
 
     @contextlib.contextmanager
     def _augmented_syspath(new_paths):
-        original_sys_path = sys.path
-        if new_paths is not None:
-            sys.path = sys.path + new_paths
-        try:
-            yield
-        finally:
-            sys.path = original_sys_path
+      original_sys_path = sys.path
+      if new_paths is not None:
+        sys.path = sys.path + new_paths
+      try:
+        yield
+      finally:
+        sys.path = original_sys_path
 
     class ProtoLoader(importlib.abc.Loader):
 
-        def __init__(self, module_name, protobuf_path):
-            self._module_name = module_name
-            self._protobuf_path = protobuf_path
+      def __init__(self, module_name, protobuf_path):
+        self._module_name = module_name
+        self._protobuf_path = protobuf_path
 
-        def create_module(self, spec):
-            return None
+      def create_module(self, spec):
+        return None
 
-        def _generated_file_to_module_name(self, filepath):
-            components = filepath.split(os.path.sep)
-            return ".".join(
-                components[:-1] + [os.path.splitext(components[-1])[0]])
+      def _generated_file_to_module_name(self, filepath):
+        components = filepath.split(os.path.sep)
+        return '.'.join(components[:-1] + [os.path.splitext(components[-1])[0]])
 
-        @staticmethod
-        def _register_message(sym_db, message_descriptor, module_name):
-            nested_dict = {
-                '__module__': module_name,
-                'DESCRIPTOR': message_descriptor,
-            }
-            for nested_type_desc in message_descriptor.nested_types:
-                nested_type = ProtoLoader._register_message(sym_db, nested_type_desc, module_name)
-                nested_dict[nested_type_desc.name] = nested_type
-            for nested_enum_desc in message_descriptor.enum_types:
-                sym_db.RegisterEnumDescriptor(nested_enum_desc)
-            message_type = (
-                    _reflection.GeneratedProtocolMessageType(
-                            message_descriptor.name, (_message.Message,), nested_dict))
-            sym_db.RegisterMessageDescriptor(message_descriptor)
-            sym_db.RegisterMessage(message_type)
-            return message_type
+      @staticmethod
+      def _register_message(sym_db, message_descriptor, module_name):
+        nested_dict = {
+            '__module__': module_name,
+            'DESCRIPTOR': message_descriptor,
+        }
+        for nested_type_desc in message_descriptor.nested_types:
+          nested_type = ProtoLoader._register_message(sym_db, nested_type_desc,
+                                                      module_name)
+          nested_dict[nested_type_desc.name] = nested_type
+        for nested_enum_desc in message_descriptor.enum_types:
+          sym_db.RegisterEnumDescriptor(nested_enum_desc)
+        message_type = (
+            _reflection.GeneratedProtocolMessageType(message_descriptor.name,
+                                                     (_message.Message,),
+                                                     nested_dict))
+        sym_db.RegisterMessageDescriptor(message_descriptor)
+        sym_db.RegisterMessage(message_type)
+        return message_type
 
-        def exec_module(self, module):
-            """Instantiate a module identical to the generated version.
-            """
-            file_descriptor = _pyext_message.FileDescriptor.FromFile(self._protobuf_path.encode('ascii'),
-                                                               [path.encode('ascii') for path in sys.path])
-            _sym_db.RegisterFileDescriptor(file_descriptor)
-            for dependency in file_descriptor.dependencies:
-                module_name = _proto_file_to_module_name(dependency.name)
-                if module_name not in sys.modules:
-                    importlib.import_module(module_name)
-            setattr(module, 'DESCRIPTOR', file_descriptor)
-            for enum_name, enum_descriptor in file_descriptor.enum_types_by_name.iteritems():
-                _sym_db.RegisterEnumDescriptor(enum_descriptor)
-                setattr(module, enum_name, enum_type_wrapper.EnumTypeWrapper(enum_descriptor))
-                for enum_value in enum_descriptor.values:
-                    setattr(module, enum_value.name, enum_value.number)
-            for name, message_descriptor in file_descriptor.message_types_by_name.iteritems():
-                message_type = ProtoLoader._register_message(_sym_db, message_descriptor, module.__name__)
-                _sym_db.RegisterMessageDescriptor(message_descriptor)
-                _sym_db.RegisterMessage(message_type)
-                setattr(module, name, message_type)
-
+      def exec_module(self, module):
+        """Instantiate a module identical to the generated version."""
+        file_descriptor = _pyext_message.FileDescriptor.FromFile(
+            self._protobuf_path.encode('ascii'),
+            [path.encode('ascii') for path in sys.path])
+        _sym_db.RegisterFileDescriptor(file_descriptor)
+        for dependency in file_descriptor.dependencies:
+          module_name = _proto_file_to_module_name(dependency.name)
+          if module_name not in sys.modules:
+            importlib.import_module(module_name)
+        setattr(module, 'DESCRIPTOR', file_descriptor)
+        for enum_name, enum_descriptor in file_descriptor.enum_types_by_name.iteritems(
+        ):
+          _sym_db.RegisterEnumDescriptor(enum_descriptor)
+          setattr(module, enum_name,
+                  enum_type_wrapper.EnumTypeWrapper(enum_descriptor))
+          for enum_value in enum_descriptor.values:
+            setattr(module, enum_value.name, enum_value.number)
+        for name, message_descriptor in file_descriptor.message_types_by_name.iteritems(
+        ):
+          message_type = ProtoLoader._register_message(_sym_db,
+                                                       message_descriptor,
+                                                       module.__name__)
+          _sym_db.RegisterMessageDescriptor(message_descriptor)
+          _sym_db.RegisterMessage(message_type)
+          setattr(module, name, message_type)
 
     class ProtoFinder(importlib.abc.MetaPathFinder):
 
-        def find_spec(self, fullname, path, target=None):
-            filepath = _module_name_to_proto_file(fullname)
-            for search_path in sys.path:
-                try:
-                    prospective_path = os.path.join(search_path, filepath)
-                    os.stat(prospective_path)
-                except (FileNotFoundError, NotADirectoryError):
-                    continue
-                else:
-                    return importlib.machinery.ModuleSpec(
-                        fullname,
-                        ProtoLoader(fullname, filepath))
-
+      def find_spec(self, fullname, path, target=None):
+        filepath = _module_name_to_proto_file(fullname)
+        for search_path in sys.path:
+          try:
+            prospective_path = os.path.join(search_path, filepath)
+            os.stat(prospective_path)
+          except (FileNotFoundError, NotADirectoryError):
+            continue
+          else:
+            return importlib.machinery.ModuleSpec(
+                fullname, ProtoLoader(fullname, filepath))
 
     def protos(protobuf_path, include_paths=None):
-        """Loads a module from a .proto file on disk.
+      """Loads a module from a .proto file on disk.
 
         This function is idempotent. Invoking it a second time will simply
         return a module that has already been loaded. If the desired proto has
@@ -199,9 +209,9 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
         ```
 
         Args:
-          protobuf_path: A string representing the file path to the .proto
-            file on disk. (e.g. "google/protobuf/any.proto"). By default, all
-            the paths on sys.paths are searched for this file.
+          protobuf_path: A string representing the file path to the .proto file
+            on disk. (e.g. "google/protobuf/any.proto"). By default, all the
+            paths on sys.paths are searched for this file.
           include_paths: An optional sequence of strings representing paths on
             which to search for the .proto file to search in addition to the
             entries in sys.paths.
@@ -210,9 +220,9 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
           A module object identical to one that would be generated by protoc
           and loaded with an `import foo_pb2` statement.
         """
-        with _augmented_syspath(include_paths):
-            module_name = _proto_file_to_module_name(protobuf_path)
-            module = importlib.import_module(module_name)
-            return module
+      with _augmented_syspath(include_paths):
+        module_name = _proto_file_to_module_name(protobuf_path)
+        module = importlib.import_module(module_name)
+        return module
 
     sys.meta_path.extend([ProtoFinder()])
