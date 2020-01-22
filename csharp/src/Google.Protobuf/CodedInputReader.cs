@@ -839,9 +839,9 @@ namespace Google.Protobuf
                 {
                     return ReadUInt32WrapperSlow(ref input);
                 }
-                long finalBufferPos = input.reader.Consumed + length;
+                long finalBufferPos = input.reader.Consumed + length + 1;
                 // field=1, type=varint = tag of 8
-                if (remaining[2] != 8)
+                if (remaining[1] != 8)
                 {
                     return ReadUInt32WrapperSlow(ref input);
                 }
@@ -914,8 +914,8 @@ namespace Google.Protobuf
                 {
                     return ReadUInt64WrapperSlow(ref input);
                 }
-                long finalBufferPos = input.reader.Consumed + length;
-                if (remaining[2] != expectedTag)
+                long finalBufferPos = input.reader.Consumed + length + 1;
+                if (remaining[1] != expectedTag)
                 {
                     return ReadUInt64WrapperSlow(ref input);
                 }
