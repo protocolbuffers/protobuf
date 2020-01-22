@@ -50,9 +50,6 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-using internal::WireFormat;
-using internal::WireFormatLite;
-
 namespace {
 struct FieldOrderingByNumber {
   inline bool operator()(const FieldDescriptor* a,
@@ -417,6 +414,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         SortFieldsByStorageSize(descriptor_));
 
     std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+    sorted_extensions.reserve(descriptor_->extension_range_count());
     for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
       sorted_extensions.push_back(descriptor_->extension_range(i));
     }
@@ -536,7 +534,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         "                                    fieldCount:$fields_count$\n"
         "                                   storageSize:sizeof($classname$__storage_)\n"
         "                                         flags:$init_flags$];\n");
-    if (oneof_generators_.size() != 0) {
+    if (!oneof_generators_.empty()) {
       printer->Print(
           "    static const char *oneofs[] = {\n");
       for (const auto& generator : oneof_generators_) {
@@ -567,7 +565,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    [localDescriptor setupExtraTextInfo:extraTextFormatInfo];\n"
           "#endif  // !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS\n");
     }
-    if (sorted_extensions.size() != 0) {
+    if (!sorted_extensions.empty()) {
       printer->Print(
           "    static const GPBExtensionRange ranges[] = {\n");
       for (int i = 0; i < sorted_extensions.size(); i++) {
@@ -589,7 +587,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     }
     string suffix_added;
     ClassName(descriptor_, &suffix_added);
-    if (suffix_added.size() > 0) {
+    if (!suffix_added.empty()) {
       printer->Print(
           "    [localDescriptor setupMessageClassNameSuffix:@\"$suffix$\"];\n",
           "suffix", suffix_added);
