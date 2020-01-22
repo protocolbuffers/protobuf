@@ -1,3 +1,5 @@
+# Lint as: python3
+
 # Protocol Buffers - Google's data interchange format
 # Copyright 2020 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -27,42 +29,43 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""Contains functions enabling instantiation of Messages directly from a
-
-".proto" file.
-"""
+"""Enables instantiation of Messages directly from a ".proto" file."""
 
 __author__ = 'rbellevi@google.com (Richard Belleville)'
 
 import sys
 
+from google.protobuf.internal import api_implementation as _api_implementation
+
 
 def protos(*args, **kwargs):
+  del args
+  del kwargs
   raise NotImplementedError(
       'The protos function is only available on a 3.X interpreter.')
 
 
-from google.protobuf.internal import api_implementation as _api_implementation
-
 if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
   try:
-    from google.protobuf.pyext import _message as _pyext_message
+    from google.protobuf.pyext import _message as _pyext_message  # pylint: disable=g-import-not-at-top
   except ImportError as e:
 
-    def protos(*args, **kwargs):
+    def protos(*args, **kwargs):  # pylint: disable=g-function-redefined, function-redefined
+      del args
+      del kwargs
       raise NotImplementedError(
           'The protos function is only available when using the cpp implementation'
       )
   else:
-    from google.protobuf import message as _message
-    import contextlib
-    import importlib
-    import importlib.machinery
-    import os
+    from google.protobuf import message as _message  # pylint: disable=g-import-not-at-top
+    import contextlib  # pylint: disable=g-import-not-at-top
+    import importlib  # pylint: disable=g-import-not-at-top
+    import importlib.machinery  # pylint: disable=g-import-not-at-top
+    import os  # pylint: disable=g-import-not-at-top
 
-    from google.protobuf.internal import enum_type_wrapper
-    from google.protobuf import reflection as _reflection
-    from google.protobuf import symbol_database as _symbol_database
+    from google.protobuf.internal import enum_type_wrapper  # pylint: disable=g-import-not-at-top
+    from google.protobuf import reflection as _reflection  # pylint: disable=g-import-not-at-top
+    from google.protobuf import symbol_database as _symbol_database  # pylint: disable=g-import-not-at-top
 
     _sym_db = _symbol_database.Default()
 
@@ -90,6 +93,7 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
         sys.path = original_sys_path
 
     class ProtoLoader(importlib.abc.Loader):
+      """Instantiates a module equivalent to a _pb2.py file from a .proto."""
 
       def __init__(self, module_name, protobuf_path):
         self._module_name = module_name
@@ -104,6 +108,7 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
 
       @staticmethod
       def _register_message(sym_db, message_descriptor, module_name):
+        """Registers a message in the symbol database."""
         nested_dict = {
             '__module__': module_name,
             'DESCRIPTOR': message_descriptor,
@@ -150,8 +155,12 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
           setattr(module, name, message_type)
 
     class ProtoFinder(importlib.abc.MetaPathFinder):
+      """MetaPathFinder that locates .proto files."""
 
       def find_spec(self, fullname, path, target=None):
+        """Determines whether a .proto file can be loaded."""
+        del path
+        del target
         filepath = _module_name_to_proto_file(fullname)
         for search_path in sys.path:
           try:
@@ -163,7 +172,7 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
             return importlib.machinery.ModuleSpec(
                 fullname, ProtoLoader(fullname, filepath))
 
-    def protos(protobuf_path, include_paths=None):
+    def protos(protobuf_path, include_paths=None):  # pylint: disable=g-function-redefined, function-redefined
       """Loads a module from a .proto file on disk.
 
         This function is idempotent. Invoking it a second time will simply
@@ -208,18 +217,18 @@ if sys.version_info[0] > 2 and _api_implementation.Type() == 'cpp':
         assert AMessage().c.__class__ is BMessage().c.__class__
         ```
 
-        Args:
-          protobuf_path: A string representing the file path to the .proto file
-            on disk. (e.g. "google/protobuf/any.proto"). By default, all the
-            paths on sys.paths are searched for this file.
-          include_paths: An optional sequence of strings representing paths on
-            which to search for the .proto file to search in addition to the
-            entries in sys.paths.
+      Args:
+        protobuf_path: A string representing the file path to the .proto file
+          on disk. (e.g. "google/protobuf/any.proto"). By default, all the
+          paths on sys.paths are searched for this file.
+        include_paths: An optional sequence of strings representing paths on
+          which to search for the .proto file to search in addition to the
+          entries in sys.paths.
 
-        Returns:
-          A module object identical to one that would be generated by protoc
-          and loaded with an `import foo_pb2` statement.
-        """
+      Returns:
+        A module object identical to one that would be generated by protoc
+        and loaded with an `import foo_pb2` statement.
+      """
       with _augmented_syspath(include_paths):
         module_name = _proto_file_to_module_name(protobuf_path)
         module = importlib.import_module(module_name)

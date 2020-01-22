@@ -33,16 +33,19 @@
 
 __author__ = 'rbellevi@google.com (Richard Belleville)'
 
+# pylint: disable=g-statement-before-imports,g-import-not-at-top
 try:
-  import unittest2 as unittest  #PY26
+  import unittest2 as unittest  # PY26
 except ImportError:
   import unittest
+# pylint: enable=g-statement-before-imports,g-import-not-at-top
+
+import collections
+import functools
+import multiprocessing
+import sys
 
 from google import protobuf
-import sys
-import collections
-import multiprocessing
-import functools
 
 from google.protobuf.internal import api_implementation
 
@@ -65,12 +68,12 @@ class ProtoFile(
 ):
 
   @staticmethod
-  def FromFileDescriptor(file_descriptor):
+  def from_file_descriptor(file_descriptor):
     return ProtoFile(file_descriptor.package, [
-        MessageType.FromDescriptor(descriptor)
+        MessageType.from_descriptor(descriptor)
         for descriptor in file_descriptor.message_types_by_name.values()
     ], [
-        EnumType.FromEnumDescriptor(descriptor)
+        EnumType.from_enum_descriptor(descriptor)
         for descriptor in file_descriptor.enum_types_by_name.values()
     ], [dep.name for dep in file_descriptor.dependencies],
                      [dep.name for dep in file_descriptor.public_dependencies])
@@ -80,7 +83,7 @@ class EnumType(
     collections.namedtuple('Enumtype', ('name', 'full_name', 'values'))):
 
   @staticmethod
-  def FromEnumDescriptor(enum_descriptor):
+  def from_enum_descriptor(enum_descriptor):
     return EnumType(enum_descriptor.name, enum_descriptor.full_name,
                     [(value_descriptor.name, value_descriptor.number)
                      for value_descriptor in enum_descriptor.values])
@@ -92,12 +95,12 @@ class MessageType(
         ('name', 'full_name', 'fields', 'nested_types', 'is_extendable'))):
 
   @staticmethod
-  def FromDescriptor(descriptor):
+  def from_descriptor(descriptor):
     return MessageType(descriptor.name, descriptor.full_name, [
-        MessageField.FromFieldDescriptor(field_desc)
+        MessageField.from_field_descriptor(field_desc)
         for field_desc in descriptor.fields_by_name.values()
     ], [
-        MessageType.FromDescriptor(nested_desc)
+        MessageType.from_descriptor(nested_desc)
         for nested_desc in descriptor.nested_types
     ], descriptor.is_extendable)
 
@@ -107,7 +110,7 @@ class EnumField(
         'Enumfield', ('name', 'full_name', 'number', 'type', 'has_options'))):
 
   @staticmethod
-  def FromEnumFieldDescriptor(descriptor):
+  def from_enum_field_descriptor(descriptor):
     return EnumField(descriptor.name, descriptor.full_name, descriptor.number,
                      descriptor.type, descriptor.has_options)
 
@@ -119,7 +122,7 @@ class MessageField(
          'default_value', 'is_extension'))):
 
   @staticmethod
-  def FromFieldDescriptor(descriptor):
+  def from_field_descriptor(descriptor):
     return MessageField(descriptor.name, descriptor.full_name,
                         descriptor.number, descriptor.type, descriptor.cpp_type,
                         descriptor.has_default_value, descriptor.default_value,
@@ -164,18 +167,18 @@ def _get_public_symbols(module):
 
 
 def _get_static_module_record():
-  from google.protobuf import test_messages_proto3_pb2
-  return ProtoFile.FromFileDescriptor(test_messages_proto3_pb2.DESCRIPTOR)
+  from google.protobuf import test_messages_proto3_pb2  # pylint: disable=g-import-not-at-top
+  return ProtoFile.from_file_descriptor(test_messages_proto3_pb2.DESCRIPTOR)
 
 
 def _get_static_module_symbols():
-  from google.protobuf import test_messages_proto3_pb2
+  from google.protobuf import test_messages_proto3_pb2  # pylint: disable=g-import-not-at-top
   return _get_public_symbols(test_messages_proto3_pb2)
 
 
 def _get_dynamic_module_record():
   protos = protobuf.protos(_TEST_PROTO_FILE, include_paths=['../src/'])
-  return ProtoFile.FromFileDescriptor(protos.DESCRIPTOR)
+  return ProtoFile.from_file_descriptor(protos.DESCRIPTOR)
 
 
 def _get_dynamic_module_symbols():
@@ -194,7 +197,7 @@ def _test_proto_module_imported_once():
 
 
 def _test_static_dynamic_combo():
-  from google.protobuf.internal import complicated_test_pb2
+  from google.protobuf.internal import complicated_test_pb2  # pylint: disable=g-import-not-at-top
   protos = protobuf.protos('google/protobuf/internal/simple_test.proto')
   static_message = complicated_test_pb2.ComplicatedMessage()
   dynamic_message = protos.SimpleMessage()
@@ -203,13 +206,13 @@ def _test_static_dynamic_combo():
 
 
 def _test_source_code_info():
-  from google.protobuf import descriptor_pb2
+  from google.protobuf import descriptor_pb2  # pylint: disable=g-import-not-at-top
   protos = protobuf.protos('google/protobuf/internal/simple_test.proto')
   file_descriptor_proto = descriptor_pb2.FileDescriptorProto()
   protos.DESCRIPTOR.CopyToProto(file_descriptor_proto)
   protos.DESCRIPTOR.CopySourceCodeInfoToProto(file_descriptor_proto)
   assert file_descriptor_proto.HasField('source_code_info')
-  assert len(file_descriptor_proto.source_code_info.location) > 0
+  assert file_descriptor_proto.source_code_info.location
 
 
 @unittest.skipIf(sys.version_info.major < 3, 'Not supported on Python 2.')
@@ -229,7 +232,7 @@ class RuntimeImportTest(unittest.TestCase):
 
   def test_syntax_error(self):
     with self.assertRaises(SyntaxError) as cm:
-      protos = protobuf.protos(_BROKEN_PROTO)
+      unused_protos = protobuf.protos(_BROKEN_PROTO)
     self.assertIn(_BROKEN_PROTO, str(cm.exception))
     # Line number of first error.
     self.assertIn('35', str(cm.exception))
@@ -253,7 +256,7 @@ class RuntimeImportGracefulFailureTest(unittest.TestCase):
 
   def test_graceful_failure(self):
     with self.assertRaises(NotImplementedError):
-      protos = protobuf.protos(_TEST_PROTO_FILE)
+      unused_protos = protobuf.protos(_TEST_PROTO_FILE)
 
 
 if __name__ == '__main__':
