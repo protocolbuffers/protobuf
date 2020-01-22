@@ -40,7 +40,7 @@ TEST_VERSION=3.0.0
 # is also possible to use this same test set to test the compatibiilty of the
 # latest version against other versions.
 OLD_VERSION=$1
-OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
+OLD_VERSION_PROTOC=https://repo1.maven.org/maven2/com/google/protobuf/protoc/$OLD_VERSION/protoc-$OLD_VERSION-linux-x86_64.exe
 
 echo "Running compatibility tests with $OLD_VERSION"
 
