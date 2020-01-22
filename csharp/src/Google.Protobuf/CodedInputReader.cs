@@ -177,6 +177,12 @@ namespace Google.Protobuf
             throw InvalidProtocolBufferException.TruncatedMessage();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void ThrowInvalidTagException()
+        {
+            throw InvalidProtocolBufferException.InvalidTag();
+        }
+
         /// <summary>
         /// Reads a field tag, returning the tag of 0 for "end of input".
         /// </summary>
@@ -194,50 +200,49 @@ namespace Google.Protobuf
                 return 0;
             }
 
-            byte value;
-
-            bool hasValue = reader.TryRead(out value);
-            if (!hasValue)
+            // Optimize for common case of a 2 byte tag that is in the current span
+            var current = reader.UnreadSpan;
+            if (current.Length >= 2)
             {
-                ThrowEndOfInputIfFalse(IsAtEnd);
-
-                // End of input
-                lastTag = 0;
-                return 0;
-            }
-
-            // Optimize for the incredibly common case of having at least two bytes left in the buffer,
-            // and those two bytes being enough to get the tag. This will be true for fields up to 4095.
-            if (value < 128)
-            {
-                lastTag = value;
-            }
-            else
-            {
-                int result = value & 0x7f;
-                ThrowEndOfInputIfFalse(reader.TryRead(out value));
-                if (value < 128)
+                int tmp = current[0];
+                if (tmp < 128)
                 {
-                    result |= value << 7;
-                    lastTag = (uint)result;
+                    lastTag = (uint)tmp;
+                    reader.Advance(1);
                 }
                 else
                 {
-                    // Nope, rewind and go the potentially slow route.
-                    reader.Rewind(2);
-                    lastTag = ReadRawVarint32();
+                    int result = tmp & 0x7f;
+                    if ((tmp = current[1]) < 128)
+                    {
+                        result |= tmp << 7;
+                        lastTag = (uint)result;
+                        reader.Advance(2);
+                    }
+                    else
+                    {
+                        // Nope, go the potentially slow route.
+                        lastTag = ReadRawVarint32();
+                    }
                 }
+            }
+            else
+            {
+                if (IsAtEnd)
+                {
+                    lastTag = 0;
+                    return 0;
+                }
+
+                lastTag = ReadRawVarint32();
             }
 
             if (WireFormat.GetTagFieldNumber(lastTag) == 0)
             {
                 // If we actually read a tag with a field of 0, that's not a valid tag.
-                throw InvalidProtocolBufferException.InvalidTag();
+                ThrowInvalidTagException();
             }
-            if (ReachedLimit)
-            {
-                return 0;
-            }
+
             return lastTag;
         }
 
@@ -360,15 +365,15 @@ namespace Google.Protobuf
         {
             const int length = sizeof(float);
 
-            if (BitConverter.IsLittleEndian && reader.CurrentSpan.Length - reader.CurrentSpanIndex >= length)
+            ReadOnlySpan<byte> current = reader.UnreadSpan;
+            if (BitConverter.IsLittleEndian && current.Length >= length)
             {
                 // Fast path. All data is in the current span and we're little endian architecture.
-                ReadOnlySpan<byte> data = reader.CurrentSpan.Slice(reader.CurrentSpanIndex, length);
                 reader.Advance(length);
 
                 // ReadUnaligned uses processor architecture for endianness. Content is little endian and
                 // IsLittleEndian has been checked so this is safe to call.
-                return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(data));
+                return Unsafe.ReadUnaligned<float>(ref MemoryMarshal.GetReference(current));
             }
             else
             {
@@ -973,12 +978,9 @@ namespace Google.Protobuf
         #region Underlying reading primitives
 
         /// <summary>
-        /// Reads a raw Varint from the input. If larger than 32 bits, discard the upper bits.
-        /// This method is optimised for the case where we've got lots of data in the buffer.
-        /// That means we can check the size just once, then just read directly from the buffer
-        /// without constant rechecking of the buffer length.
+        /// Same code as ReadRawVarint32, but read each byte from reader individually
         /// </summary>
-        internal uint ReadRawVarint32()
+        private uint SlowReadRawVarint32()
         {
             byte value;
 
@@ -1043,9 +1045,80 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Reads a raw varint from the input.
+        /// Reads a raw Varint from the input. If larger than 32 bits, discard the upper bits.
+        /// This method is optimised for the case where we've got lots of data in the buffer.
+        /// That means we can check the size just once, then just read directly from the buffer
+        /// without constant rechecking of the buffer length.
         /// </summary>
-        internal ulong ReadRawVarint64()
+        internal uint ReadRawVarint32()
+        {
+            var current = reader.UnreadSpan;
+
+            if (current.Length < 5)
+            {
+                return SlowReadRawVarint32();
+            }
+
+            int bufferPos = 0;
+            int tmp = current[bufferPos++];
+            if (tmp < 128)
+            {
+                reader.Advance(bufferPos);
+                return (uint)tmp;
+            }
+            int result = tmp & 0x7f;
+            if ((tmp = current[bufferPos++]) < 128)
+            {
+                result |= tmp << 7;
+            }
+            else
+            {
+                result |= (tmp & 0x7f) << 7;
+                if ((tmp = current[bufferPos++]) < 128)
+                {
+                    result |= tmp << 14;
+                }
+                else
+                {
+                    result |= (tmp & 0x7f) << 14;
+                    if ((tmp = current[bufferPos++]) < 128)
+                    {
+                        result |= tmp << 21;
+                    }
+                    else
+                    {
+                        result |= (tmp & 0x7f) << 21;
+                        result |= (tmp = current[bufferPos++]) << 28;
+                        if (tmp >= 128)
+                        {
+                            reader.Advance(bufferPos);
+
+                            // Discard upper 32 bits.
+                            // Note that this has to use ReadRawByte() as we only ensure we've
+                            // got at least 5 bytes at the start of the method. This lets us
+                            // use the fast path in more cases, and we rarely hit this section of code.
+                            for (int i = 0; i < 5; i++)
+                            {
+                                ThrowEndOfInputIfFalse(reader.TryRead(out var value));
+                                tmp = value;
+                                if (tmp < 128)
+                                {
+                                    return (uint)result;
+                                }
+                            }
+                            throw InvalidProtocolBufferException.MalformedVarint();
+                        }
+                    }
+                }
+            }
+            reader.Advance(bufferPos);
+            return (uint)result;
+        }
+
+        /// <summary>
+        /// Same code as ReadRawVarint64, but read each byte from reader individually
+        /// </summary>
+        private ulong SlowReadRawVarint64()
         {
             int shift = 0;
             ulong result = 0;
@@ -1063,19 +1136,56 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Reads a raw varint from the input.
+        /// </summary>
+        internal ulong ReadRawVarint64()
+        {
+            var current = reader.UnreadSpan;
+
+            if (current.Length < 10)
+            {
+                return SlowReadRawVarint64();
+            }
+
+            int bufferPos = 0;
+            ulong result = current[bufferPos++];
+            if (result < 128)
+            {
+                reader.Advance(bufferPos);
+                return result;
+            }
+            result &= 0x7f;
+            int shift = 7;
+            do
+            {
+                byte b = current[bufferPos++];
+                result |= (ulong)(b & 0x7F) << shift;
+                if (b < 0x80)
+                {
+                    reader.Advance(bufferPos);
+                    return result;
+                }
+                shift += 7;
+            }
+            while (shift < 64);
+
+            throw InvalidProtocolBufferException.MalformedVarint();
+        }
+
+        /// <summary>
         /// Reads a 32-bit little-endian integer from the input.
         /// </summary>
         internal uint ReadRawLittleEndian32()
         {
             const int length = 4;
 
-            if (reader.CurrentSpan.Length - reader.CurrentSpanIndex >= length)
+            ReadOnlySpan<byte> current = reader.UnreadSpan;
+            if (current.Length >= length)
             {
                 // Fast path. All data is in the current span.
-                ReadOnlySpan<byte> data = reader.CurrentSpan.Slice(reader.CurrentSpanIndex, length);
                 reader.Advance(length);
 
-                return BinaryPrimitives.ReadUInt32LittleEndian(data);
+                return BinaryPrimitives.ReadUInt32LittleEndian(current);
             }
             else
             {
@@ -1103,13 +1213,13 @@ namespace Google.Protobuf
         {
             const int length = 8;
 
-            if (reader.CurrentSpan.Length - reader.CurrentSpanIndex >= length)
+            ReadOnlySpan<byte> current = reader.UnreadSpan;
+            if (current.Length >= length)
             {
                 // Fast path. All data is in the current span.
-                ReadOnlySpan<byte> data = reader.CurrentSpan.Slice(reader.CurrentSpanIndex, length);
                 reader.Advance(length);
 
-                return BinaryPrimitives.ReadUInt64LittleEndian(data);
+                return BinaryPrimitives.ReadUInt64LittleEndian(current);
             }
             else
             {
@@ -1169,6 +1279,7 @@ namespace Google.Protobuf
         /// <returns></returns>
         internal bool ReachedLimit
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if (currentLimit == long.MaxValue)
