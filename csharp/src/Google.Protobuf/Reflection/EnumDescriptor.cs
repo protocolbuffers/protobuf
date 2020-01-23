@@ -136,7 +136,13 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public T GetOption<T>(Extension<EnumOptions, T> extension)
         {
-            var value = Proto.Options.GetExtension(extension);
+            var options = Proto.Options;
+            if (options == null)
+            {
+                return default(T);
+            }
+
+            var value = options.GetExtension(extension);
             return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
         }
 
@@ -145,7 +151,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumOptions, T> extension)
         {
-            return Proto.Options.GetExtension(extension).Clone();
+            return Proto.Options?.GetExtension(extension)?.Clone();
         }
     }
 }

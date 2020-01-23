@@ -184,13 +184,21 @@ namespace Google.Protobuf.Test.Reflection
             var fileDescriptor = UnittestProto3Reflection.Descriptor;
             var messageDescriptor = TestAllTypes.Descriptor;
             Assert.NotNull(fileDescriptor.CustomOptions);
+            Assert.DoesNotThrow(() => { fileDescriptor.GetOption(Fileopt); });
             Assert.NotNull(messageDescriptor.CustomOptions);
+            Assert.DoesNotThrow(() => { messageDescriptor.GetOption(Msgopt); });
             Assert.NotNull(messageDescriptor.Fields[1].CustomOptions);
+            Assert.DoesNotThrow(() => { messageDescriptor.Fields[1].GetOption(Fieldopt); });
             Assert.NotNull(fileDescriptor.Services[0].CustomOptions);
+            Assert.DoesNotThrow(() => { fileDescriptor.Services[0].GetOption(Serviceopt); });
             Assert.NotNull(fileDescriptor.Services[0].Methods[0].CustomOptions);
+            Assert.DoesNotThrow(() => { fileDescriptor.Services[0].Methods[0].GetOption(Methodopt); });
             Assert.NotNull(fileDescriptor.EnumTypes[0].CustomOptions);
+            Assert.DoesNotThrow(() => { fileDescriptor.EnumTypes[0].GetOption(Enumopt); });
             Assert.NotNull(fileDescriptor.EnumTypes[0].Values[0].CustomOptions);
+            Assert.DoesNotThrow(() => { fileDescriptor.EnumTypes[0].Values[0].GetOption(EnumValueOpt1); });
             Assert.NotNull(TestAllTypes.Descriptor.Oneofs[0].CustomOptions);
+            Assert.DoesNotThrow(() => { TestAllTypes.Descriptor.Oneofs[0].GetOption(OneofOpt1); });
         }
 
         [Test]
