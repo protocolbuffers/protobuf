@@ -407,6 +407,10 @@ namespace Google.Protobuf
 
         protected override T ParseFromWithLimits<T>(MessageParser<T> messageParser, ByteString bytes, int sizeLimit, int resursionLimits)
         {
+            if (sizeLimit != int.MaxValue)
+            {
+                throw new ArgumentException("sizeLimit not supported when parsing with CodedInputReader", nameof(sizeLimit));
+            }
             CodedInputReader input = CodedInputReader.CreateWithLimits(new ReadOnlySequence<byte>(bytes.ToByteArray()), resursionLimits);
             return messageParser.ParseFrom(ref input);
         }

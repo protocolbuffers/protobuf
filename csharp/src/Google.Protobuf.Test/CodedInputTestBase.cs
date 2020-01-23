@@ -125,10 +125,10 @@ namespace Google.Protobuf
 
             Assert.Throws<InvalidProtocolBufferException>(() => ParseFrom(TestRecursiveMessage.Parser, beyondRecursiveLimit));
 
-            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(atRecursiveLimit.ToByteArray()), 1000000, CodedInputStream.DefaultRecursionLimit - 1);
+            CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(atRecursiveLimit.ToByteArray()), int.MaxValue, CodedInputStream.DefaultRecursionLimit - 1);
             Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(input));
 
-            Assert.Throws<InvalidProtocolBufferException>(() => ParseFromWithLimits(TestRecursiveMessage.Parser, atRecursiveLimit, sizeLimit: 1000000, resursionLimits: CodedInputStream.DefaultRecursionLimit - 1));
+            Assert.Throws<InvalidProtocolBufferException>(() => ParseFromWithLimits(TestRecursiveMessage.Parser, atRecursiveLimit, sizeLimit: int.MaxValue, resursionLimits: CodedInputStream.DefaultRecursionLimit - 1));
         }
 
         [Test]
