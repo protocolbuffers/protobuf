@@ -308,7 +308,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "\n",
       "root_class_name", root_class_name_);
 
-  if (extension_generators_.size() > 0) {
+  if (!extension_generators_.empty()) {
     // The dynamic methods block is only needed if there are extensions.
     printer->Print(
         "@interface $root_class_name$ (DynamicMethods)\n",
@@ -319,7 +319,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
     }
 
     printer->Print("@end\n\n");
-  }  // extension_generators_.size() > 0
+  }  // !extension_generators_.empty()
 
   for (const auto& generator : message_generators_) {
     generator->GenerateMessageHeader(printer);
@@ -528,7 +528,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   printer->Print("\n@end\n\n");
 
   // File descriptor only needed if there are messages to use it.
-  if (message_generators_.size() > 0) {
+  if (!message_generators_.empty()) {
     std::map<string, string> vars;
     vars["root_class_name"] = root_class_name_;
     vars["package"] = file_->package();
@@ -553,7 +553,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
         "  static GPBFileDescriptor *descriptor = NULL;\n"
         "  if (!descriptor) {\n"
         "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
-    if (vars["objc_prefix"].size() > 0) {
+    if (!vars["objc_prefix"].empty()) {
       printer->Print(
           vars,
           "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
