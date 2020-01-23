@@ -29,6 +29,7 @@ else()
 endif()
 
 # Options
+option(protobuf_INSTALL "Install protobuf binaries and files" ON)
 option(protobuf_BUILD_TESTS "Build tests" ON)
 option(protobuf_BUILD_CONFORMANCE "Build conformance tests" OFF)
 option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
@@ -247,7 +248,9 @@ if (protobuf_BUILD_CONFORMANCE)
   include(conformance.cmake)
 endif (protobuf_BUILD_CONFORMANCE)
 
-include(install.cmake)
+if (protobuf_INSTALL)
+  include(install.cmake)
+endif (protobuf_INSTALL)
 
 if (protobuf_BUILD_EXAMPLES)
   include(examples.cmake)
