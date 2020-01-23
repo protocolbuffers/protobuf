@@ -724,6 +724,68 @@ namespace Google.Protobuf
             MessageParsingHelpers.AssertReadingMessageThrows<TestAllTypes, InvalidProtocolBufferException>(TestAllTypes.Parser, data);
         }
 
+        [Test]
+        public void ParsingNestedMessageFailsIfOverLimit()
+        {
+            // when parsing length delimited byteString, parser must recognize it's over limit.
+            AssertReadingNestedMessageWithWrongLengthThrows(new TestAllTypes { SingleBytes = ByteString.CopyFrom(1, 2, 3, 4) }, -1, 10);
+
+            // when parsing varint, parser must recognize it's over limit but hasn't yet finished reading the entire varint
+            AssertReadingNestedMessageWithWrongLengthThrows(new TestAllTypes { SingleInt64 = 123456789 }, -1, 10);
+
+            // when parsing length delimited byteString, parser must recognize it's over limit.
+            AssertReadingNestedMessageWithWrongLengthThrows(new TestAllTypes { SingleString = "test" }, -1, 10);
+
+            // when reading the fixed64 value, parser must recognize it's over limit
+            AssertReadingNestedMessageWithWrongLengthThrows(new TestAllTypes { SingleDouble = 1e-9 }, -1, 10);
+
+            // when reading the fixed32 value, parser must recognize it's over limit
+            AssertReadingNestedMessageWithWrongLengthThrows(new TestAllTypes { SingleDouble = 1e-3 }, -1, 10);
+
+            // packed repeated value
+            AssertReadingNestedMessageWithWrongLengthThrows(new TestAllTypes { RepeatedInt64 = { 1, 2, 3, 4 } }, -1, 10);
+
+            // repeated string (non-packed)
+            AssertReadingNestedMessageWithWrongLengthThrows(new TestAllTypes { RepeatedString = { "abc", "def" } }, -1, 10);
+
+            // TODO(jtattermusch): test for start and end group too?
+
+            // TODO(jtattermusch): what if even the tag/length of the nested message is over the limit?
+        }
+
+        private void AssertReadingNestedMessageWithWrongLengthThrows(TestAllTypes nestedMsg, int lengthModifier, int paddingMessageCount)
+        {
+            // construct a NestedTestAllTypes message with a nested message
+            // as a payload, followed by some padding. Tweak the serialized
+            // form of the message so that for payload, the length delimiter
+            // is set incorrectly. That will result it nested message's
+            // limit being too small and should result in parsing
+            // error. The padding is there to make sure we're actually testing
+            // the nested message limit rather than hitting the end of the buffer.
+            // var msg = new NestedTestAllTypes
+            // {
+            //     Payload = nestedMsg,  // our payload
+            //     RepeatedChild = { new NestedTestAllTypes(), ... }  // the padding
+            // };
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            output.WriteTag(2, WireFormat.WireType.LengthDelimited);  // tag for "payload" field
+            output.WriteLength(nestedMsg.CalculateSize() + lengthModifier);  // size of "payload" field, but artifically made incorrect
+            output.WriteRawBytes(nestedMsg.ToByteArray());  // write raw data of payload message
+            // write padding messages to make sure we don't approach the end of the buffer
+            for (int i = 0; i < paddingMessageCount; i++)
+            {
+                output.WriteTag(3, WireFormat.WireType.LengthDelimited);  // "repeated_child" field
+                output.WriteMessage(new NestedTestAllTypes());
+            }
+            output.Flush();
+
+            // TODO(jtattermusch): check that with unmodified length delimiter, message can be parsed ok?
+            //MessageParsingHelpers.AssertReadingMessage(NestedTestAllTypes.Parser, data, (msg) => { });
+
+            MessageParsingHelpers.AssertReadingMessageThrows<NestedTestAllTypes, InvalidProtocolBufferException>(NestedTestAllTypes.Parser, stream.ToArray());
+        }
+
         /// <summary>
         /// Demonstrates current behaviour with an extraneous end group tag - see issue 688
         /// for details; we may want to change this.
