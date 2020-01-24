@@ -891,7 +891,7 @@ namespace Google.Protobuf
             internal static T Read<T>(ref CodedInputReader input, FieldCodec<T> codec)
             {
                 int length = input.ReadLength();
-                long oldLimit = input.PushLimit(length);
+                int oldLimit = input.PushLimit(length);
 
                 uint tag;
                 T value = codec.DefaultValue;

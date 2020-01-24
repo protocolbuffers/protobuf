@@ -142,7 +142,7 @@ namespace Google.Protobuf.Collections
                 int length = input.ReadLength();
                 if (length > 0)
                 {
-                    long oldLimit = input.PushLimit(length);
+                    int oldLimit = input.PushLimit(length);
                     while (!input.ReachedLimit)
                     {
                         Add(reader(ref input));
