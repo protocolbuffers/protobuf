@@ -226,10 +226,6 @@ namespace Google.Protobuf
                 // If we actually read a tag with a field of 0, that's not a valid tag.
                 ThrowInvalidTagException();
             }
-            if (ReachedLimit)
-            {
-                return 0;
-            }
 
             return lastTag;
         }
@@ -1308,7 +1304,7 @@ namespace Google.Protobuf
             if (length + reader.Consumed > currentLimit)
             {
                 // Read to the end of the limit.
-                reader.Advance(currentLimit);
+                reader.Advance(Math.Min(currentLimit, reader.Remaining));
                 // Then fail.
                 ThrowTruncatedMessage();
             }
