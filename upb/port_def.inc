@@ -128,6 +128,18 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 
 #define UPB_UNUSED(var) (void)var
 
+/* UPB_ASSUME(): in release mode, we tell the compiler to assume this is true.
+ */
+#ifdef NDEBUG
+#ifdef __GNUC__
+#define UPB_ASSUME(expr) if (!(expr)) __builtin_unreachable()
+#else
+#define UPB_ASSUME(expr) do {} if (false && (expr))
+#endif
+#else
+#define UPB_ASSUME(expr) assert(expr)
+#endif
+
 /* UPB_ASSERT(): in release mode, we use the expression without letting it be
  * evaluated.  This prevents "unused variable" warnings. */
 #ifdef NDEBUG

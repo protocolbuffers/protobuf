@@ -389,7 +389,7 @@ static upb_selector_t getsel_for_handlertype(upb_json_parser *p,
                                              upb_handlertype_t type) {
   upb_selector_t sel;
   bool ok = upb_handlers_getselector(p->top->f, type, &sel);
-  UPB_ASSERT(ok);
+  UPB_ASSUME(ok);
   return sel;
 }
 
@@ -414,7 +414,7 @@ static void set_name_table(upb_json_parser *p, upb_jsonparser_frame *frame) {
   const upb_json_parsermethod *method;
 
   ok = upb_inttable_lookupptr(&cache->methods, frame->m, &v);
-  UPB_ASSERT(ok);
+  UPB_ASSUME(ok);
   method = upb_value_getconstptr(v);
 
   frame->name_table = &method->name_table;
@@ -2019,7 +2019,7 @@ static void end_member(upb_json_parser *p) {
     /* send ENDSUBMSG in repeated-field-of-mapentries frame. */
     p->top--;
     ok = upb_handlers_getselector(mapfield, UPB_HANDLER_ENDSUBMSG, &sel);
-    UPB_ASSERT(ok);
+    UPB_ASSUME(ok);
     upb_sink_endsubmsg(p->top->sink, (p->top + 1)->sink, sel);
   }
 
