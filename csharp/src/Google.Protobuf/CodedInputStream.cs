@@ -307,6 +307,13 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.MoreDataAvailable();
             }
         }
+
+        internal void CheckLastTagWas(uint expectedTag)
+        {
+           if (lastTag != expectedTag) {
+                throw InvalidProtocolBufferException.InvalidEndTag();
+           }
+        }
         #endregion
 
         #region Reading of tags etc
@@ -636,7 +643,27 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.RecursionLimitExceeded();
             }
             ++recursionDepth;
+
+            uint tag = lastTag;
+            int fieldNumber = WireFormat.GetTagFieldNumber(tag);
+
             builder.MergeFrom(this);
+            CheckLastTagWas(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
+            --recursionDepth;
+        }
+
+        /// <summary>
+        /// Reads an embedded group unknown field from the stream.
+        /// </summary>
+        internal void ReadGroup(int fieldNumber, UnknownFieldSet set)
+        {
+            if (recursionDepth >= recursionLimit)
+            {
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
+            ++recursionDepth;
+            set.MergeGroupFrom(this);
+            CheckLastTagWas(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
             --recursionDepth;
         }
 
