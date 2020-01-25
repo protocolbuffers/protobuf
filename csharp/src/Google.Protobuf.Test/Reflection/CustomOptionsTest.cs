@@ -184,21 +184,21 @@ namespace Google.Protobuf.Test.Reflection
             var fileDescriptor = UnittestProto3Reflection.Descriptor;
             var messageDescriptor = TestAllTypes.Descriptor;
             Assert.NotNull(fileDescriptor.CustomOptions);
-            Assert.DoesNotThrow(() => { fileDescriptor.GetOption(Fileopt); });
+            Assert.AreEqual(fileDescriptor.GetOption(Fileopt), null);
             Assert.NotNull(messageDescriptor.CustomOptions);
-            Assert.DoesNotThrow(() => { messageDescriptor.GetOption(Msgopt); });
+            Assert.AreEqual(messageDescriptor.GetOption(Msgopt), null);
             Assert.NotNull(messageDescriptor.Fields[1].CustomOptions);
-            Assert.DoesNotThrow(() => { messageDescriptor.Fields[1].GetOption(Fieldopt); });
+            Assert.AreEqual(messageDescriptor.Fields[1].GetOption(Fieldopt), null);
             Assert.NotNull(fileDescriptor.Services[0].CustomOptions);
-            Assert.DoesNotThrow(() => { fileDescriptor.Services[0].GetOption(Serviceopt); });
+            Assert.AreEqual(fileDescriptor.Services[0].GetOption(Serviceopt), null);
             Assert.NotNull(fileDescriptor.Services[0].Methods[0].CustomOptions);
-            Assert.DoesNotThrow(() => { fileDescriptor.Services[0].Methods[0].GetOption(Methodopt); });
+            Assert.AreEqual(fileDescriptor.Services[0].Methods[0].GetOption(Methodopt), null);
             Assert.NotNull(fileDescriptor.EnumTypes[0].CustomOptions);
-            Assert.DoesNotThrow(() => { fileDescriptor.EnumTypes[0].GetOption(Enumopt); });
+            Assert.AreEqual(fileDescriptor.EnumTypes[0].GetOption(Enumopt), null);
             Assert.NotNull(fileDescriptor.EnumTypes[0].Values[0].CustomOptions);
-            Assert.DoesNotThrow(() => { fileDescriptor.EnumTypes[0].Values[0].GetOption(EnumValueOpt1); });
+            Assert.AreEqual(fileDescriptor.EnumTypes[0].Values[0].GetOption(EnumValueOpt1), 0);
             Assert.NotNull(TestAllTypes.Descriptor.Oneofs[0].CustomOptions);
-            Assert.DoesNotThrow(() => { TestAllTypes.Descriptor.Oneofs[0].GetOption(OneofOpt1); });
+            Assert.AreEqual(TestAllTypes.Descriptor.Oneofs[0].GetOption(OneofOpt1), 0);
         }
 
         [Test]
