@@ -280,7 +280,7 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.NegativeSize();
             }
 
-            ValidateRequestedDataAvaliable(length);
+            CheckRequestedDataAvailable(length);
 
             reader.Advance(length);
         }
@@ -471,7 +471,7 @@ namespace Google.Protobuf
         /// <returns>The decoded string.</returns>
         private string ReadStringSlow(int byteLength)
         {
-            ValidateRequestedDataAvaliable(byteLength);
+            CheckRequestedDataAvailable(byteLength);
 
             if (decoder == null)
             {
@@ -568,7 +568,7 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.NegativeSize();
             }
 
-            ValidateRequestedDataAvaliable(length);
+            CheckRequestedDataAvailable(length);
 
             // Avoid creating a copy of Sequence if data is on current span
             var unreadSpan = LimitedUnreadSpan;
@@ -1299,7 +1299,7 @@ namespace Google.Protobuf
             return b;
         }
 
-        private void ValidateRequestedDataAvaliable(int length)
+        private void CheckRequestedDataAvailable(int length)
         {
             if (length + reader.Consumed > currentLimit)
             {
@@ -1319,7 +1319,7 @@ namespace Google.Protobuf
 
         private void CopyToSlow(Span<byte> destination)
         {
-            ValidateRequestedDataAvaliable(destination.Length);
+            CheckRequestedDataAvailable(destination.Length);
 
             reader.TryCopyTo(destination);
         }
