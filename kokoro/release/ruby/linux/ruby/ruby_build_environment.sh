@@ -4,6 +4,5 @@ set +ex
 [[ -s /etc/profile.d/rvm.sh ]] && . /etc/profile.d/rvm.sh
 set -e  # rvm commands are very verbose
 rvm --default use ruby-2.4.1
-gem update --system
-gem install bundler --update
+gem install bundler -v '< 2.0'
 set -ex
