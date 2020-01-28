@@ -25,7 +25,7 @@
     <dependency>
       <groupId>com.google.errorprone</groupId>
       <artifactId>error_prone_annotations</artifactId>
-      <version>2.3.3</version>
+      <version>2.3.4</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
