@@ -113,11 +113,12 @@ std::string PROTOBUF_EXPORT VersionString(int version);
 // to use the protobuf library) to verify that the version you link against
 // matches the headers you compiled against.  If a version mismatch is
 // detected, the process will abort.
+#ifndef GOOGLE_PROTOBUF_VERIFY_VERSION
 #define GOOGLE_PROTOBUF_VERIFY_VERSION                                    \
   ::google::protobuf::internal::VerifyVersion(                            \
     GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION,         \
     __FILE__)
-
+#endif
 
 // ===================================================================
 // from google3/util/utf8/public/unilib.h
