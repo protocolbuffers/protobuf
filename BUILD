@@ -349,6 +349,12 @@ cc_test(
     ],
 )
 
+upb_proto_reflection_library(
+    name = "test_messages_proto3_proto_upb",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
+
 proto_library(
     name = "test_decoder_proto",
     srcs = [
@@ -516,8 +522,14 @@ upb_proto_library(
     deps = ["@com_google_protobuf//:conformance_proto"],
 )
 
-upb_proto_library(
-    name = "test_messages_proto3_proto_upb",
+upb_proto_reflection_library(
+    name = "test_messages_proto2_upbdefs",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto2_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "test_messages_proto3_upbdefs",
     testonly = 1,
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
 )
@@ -534,7 +546,9 @@ cc_binary(
     }) + ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
         ":conformance_proto_upb",
-        ":test_messages_proto3_proto_upb",
+        ":test_messages_proto2_upbdefs",
+        ":test_messages_proto3_upbdefs",
+        ":reflection",
         ":upb",
     ],
 )
@@ -542,7 +556,7 @@ cc_binary(
 make_shell_script(
     name = "gen_test_conformance_upb",
     out = "test_conformance_upb.sh",
-    contents = "external/com_google_protobuf/conformance_test_runner ./conformance_upb",
+    contents = "external/com_google_protobuf/conformance_test_runner --enforce_recommended ./conformance_upb",
 )
 
 sh_test(

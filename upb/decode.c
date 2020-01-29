@@ -132,7 +132,8 @@ static void upb_set32(void *msg, size_t ofs, uint32_t val) {
   memcpy((char*)msg + ofs, &val, sizeof(val));
 }
 
-static const char *upb_append_unknown(const char *ptr, upb_msg *msg, upb_decstate *d) {
+static const char *upb_append_unknown(const char *ptr, upb_msg *msg,
+                                      upb_decstate *d) {
   upb_msg_addunknown(msg, d->field_start, ptr - d->field_start, d->arena);
   return ptr;
 }
@@ -161,7 +162,7 @@ static const char *upb_skip_unknownfielddata(const char *ptr, upb_decstate *d,
     case UPB_WIRE_TYPE_START_GROUP:
       return upb_skip_unknowngroup(ptr, d, tag >> 3);
     case UPB_WIRE_TYPE_END_GROUP:
-      CHK((tag >> 3) == group_fieldnum);
+      d->end_group = tag >> 3;
       return ptr;
   }
   return false;
