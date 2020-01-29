@@ -63,8 +63,6 @@ typedef struct {
 #define CHK(x) if (!(x)) { return 0; }
 #define PTR_AT(msg, ofs, type) (type*)((const char*)msg + ofs)
 
-static const char *upb_skip_unknowngroup(const char *ptr, upb_decstate *d,
-                                         int field_number);
 static const char *upb_decode_message(const char *ptr, const upb_msglayout *l,
                                       upb_msg *msg, upb_decstate *d);
 
@@ -139,8 +137,7 @@ static const char *upb_append_unknown(const char *ptr, upb_msg *msg,
 }
 
 static const char *upb_skip_unknownfielddata(const char *ptr, upb_decstate *d,
-                                             uint32_t tag,
-                                             uint32_t group_fieldnum) {
+                                             uint32_t tag) {
   switch (tag & 7) {
     case UPB_WIRE_TYPE_VARINT: {
       uint64_t val;
@@ -159,26 +156,22 @@ static const char *upb_skip_unknownfielddata(const char *ptr, upb_decstate *d,
       CHK(ptr = upb_decode_string(ptr, d->limit, &len));
       return ptr + len;
     }
-    case UPB_WIRE_TYPE_START_GROUP:
-      return upb_skip_unknowngroup(ptr, d, tag >> 3);
+    case UPB_WIRE_TYPE_START_GROUP: {
+      uint32_t field_number = tag >> 3;
+      while (ptr < d->limit && d->end_group == 0) {
+        uint32_t tag = 0;
+        CHK(ptr = upb_decode_varint32(ptr, d->limit, &tag));
+        CHK(ptr = upb_skip_unknownfielddata(ptr, d, tag));
+      }
+      CHK(d->end_group == field_number);
+      d->end_group = 0;
+      return ptr;
+    }
     case UPB_WIRE_TYPE_END_GROUP:
       d->end_group = tag >> 3;
       return ptr;
   }
   return false;
-}
-
-static const char *upb_skip_unknowngroup(const char *ptr, upb_decstate *d,
-                                         int field_number) {
-  while (ptr < d->limit && d->end_group == 0) {
-    uint32_t tag = 0;
-    CHK(ptr = upb_decode_varint32(ptr, d->limit, &tag));
-    CHK(ptr = upb_skip_unknownfielddata(ptr, d, tag, field_number));
-  }
-
-  CHK(d->end_group == field_number);
-  d->end_group = 0;
-  return ptr;
 }
 
 static void *upb_array_reserve(upb_array *arr, size_t elements,
@@ -605,7 +598,7 @@ static const char *upb_decode_field(const char *ptr,
     }
   } else {
     CHK(field_number != 0);
-    CHK(ptr = upb_skip_unknownfielddata(ptr, d, tag, -1));
+    CHK(ptr = upb_skip_unknownfielddata(ptr, d, tag));
     CHK(ptr = upb_append_unknown(ptr, msg, d));
     return ptr;
   }
