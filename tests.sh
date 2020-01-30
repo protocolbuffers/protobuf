@@ -715,6 +715,30 @@ build_php7.0_mac() {
   popd
 }
 
+build_php7.4_mac() {
+  generate_php_test_proto
+  # Install PHP
+  curl -s https://php-osx.liip.ch/install.sh | bash -s 7.4
+  PHP_FOLDER=`find /usr/local -type d -name "php7-7.4*"`  # The folder name may change upon time
+  export PATH="$PHP_FOLDER/bin:$PATH"
+
+  # Install phpunit
+  curl https://phar.phpunit.de/phpunit-8.phar -L -o phpunit.phar
+  chmod +x phpunit.phar
+  sudo mv phpunit.phar /usr/local/bin/phpunit
+
+  # Install valgrind
+  echo "#! /bin/bash" > valgrind
+  chmod ug+x valgrind
+  sudo mv valgrind /usr/local/bin/valgrind
+
+  # Test
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
+}
+
 build_php_compatibility() {
   internal_build_cpp
   php/tests/compatibility_test.sh $LAST_RELEASED
