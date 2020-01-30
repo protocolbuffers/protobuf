@@ -134,6 +134,20 @@ message self {
   optional bool typeof            = 37;
   optional bool restrict          = 38;
   optional bool NULL              = 39;
+  optional bool char8_t           = 40;
+  optional bool requires          = 41;
+  optional bool synchronized      = 42;
+  optional bool constexpr         = 43;
+
+  // Some C++ "identifiers with special meaning"
+  // that we shouldn't have to worry about because they
+  // can only appear in specialized areas.
+  optional bool override                 = 80;
+  optional bool final                    = 81;
+  optional bool import                   = 82;
+  optional bool module                   = 83;
+  optional bool transaction_safe         = 84;
+  optional bool transaction_safe_dynamic = 85;
 
   // Some NSObject Methods
   optional bool dealloc           = 110;

@@ -45,6 +45,7 @@
 // Some of the tests explicitly use cross file enums also.
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestImport.pbobjc.h"
+#import "google/protobuf/UnittestObjc.pbobjc.h"
 
 // Sanity check the conditions of the test within the Xcode project.
 #if !__cplusplus
