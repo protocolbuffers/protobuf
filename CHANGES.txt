@@ -1,3 +1,13 @@
+2020-01-31 version 3.11.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Add OUT and OPTIONAL to windows portability files (#7087)
+
+  PHP
+  * Refactored ulong to zend_ulong for php7.4 compatibility (#7147)
+  * Call register_class before getClass from desc to fix segfault (#7077)
+  
+
 2019-12-10 version 3.11.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   PHP
