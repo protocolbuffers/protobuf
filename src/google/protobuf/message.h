@@ -1193,11 +1193,11 @@ const T* DynamicCastToGenerated(const Message* from) {
   const Message* unused = static_cast<T*>(nullptr);
   (void)unused;
 
-#ifdef GOOGLE_PROTOBUF_NO_RTTI
+#if PROTOBUF_RTTI
+  return dynamic_cast<const T*>(from);
+#else
   bool ok = T::default_instance().GetReflection() == from->GetReflection();
   return ok ? down_cast<const T*>(from) : nullptr;
-#else
-  return dynamic_cast<const T*>(from);
 #endif
 }
 
