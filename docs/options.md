@@ -224,3 +224,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Wire since and until
    * Website: https://square.github.io/wire/
    * Extensions: 1076, 1077
+
+1. Bazel, Failure Details
+   * Website: https://github.com/bazelbuild/bazel
+   * Extensions: 1078
