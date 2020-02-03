@@ -132,6 +132,7 @@ static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
 PHP_METHOD(Descriptor, getClass) {
   Descriptor* desc = UNBOX(Descriptor, getThis());
   DescriptorInternal* intern = desc->intern;
+  register_class(intern, false TSRMLS_CC);
 #if PHP_MAJOR_VERSION < 7
   const char* classname = intern->klass->name;
 #else
