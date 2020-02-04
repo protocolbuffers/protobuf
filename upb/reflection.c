@@ -66,27 +66,36 @@ static uint32_t *oneofcase(const upb_msg *msg,
   return PTR_AT(msg, ~field->presence, uint32_t);
 }
 
+static upb_msgval _upb_msg_getraw(const upb_msg *msg, const upb_fielddef *f) {
+  const upb_msglayout_field *field = upb_fielddef_layout(f);
+  const char *mem = PTR_AT(msg, field->offset, char);
+  upb_msgval val = {0};
+  int size = upb_fielddef_isseq(f) ? sizeof(void *)
+                                   : field_size[field->descriptortype];
+  memcpy(&val, mem, size);
+  return val;
+}
+
 bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
-  UPB_ASSERT(field->presence);
   if (in_oneof(field)) {
     return *oneofcase(msg, field) == field->number;
-  } else {
+  } else if (field->presence > 0) {
     uint32_t hasbit = field->presence;
     return *PTR_AT(msg, hasbit / 8, char) | (1 << (hasbit % 8));
+  } else {
+    UPB_ASSERT(field->descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
+               field->descriptortype == UPB_DESCRIPTOR_TYPE_GROUP);
+    return _upb_msg_getraw(msg, f).msg_val != NULL;
   }
 }
 
 upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
-  const upb_msglayout_field *field = upb_fielddef_layout(f);
-  const char *mem = PTR_AT(msg, field->offset, char);
-  upb_msgval val;
-  if (field->presence == 0 || upb_msg_has(msg, f)) {
-    int size = upb_fielddef_isseq(f) ? sizeof(void *)
-                                     : field_size[field->descriptortype];
-    memcpy(&val, mem, size);
+  if (!upb_fielddef_haspresence(f) || upb_msg_has(msg, f)) {
+    return _upb_msg_getraw(msg, f);
   } else {
     /* TODO(haberman): change upb_fielddef to not require this switch(). */
+    upb_msgval val = {0};
     switch (upb_fielddef_type(f)) {
       case UPB_TYPE_INT32:
       case UPB_TYPE_ENUM:
@@ -118,8 +127,8 @@ upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
         val.msg_val = NULL;
         break;
     }
+    return val;
   }
-  return val;
 }
 
 upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
@@ -157,7 +166,36 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
   }
 }
 
-#undef DEREF
+bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
+                  const upb_symtab *ext_pool, const upb_fielddef **out_f,
+                  upb_msgval *out_val, size_t *iter) {
+  int i = *iter;
+  const upb_msgval zero = {0};
+  const upb_fielddef *f;
+  while ((f = _upb_msgdef_field(m, ++i)) != NULL) {
+    upb_msgval val = _upb_msg_getraw(msg, f);
+
+    /* Skip field if unset or empty. */
+    if (upb_fielddef_haspresence(f)) {
+      if (!upb_msg_has(msg, f)) continue;
+    } else {
+      upb_msgval test = val;
+      if (upb_fielddef_isstring(f) && !upb_fielddef_isseq(f)) {
+        /* Clear string pointer, only size matters (ptr could be non-NULL). */
+        test.str_val.data = NULL;
+      }
+      /* Continue if NULL or 0. */
+      if (memcmp(&test, &zero, sizeof(test)) == 0) continue;
+    }
+
+    *out_val = val;
+    *out_f = f;
+    *iter = i;
+    return true;
+  }
+  *iter = i;
+  return false;
+}
 
 /** upb_array *****************************************************************/
 

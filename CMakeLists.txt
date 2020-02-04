@@ -88,6 +88,11 @@ target_link_libraries(reflection
   port
   table
   upb)
+add_library(textformat
+  upb/textencode.c
+  upb/textencode.h)
+target_link_libraries(textformat
+  reflection)
 add_library(table INTERFACE)
 target_link_libraries(table INTERFACE
   port

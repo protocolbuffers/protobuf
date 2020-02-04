@@ -52,6 +52,33 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
 /* Clears any field presence and sets the value back to its default. */
 void upb_msg_clearfield(upb_msg *msg, const upb_fielddef *f);
 
+/* Iterate over present fields.
+ *
+ * size_t iter = UPB_MSG_BEGIN;
+ * const upb_fielddef *f;
+ * upb_msgval val;
+ * while (upb_msg_next(msg, m, ext_pool, &f, &val, &iter)) {
+ *   process_field(f, val);
+ * }
+ *
+ * If ext_pool is NULL, no extensions will be returned.  If the given symtab
+ * returns extensions that don't match what is in this message, those extensions
+ * will be skipped.
+ */
+
+#define UPB_MSG_BEGIN -1
+bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
+                  const upb_symtab *ext_pool, const upb_fielddef **f,
+                  upb_msgval *val, size_t *iter);
+
+/* Adds unknown data (serialized protobuf data) to the given message.  The data
+ * is copied into the message instance. */
+void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
+                        upb_arena *arena);
+
+/* Returns a reference to the message's unknown data. */
+const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
+
 /** upb_array *****************************************************************/
 
 /* Creates a new array on the given arena that holds elements of this type. */

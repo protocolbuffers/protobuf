@@ -427,6 +427,7 @@ const upb_oneofdef *upb_msgdef_ntoo(const upb_msgdef *m, const char *name,
 int upb_msgdef_numfields(const upb_msgdef *m);
 int upb_msgdef_numoneofs(const upb_msgdef *m);
 const upb_msglayout *upb_msgdef_layout(const upb_msgdef *m);
+const upb_fielddef *_upb_msgdef_field(const upb_msgdef *m, int i);
 
 UPB_INLINE const upb_oneofdef *upb_msgdef_ntooz(const upb_msgdef *m,
                                                const char *name) {

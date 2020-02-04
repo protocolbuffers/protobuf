@@ -142,6 +142,20 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "textformat",
+    srcs = [
+        "upb/textencode.c",
+    ],
+    hdrs = [
+        "upb/textencode.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":reflection",
+    ],
+)
+
 # Internal C/C++ libraries #####################################################
 
 cc_library(
@@ -523,6 +537,12 @@ upb_proto_library(
 )
 
 upb_proto_reflection_library(
+    name = "conformance_proto_upbdefs",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:conformance_proto"],
+)
+
+upb_proto_reflection_library(
     name = "test_messages_proto2_upbdefs",
     testonly = 1,
     deps = ["@com_google_protobuf//:test_messages_proto2_proto"],
@@ -546,9 +566,11 @@ cc_binary(
     }) + ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
         ":conformance_proto_upb",
+        ":conformance_proto_upbdefs",
         ":test_messages_proto2_upbdefs",
         ":test_messages_proto3_upbdefs",
         ":reflection",
+        ":textformat",
         ":upb",
     ],
 )

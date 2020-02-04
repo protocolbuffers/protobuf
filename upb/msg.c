@@ -94,7 +94,7 @@ void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
 }
 
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len) {
-  const upb_msg_internal* in = upb_msg_getinternal_const(msg);
+  const upb_msg_internal *in = upb_msg_getinternal_const(msg);
   *len = in->unknown_len;
   return in->unknown;
 }
