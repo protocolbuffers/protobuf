@@ -915,6 +915,36 @@ php_EXTRA_DIST=                                                       \
 
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
+  python/generate_docs.py                                                    \
+  python/docs/requirements.txt                                               \
+  python/docs/make.bat                                                       \
+  python/docs/index.rst                                                      \
+  python/docs/google/protobuf/wrappers_pb2.rst                               \
+  python/docs/google/protobuf/type_pb2.rst                                   \
+  python/docs/google/protobuf/timestamp_pb2.rst                              \
+  python/docs/google/protobuf/text_format.rst                                \
+  python/docs/google/protobuf/text_encoding.rst                              \
+  python/docs/google/protobuf/symbol_database.rst                            \
+  python/docs/google/protobuf/struct_pb2.rst                                 \
+  python/docs/google/protobuf/service_reflection.rst                         \
+  python/docs/google/protobuf/service.rst                                    \
+  python/docs/google/protobuf/reflection.rst                                 \
+  python/docs/google/protobuf/proto_builder.rst                              \
+  python/docs/google/protobuf/message_factory.rst                            \
+  python/docs/google/protobuf/message.rst                                    \
+  python/docs/google/protobuf/json_format.rst                                \
+  python/docs/google/protobuf/field_mask_pb2.rst                             \
+  python/docs/google/protobuf/empty_pb2.rst                                  \
+  python/docs/google/protobuf/duration_pb2.rst                               \
+  python/docs/google/protobuf/descriptor_pool.rst                            \
+  python/docs/google/protobuf/descriptor_pb2.rst                             \
+  python/docs/google/protobuf/descriptor_database.rst                        \
+  python/docs/google/protobuf/descriptor.rst                                 \
+  python/docs/google/protobuf/any_pb2.rst                                    \
+  python/docs/google/protobuf.rst                                            \
+  python/docs/environment.yml                                                \
+  python/docs/conf.py                                                        \
+  python/docs/Makefile                                                       \
   python/google/__init__.py                                                  \
   python/google/protobuf/__init__.py                                         \
   python/google/protobuf/compiler/__init__.py                                \
