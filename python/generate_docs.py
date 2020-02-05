@@ -29,9 +29,38 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Script to generate a list of all modules to use in autosummary."""
+"""Script to generate a list of all modules to use in autosummary.
 
-import os
+This script creates a ReStructured Text file for each public module in the
+protobuf Python package. The script also updates the table of contents in
+``docs/index.rst`` to point to these module references.
+
+To build the docs with Sphinx:
+
+1. Install the needed packages (``sphinx``, ``sphinxcontrib-napoleon`` for
+   Google-style docstring support). I've created a conda environment file to
+   make this easier:
+
+.. code:: bash
+
+   conda env create -f python/docs/environment.yml
+
+2. (Optional) Generate reference docs files and regenerate index:
+
+.. code:: bash
+
+   cd python
+   python generate_docs.py
+   cd ..
+
+3. Run Sphinx.
+
+.. code:: bash
+
+   cd python/docs
+   make html
+"""
+
 import pathlib
 import re
 
