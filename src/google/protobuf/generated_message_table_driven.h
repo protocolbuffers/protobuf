@@ -206,12 +206,18 @@ struct ParseTable {
 static_assert(sizeof(ParseTableField) <= 16, "ParseTableField is too large");
 // The tables must be composed of POD components to ensure link-time
 // initialization.
-static_assert(std::is_pod<ParseTableField>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField::enum_aux>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField::message_aux>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField::string_aux>::value, "");
-static_assert(std::is_pod<ParseTable>::value, "");
+static_assert(std::is_standard_layout<ParseTableField>::value, "");
+static_assert(std::is_trivial<ParseTableField>::value, "");
+static_assert(std::is_standard_layout<AuxillaryParseTableField>::value, "");
+static_assert(std::is_trivial<AuxillaryParseTableField>::value, "");
+static_assert(std::is_standard_layout<AuxillaryParseTableField::enum_aux>::value, "");
+static_assert(std::is_trivial<AuxillaryParseTableField::enum_aux>::value, "");
+static_assert(std::is_standard_layout<AuxillaryParseTableField::message_aux>::value, "");
+static_assert(std::is_trivial<AuxillaryParseTableField::message_aux>::value, "");
+static_assert(std::is_standard_layout<AuxillaryParseTableField::string_aux>::value, "");
+static_assert(std::is_trivial<AuxillaryParseTableField::string_aux>::value, "");
+static_assert(std::is_standard_layout<ParseTable>::value, "");
+static_assert(std::is_trivial<ParseTable>::value, "");
 
 // TODO(ckennelly): Consolidate these implementations into a single one, using
 // dynamic dispatch to the appropriate unknown field handler.
