@@ -4,6 +4,10 @@
 
 #include "upb/def.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum {
   /* When set, prints everything on a single line. */
   UPB_TXTENC_SINGLELINE = 1,
@@ -23,5 +27,9 @@ enum {
 size_t upb_textencode(const upb_msg *msg, const upb_msgdef *m,
                       const upb_symtab *ext_pool, int options, char *buf,
                       size_t size);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #endif  /* UPB_TEXTENCODE_H_ */
