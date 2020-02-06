@@ -354,11 +354,24 @@ cc_test(
     ],
 )
 
+proto_library(
+    name = "test_proto",
+    testonly = 1,
+    srcs = ["tests/test.proto"],
+)
+
+upb_proto_library(
+    name = "test_upbproto",
+    testonly = 1,
+    deps = [":test_proto"],
+)
+
 cc_test(
     name = "test_generated_code",
     srcs = ["tests/test_generated_code.c"],
     deps = [
         ":test_messages_proto3_proto_upb",
+        ":test_upbproto",
         ":upb_test",
     ],
 )
@@ -657,6 +670,7 @@ cc_test(
         "@com_google_protobuf//:descriptor_proto",
         ":descriptor_proto_lua",
         ":test_messages_proto3_proto_lua",
+        ":test_proto_lua",
         "tests/bindings/lua/test_upb.lua",
         "third_party/lunit/console.lua",
         "third_party/lunit/lunit.lua",
@@ -683,8 +697,13 @@ cc_binary(
 )
 
 lua_proto_library(
+    name = "test_proto_lua",
+    testonly = 1,
+    deps = [":test_proto"],
+)
+
+lua_proto_library(
     name = "descriptor_proto_lua",
-    visibility = ["//visibility:public"],
     deps = ["@com_google_protobuf//:descriptor_proto"],
 )
 

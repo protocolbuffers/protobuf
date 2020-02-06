@@ -27,7 +27,9 @@ const char *init =
     "./third_party/lunit/?.lua;"
     "external/com_google_protobuf/?.lua;"
     "external/com_google_protobuf/src/?.lua;"
+    "bazel-bin/?.lua;"
     "bazel-bin/external/com_google_protobuf/src/?.lua;"
+    "bazel-bin/external/com_google_protobuf/?.lua;"
     "bazel-bin/external/com_google_protobuf/?.lua;"
     "upb/bindings/lua/?.lua"
   "'";

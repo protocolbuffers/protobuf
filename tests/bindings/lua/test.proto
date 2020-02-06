@@ -1,8 +1,7 @@
-
 syntax = "proto2";
 
-package upb_test;
+package lua_test;
 
-message MapTest {
+message TestLua {
   map<string, double> map_string_double = 1;
 }

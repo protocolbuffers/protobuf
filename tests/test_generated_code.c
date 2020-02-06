@@ -5,6 +5,7 @@
 
 #include "src/google/protobuf/test_messages_proto3.upb.h"
 #include "tests/upb_test.h"
+#include "tests/test.upb.h"
 
 const char test_str[] = "abcdefg";
 const char test_str2[] = "12345678910";
@@ -112,6 +113,25 @@ static void check_string_map_one_entry(
   const_ent = protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_next(
       msg, &iter);
   ASSERT(!const_ent);
+}
+
+static void test_string_double_map() {
+  upb_arena *arena = upb_arena_new();
+  upb_strview serialized;
+  upb_test_MapTest *msg = upb_test_MapTest_new(arena);
+  upb_test_MapTest *msg2;
+  double val;
+
+  upb_test_MapTest_map_string_double_set(msg, test_str_view, 1.5, arena);
+  serialized.data = upb_test_MapTest_serialize(msg, arena, &serialized.size);
+  ASSERT(serialized.data);
+
+  msg2 = upb_test_MapTest_parse(serialized.data, serialized.size, arena);
+  ASSERT(msg2);
+  ASSERT(upb_test_MapTest_map_string_double_get(msg2, test_str_view, &val));
+  ASSERT(val == 1.5);
+
+  upb_arena_free(arena);
 }
 
 static void test_string_map() {
@@ -323,6 +343,7 @@ void test_repeated() {
 int run_tests(int argc, char *argv[]) {
   test_scalars();
   test_string_map();
+  test_string_double_map();
   test_int32_map();
   test_repeated();
   return 0;

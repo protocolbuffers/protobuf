@@ -1,6 +1,7 @@
 
 local upb = require "lupb"
 local lunit = require "lunit"
+local upb_test = require "tests.test_pb"
 local test_messages_proto3 = require "google.protobuf.test_messages_proto3_pb"
 local descriptor = require "google.protobuf.descriptor_pb"
 
@@ -66,6 +67,32 @@ function test_msg_map()
   local msg2 = upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
   assert_equal(10, msg2.map_int32_int32[5])
   assert_equal(12, msg2.map_int32_int32[6])
+end
+
+function test_string_double_map()
+  msg = upb_test.MapTest()
+  msg.map_string_double["one"] = 1.0
+  msg.map_string_double["two point five"] = 2.5
+  assert_equal(1, msg.map_string_double["one"])
+  assert_equal(2.5, msg.map_string_double["two point five"])
+
+  -- Test overwrite.
+  msg.map_string_double["one"] = 2
+  assert_equal(2, msg.map_string_double["one"])
+  assert_equal(2.5, msg.map_string_double["two point five"])
+  msg.map_string_double["one"] = 1.0
+
+  -- Test delete.
+  msg.map_string_double["one"] = nil
+  assert_nil(msg.map_string_double["one"])
+  assert_equal(2.5, msg.map_string_double["two point five"])
+  msg.map_string_double["one"] = 1
+
+  local serialized = upb.encode(msg)
+  assert_true(#serialized > 0)
+  local msg2 = upb.decode(upb_test.MapTest, serialized)
+  assert_equal(1, msg2.map_string_double["one"])
+  assert_equal(2.5, msg2.map_string_double["two point five"])
 end
 
 function test_msg_string_map()
