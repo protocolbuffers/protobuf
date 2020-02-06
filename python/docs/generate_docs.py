@@ -49,15 +49,13 @@ To build the docs with Sphinx:
 
 .. code:: bash
 
-   cd python
+   cd python/docs
    python generate_docs.py
-   cd ..
 
 3. Run Sphinx.
 
 .. code:: bash
 
-   cd python/docs
    make html
 """
 
@@ -65,9 +63,9 @@ import pathlib
 import re
 
 
-CURRENT_DIR = pathlib.Path(__file__).parent.resolve()
-DOCS_DIR = CURRENT_DIR / "docs"
-SOURCE_DIR = CURRENT_DIR / "google" / "protobuf"
+DOCS_DIR = pathlib.Path(__file__).parent.resolve()
+PYTHON_DIR = DOCS_DIR.parent
+SOURCE_DIR = PYTHON_DIR / "google" / "protobuf"
 SOURCE_POSIX = SOURCE_DIR.as_posix()
 IGNORED_PACKAGES = (
   "compiler",
@@ -141,13 +139,13 @@ def write_automodule(module):
 
 def replace_toc(modules):
   toctree = [module.replace(".", "/") for module in modules]
-  with open(CURRENT_DIR / "docs" / "index.rst", "r") as index_file:
+  with open(DOCS_DIR / "index.rst", "r") as index_file:
     index_contents = index_file.read()
   toc = TOC_TEMPLATE.format(
     toctree="\n   ".join(toctree)
   )
   index_contents = re.sub(TOC_REGEX, toc, index_contents)
-  with open(CURRENT_DIR / "docs" / "index.rst", "w") as index_file:
+  with open(DOCS_DIR / "index.rst", "w") as index_file:
     index_file.write(index_contents)
 
 
