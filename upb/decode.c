@@ -622,6 +622,9 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   state.depth = 64;
   state.end_group = 0;
 
+  /* Early exit required for buf==NULL case. */
+  if (size == 0) return true;
+
   CHK(upb_decode_message(buf, l, msg, &state));
   return state.end_group == 0;
 }

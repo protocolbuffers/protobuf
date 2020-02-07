@@ -340,11 +340,23 @@ void test_repeated() {
   upb_arena_free(arena);
 }
 
+void test_null_decode_buf() {
+  upb_arena *arena = upb_arena_new();
+  protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_parse(NULL, 0, arena);
+  size_t size;
+
+  ASSERT(msg);
+  protobuf_test_messages_proto3_TestAllTypesProto3_serialize(msg, arena, &size);
+  ASSERT(size == 0);
+}
+
 int run_tests(int argc, char *argv[]) {
   test_scalars();
   test_string_map();
   test_string_double_map();
   test_int32_map();
   test_repeated();
+  test_null_decode_buf();
   return 0;
 }
