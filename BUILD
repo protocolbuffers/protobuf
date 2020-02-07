@@ -656,6 +656,7 @@ cc_library(
     ],
     deps = [
         ":reflection",
+        ":textformat",
         ":upb",
         "@lua//:liblua",
     ],

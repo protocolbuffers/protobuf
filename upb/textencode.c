@@ -21,8 +21,6 @@ typedef struct {
 
 static void txtenc_msg(txtenc *e, const upb_msg *msg, const upb_msgdef *m);
 
-#define CHK(x) do { if (!(x)) { return false; } } while(0)
-
 static void txtenc_putbytes(txtenc *e, const void *data, size_t len) {
   size_t have = e->end - e->ptr;
   if (UPB_LIKELY(have >= len)) {
@@ -159,6 +157,7 @@ static void txtenc_field(txtenc *e, upb_msgval val, const upb_fielddef *f) {
       break;
     case UPB_TYPE_MESSAGE:
       txtenc_putstr(e, "{");
+      txtenc_endfield(e);
       e->indent_depth++;
       txtenc_msg(e, val.msg_val, upb_fielddef_msgsubdef(f));
       e->indent_depth--;
@@ -223,6 +222,8 @@ static void txtenc_map(txtenc *e, const upb_map *map, const upb_fielddef *f) {
     txtenc_endfield(e);
   }
 }
+
+#define CHK(x) do { if (!(x)) { return false; } } while(0)
 
 static const char *txtenc_parsevarint(const char *ptr, const char *limit,
                                       uint64_t *val) {
@@ -333,6 +334,8 @@ static const char *txtenc_unknown(txtenc *e, const char *ptr, const char *end,
   return groupnum == -1 ? ptr : NULL;
 }
 
+#undef CHK
+
 static void txtenc_msg(txtenc *e, const upb_msg *msg,
                        const upb_msgdef *m) {
   size_t iter = UPB_MSG_BEGIN;
@@ -389,5 +392,3 @@ size_t upb_textencode(const upb_msg *msg, const upb_msgdef *m,
   txtenc_msg(&e, msg, m);
   return txtenc_nullz(&e, size);
 }
-
-#undef CHK

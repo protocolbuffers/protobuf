@@ -82,7 +82,7 @@ bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f) {
     return *oneofcase(msg, field) == field->number;
   } else if (field->presence > 0) {
     uint32_t hasbit = field->presence;
-    return *PTR_AT(msg, hasbit / 8, char) | (1 << (hasbit % 8));
+    return *PTR_AT(msg, hasbit / 8, char) & (1 << (hasbit % 8));
   } else {
     UPB_ASSERT(field->descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
                field->descriptortype == UPB_DESCRIPTOR_TYPE_GROUP);

@@ -458,6 +458,11 @@ function test_foo()
   assert_error_match("lupb.array expected", function () set.file = 1 end)
 
   set = upb.decode(FileDescriptorSet, descriptor)
+
+  -- Test that we can at least call this without crashing.
+  set_textformat = tostring(set)
+
+  -- print(set_textformat)
   assert_equal(#set.file, 1)
   assert_equal(set.file[1].name, "google/protobuf/descriptor.proto")
 end

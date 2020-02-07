@@ -13,6 +13,7 @@
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
 #include "upb/reflection.h"
+#include "upb/textencode.h"
 
 #include "upb/port_def.inc"
 
@@ -887,9 +888,41 @@ static int lupb_msg_newindex(lua_State *L) {
   return 1;
 }
 
+/**
+ * lupb_msg_tostring()
+ *
+ * Handles:
+ *   tostring(msg)
+ *   print(msg)
+ *   etc.
+ */
+static int lupb_msg_tostring(lua_State *L) {
+  upb_msg *msg = lupb_msg_check(L, 1);
+  const upb_msgdef *m;
+  char buf[1024];
+  size_t size;
+
+  lua_getiuservalue(L, 1, LUPB_MSGDEF_INDEX);
+  m = lupb_msgdef_check(L, -1);
+
+  size = upb_textencode(msg, m, NULL, 0, buf, sizeof(buf));
+
+  if (size < sizeof(buf)) {
+    lua_pushlstring(L, buf, size);
+  } else {
+    char *ptr = malloc(size + 1);
+    upb_textencode(msg, m, NULL, 0, ptr, size + 1);
+    lua_pushlstring(L, ptr, size);
+    free(ptr);
+  }
+
+  return 1;
+}
+
 static const struct luaL_Reg lupb_msg_mm[] = {
   {"__index", lupb_msg_index},
   {"__newindex", lupb_msg_newindex},
+  {"__tostring", lupb_msg_tostring},
   {NULL, NULL}
 };
 
