@@ -1482,18 +1482,35 @@ class LazyAccessor {
    * @private
    */
   getRepeatedMessageArray_(fieldNumber, instanceCreator, pivot) {
+    // This method can be shortened using getFieldWithDefault and
+    // getRepeatedNonPrimitive methods. But that will require creating and
+    // passing a reader closure every time getRepeatedMessageArray_ is called,
+    // which is expensive.
     checkInstanceCreator(instanceCreator);
-    const bytesInstanceCreator = (bufferDecoder) =>
-        instanceCreator(LazyAccessor.fromBufferDecoder_(bufferDecoder, pivot));
-    const readMessageFunc = (bufferDecoder, start) =>
-        bytesInstanceCreator(reader.readDelimited(bufferDecoder, start));
+    checkFieldNumber(fieldNumber);
 
-    const readRepeatedMessageFunc = (indexArray, bufferDecoder) =>
-        readRepeatedNonPrimitive(indexArray, bufferDecoder, readMessageFunc);
-    const encoder = (writer, fieldNumber, values) =>
-        writeRepeatedMessage(writer, fieldNumber, values);
-    return this.getFieldWithDefault_(
-        fieldNumber, /* defaultValue= */[], readRepeatedMessageFunc, encoder);
+    const field = this.fields_.get(fieldNumber);
+    if (field === undefined) {
+      return [];
+    }
+
+    if (field.hasDecodedValue()) {
+      return field.getDecodedValue();
+    }
+
+    const indexArray = checkDefAndNotNull(field.getIndexArray());
+    const result = new Array(indexArray.length);
+    for (let i = 0; i < indexArray.length; i++) {
+      validateWireType(indexArray[i], WireType.DELIMITED);
+      const subMessageBuffer = reader.readDelimited(
+          checkDefAndNotNull(this.bufferDecoder_),
+          Field.getStartIndex(indexArray[i]));
+      result[i] = instanceCreator(
+          LazyAccessor.fromBufferDecoder_(subMessageBuffer, pivot));
+    }
+    field.setCache(result, writeRepeatedMessage);
+
+    return result;
   }
 
   /**
