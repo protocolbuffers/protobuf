@@ -450,12 +450,13 @@ class Writer {
   getLength_(bufferDecoder, start, wireType) {
     switch (wireType) {
       case WireType.VARINT:
-        return bufferDecoder.skipVarint(start) - start;
+        bufferDecoder.skipVarint(start);
+        return bufferDecoder.cursor() - start;
       case WireType.FIXED64:
         return 8;
       case WireType.DELIMITED:
-        const {lowBits: dataLength, dataStart} = bufferDecoder.getVarint(start);
-        return dataLength + dataStart - start;
+        const dataLength = bufferDecoder.getUnsignedVarint32At(start);
+        return dataLength + bufferDecoder.cursor() - start;
       case WireType.START_GROUP:
         return this.getGroupLength_(bufferDecoder, start);
       case WireType.FIXED32:
@@ -477,12 +478,13 @@ class Writer {
     // corresponding stop group
     let cursor = start;
     while (cursor < bufferDecoder.endIndex()) {
-      const {lowBits: tag, dataStart} = bufferDecoder.getVarint(cursor);
+      const tag = bufferDecoder.getUnsignedVarint32At(cursor);
       const wireType = /** @type {!WireType} */ (tag & 0x07);
       if (wireType === WireType.END_GROUP) {
-        return dataStart - start;
+        return bufferDecoder.cursor() - start;
       }
-      cursor = dataStart + this.getLength_(bufferDecoder, dataStart, wireType);
+      cursor = bufferDecoder.cursor() +
+          this.getLength_(bufferDecoder, bufferDecoder.cursor(), wireType);
     }
     throw new Error('No end group found');
   }

@@ -8,7 +8,7 @@ const BufferDecoder = goog.require('protobuf.binary.BufferDecoder');
 const Storage = goog.require('protobuf.binary.Storage');
 const WireType = goog.require('protobuf.binary.WireType');
 const {Field} = goog.require('protobuf.binary.field');
-const {checkCriticalPositionIndex, checkCriticalState} = goog.require('protobuf.internal.checks');
+const {checkCriticalElementIndex, checkCriticalState} = goog.require('protobuf.internal.checks');
 
 /**
  * Appends a new entry in the index array for the given field number.
@@ -57,8 +57,6 @@ class Indexer {
   constructor(bufferDecoder) {
     /** @private @const {!BufferDecoder} */
     this.bufferDecoder_ = bufferDecoder;
-    /** @private {number} */
-    this.cursor_ = bufferDecoder.startIndex();
   }
 
   /**
@@ -66,15 +64,18 @@ class Indexer {
    * @return {!Storage<!Field>}
    */
   index(pivot) {
+    this.bufferDecoder_.setCursor(this.bufferDecoder_.startIndex());
+
     const storage = new Storage(pivot);
-    while (this.hasNextByte_()) {
-      const tag = this.readVarInt32_();
+    while (this.bufferDecoder_.hasNext()) {
+      const tag = this.bufferDecoder_.getUnsignedVarint32();
       const wireType = tagToWireType(tag);
       const fieldNumber = tagToFieldNumber(tag);
       checkCriticalState(
           fieldNumber > 0, `Invalid field number ${fieldNumber}`);
 
-      addIndexEntry(storage, fieldNumber, wireType, this.cursor_);
+      addIndexEntry(
+          storage, fieldNumber, wireType, this.bufferDecoder_.cursor());
 
       checkCriticalState(
           !this.skipField_(wireType, fieldNumber),
@@ -93,14 +94,18 @@ class Indexer {
   skipField_(wireType, fieldNumber) {
     switch (wireType) {
       case WireType.VARINT:
-        this.cursor_ = this.bufferDecoder_.skipVarint(this.cursor_);
+        checkCriticalElementIndex(
+            this.bufferDecoder_.cursor(), this.bufferDecoder_.endIndex());
+        this.bufferDecoder_.skipVarint(this.bufferDecoder_.cursor());
         return false;
       case WireType.FIXED64:
-        this.skip_(8);
+        this.bufferDecoder_.skip(8);
         return false;
       case WireType.DELIMITED:
-        const length = this.readVarInt32_();
-        this.skip_(length);
+        checkCriticalElementIndex(
+            this.bufferDecoder_.cursor(), this.bufferDecoder_.endIndex());
+        const length = this.bufferDecoder_.getUnsignedVarint32();
+        this.bufferDecoder_.skip(length);
         return false;
       case WireType.START_GROUP:
         checkCriticalState(this.skipGroup_(fieldNumber), 'No end group found.');
@@ -109,21 +114,11 @@ class Indexer {
         // Signal that we found a stop group to the caller
         return true;
       case WireType.FIXED32:
-        this.skip_(4);
+        this.bufferDecoder_.skip(4);
         return false;
       default:
         throw new Error(`Invalid wire type: ${wireType}`);
     }
-  }
-
-  /**
-   * Seeks forward by the given amount.
-   * @param {number} skipAmount
-   * @private
-   */
-  skip_(skipAmount) {
-    this.cursor_ += skipAmount;
-    checkCriticalPositionIndex(this.cursor_, this.bufferDecoder_.endIndex());
   }
 
   /**
@@ -138,8 +133,8 @@ class Indexer {
     // Note: Since we are calling skipField from here nested groups will be
     // handled by recursion of this method and thus we will not see a nested
     // STOP GROUP here unless there is something wrong with the input data.
-    while (this.hasNextByte_()) {
-      const tag = this.readVarInt32_();
+    while (this.bufferDecoder_.hasNext()) {
+      const tag = this.bufferDecoder_.getUnsignedVarint32();
       const wireType = tagToWireType(tag);
       const fieldNumber = tagToFieldNumber(tag);
 
@@ -153,26 +148,6 @@ class Indexer {
     }
     return false;
   }
-
-  /**
-   * Returns a JS number for a 32 bit var int.
-   * @return {number}
-   * @private
-   */
-  readVarInt32_() {
-    const {lowBits, dataStart} = this.bufferDecoder_.getVarint(this.cursor_);
-    this.cursor_ = dataStart;
-    return lowBits;
-  }
-
-  /**
-   * Returns true if there are more bytes to read in the array.
-   * @return {boolean}
-   * @private
-   */
-  hasNextByte_() {
-    return this.cursor_ < this.bufferDecoder_.endIndex();
-  }
 }
 
 /**
@@ -185,7 +160,6 @@ class Indexer {
 function buildIndex(bufferDecoder, pivot) {
   return new Indexer(bufferDecoder).index(pivot);
 }
-
 
 exports = {
   buildIndex,

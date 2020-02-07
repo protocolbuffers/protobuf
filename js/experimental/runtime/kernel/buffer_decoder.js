@@ -6,7 +6,7 @@ goog.module('protobuf.binary.BufferDecoder');
 
 const ByteString = goog.require('protobuf.ByteString');
 const functions = goog.require('goog.functions');
-const {POLYFILL_TEXT_ENCODING, checkCriticalElementIndex, checkCriticalPositionIndex, checkState} = goog.require('protobuf.internal.checks');
+const {POLYFILL_TEXT_ENCODING, checkCriticalPositionIndex, checkCriticalState, checkState} = goog.require('protobuf.internal.checks');
 const {byteStringFromUint8ArrayUnsafe} = goog.require('protobuf.byteStringInternal');
 const {concatenateByteArrays} = goog.require('protobuf.binary.uint8arrays');
 const {decode} = goog.require('protobuf.binary.textencoding');
@@ -72,7 +72,9 @@ class BufferDecoder {
     /** @private @const {number} */
     this.startIndex_ = startIndex;
     /** @private @const {number} */
-    this.endIndex_ = this.startIndex_ + length;
+    this.endIndex_ = startIndex + length;
+    /** @private {number} */
+    this.cursor_ = startIndex;
   }
 
   /**
@@ -100,11 +102,37 @@ class BufferDecoder {
   }
 
   /**
+   * Returns the start position of the next data, i.e. end position of the last
+   * read data + 1.
+   * @return {number}
+   */
+  cursor() {
+    return this.cursor_;
+  }
+
+  /**
+   * Sets the cursor to the specified position.
+   * @param {number} position
+   */
+  setCursor(position) {
+    this.cursor_ = position;
+  }
+
+  /**
+   * Returns if there is more data to read after the current cursor position.
+   * @return {boolean}
+   */
+  hasNext() {
+    return this.cursor_ < this.endIndex_;
+  }
+
+  /**
    * Returns a float32 from a given index
    * @param {number} index
    * @return {number}
    */
   getFloat32(index) {
+    this.cursor_ = index + 4;
     return this.dataView_.getFloat32(index, true);
   }
 
@@ -114,6 +142,7 @@ class BufferDecoder {
    * @return {number}
    */
   getFloat64(index) {
+    this.cursor_ = index + 8;
     return this.dataView_.getFloat64(index, true);
   }
 
@@ -123,15 +152,8 @@ class BufferDecoder {
    * @return {number}
    */
   getInt32(index) {
+    this.cursor_ = index + 4;
     return this.dataView_.getInt32(index, true);
-  }
-
-  /**
-   * @param {number} index
-   * @return {number}
-   */
-  getUint8(index) {
-    return this.dataView_.getUint8(index);
   }
 
   /**
@@ -140,28 +162,30 @@ class BufferDecoder {
    * @return {number}
    */
   getUint32(index) {
+    this.cursor_ = index + 4;
     return this.dataView_.getUint32(index, true);
   }
 
   /**
-   * Returns two JS numbers each representing 32 bits of a 64 bit number.
+   * Returns two JS numbers each representing 32 bits of a 64 bit number. Also
+   * sets the cursor to the start of the next block of data.
    * @param {number} index
-   * @return {{lowBits: number, highBits: number, dataStart: number}}
+   * @return {{lowBits: number, highBits: number}}
    */
   getVarint(index) {
-    let start = index;
+    this.cursor_ = index;
     let lowBits = 0;
     let highBits = 0;
 
     for (let shift = 0; shift < 28; shift += 7) {
-      const b = this.dataView_.getUint8(start++);
+      const b = this.dataView_.getUint8(this.cursor_++);
       lowBits |= (b & 0x7F) << shift;
       if ((b & 0x80) === 0) {
-        return {lowBits, highBits, dataStart: start};
+        return {lowBits, highBits};
       }
     }
 
-    const middleByte = this.dataView_.getUint8(start++);
+    const middleByte = this.dataView_.getUint8(this.cursor_++);
 
     // last four bits of the first 32 bit number
     lowBits |= (middleByte & 0x0F) << 28;
@@ -170,36 +194,100 @@ class BufferDecoder {
     highBits = (middleByte & 0x70) >> 4;
 
     if ((middleByte & 0x80) === 0) {
-      return {lowBits, highBits, dataStart: start};
+      return {lowBits, highBits};
     }
 
 
     for (let shift = 3; shift <= 31; shift += 7) {
-      const b = this.dataView_.getUint8(start++);
+      const b = this.dataView_.getUint8(this.cursor_++);
       highBits |= (b & 0x7F) << shift;
       if ((b & 0x80) === 0) {
-        return {lowBits, highBits, dataStart: start};
+        return {lowBits, highBits};
       }
     }
 
-    checkState(false, 'Data is longer than 10 bytes');
-    return {lowBits, highBits, dataStart: start};
+    checkCriticalState(false, 'Data is longer than 10 bytes');
+
+    return {lowBits, highBits};
   }
 
   /**
-   * Skips over a varint at a given index and returns the next position.
+   * Returns an unsigned int32 number at the current cursor position. The upper
+   * bits are discarded if the varint is longer than 32 bits. Also sets the
+   * cursor to the start of the next block of data.
+   * @return {number}
+   */
+  getUnsignedVarint32() {
+    let b = this.dataView_.getUint8(this.cursor_++);
+    let result = b & 0x7F;
+    if ((b & 0x80) === 0) {
+      return result;
+    }
+
+    b = this.dataView_.getUint8(this.cursor_++);
+    result |= (b & 0x7F) << 7;
+    if ((b & 0x80) === 0) {
+      return result;
+    }
+
+    b = this.dataView_.getUint8(this.cursor_++);
+    result |= (b & 0x7F) << 14;
+    if ((b & 0x80) === 0) {
+      return result;
+    }
+
+    b = this.dataView_.getUint8(this.cursor_++);
+    result |= (b & 0x7F) << 21;
+    if ((b & 0x80) === 0) {
+      return result;
+    }
+
+    // Extract only last 4 bits
+    b = this.dataView_.getUint8(this.cursor_++);
+    result |= (b & 0x0F) << 28;
+
+    for (let readBytes = 5; ((b & 0x80) !== 0) && readBytes < 10; readBytes++) {
+      b = this.dataView_.getUint8(this.cursor_++);
+    }
+
+    checkCriticalState((b & 0x80) === 0, 'Data is longer than 10 bytes');
+
+    // Result can be have 32 bits, convert it to unsigned
+    return result >>> 0;
+  }
+
+  /**
+   * Returns an unsigned int32 number at the specified index. The upper bits are
+   * discarded if the varint is longer than 32 bits. Also sets the cursor to the
+   * start of the next block of data.
+   * @param {number} index
+   * @return {number}
+   */
+  getUnsignedVarint32At(index) {
+    this.cursor_ = index;
+    return this.getUnsignedVarint32();
+  }
+
+  /**
+   * Seeks forward by the given amount.
+   * @param {number} skipAmount
+   * @package
+   */
+  skip(skipAmount) {
+    this.cursor_ += skipAmount;
+    checkCriticalPositionIndex(this.cursor_, this.endIndex_);
+  }
+
+  /**
+   * Skips over a varint at a given index.
    * @param {number} index Start of the data.
-   * @return {number} Position of the first byte after the varint.
    * @package
    */
   skipVarint(index) {
-    let cursor = index;
-    checkCriticalElementIndex(cursor, this.endIndex());
-    while (this.dataView_.getUint8(cursor++) & 0x80) {
-      checkCriticalElementIndex(cursor, this.endIndex());
+    this.cursor_ = index;
+    while (this.dataView_.getUint8(this.cursor_++) & 0x80) {
     }
-    checkCriticalPositionIndex(cursor, index + 10);
-    return cursor;
+    checkCriticalPositionIndex(this.cursor_, index + 10);
   }
 
   /**
