@@ -1202,7 +1202,77 @@ js_EXTRA_DIST=                                                         \
   js/test15.proto                                                      \
   js/test_bootstrap.js                                                 \
   js/testbinary.proto                                                  \
-  js/testempty.proto
+  js/testempty.proto                                                   \
+  js/experimental/runtime/testing/jasmine_protobuf.js                  \
+  js/experimental/runtime/testing/ensure_custom_equality_test.js       \
+  js/experimental/runtime/testing/binary/test_message.js               \
+  js/experimental/runtime/kernel/writer_test.js                        \
+  js/experimental/runtime/kernel/writer.js                             \
+  js/experimental/runtime/kernel/wire_type.js                          \
+  js/experimental/runtime/kernel/uint8arrays_test.js                   \
+  js/experimental/runtime/kernel/uint8arrays.js                        \
+  js/experimental/runtime/kernel/uint32_test_pairs.js                  \
+  js/experimental/runtime/kernel/typed_arrays_test.js                  \
+  js/experimental/runtime/kernel/typed_arrays.js                       \
+  js/experimental/runtime/kernel/textencoding_test.js                  \
+  js/experimental/runtime/kernel/textencoding.js                       \
+  js/experimental/runtime/kernel/storage_test.js                       \
+  js/experimental/runtime/kernel/storage.js                            \
+  js/experimental/runtime/kernel/sint64_test_pairs.js                  \
+  js/experimental/runtime/kernel/sint32_test_pairs.js                  \
+  js/experimental/runtime/kernel/sfixed64_test_pairs.js                \
+  js/experimental/runtime/kernel/sfixed32_test_pairs.js                \
+  js/experimental/runtime/kernel/reader_test.js                        \
+  js/experimental/runtime/kernel/reader.js                             \
+  js/experimental/runtime/kernel/packed_uint32_test_pairs.js           \
+  js/experimental/runtime/kernel/packed_sint64_test_pairs.js           \
+  js/experimental/runtime/kernel/packed_sint32_test_pairs.js           \
+  js/experimental/runtime/kernel/packed_sfixed64_test_pairs.js         \
+  js/experimental/runtime/kernel/packed_sfixed32_test_pairs.js         \
+  js/experimental/runtime/kernel/packed_int64_test_pairs.js            \
+  js/experimental/runtime/kernel/packed_int32_test_pairs.js            \
+  js/experimental/runtime/kernel/packed_float_test_pairs.js            \
+  js/experimental/runtime/kernel/packed_fixed32_test_pairs.js          \
+  js/experimental/runtime/kernel/packed_double_test_pairs.js           \
+  js/experimental/runtime/kernel/packed_bool_test_pairs.js             \
+  js/experimental/runtime/kernel/lazy_accessor_test.js                 \
+  js/experimental/runtime/kernel/lazy_accessor_repeated_test.js        \
+  js/experimental/runtime/kernel/lazy_accessor_compatibility_test.js   \
+  js/experimental/runtime/kernel/lazy_accessor.js                      \
+  js/experimental/runtime/kernel/internal_message.js                   \
+  js/experimental/runtime/kernel/int64_test_pairs.js                   \
+  js/experimental/runtime/kernel/int32_test_pairs.js                   \
+  js/experimental/runtime/kernel/indexer_test.js                       \
+  js/experimental/runtime/kernel/indexer.js                            \
+  js/experimental/runtime/kernel/float_test_pairs.js                   \
+  js/experimental/runtime/kernel/fixed32_test_pairs.js                 \
+  js/experimental/runtime/kernel/field.js                              \
+  js/experimental/runtime/kernel/double_test_pairs.js                  \
+  js/experimental/runtime/kernel/conformance/wire_format.js            \
+  js/experimental/runtime/kernel/conformance/test_all_types_proto3.js  \
+  js/experimental/runtime/kernel/conformance/test_all_types_proto2.js  \
+  js/experimental/runtime/kernel/conformance/conformance_testee_runner_node.js \
+  js/experimental/runtime/kernel/conformance/conformance_testee.js     \
+  js/experimental/runtime/kernel/conformance/conformance_response.js   \
+  js/experimental/runtime/kernel/conformance/conformance_request.js    \
+  js/experimental/runtime/kernel/buffer_decoder_test.js                \
+  js/experimental/runtime/kernel/buffer_decoder_helper.js              \
+  js/experimental/runtime/kernel/buffer_decoder.js                     \
+  js/experimental/runtime/kernel/bool_test_pairs.js                    \
+  js/experimental/runtime/internal/checks_test.js                      \
+  js/experimental/runtime/internal/checks.js                           \
+  js/experimental/runtime/int64_test.js                                \
+  js/experimental/runtime/int64.js                                     \
+  js/experimental/runtime/bytestring_test.js                           \
+  js/experimental/runtime/bytestring_internal.js                       \
+  js/experimental/runtime/bytestring.js                                \
+  js/experimental/benchmarks/code_size/kernel/popular_types.js         \
+  js/experimental/benchmarks/code_size/kernel/all_types.js             \
+  js/experimental/benchmarks/code_size/code_size_base.js               \
+  js/experimental/benchmarks/code_size/apps_jspb/popular_types_proto3.js \
+  js/experimental/benchmarks/code_size/apps_jspb/popular_types_proto2.js \
+  js/experimental/benchmarks/code_size/apps_jspb/all_types_proto3.js \
+  js/experimental/benchmarks/code_size/apps_jspb/all_types_proto2.js
 
 all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
 
