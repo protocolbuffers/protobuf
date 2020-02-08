@@ -89,7 +89,7 @@
                 <resource>
                   <directory>${basedir}/../core/src/main/java/com/google/protobuf</directory>
                   <includes>
-                    <!-- Keep in sync with //:BUILD  -->
+                    <!-- Keep in sync with //java/core:BUILD  -->
                     <include>AbstractMessageLite.java</include>
                     <include>AbstractParser.java</include>
                     <include>AbstractProtobufList.java</include>
