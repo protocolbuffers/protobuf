@@ -113,6 +113,7 @@ static void txtenc_string(txtenc *e, upb_strview str, bool bytes) {
         } else {
           txtenc_putbytes(e, ptr, 1);
         }
+        break;
     }
     ptr++;
   }

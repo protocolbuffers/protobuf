@@ -186,6 +186,13 @@ bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
       }
       /* Continue if NULL or 0. */
       if (memcmp(&test, &zero, sizeof(test)) == 0) continue;
+
+      /* Continue on empty array or map. */
+      if (upb_fielddef_ismap(f)) {
+        if (upb_map_size(test.map_val) == 0) continue;
+      } else if (upb_fielddef_isseq(f)) {
+        if (upb_array_size(test.array_val) == 0) continue;
+      }
     }
 
     *out_val = val;
