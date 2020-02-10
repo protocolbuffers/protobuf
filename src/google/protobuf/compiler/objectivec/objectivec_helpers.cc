@@ -990,7 +990,7 @@ string BuildCommentsString(const SourceLocation& location,
 // want to put the library in a framework is an interesting question. The
 // problem is it means changing sources shipped with the library to actually
 // use a different value; so it isn't as simple as a option.
-const char* const ProtobufLibraryFrameworkName = "protobuf";
+const char* const ProtobufLibraryFrameworkName = "Protobuf";
 
 string ProtobufFrameworkImportSymbol(const string& framework_name) {
   // GPB_USE_[framework_name]_FRAMEWORK_IMPORTS
@@ -1578,16 +1578,15 @@ ImportWriter::~ImportWriter() {}
 
 void ImportWriter::AddFile(const FileDescriptor* file,
                            const string& header_extension) {
-  const string file_path(FilePath(file));
-
   if (IsProtobufLibraryBundledProtoFile(file)) {
     // The imports of the WKTs are only needed within the library itself,
     // in other cases, they get skipped because the generated code already
     // import GPBProtocolBuffers.h and hence proves them.
     if (include_wkt_imports_) {
-      protobuf_framework_imports_.push_back(
-          FilePathBasename(file) + header_extension);
-      protobuf_non_framework_imports_.push_back(file_path + header_extension);
+      const string header_name =
+        "GPB" + FilePathBasename(file) + header_extension;
+      protobuf_framework_imports_.push_back(header_name);
+      protobuf_non_framework_imports_.push_back(header_name);
     }
     return;
   }
@@ -1613,7 +1612,7 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     return;
   }
 
-  other_imports_.push_back(file_path + header_extension);
+  other_imports_.push_back(FilePath(file) + header_extension);
 }
 
 void ImportWriter::Print(io::Printer* printer) const {
