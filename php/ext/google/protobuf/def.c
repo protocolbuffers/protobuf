@@ -890,74 +890,15 @@ bool depends_on_descriptor(const google_protobuf_FileDescriptorProto* file) {
   return false;
 }
 
-const upb_filedef *parse_and_add_descriptor(const char *data,
-                                            PHP_PROTO_SIZE data_len,
-                                            InternalDescriptorPoolImpl *pool,
-                                            upb_arena *arena) {
-  size_t n;
-  google_protobuf_FileDescriptorSet *set;
-  const google_protobuf_FileDescriptorProto* const* files;
-  const upb_filedef* file;
-  upb_status status;
-
-  set = google_protobuf_FileDescriptorSet_parse(
-      data, data_len, arena);
-
-  if (!set) {
-    zend_error(E_ERROR, "Failed to parse binary descriptor\n");
-    return NULL;
-  }
-
-  files = google_protobuf_FileDescriptorSet_file(set, &n);
-
-  if (n != 1) {
-    zend_error(E_ERROR, "Serialized descriptors should have exactly one file");
-    return NULL;
-  }
-
-  // Check whether file has already been added.
-  upb_strview name = google_protobuf_FileDescriptorProto_name(files[0]);
-  // TODO(teboring): Needs another look up method which takes data and length.
-  file = upb_symtab_lookupfile2(pool->symtab, name.data, name.size);
-  if (file != NULL) {
-    return NULL;
-  }
-
-  // The PHP code generator currently special-cases descriptor.proto.  It
-  // doesn't add it as a dependency even if the proto file actually does
-  // depend on it.
-  if (depends_on_descriptor(files[0]) &&
-      upb_symtab_lookupfile(pool->symtab, "google/protobuf/descriptor.proto") ==
-          NULL) {
-    if (!parse_and_add_descriptor((char *)descriptor_proto,
-                                  descriptor_proto_len, pool, arena)) {
-      return NULL;
-    }
-  }
-
-  upb_status_clear(&status);
-  file = upb_symtab_addfile(pool->symtab, files[0], &status);
-  check_upb_status(&status, "Unable to load descriptor");
-  return file;
-}
-
-void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
-                                 InternalDescriptorPoolImpl *pool,
-                                 bool use_nested_submsg TSRMLS_DC) {
-  int i;
-  upb_arena *arena;
-  const upb_filedef* file;
-
-  arena = upb_arena_new();
-  file = parse_and_add_descriptor(data, data_len, pool, arena);
-  upb_arena_free(arena);
-  if (!file) return;
-
+static void internal_add_single_generated_file(
+    const upb_filedef* file,
+    InternalDescriptorPoolImpl* pool,
+    bool use_nested_submsg TSRMLS_DC) {
+  size_t i;
   // For each enum/message, we need its PHP class, upb descriptor and its PHP
   // wrapper. These information are needed later for encoding, decoding and type
   // checking. However, sometimes we just have one of them. In order to find
   // them quickly, here, we store the mapping for them.
-
   for (i = 0; i < upb_filedef_msgcount(file); i++) {
     const upb_msgdef *msgdef = upb_filedef_msg(file, i);
     CREATE_HASHTABLE_VALUE(desc, desc_php, Descriptor, descriptor_type);
@@ -997,6 +938,73 @@ void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
     fill_classname_for_desc(desc->intern, true);
     add_class_enumdesc(desc->intern->classname, desc->intern);
   }
+}
+
+const bool parse_and_add_descriptor(const char *data,
+                                    PHP_PROTO_SIZE data_len,
+                                    InternalDescriptorPoolImpl *pool,
+                                    upb_arena *arena,
+                                    bool use_nested_submsg TSRMLS_DC) {
+  size_t i, n;
+  google_protobuf_FileDescriptorSet *set;
+  const google_protobuf_FileDescriptorProto* const* files;
+  const upb_filedef* file;
+  upb_status status;
+
+  set = google_protobuf_FileDescriptorSet_parse(
+      data, data_len, arena);
+
+  if (!set) {
+    zend_error(E_ERROR, "Failed to parse binary descriptor\n");
+    return false;
+  }
+
+  files = google_protobuf_FileDescriptorSet_file(set, &n);
+
+  for (i = 0; i < n; i++) {
+    // Check whether file has already been added.
+    upb_strview name = google_protobuf_FileDescriptorProto_name(files[i]);
+    // TODO(teboring): Needs another look up method which takes data and length.
+    file = upb_symtab_lookupfile2(pool->symtab, name.data, name.size);
+    if (file != NULL) {
+      continue;
+    }
+
+    // The PHP code generator currently special-cases descriptor.proto.  It
+    // doesn't add it as a dependency even if the proto file actually does
+    // depend on it.
+    if (depends_on_descriptor(files[i]) &&
+        upb_symtab_lookupfile(
+            pool->symtab, "google/protobuf/descriptor.proto") ==
+                NULL) {
+      if (!parse_and_add_descriptor((char *)descriptor_proto,
+                                    descriptor_proto_len, pool, arena,
+                                    use_nested_submsg TSRMLS_CC)) {
+        return false;
+      }
+    }
+
+    upb_status_clear(&status);
+    file = upb_symtab_addfile(pool->symtab, files[i], &status);
+    check_upb_status(&status, "Unable to load descriptor");
+
+    internal_add_single_generated_file(file, pool, use_nested_submsg TSRMLS_CC);
+  }
+
+  return true;
+}
+
+void internal_add_generated_file(const char *data, PHP_PROTO_SIZE data_len,
+                                 InternalDescriptorPoolImpl *pool,
+                                 bool use_nested_submsg TSRMLS_DC) {
+  int i;
+  upb_arena *arena;
+
+  arena = upb_arena_new();
+  parse_and_add_descriptor(data, data_len, pool, arena,
+                           use_nested_submsg TSRMLS_CC);
+  upb_arena_free(arena);
+  return;
 }
 
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile) {
