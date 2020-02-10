@@ -89,8 +89,8 @@ target_link_libraries(reflection
   table
   upb)
 add_library(textformat
-  upb/textencode.c
-  upb/textencode.h)
+  upb/text_encode.c
+  upb/text_encode.h)
 target_link_libraries(textformat
   reflection)
 add_library(table INTERFACE)

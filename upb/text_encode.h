@@ -24,9 +24,9 @@ enum {
  * size (excluding NULL) is returned.  This means that a return value >= |size|
  * implies that the output was truncated.  (These are the same semantics as
  * snprintf()). */
-size_t upb_textencode(const upb_msg *msg, const upb_msgdef *m,
-                      const upb_symtab *ext_pool, int options, char *buf,
-                      size_t size);
+size_t upb_text_encode(const upb_msg *msg, const upb_msgdef *m,
+                       const upb_symtab *ext_pool, int options, char *buf,
+                       size_t size);
 
 #ifdef __cplusplus
 }  /* extern "C" */

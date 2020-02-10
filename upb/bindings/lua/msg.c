@@ -13,7 +13,7 @@
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
 #include "upb/reflection.h"
-#include "upb/textencode.h"
+#include "upb/text_encode.h"
 
 #include "upb/port_def.inc"
 
@@ -905,13 +905,13 @@ static int lupb_msg_tostring(lua_State *L) {
   lua_getiuservalue(L, 1, LUPB_MSGDEF_INDEX);
   m = lupb_msgdef_check(L, -1);
 
-  size = upb_textencode(msg, m, NULL, 0, buf, sizeof(buf));
+  size = upb_text_encode(msg, m, NULL, 0, buf, sizeof(buf));
 
   if (size < sizeof(buf)) {
     lua_pushlstring(L, buf, size);
   } else {
     char *ptr = malloc(size + 1);
-    upb_textencode(msg, m, NULL, 0, ptr, size + 1);
+    upb_text_encode(msg, m, NULL, 0, ptr, size + 1);
     lua_pushlstring(L, ptr, size);
     free(ptr);
   }

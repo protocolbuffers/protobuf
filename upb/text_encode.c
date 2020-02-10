@@ -1,5 +1,5 @@
 
-#include "upb/textencode.h"
+#include "upb/text_encode.h"
 
 #include <ctype.h>
 #include <float.h>
@@ -376,9 +376,9 @@ size_t txtenc_nullz(txtenc *e, size_t size) {
   return ret;
 }
 
-size_t upb_textencode(const upb_msg *msg, const upb_msgdef *m,
-                      const upb_symtab *ext_pool, int options, char *buf,
-                      size_t size) {
+size_t upb_text_encode(const upb_msg *msg, const upb_msgdef *m,
+                       const upb_symtab *ext_pool, int options, char *buf,
+                       size_t size) {
   txtenc e;
 
   e.buf = buf;
