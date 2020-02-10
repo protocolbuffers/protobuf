@@ -808,8 +808,10 @@ class LazyAccessor {
    * @return {!Iterable<boolean>}
    */
   getRepeatedBoolIterable(fieldNumber) {
-    const array = this.getRepeatedBoolArray_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedBoolArray_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedBoolArray_(fieldNumber));
   }
 
   /**
@@ -857,8 +859,10 @@ class LazyAccessor {
    * @return {!Iterable<number>}
    */
   getRepeatedDoubleIterable(fieldNumber) {
-    const array = this.getRepeatedDoubleArray_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedDoubleArray_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedDoubleArray_(fieldNumber));
   }
 
   /**
@@ -906,8 +910,10 @@ class LazyAccessor {
    * @return {!Iterable<number>}
    */
   getRepeatedFixed32Iterable(fieldNumber) {
-    const array = this.getRepeatedFixed32Array_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedFixed32Array_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedFixed32Array_(fieldNumber));
   }
 
   /**
@@ -986,8 +992,10 @@ class LazyAccessor {
    * @return {!Iterable<number>}
    */
   getRepeatedFloatIterable(fieldNumber) {
-    const array = this.getRepeatedFloatArray_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedFloatArray_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedFloatArray_(fieldNumber));
   }
 
   /**
@@ -1035,8 +1043,10 @@ class LazyAccessor {
    * @return {!Iterable<number>}
    */
   getRepeatedInt32Iterable(fieldNumber) {
-    const array = this.getRepeatedInt32Array_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedInt32Array_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedInt32Array_(fieldNumber));
   }
 
   /**
@@ -1084,8 +1094,10 @@ class LazyAccessor {
    * @return {!Iterable<!Int64>}
    */
   getRepeatedInt64Iterable(fieldNumber) {
-    const array = this.getRepeatedInt64Array_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedInt64Array_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedInt64Array_(fieldNumber));
   }
 
   /**
@@ -1133,8 +1145,10 @@ class LazyAccessor {
    * @return {!Iterable<number>}
    */
   getRepeatedSfixed32Iterable(fieldNumber) {
-    const array = this.getRepeatedSfixed32Array_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedSfixed32Array_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedSfixed32Array_(fieldNumber));
   }
 
   /**
@@ -1182,8 +1196,10 @@ class LazyAccessor {
    * @return {!Iterable<!Int64>}
    */
   getRepeatedSfixed64Iterable(fieldNumber) {
-    const array = this.getRepeatedSfixed64Array_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedSfixed64Array_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedSfixed64Array_(fieldNumber));
   }
 
   /**
@@ -1231,8 +1247,10 @@ class LazyAccessor {
    * @return {!Iterable<number>}
    */
   getRepeatedSint32Iterable(fieldNumber) {
-    const array = this.getRepeatedSint32Array_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedSint32Array_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedSint32Array_(fieldNumber));
   }
 
   /**
@@ -1280,8 +1298,10 @@ class LazyAccessor {
    * @return {!Iterable<!Int64>}
    */
   getRepeatedSint64Iterable(fieldNumber) {
-    const array = this.getRepeatedSint64Array_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedSint64Array_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedSint64Array_(fieldNumber));
   }
 
   /**
@@ -1329,8 +1349,10 @@ class LazyAccessor {
    * @return {!Iterable<number>}
    */
   getRepeatedUint32Iterable(fieldNumber) {
-    const array = this.getRepeatedUint32Array_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedUint32Array_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedUint32Array_(fieldNumber));
   }
 
   /**
@@ -1408,8 +1430,10 @@ class LazyAccessor {
    * @return {!Iterable<!ByteString>}
    */
   getRepeatedBytesIterable(fieldNumber) {
-    const array = this.getRepeatedBytesArray_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedBytesArray_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedBytesArray_(fieldNumber));
   }
 
   /**
@@ -1456,8 +1480,10 @@ class LazyAccessor {
    * @return {!Iterable<string>}
    */
   getRepeatedStringIterable(fieldNumber) {
-    const array = this.getRepeatedStringArray_(fieldNumber);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedStringArray_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(this.getRepeatedStringArray_(fieldNumber));
   }
 
   /**
@@ -1540,9 +1566,11 @@ class LazyAccessor {
    * @template T
    */
   getRepeatedMessageIterable(fieldNumber, instanceCreator, pivot = undefined) {
-    const array =
-        this.getRepeatedMessageArray_(fieldNumber, instanceCreator, pivot);
-    return new ArrayIterable(array);
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedMessageArray_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(
+        this.getRepeatedMessageArray_(fieldNumber, instanceCreator, pivot));
   }
 
   /**
