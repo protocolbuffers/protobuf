@@ -108,13 +108,13 @@ UPB_INLINE bool _upb_has_oneof_field(const void *msg, size_t case_ofs, int32_t n
 
 /* Our internal representation for repeated fields.  */
 typedef struct {
-  uintptr_t data;   /* Tagged ptr: low 2 bits of ptr are lg2(elem size). */
+  uintptr_t data;   /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
   size_t len;   /* Measured in elements. */
   size_t size;  /* Measured in elements. */
 } upb_array;
 
 UPB_INLINE const void *_upb_array_constptr(const upb_array *arr) {
-  return (void*)((uintptr_t)arr->data & ~7UL);
+  return (void*)(arr->data & ~(uintptr_t)7);
 }
 
 UPB_INLINE void *_upb_array_ptr(upb_array *arr) {
