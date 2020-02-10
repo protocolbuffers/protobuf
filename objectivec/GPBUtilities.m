@@ -504,7 +504,7 @@ void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
   [oldValue release];
 }
 
-// This exists only for briging some aliased types, nothing else should use it.
+// This exists only for bridging some aliased types, nothing else should use it.
 static void GPBSetObjectIvarWithField(GPBMessage *self,
                                       GPBFieldDescriptor *field, id value) {
   if (self == nil || field == nil) return;
@@ -521,7 +521,7 @@ static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
 // is marked as consuming the value. Note: For some reason this doesn't happen
 // with the -retain in GPBSetObjectIvarWithField.
 #if !defined(__clang_analyzer__)
-// This exists only for briging some aliased types, nothing else should use it.
+// This exists only for bridging some aliased types, nothing else should use it.
 static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
                                           GPBFieldDescriptor *field, id value) {
   if (self == nil || field == nil) return;
@@ -806,6 +806,7 @@ void GPBSetBoolIvarWithFieldInternal(GPBMessage *self,
 
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Int32, int32_t)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 int32_t GPBGetMessageInt32Field(GPBMessage *self,
                                 GPBFieldDescriptor *field) {
@@ -872,8 +873,10 @@ void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
+// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(UInt32, uint32_t)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 uint32_t GPBGetMessageUInt32Field(GPBMessage *self,
                                   GPBFieldDescriptor *field) {
@@ -940,8 +943,10 @@ void GPBSetUInt32IvarWithFieldInternal(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
+// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Int64, int64_t)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 int64_t GPBGetMessageInt64Field(GPBMessage *self,
                                 GPBFieldDescriptor *field) {
@@ -1008,8 +1013,10 @@ void GPBSetInt64IvarWithFieldInternal(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
+// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(UInt64, uint64_t)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 uint64_t GPBGetMessageUInt64Field(GPBMessage *self,
                                   GPBFieldDescriptor *field) {
@@ -1076,8 +1083,10 @@ void GPBSetUInt64IvarWithFieldInternal(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
+// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Float, float)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 float GPBGetMessageFloatField(GPBMessage *self,
                               GPBFieldDescriptor *field) {
@@ -1144,8 +1153,10 @@ void GPBSetFloatIvarWithFieldInternal(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
+// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Double, double)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 double GPBGetMessageDoubleField(GPBMessage *self,
                                 GPBFieldDescriptor *field) {
@@ -1212,12 +1223,14 @@ void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
+// clang-format on
 //%PDDM-EXPAND-END (6 expansions)
 
 // Aliases are function calls that are virtually the same.
 
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_COPY_OBJECT(String, NSString)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 // Only exists for public api, no core code should use this.
 NSString *GPBGetMessageStringField(GPBMessage *self,
@@ -1248,8 +1261,10 @@ void GPBSetMessageStringField(GPBMessage *self,
   GPBSetCopyObjectIvarWithField(self, field, (id)value);
 }
 
+// clang-format on
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_COPY_OBJECT(Bytes, NSData)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 // Only exists for public api, no core code should use this.
 NSData *GPBGetMessageBytesField(GPBMessage *self,
@@ -1280,8 +1295,10 @@ void GPBSetMessageBytesField(GPBMessage *self,
   GPBSetCopyObjectIvarWithField(self, field, (id)value);
 }
 
+// clang-format on
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Message, GPBMessage)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 // Only exists for public api, no core code should use this.
 GPBMessage *GPBGetMessageMessageField(GPBMessage *self,
@@ -1312,8 +1329,10 @@ void GPBSetMessageMessageField(GPBMessage *self,
   GPBSetObjectIvarWithField(self, field, (id)value);
 }
 
+// clang-format on
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Group, GPBMessage)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 // Only exists for public api, no core code should use this.
 GPBMessage *GPBGetMessageGroupField(GPBMessage *self,
@@ -1344,6 +1363,7 @@ void GPBSetMessageGroupField(GPBMessage *self,
   GPBSetObjectIvarWithField(self, field, (id)value);
 }
 
+// clang-format on
 //%PDDM-EXPAND-END (4 expansions)
 
 // GPBGetMessageRepeatedField is defined in GPBMessage.m

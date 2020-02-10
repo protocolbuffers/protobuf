@@ -76,3 +76,8 @@ bind(
     name = "error_prone_annotations",
     actual = "@error_prone_annotations_maven//jar",
 )
+
+# For `cc_proto_blacklist_test`.
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()

@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.11.0RC1"
+#define PHP_PROTOBUF_VERSION "3.11.2"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -143,7 +143,6 @@
 #define PHP_PROTO_INIT_SUBMSGCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)   \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
     zend_class_entry class_type;                                             \
-    const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
     LOWWERNAME##_type = zend_register_internal_class_ex(                     \
@@ -156,7 +155,6 @@
 #define PHP_PROTO_INIT_ENUMCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)     \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
     zend_class_entry class_type;                                             \
-    const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
     LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC);
@@ -166,7 +164,6 @@
 #define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
     zend_class_entry class_type;                                             \
-    const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
     LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
@@ -187,6 +184,9 @@
   PHP_PROTO_FREE_CLASS_OBJECT(NAME, LOWWERNAME##_free, LOWWERNAME##_handlers); \
   }
 
+#define PHP_PROTO_OBJECT_EMPTY_FREE_START(classname, lowername) \
+  void lowername##_free(void* object TSRMLS_DC) {               \
+    classname* intern = object;
 #define PHP_PROTO_OBJECT_FREE_START(classname, lowername) \
   void lowername##_free(void* object TSRMLS_DC) {         \
     classname* intern = object;
@@ -195,6 +195,7 @@
     efree(intern);                                \
   }
 
+#define PHP_PROTO_OBJECT_EMPTY_DTOR_START(classname, lowername)
 #define PHP_PROTO_OBJECT_DTOR_START(classname, lowername)
 #define PHP_PROTO_OBJECT_DTOR_END
 
@@ -410,32 +411,28 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
   zend_object std;                \
   };
 
-#define PHP_PROTO_INIT_SUBMSGCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)   \
-  void LOWWERNAME##_init(TSRMLS_D) {                                         \
-    zend_class_entry class_type;                                             \
-    const char* class_name = CLASSNAME;                                      \
-    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
-                        LOWWERNAME##_methods);                               \
-    LOWWERNAME##_type = zend_register_internal_class_ex(                     \
-        &class_type, message_type TSRMLS_CC);                                \
-    zend_do_inheritance(LOWWERNAME##_type, message_type TSRMLS_CC);
+#define PHP_PROTO_INIT_SUBMSGCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME) \
+  void LOWWERNAME##_init(TSRMLS_D) {                                       \
+    zend_class_entry class_type;                                           \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),          \
+                        LOWWERNAME##_methods);                             \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type);         \
+    zend_do_inheritance(LOWWERNAME##_type, message_type);
 #define PHP_PROTO_INIT_SUBMSGCLASS_END \
   }
 
 #define PHP_PROTO_INIT_ENUMCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)     \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
     zend_class_entry class_type;                                             \
-    const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
-    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC);
+    LOWWERNAME##_type = zend_register_internal_class(&class_type);
 #define PHP_PROTO_INIT_ENUMCLASS_END \
   }
 
 #define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
     zend_class_entry class_type;                                             \
-    const char* class_name = CLASSNAME;                                      \
     INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
                         LOWWERNAME##_methods);                               \
     LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
@@ -449,6 +446,8 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 #define PHP_PROTO_INIT_CLASS_END \
   }
 
+#define PHP_PROTO_OBJECT_EMPTY_FREE_START(classname, lowername) \
+  void lowername##_free(zend_object* object) {
 #define PHP_PROTO_OBJECT_FREE_START(classname, lowername) \
   void lowername##_free(zend_object* object) {            \
     classname* intern =                                   \
@@ -456,6 +455,8 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 #define PHP_PROTO_OBJECT_FREE_END           \
   }
 
+#define PHP_PROTO_OBJECT_EMPTY_DTOR_START(classname, lowername) \
+  void lowername##_dtor(zend_object* object) {
 #define PHP_PROTO_OBJECT_DTOR_START(classname, lowername) \
   void lowername##_dtor(zend_object* object) {            \
     classname* intern =                                   \
@@ -569,8 +570,8 @@ static inline int php_proto_zend_lookup_class(
   LOWERNAME##_free_c(intern TSRMLS_CC);             \
   PHP_PROTO_OBJECT_FREE_END
 
-#define DEFINE_PROTOBUF_DTOR(CAMELNAME, LOWERNAME)  \
-  PHP_PROTO_OBJECT_DTOR_START(CAMELNAME, LOWERNAME) \
+#define DEFINE_PROTOBUF_DTOR(CAMELNAME, LOWERNAME)        \
+  PHP_PROTO_OBJECT_EMPTY_DTOR_START(CAMELNAME, LOWERNAME) \
   PHP_PROTO_OBJECT_DTOR_END
 
 #define DEFINE_CLASS(NAME, LOWERNAME, string_name) \
@@ -689,7 +690,7 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   zend_bool keep_descriptor_pool_after_request;
 ZEND_END_MODULE_GLOBALS(protobuf)
 
-ZEND_DECLARE_MODULE_GLOBALS(protobuf)
+ZEND_EXTERN_MODULE_GLOBALS(protobuf)
 
 #ifdef ZTS
 #define PROTOBUF_G(v) TSRMG(protobuf_globals_id, zend_protobuf_globals *, v)

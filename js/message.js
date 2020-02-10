@@ -317,7 +317,7 @@ jspb.Message.getIndex_ = function(msg, fieldNumber) {
   return fieldNumber + msg.arrayIndexOffset_;
 };
 
-// This is only here to ensure we are not back sliding on ES6 requiements for
+// This is only here to ensure we are not back sliding on ES6 requirements for
 // protos in g3.
 jspb.Message.hiddenES6Property_ = class {};
 
@@ -366,7 +366,7 @@ jspb.Message.initialize = function(
 
   if (!jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS) {
     // TODO(jakubvrana): This is same for all instances, move to prototype.
-    // TODO(jakubvrana): There are indexOf calls on this in serializtion,
+    // TODO(jakubvrana): There are indexOf calls on this in serialization,
     // consider switching to a set.
     msg.repeatedFields = repeatedFields;
   }
@@ -1860,7 +1860,7 @@ jspb.Message.clone_ = function(obj) {
  * @param {Function} constructor The message constructor.
  */
 jspb.Message.registerMessageType = function(id, constructor) {
-  // This is needed so we can later access messageId directly on the contructor,
+  // This is needed so we can later access messageId directly on the constructor,
   // otherwise it is not available due to 'property collapsing' by the compiler.
   /**
    * @suppress {strictMissingProperties} messageId is not defined on Function

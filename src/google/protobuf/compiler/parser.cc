@@ -1295,7 +1295,7 @@ bool Parser::ParseDefaultAssignment(
       break;
 
     case FieldDescriptorProto::TYPE_STRING:
-      // Note: When file opton java_string_check_utf8 is true, if a
+      // Note: When file option java_string_check_utf8 is true, if a
       // non-string representation (eg byte[]) is later supported, it must
       // be checked for UTF-8-ness.
       DO(ConsumeString(default_value,

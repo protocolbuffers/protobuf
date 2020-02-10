@@ -297,7 +297,7 @@
 
 // Shared google3/opensource definitions. //////////////////////////////////////
 
-#define PROTOBUF_VERSION 3011000
+#define PROTOBUF_VERSION 3011002
 #define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3011000
 #define PROTOBUF_MIN_PROTOC_VERSION 3011000
 #define PROTOBUF_VERSION_SUFFIX ""
@@ -388,6 +388,10 @@
 #undef IGNORE
 #pragma push_macro("IN")
 #undef IN
+#pragma push_macro("OUT")
+#undef OUT
+#pragma push_macro("OPTIONAL")
+#undef OPTIONAL
 #pragma push_macro("min")
 #undef min
 #pragma push_macro("max")

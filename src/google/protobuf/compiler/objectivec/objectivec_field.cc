@@ -97,8 +97,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["default_name"] = GPBGenericValueFieldName(descriptor);
 
-  (*variables)["dataTypeSpecific_name"] = "className";
-  (*variables)["dataTypeSpecific_value"] = "NULL";
+  (*variables)["dataTypeSpecific_name"] = "clazz";
+  (*variables)["dataTypeSpecific_value"] = "Nil";
 
   (*variables)["storage_offset_value"] =
       "(uint32_t)offsetof(" + classname + "__storage_, " + camel_case_name + ")";
@@ -177,6 +177,11 @@ void FieldGenerator::GenerateCFunctionImplementations(
 }
 
 void FieldGenerator::DetermineForwardDeclarations(
+    std::set<string>* fwd_decls) const {
+  // Nothing
+}
+
+void FieldGenerator::DetermineObjectiveCClassDefinitions(
     std::set<string>* fwd_decls) const {
   // Nothing
 }
@@ -398,7 +403,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
 }
 
 bool RepeatedFieldGenerator::WantsHasProperty(void) const {
-  // Consumer check the array size/existance rather than a has bit.
+  // Consumer check the array size/existence rather than a has bit.
   return false;
 }
 

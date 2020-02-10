@@ -84,24 +84,24 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
     io::Printer* printer) {
   std::map<string, string> vars;
   vars["root_class_and_method_name"] = root_class_and_method_name_;
-  vars["extended_type"] = ClassName(descriptor_->containing_type());
+  const string containing_type = ClassName(descriptor_->containing_type());
+  vars["extended_type"] = ObjCClass(containing_type);
   vars["number"] = StrCat(descriptor_->number());
 
   std::vector<string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");
   if (descriptor_->is_packed()) options.push_back("GPBExtensionPacked");
-  if (descriptor_->containing_type()->options().message_set_wire_format())
+  if (descriptor_->containing_type()->options().message_set_wire_format()) {
     options.push_back("GPBExtensionSetWireFormat");
-
+  }
   vars["options"] = BuildFlagsString(FLAGTYPE_EXTENSION, options);
 
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
-  string singular_type;
   if (objc_type == OBJECTIVECTYPE_MESSAGE) {
-    vars["type"] = string("GPBStringifySymbol(") +
-                   ClassName(descriptor_->message_type()) + ")";
+    std::string message_type = ClassName(descriptor_->message_type());
+    vars["type"] = ObjCClass(message_type);
   } else {
-    vars["type"] = "NULL";
+    vars["type"] = "Nil";
   }
 
   vars["default_name"] = GPBGenericValueFieldName(descriptor_);
@@ -124,8 +124,8 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
                  "{\n"
                  "  .defaultValue.$default_name$ = $default$,\n"
                  "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
-                 "  .extendedClass = GPBStringifySymbol($extended_type$),\n"
-                 "  .messageOrGroupClassName = $type$,\n"
+                 "  .extendedClass.clazz = $extended_type$,\n"
+                 "  .messageOrGroupClass.clazz = $type$,\n"
                  "  .enumDescriptorFunc = $enum_desc_func_name$,\n"
                  "  .fieldNumber = $number$,\n"
                  "  .dataType = $extension_type$,\n"
@@ -133,11 +133,23 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
                  "},\n");
 }
 
+void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
+    std::set<string>* fwd_decls) {
+  string extended_type = ClassName(descriptor_->containing_type());
+  fwd_decls->insert(ObjCClassDeclaration(extended_type));
+  ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
+  if (objc_type == OBJECTIVECTYPE_MESSAGE) {
+    string message_type = ClassName(descriptor_->message_type());
+    fwd_decls->insert(ObjCClassDeclaration(message_type));
+  }
+}
+
 void ExtensionGenerator::GenerateRegistrationSource(io::Printer* printer) {
   printer->Print(
       "[registry addExtension:$root_class_and_method_name$];\n",
       "root_class_and_method_name", root_class_and_method_name_);
 }
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf

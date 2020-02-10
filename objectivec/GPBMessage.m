@@ -564,7 +564,7 @@ static id CreateMapForField(GPBFieldDescriptor *field,
 // so use of the array/map after the call returns is flagged as a use after
 // free.
 // But GPBSetRetainedObjectIvarWithFieldInternal() is "consuming" the retain
-// count be holding onto the object (it is transfering it), the object is
+// count be holding onto the object (it is transferring it), the object is
 // still valid after returning from the call.  The other way to avoid this
 // would be to add a -retain/-autorelease, but that would force every
 // repeated/map field parsed into the autorelease pool which is both a memory
@@ -1376,6 +1376,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 //%PDDM-EXPAND FIELD_CASE(Bool, Bool)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeBool:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1394,8 +1395,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(Fixed32, UInt32)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeFixed32:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1414,8 +1417,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(SFixed32, Int32)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeSFixed32:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1434,8 +1439,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(Float, Float)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeFloat:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1454,8 +1461,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(Fixed64, UInt64)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeFixed64:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1474,8 +1483,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(SFixed64, Int64)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeSFixed64:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1494,8 +1505,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(Double, Double)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeDouble:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1514,8 +1527,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(Int32, Int32)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeInt32:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1534,8 +1549,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(Int64, Int64)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeInt64:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1554,8 +1571,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(SInt32, Int32)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeSInt32:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1574,8 +1593,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(SInt64, Int64)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeSInt64:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1594,8 +1615,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(UInt32, UInt32)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeUInt32:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1614,8 +1637,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE(UInt64, UInt64)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeUInt64:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1634,8 +1659,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE_FULL(Enum, Int32, Enum)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeEnum:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1654,8 +1681,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE2(Bytes)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeBytes:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1678,8 +1707,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE2(String)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeString:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1702,8 +1733,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE2(Message)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeMessage:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1726,8 +1759,10 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND FIELD_CASE2(Group)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
     case GPBDataTypeGroup:
       if (fieldType == GPBFieldTypeRepeated) {
@@ -1750,6 +1785,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       }
       break;
 
+// clang-format on
 //%PDDM-EXPAND-END (18 expansions)
   }
 }
@@ -2518,7 +2554,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
               GetOrCreateArrayIvarWithField(self, field, syntax);
           [resultArray addRawValuesFromArray:otherArray];
         } else {
-          // The array type doesn't matter, that all implment
+          // The array type doesn't matter, that all implement
           // -addValuesFromArray:.
           GPBInt32Array *resultArray =
               GetOrCreateArrayIvarWithField(self, field, syntax);

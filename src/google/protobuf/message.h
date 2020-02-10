@@ -936,7 +936,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   // If key is in map field: Saves the value pointer to val and returns
   // false. If key in not in map field: Insert the key into map, saves
-  // value pointer to val and retuns true.
+  // value pointer to val and returns true.
   bool InsertOrLookupMapValue(Message* message, const FieldDescriptor* field,
                               const MapKey& key, MapValueRef* val) const;
 

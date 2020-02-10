@@ -19,7 +19,7 @@ local_repository(
 )
 
 # Similar to com_google_protobuf but for Java lite. If you are building
-# for Android, the lite version should be prefered because it has a much
+# for Android, the lite version should be preferred because it has a much
 # smaller code size.
 local_repository(
     name = "com_google_protobuf_javalite",

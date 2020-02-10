@@ -254,7 +254,7 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   // and then you do:
   //   Open("bar/qux");
   // the DiskSourceTree will first try to open foo/bar/qux, then baz/bar/qux,
-  // returning the first one that opens successfuly.
+  // returning the first one that opens successfully.
   //
   // disk_path may be an absolute path or relative to the current directory,
   // just like a path you'd pass to open().

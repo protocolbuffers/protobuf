@@ -873,7 +873,7 @@ final class ArrayDecoders {
       }
     } else {
       Object value = null;
-      // Enum is a special case becasue unknown enum values will be put into UnknownFieldSetLite.
+      // Enum is a special case because unknown enum values will be put into UnknownFieldSetLite.
       if (extension.getLiteType() == WireFormat.FieldType.ENUM) {
         position = decodeVarint32(data, position, registers);
         Object enumValue = extension.descriptor.getEnumType().findValueByNumber(registers.int1);

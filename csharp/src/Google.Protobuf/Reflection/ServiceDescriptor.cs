@@ -85,7 +85,7 @@ namespace Google.Protobuf.Reflection
         /// Finds a method by name.
         /// </summary>
         /// <param name="name">The unqualified name of the method (e.g. "Foo").</param>
-        /// <returns>The method's decsriptor, or null if not found.</returns>
+        /// <returns>The method's descriptor, or null if not found.</returns>
         public MethodDescriptor FindMethodByName(String name)
         {
             return File.DescriptorPool.FindSymbol<MethodDescriptor>(FullName + "." + name);

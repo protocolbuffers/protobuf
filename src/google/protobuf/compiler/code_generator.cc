@@ -50,7 +50,7 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                                 const std::string& parameter,
                                 GeneratorContext* generator_context,
                                 std::string* error) const {
-  // Default implemenation is just to call the per file method, and prefix any
+  // Default implementation is just to call the per file method, and prefix any
   // error string with the file to provide context.
   bool succeeded = true;
   for (int i = 0; i < files.size(); i++) {

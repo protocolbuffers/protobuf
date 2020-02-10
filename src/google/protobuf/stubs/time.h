@@ -58,7 +58,7 @@ bool PROTOBUF_EXPORT DateTimeToSeconds(const DateTime& time, int64* seconds);
 
 void PROTOBUF_EXPORT GetCurrentTime(int64* seconds, int32* nanos);
 
-// Formats a time string in RFC3339 fromat.
+// Formats a time string in RFC3339 format.
 //
 // For example, "2015-05-20T13:29:35.120Z". For nanos, 0, 3, 6 or 9 fractional
 // digits will be used depending on how many are required to represent the exact

@@ -296,7 +296,7 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   ProtoWriter* StartListField(const google::protobuf::Field& field,
                               const google::protobuf::Type& type);
 
-  // Renders a primitve field given the field and the enclosing type.
+  // Renders a primitive field given the field and the enclosing type.
   ProtoWriter* RenderPrimitiveField(const google::protobuf::Field& field,
                                     const google::protobuf::Type& type,
                                     const DataPiece& value);

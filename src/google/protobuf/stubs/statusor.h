@@ -204,7 +204,7 @@ inline StatusOr<T>::StatusOr(const Status& status) {
 template<typename T>
 inline StatusOr<T>::StatusOr(const T& value) {
   if (internal::StatusOrHelper::Specialize<T>::IsValueNull(value)) {
-    status_ = Status(error::INTERNAL, "nullptr is not a vaild argument.");
+    status_ = Status(error::INTERNAL, "nullptr is not a valid argument.");
   } else {
     status_ = Status::OK;
     value_ = value;

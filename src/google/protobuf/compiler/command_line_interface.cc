@@ -2280,7 +2280,7 @@ namespace {
 // Nested Messages:
 // Note that it only stores the nested message type, iff the nested type is
 // either a direct child of the given descriptor, or the nested type is a
-// decendent of the given descriptor and all the nodes between the
+// descendant of the given descriptor and all the nodes between the
 // nested type and the given descriptor are group types. e.g.
 //
 // message Foo {

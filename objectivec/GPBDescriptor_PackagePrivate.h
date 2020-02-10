@@ -80,7 +80,11 @@ typedef struct GPBMessageFieldDescription {
   // Name of ivar.
   const char *name;
   union {
-    const char *className;  // Name for message class.
+    // className is deprecated and will be removed in favor of clazz.
+    // kept around right now for backwards compatibility.
+    // clazz is used iff GPBDescriptorInitializationFlag_UsesClassRefs is set.
+    char *className;  // Name of the class of the message.
+    Class clazz;  // Class of the message.
     // For enums only: If EnumDescriptors are compiled in, it will be that,
     // otherwise it will be the verifier.
     GPBEnumDescriptorFunc enumDescFunc;
@@ -123,8 +127,14 @@ typedef NS_OPTIONS(uint8_t, GPBExtensionOptions) {
 typedef struct GPBExtensionDescription {
   GPBGenericValue defaultValue;
   const char *singletonName;
-  const char *extendedClass;
-  const char *messageOrGroupClassName;
+  union {
+    const char *name;
+    Class clazz;
+  } extendedClass;
+  union {
+    const char *name;
+    Class clazz;
+  } messageOrGroupClass;
   GPBEnumDescriptorFunc enumDescriptorFunc;
   int32_t fieldNumber;
   GPBDataType dataType;
@@ -135,6 +145,11 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   GPBDescriptorInitializationFlag_None              = 0,
   GPBDescriptorInitializationFlag_FieldsWithDefault = 1 << 0,
   GPBDescriptorInitializationFlag_WireFormat        = 1 << 1,
+
+  // This is used as a stopgap as we move from using class names to class
+  // references. The runtime needs to support both until we allow a
+  // breaking change in the runtime.
+  GPBDescriptorInitializationFlag_UsesClassRefs        = 1 << 2,
 };
 
 @interface GPBDescriptor () {
@@ -168,8 +183,11 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
       firstHasIndex:(int32_t)firstHasIndex;
 - (void)setupExtraTextInfo:(const char *)extraTextFormatInfo;
 - (void)setupExtensionRanges:(const GPBExtensionRange *)ranges count:(int32_t)count;
-- (void)setupContainingMessageClassName:(const char *)msgClassName;
+- (void)setupContainingMessageClass:(Class)msgClass;
 - (void)setupMessageClassNameSuffix:(NSString *)suffix;
+
+// Deprecated. Use setupContainingMessageClass instead.
+- (void)setupContainingMessageClassName:(const char *)msgClassName;
 
 @end
 
@@ -206,7 +224,15 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 // description has to be long lived, it is held as a raw pointer.
 - (instancetype)initWithFieldDescription:(void *)description
                          includesDefault:(BOOL)includesDefault
+                           usesClassRefs:(BOOL)usesClassRefs
                                   syntax:(GPBFileSyntax)syntax;
+
+// Deprecated. Equivalent to calling above with `usesClassRefs = NO`.
+- (instancetype)initWithFieldDescription:(void *)description
+                         includesDefault:(BOOL)includesDefault
+                                  syntax:(GPBFileSyntax)syntax;
+
+
 @end
 
 @interface GPBEnumDescriptor ()
@@ -246,8 +272,11 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 @property(nonatomic, readonly) GPBWireFormat alternateWireType;
 
 // description has to be long lived, it is held as a raw pointer.
-- (instancetype)initWithExtensionDescription:
-    (GPBExtensionDescription *)description;
+- (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc
+                               usesClassRefs:(BOOL)usesClassRefs;
+// Deprecated. Calls above with `usesClassRefs = NO`
+- (instancetype)initWithExtensionDescription:(GPBExtensionDescription *)desc;
+
 - (NSComparisonResult)compareByFieldNumber:(GPBExtensionDescriptor *)other;
 @end
 

@@ -334,25 +334,6 @@ DEFINE_SINGULAR_HANDLER(double, double)
 #undef DEFINE_SINGULAR_HANDLER
 
 #if PHP_MAJOR_VERSION < 7
-static void *empty_php_string(zval** value_ptr) {
-  SEPARATE_ZVAL_IF_NOT_REF(value_ptr);
-  if (Z_TYPE_PP(value_ptr) == IS_STRING &&
-      !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
-    FREE(Z_STRVAL_PP(value_ptr));
-  }
-  ZVAL_EMPTY_STRING(*value_ptr);
-  return (void*)(*value_ptr);
-}
-#else
-static void *empty_php_string(zval* value_ptr) {
-  if (Z_TYPE_P(value_ptr) == IS_STRING) {
-    zend_string_release(Z_STR_P(value_ptr));
-  }
-  ZVAL_EMPTY_STRING(value_ptr);
-  return value_ptr;
-}
-#endif
-#if PHP_MAJOR_VERSION < 7
 static void new_php_string(zval** value_ptr, const char* str, size_t len) {
   SEPARATE_ZVAL_IF_NOT_REF(value_ptr);
   if (Z_TYPE_PP(value_ptr) == IS_STRING &&
@@ -830,7 +811,6 @@ static map_handlerdata_t* new_map_handlerdata(
   static bool oneof##type##_handler(void* closure, const void* hd, \
                                     ctype val) {                   \
     const oneof_handlerdata_t* oneofdata = hd;                     \
-    MessageHeader* msg = (MessageHeader*)closure;                  \
     DEREF(message_data(closure), oneofdata->case_ofs, uint32_t) =  \
         oneofdata->oneof_case_num;                                 \
     DEREF(message_data(closure), oneofdata->ofs, ctype) = val;     \
@@ -886,22 +866,6 @@ static void oneof_cleanup(MessageHeader* msg,
 }
 
 // Handlers for string/bytes in a oneof.
-static void *oneofbytes_handler(void *closure,
-                                const void *hd,
-                                size_t size_hint) {
-  MessageHeader* msg = closure;
-  const oneof_handlerdata_t *oneofdata = hd;
-
-  oneof_cleanup(msg, oneofdata);
-
-  DEREF(message_data(msg), oneofdata->case_ofs, uint32_t) =
-      oneofdata->oneof_case_num;
-  DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*) =
-      OBJ_PROP(&msg->std, oneofdata->property_ofs);
-
-   return empty_php_string(DEREF(
-       message_data(msg), oneofdata->ofs, CACHED_VALUE*));
-}
 static bool oneofstr_end_handler(void *closure, const void *hd) {
   stringfields_parseframe_t* frame = closure;
   MessageHeader* msg = (MessageHeader*)frame->closure;
@@ -984,7 +948,6 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
   TSRMLS_FETCH();
   DescriptorInternal* subdesc = get_msgdef_desc(submsgdata->md);
   register_class(subdesc, false TSRMLS_CC);
-  zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
   MessageHeader* submsg;
   wrapperfields_parseframe_t* frame =
@@ -999,6 +962,12 @@ static void* wrapper_submsg_handler(void* closure, const void* hd) {
     frame->submsg = submsg;
     frame->is_msg = true;
   } else {
+    if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
+      // Needs to initiate the wrapper message
+      const upb_msgdef* msgdef = subdesc->msgdef;
+      const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
+      native_slot_get_default(upb_fielddef_type(f), cached TSRMLS_CC);
+    }
     // In this case, wrapper message hasn't been created and value will be
     // stored in cache directly.
     frame->submsg = cached;
@@ -1016,7 +985,6 @@ static void* wrapper_oneofsubmsg_handler(void* closure, const void* hd) {
   TSRMLS_FETCH();
   DescriptorInternal* subdesc = get_msgdef_desc(oneofdata->md);
   register_class(subdesc, false TSRMLS_CC);
-  zend_class_entry* subklass = subdesc->klass;
   wrapperfields_parseframe_t* frame =
       (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
   CACHED_VALUE* cached = OBJ_PROP(&msg->std, oneofdata->property_ofs);
@@ -1024,6 +992,12 @@ static void* wrapper_oneofsubmsg_handler(void* closure, const void* hd) {
 
   if (oldcase != oneofdata->oneof_case_num) {
     oneof_cleanup(msg, oneofdata);
+    if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
+      // Needs to initiate the wrapper message
+      const upb_msgdef* msgdef = subdesc->msgdef;
+      const upb_fielddef* f = upb_msgdef_itof(msgdef, 1);
+      native_slot_get_default(upb_fielddef_type(f), cached TSRMLS_CC);
+    }
     frame->submsg = cached;
     frame->is_msg = false;
   } else if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_OBJECT) {
@@ -1676,11 +1650,10 @@ static void putjsonlistvalue(
   upb_status status;
   upb_sink subsink;
   const upb_fielddef* f = upb_msgdef_itof(desc->msgdef, 1);
-  uint32_t offset = desc->layout->fields[upb_fielddef_index(f)].offset;
   zval* array;
   RepeatedField* intern;
   HashTable *ht;
-  int size, i;
+  int size;
 
   upb_sink_startmsg(sink);
 
@@ -1710,7 +1683,6 @@ static void putjsonstruct(
   upb_status status;
   upb_sink subsink;
   const upb_fielddef* f = upb_msgdef_itof(desc->msgdef, 1);
-  uint32_t offset = desc->layout->fields[upb_fielddef_index(f)].offset;
   zval* map;
   Map* intern;
   int size;
@@ -2235,8 +2207,6 @@ static void discard_unknown_fields(MessageHeader* msg) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     upb_fielddef* f = upb_msg_iter_field(&it);
-    uint32_t offset = desc->layout->fields[upb_fielddef_index(f)].offset;
-    bool containing_oneof = false;
 
     if (upb_fielddef_containingoneof(f)) {
       uint32_t oneof_case_offset =
@@ -2249,12 +2219,11 @@ static void discard_unknown_fields(MessageHeader* msg) {
       }
       // Otherwise, fall through to the appropriate singular-field handler
       // below.
-      containing_oneof = true;
     }
 
     if (is_map_field(f)) {
       MapIter map_it;
-      int len, size;
+      int len;
       const upb_fielddef* value_field;
 
       value_field = map_field_value(f);
@@ -2263,7 +2232,6 @@ static void discard_unknown_fields(MessageHeader* msg) {
       zval* map_php = CACHED_PTR_TO_ZVAL_PTR(find_zval_property(msg, f));
       if (ZVAL_IS_NULL(map_php)) continue;
 
-      Map* intern = UNBOX(Map, map_php);
       for (map_begin(map_php, &map_it TSRMLS_CC);
            !map_done(&map_it); map_next(&map_it)) {
         upb_value value = map_iter_value(&map_it, &len);

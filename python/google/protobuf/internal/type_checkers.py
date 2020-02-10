@@ -38,7 +38,7 @@ TYPE_TO_BYTE_SIZE_FN: A dictionary with field types and a size computing
 TYPE_TO_SERIALIZE_METHOD: A dictionary with field types and serialization
   function.
 FIELD_TYPE_TO_WIRE_TYPE: A dictionary with field typed and their
-  coresponding wire types.
+  corresponding wire types.
 TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
   function.
 """

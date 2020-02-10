@@ -1185,7 +1185,7 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
   FlattenMessagesInFile(file_, &classes);  // All messages need forward decls.
 
   if (options_.proto_h) {  // proto.h needs extra forward declarations.
-    // All classes / enums refered to as field members
+    // All classes / enums referred to as field members
     std::vector<const FieldDescriptor*> fields;
     ListAllFields(file_, &fields);
     for (int i = 0; i < fields.size(); i++) {

@@ -113,7 +113,7 @@ message ConformanceRequest {
   string message_type = 4;
 
   // Each test is given a specific test category. Some category may need
-  // spedific support in testee programs. Refer to the defintion of TestCategory
+  // spedific support in testee programs. Refer to the definition of TestCategory
   // for more information.
   TestCategory test_category = 5;
 
@@ -170,7 +170,7 @@ message ConformanceResponse {
 
 // Encoding options for jspb format.
 message JspbEncodingConfig {
-  // Encode the value field of Any as jspb array if ture, otherwise binary.
+  // Encode the value field of Any as jspb array if true, otherwise binary.
   bool use_jspb_array_any_format = 1;
 }
 

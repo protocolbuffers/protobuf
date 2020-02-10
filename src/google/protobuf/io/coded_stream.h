@@ -817,7 +817,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     return is_serialization_deterministic_;
   }
 
-  // The number of bytes writen to the stream at position ptr, relative to the
+  // The number of bytes written to the stream at position ptr, relative to the
   // stream's overall position.
   int64 ByteCount(uint8* ptr) const;
 
@@ -1171,7 +1171,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Returns the number of bytes needed to encode the given value as a varint.
   static size_t VarintSize64(uint64 value);
 
-  // If negative, 10 bytes.  Otheriwse, same as VarintSize32().
+  // If negative, 10 bytes.  Otherwise, same as VarintSize32().
   static size_t VarintSize32SignExtended(int32 value);
 
   // Compile-time equivalent of VarintSize32().

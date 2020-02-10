@@ -96,7 +96,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Adds the specified extensions to the reigstry
+        /// Adds the specified extensions to the registry
         /// </summary>
         public void AddRange(IEnumerable<Extension> extensions)
         {

@@ -52,7 +52,7 @@ namespace objectivec {
 namespace {
 
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.
-const int32 GOOGLE_PROTOBUF_OBJC_VERSION = 30002;
+const int32 GOOGLE_PROTOBUF_OBJC_VERSION = 30003;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
@@ -303,12 +303,12 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       " * which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
       " * this file and all files that it depends on.\n"
       " **/\n"
-      "@interface $root_class_name$ : GPBRootObject\n"
+      "GPB_FINAL @interface $root_class_name$ : GPBRootObject\n"
       "@end\n"
       "\n",
       "root_class_name", root_class_name_);
 
-  if (extension_generators_.size() > 0) {
+  if (!extension_generators_.empty()) {
     // The dynamic methods block is only needed if there are extensions.
     printer->Print(
         "@interface $root_class_name$ (DynamicMethods)\n",
@@ -319,7 +319,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
     }
 
     printer->Print("@end\n\n");
-  }  // extension_generators_.size() > 0
+  }  // !extension_generators_.empty()
 
   for (const auto& generator : message_generators_) {
     generator->GenerateMessageHeader(printer);
@@ -398,10 +398,20 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     }
   }
 
+  std::set<string> fwd_decls;
+  for (const auto& generator : message_generators_) {
+    generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+  }
+  for (const auto& generator : extension_generators_) {
+    generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+  }
+
   // Note:
   //  deprecated-declarations suppression is only needed if some place in this
   //    proto file is something deprecated or if it references something from
   //    another file that is deprecated.
+  //  dollar-in-identifier-extension is needed because we use references to
+  //    objc class names that have $ in identifiers.
   printer->Print(
       "// @@protoc_insertion_point(imports)\n"
       "\n"
@@ -414,9 +424,26 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     printer->Print(
         "#pragma clang diagnostic ignored \"-Wdirect-ivar-access\"\n");
   }
-
+  if (!fwd_decls.empty()) {
+    printer->Print(
+      "#pragma clang diagnostic ignored \"-Wdollar-in-identifier-extension\"\n");
+  }
   printer->Print(
-      "\n"
+      "\n");
+  if (!fwd_decls.empty()) {
+    printer->Print(
+        "#pragma mark - Objective C Class declarations\n"
+        "// Forward declarations of Objective C classes that we can use as\n"
+        "// static values in struct initializers.\n"
+        "// We don't use [Foo class] because it is not a static value.\n");
+  }
+  for (const auto& i : fwd_decls) {
+    printer->Print("$value$\n", "value", i);
+  }
+  if (!fwd_decls.empty()) {
+    printer->Print("\n");
+  }
+  printer->Print(
       "#pragma mark - $root_class_name$\n"
       "\n"
       "@implementation $root_class_name$\n\n",
@@ -454,7 +481,8 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
           "};\n"
           "for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {\n"
           "  GPBExtensionDescriptor *extension =\n"
-          "      [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]];\n"
+          "      [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]\n"
+          "                                                     usesClassRefs:YES];\n"
           "  [registry addExtension:extension];\n"
           "  [self globallyRegisterExtension:extension];\n"
           "  [extension release];\n"
@@ -500,7 +528,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   printer->Print("\n@end\n\n");
 
   // File descriptor only needed if there are messages to use it.
-  if (message_generators_.size() > 0) {
+  if (!message_generators_.empty()) {
     std::map<string, string> vars;
     vars["root_class_name"] = root_class_name_;
     vars["package"] = file_->package();
@@ -525,7 +553,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
         "  static GPBFileDescriptor *descriptor = NULL;\n"
         "  if (!descriptor) {\n"
         "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
-    if (vars["objc_prefix"].size() > 0) {
+    if (!vars["objc_prefix"].empty()) {
       printer->Print(
           vars,
           "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"

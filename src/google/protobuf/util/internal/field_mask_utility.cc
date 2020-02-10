@@ -186,7 +186,7 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
       // Builds a prefix and save it into the stack.
       prefix.push(AppendPathSegmentToPrefix(current_prefix, segment));
     } else if (!segment.empty()) {
-      // When the current charactor is ')', ',' or the current position has
+      // When the current character is ')', ',' or the current position has
       // passed the end of the input, builds and outputs a new paths by
       // concatenating the last prefix with the current segment.
       RETURN_IF_ERROR(

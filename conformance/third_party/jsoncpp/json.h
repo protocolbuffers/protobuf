@@ -1019,7 +1019,7 @@ private:
  * - ".name1.name2.name3"
  * - ".[0][1][2].name1[3]"
  * - ".%" => member name is provided as parameter
- * - ".[%]" => index is provied as parameter
+ * - ".[%]" => index is provided as parameter
  */
 class JSON_API Path {
 public:
@@ -1371,7 +1371,7 @@ public:
    */
   std::string getFormattedErrorMessages() const;
 
-  /** \brief Returns a vector of structured erros encounted while parsing.
+  /** \brief Returns a vector of structured errors encounted while parsing.
    * \return A (possibly empty) vector of StructuredError objects. Currently
    *         only one error can be returned, but the caller should tolerate
    * multiple
@@ -1816,7 +1816,7 @@ public:
  *
  * The JSON document is written in a single line. It is not intended for 'human'
  *consumption,
- * but may be usefull to support feature such as RPC where bandwith is limited.
+ * but may be useful to support feature such as RPC where bandwidth is limited.
  * \sa Reader, Value
  * \deprecated Use StreamWriterBuilder.
  */

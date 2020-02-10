@@ -122,7 +122,7 @@ class RepeatedFieldWrapper : public RandomAccessRepeatedFieldAccessor {
     return reinterpret_cast<RepeatedFieldType*>(data);
   }
 
-  // Convert an object recevied by this accessor to an object to be stored in
+  // Convert an object received by this accessor to an object to be stored in
   // the underlying RepeatedField.
   virtual T ConvertToT(const Value* value) const = 0;
 

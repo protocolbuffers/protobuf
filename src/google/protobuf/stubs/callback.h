@@ -68,7 +68,7 @@ namespace protobuf {
 // Also note that the arguments cannot be references:
 //   void Foo(const string& s);
 //   string my_str;
-//   NewCallback(&Foo, my_str);  // WON'T WORK:  Can't use referecnes.
+//   NewCallback(&Foo, my_str);  // WON'T WORK:  Can't use references.
 // However, correctly-typed pointers will work just fine.
 class PROTOBUF_EXPORT Closure {
  public:

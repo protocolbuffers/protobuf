@@ -190,7 +190,7 @@ struct PROTOBUF_EXPORT SCCInfoBase {
     kUninitialized = -1,  // initial state
   };
 #if defined(_MSC_VER) && !defined(__clang__)
-  // MSVC doesnt make std::atomic constant initialized. This union trick
+  // MSVC doesn't make std::atomic constant initialized. This union trick
   // makes it so.
   union {
     int visit_status_to_make_linker_init;

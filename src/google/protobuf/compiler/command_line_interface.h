@@ -97,7 +97,7 @@ class DiskSourceTree;    // importer.h
 //   protoc --cpp_out=outdir --foo_out=outdir --proto_path=src src/foo.proto
 //
 // The .proto file to compile can be specified on the command line using either
-// its physical file path, or a virtual path relative to a diretory specified
+// its physical file path, or a virtual path relative to a directory specified
 // in --proto_path. For example, for src/foo.proto, the following two protoc
 // invocations work the same way:
 //   1. protoc --proto_path=src src/foo.proto (physical file path)
@@ -194,7 +194,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // DEPRECATED. Calling this method has no effect. Protocol compiler now
   // always try to find the .proto file relative to the current directory
   // first and if the file is not found, it will then treat the input path
-  // as a virutal path.
+  // as a virtual path.
   void SetInputsAreProtoPathRelative(bool /* enable */) {}
 
   // Provides some text which will be printed when the --version flag is

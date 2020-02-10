@@ -4112,7 +4112,7 @@ std::string valueToString(double value, bool useSpecialFloats, unsigned int prec
   sprintf(formatString, "%%.%dg", precision);
 
   // Print into the buffer. We need not request the alternative representation
-  // that always has a decimal point because JSON doesn't distingish the
+  // that always has a decimal point because JSON doesn't distinguish the
   // concepts of reals and integers.
   if (isfinite(value)) {
     len = snprintf(buffer, sizeof(buffer), formatString, value);

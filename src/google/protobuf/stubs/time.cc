@@ -212,7 +212,7 @@ bool SecondsToDateTime(int64 seconds, DateTime* time) {
   if (seconds < kMinTime || seconds > kMaxTime) {
     return false;
   }
-  // It's easier to calcuate the DateTime starting from 0001-01-01T00:00:00
+  // It's easier to calculate the DateTime starting from 0001-01-01T00:00:00
   seconds = seconds + kSecondsFromEraToEpoch;
   int year = 1;
   if (seconds >= kSecondsPer400Years) {
