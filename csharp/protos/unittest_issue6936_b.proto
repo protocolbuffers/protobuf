@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "unittest_issue6936_a.proto";
+
+package unittest_issues;
+
+option csharp_namespace = "UnitTest.Issues.TestProtos";
+
+// This file is used as part of a unit test for issue 6936
+// We don't need to use it, we just have to import it in "unittest_issue6936_c.proto"
+
+message Foo {
+    option (opt) = "foo";
+}
