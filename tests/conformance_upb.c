@@ -15,7 +15,7 @@
 #include "upb/decode.h"
 #include "upb/encode.h"
 #include "upb/reflection.h"
-#include "upb/textencode.h"
+#include "upb/text_encode.h"
 
 int test_count = 0;
 bool verbose = false;  /* Set to true to get req/resp printed on stderr. */
@@ -87,9 +87,9 @@ void serialize_text(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
   if (!conformance_ConformanceRequest_print_unknown_fields(c->request)) {
     opts |= UPB_TXTENC_SKIPUNKNOWN;
   }
-  len = upb_textencode(msg, m, c->symtab, opts, NULL, 0);
+  len = upb_text_encode(msg, m, c->symtab, opts, NULL, 0);
   data = upb_arena_malloc(c->arena, len + 1);
-  len2 = upb_textencode(msg, m, c->symtab, opts, data, len + 1);
+  len2 = upb_text_encode(msg, m, c->symtab, opts, data, len + 1);
   assert(len == len2);
   conformance_ConformanceResponse_set_text_payload(
       c->response, upb_strview_make(data, len));
@@ -153,7 +153,7 @@ void DoTest(const ctx* c) {
 void debug_print(const char *label, const upb_msg *msg, const upb_msgdef *m,
                  const ctx *c) {
   char buf[512];
-  upb_textencode(msg, m, c->symtab, UPB_TXTENC_SINGLELINE, buf, sizeof(buf));
+  upb_text_encode(msg, m, c->symtab, UPB_TXTENC_SINGLELINE, buf, sizeof(buf));
   fprintf(stderr, "%s: %s\n", label, buf);
 }
 

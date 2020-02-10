@@ -145,10 +145,10 @@ cc_library(
 cc_library(
     name = "textformat",
     srcs = [
-        "upb/textencode.c",
+        "upb/text_encode.c",
     ],
     hdrs = [
-        "upb/textencode.h",
+        "upb/text_encode.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
