@@ -1,0 +1,12 @@
+name: protobuf
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - libprotobuf=3.11.2
+  - make=4.2.1
+  - pip=19.3.1
+  - python=3.7.6
+  - sphinx=2.3.1
+  - sphinx_rtd_theme=0.4.3
+  - sphinxcontrib-napoleon=0.7

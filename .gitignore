@@ -57,6 +57,7 @@ python/**/*.egg
 python/.eggs/
 python/.tox
 python/build/
+python/docs/_build/
 
 src/js_embed
 src/protoc

@@ -63,7 +63,7 @@ build_cpp_distcheck() {
   # List all files that should be included in the distribution package.
   git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
     grep -v ".gitignore" | grep -v "java/compatibility_tests" | grep -v "java/lite/proguard.pgcfg" |\
-    grep -v "python/compatibility_tests" | grep -v "csharp/compatibility_tests" > dist.lst
+    grep -v "python/compatibility_tests" | grep -v "python/docs" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
   DIST=`ls *.tar.gz`
   tar -xf $DIST
