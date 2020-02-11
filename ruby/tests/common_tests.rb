@@ -1265,6 +1265,36 @@ module CommonTests
     assert proto_module::TestMessage.new != nil
   end
 
+  def test_wrappers_set_to_default
+    run_asserts = ->(m) {
+      assert_equal 0.0, m.double.value
+      assert_equal 0.0, m.float.value
+      assert_equal 0, m.int32.value
+      assert_equal 0, m.int64.value
+      assert_equal 0, m.uint32.value
+      assert_equal 0, m.uint64.value
+      assert_equal false, m.bool.value
+      assert_equal '', m.string.value
+      assert_equal '', m.bytes.value
+    }
+
+    m = proto_module::Wrapper.new(
+      double: Google::Protobuf::DoubleValue.new(value: 0.0),
+      float: Google::Protobuf::FloatValue.new(value: 0.0),
+      int32: Google::Protobuf::Int32Value.new(value: 0),
+      int64: Google::Protobuf::Int64Value.new(value: 0),
+      uint32: Google::Protobuf::UInt32Value.new(value: 0),
+      uint64: Google::Protobuf::UInt64Value.new(value: 0),
+      bool: Google::Protobuf::BoolValue.new(value: false),
+      string: Google::Protobuf::StringValue.new(value: ""),
+      bytes: Google::Protobuf::BytesValue.new(value: ''),
+    )
+
+    run_asserts.call(m)
+    m2 = proto_module::Wrapper.decode(m.to_proto)
+    run_asserts.call(m2)
+  end
+
   def test_wrapper_getters
     run_asserts = ->(m) {
       assert_equal 2.0, m.double_as_value

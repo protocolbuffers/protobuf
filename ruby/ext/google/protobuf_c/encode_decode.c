@@ -44,6 +44,23 @@ VALUE noleak_rb_str_cat(VALUE rb_str, const char *str, long len) {
   return rb_str;
 }
 
+bool is_wrapper(const upb_msgdef* m) {
+  switch (upb_msgdef_wellknowntype(m)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+    case UPB_WELLKNOWN_FLOATVALUE:
+    case UPB_WELLKNOWN_INT64VALUE:
+    case UPB_WELLKNOWN_UINT64VALUE:
+    case UPB_WELLKNOWN_INT32VALUE:
+    case UPB_WELLKNOWN_UINT32VALUE:
+    case UPB_WELLKNOWN_STRINGVALUE:
+    case UPB_WELLKNOWN_BYTESVALUE:
+    case UPB_WELLKNOWN_BOOLVALUE:
+      return true;
+    default:
+      return false;
+  }
+}
+
 // The code below also comes from upb's prototype Ruby binding, developed by
 // haberman@.
 
@@ -117,19 +134,26 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs, int32_t hasbit)
 typedef struct {
   size_t ofs;
   int32_t hasbit;
+  upb_fieldtype_t wrapped_type;  // Only for wrappers.
   VALUE subklass;
 } submsg_handlerdata_t;
 
 // Creates a handlerdata that contains offset and submessage type information.
 static const void *newsubmsghandlerdata(upb_handlers* h,
+                                        const upb_fielddef *f,
                                         uint32_t ofs,
                                         int32_t hasbit,
                                         VALUE subklass) {
   submsg_handlerdata_t *hd = ALLOC(submsg_handlerdata_t);
+  const upb_msgdef *subm = upb_fielddef_msgsubdef(f);
   hd->ofs = ofs;
   hd->hasbit = hasbit;
   hd->subklass = subklass;
   upb_handlers_addcleanup(h, hd, xfree);
+  if (is_wrapper(subm)) {
+    const upb_fielddef *value_f = upb_msgdef_itof(subm, 1);
+    hd->wrapped_type = upb_fielddef_type(value_f);
+  }
   return hd;
 }
 
@@ -310,12 +334,39 @@ static void *submsg_handler(void *closure, const void *hd) {
 }
 
 static void* startwrapper(void* closure, const void* hd) {
-  char* msg = closure;
   const submsg_handlerdata_t* submsgdata = hd;
+  char* msg = closure;
+  VALUE* field = (VALUE*)(msg + submsgdata->ofs);
 
   set_hasbit(closure, submsgdata->hasbit);
 
-  return msg + submsgdata->ofs;
+  switch (submsgdata->wrapped_type) {
+    case UPB_TYPE_FLOAT:
+    case UPB_TYPE_DOUBLE:
+      *field = DBL2NUM(0);
+      break;
+    case UPB_TYPE_BOOL:
+      *field = Qfalse;
+      break;
+    case UPB_TYPE_STRING:
+      *field = get_frozen_string(NULL, 0, false);
+      break;
+    case UPB_TYPE_BYTES:
+      *field = get_frozen_string(NULL, 0, true);
+      break;
+    case UPB_TYPE_ENUM:
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_UINT64:
+      *field = INT2NUM(0);
+      break;
+    case UPB_TYPE_MESSAGE:
+      rb_raise(rb_eRuntimeError,
+               "Internal logic error with well-known types.");
+  }
+
+  return field;
 }
 
 // Handler data for startmap/endmap handlers.
@@ -522,23 +573,6 @@ static void* oneof_startwrapper(void* closure, const void* hd) {
   return msg + oneofdata->ofs;
 }
 
-bool is_wrapper(const upb_msgdef* m) {
-  switch (upb_msgdef_wellknowntype(m)) {
-    case UPB_WELLKNOWN_DOUBLEVALUE:
-    case UPB_WELLKNOWN_FLOATVALUE:
-    case UPB_WELLKNOWN_INT64VALUE:
-    case UPB_WELLKNOWN_UINT64VALUE:
-    case UPB_WELLKNOWN_INT32VALUE:
-    case UPB_WELLKNOWN_UINT32VALUE:
-    case UPB_WELLKNOWN_STRINGVALUE:
-    case UPB_WELLKNOWN_BYTESVALUE:
-    case UPB_WELLKNOWN_BOOLVALUE:
-      return true;
-    default:
-      return false;
-  }
-}
-
 // Set up handlers for a repeated field.
 static void add_handlers_for_repeated_field(upb_handlers *h,
                                             const Descriptor* desc,
@@ -579,7 +613,7 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
     case UPB_TYPE_MESSAGE: {
       VALUE subklass = field_type_class(desc->layout, f);
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
-      attr.handler_data = newsubmsghandlerdata(h, 0, -1, subklass);
+      attr.handler_data = newsubmsghandlerdata(h, f, 0, -1, subklass);
       if (is_wrapper(upb_fielddef_msgsubdef(f))) {
         upb_handlers_setstartsubmsg(h, f, appendwrapper_handler, &attr);
       } else {
@@ -708,7 +742,7 @@ static void add_handlers_for_singular_field(const Descriptor* desc,
     case UPB_TYPE_MESSAGE: {
       upb_handlerattr attr = UPB_HANDLERATTR_INIT;
       attr.handler_data = newsubmsghandlerdata(
-          h, offset, hasbit, field_type_class(desc->layout, f));
+          h, f, offset, hasbit, field_type_class(desc->layout, f));
       if (is_wrapper(upb_fielddef_msgsubdef(f))) {
         upb_handlers_setstartsubmsg(h, f, startwrapper, &attr);
       } else {
