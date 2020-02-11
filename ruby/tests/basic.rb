@@ -320,15 +320,15 @@ module BasicTest
 
     def test_map_wrappers_with_no_value
       run_asserts = ->(m) {
-        assert_equal nil, m.map_double[0]
-        assert_equal nil, m.map_float[0]
-        assert_equal nil, m.map_int32[0]
-        assert_equal nil, m.map_int64[0]
-        assert_equal nil, m.map_uint32[0]
-        assert_equal nil, m.map_uint64[0]
-        assert_equal nil, m.map_bool[0]
-        assert_equal nil, m.map_string[0]
-        assert_equal nil, m.map_bytes[0]
+        assert_equal 0.0, m.map_double[0].value
+        assert_equal 0.0, m.map_float[0].value
+        assert_equal 0, m.map_int32[0].value
+        assert_equal 0, m.map_int64[0].value
+        assert_equal 0, m.map_uint32[0].value
+        assert_equal 0, m.map_uint64[0].value
+        assert_equal false, m.map_bool[0].value
+        assert_equal '', m.map_string[0].value
+        assert_equal '', m.map_bytes[0].value
       }
 
       m = proto_module::Wrapper.new(
@@ -342,6 +342,7 @@ module BasicTest
         map_string: {0 => Google::Protobuf::StringValue.new()},
         map_bytes: {0 => Google::Protobuf::BytesValue.new()},
       )
+      run_asserts.call(m)
 
       serialized = proto_module::Wrapper::encode(m)
       m2 = proto_module::Wrapper::decode(serialized)
