@@ -1293,6 +1293,7 @@ module CommonTests
     run_asserts.call(m)
     m2 = proto_module::Wrapper.decode(m.to_proto)
     run_asserts.call(m2)
+    m3 = proto_module::Wrapper.decode_json(m.to_json)
   end
 
   def test_wrapper_getters
