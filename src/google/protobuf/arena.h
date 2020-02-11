@@ -338,8 +338,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CreateArray(Arena* arena,
                                                size_t num_elements) {
+#ifndef __INTEL_COMPILER // icc mis-evaluates some types as non-pod
     static_assert(std::is_pod<T>::value,
                   "CreateArray requires a trivially constructible type");
+#endif
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
     GOOGLE_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
