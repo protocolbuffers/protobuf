@@ -1466,6 +1466,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
   MessageHeader* msg;
   upb_msg_field_iter i;
   upb_status status;
+  bool json_wrapper = is_wrapper(desc->msgdef) && is_json;
 
   if (is_json &&
       upb_msgdef_wellknowntype(desc->msgdef) == UPB_WELLKNOWN_ANY) {
@@ -1542,7 +1543,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
         is_default = RSTRING_LEN(str) == 0;
       }
 
-      if (is_matching_oneof || emit_defaults || !is_default) {
+      if (is_matching_oneof || emit_defaults || !is_default || json_wrapper) {
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
@@ -1562,7 +1563,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
     } else if (upb_msgdef_syntax(desc->msgdef) == UPB_SYNTAX_PROTO3) {       \
       is_default = default_value == value;                                   \
     }                                                                        \
-    if (is_matching_oneof || emit_defaults || !is_default) {                 \
+    if (is_matching_oneof || emit_defaults || !is_default || json_wrapper) { \
       upb_sink_put##upbtype(sink, sel, value);                               \
     }                                                                        \
   } break;
