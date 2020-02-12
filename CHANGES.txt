@@ -1,3 +1,12 @@
+2020-02-14 version 3.11.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  
+  C#
+  * Fix latest ArgumentException for C# extensions (#7188)
+  
+  Ruby
+  * Fix wrappers with a zero value (#7195)
+  * Fix JSON serialization of 0/empty-valued wrapper types (#7198)
+
 2020-01-31 version 3.11.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
