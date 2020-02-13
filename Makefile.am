@@ -247,8 +247,10 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs
 
 java_EXTRA_DIST=                                                                   \
+  java/BUILD                                                                       \
   java/README.md                                                                   \
   java/bom/pom.xml                                                                 \
+  java/core/BUILD                                                                  \
   java/core/generate-sources-build.xml                                             \
   java/core/generate-test-sources-build.xml                                        \
   java/core/pom.xml                                                                \
@@ -504,6 +506,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_extra_interfaces.proto         \
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
   java/lite.md                                                                     \
+  java/lite/BUILD                                                                  \
   java/lite/generate-sources-build.xml                                             \
   java/lite/generate-test-sources-build.xml                                        \
   java/lite/lite.awk                                                               \
@@ -512,6 +515,7 @@ java_EXTRA_DIST=                                                                
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
   java/pom.xml                                                                     \
+  java/util/BUILD                                                                  \
   java/util/pom.xml                                                                \
   java/util/src/main/java/com/google/protobuf/util/Durations.java                  \
   java/util/src/main/java/com/google/protobuf/util/FieldMaskTree.java              \
@@ -1298,7 +1302,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   WORKSPACE                              \
   cmake/CMakeLists.txt                   \
   cmake/README.md                        \
-  cmake/conformance.cmake                   \
+  cmake/conformance.cmake                \
   cmake/examples.cmake                   \
   cmake/extract_includes.bat.in          \
   cmake/install.cmake                    \
@@ -1315,6 +1319,8 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   cmake/tests.cmake                      \
   cmake/version.rc.in                    \
   compiler_config_setting.bzl            \
+  build_files_updated_unittest.sh        \
+  cc_proto_blacklist_test.bzl            \
   editors/README.txt                     \
   editors/proto.vim                      \
   editors/protobuf-mode.el               \
