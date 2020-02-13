@@ -71,11 +71,6 @@
                   <type>exe</type>
                 </artifact>
                 <artifact>
-                  <file>${basedir}/target/osx/x86_32/protoc.exe</file>
-                  <classifier>osx-x86_32</classifier>
-                  <type>exe</type>
-                </artifact>
-                <artifact>
                   <file>${basedir}/target/linux/aarch_64/protoc.exe</file>
                   <classifier>linux-aarch_64</classifier>
                   <type>exe</type>
