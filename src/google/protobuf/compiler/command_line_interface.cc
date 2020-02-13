@@ -886,7 +886,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     for (int i = 0; i < output_directives_.size(); i++) {
       std::string output_location = output_directives_[i].output_location;
       if (!HasSuffixString(output_location, ".zip") &&
-          !HasSuffixString(output_location, ".jar")) {
+          !HasSuffixString(output_location, ".jar") &&
+          !HasSuffixString(output_location, ".srcjar")) {
         AddTrailingSlash(&output_location);
       }
 
