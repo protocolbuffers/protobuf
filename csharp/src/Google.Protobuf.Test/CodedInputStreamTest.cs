@@ -33,6 +33,7 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
+using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -336,6 +337,66 @@ namespace Google.Protobuf
 
             CodedInputStream input = CodedInputStream.CreateWithLimits(new MemoryStream(atRecursiveLimit.ToByteArray()), 1000000, CodedInputStream.DefaultRecursionLimit - 1);
             Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(input));
+        }
+        
+        private static byte[] MakeMaliciousRecursionUnknownFieldsPayload(int recursionDepth)
+        {
+            // generate recursively nested groups that will be parsed as unknown fields
+            int unknownFieldNumber = 14;  // an unused field number
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+            for (int i = 0; i < recursionDepth; i++)
+            {
+                output.WriteTag(WireFormat.MakeTag(unknownFieldNumber, WireFormat.WireType.StartGroup));
+            }
+            for (int i = 0; i < recursionDepth; i++)
+            {
+                output.WriteTag(WireFormat.MakeTag(unknownFieldNumber, WireFormat.WireType.EndGroup));
+            }
+            output.Flush();
+            return ms.ToArray();
+        }
+
+        [Test]
+        public void MaliciousRecursion_UnknownFields()
+        {
+            byte[] payloadAtRecursiveLimit = MakeMaliciousRecursionUnknownFieldsPayload(CodedInputStream.DefaultRecursionLimit);
+            byte[] payloadBeyondRecursiveLimit = MakeMaliciousRecursionUnknownFieldsPayload(CodedInputStream.DefaultRecursionLimit + 1);
+            
+            Assert.DoesNotThrow(() => TestRecursiveMessage.Parser.ParseFrom(payloadAtRecursiveLimit));
+            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(payloadBeyondRecursiveLimit));
+        }
+
+        [Test]
+        public void ReadGroup_WrongEndGroupTag()
+        {
+            int groupFieldNumber = Proto2.TestAllTypes.OptionalGroupFieldNumber;
+
+            // write Proto2.TestAllTypes with "optional_group" set, but use wrong EndGroup closing tag
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+            output.WriteTag(WireFormat.MakeTag(groupFieldNumber, WireFormat.WireType.StartGroup));
+            output.WriteGroup(new Proto2.TestAllTypes.Types.OptionalGroup { A = 12345 });
+            // end group with different field number
+            output.WriteTag(WireFormat.MakeTag(groupFieldNumber + 1, WireFormat.WireType.EndGroup));
+            output.Flush();
+            var payload = ms.ToArray();
+
+            Assert.Throws<InvalidProtocolBufferException>(() => Proto2.TestAllTypes.Parser.ParseFrom(payload));
+        }
+
+        [Test]
+        public void ReadGroup_UnknownFields_WrongEndGroupTag()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+            output.WriteTag(WireFormat.MakeTag(14, WireFormat.WireType.StartGroup));
+            // end group with different field number
+            output.WriteTag(WireFormat.MakeTag(15, WireFormat.WireType.EndGroup));
+            output.Flush();
+            var payload = ms.ToArray();
+
+            Assert.Throws<InvalidProtocolBufferException>(() => TestRecursiveMessage.Parser.ParseFrom(payload));
         }
 
         [Test]

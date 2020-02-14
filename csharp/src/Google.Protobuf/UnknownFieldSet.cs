@@ -215,12 +215,8 @@ namespace Google.Protobuf
                     }
                 case WireFormat.WireType.StartGroup:
                     {
-                        uint endTag = WireFormat.MakeTag(number, WireFormat.WireType.EndGroup);
                         UnknownFieldSet set = new UnknownFieldSet();
-                        while (input.ReadTag() != endTag)
-                        {
-                            set.MergeFieldFrom(input);
-                        }
+                        input.ReadGroup(number, set);
                         GetOrAddField(number).AddGroup(set);
                         return true;
                     }
@@ -230,6 +226,22 @@ namespace Google.Protobuf
                     }
                 default:
                     throw InvalidProtocolBufferException.InvalidWireType();
+            }
+        }
+
+        internal void MergeGroupFrom(CodedInputStream input)
+        {
+            while (true)
+            {
+                uint tag = input.ReadTag();
+                if (tag == 0)
+                {
+                    break;
+                }
+                if (!MergeFieldFrom(input))
+                {
+                    break;
+                }
             }
         }
 
