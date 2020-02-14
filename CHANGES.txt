@@ -2,6 +2,7 @@
   
   C#
   * Fix latest ArgumentException for C# extensions (#7188)
+  * Enforce recursion depth checking for unknown fields (#7210)
   
   Ruby
   * Fix wrappers with a zero value (#7195)
