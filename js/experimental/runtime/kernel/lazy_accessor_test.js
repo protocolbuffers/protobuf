@@ -25,10 +25,6 @@ function createArrayBuffer(...bytes) {
 }
 
 describe('LazyAccessor', () => {
-  it('encodes none for the empty input', () => {
-    const accessor = LazyAccessor.fromArrayBuffer(new ArrayBuffer(0));
-    expect(accessor.serialize()).toEqual(new ArrayBuffer(0));
-  });
 
   it('uses the default pivot point', () => {
     const accessor = LazyAccessor.fromArrayBuffer(new ArrayBuffer(0));
