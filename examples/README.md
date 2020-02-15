@@ -91,22 +91,18 @@ scripts) and can be used to create/display an address book data file.
 
 ### Go
 
-The Go example requires a plugin to the protocol buffer compiler, so it is not
-build with all the other examples.  See:
+Follow instructions in [../README.md](../README.md) to install protoc. Then
+install the Go protoc plugin (protoc-gen-go):
 
-    https://github.com/golang/protobuf
+    $ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 
-for more information about Go protocol buffer support.
+The "go install" command will install protoc-gen-go into the GOBIN
+directory.  You can set the $GOBIN environment variable before
+running "go install" to change the install location.  Make sure the
+install directory is in your shell $PATH.
 
-First, install the Protocol Buffers compiler (protoc).
-
-Then, install the Go Protocol Buffers plugin ($GOPATH/bin must be in your $PATH
-for protoc to find it):
-
-    go get github.com/golang/protobuf/protoc-gen-go
-
-Build the Go samples in this directory with "make go".  This creates the
-following executable files in the current directory:
+Build the Go samples with "make go".  This creates the following
+executable files in the current directory:
 
     add_person_go      list_people_go
 

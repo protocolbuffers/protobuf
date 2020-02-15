@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/golang/protobuf/proto"
-	pb "github.com/protocolbuffers/protobuf/examples/tutorial"
+	pb "github.com/protocolbuffers/protobuf/examples/go/tutorialpb"
+	"google.golang.org/protobuf/proto"
 )
 
 func writePerson(w io.Writer, p *pb.Person) {
