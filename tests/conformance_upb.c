@@ -15,6 +15,7 @@
 #include "upb/decode.h"
 #include "upb/encode.h"
 #include "upb/reflection.h"
+#include "upb/json_encode.h"
 #include "upb/text_encode.h"
 
 int test_count = 0;
@@ -95,6 +96,34 @@ void serialize_text(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
       c->response, upb_strview_make(data, len));
 }
 
+void serialize_json(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
+  size_t len;
+  size_t len2;
+  int opts = 0;
+  char *data;
+  upb_status status;
+
+  upb_status_clear(&status);
+  if (!conformance_ConformanceRequest_print_unknown_fields(c->request)) {
+    opts |= UPB_TXTENC_SKIPUNKNOWN;
+  }
+
+  len = upb_json_encode(msg, m, c->symtab, opts, NULL, 0, &status);
+
+  if (len == -1) {
+    static const char msg[] = "Error serializing.";
+    conformance_ConformanceResponse_set_serialize_error(
+        c->response, upb_strview_make(msg, strlen(msg)));
+    return;
+  }
+
+  data = upb_arena_malloc(c->arena, len + 1);
+  len2 = upb_json_encode(msg, m, c->symtab, opts, data, len + 1, &status);
+  assert(len == len2);
+  conformance_ConformanceResponse_set_json_payload(
+      c->response, upb_strview_make(data, len));
+}
+
 bool parse_input(upb_msg *msg, const upb_msgdef *m, const ctx* c) {
   switch (conformance_ConformanceRequest_payload_case(c->request)) {
     case conformance_ConformanceRequest_payload_protobuf_payload:
@@ -121,6 +150,9 @@ void write_output(const upb_msg *msg, const upb_msgdef *m, const ctx* c) {
       break;
     case conformance_TEXT_FORMAT:
       serialize_text(msg, m, c);
+      break;
+    case conformance_JSON:
+      serialize_json(msg, m, c);
       break;
     default: {
       static const char msg[] = "Unsupported output format.";

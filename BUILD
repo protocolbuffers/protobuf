@@ -598,6 +598,7 @@ cc_binary(
         ":test_messages_proto3_upbdefs",
         ":reflection",
         ":textformat",
+        ":json",
         ":upb",
     ],
 )

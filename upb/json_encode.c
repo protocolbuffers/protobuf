@@ -245,6 +245,8 @@ static void jsonenc_double(jsonenc *e, const char *fmt, double val) {
     jsonenc_putstr(e, "\"Infinity\"");
   } else if (val == -UPB_INFINITY) {
     jsonenc_putstr(e, "\"-Infinity\"");
+  } else if (val != val) {
+    jsonenc_putstr(e, "\"NaN\"");
   } else {
     jsonenc_printf(e, fmt, val);
   }
@@ -255,6 +257,27 @@ static void jsonenc_wrapper(jsonenc *e, const upb_msg *msg,
   const upb_fielddef *val_f = upb_msgdef_itof(m, 1);
   upb_msgval val = upb_msg_get(m, val_f);
   jsonenc_scalar(e, val, val_f);
+}
+
+const upb_msgdef *jsonenc_getanymsg(jsonenc *e, upb_strview type_url) {
+  /* Find last '/', if any. */
+  const char *end = type_url.data + type_url.size;
+  const char *ptr = end;
+
+  if (!e->ext_pool || type_url.size == 0) return NULL;
+
+  while (true) {
+    if (--ptr == type_url.data) {
+      /* Type URL must contain at least one '/', with host before. */
+      return NULL;
+    }
+    if (*ptr == '/') {
+      ptr++;
+      break;
+    }
+  }
+
+  return upb_symtab_lookupmsg2(e->ext_pool, ptr, end - ptr);
 }
 
 static void jsonenc_any(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
@@ -286,12 +309,50 @@ static void jsonenc_any(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
   jsonenc_putstr(e, "}");
 }
 
-static void jsonenc_putsep(jsonenc *e, bool *first) {
+static void jsonenc_putsep(jsonenc *e, const char *str, bool *first) {
   if (*first) {
     *first = false;
   } else {
-    jsonenc_putstr(e, ", ");
+    jsonenc_putstr(e, str);
   }
+}
+
+static void jsonenc_fieldpath(jsonenc *e, upb_strview path) {
+  const char *ptr = path.data;
+  const char *end = ptr + path.size;
+
+  while (ptr < end) {
+    char ch = *ptr;
+    if (ch >= 'A' && ch <= 'Z') {
+      jsonenc_err(e, "Field mask element may not have upper-case letter.");
+    } else if (ch == '_') {
+      if (ptr == end - 1 || *(ptr + 1) < 'a' || *(ptr + 1) > 'z') {
+        jsonenc_err(e, "Underscore must be followed by a lowercase letter.");
+      }
+    } else {
+      jsonenc_putbytes(e, &ch, 1);
+    }
+    ptr++;
+  }
+}
+
+static void jsonenc_fieldmask(jsonenc *e, const upb_msg *msg,
+                              const upb_msgdef *m) {
+  const upb_fielddef *paths_f = upb_msgdef_itof(m, 1);
+  const upb_array *paths = upb_msg_get(msg, paths_f).array_val;
+  bool first = true;
+  size_t i, n = 0;
+
+  if (paths) n = upb_array_size(paths);
+
+  jsonenc_putstr(e, "\"");
+
+  for (i = 0; i < n; i++) {
+    jsonenc_putsep(e, ",", &first);
+    jsonenc_fieldpath(e, upb_array_get(paths, i).str_val);
+  }
+
+  jsonenc_putstr(e, "\"");
 }
 
 static void jsonenc_struct(jsonenc *e, const upb_msg *msg,
@@ -309,7 +370,7 @@ static void jsonenc_struct(jsonenc *e, const upb_msg *msg,
     upb_msgval key = upb_mapiter_key(fields, iter);
     upb_msgval val = upb_mapiter_value(fields, iter);
 
-    jsonenc_putsep(e, &first);
+    jsonenc_putsep(e, ", ", &first);
     jsonenc_string(e, key.str_val);
     jsonenc_putstr(e, ": ");
     jsonenc_value(e, val.msg_val, upb_fielddef_msgsubdef(value_f));
@@ -332,7 +393,7 @@ static void jsonenc_listvalue(jsonenc *e, const upb_msg *msg,
   for (i = 0; i < size; i++) {
     upb_msgval elem = upb_array_get(values, i);
 
-    jsonenc_putsep(e, &first);
+    jsonenc_putsep(e, ", ", &first);
     jsonenc_value(e, elem.msg_val, values_m);
   }
 
@@ -382,6 +443,8 @@ static void jsonenc_msgfield(jsonenc *e, const upb_msg *msg,
       jsonenc_any(e, msg, m);
       break;
     case UPB_WELLKNOWN_FIELDMASK:
+      jsonenc_fieldmask(e, msg, m);
+      break;
     case UPB_WELLKNOWN_DURATION:
       jsonenc_duration(e, msg, m);
       break;
@@ -486,7 +549,7 @@ static void jsonenc_array(jsonenc *e, const upb_array *arr,
   jsonenc_putstr(e, "[");
 
   for (i = 0; i < size; i++) {
-    jsonenc_putsep(e, &first);
+    jsonenc_putsep(e, ", ", &first);
     jsonenc_scalar(e, upb_array_get(arr, i), f);
   }
 
@@ -503,7 +566,7 @@ static void jsonenc_map(jsonenc *e, const upb_map *map, const upb_fielddef *f) {
   jsonenc_putstr(e, "{");
 
   while (upb_mapiter_next(map, &iter)) {
-    jsonenc_putsep(e, &first);
+    jsonenc_putsep(e, ", ", &first);
     jsonenc_mapkey(e, upb_mapiter_key(map, iter), key_f);
     jsonenc_scalar(e, upb_mapiter_value(map, iter), val_f);
   }
@@ -524,7 +587,7 @@ static void jsonenc_fieldval(jsonenc *e, const upb_fielddef *f,
     name = buf;
   }
 
-  jsonenc_putsep(e, first);
+  jsonenc_putsep(e, ", ", first);
   jsonenc_printf(e, "\"%s\": ", name);
 
   if (upb_fielddef_ismap(f)) {
@@ -573,9 +636,9 @@ size_t jsonenc_nullz(jsonenc *e, size_t size) {
   return ret;
 }
 
-size_t upb_jsonencode(const upb_msg *msg, const upb_msgdef *m,
-                      const upb_symtab *ext_pool, int options, char *buf,
-                      size_t size, upb_status *status) {
+size_t upb_json_encode(const upb_msg *msg, const upb_msgdef *m,
+                       const upb_symtab *ext_pool, int options, char *buf,
+                       size_t size, upb_status *status) {
   jsonenc e;
 
   e.buf = buf;
