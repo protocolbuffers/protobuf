@@ -436,7 +436,6 @@ static void jsonenc_msgfield(jsonenc *e, const upb_msg *msg,
                              const upb_msgdef *m) {
   switch (upb_msgdef_wellknowntype(m)) {
     case UPB_WELLKNOWN_UNSPECIFIED:
-      jsonenc_putstr(e, "{");
       jsonenc_msg(e, msg, m);
       break;
     case UPB_WELLKNOWN_ANY:
@@ -480,7 +479,7 @@ static void jsonenc_scalar(jsonenc *e, upb_msgval val, const upb_fielddef *f) {
       jsonenc_putstr(e, val.bool_val ? "true" : "false");
       break;
     case UPB_TYPE_FLOAT:
-      jsonenc_double(e, "%.8g", val.float_val);
+      jsonenc_double(e, "%.9g", val.float_val);
       break;
     case UPB_TYPE_DOUBLE:
       jsonenc_double(e, "%.17g", val.double_val);
