@@ -156,6 +156,20 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "json",
+    srcs = [
+        "upb/json_encode.c",
+    ],
+    hdrs = [
+        "upb/json_encode.h",
+    ],
+    deps = [
+        ":upb",
+        ":reflection",
+    ],
+)
+
 # Internal C/C++ libraries #####################################################
 
 cc_library(
