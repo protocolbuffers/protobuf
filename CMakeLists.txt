@@ -93,6 +93,12 @@ add_library(textformat
   upb/text_encode.h)
 target_link_libraries(textformat
   reflection)
+add_library(json
+  upb/json_encode.c
+  upb/json_encode.h)
+target_link_libraries(json
+  upb
+  reflection)
 add_library(table INTERFACE)
 target_link_libraries(table INTERFACE
   port
