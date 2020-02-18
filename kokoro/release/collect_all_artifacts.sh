@@ -43,9 +43,7 @@ mkdir -p protoc/linux_x64
 cp ${INPUT_ARTIFACTS_DIR}/protoc-artifacts/target/linux/x86_32/protoc.exe protoc/linux_x86/protoc
 cp ${INPUT_ARTIFACTS_DIR}/protoc-artifacts/target/linux/x86_64/protoc.exe protoc/linux_x64/protoc
 
-mkdir -p protoc/macosx_x86
 mkdir -p protoc/macosx_x64
-cp ${INPUT_ARTIFACTS_DIR}/build32/src/protoc protoc/macosx_x86/protoc
 cp ${INPUT_ARTIFACTS_DIR}/build64/src/protoc protoc/macosx_x64/protoc
 
 # Install nuget (will also install  mono)
