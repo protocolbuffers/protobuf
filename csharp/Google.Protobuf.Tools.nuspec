@@ -20,7 +20,6 @@
     <file src="protoc\windows_x64\protoc.exe" target="tools\windows_x64\protoc.exe"/>
     <file src="protoc\linux_x86\protoc" target="tools\linux_x86\protoc"/>
     <file src="protoc\linux_x64\protoc" target="tools\linux_x64\protoc"/>
-    <file src="protoc\macosx_x86\protoc" target="tools\macosx_x86\protoc"/>
     <file src="protoc\macosx_x64\protoc" target="tools\macosx_x64\protoc"/>
     <file src="..\src\google\protobuf\any.proto" target="tools\google\protobuf"/>
     <file src="..\src\google\protobuf\api.proto" target="tools\google\protobuf"/>
