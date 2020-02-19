@@ -11,6 +11,8 @@ use Google\Protobuf\Internal\MapField;
 use Descriptors\TestDescriptorsEnum;
 use Descriptors\TestDescriptorsMessage;
 use Descriptors\TestDescriptorsMessage\Sub;
+use Foo\TestMessage;
+use Bar\TestInclude;
 
 class DescriptorsTest extends TestBase
 {
@@ -87,6 +89,17 @@ class DescriptorsTest extends TestBase
 
         $this->assertInstanceOf('\Google\Protobuf\OneofDescriptor', $desc->getOneofDecl(0));
         $this->assertSame(1, $desc->getOneofDeclCount());
+    }
+
+    public function testDescriptorForIncludedMessage()
+    {
+        $pool = DescriptorPool::getGeneratedPool();
+        $class = get_class(new TestMessage());
+        $this->assertSame('Foo\TestMessage', $class);
+        $desc = $pool->getDescriptorByClassName($class);
+        $fielddesc = $desc->getField(17);
+        $subdesc = $fielddesc->getMessageType();
+        $this->assertSame('Bar\TestInclude', $subdesc->getClass());
     }
 
     #########################################################
