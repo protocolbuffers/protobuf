@@ -124,6 +124,7 @@ cc_library(
     name = "reflection",
     srcs = [
         "upb/def.c",
+        "upb/msg.h",
         "upb/reflection.c",
     ],
     hdrs = [

@@ -81,6 +81,7 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   upb)
 add_library(reflection
   upb/def.c
+  upb/msg.h
   upb/reflection.c
   upb/def.h
   upb/reflection.h)
