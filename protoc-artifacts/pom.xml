@@ -8,7 +8,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.11.2</version>
+  <version>3.11.4</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>
@@ -68,11 +68,6 @@
                 <artifact>
                   <file>${basedir}/target/osx/x86_64/protoc.exe</file>
                   <classifier>osx-x86_64</classifier>
-                  <type>exe</type>
-                </artifact>
-                <artifact>
-                  <file>${basedir}/target/osx/x86_32/protoc.exe</file>
-                  <classifier>osx-x86_32</classifier>
                   <type>exe</type>
                 </artifact>
                 <artifact>
