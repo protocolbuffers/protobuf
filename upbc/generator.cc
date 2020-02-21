@@ -853,12 +853,14 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
   }
   output("\n");
 
-  output("static const upb_msglayout *layouts[$0] = {\n", file_messages.size());
-  for (auto message : file_messages) {
-    output("  &$0,\n", MessageInit(message));
+  if (!file_messages.empty()) {
+    output("static const upb_msglayout *layouts[$0] = {\n", file_messages.size());
+    for (auto message : file_messages) {
+      output("  &$0,\n", MessageInit(message));
+    }
+    output("};\n");
+    output("\n");
   }
-  output("};\n");
-  output("\n");
 
   protobuf::FileDescriptorProto file_proto;
   file->CopyTo(&file_proto);
@@ -905,7 +907,11 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
 
   output("upb_def_init $0 = {\n", DefInitSymbol(file));
   output("  deps,\n");
-  output("  layouts,\n");
+  if (file_messages.empty()) {
+    output("  NULL,\n");
+  } else {
+    output("  layouts,\n");
+  }
   output("  \"$0\",\n", file->name());
   output("  UPB_STRVIEW_INIT(descriptor, $0)\n", file_data.size());
   output("};\n");

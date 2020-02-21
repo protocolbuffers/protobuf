@@ -389,9 +389,21 @@ cc_test(
     srcs = ["tests/test_generated_code.c"],
     deps = [
         ":test_messages_proto3_proto_upb",
+        ":empty_upbdefs_proto",
         ":test_upbproto",
         ":upb_test",
     ],
+)
+
+proto_library(
+    name = "empty_proto",
+    srcs = ["tests/empty.proto"],
+)
+
+upb_proto_reflection_library(
+    name = "empty_upbdefs_proto",
+    testonly = 1,
+    deps = [":empty_proto"],
 )
 
 upb_proto_library(
