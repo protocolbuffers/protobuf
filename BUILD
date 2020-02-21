@@ -1,5 +1,6 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_proto//proto/private:native.bzl", "native_proto_common")
@@ -9,6 +10,42 @@ load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 licenses(["notice"])
 
 exports_files(["LICENSE"])
+
+################################################################################
+# build configuration
+################################################################################
+
+string_flag(
+    name = "incompatible_use_com_google_googletest",
+    # TODO(yannic): Flip to `true` for `3.13.0`.
+    build_setting_default = "false",
+    values = ["true", "false"]
+)
+
+config_setting(
+    name = "use_com_google_googletest",
+    flag_values = {
+        "//:incompatible_use_com_google_googletest": "true"
+    },
+)
+
+GTEST = select({
+    "//:use_com_google_googletest": [
+        "@com_google_googletest//:gtest",
+    ],
+    "//conditions:default": [
+        "//external:gtest",
+    ],
+})
+
+GTEST_MAIN = select({
+    "//:use_com_google_googletest": [
+        "@com_google_googletest//:gtest_main",
+    ],
+    "//conditions:default": [
+        "//external:gtest_main",
+    ],
+})
 
 ################################################################################
 # ZLIB configuration
@@ -533,8 +570,7 @@ cc_binary(
     deps = [
         ":protobuf",
         ":protoc_lib",
-        "//external:gtest",
-    ],
+    ] + GTEST,
 )
 
 cc_test(
@@ -546,8 +582,7 @@ cc_test(
     ],
     deps = [
         ":protobuf_lite",
-        "//external:gtest_main",
-    ],
+    ] + GTEST_MAIN,
 )
 
 cc_test(
@@ -650,8 +685,7 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":protoc_lib",
-        "//external:gtest_main",
-    ] + PROTOBUF_DEPS,
+    ] + PROTOBUF_DEPS + GTEST_MAIN,
 )
 
 ################################################################################
