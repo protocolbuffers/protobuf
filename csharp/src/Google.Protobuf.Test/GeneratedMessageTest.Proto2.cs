@@ -376,5 +376,18 @@ namespace Google.Protobuf
             TestGroupExtension extendable_parsed = TestGroupExtension.Parser.WithExtensionRegistry(new ExtensionRegistry() { TestNestedExtension.Extensions.OptionalGroupExtension }).ParseFrom(bytes);
             Assert.AreEqual(message, extendable_parsed);
         }
+
+        [Test]
+        public void RoundTrip_ParseUsingCodedInput()
+        {
+            var message = new TestAllExtensions();
+            message.SetExtension(UnittestExtensions.OptionalBoolExtension, true);
+            byte[] bytes = message.ToByteArray();
+            using (CodedInputStream input = new CodedInputStream(bytes))
+            {
+                var parsed = TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { UnittestExtensions.OptionalBoolExtension }).ParseFrom(input);
+                Assert.AreEqual(message, parsed);
+            }
+        }
     }
 }
