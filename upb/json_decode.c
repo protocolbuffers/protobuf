@@ -2,6 +2,8 @@
 #include "upb/json_decode.h"
 
 #include <errno.h>
+#include <float.h>
+#include <inttypes.h>
 #include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,7 +46,7 @@ UPB_NORETURN static void jsondec_err(jsondec *d, const char *msg) {
   longjmp(d->err, 1);
 }
 
-static void jsondec_errf(jsondec *d, const char *fmt, ...) {
+UPB_NORETURN static void jsondec_errf(jsondec *d, const char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
   upb_status_vseterrf(d->status, fmt, argp);
@@ -78,9 +80,11 @@ static bool jsondec_tryparsech(jsondec *d, char ch) {
 }
 
 static void jsondec_parselit(jsondec *d, const char *lit) {
-  if (d->end - d->ptr < strlen(lit) || memcmp(d->ptr, lit, strlen(lit)) != 0) {
+  size_t len = strlen(lit);
+  if (d->end - d->ptr < len || memcmp(d->ptr, lit, len) != 0) {
     jsondec_errf(d, "Expected: '%s'", lit);
   }
+  d->ptr += len;
 }
 
 static void jsondec_wsch(jsondec *d, char ch) {
@@ -126,7 +130,7 @@ static int jsondec_rawpeek(jsondec *d) {
     case 'n':
       return JD_NULL;
     default:
-      jsondec_err(d, "Unexpected character");
+      jsondec_errf(d, "Unexpected character: '%c'", *d->ptr);
   }
 }
 
@@ -149,6 +153,7 @@ static void jsondec_push(jsondec *d) {
   if (--d->depth < 0) {
     jsondec_err(d, "Recursion limit exceeded");
   }
+  d->is_first = true;
 }
 
 static bool jsondec_seqnext(jsondec *d, char end_ch) {
@@ -252,7 +257,15 @@ parse:
     /* Currently the min/max-val conformance tests fail if we check this.  Does
      * this mean the conformance tests are wrong or strtod() is wrong, or
      * something else?  Investigate further. */
-    /* CHK(errno == 0); */
+    /*
+    if (errno == ERANGE) {
+      jsondec_err(d, "Number out of range");
+    }
+    */
+
+    if (val > DBL_MAX || val < -DBL_MAX) {
+      jsondec_err(d, "Number out of range");
+    }
 
     return val;
   }
@@ -351,10 +364,11 @@ static size_t jsondec_unicode(jsondec *d, char* out) {
 }
 
 static void jsondec_resize(jsondec *d, char **buf, char **end, char **buf_end) {
-  size_t size = 8;
+  size_t oldsize = *buf_end - *buf;
   size_t len = *end - *buf;
-  while (size < *buf_end - *buf) size++;
-  *buf = upb_arena_realloc(d->arena, *buf, *buf_end - *buf, size);
+  size_t size = UPB_MAX(8, 2 * oldsize);
+
+  *buf = upb_arena_realloc(d->arena, *buf, len, size);
   *end = *buf + len;
   *buf_end = *buf + size;
 }
@@ -371,18 +385,21 @@ static upb_strview jsondec_string(jsondec *d) {
   }
 
   while (d->ptr < d->end) {
+    char ch = *d->ptr++;
+
     if (end == buf_end) {
       jsondec_resize(d, &buf, &end, &buf_end);
     }
 
-    switch (*d->ptr) {
+    switch (ch) {
       case '"': {
         upb_strview ret = {buf, end - buf};
         return ret;
       }
       case '\\':
-        if (++d->ptr == d->end) goto eof;
+        if (d->ptr == d->end) goto eof;
         if (*d->ptr == 'u') {
+          d->ptr++;
           if (buf_end - end < 4) {
             // Allow space for maximum-sized code point (4 bytes).
             jsondec_resize(d, &buf, &end, &buf_end);
@@ -391,11 +408,12 @@ static upb_strview jsondec_string(jsondec *d) {
         } else {
           *end++ = jsondec_escape(d);
         }
+        break;
       default:
         if ((unsigned char)*d->ptr < 0x20) {
           jsondec_err(d, "Invalid char in JSON string");
         }
-        *end++ = *d->ptr;
+        *end++ = ch;
         break;
     }
   }
@@ -429,7 +447,7 @@ static void jsondec_skipval(jsondec *d) {
       jsondec_false(d);
       break;
     case JD_NULL:
-      jsondec_number(d);
+      jsondec_null(d);
       break;
     case JD_STRING:
       jsondec_string(d);
@@ -570,6 +588,7 @@ static const char *jsondec_buftouint64(jsondec *d, const char *ptr,
     }
     u64 *= 10;
     u64 += ch;
+    ptr++;
   }
 
   *val = u64;
@@ -626,8 +645,9 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
         jsondec_err(d, "JSON number is out of range.");
       }
       val.int64_val = dbl;  /* must be guarded, overflow here is UB */
-      if (val.uint64_val != dbl) {
-        jsondec_err(d, "JSON number was not integral.");
+      if (val.int64_val != dbl) {
+        jsondec_errf(d, "JSON number was not integral (%d != %" PRId64 ")", dbl,
+                     val.int64_val);
       }
       break;
     }
@@ -640,7 +660,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
       jsondec_err(d, "Expected number or string");
   }
 
-  if (upb_fielddef_type(f) == UPB_TYPE_UINT32) {
+  if (upb_fielddef_type(f) == UPB_TYPE_INT32) {
     if (val.int64_val > INT32_MAX || val.int64_val < INT32_MIN) {
       jsondec_err(d, "Integer out of range.");
     }
@@ -662,7 +682,8 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
       }
       val.uint64_val = dbl;  /* must be guarded, overflow here is UB */
       if (val.uint64_val != dbl) {
-        jsondec_err(d, "JSON number was not integral.");
+        jsondec_errf(d, "JSON number was not integral (%d != %" PRIu64 ")", dbl,
+                     val.uint64_val);
       }
       break;
     }
@@ -703,6 +724,7 @@ static upb_msgval jsondec_double(jsondec *d, const upb_fielddef *f) {
       } else if (jsondec_streql(str, "-Infinity")) {
         val.double_val = -UPB_INFINITY;
       } else {
+        val.double_val = strtod(str.data, NULL);
       }
       break;
     default:
@@ -710,6 +732,10 @@ static upb_msgval jsondec_double(jsondec *d, const upb_fielddef *f) {
   }
 
   if (upb_fielddef_type(f) == UPB_TYPE_FLOAT) {
+    if (val.double_val != UPB_INFINITY && val.double_val != -UPB_INFINITY &&
+        (val.double_val > FLT_MAX || val.double_val < -FLT_MAX)) {
+      jsondec_err(d, "Float out of range");
+    }
     val.float_val = val.double_val;
   }
 
@@ -758,9 +784,11 @@ static upb_msgval jsondec_bool(jsondec *d, const upb_fielddef *f) {
     switch (jsondec_peek(d)) {
       case JD_TRUE:
         val.bool_val = true;
+        jsondec_true(d);
         break;
       case JD_FALSE:
         val.bool_val = false;
+        jsondec_false(d);
         break;
       default:
         jsondec_err(d, "Expected true or false");
@@ -897,14 +925,16 @@ static int jsondec_tsdigits(jsondec *d, const char **ptr, size_t digits,
   uint64_t val;
   const char *p = *ptr;
   const char *end = p + digits;
+  size_t after_len = after ? strlen(after) : 0;
+
   assert(digits <= 9);  /* int can't overflow. */
 
   if (jsondec_buftouint64(d, p, end, &val) != end ||
-      (after && memcmp(end, after, strlen(after)) != 0)) {
+      (after_len && memcmp(end, after, after_len) != 0)) {
     jsondec_err(d, "Malformed timestamp");
   }
 
-  *ptr = end + strlen(after);
+  *ptr = end + after_len;
   return val;
 }
 
@@ -929,7 +959,7 @@ static int jsondec_nanos(jsondec *d, const char **ptr, const char *end) {
 // jsondec_epochdays(1970, 1, 1) == 1970-01-01 == 0
 static int jsondec_epochdays(int y, int m, int d) {
   unsigned year_base = 4800;  /* Before minimum year, divisible by 100 & 400 */
-  unsigned epoch = 719528;   /* Days between year_base and 1970 (Unix epoch) */
+  unsigned epoch = 2472632;   /* Days between year_base and 1970 (Unix epoch) */
   unsigned carry = (unsigned)m - 3 > m;
   unsigned m_adj = m - 3 + (carry ? 12 : 0);   /* Month, counting from March */
   unsigned y_adj = y + year_base - carry;  /* Year, positive and March-based */
@@ -941,7 +971,7 @@ static int jsondec_epochdays(int y, int m, int d) {
 }
 
 static int64_t jsondec_unixtime(int y, int m, int d, int h, int min, int s) {
-  return jsondec_epochdays(y, m, d) * 86400 + h * 3600 + min * 60 + s;
+  return (int64_t)jsondec_epochdays(y, m, d) * 86400 + h * 3600 + min * 60 + s;
 }
 
 static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
@@ -1096,12 +1126,13 @@ static void jsondec_wellknownvalue(jsondec *d, upb_msg *msg,
       f = upb_msgdef_itof(m, 4);
       jsondec_true(d);
       break;
-    /* Note: these cases return, because upb_msg_mutable() is enough. */
     case JD_NULL:
       /* NullValue null_value = 1; */
+      val.int32_val = 0;
+      f = upb_msgdef_itof(m, 1);
       jsondec_null(d);
-      upb_msg_mutable(msg, upb_msgdef_itof(m, 1), d->arena);
-      return;
+      break;
+    /* Note: these cases return, because upb_msg_mutable() is enough. */
     case JD_OBJECT: {
       /* Struct struct_value = 5; */
       f = upb_msgdef_itof(m, 5);
@@ -1133,6 +1164,7 @@ static upb_strview jsondec_mask(jsondec *d, const char *buf, const char *end) {
   ret.size = end - ptr;
   while (ptr < end) {
     ret.size += (*ptr >= 'A' && *ptr <= 'Z');
+    ptr++;
   }
 
   out = upb_arena_malloc(d->arena, ret.size);
@@ -1239,7 +1271,10 @@ static void jsondec_any(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
     jsondec_entrysep(d);
     if (jsondec_streql(name, "@type")) {
       any_m = jsondec_typeurl(d, msg, m);
-      if (pre_type_data) pre_type_end = start;
+      if (pre_type_data) {
+        pre_type_end = start;
+        while (*pre_type_end != ',') pre_type_end--;
+      }
     } else {
       if (!pre_type_data) pre_type_data = start;
       jsondec_skipval(d);
@@ -1253,10 +1288,14 @@ static void jsondec_any(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
   any_msg = upb_msg_new(any_m, d->arena);
 
   if (pre_type_data) {
+    size_t len = pre_type_end - pre_type_data + 1;
+    char *tmp = upb_arena_malloc(d->arena, len);
+    memcpy(tmp, pre_type_data, len - 1);
+    tmp[len - 1] = '}';
     const char *saved_ptr = d->ptr;
     const char *saved_end = d->end;
-    d->ptr = pre_type_data;
-    d->end = pre_type_end;
+    d->ptr = tmp;
+    d->end = tmp + len;
     d->is_first = true;
     while (jsondec_objnext(d)) {
       jsondec_anyfield(d, any_msg, any_m);
@@ -1274,6 +1313,12 @@ static void jsondec_any(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
   encoded.str_val.data = upb_encode(any_msg, upb_msgdef_layout(any_m), d->arena,
                                     &encoded.str_val.size);
   upb_msg_set(msg, value_f, encoded, d->arena);
+}
+
+static void jsondec_wrapper(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
+  const upb_fielddef *value_f = upb_msgdef_itof(m, 1);
+  upb_msgval val = jsondec_value(d, value_f);
+  upb_msg_set(msg, value_f, val, d->arena);
 }
 
 static void jsondec_wellknown(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
@@ -1308,7 +1353,7 @@ static void jsondec_wellknown(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
     case UPB_WELLKNOWN_STRINGVALUE:
     case UPB_WELLKNOWN_BYTESVALUE:
     case UPB_WELLKNOWN_BOOLVALUE:
-      jsondec_value(d, upb_msgdef_itof(m, 1));
+      jsondec_wrapper(d, msg, m);
       break;
     default:
       UPB_UNREACHABLE();

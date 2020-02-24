@@ -67,6 +67,7 @@ static uint32_t *oneofcase(const upb_msg *msg,
 }
 
 static upb_msgval _upb_msg_getraw(const upb_msg *msg, const upb_fielddef *f) {
+  assert(f);
   const upb_msglayout_field *field = upb_fielddef_layout(f);
   const char *mem = PTR_AT(msg, field->offset, char);
   upb_msgval val = {0};

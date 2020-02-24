@@ -468,6 +468,10 @@ const char *upb_fielddef_name(const upb_fielddef *f) {
   return shortdefname(f->full_name);
 }
 
+const char *upb_fielddef_jsonname(const upb_fielddef *f) {
+  return f->json_name;
+}
+
 uint32_t upb_fielddef_selectorbase(const upb_fielddef *f) {
   return f->selector_base;
 }
@@ -1382,7 +1386,7 @@ static bool create_fielddef(
       return false;
     }
 
-    if (!upb_inttable_insert2(&m->itof, field_number, v, alloc)) {
+    if (upb_inttable_lookup(&m->itof, field_number, NULL)) {
       upb_status_seterrf(ctx->status, "duplicate field number (%u)",
                          field_number);
       return false;
