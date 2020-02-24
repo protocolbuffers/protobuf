@@ -136,8 +136,11 @@ upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
   const upb_msglayout_field *field = upb_fielddef_layout(f);
   upb_mutmsgval ret;
   char *mem = PTR_AT(msg, field->offset, char);
+  bool wrong_oneof = in_oneof(field) && *oneofcase(msg, field) != field->number;
+
   memcpy(&ret, mem, sizeof(void*));
-  if (a && !ret.msg) {
+
+  if (a && (!ret.msg || wrong_oneof)) {
     if (upb_fielddef_ismap(f)) {
       const upb_msgdef *entry = upb_fielddef_msgsubdef(f);
       const upb_fielddef *key = upb_msgdef_itof(entry, UPB_MAPENTRY_KEY);
@@ -149,7 +152,12 @@ upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
       UPB_ASSERT(upb_fielddef_issubmsg(f));
       ret.msg = upb_msg_new(upb_fielddef_msgsubdef(f), a);
     }
+
     memcpy(mem, &ret, sizeof(void*));
+
+    if (wrong_oneof) {
+      *oneofcase(msg, field) = field->number;
+    }
   }
   return ret;
 }
