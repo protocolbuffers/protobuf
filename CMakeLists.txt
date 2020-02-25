@@ -97,7 +97,9 @@ target_link_libraries(textformat
   port
   reflection)
 add_library(json
+  upb/json_decode.c
   upb/json_encode.c
+  upb/json_decode.h
   upb/json_encode.h)
 target_link_libraries(json
   port
