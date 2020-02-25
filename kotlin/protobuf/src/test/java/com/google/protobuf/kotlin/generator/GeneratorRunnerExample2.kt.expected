@@ -1,0 +1,106 @@
+@file:Suppress("DEPRECATION")
+
+package com.google.protobuf.kotlin.generator
+
+import com.google.protobuf.kotlin.ExtendableProtoDslV3
+import com.google.protobuf.kotlin.ProtoDslMarker
+import kotlin.Boolean
+import kotlin.Int
+import kotlin.PublishedApi
+import kotlin.String
+import kotlin.Suppress
+import kotlin.Unit
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
+
+/**
+ * Kotlin extensions for protos defined in the file testing/example2.proto.
+ */
+object Example2Kt {
+  /**
+   * Entry point for creating ExampleProto2Message messages in Kotlin.
+   */
+  @JvmSynthetic
+  inline fun exampleProto2Message(block: ExampleProto2MessageDsl.() -> Unit) =
+      ExampleProto2MessageDsl(Example2.ExampleProto2Message.newBuilder()).apply(block).build()
+
+  /**
+   * A DSL type for creating ExampleProto2Message messages.  To use it, call the
+   * [exampleProto2Message] method.
+   */
+  @ProtoDslMarker
+  class ExampleProto2MessageDsl @PublishedApi internal constructor(
+    builder_: Example2.ExampleProto2Message.Builder
+  ) : ExtendableProtoDslV3<Example2.ExampleProto2Message,
+      Example2.ExampleProto2Message.Builder>(builder_) {
+    @PublishedApi
+    internal val builder_: Example2.ExampleProto2Message.Builder
+      get() = _proto_dsl_builder
+
+    /**
+     * The protobuf.kotlin.generator.ExampleProto2Message.optional_int32_field field.
+     */
+    var optionalInt32Field: Int
+      @JvmName("getOptionalInt32Field")
+      get() = builder_.getOptionalInt32Field()
+      @JvmName("setOptionalInt32Field")
+      set(newValue) {
+        builder_.setOptionalInt32Field(newValue)
+      }
+
+    /**
+     * The protobuf.kotlin.generator.ExampleProto2Message.required_string_field field.
+     */
+    var requiredStringField: String
+      @JvmName("getRequiredStringField")
+      get() = builder_.getRequiredStringField()
+      @JvmName("setRequiredStringField")
+      set(newValue) {
+        builder_.setRequiredStringField(newValue)
+      }
+
+    /**
+     * Builds the ExampleProto2Message.
+     */
+    @PublishedApi
+    internal fun build(): Example2.ExampleProto2Message = builder_.build()
+
+    /**
+     * True if the optional_int32_field field has been set.
+     */
+    fun hasOptionalInt32Field(): Boolean = builder_.hasOptionalInt32Field()
+
+    /**
+     * True if the required_string_field field has been set.
+     */
+    fun hasRequiredStringField(): Boolean = builder_.hasRequiredStringField()
+
+    /**
+     * Clears any value assigned to the optional_int32_field field.
+     */
+    fun clearOptionalInt32Field() {
+      builder_.clearOptionalInt32Field()
+    }
+
+    /**
+     * Clears any value assigned to the required_string_field field.
+     */
+    fun clearRequiredStringField() {
+      builder_.clearRequiredStringField()
+    }
+  }
+
+  /**
+   * Kotlin extensions around the proto message type protobuf.kotlin.generator.ExampleProto2Message.
+   */
+  object ExampleProto2MessageKt
+}
+
+/**
+ * Creates a Example2.ExampleProto2Message equivalent to this one, but with the specified
+ * modifications.
+ */
+@JvmSynthetic
+inline fun Example2.ExampleProto2Message.copy(block: Example2Kt.ExampleProto2MessageDsl.() -> Unit):
+    Example2.ExampleProto2Message =
+    Example2Kt.ExampleProto2MessageDsl(toBuilder()).apply(block).build()

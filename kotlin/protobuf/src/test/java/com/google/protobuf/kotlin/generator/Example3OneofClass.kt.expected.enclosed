@@ -1,0 +1,60 @@
+import com.google.protobuf.kotlin.OneofRepresentation
+import com.google.protobuf.kotlin.generator.Example3
+import com.google.protobuf.kotlin.generator.Example3.ExampleMessage.MyOneofCase.MYONEOF_NOT_SET
+import com.google.protobuf.kotlin.generator.Example3.ExampleMessage.MyOneofCase.STRING_ONEOF_OPTION
+import com.google.protobuf.kotlin.generator.Example3.ExampleMessage.MyOneofCase.SUB_MESSAGE_ONEOF_OPTION
+import kotlin.Any
+import kotlin.PublishedApi
+import kotlin.String
+import kotlin.Unit
+
+/**
+ * Representation of a value for the oneof my_oneof.
+ */
+abstract class MyOneofOneofClass<T : Any>(
+  override val value: T,
+  override val case: Example3.ExampleMessage.MyOneofCase
+) : OneofRepresentation<T, Example3.ExampleMessage.MyOneofCase>() {
+  internal fun writeTo(builder: Example3.ExampleMessage.Builder) {
+    when (case) {
+      STRING_ONEOF_OPTION -> builder.stringOneofOption = value as String
+      SUB_MESSAGE_ONEOF_OPTION -> builder.subMessageOneofOption = value as
+          Example3.ExampleMessage.SubMessage
+      else -> builder.clearMyOneof()
+    }
+  }
+
+  /**
+   * A representation of the string_oneof_option option of the my_oneof oneof.
+   */
+  class StringOneofOptionOneofClass(
+    value: String
+  ) : MyOneofOneofClass<String>(value, STRING_ONEOF_OPTION)
+
+  /**
+   * A representation of the sub_message_oneof_option option of the my_oneof oneof.
+   */
+  class SubMessageOneofOptionOneofClass(
+    value: Example3.ExampleMessage.SubMessage
+  ) : MyOneofOneofClass<Example3.ExampleMessage.SubMessage>(value, SUB_MESSAGE_ONEOF_OPTION)
+
+  /**
+   * Represents the absence of a value for my_oneof.
+   */
+  object NotSetName : MyOneofOneofClass<Unit>(Unit, MYONEOF_NOT_SET)
+
+  companion object {
+    /**
+     * Extract an object representation of the set field of the oneof my_oneof.
+     */
+    @PublishedApi
+    internal fun readFrom(input: Example3.ExampleMessageOrBuilder): MyOneofOneofClass<*> {
+      val _theCase: Example3.ExampleMessage.MyOneofCase = input.myOneofCase
+      return when (_theCase) {
+        STRING_ONEOF_OPTION -> StringOneofOptionOneofClass(input.stringOneofOption)
+        SUB_MESSAGE_ONEOF_OPTION -> SubMessageOneofOptionOneofClass(input.subMessageOneofOption)
+        else -> NotSetName
+      }
+    }
+  }
+}

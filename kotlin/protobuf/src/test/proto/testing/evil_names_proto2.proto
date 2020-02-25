@@ -1,0 +1,50 @@
+syntax = "proto2";
+
+package protobuf.kotlin.generator;
+
+option java_package = "com.google.protobuf.kotlin.generator";
+
+/*
+ * We make sure the Kotlin version of this compiles, verifying b/140669339
+ * is fixed.
+ */
+message EvilNamesProto2 {
+  optional bool initialized = 1;
+  optional bool has_foo = 2;
+  optional string Bar = 3;
+  optional bool is_initialized = 4;
+
+  oneof my_oneof {
+    string aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa = 10;
+  }
+
+  oneof camelCase {  // regression test for b/142341003
+    string fooBar = 5;
+  }
+
+  repeated string ALL_CAPS = 7;
+  map<int32, bool> ALL_CAPS_MAP = 8;
+
+  // Cases where characters follow digit for b/143478601
+  optional bool has_underbar_preceeding_numeric_1foo = 9;
+  optional bool has_underbar_preceeding_numeric_42bar = 13;
+  optional bool has_underbar_preceeding_numeric_123foo42bar_baz = 14;
+
+  extensions 100 to max;
+
+  repeated string extension = 12;
+  repeated int32 class = 15;
+  optional double int = 16;
+  optional bool long = 17;
+  optional int64 boolean = 18;
+  optional string sealed = 19;
+  optional float interface = 20;
+  optional int32 in = 21;
+  optional string object = 22;
+  optional string cached_size = 23;
+  optional bool serialized_size = 24;
+}
+
+message AnotherEvilNamesProto2 {
+  map<int32, int32> class = 1;
+}

@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package testing;
+
+message ProtoApi1ImplicitPackageMessage {}

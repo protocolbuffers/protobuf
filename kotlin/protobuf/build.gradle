@@ -1,0 +1,118 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version'1.3.61'
+    id 'com.google.protobuf' version '0.8.8'
+
+    // Generate IntelliJ IDEA's .idea & .iml project files
+    // Starting with 0.8.4 of protobuf-gradle-plugin, *.proto and the gen output files are added
+    // to IntelliJ as sources. It is no longer necessary to add them manually to the idea {} block
+    // to jump to definitions from Java and Kotlin files.
+    // For best results, install the Protobuf and Kotlin plugins for IntelliJ.
+    id 'idea'
+
+    // Provide convenience executables for trying out the examples.
+    id 'application'
+    id 'maven-publish'
+}
+
+apply plugin : "java"
+
+mainClassName = 'com.google.protobuf.kotlin.generator.GeneratorRunner'
+applicationName = 'proto-kotlin'
+
+// Generate the jar file to be used by our custom plugin
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+repositories {
+    google()
+    jcenter()
+    mavenCentral()
+    mavenLocal()
+}
+
+// Feel free to delete the comment at the next line. It is just for safely
+// updating the version in our release process.
+def coroutinesVersion = '1.3.3'
+def kotlinVersion = '1.3.61'
+
+dependencies {
+    // Kotlin
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
+
+    // Protobuf
+    compile "io.grpc:protoc-plugin-kotlin:0.1"
+    compile 'com.google.protobuf:protobuf-gradle-plugin:0.8.11'
+    compile 'com.google.protobuf:protobuf-java:3.11.0'
+
+    compile 'com.squareup:kotlinpoet:1.5.0'
+    compile "org.jetbrains.kotlin:kotlin-reflect:1.3.61"
+
+    // Testing
+    testImplementation "com.google.truth:truth:1.0.1"
+    testImplementation "com.google.truth.extensions:truth-proto-extension:1.0"
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.3.2'
+    testImplementation "org.jetbrains.kotlin:kotlin-android-extensions:$kotlinVersion"
+    testImplementation "junit:junit:4.12"
+    testImplementation "com.google.jimfs:jimfs:1.1"
+}
+
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:3.11.0' }
+    plugins {
+        // Specify protoc to generate using our kotlin plugin
+        kotlin {
+            path = 'build/install/proto-kotlin/bin/proto-kotlin'
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            // Generate the protoc binary first so we can generate the files for
+            // our tests
+            if (task.name.startsWith('generateTestProto')) {
+                task.dependsOn { installDist }
+            }
+            task.plugins {
+                // Add kotlin output without any option. This yields
+                // "--custom_out=/path/to/output" on the protoc commandline.
+                kotlin {}
+            }
+        }
+    }
+}
+
+def artifactForGradlePlugin(MavenPublication pub, String os, String arch) {
+    if (os == "windows") {
+        pub.artifact("src/main/dist/protoc-gen-kotlin.bat" as File) {
+            classifier os + "-" + arch
+            extension "exe"
+        }
+    } else {
+        pub.artifact("src/main/dist/protoc-gen-kotlin" as File) {
+            classifier os + "-" + arch
+            extension "exe"
+        }
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'io.grpc'
+            artifactId = 'proto-kotlin'
+            version = '0.1'
+            from components.java
+
+            // Generate the artifacts expected by protobuf-gradle-plugin
+            artifactForGradlePlugin(it, 'linux', 'aarch_64')
+            artifactForGradlePlugin(it, 'linux', 'x86_32')
+            artifactForGradlePlugin(it, 'linux', 'x86_64')
+            artifactForGradlePlugin(it, 'osx', 'x86_64')
+            artifactForGradlePlugin(it, 'windows', 'x86_32')
+            artifactForGradlePlugin(it, 'windows', 'x86_64')
+        }
+    }
+}

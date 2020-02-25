@@ -1,0 +1,767 @@
+@file:Suppress("DEPRECATION")
+
+package com.google.protobuf.kotlin.generator
+
+import com.google.protobuf.Int32Value
+import com.google.protobuf.kotlin.DslList
+import com.google.protobuf.kotlin.DslMap
+import com.google.protobuf.kotlin.OneofRepresentation
+import com.google.protobuf.kotlin.ProtoDsl
+import com.google.protobuf.kotlin.ProtoDslMarker
+import com.google.protobuf.kotlin.generator.Example3.ExampleMessage.DeprecatedOneofCase.DEPRECATEDONEOF_NOT_SET
+import com.google.protobuf.kotlin.generator.Example3.ExampleMessage.DeprecatedOneofCase.DEPRECATED_ONEOF_OPTION
+import com.google.protobuf.kotlin.generator.Example3.ExampleMessage.MyOneofCase.MYONEOF_NOT_SET
+import com.google.protobuf.kotlin.generator.Example3.ExampleMessage.MyOneofCase.STRING_ONEOF_OPTION
+import com.google.protobuf.kotlin.generator.Example3.ExampleMessage.MyOneofCase.SUB_MESSAGE_ONEOF_OPTION
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Deprecated
+import kotlin.Int
+import kotlin.Long
+import kotlin.PublishedApi
+import kotlin.String
+import kotlin.Suppress
+import kotlin.Unit
+import kotlin.collections.Iterable
+import kotlin.collections.Map
+import kotlin.jvm.JvmName
+import kotlin.jvm.JvmSynthetic
+
+/**
+ * Kotlin extensions for protos defined in the file testing/example3.proto.
+ */
+object Example3Kt {
+  /**
+   * Entry point for creating ExampleMessage messages in Kotlin.
+   */
+  @JvmSynthetic
+  inline fun exampleMessage(block: ExampleMessageDsl.() -> Unit) =
+      ExampleMessageDsl(Example3.ExampleMessage.newBuilder()).apply(block).build()
+
+  /**
+   * A DSL type for creating ExampleMessage messages.  To use it, call the [exampleMessage] method.
+   */
+  @ProtoDslMarker
+  class ExampleMessageDsl @PublishedApi internal constructor(
+    builder_: Example3.ExampleMessage.Builder
+  ) : ProtoDsl<Example3.ExampleMessage.Builder>(builder_) {
+    @PublishedApi
+    internal val builder_: Example3.ExampleMessage.Builder
+      get() = _proto_dsl_builder
+
+    /**
+     * The protobuf.kotlin.generator.ExampleMessage.int32_field field.
+     */
+    var int32Field: Int
+      @JvmName("getInt32Field")
+      get() = builder_.getInt32Field()
+      @JvmName("setInt32Field")
+      set(newValue) {
+        builder_.setInt32Field(newValue)
+      }
+
+    /**
+     * The protobuf.kotlin.generator.ExampleMessage.string_field field.
+     */
+    var stringField: String
+      @JvmName("getStringField")
+      get() = builder_.getStringField()
+      @JvmName("setStringField")
+      set(newValue) {
+        builder_.setStringField(newValue)
+      }
+
+    /**
+     * The protobuf.kotlin.generator.ExampleMessage.sub_message_field field.
+     */
+    var subMessageField: Example3.ExampleMessage.SubMessage
+      @JvmName("getSubMessageField")
+      get() = builder_.getSubMessageField()
+      @JvmName("setSubMessageField")
+      set(newValue) {
+        builder_.setSubMessageField(newValue)
+      }
+
+    /**
+     * The protobuf.kotlin.generator.ExampleMessage.string_oneof_option field.
+     */
+    var stringOneofOption: String
+      @JvmName("getStringOneofOption")
+      get() = builder_.getStringOneofOption()
+      @JvmName("setStringOneofOption")
+      set(newValue) {
+        builder_.setStringOneofOption(newValue)
+      }
+
+    /**
+     * The protobuf.kotlin.generator.ExampleMessage.sub_message_oneof_option field.
+     */
+    var subMessageOneofOption: Example3.ExampleMessage.SubMessage
+      @JvmName("getSubMessageOneofOption")
+      get() = builder_.getSubMessageOneofOption()
+      @JvmName("setSubMessageOneofOption")
+      set(newValue) {
+        builder_.setSubMessageOneofOption(newValue)
+      }
+
+    /**
+     * The protobuf.kotlin.generator.ExampleMessage.optional_int32 field.
+     */
+    var optionalInt32: Int32Value
+      @JvmName("getOptionalInt32")
+      get() = builder_.getOptionalInt32()
+      @JvmName("setOptionalInt32")
+      set(newValue) {
+        builder_.setOptionalInt32(newValue)
+      }
+
+    /**
+     * The protobuf.kotlin.generator.ExampleMessage.deprecated_field field.
+     */
+    @Deprecated(message = "Field deprecated_field is deprecated")
+    var deprecatedField: String
+      @JvmName("getDeprecatedField")
+      get() = builder_.getDeprecatedField()
+      @JvmName("setDeprecatedField")
+      set(newValue) {
+        builder_.setDeprecatedField(newValue)
+      }
+
+    /**
+     * The protobuf.kotlin.generator.ExampleMessage.deprecated_oneof_option field.
+     */
+    @Deprecated(message = "Field deprecated_oneof_option is deprecated")
+    var deprecatedOneofOption: String
+      @JvmName("getDeprecatedOneofOption")
+      get() = builder_.getDeprecatedOneofOption()
+      @JvmName("setDeprecatedOneofOption")
+      set(newValue) {
+        builder_.setDeprecatedOneofOption(newValue)
+      }
+
+    /**
+     * An enum reflecting which field of the oneof my_oneof is set.
+     */
+    val myOneofCase: Example3.ExampleMessage.MyOneofCase
+      get() = builder_.myOneofCase
+
+    /**
+     * An enum reflecting which field of the oneof deprecated_oneof is set.
+     */
+    val deprecatedOneofCase: Example3.ExampleMessage.DeprecatedOneofCase
+      get() = builder_.deprecatedOneofCase
+
+    /**
+     * An object representing a value assigned to the oneof my_oneof.
+     */
+    var myOneof: ExampleMessageKt.MyOneofOneof<*>
+      get() = ExampleMessageKt.MyOneofOneof.readFrom(builder_)
+      set(newValue) {
+        newValue.writeTo(builder_)
+      }
+
+    /**
+     * An object representing a value assigned to the oneof deprecated_oneof.
+     */
+    var deprecatedOneof: ExampleMessageKt.DeprecatedOneofOneof<*>
+      get() = ExampleMessageKt.DeprecatedOneofOneof.readFrom(builder_)
+      set(newValue) {
+        newValue.writeTo(builder_)
+      }
+
+    /**
+     * A [kotlin.collections.List] view of the repeated field repeated_string_field.
+     *
+     * While the view object itself is a `List`, not a `MutableList`, within the context of the
+     * DSL it has extension methods and operator overloads that mutate it appropriately.
+     * For example, writing `repeatedStringField += element` adds that element to the repeated
+     * field, but that
+     * code only compiles within the DSL.
+     */
+    val repeatedStringField: DslList<String, RepeatedStringFieldProxy>
+      inline get() = DslList(builder_.getRepeatedStringFieldList())
+
+    /**
+     * A [kotlin.collections.List] view of the repeated field deprecated_repeated_field.
+     *
+     * While the view object itself is a `List`, not a `MutableList`, within the context of the
+     * DSL it has extension methods and operator overloads that mutate it appropriately.
+     * For example, writing `deprecatedRepeatedField += element` adds that element to the repeated
+     * field, but that
+     * code only compiles within the DSL.
+     */
+    @Deprecated(message = "Field deprecated_repeated_field is deprecated")
+    val deprecatedRepeatedField: DslList<Int, DeprecatedRepeatedFieldProxy>
+      inline get() = DslList(builder_.getDeprecatedRepeatedFieldList())
+
+    /**
+     * A [Map] view of the map field map_field.
+     *
+     * While the view object itself is a `Map`, not a `MutableMap`, within the context of the
+     * DSL it has extension methods and operator overloads that mutate it appropriately.
+     * For example, writing `mapField[k] = v` adds a mapping from `k` to `v` in the map field,
+     * but that code only compiles within the DSL.
+     */
+    val mapField: DslMap<Long, Example3.ExampleMessage.SubMessage, MapFieldProxy>
+      get() = DslMap(builder_.getMapFieldMap())
+
+    /**
+     * A [Map] view of the map field deprecated_map_field.
+     *
+     * While the view object itself is a `Map`, not a `MutableMap`, within the context of the
+     * DSL it has extension methods and operator overloads that mutate it appropriately.
+     * For example, writing `deprecatedMapField[k] = v` adds a mapping from `k` to `v` in the map
+     * field,
+     * but that code only compiles within the DSL.
+     */
+    @Deprecated(message = "Field deprecated_map_field is deprecated")
+    val deprecatedMapField: DslMap<String, Int, DeprecatedMapFieldProxy>
+      get() = DslMap(builder_.getDeprecatedMapFieldMap())
+
+    /**
+     * Builds the ExampleMessage.
+     */
+    @PublishedApi
+    internal fun build(): Example3.ExampleMessage = builder_.build()
+
+    /**
+     * True if the sub_message_field field has been set.
+     */
+    fun hasSubMessageField(): Boolean = builder_.hasSubMessageField()
+
+    /**
+     * True if the sub_message_oneof_option field has been set.
+     */
+    fun hasSubMessageOneofOption(): Boolean = builder_.hasSubMessageOneofOption()
+
+    /**
+     * True if the optional_int32 field has been set.
+     */
+    fun hasOptionalInt32(): Boolean = builder_.hasOptionalInt32()
+
+    /**
+     * Clears any value assigned to the int32_field field.
+     */
+    fun clearInt32Field() {
+      builder_.clearInt32Field()
+    }
+
+    /**
+     * Clears any value assigned to the string_field field.
+     */
+    fun clearStringField() {
+      builder_.clearStringField()
+    }
+
+    /**
+     * Clears any value assigned to the sub_message_field field.
+     */
+    fun clearSubMessageField() {
+      builder_.clearSubMessageField()
+    }
+
+    /**
+     * Clears any value assigned to the string_oneof_option field.
+     */
+    fun clearStringOneofOption() {
+      builder_.clearStringOneofOption()
+    }
+
+    /**
+     * Clears any value assigned to the sub_message_oneof_option field.
+     */
+    fun clearSubMessageOneofOption() {
+      builder_.clearSubMessageOneofOption()
+    }
+
+    /**
+     * Clears any value assigned to the optional_int32 field.
+     */
+    fun clearOptionalInt32() {
+      builder_.clearOptionalInt32()
+    }
+
+    /**
+     * Clears any value assigned to the deprecated_field field.
+     */
+    @Deprecated(message = "Field deprecated_field is deprecated")
+    fun clearDeprecatedField() {
+      builder_.clearDeprecatedField()
+    }
+
+    /**
+     * Clears any value assigned to the deprecated_oneof_option field.
+     */
+    @Deprecated(message = "Field deprecated_oneof_option is deprecated")
+    fun clearDeprecatedOneofOption() {
+      builder_.clearDeprecatedOneofOption()
+    }
+
+    /**
+     * Adds an element to the repeated field repeated_string_field.
+     *
+     * For example, `repeatedStringField.add(value)` adds `value` to repeated_string_field.
+     */
+    @JvmName("addRepeatedStringField")
+    fun DslList<String, RepeatedStringFieldProxy>.add(newValue: String) {
+      builder_.addRepeatedStringField(newValue)
+    }
+
+    /**
+     * Adds an element to the repeated field repeated_string_field.
+     *
+     * For example, `repeatedStringField += value` adds `value` to repeated_string_field.
+     */
+    @JvmName("plusAssignRepeatedStringField")
+    operator fun DslList<String, RepeatedStringFieldProxy>.plusAssign(newValue: String) {
+      builder_.addRepeatedStringField(newValue)
+    }
+
+    /**
+     * Adds elements to the repeated field repeated_string_field.
+     *
+     * For example, `repeatedStringField.addAll(values)` adds each of the elements of `values`, in
+     * order, to repeated_string_field.
+     */
+    @JvmName("addAllRepeatedStringField")
+    fun DslList<String, RepeatedStringFieldProxy>.addAll(newValues: Iterable<String>) {
+      builder_.addAllRepeatedStringField(newValues)
+    }
+
+    /**
+     * Adds elements to the repeated field repeated_string_field.
+     *
+     * For example, `repeatedStringField += values` adds each of the elements of `values`, in order,
+     * to repeated_string_field.
+     */
+    @JvmName("plusAssignRepeatedStringField")
+    operator fun DslList<String, RepeatedStringFieldProxy>.plusAssign(newValues: Iterable<String>) {
+      builder_.addAllRepeatedStringField(newValues)
+    }
+
+    /**
+     * Sets the element of the repeated field repeated_string_field at a given index.
+     *
+     * For example, `repeatedStringField[i] = value` sets the `i`th element of repeated_string_field
+     * to `value`.
+     */
+    @JvmName("setRepeatedStringField")
+    operator fun DslList<String, RepeatedStringFieldProxy>.set(index: Int, newValue: String) {
+      builder_.setRepeatedStringField(index, newValue)
+    }
+
+    /**
+     * Removes all elements from the repeated field repeated_string_field.
+     *
+     * For example, `repeatedStringField.clear()` deletes all elements from repeated_string_field.
+     */
+    @JvmName("clearRepeatedStringField")
+    fun DslList<String, RepeatedStringFieldProxy>.clear() {
+      builder_.clearRepeatedStringField()
+    }
+
+    /**
+     * Adds an element to the repeated field deprecated_repeated_field.
+     *
+     * For example, `deprecatedRepeatedField.add(value)` adds `value` to deprecated_repeated_field.
+     */
+    @JvmName("addDeprecatedRepeatedField")
+    fun DslList<Int, DeprecatedRepeatedFieldProxy>.add(newValue: Int) {
+      builder_.addDeprecatedRepeatedField(newValue)
+    }
+
+    /**
+     * Adds an element to the repeated field deprecated_repeated_field.
+     *
+     * For example, `deprecatedRepeatedField += value` adds `value` to deprecated_repeated_field.
+     */
+    @JvmName("plusAssignDeprecatedRepeatedField")
+    operator fun DslList<Int, DeprecatedRepeatedFieldProxy>.plusAssign(newValue: Int) {
+      builder_.addDeprecatedRepeatedField(newValue)
+    }
+
+    /**
+     * Adds elements to the repeated field deprecated_repeated_field.
+     *
+     * For example, `deprecatedRepeatedField.addAll(values)` adds each of the elements of `values`,
+     * in order, to deprecated_repeated_field.
+     */
+    @JvmName("addAllDeprecatedRepeatedField")
+    fun DslList<Int, DeprecatedRepeatedFieldProxy>.addAll(newValues: Iterable<Int>) {
+      builder_.addAllDeprecatedRepeatedField(newValues)
+    }
+
+    /**
+     * Adds elements to the repeated field deprecated_repeated_field.
+     *
+     * For example, `deprecatedRepeatedField += values` adds each of the elements of `values`, in
+     * order, to deprecated_repeated_field.
+     */
+    @JvmName("plusAssignDeprecatedRepeatedField")
+    operator fun DslList<Int, DeprecatedRepeatedFieldProxy>.plusAssign(newValues: Iterable<Int>) {
+      builder_.addAllDeprecatedRepeatedField(newValues)
+    }
+
+    /**
+     * Sets the element of the repeated field deprecated_repeated_field at a given index.
+     *
+     * For example, `deprecatedRepeatedField[i] = value` sets the `i`th element of
+     * deprecated_repeated_field to `value`.
+     */
+    @JvmName("setDeprecatedRepeatedField")
+    operator fun DslList<Int, DeprecatedRepeatedFieldProxy>.set(index: Int, newValue: Int) {
+      builder_.setDeprecatedRepeatedField(index, newValue)
+    }
+
+    /**
+     * Removes all elements from the repeated field deprecated_repeated_field.
+     *
+     * For example, `deprecatedRepeatedField.clear()` deletes all elements from
+     * deprecated_repeated_field.
+     */
+    @JvmName("clearDeprecatedRepeatedField")
+    fun DslList<Int, DeprecatedRepeatedFieldProxy>.clear() {
+      builder_.clearDeprecatedRepeatedField()
+    }
+
+    /**
+     * Puts the specified key-value pair into the map field map_field, overwriting any previous
+     * value associated with the key.
+     *
+     * For example, `mapField.put(k, v)` maps the key `k` to the value `v` in map_field.
+     *
+     * Calling this method with any receiver but [mapField] may have undefined behavior.
+     */
+    @JvmName("putMapField")
+    fun DslMap<Long, Example3.ExampleMessage.SubMessage, MapFieldProxy>.put(key: Long,
+        newValue: Example3.ExampleMessage.SubMessage) {
+      builder_.putMapField(key, newValue)
+    }
+
+    /**
+     * Puts the specified key-value pair into the map field map_field, overwriting any previous
+     * value associated with the key.
+     *
+     * For example, `mapField[k] = v` maps the key `k` to the value `v` in map_field.
+     *
+     * Calling this method with any receiver but [mapField] may have undefined behavior.
+     */
+    @JvmName("setMapField")
+    operator fun DslMap<Long, Example3.ExampleMessage.SubMessage, MapFieldProxy>.set(key: Long,
+        newValue: Example3.ExampleMessage.SubMessage) {
+      builder_.putMapField(key, newValue)
+    }
+
+    /**
+     * Removes the entry for the specified key from the map field map_field, if one exists.
+     * Otherwise, does nothing.
+     *
+     * For example, `mapField.remove(k)` removes the key `k` from map_field.
+     *
+     * Calling this method with any receiver but [mapField] may have undefined behavior.
+     */
+    @JvmName("removeMapField")
+    fun DslMap<Long, Example3.ExampleMessage.SubMessage, MapFieldProxy>.remove(key: Long) {
+      builder_.removeMapField(key)
+    }
+
+    /**
+     * Puts the entries in the given map into the map field map_field.  If there is already an entry
+     * for a key in the map, it is overwritten.
+     *
+     * For example, `mapField.putAll(mapOf(k1 to v1, k2 to v2))` is equivalent to `mapField[k1] =
+     * v1; mapField[k2] = v2`.
+     *
+     * Calling this method with any receiver but [mapField] may have undefined behavior.
+     */
+    @JvmName("putAllMapField")
+    fun DslMap<Long, Example3.ExampleMessage.SubMessage, MapFieldProxy>.putAll(map: Map<Long,
+        Example3.ExampleMessage.SubMessage>) {
+      builder_.putAllMapField(map)
+    }
+
+    /**
+     * Removes all entries from the map field map_field.
+     *
+     * For example, `mapField.clear()` deletes all entries previously part of map_field.
+     *
+     * Calling this method with any receiver but [mapField] may have undefined behavior.
+     */
+    @JvmName("clearMapField")
+    fun DslMap<Long, Example3.ExampleMessage.SubMessage, MapFieldProxy>.clear() {
+      builder_.clearMapField()
+    }
+
+    /**
+     * Puts the specified key-value pair into the map field deprecated_map_field, overwriting any
+     * previous
+     * value associated with the key.
+     *
+     * For example, `deprecatedMapField.put(k, v)` maps the key `k` to the value `v` in
+     * deprecated_map_field.
+     *
+     * Calling this method with any receiver but [deprecatedMapField] may have undefined behavior.
+     */
+    @JvmName("putDeprecatedMapField")
+    fun DslMap<String, Int, DeprecatedMapFieldProxy>.put(key: String, newValue: Int) {
+      builder_.putDeprecatedMapField(key, newValue)
+    }
+
+    /**
+     * Puts the specified key-value pair into the map field deprecated_map_field, overwriting any
+     * previous
+     * value associated with the key.
+     *
+     * For example, `deprecatedMapField[k] = v` maps the key `k` to the value `v` in
+     * deprecated_map_field.
+     *
+     * Calling this method with any receiver but [deprecatedMapField] may have undefined behavior.
+     */
+    @JvmName("setDeprecatedMapField")
+    operator fun DslMap<String, Int, DeprecatedMapFieldProxy>.set(key: String, newValue: Int) {
+      builder_.putDeprecatedMapField(key, newValue)
+    }
+
+    /**
+     * Removes the entry for the specified key from the map field deprecated_map_field, if one
+     * exists.
+     * Otherwise, does nothing.
+     *
+     * For example, `deprecatedMapField.remove(k)` removes the key `k` from deprecated_map_field.
+     *
+     * Calling this method with any receiver but [deprecatedMapField] may have undefined behavior.
+     */
+    @JvmName("removeDeprecatedMapField")
+    fun DslMap<String, Int, DeprecatedMapFieldProxy>.remove(key: String) {
+      builder_.removeDeprecatedMapField(key)
+    }
+
+    /**
+     * Puts the entries in the given map into the map field deprecated_map_field.  If there is
+     * already an entry
+     * for a key in the map, it is overwritten.
+     *
+     * For example, `deprecatedMapField.putAll(mapOf(k1 to v1, k2 to v2))` is equivalent to
+     * `deprecatedMapField[k1] = v1; deprecatedMapField[k2] = v2`.
+     *
+     * Calling this method with any receiver but [deprecatedMapField] may have undefined behavior.
+     */
+    @JvmName("putAllDeprecatedMapField")
+    fun DslMap<String, Int, DeprecatedMapFieldProxy>.putAll(map: Map<String, Int>) {
+      builder_.putAllDeprecatedMapField(map)
+    }
+
+    /**
+     * Removes all entries from the map field deprecated_map_field.
+     *
+     * For example, `deprecatedMapField.clear()` deletes all entries previously part of
+     * deprecated_map_field.
+     *
+     * Calling this method with any receiver but [deprecatedMapField] may have undefined behavior.
+     */
+    @JvmName("clearDeprecatedMapField")
+    fun DslMap<String, Int, DeprecatedMapFieldProxy>.clear() {
+      builder_.clearDeprecatedMapField()
+    }
+
+    /**
+     * An uninstantiable, behaviorless type to represent the field repeated_string_field in
+     * generics.
+     */
+    class RepeatedStringFieldProxy private constructor()
+
+    /**
+     * An uninstantiable, behaviorless type to represent the field deprecated_repeated_field in
+     * generics.
+     */
+    class DeprecatedRepeatedFieldProxy private constructor()
+
+    /**
+     * A behaviorless, uninstantiable type to represent the field map_field in generics.
+     */
+    class MapFieldProxy private constructor()
+
+    /**
+     * A behaviorless, uninstantiable type to represent the field deprecated_map_field in generics.
+     */
+    class DeprecatedMapFieldProxy private constructor()
+  }
+
+  /**
+   * Kotlin extensions around the proto message type protobuf.kotlin.generator.ExampleMessage.
+   */
+  object ExampleMessageKt {
+    /**
+     * Entry point for creating SubMessage messages in Kotlin.
+     */
+    @JvmSynthetic
+    inline fun subMessage(block: SubMessageDsl.() -> Unit) =
+        SubMessageDsl(Example3.ExampleMessage.SubMessage.newBuilder()).apply(block).build()
+
+    /**
+     * Representation of a value for the oneof my_oneof.
+     */
+    abstract class MyOneofOneof<T : Any>(
+      override val value: T,
+      override val case: Example3.ExampleMessage.MyOneofCase
+    ) : OneofRepresentation<T, Example3.ExampleMessage.MyOneofCase>() {
+      internal fun writeTo(builder: Example3.ExampleMessage.Builder) {
+        when (case) {
+          STRING_ONEOF_OPTION -> builder.stringOneofOption = value as String
+          SUB_MESSAGE_ONEOF_OPTION -> builder.subMessageOneofOption = value as
+              Example3.ExampleMessage.SubMessage
+          else -> builder.clearMyOneof()
+        }
+      }
+
+      /**
+       * A representation of the string_oneof_option option of the my_oneof oneof.
+       */
+      class StringOneofOption(
+        value: String
+      ) : MyOneofOneof<String>(value, STRING_ONEOF_OPTION)
+
+      /**
+       * A representation of the sub_message_oneof_option option of the my_oneof oneof.
+       */
+      class SubMessageOneofOption(
+        value: Example3.ExampleMessage.SubMessage
+      ) : MyOneofOneof<Example3.ExampleMessage.SubMessage>(value, SUB_MESSAGE_ONEOF_OPTION)
+
+      /**
+       * Represents the absence of a value for my_oneof.
+       */
+      object NotSet : MyOneofOneof<Unit>(Unit, MYONEOF_NOT_SET)
+
+      companion object {
+        /**
+         * Extract an object representation of the set field of the oneof my_oneof.
+         */
+        @PublishedApi
+        internal fun readFrom(input: Example3.ExampleMessageOrBuilder): MyOneofOneof<*> {
+          val _theCase: Example3.ExampleMessage.MyOneofCase = input.myOneofCase
+          return when (_theCase) {
+            STRING_ONEOF_OPTION -> StringOneofOption(input.stringOneofOption)
+            SUB_MESSAGE_ONEOF_OPTION -> SubMessageOneofOption(input.subMessageOneofOption)
+            else -> NotSet
+          }
+        }
+      }
+    }
+
+    /**
+     * Representation of a value for the oneof deprecated_oneof.
+     */
+    abstract class DeprecatedOneofOneof<T : Any>(
+      override val value: T,
+      override val case: Example3.ExampleMessage.DeprecatedOneofCase
+    ) : OneofRepresentation<T, Example3.ExampleMessage.DeprecatedOneofCase>() {
+      internal fun writeTo(builder: Example3.ExampleMessage.Builder) {
+        when (case) {
+          DEPRECATED_ONEOF_OPTION -> builder.deprecatedOneofOption = value as String
+          else -> builder.clearDeprecatedOneof()
+        }
+      }
+
+      /**
+       * A representation of the deprecated_oneof_option option of the deprecated_oneof oneof.
+       */
+      @Deprecated(message = "Field deprecated_oneof_option is deprecated")
+      class DeprecatedOneofOption(
+        value: String
+      ) : DeprecatedOneofOneof<String>(value, DEPRECATED_ONEOF_OPTION)
+
+      /**
+       * Represents the absence of a value for deprecated_oneof.
+       */
+      object NotSet : DeprecatedOneofOneof<Unit>(Unit, DEPRECATEDONEOF_NOT_SET)
+
+      companion object {
+        /**
+         * Extract an object representation of the set field of the oneof deprecated_oneof.
+         */
+        @PublishedApi
+        internal fun readFrom(input: Example3.ExampleMessageOrBuilder): DeprecatedOneofOneof<*> {
+          val _theCase: Example3.ExampleMessage.DeprecatedOneofCase = input.deprecatedOneofCase
+          return when (_theCase) {
+            DEPRECATED_ONEOF_OPTION -> DeprecatedOneofOption(input.deprecatedOneofOption)
+            else -> NotSet
+          }
+        }
+      }
+    }
+
+    /**
+     * A DSL type for creating SubMessage messages.  To use it, call the [subMessage] method.
+     */
+    @ProtoDslMarker
+    class SubMessageDsl @PublishedApi internal constructor(
+      builder_: Example3.ExampleMessage.SubMessage.Builder
+    ) : ProtoDsl<Example3.ExampleMessage.SubMessage.Builder>(builder_) {
+      @PublishedApi
+      internal val builder_: Example3.ExampleMessage.SubMessage.Builder
+        get() = _proto_dsl_builder
+
+      /**
+       * Builds the SubMessage.
+       */
+      @PublishedApi
+      internal fun build(): Example3.ExampleMessage.SubMessage = builder_.build()
+    }
+
+    /**
+     * Kotlin extensions around the proto message type
+     * protobuf.kotlin.generator.ExampleMessage.SubMessage.
+     */
+    object SubMessageKt
+  }
+}
+
+/**
+ * Creates a Example3.ExampleMessage equivalent to this one, but with the specified modifications.
+ */
+@JvmSynthetic
+inline fun Example3.ExampleMessage.copy(block: Example3Kt.ExampleMessageDsl.() -> Unit):
+    Example3.ExampleMessage = Example3Kt.ExampleMessageDsl(toBuilder()).apply(block).build()
+
+/**
+ * Creates a Example3.ExampleMessage.SubMessage equivalent to this one, but with the specified
+ * modifications.
+ */
+@JvmSynthetic
+inline
+    fun Example3.ExampleMessage.SubMessage.copy(block: Example3Kt.ExampleMessageKt.SubMessageDsl.() ->
+    Unit): Example3.ExampleMessage.SubMessage =
+    Example3Kt.ExampleMessageKt.SubMessageDsl(toBuilder()).apply(block).build()
+
+/**
+ * The value of the oneof my_oneof.
+ */
+val Example3.ExampleMessageOrBuilder.myOneof: Example3Kt.ExampleMessageKt.MyOneofOneof<*>
+  get() = Example3Kt.ExampleMessageKt.MyOneofOneof.readFrom(this)
+
+/**
+ * The value of the oneof my_oneof.
+ */
+var Example3.ExampleMessage.Builder.myOneof: Example3Kt.ExampleMessageKt.MyOneofOneof<*>
+  get() = Example3Kt.ExampleMessageKt.MyOneofOneof.readFrom(this)
+  set(newOneofParam) {
+    newOneofParam.writeTo(this)
+  }
+
+/**
+ * The value of the oneof deprecated_oneof.
+ */
+val Example3.ExampleMessageOrBuilder.deprecatedOneof:
+    Example3Kt.ExampleMessageKt.DeprecatedOneofOneof<*>
+  get() = Example3Kt.ExampleMessageKt.DeprecatedOneofOneof.readFrom(this)
+
+/**
+ * The value of the oneof deprecated_oneof.
+ */
+var Example3.ExampleMessage.Builder.deprecatedOneof:
+    Example3Kt.ExampleMessageKt.DeprecatedOneofOneof<*>
+  get() = Example3Kt.ExampleMessageKt.DeprecatedOneofOneof.readFrom(this)
+  set(newOneofParam) {
+    newOneofParam.writeTo(this)
+  }

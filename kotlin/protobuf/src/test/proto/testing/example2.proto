@@ -1,0 +1,17 @@
+syntax = "proto2";
+
+package protobuf.kotlin.generator;
+
+option java_package = "com.google.protobuf.kotlin.generator";
+
+message ExampleProto2Message {
+  optional int32 optional_int32_field = 1;
+  required string required_string_field = 2;
+
+  extensions 100 to 199;
+}
+
+extend ExampleProto2Message {
+  optional int32 int32_extension = 100;
+  repeated string repeated_string_extension = 101;
+}

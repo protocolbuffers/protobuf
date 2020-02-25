@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package testing;
+
+option java_package = "com.google.protos.testing.proto2api";
+
+message ProtoApi1ExplicitPackageMessage {
+
+}

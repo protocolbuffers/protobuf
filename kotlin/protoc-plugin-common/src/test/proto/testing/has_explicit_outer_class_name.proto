@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package testing;
+
+option java_package = "com.google.protobuf.kotlin.protoc.testproto";
+option java_outer_classname = "MyExplicitOuterClassName";
+
+message HasExplicitOuterClassName {}

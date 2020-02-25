@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+package testing;
+
+option java_package = "com.google.protobuf.kotlin.protoc.testproto";
+
+message ExampleProto2Message {
+  optional int32 optional_int32_field = 1;
+  required string required_string_field = 2;
+}

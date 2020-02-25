@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package testing;
+
+import "google/protobuf/wrappers.proto";
+
+option java_package = "com.google.protobuf.kotlin.protoc.testproto";
+
+message ExampleMessage {
+  int32 int32_field = 1;
+  string string_field = 2;
+  SubMessage sub_message_field = 3;
+
+  oneof my_oneof {
+    string string_oneof_option = 4;
+    SubMessage sub_message_oneof_option = 5;
+  }
+
+  repeated string repeated_string_field = 6;
+  map<int64, SubMessage> map_field = 7;
+
+  message SubMessage {}
+
+  // TODO(lowasser): why does this need the leading .?  Other protos don't seem
+  // to.
+  .google.protobuf.Int32Value optional_int32 = 8;
+
+  string class = 9;
+  repeated string cached_size = 10;
+  map<string, string> serialized_size = 11;
+}
+
+enum ExampleEnum {
+  DEFAULT = 0;
+  FOO = 1;
+  BAR = 2;
+}

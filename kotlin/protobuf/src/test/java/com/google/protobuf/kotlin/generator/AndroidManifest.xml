@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.google.protobuf.kotlin.generator">
+  <application>
+    <uses-library android:name="android.test.runner"/>
+  </application>
+  <instrumentation
+      android:name="com.google.android.apps.common.testing.testrunner.Google3InstrumentationTestRunner"
+      android:targetPackage="com.google.protobuf.kotlin.generator" />
+</manifest>

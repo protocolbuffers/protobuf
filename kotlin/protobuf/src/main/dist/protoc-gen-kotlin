@@ -1,0 +1,26 @@
+#!/bin/bash
+PRG="$0"
+# Need this for relative symlinks.
+while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
+done
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`" >/dev/null
+APP_HOME="`pwd -P`"
+APP_BASE_NAME=`basename "$0"`
+
+# Get jar file name from current filename by stripping os and arch
+JAR_FILENAME=${APP_BASE_NAME%.*}
+JAR_FILENAME=${JAR_FILENAME/-linux-aarch_64/}
+JAR_FILENAME=${JAR_FILENAME/-linux-x86_32/}
+JAR_FILENAME=${JAR_FILENAME/-linux-x86_64/}
+JAR_FILENAME=${JAR_FILENAME/-osx-x86_64/}
+
+# Call the jar and pass our args
+java -jar $JAR_FILENAME.jar $1 $2

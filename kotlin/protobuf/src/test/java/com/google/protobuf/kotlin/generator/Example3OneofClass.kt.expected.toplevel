@@ -1,0 +1,16 @@
+import com.google.protobuf.kotlin.generator.Example3
+
+/**
+ * The value of the oneof my_oneof.
+ */
+var Example3.ExampleMessage.Builder.myOneofProperty: MyOneofOneofClass<*>
+  get() = MyOneofOneofClass.readFrom(this)
+  set(newOneofParam) {
+    newOneofParam.writeTo(this)
+  }
+
+/**
+ * The value of the oneof my_oneof.
+ */
+val Example3.ExampleMessageOrBuilder.myOneofProperty: MyOneofOneofClass<*>
+  get() = MyOneofOneofClass.readFrom(this)

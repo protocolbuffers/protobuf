@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package testing;
+
+option java_package = "com.google.protobuf.kotlin.protoc.testproto";
+
+message NestedMessageConflicts {
+  message HasNestedClassNameConflict {}
+}
