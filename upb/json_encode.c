@@ -196,7 +196,6 @@ static void jsonenc_bytes(jsonenc *e, upb_strview str) {
       jsonenc_putbytes(e, buf, 4);
       break;
     case 1:
-      fprintf(stderr, "Base64 encode: %d\n", (int)ptr[0]);
       buf[0] = base64[ptr[0] >> 2];
       buf[1] = base64[((ptr[0] & 0x3) << 4)];
       buf[2] = '=';
@@ -349,15 +348,17 @@ static void jsonenc_fieldpath(jsonenc *e, upb_strview path) {
 
   while (ptr < end) {
     char ch = *ptr;
+
     if (ch >= 'A' && ch <= 'Z') {
       jsonenc_err(e, "Field mask element may not have upper-case letter.");
     } else if (ch == '_') {
       if (ptr == end - 1 || *(ptr + 1) < 'a' || *(ptr + 1) > 'z') {
         jsonenc_err(e, "Underscore must be followed by a lowercase letter.");
       }
-    } else {
-      jsonenc_putbytes(e, &ch, 1);
+      ch = *++ptr - 32;
     }
+
+    jsonenc_putbytes(e, &ch, 1);
     ptr++;
   }
 }

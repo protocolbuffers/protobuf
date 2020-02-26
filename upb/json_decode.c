@@ -203,7 +203,7 @@ static bool jsondec_objnext(jsondec *d) {
 
 /* JSON number ****************************************************************/
 
-static void jsondec_skipdigits(jsondec *d) {
+static bool jsondec_tryskipdigits(jsondec *d) {
   const char *start = d->ptr;
 
   while (d->ptr < d->end) {
@@ -213,7 +213,11 @@ static void jsondec_skipdigits(jsondec *d) {
     d->ptr++;
   }
 
-  if (d->ptr == start) {
+  return d->ptr != start;
+}
+
+static void jsondec_skipdigits(jsondec *d) {
+  if (!jsondec_tryskipdigits(d)) {
     jsondec_err(d, "Expected one or more digits");
   }
 }
@@ -225,9 +229,15 @@ static double jsondec_number(jsondec *d) {
 
   /* Skip over the syntax of a number, as specified by JSON. */
   if (*d->ptr == '-') d->ptr++;
-  if (!jsondec_tryparsech(d, '0')) {
+
+  if (jsondec_tryparsech(d, '0')) {
+    if (jsondec_tryskipdigits(d)) {
+      jsondec_err(d, "number cannot have leading zero");
+    }
+  } else {
     jsondec_skipdigits(d);
   }
+
   if (d->ptr == d->end) goto parse;
   if (jsondec_tryparsech(d, '.')) {
     jsondec_skipdigits(d);
@@ -337,6 +347,8 @@ static size_t jsondec_unicode(jsondec *d, char* out) {
     cp = (high & 0x3ff) << 10;
     cp |= (low & 0x3ff);
     cp += 0x10000;
+  } else if (cp >= 0xdc00 && cp <= 0xdfff) {
+    jsondec_err(d, "Unpaired low surrogate");
   }
 
   /* Write to UTF-8 */
@@ -846,6 +858,12 @@ static upb_msgval jsondec_msg(jsondec *d, const upb_fielddef *f) {
   return val;
 }
 
+static bool jsondec_isvalue(const upb_fielddef *f) {
+  return upb_fielddef_type(f) == UPB_TYPE_MESSAGE &&
+         upb_msgdef_wellknowntype(upb_fielddef_msgsubdef(f)) ==
+             UPB_WELLKNOWN_VALUE;
+}
+
 static void jsondec_field(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
   upb_strview name;
   const upb_fielddef *f;
@@ -863,7 +881,12 @@ static void jsondec_field(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
     return;
   }
 
-  if (jsondec_peek(d) == JD_NULL) {
+  if (upb_fielddef_containingoneof(f) &&
+      upb_msg_hasoneof(msg, upb_fielddef_containingoneof(f))) {
+    jsondec_err(d, "More than one field for this oneof.");
+  }
+
+  if (jsondec_peek(d) == JD_NULL && !jsondec_isvalue(f)) {
     /* JSON "null" indicates a default value, so no need to set anything. */
     return jsondec_null(d);
   }
@@ -1106,47 +1129,45 @@ static void jsondec_wellknownvalue(jsondec *d, upb_msg *msg,
   switch (jsondec_peek(d)) {
     case JD_NUMBER:
       /* double number_value = 2; */
-      val.double_val = jsondec_number(d);
       f = upb_msgdef_itof(m, 2);
+      val.double_val = jsondec_number(d);
       break;
     case JD_STRING:
       /* string string_value = 3; */
-      val.str_val = jsondec_string(d);
       f = upb_msgdef_itof(m, 3);
+      val.str_val = jsondec_string(d);
       break;
     case JD_FALSE:
       /* bool bool_value = 4; */
-      val.bool_val = false;
       f = upb_msgdef_itof(m, 4);
+      val.bool_val = false;
       jsondec_false(d);
       break;
     case JD_TRUE:
       /* bool bool_value = 4; */
-      val.bool_val = true;
       f = upb_msgdef_itof(m, 4);
+      val.bool_val = true;
       jsondec_true(d);
       break;
     case JD_NULL:
       /* NullValue null_value = 1; */
-      val.int32_val = 0;
       f = upb_msgdef_itof(m, 1);
+      val.int32_val = 0;
       jsondec_null(d);
       break;
     /* Note: these cases return, because upb_msg_mutable() is enough. */
-    case JD_OBJECT: {
+    case JD_OBJECT:
       /* Struct struct_value = 5; */
       f = upb_msgdef_itof(m, 5);
       submsg = upb_msg_mutable(msg, f, d->arena).msg;
       jsondec_struct(d, submsg, upb_fielddef_msgsubdef(f));
       return;
-    }
-    case JD_ARRAY: {
+    case JD_ARRAY:
       /* ListValue list_value = 6; */
       f = upb_msgdef_itof(m, 6);
       submsg = upb_msg_mutable(msg, f, d->arena).msg;
       jsondec_listvalue(d, submsg, upb_fielddef_msgsubdef(f));
       return;
-    }
     default:
       UPB_UNREACHABLE();
   }
@@ -1176,6 +1197,8 @@ static upb_strview jsondec_mask(jsondec *d, const char *buf, const char *end) {
     if (ch >= 'A' && ch <= 'Z') {
       *out++ = '_';
       *out++ = ch + 32;
+    } else if (ch == '_') {
+      jsondec_err(d, "field mask may not contain '_'");
     } else {
       *out++ = ch;
     }
