@@ -96,8 +96,11 @@ class MapPair {
 
   MapPair(const Key& other_first, const T& other_second)
       : first(other_first), second(other_second) {}
+  MapPair(Key&& other_first, T&& other_second)
+      : first(std::move(other_first)), second(std::move(other_second)) {}
   explicit MapPair(const Key& other_first) : first(other_first), second() {}
   MapPair(const MapPair& other) : first(other.first), second(other.second) {}
+  MapPair(MapPair&& other) : first(std::move(other.first)), second(std::move(other.second)) {}
 
   ~MapPair() {}
 
@@ -1106,6 +1109,14 @@ class Map {
     }
     return std::pair<iterator, bool>(iterator(p.first), p.second);
   }
+  std::pair<iterator, bool> insert(value_type&& value) {
+    std::pair<typename InnerMap::iterator, bool> p =
+        elements_->insert(value.first);
+    if (p.second) {
+      p.first->value() = CreateValueTypeInternal(std::move(value));
+    }
+    return std::pair<iterator, bool>(iterator(p.first), p.second);
+  }
   template <class InputIt>
   void insert(InputIt first, InputIt last) {
     for (InputIt it = first; it != last; ++it) {
@@ -1198,6 +1209,20 @@ class Map {
       Arena::CreateInArenaStorage(&p->second, arena_);
       const_cast<Key&>(p->first) = value.first;
       p->second = value.second;
+      return p;
+    }
+  }
+
+  value_type* CreateValueTypeInternal(value_type&& value) {
+    if (arena_ == NULL) {
+      return new value_type(std::move(value));
+    } else {
+      value_type* p = reinterpret_cast<value_type*>(
+          Arena::CreateArray<uint8>(arena_, sizeof(value_type)));
+      Arena::CreateInArenaStorage(const_cast<Key*>(&p->first), arena_);
+      Arena::CreateInArenaStorage(&p->second, arena_);
+      const_cast<Key&>(p->first) = value.first;
+      p->second = std::move(value.second);
       return p;
     }
   }
