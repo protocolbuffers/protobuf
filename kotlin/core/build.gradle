@@ -44,7 +44,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
 
     // Protobuf
-    compile "io.grpc:protoc-plugin-kotlin:0.1"
+    compile "com.google.protobuf:protobuf-kotlin-util:0.1"
     compile 'com.google.protobuf:protobuf-gradle-plugin:0.8.11'
     compile 'com.google.protobuf:protobuf-java:3.11.0'
 
@@ -101,8 +101,8 @@ def artifactForGradlePlugin(MavenPublication pub, String os, String arch) {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = 'io.grpc'
-            artifactId = 'proto-kotlin'
+            groupId = 'com.google.protobuf'
+            artifactId = 'protobuf-kotlin'
             version = '0.1'
             from components.java
 

@@ -36,8 +36,8 @@ dependencies {
 publishing {
     publications {
         maven(MavenPublication) {
-            groupId = 'io.grpc'
-            artifactId = 'protoc-plugin-kotlin'
+            groupId = 'com.google.protobuf'
+            artifactId = 'protobuf-kotlin-util'
             version = '0.1'
 
             from components.java
