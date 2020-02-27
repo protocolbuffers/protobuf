@@ -1217,7 +1217,7 @@ js_EXTRA_DIST=                                                         \
   js/test_bootstrap.js                                                 \
   js/testbinary.proto                                                  \
   js/testempty.proto                                                   \
-  js/testlargenumbers.proto
+  js/testlargenumbers.proto                                            \
   js/experimental/runtime/testing/jasmine_protobuf.js                  \
   js/experimental/runtime/testing/ensure_custom_equality_test.js       \
   js/experimental/runtime/testing/binary/test_message.js               \
