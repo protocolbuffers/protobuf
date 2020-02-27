@@ -60,6 +60,18 @@ describe('Writer does', () => {
     const writer = new Writer();
     writer.writeTag(1, WireType.VARINT);
     expect(writer.getAndResetResultBuffer()).toEqual(createArrayBuffer(0x08));
+
+    writer.writeTag(0x0FFFFFFF, WireType.VARINT);
+    expect(writer.getAndResetResultBuffer())
+        .toEqual(createArrayBuffer(0xF8, 0xFF, 0xFF, 0xFF, 0x7));
+
+    writer.writeTag(0x10000000, WireType.VARINT);
+    expect(writer.getAndResetResultBuffer())
+        .toEqual(createArrayBuffer(0x80, 0x80, 0x80, 0x80, 0x08));
+
+    writer.writeTag(0x1FFFFFFF, WireType.VARINT);
+    expect(writer.getAndResetResultBuffer())
+        .toEqual(createArrayBuffer(0xF8, 0xFF, 0xFF, 0xFF, 0x0F));
   });
 
   it('reset after calling getAndResetResultBuffer', () => {
@@ -95,7 +107,8 @@ describe('Writer does', () => {
       // These values might change at any point and are not considered
       // what the implementation should be doing here.
       writer.writeTag(-1, WireType.VARINT);
-      expect(writer.getAndResetResultBuffer()).toEqual(createArrayBuffer(0xF8));
+      expect(writer.getAndResetResultBuffer())
+          .toEqual(createArrayBuffer(0xF8, 0xFF, 0xFF, 0xFF, 0xF));
     }
   });
 
@@ -504,7 +517,11 @@ describe('Writer.writeString does', () => {
       expect(new Uint8Array(writer.getAndResetResultBuffer()))
           .toEqual(new Uint8Array(createArrayBuffer(
               -6,  // invalid tag
-              1,   // string length
+              0xff,
+              0xff,
+              0xff,
+              0x0f,
+              1,  // string length
               'a'.charCodeAt(0),
               )));
     }

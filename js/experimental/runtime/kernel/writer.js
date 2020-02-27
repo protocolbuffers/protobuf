@@ -93,7 +93,7 @@ class Writer {
     checkFieldNumber(fieldNumber);
     checkWireType(wireType);
     const tag = fieldNumber << 3 | wireType;
-    this.writeUnsignedVarint32_(tag);
+    this.writeUnsignedVarint32_(tag >>> 0);
   }
 
   /**
