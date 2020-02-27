@@ -16,7 +16,7 @@ static void test_varint_for_num(upb_decoderet (*decoder)(const char*),
   bytes = upb_vencode64(num, buf);
 
   if (num <= UINT32_MAX) {
-    uint64_t encoded = upb_vencode32(num);
+    uint64_t encoded = upb_vencode32((uint32_t)num);
     char buf2[16];
     upb_decoderet r;
 
@@ -44,7 +44,7 @@ static void test_varint_for_num(upb_decoderet (*decoder)(const char*),
     r = decoder(buf2);
     ASSERT(r.val == num);
     ASSERT(r.p == buf2 + upb_value_size(encoded));
-    ASSERT(upb_zzenc_32(upb_zzdec_32(num)) == num);
+    ASSERT(upb_zzenc_32(upb_zzdec_32((uint32_t)num)) == num);
   }
 
   r = decoder(buf);

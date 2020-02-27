@@ -169,10 +169,10 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
 bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
                   const upb_symtab *ext_pool, const upb_fielddef **out_f,
                   upb_msgval *out_val, size_t *iter) {
-  int i = *iter;
+  size_t i = *iter;
   const upb_msgval zero = {0};
   const upb_fielddef *f;
-  while ((f = _upb_msgdef_field(m, ++i)) != NULL) {
+  while ((f = _upb_msgdef_field(m, (int)++i)) != NULL) {
     upb_msgval val = _upb_msg_getraw(msg, f);
 
     /* Skip field if unset or empty. */
