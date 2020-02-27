@@ -1112,8 +1112,11 @@ jspb.Message.setFieldIgnoringDefault_ = function(
   goog.asserts.assertInstanceof(msg, jspb.Message);
   if (value !== defaultValue) {
     jspb.Message.setField(msg, fieldNumber, value);
-  } else {
+  } else if (fieldNumber < msg.pivot_) {
     msg.array[jspb.Message.getIndex_(msg, fieldNumber)] = null;
+  } else {
+    jspb.Message.maybeInitEmptyExtensionObject_(msg);
+    delete msg.extensionObject_[fieldNumber];
   }
   return msg;
 };
