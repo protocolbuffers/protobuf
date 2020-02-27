@@ -30,6 +30,15 @@ describe('LazyAccessor', () => {
     expect(accessor.serialize()).toEqual(new ArrayBuffer(0));
   });
 
+  it('encodes and decodes max field number', () => {
+    const accessor = LazyAccessor.fromArrayBuffer(
+        createArrayBuffer(0xF8, 0xFF, 0xFF, 0xFF, 0x0F, 0x01));
+    expect(accessor.getBoolWithDefault(MAX_FIELD_NUMBER)).toBe(true);
+    accessor.setBool(MAX_FIELD_NUMBER, false);
+    expect(accessor.serialize())
+        .toEqual(createArrayBuffer(0xF8, 0xFF, 0xFF, 0xFF, 0x0F, 0x00));
+  });
+
   it('uses the default pivot point', () => {
     const accessor = LazyAccessor.fromArrayBuffer(new ArrayBuffer(0));
     expect(accessor.getPivot()).toBe(24);
@@ -147,17 +156,31 @@ describe('LazyAccessor clear field does', () => {
     expect(clonedAccessor.serialize()).toEqual(new ArrayBuffer(0));
     expect(clonedAccessor.getBoolWithDefault(1)).toEqual(false);
   });
+
+  it('clear the max field number', () => {
+    const accessor = LazyAccessor.createEmpty();
+    accessor.setBool(MAX_FIELD_NUMBER, true);
+
+    accessor.clearField(MAX_FIELD_NUMBER);
+
+    expect(accessor.hasFieldNumber(MAX_FIELD_NUMBER)).toEqual(false);
+    expect(accessor.getBoolWithDefault(MAX_FIELD_NUMBER)).toEqual(false);
+  });
 });
 
 describe('LazyAccessor shallow copy does', () => {
   it('work for singular fields', () => {
     const accessor = LazyAccessor.createEmpty();
     accessor.setBool(1, true);
+    accessor.setBool(MAX_FIELD_NUMBER, true);
     const clonedAccessor = accessor.shallowCopy();
     expect(clonedAccessor.getBoolWithDefault(1)).toEqual(true);
+    expect(clonedAccessor.getBoolWithDefault(MAX_FIELD_NUMBER)).toEqual(true);
 
     accessor.setBool(1, false);
+    accessor.setBool(MAX_FIELD_NUMBER, false);
     expect(clonedAccessor.getBoolWithDefault(1)).toEqual(true);
+    expect(clonedAccessor.getBoolWithDefault(MAX_FIELD_NUMBER)).toEqual(true);
   });
 
   it('work for repeated fields', () => {
