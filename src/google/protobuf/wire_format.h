@@ -65,7 +65,7 @@ namespace protobuf {
 namespace internal {
 
 // This class is for internal use by the protocol buffer library and by
-// protocol-complier-generated message classes.  It must not be called
+// protocol-compiler-generated message classes.  It must not be called
 // directly by clients.
 //
 // This class contains code for implementing the binary protocol buffer
@@ -116,15 +116,15 @@ class PROTOBUF_EXPORT WireFormat {
   static void SerializeWithCachedSizes(const Message& message, int size,
                                        io::CodedOutputStream* output) {
     int expected_endpoint = output->ByteCount() + size;
-    output->SetCur(InternalSerializeWithCachedSizesToArray(
-        message, output->Cur(), output->EpsCopy()));
+    output->SetCur(
+        _InternalSerialize(message, output->Cur(), output->EpsCopy()));
     GOOGLE_CHECK_EQ(output->ByteCount(), expected_endpoint)
         << ": Protocol message serialized to a size different from what was "
            "originally expected.  Perhaps it was modified by another thread "
            "during serialization?";
   }
-  static uint8* InternalSerializeWithCachedSizesToArray(
-      const Message& message, uint8* target, io::EpsCopyOutputStream* stream);
+  static uint8* _InternalSerialize(const Message& message, uint8* target,
+                                   io::EpsCopyOutputStream* stream);
 
   // Implements Message::ByteSize() via reflection.  WARNING:  The result
   // of this method is *not* cached anywhere.  However, all embedded messages
@@ -237,7 +237,7 @@ class PROTOBUF_EXPORT WireFormat {
                               const Message& message);
 
   // Parse/serialize a MessageSet::Item group.  Used with messages that use
-  // opion message_set_wire_format = true.
+  // option message_set_wire_format = true.
   static bool ParseAndMergeMessageSetItem(io::CodedInputStream* input,
                                           Message* message);
   static void SerializeMessageSetItemWithCachedSizes(

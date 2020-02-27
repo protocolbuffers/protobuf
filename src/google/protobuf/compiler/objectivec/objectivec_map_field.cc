@@ -112,6 +112,7 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
   if (value_field_flags.find("GPBFieldHasEnumDescriptor") != string::npos) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
   }
+
   variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
 
   ObjectiveCType value_objc_type = GetObjectiveCType(value_descriptor);
@@ -167,6 +168,17 @@ void MapFieldGenerator::DetermineForwardDeclarations(
     const string& value_storage_type =
         value_field_generator_->variable("storage_type");
     fwd_decls->insert("@class " + value_storage_type);
+  }
+}
+
+void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
+    std::set<string>* fwd_decls) const {
+  // Class name is already in "storage_type".
+  const FieldDescriptor* value_descriptor =
+      descriptor_->message_type()->FindFieldByName("value");
+  if (GetObjectiveCType(value_descriptor) == OBJECTIVECTYPE_MESSAGE) {
+    fwd_decls->insert(ObjCClassDeclaration(
+        value_field_generator_->variable("storage_type")));
   }
 }
 

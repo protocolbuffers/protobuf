@@ -307,6 +307,13 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.MoreDataAvailable();
             }
         }
+
+        internal void CheckLastTagWas(uint expectedTag)
+        {
+           if (lastTag != expectedTag) {
+                throw InvalidProtocolBufferException.InvalidEndTag();
+           }
+        }
         #endregion
 
         #region Reading of tags etc
@@ -481,7 +488,33 @@ namespace Google.Protobuf
         /// </summary>
         public double ReadDouble()
         {
-            return BitConverter.Int64BitsToDouble((long) ReadRawLittleEndian64());
+            if (bufferPos + 8 <= bufferSize)
+            {
+                if (BitConverter.IsLittleEndian)
+                {
+                    var result = BitConverter.ToDouble(buffer, bufferPos);
+                    bufferPos += 8;
+                    return result;
+                }
+                else
+                {
+                    var bytes = new byte[8];
+                    bytes[0] = buffer[bufferPos + 7];
+                    bytes[1] = buffer[bufferPos + 6];
+                    bytes[2] = buffer[bufferPos + 5];
+                    bytes[3] = buffer[bufferPos + 4];
+                    bytes[4] = buffer[bufferPos + 3];
+                    bytes[5] = buffer[bufferPos + 2];
+                    bytes[6] = buffer[bufferPos + 1];
+                    bytes[7] = buffer[bufferPos];
+                    bufferPos += 8;
+                    return BitConverter.ToDouble(bytes, 0);
+                }
+            }
+            else
+            {
+                return BitConverter.Int64BitsToDouble((long)ReadRawLittleEndian64());
+            }
         }
 
         /// <summary>
@@ -551,7 +584,7 @@ namespace Google.Protobuf
         /// </summary>
         public bool ReadBool()
         {
-            return ReadRawVarint32() != 0;
+            return ReadRawVarint64() != 0;
         }
 
         /// <summary>
@@ -610,7 +643,27 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.RecursionLimitExceeded();
             }
             ++recursionDepth;
+
+            uint tag = lastTag;
+            int fieldNumber = WireFormat.GetTagFieldNumber(tag);
+
             builder.MergeFrom(this);
+            CheckLastTagWas(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
+            --recursionDepth;
+        }
+
+        /// <summary>
+        /// Reads an embedded group unknown field from the stream.
+        /// </summary>
+        internal void ReadGroup(int fieldNumber, UnknownFieldSet set)
+        {
+            if (recursionDepth >= recursionLimit)
+            {
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
+            ++recursionDepth;
+            set.MergeGroupFrom(this);
+            CheckLastTagWas(WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
             --recursionDepth;
         }
 
@@ -711,7 +764,260 @@ namespace Google.Protobuf
             return false;
         }
 
-        #endregion
+        internal static float? ReadFloatWrapperLittleEndian(CodedInputStream input)
+        {
+            // length:1 + tag:1 + value:4 = 6 bytes
+            if (input.bufferPos + 6 <= input.bufferSize)
+            {
+                // The entire wrapper message is already contained in `buffer`.
+                int length = input.buffer[input.bufferPos];
+                if (length == 0)
+                {
+                    input.bufferPos++;
+                    return 0F;
+                }
+                // tag:1 + value:4 = length of 5 bytes
+                // field=1, type=32-bit = tag of 13
+                if (length != 5 || input.buffer[input.bufferPos + 1] != 13)
+                {
+                    return ReadFloatWrapperSlow(input);
+                }
+                var result = BitConverter.ToSingle(input.buffer, input.bufferPos + 2);
+                input.bufferPos += 6;
+                return result;
+            }
+            else
+            {
+                return ReadFloatWrapperSlow(input);
+            }
+        }
+
+        internal static float? ReadFloatWrapperSlow(CodedInputStream input)
+        {
+            int length = input.ReadLength();
+            if (length == 0)
+            {
+                return 0F;
+            }
+            int finalBufferPos = input.totalBytesRetired + input.bufferPos + length;
+            float result = 0F;
+            do
+            {
+                // field=1, type=32-bit = tag of 13
+                if (input.ReadTag() == 13)
+                {
+                    result = input.ReadFloat();
+                }
+                else
+                {
+                    input.SkipLastField();
+                }
+            }
+            while (input.totalBytesRetired + input.bufferPos < finalBufferPos);
+            return result;
+        }
+
+        internal static double? ReadDoubleWrapperLittleEndian(CodedInputStream input)
+        {
+            // length:1 + tag:1 + value:8 = 10 bytes
+            if (input.bufferPos + 10 <= input.bufferSize)
+            {
+                // The entire wrapper message is already contained in `buffer`.
+                int length = input.buffer[input.bufferPos];
+                if (length == 0)
+                {
+                    input.bufferPos++;
+                    return 0D;
+                }
+                // tag:1 + value:8 = length of 9 bytes
+                // field=1, type=64-bit = tag of 9
+                if (length != 9 || input.buffer[input.bufferPos + 1] != 9)
+                {
+                    return ReadDoubleWrapperSlow(input);
+                }
+                var result = BitConverter.ToDouble(input.buffer, input.bufferPos + 2);
+                input.bufferPos += 10;
+                return result;
+            }
+            else
+            {
+                return ReadDoubleWrapperSlow(input);
+            }
+        }
+
+        internal static double? ReadDoubleWrapperSlow(CodedInputStream input)
+        {
+            int length = input.ReadLength();
+            if (length == 0)
+            {
+                return 0D;
+            }
+            int finalBufferPos = input.totalBytesRetired + input.bufferPos + length;
+            double result = 0D;
+            do
+            {
+                // field=1, type=64-bit = tag of 9
+                if (input.ReadTag() == 9)
+                {
+                    result = input.ReadDouble();
+                }
+                else
+                {
+                    input.SkipLastField();
+                }
+            }
+            while (input.totalBytesRetired + input.bufferPos < finalBufferPos);
+            return result;
+        }
+
+        internal static bool? ReadBoolWrapper(CodedInputStream input)
+        {
+            return ReadUInt64Wrapper(input) != 0;
+        }
+
+        internal static uint? ReadUInt32Wrapper(CodedInputStream input)
+        {
+            // length:1 + tag:1 + value:5(varint32-max) = 7 bytes
+            if (input.bufferPos + 7 <= input.bufferSize)
+            {
+                // The entire wrapper message is already contained in `buffer`.
+                int pos0 = input.bufferPos;
+                int length = input.buffer[input.bufferPos++];
+                if (length == 0)
+                {
+                    return 0;
+                }
+                // Length will always fit in a single byte.
+                if (length >= 128)
+                {
+                    input.bufferPos = pos0;
+                    return ReadUInt32WrapperSlow(input);
+                }
+                int finalBufferPos = input.bufferPos + length;
+                // field=1, type=varint = tag of 8
+                if (input.buffer[input.bufferPos++] != 8)
+                {
+                    input.bufferPos = pos0;
+                    return ReadUInt32WrapperSlow(input);
+                }
+                var result = input.ReadUInt32();
+                // Verify this message only contained a single field.
+                if (input.bufferPos != finalBufferPos)
+                {
+                    input.bufferPos = pos0;
+                    return ReadUInt32WrapperSlow(input);
+                }
+                return result;
+            }
+            else
+            {
+                return ReadUInt32WrapperSlow(input);
+            }
+        }
+
+        private static uint? ReadUInt32WrapperSlow(CodedInputStream input)
+        {
+            int length = input.ReadLength();
+            if (length == 0)
+            {
+                return 0;
+            }
+            int finalBufferPos = input.totalBytesRetired + input.bufferPos + length;
+            uint result = 0;
+            do
+            {
+                // field=1, type=varint = tag of 8
+                if (input.ReadTag() == 8)
+                {
+                    result = input.ReadUInt32();
+                }
+                else
+                {
+                    input.SkipLastField();
+                }
+            }
+            while (input.totalBytesRetired + input.bufferPos < finalBufferPos);
+            return result;
+        }
+
+        internal static int? ReadInt32Wrapper(CodedInputStream input)
+        {
+            return (int?)ReadUInt32Wrapper(input);
+        }
+
+        internal static ulong? ReadUInt64Wrapper(CodedInputStream input)
+        {
+            // field=1, type=varint = tag of 8
+            const int expectedTag = 8;
+            // length:1 + tag:1 + value:10(varint64-max) = 12 bytes
+            if (input.bufferPos + 12 <= input.bufferSize)
+            {
+                // The entire wrapper message is already contained in `buffer`.
+                int pos0 = input.bufferPos;
+                int length = input.buffer[input.bufferPos++];
+                if (length == 0)
+                {
+                    return 0L;
+                }
+                // Length will always fit in a single byte.
+                if (length >= 128)
+                {
+                    input.bufferPos = pos0;
+                    return ReadUInt64WrapperSlow(input);
+                }
+                int finalBufferPos = input.bufferPos + length;
+                if (input.buffer[input.bufferPos++] != expectedTag)
+                {
+                    input.bufferPos = pos0;
+                    return ReadUInt64WrapperSlow(input);
+                }
+                var result = input.ReadUInt64();
+                // Verify this message only contained a single field.
+                if (input.bufferPos != finalBufferPos)
+                {
+                    input.bufferPos = pos0;
+                    return ReadUInt64WrapperSlow(input);
+                }
+                return result;
+            }
+            else
+            {
+                return ReadUInt64WrapperSlow(input);
+            }
+        }
+
+        internal static ulong? ReadUInt64WrapperSlow(CodedInputStream input)
+        {
+            // field=1, type=varint = tag of 8
+            const int expectedTag = 8;
+            int length = input.ReadLength();
+            if (length == 0)
+            {
+                return 0L;
+            }
+            int finalBufferPos = input.totalBytesRetired + input.bufferPos + length;
+            ulong result = 0L;
+            do
+            {
+                if (input.ReadTag() == expectedTag)
+                {
+                    result = input.ReadUInt64();
+                }
+                else
+                {
+                    input.SkipLastField();
+                }
+            }
+            while (input.totalBytesRetired + input.bufferPos < finalBufferPos);
+            return result;
+        }
+
+        internal static long? ReadInt64Wrapper(CodedInputStream input)
+        {
+            return (long?)ReadUInt64Wrapper(input);
+        }
+
+#endregion
 
         #region Underlying reading primitives
 
@@ -876,17 +1182,42 @@ namespace Google.Protobuf
         /// </summary>
         internal ulong ReadRawVarint64()
         {
-            int shift = 0;
-            ulong result = 0;
-            while (shift < 64)
+            if (bufferPos + 10 <= bufferSize)
             {
-                byte b = ReadRawByte();
-                result |= (ulong) (b & 0x7F) << shift;
-                if ((b & 0x80) == 0)
+                ulong result = buffer[bufferPos++];
+                if (result < 128)
                 {
                     return result;
                 }
-                shift += 7;
+                result &= 0x7f;
+                int shift = 7;
+                do
+                {
+                    byte b = buffer[bufferPos++];
+                    result |= (ulong)(b & 0x7F) << shift;
+                    if (b < 0x80)
+                    {
+                        return result;
+                    }
+                    shift += 7;
+                }
+                while (shift < 64);
+            }
+            else
+            {
+                int shift = 0;
+                ulong result = 0;
+                do
+                {
+                    byte b = ReadRawByte();
+                    result |= (ulong)(b & 0x7F) << shift;
+                    if (b < 0x80)
+                    {
+                        return result;
+                    }
+                    shift += 7;
+                }
+                while (shift < 64);
             }
             throw InvalidProtocolBufferException.MalformedVarint();
         }
@@ -896,11 +1227,32 @@ namespace Google.Protobuf
         /// </summary>
         internal uint ReadRawLittleEndian32()
         {
-            uint b1 = ReadRawByte();
-            uint b2 = ReadRawByte();
-            uint b3 = ReadRawByte();
-            uint b4 = ReadRawByte();
-            return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24);
+            if (bufferPos + 4 <= bufferSize)
+            {
+                if (BitConverter.IsLittleEndian)
+                {
+                    var result = BitConverter.ToUInt32(buffer, bufferPos);
+                    bufferPos += 4;
+                    return result;
+                }
+                else
+                {
+                    uint b1 = buffer[bufferPos];
+                    uint b2 = buffer[bufferPos + 1];
+                    uint b3 = buffer[bufferPos + 2];
+                    uint b4 = buffer[bufferPos + 3];
+                    bufferPos += 4;
+                    return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24);
+                }
+            }
+            else
+            {
+                uint b1 = ReadRawByte();
+                uint b2 = ReadRawByte();
+                uint b3 = ReadRawByte();
+                uint b4 = ReadRawByte();
+                return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24);
+            }
         }
 
         /// <summary>
@@ -908,16 +1260,42 @@ namespace Google.Protobuf
         /// </summary>
         internal ulong ReadRawLittleEndian64()
         {
-            ulong b1 = ReadRawByte();
-            ulong b2 = ReadRawByte();
-            ulong b3 = ReadRawByte();
-            ulong b4 = ReadRawByte();
-            ulong b5 = ReadRawByte();
-            ulong b6 = ReadRawByte();
-            ulong b7 = ReadRawByte();
-            ulong b8 = ReadRawByte();
-            return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24)
-                   | (b5 << 32) | (b6 << 40) | (b7 << 48) | (b8 << 56);
+            if (bufferPos + 8 <= bufferSize)
+            {
+                if (BitConverter.IsLittleEndian)
+                {
+                    var result = BitConverter.ToUInt64(buffer, bufferPos);
+                    bufferPos += 8;
+                    return result;
+                }
+                else
+                {
+                    ulong b1 = buffer[bufferPos];
+                    ulong b2 = buffer[bufferPos + 1];
+                    ulong b3 = buffer[bufferPos + 2];
+                    ulong b4 = buffer[bufferPos + 3];
+                    ulong b5 = buffer[bufferPos + 4];
+                    ulong b6 = buffer[bufferPos + 5];
+                    ulong b7 = buffer[bufferPos + 6];
+                    ulong b8 = buffer[bufferPos + 7];
+                    bufferPos += 8;
+                    return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24)
+                           | (b5 << 32) | (b6 << 40) | (b7 << 48) | (b8 << 56);
+                }
+            }
+            else
+            {
+                ulong b1 = ReadRawByte();
+                ulong b2 = ReadRawByte();
+                ulong b3 = ReadRawByte();
+                ulong b4 = ReadRawByte();
+                ulong b5 = ReadRawByte();
+                ulong b6 = ReadRawByte();
+                ulong b7 = ReadRawByte();
+                ulong b8 = ReadRawByte();
+                return b1 | (b2 << 8) | (b3 << 16) | (b4 << 24)
+                       | (b5 << 32) | (b6 << 40) | (b7 << 48) | (b8 << 56);
+            }
         }
 
         /// <summary>
@@ -1301,6 +1679,6 @@ namespace Google.Protobuf
                 }
             }
         }
-        #endregion
+#endregion
     }
 }

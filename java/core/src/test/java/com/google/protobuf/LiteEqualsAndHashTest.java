@@ -75,7 +75,7 @@ public class LiteEqualsAndHashTest extends TestCase {
     assertEquals(foo1a, foo1b);
     assertEquals(foo1a.hashCode(), foo1b.hashCode());
 
-    // Check that a diffeent object is not equal.
+    // Check that a different object is not equal.
     assertFalse(foo1a.equals(foo2));
 
     // Check that two objects which have different types but the same field values are not

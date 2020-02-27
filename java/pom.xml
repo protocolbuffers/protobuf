@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.11.0-rc-0</version>
+  <version>3.11.4</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -75,7 +75,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <version>4.13</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -93,18 +93,18 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>28.1-android</version>
+        <version>28.2-android</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava-testlib</artifactId>
-        <version>28.1-android</version>
+        <version>28.2-android</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>com.google.truth</groupId>
         <artifactId>truth</artifactId>
-        <version>1.0</version>
+        <version>1.0.1</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

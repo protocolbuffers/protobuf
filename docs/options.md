@@ -212,3 +212,19 @@ with info about your project (name and website) so we can add an entry for you.
 1. Dart port of protocol buffers
    * Website https://github.com/dart-lang/protobuf
    * Extensions: 1073
+
+1. Ocaml-protoc-plugin
+   * Website: https://github.com/issuu/ocaml-protoc-plugin
+   * Extensions: 1074
+
+1. Analyze Re Graphene
+   * Website: https://analyzere.com
+   * Extensions: 1075
+
+1. Wire since and until
+   * Website: https://square.github.io/wire/
+   * Extensions: 1076, 1077
+
+1. Bazel, Failure Details
+   * Website: https://github.com/bazelbuild/bazel
+   * Extensions: 1078

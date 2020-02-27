@@ -143,7 +143,7 @@ namespace Google.Protobuf.Conformance
                     case global::Conformance.WireFormat.Protobuf:
                         return new ConformanceResponse { ProtobufPayload = message.ToByteString() };
                     default:
-                        throw new Exception("Unsupported request output format: " + request.PayloadCase);
+                        throw new Exception("Unsupported request output format: " + request.RequestedOutputFormat);
                 }
             }
             catch (InvalidOperationException e)

@@ -128,7 +128,8 @@ struct MapEntryFuncs {
     // Tags for key and value will both be one byte (field numbers 1 and 2).
     size_t inner_length =
         2 + KeyTypeHandler::ByteSize(key) + ValueTypeHandler::ByteSize(value);
-    return inner_length + io::CodedOutputStream::VarintSize32(static_cast<uint32>(inner_length));
+    return inner_length + io::CodedOutputStream::VarintSize32(
+                              static_cast<uint32>(inner_length));
   }
 
   static int GetCachedSize(const Key& key, const Value& value) {
@@ -275,8 +276,8 @@ class MapEntryImpl : public Base {
     return size;
   }
 
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      ::google::protobuf::uint8* ptr, io::EpsCopyOutputStream* stream) const override {
+  ::google::protobuf::uint8* _InternalSerialize(::google::protobuf::uint8* ptr,
+                              io::EpsCopyOutputStream* stream) const override {
     ptr = KeyTypeHandler::Write(kKeyFieldNumber, key(), ptr, stream);
     return ValueTypeHandler::Write(kValueFieldNumber, value(), ptr, stream);
   }
@@ -657,7 +658,7 @@ struct MapEntryHelper<MapEntryLite<T, Key, Value, kKeyFieldType,
         key_(FromHelper<kKeyFieldType>::From(map_pair.first)),
         value_(FromHelper<kValueFieldType>::From(map_pair.second)) {}
 
-  // Purposely not folowing the style guide naming. These are the names
+  // Purposely not following the style guide naming. These are the names
   // the proto compiler would generate given the map entry descriptor.
   // The proto compiler generates the offsets in this struct as if this was
   // a regular message. This way the table driven code barely notices it's

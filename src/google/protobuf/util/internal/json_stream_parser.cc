@@ -33,8 +33,10 @@
 #include <algorithm>
 #include <cctype>
 #include <cerrno>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 #include <memory>
 
 #include <google/protobuf/stubs/logging.h>
@@ -42,7 +44,6 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/util/internal/json_escaping.h>
-#include <google/protobuf/stubs/mathlimits.h>
 
 
 namespace google {
@@ -527,8 +528,7 @@ util::Status JsonStreamParser::ParseDoubleHelper(const std::string& number,
   if (!safe_strtod(number, &result->double_val)) {
     return ReportFailure("Unable to parse number.");
   }
-  if (!loose_float_number_conversion_ &&
-      !MathLimits<double>::IsFinite(result->double_val)) {
+  if (!loose_float_number_conversion_ && !std::isfinite(result->double_val)) {
     return ReportFailure("Number exceeds the range of double.");
   }
   result->type = NumberResult::DOUBLE;

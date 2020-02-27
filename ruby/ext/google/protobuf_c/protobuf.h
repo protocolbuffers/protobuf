@@ -363,8 +363,10 @@ VALUE native_slot_get(upb_fieldtype_t type,
 void native_slot_init(upb_fieldtype_t type, void* memory);
 void native_slot_mark(upb_fieldtype_t type, void* memory);
 void native_slot_dup(upb_fieldtype_t type, void* to, void* from);
-void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from);
-bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2);
+void native_slot_deep_copy(upb_fieldtype_t type, VALUE type_class, void* to,
+                           void* from);
+bool native_slot_eq(upb_fieldtype_t type, VALUE type_class, void* mem1,
+                    void* mem2);
 
 VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value);
 void native_slot_check_int_range_precision(const char* name, upb_fieldtype_t type, VALUE value);
@@ -555,6 +557,9 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from);
 VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2);
 VALUE layout_hash(MessageLayout* layout, void* storage);
 VALUE layout_inspect(MessageLayout* layout, void* storage);
+
+bool is_wrapper_type_field(const upb_fielddef* field);
+VALUE ruby_wrapper_type(VALUE type_class, VALUE value);
 
 // -----------------------------------------------------------------------------
 // Message class creation.

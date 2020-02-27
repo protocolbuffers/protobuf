@@ -62,13 +62,12 @@ VALUE Message_alloc(VALUE klass) {
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   MessageHeader* msg;
   VALUE ret;
-  size_t size;
 
   if (desc->layout == NULL) {
     create_layout(desc);
   }
 
-  msg = ALLOC_N(uint8_t, sizeof(MessageHeader) + desc->layout->size);
+  msg = (void*)ALLOC_N(uint8_t, sizeof(MessageHeader) + desc->layout->size);
   msg->descriptor = desc;
   msg->unknown_fields = NULL;
   memcpy(Message_data(msg), desc->layout->empty_template, desc->layout->size);
@@ -109,30 +108,36 @@ enum {
 };
 
 // Check if the field is a well known wrapper type
-static bool is_wrapper_type_field(const MessageLayout* layout,
-                                  const upb_fielddef* field) {
-  const char* field_type_name = rb_class2name(field_type_class(layout, field));
-
-  return strcmp(field_type_name, "Google::Protobuf::DoubleValue") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::FloatValue") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::Int32Value") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::Int64Value") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::UInt32Value") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::UInt64Value") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::BoolValue") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::StringValue") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::BytesValue") == 0;
+bool is_wrapper_type_field(const upb_fielddef* field) {
+  const upb_msgdef *m;
+  if (upb_fielddef_type(field) != UPB_TYPE_MESSAGE) {
+    return false;
+  }
+  m = upb_fielddef_msgsubdef(field);
+  switch (upb_msgdef_wellknowntype(m)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+    case UPB_WELLKNOWN_FLOATVALUE:
+    case UPB_WELLKNOWN_INT64VALUE:
+    case UPB_WELLKNOWN_UINT64VALUE:
+    case UPB_WELLKNOWN_INT32VALUE:
+    case UPB_WELLKNOWN_UINT32VALUE:
+    case UPB_WELLKNOWN_STRINGVALUE:
+    case UPB_WELLKNOWN_BYTESVALUE:
+    case UPB_WELLKNOWN_BOOLVALUE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Get a new Ruby wrapper type and set the initial value
-static VALUE ruby_wrapper_type(const MessageLayout* layout,
-                               const upb_fielddef* field, const VALUE value) {
-  if (is_wrapper_type_field(layout, field) && value != Qnil) {
+VALUE ruby_wrapper_type(VALUE type_class, VALUE value) {
+  if (value != Qnil) {
     VALUE hash = rb_hash_new();
     rb_hash_aset(hash, rb_str_new2("value"), value);
     {
       VALUE args[1] = {hash};
-      return rb_class_new_instance(1, args, field_type_class(layout, field));
+      return rb_class_new_instance(1, args, type_class);
     }
   }
   return Qnil;
@@ -193,8 +198,7 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     // Check if field exists and is a wrapper type
     if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name,
                               name_len - 9, &test_f_wrapper, &test_o_wrapper) &&
-        upb_fielddef_type(test_f_wrapper) == UPB_TYPE_MESSAGE &&
-        is_wrapper_type_field(self->descriptor->layout, test_f_wrapper)) {
+        is_wrapper_type_field(test_f_wrapper)) {
       // It does exist!
       has_field = true;
       if (accessor_type == METHOD_SETTER) {
@@ -329,12 +333,17 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     return layout_has(self->descriptor->layout, Message_data(self), f);
   } else if (accessor_type == METHOD_WRAPPER_GETTER) {
     VALUE value = layout_get(self->descriptor->layout, Message_data(self), f);
-    if (value != Qnil) {
-      value = rb_funcall(value, rb_intern("value"), 0);
+    switch (TYPE(value)) {
+      case T_DATA:
+        return rb_funcall(value, rb_intern("value"), 0);
+      case T_NIL:
+        return Qnil;
+      default:
+        return value;
     }
-    return value;
   } else if (accessor_type == METHOD_WRAPPER_SETTER) {
-    VALUE wrapper = ruby_wrapper_type(self->descriptor->layout, f, argv[1]);
+    VALUE wrapper = ruby_wrapper_type(
+        field_type_class(self->descriptor->layout, f), argv[1]);
     layout_set(self->descriptor->layout, Message_data(self), f, wrapper);
     return Qnil;
   } else if (accessor_type == METHOD_ENUM_GETTER) {

@@ -492,7 +492,7 @@ std::set<std::string>* NewAllowedProto3Extendee() {
     allowed_proto3_extendees->insert(std::string("google.protobuf.") +
                                      kOptionNames[i]);
     // Split the word to trick the opensource processing scripts so they
-    // will keep the origial package name.
+    // will keep the original package name.
     allowed_proto3_extendees->insert(std::string("proto") + "2." +
                                      kOptionNames[i]);
   }
@@ -3246,7 +3246,7 @@ class DescriptorBuilder {
   // Like AddSymbol(), but succeeds if the symbol is already defined as long
   // as the existing definition is also a package (because it's OK to define
   // the same package in two different files).  Also adds all parents of the
-  // packgae to the symbol table (e.g. AddPackage("foo.bar", ...) will add
+  // package to the symbol table (e.g. AddPackage("foo.bar", ...) will add
   // "foo.bar" and "foo" to the table).
   void AddPackage(const std::string& name, const Message& proto,
                   const FileDescriptor* file);
@@ -4602,7 +4602,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
 
-
   for (int i = 0; i < proto.reserved_range_size(); i++) {
     const DescriptorProto_ReservedRange& range1 = proto.reserved_range(i);
     for (int j = i + 1; j < proto.reserved_range_size(); j++) {
@@ -5545,7 +5544,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
                           proto.has_default_value();
 
     // In case of weak fields we force building the dependency. We need to know
-    // if the type exist or not. If it doesnt exist we substitute Empty which
+    // if the type exist or not. If it doesn't exist we substitute Empty which
     // should only be done if the type can't be found in the generated pool.
     // TODO(gerbens) Ideally we should query the database directly to check
     // if weak fields exist or not so that we don't need to force building
@@ -6438,6 +6437,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
   std::vector<int> dest_path = options_path;
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
+    builder_->undefine_resolved_name_.clear();
     const std::string& name_part = uninterpreted_option_->name(i).name_part();
     if (debug_msg_name.size() > 0) {
       debug_msg_name += ".";

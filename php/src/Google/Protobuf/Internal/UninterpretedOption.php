@@ -33,32 +33,32 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string identifier_value = 3;</code>
      */
-    private $identifier_value = '';
+    protected $identifier_value = '';
     private $has_identifier_value = false;
     /**
      * Generated from protobuf field <code>optional uint64 positive_int_value = 4;</code>
      */
-    private $positive_int_value = 0;
+    protected $positive_int_value = 0;
     private $has_positive_int_value = false;
     /**
      * Generated from protobuf field <code>optional int64 negative_int_value = 5;</code>
      */
-    private $negative_int_value = 0;
+    protected $negative_int_value = 0;
     private $has_negative_int_value = false;
     /**
      * Generated from protobuf field <code>optional double double_value = 6;</code>
      */
-    private $double_value = 0.0;
+    protected $double_value = 0.0;
     private $has_double_value = false;
     /**
      * Generated from protobuf field <code>optional bytes string_value = 7;</code>
      */
-    private $string_value = '';
+    protected $string_value = '';
     private $has_string_value = false;
     /**
      * Generated from protobuf field <code>optional string aggregate_value = 8;</code>
      */
-    private $aggregate_value = '';
+    protected $aggregate_value = '';
     private $has_aggregate_value = false;
 
     /**

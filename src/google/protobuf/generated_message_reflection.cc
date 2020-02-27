@@ -1035,7 +1035,7 @@ void Reflection::ListFields(const Message& message,
 
   // Optimization: Avoid calling GetHasBits() and HasOneofField() many times
   // within the field loop.  We allow this violation of ReflectionSchema
-  // encapsulation because this function takes a noticable about of CPU
+  // encapsulation because this function takes a noticeable about of CPU
   // fleetwide and properly allowing this optimization through public interfaces
   // seems more trouble than it is worth.
   const uint32* const has_bits =
@@ -2079,19 +2079,19 @@ void Reflection::ClearOneof(Message* message,
   }
 }
 
-#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                               \
-  template <>                                                           \
-  const RepeatedField<TYPE>& Reflection::GetRepeatedField<TYPE>(        \
-      const Message& message, const FieldDescriptor* field) const {     \
-    return *static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(  \
-        const_cast<Message*>(&message), field, CPPTYPE, CTYPE, NULL));  \
-  }                                                                     \
-                                                                        \
-  template <>                                                           \
-  RepeatedField<TYPE>* Reflection::MutableRepeatedField<TYPE>(          \
-      Message * message, const FieldDescriptor* field) const {          \
-    return static_cast<RepeatedField<TYPE>*>(                           \
-        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, NULL)); \
+#define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                                \
+  template <>                                                            \
+  const RepeatedField<TYPE>& Reflection::GetRepeatedFieldInternal<TYPE>( \
+      const Message& message, const FieldDescriptor* field) const {      \
+    return *static_cast<RepeatedField<TYPE>*>(MutableRawRepeatedField(   \
+        const_cast<Message*>(&message), field, CPPTYPE, CTYPE, NULL));   \
+  }                                                                      \
+                                                                         \
+  template <>                                                            \
+  RepeatedField<TYPE>* Reflection::MutableRepeatedFieldInternal<TYPE>(   \
+      Message * message, const FieldDescriptor* field) const {           \
+    return static_cast<RepeatedField<TYPE>*>(                            \
+        MutableRawRepeatedField(message, field, CPPTYPE, CTYPE, NULL));  \
   }
 
 HANDLE_TYPE(int32, FieldDescriptor::CPPTYPE_INT32, -1);

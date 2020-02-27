@@ -19,3 +19,6 @@ $SDKVersion = $GlobalJson.sdk.version
 Write-Host "Downloading install script: $InstallScriptUrl => $InstallScriptPath"
 Invoke-WebRequest -Uri $InstallScriptUrl -OutFile $InstallScriptPath
 &$InstallScriptPath -Version $SDKVersion
+
+# Also install dotnet SDK LTS which is required to run some of the tests
+&$InstallScriptPath -Version 2.1.802

@@ -78,7 +78,7 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2ftimestamp_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2ftimestamp_2eproto), true);
+static bool dynamic_init_dummy_google_2fprotobuf_2ftimestamp_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2ftimestamp_2eproto)), true);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
@@ -164,14 +164,14 @@ const char* Timestamp::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
       // int64 seconds = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          seconds_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          seconds_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // int32 nanos = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          nanos_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          nanos_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -195,7 +195,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* Timestamp::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* Timestamp::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;

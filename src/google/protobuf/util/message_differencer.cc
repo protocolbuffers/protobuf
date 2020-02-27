@@ -42,7 +42,6 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/any.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -309,6 +308,11 @@ void MessageDifferencer::set_repeated_field_comparison(
   repeated_field_comparison_ = comparison;
 }
 
+MessageDifferencer::RepeatedFieldComparison
+MessageDifferencer::repeated_field_comparison() {
+  return repeated_field_comparison_;
+}
+
 void MessageDifferencer::CheckRepeatedFieldComparisons(
     const FieldDescriptor* field,
     const RepeatedFieldComparison& new_comparison) {
@@ -454,7 +458,7 @@ void MessageDifferencer::ReportDifferencesToString(std::string* output) {
 
 void MessageDifferencer::ReportDifferencesTo(Reporter* reporter) {
   // If an output string is set, clear it to prevent
-  // it superceding the specified reporter.
+  // it superseding the specified reporter.
   if (output_string_) {
     output_string_ = NULL;
   }
@@ -580,7 +584,7 @@ bool MessageDifferencer::Compare(const Message& message1,
                               *unknown_field_set2, parent_fields)) {
       if (reporter_ == NULL) {
         return false;
-      };
+      }
       unknown_compare_result = false;
     }
   }
@@ -809,7 +813,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       continue;
     }
 
-    // By this point, field1 and field2 are guarenteed to point to the same
+    // By this point, field1 and field2 are guaranteed to point to the same
     // field, so we can now compare the values.
     if (IsIgnored(message1, message2, field1, *parent_fields)) {
       // Ignore this field. Report and move on.
@@ -861,7 +865,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
         parent_fields->pop_back();
       }
     }
-    // Increment the field indicies.
+    // Increment the field indices.
     ++field_index1;
     ++field_index2;
   }
@@ -1545,7 +1549,7 @@ bool MaximumMatcher::Match(int left, int right) {
 bool MaximumMatcher::FindArgumentPathDFS(int v, std::vector<bool>* visited) {
   (*visited)[v] = true;
   // We try to match those un-matched nodes on the right side first. This is
-  // the step that the navie greedy matching algorithm uses. In the best cases
+  // the step that the naive greedy matching algorithm uses. In the best cases
   // where the greedy algorithm can find a maximum matching, we will always
   // find a match in this step and the performance will be identical to the
   // greedy algorithm.
@@ -1557,7 +1561,7 @@ bool MaximumMatcher::FindArgumentPathDFS(int v, std::vector<bool>* visited) {
     }
   }
   // Then we try those already matched nodes and see if we can find an
-  // alternaive match for the node matched to them.
+  // alternative match for the node matched to them.
   // The greedy algorithm will stop before this and fail to produce the
   // correct result.
   for (int i = 0; i < count2_; ++i) {

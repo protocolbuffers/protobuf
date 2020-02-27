@@ -8,7 +8,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.11.0-rc-0</version>
+  <version>3.11.4</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>
@@ -71,11 +71,6 @@
                   <type>exe</type>
                 </artifact>
                 <artifact>
-                  <file>${basedir}/target/osx/x86_32/protoc.exe</file>
-                  <classifier>osx-x86_32</classifier>
-                  <type>exe</type>
-                </artifact>
-                <artifact>
                   <file>${basedir}/target/linux/aarch_64/protoc.exe</file>
                   <classifier>linux-aarch_64</classifier>
                   <type>exe</type>
@@ -86,8 +81,8 @@
                   <type>exe</type>
 	  	</artifact>
                 <artifact>
-                  <file>${basedir}/target/linux/s390x_64/protoc.exe</file>
-                  <classifier>linux-s390x_64</classifier>
+                  <file>${basedir}/target/linux/s390x/protoc.exe</file>
+                  <classifier>linux-s390x</classifier>
                   <type>exe</type>
                 </artifact>
               </artifacts>

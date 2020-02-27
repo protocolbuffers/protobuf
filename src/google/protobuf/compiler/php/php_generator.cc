@@ -37,6 +37,16 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/any.pb.h>
+#include <google/protobuf/api.pb.h>
+#include <google/protobuf/duration.pb.h>
+#include <google/protobuf/empty.pb.h>
+#include <google/protobuf/field_mask.pb.h>
+#include <google/protobuf/source_context.pb.h>
+#include <google/protobuf/struct.pb.h>
+#include <google/protobuf/timestamp.pb.h>
+#include <google/protobuf/type.pb.h>
+#include <google/protobuf/wrappers.pb.h>
 
 #include <sstream>
 
@@ -91,6 +101,9 @@ std::string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
 std::string BinaryToHex(const string& binary);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
+void GenerateAddFilesToPool(const FileDescriptor* file,
+                            const std::set<string>& aggregate_metadata_prefixes,
+                            io::Printer* printer);
 void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message,
                                int is_descriptor);
 void GenerateMessageConstructorDocComment(io::Printer* printer,
@@ -110,7 +123,6 @@ void GenerateServiceDocComment(io::Printer* printer,
                                const ServiceDescriptor* service);
 void GenerateServiceMethodDocComment(io::Printer* printer,
                               const MethodDescriptor* method);
-
 
 std::string ReservedNamePrefix(const string& classname,
                                 const FileDescriptor* file) {
@@ -628,7 +640,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
   } else {
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldProperty);
     printer->Print(
-        "private $^name^ = ^default^;\n",
+        "protected $^name^ = ^default^;\n",
         "name", field->name(),
         "default", DefaultForField(field));
   }
@@ -682,10 +694,10 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     printer->Print(
         "public function get^camel_name^Unwrapped()\n"
         "{\n"
-        "    $wrapper = $this->get^camel_name^();\n"
-        "    return is_null($wrapper) ? null : $wrapper->getValue();\n"
+        "    return $this->readWrapperValue(\"^field_name^\");\n"
         "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true));
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "field_name", field->name());
   }
 
   // Generate setter.
@@ -795,11 +807,11 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     printer->Print(
         "public function set^camel_name^Unwrapped($var)\n"
         "{\n"
-        "    $wrappedVar = is_null($var) ? null : new \\^wrapper_type^(['value' => $var]);\n"
-        "    return $this->set^camel_name^($wrappedVar);\n"
+        "    $this->writeWrapperValue(\"^field_name^\", $var);\n"
+        "    return $this;"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "wrapper_type", LegacyFullClassName(field->message_type(), is_descriptor));
+        "field_name", field->name());
   }
 
   // Generate has method for proto2 only.
@@ -924,13 +936,20 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
   }
 }
 
-void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
-                           io::Printer* printer) {
-    printer->Print(
-        "public static $is_initialized = false;\n\n"
-        "public static function initOnce() {\n");
-    Indent(printer);
+void GenerateAddFileToPool(
+    const FileDescriptor* file,
+    bool is_descriptor,
+    bool aggregate_metadata,
+    const std::set<string>& aggregate_metadata_prefixes,
+    io::Printer* printer) {
+  printer->Print(
+      "public static $is_initialized = false;\n\n"
+      "public static function initOnce() {\n");
+  Indent(printer);
 
+  if (aggregate_metadata) {
+    GenerateAddFilesToPool(file, aggregate_metadata_prefixes, printer);
+  } else {
     printer->Print(
         "$pool = \\Google\\Protobuf\\Internal\\"
         "DescriptorPool::getGeneratedPool();\n\n"
@@ -938,79 +957,210 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
         "  return;\n"
         "}\n");
 
-  if (is_descriptor) {
-    for (int i = 0; i < file->message_type_count(); i++) {
-      GenerateMessageToPool("", file->message_type(i), printer);
-    }
-    for (int i = 0; i < file->enum_type_count(); i++) {
-      GenerateEnumToPool(file->enum_type(i), printer);
-    }
+    if (is_descriptor) {
+      for (int i = 0; i < file->message_type_count(); i++) {
+        GenerateMessageToPool("", file->message_type(i), printer);
+      }
+      for (int i = 0; i < file->enum_type_count(); i++) {
+        GenerateEnumToPool(file->enum_type(i), printer);
+      }
 
+      printer->Print(
+          "$pool->finish();\n");
+    } else {
+      for (int i = 0; i < file->dependency_count(); i++) {
+        const std::string& name = file->dependency(i)->name();
+        // Currently, descriptor.proto is not ready for external usage. Skip to
+        // import it for now, so that its dependencies can still work as long as
+        // they don't use protos defined in descriptor.proto.
+        if (name == kDescriptorFile) {
+          continue;
+        }
+        std::string dependency_filename =
+            GeneratedMetadataFileName(file->dependency(i), is_descriptor);
+        printer->Print(
+            "\\^name^::initOnce();\n",
+            "name", FilenameToClassname(dependency_filename));
+      }
+
+      // Add messages and enums to descriptor pool.
+      FileDescriptorSet files;
+      FileDescriptorProto* file_proto = files.add_file();
+      file->CopyTo(file_proto);
+
+      // Filter out descriptor.proto as it cannot be depended on for now.
+      RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
+      for (RepeatedPtrField<string>::iterator it = dependency->begin();
+           it != dependency->end(); ++it) {
+        if (*it != kDescriptorFile) {
+          dependency->erase(it);
+          break;
+        }
+      }
+
+      // Filter out all extensions, since we do not support extension yet.
+      file_proto->clear_extension();
+      RepeatedPtrField<DescriptorProto>* message_type =
+          file_proto->mutable_message_type();
+      for (RepeatedPtrField<DescriptorProto>::iterator it = message_type->begin();
+           it != message_type->end(); ++it) {
+        it->clear_extension();
+      }
+
+      string files_data;
+      files.SerializeToString(&files_data);
+
+      printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
+      Indent(printer);
+
+      printer->Print(
+          "\"^data^\"\n",
+          "data", BinaryToHex(files_data));
+
+      Outdent(printer);
+      printer->Print(
+          "), true);\n\n");
+    }
     printer->Print(
-        "$pool->finish();\n");
+        "static::$is_initialized = true;\n");
+  }
+
+  Outdent(printer);
+  printer->Print("}\n");
+}
+
+static void AnalyzeDependencyForFile(
+    const FileDescriptor* file,
+    std::set<const FileDescriptor*>* nodes_without_dependency,
+    std::map<const FileDescriptor*, std::set<const FileDescriptor*>>* deps,
+    std::map<const FileDescriptor*, int>* dependency_count) {
+  int count = file->dependency_count();
+  for (int i = 0; i < file->dependency_count(); i++) {
+      const FileDescriptor* dependency = file->dependency(i);
+      if (dependency->name() == kDescriptorFile) {
+        count--;
+        break;
+      }
+  }
+
+  if (count == 0) {
+    nodes_without_dependency->insert(file);
   } else {
+    (*dependency_count)[file] = count;
     for (int i = 0; i < file->dependency_count(); i++) {
-      const std::string& name = file->dependency(i)->name();
-      // Currently, descriptor.proto is not ready for external usage. Skip to
-      // import it for now, so that its dependencies can still work as long as
-      // they don't use protos defined in descriptor.proto.
-      if (name == kDescriptorFile) {
+      const FileDescriptor* dependency = file->dependency(i);
+      if (dependency->name() == kDescriptorFile) {
         continue;
       }
+      if (deps->find(dependency) == deps->end()) {
+        (*deps)[dependency] = std::set<const FileDescriptor*>();
+      }
+      (*deps)[dependency].insert(file);
+      AnalyzeDependencyForFile(
+          dependency, nodes_without_dependency, deps, dependency_count);
+    }
+  }
+}
+
+static bool NeedsUnwrapping(
+    const FileDescriptor* file,
+    const std::set<string>& aggregate_metadata_prefixes) {
+  bool has_aggregate_metadata_prefix = false;
+  if (aggregate_metadata_prefixes.empty()) {
+    has_aggregate_metadata_prefix = true;
+  } else {
+    for (const auto& prefix : aggregate_metadata_prefixes) {
+      if (HasPrefixString(file->package(), prefix)) {
+        has_aggregate_metadata_prefix = true;
+        break;
+      }
+    }
+  }
+
+  return has_aggregate_metadata_prefix;
+}
+
+void GenerateAddFilesToPool(
+    const FileDescriptor* file,
+    const std::set<string>& aggregate_metadata_prefixes,
+    io::Printer* printer) {
+  printer->Print(
+      "$pool = \\Google\\Protobuf\\Internal\\"
+      "DescriptorPool::getGeneratedPool();\n"
+      "if (static::$is_initialized == true) {\n"
+      "  return;\n"
+      "}\n");
+
+  // Sort files according to dependency
+  std::map<const FileDescriptor*, std::set<const FileDescriptor*>> deps;
+  std::map<const FileDescriptor*, int> dependency_count;
+  std::set<const FileDescriptor*> nodes_without_dependency;
+  FileDescriptorSet sorted_file_set;
+  
+  AnalyzeDependencyForFile(
+      file, &nodes_without_dependency, &deps, &dependency_count);
+
+  while (!nodes_without_dependency.empty()) {
+    auto file = *nodes_without_dependency.begin();
+    nodes_without_dependency.erase(file);
+    for (auto dependent : deps[file]) {
+      if (dependency_count[dependent] == 1) {
+        dependency_count.erase(dependent);
+        nodes_without_dependency.insert(dependent);
+      } else {
+        dependency_count[dependent] -= 1;
+      }
+    }
+
+    bool needs_aggregate = NeedsUnwrapping(file, aggregate_metadata_prefixes);
+
+    if (needs_aggregate) {
+      auto file_proto = sorted_file_set.add_file();
+      file->CopyTo(file_proto);
+
+      // Filter out descriptor.proto as it cannot be depended on for now.
+      RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
+      for (RepeatedPtrField<string>::iterator it = dependency->begin();
+           it != dependency->end(); ++it) {
+        if (*it != kDescriptorFile) {
+          dependency->erase(it);
+          break;
+        }
+      }
+
+      // Filter out all extensions, since we do not support extension yet.
+      file_proto->clear_extension();
+      RepeatedPtrField<DescriptorProto>* message_type =
+          file_proto->mutable_message_type();
+      for (RepeatedPtrField<DescriptorProto>::iterator it = message_type->begin();
+           it != message_type->end(); ++it) {
+        it->clear_extension();
+      }
+    } else {
       std::string dependency_filename =
-          GeneratedMetadataFileName(file->dependency(i), is_descriptor);
+          GeneratedMetadataFileName(file, false);
       printer->Print(
           "\\^name^::initOnce();\n",
           "name", FilenameToClassname(dependency_filename));
     }
-
-    // Add messages and enums to descriptor pool.
-    FileDescriptorSet files;
-    FileDescriptorProto* file_proto = files.add_file();
-    file->CopyTo(file_proto);
-
-    // Filter out descriptor.proto as it cannot be depended on for now.
-    RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
-    for (RepeatedPtrField<string>::iterator it = dependency->begin();
-         it != dependency->end(); ++it) {
-      if (*it != kDescriptorFile) {
-        dependency->erase(it);
-        break;
-      }
-    }
-
-    // Filter out all extensions, since we do not support extension yet.
-    file_proto->clear_extension();
-    RepeatedPtrField<DescriptorProto>* message_type =
-        file_proto->mutable_message_type();
-    for (RepeatedPtrField<DescriptorProto>::iterator it = message_type->begin();
-         it != message_type->end(); ++it) {
-      it->clear_extension();
-    }
-
-    string files_data;
-    files.SerializeToString(&files_data);
-
-    printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
-    Indent(printer);
-
-    // Only write 30 bytes per line.
-    static const int kBytesPerLine = 30;
-    for (int i = 0; i < files_data.size(); i += kBytesPerLine) {
-      printer->Print(
-          "\"^data^\"^dot^\n",
-          "data", BinaryToHex(files_data.substr(i, kBytesPerLine)),
-          "dot", i + kBytesPerLine < files_data.size() ? " ." : "");
-    }
-
-    Outdent(printer);
-    printer->Print(
-        "), true);\n\n");
   }
+
+  string files_data;
+  sorted_file_set.SerializeToString(&files_data);
+
+  printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
+  Indent(printer);
+
+  printer->Print(
+      "\"^data^\"\n",
+      "data", BinaryToHex(files_data));
+
+  Outdent(printer);
+  printer->Print(
+      "), true);\n");
+
   printer->Print(
       "static::$is_initialized = true;\n");
-  Outdent(printer);
-  printer->Print("}\n");
 }
 
 void GenerateUseDeclaration(bool is_descriptor, io::Printer* printer) {
@@ -1051,6 +1201,8 @@ std::string FilenameToClassname(const string& filename) {
 
 void GenerateMetadataFile(const FileDescriptor* file,
                           bool is_descriptor,
+                          bool aggregate_metadata,
+                          const std::set<string>& aggregate_metadata_prefixes,
                           GeneratorContext* generator_context) {
   std::string filename = GeneratedMetadataFileName(file, is_descriptor);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
@@ -1079,7 +1231,8 @@ void GenerateMetadataFile(const FileDescriptor* file,
   }
   Indent(&printer);
 
-  GenerateAddFileToPool(file, is_descriptor, &printer);
+  GenerateAddFileToPool(file, is_descriptor, aggregate_metadata,
+                        aggregate_metadata_prefixes, &printer);
 
   Outdent(&printer);
   printer.Print("}\n\n");
@@ -1215,7 +1368,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   Outdent(&printer);
   printer.Print("}\n\n");
 
-  // write legacy file for backwards compatiblity with nested messages and enums
+  // write legacy file for backwards compatibility with nested messages and enums
   if (en->containing_type() != NULL) {
     printer.Print(
         "// Adding a class alias for backwards compatibility with the previous class name.\n");
@@ -1229,6 +1382,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
 
 void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
                          bool is_descriptor,
+                         bool aggregate_metadata,
                          GeneratorContext* generator_context) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
@@ -1285,9 +1439,11 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
       GeneratedMetadataFileName(file, is_descriptor);
   std::string metadata_fullname = FilenameToClassname(metadata_filename);
   printer.Print(
-      "\\^fullname^::initOnce();\n"
-      "parent::__construct($data);\n",
+      "\\^fullname^::initOnce();\n",
       "fullname", metadata_fullname);
+
+  printer.Print(
+      "parent::__construct($data);\n");
 
   Outdent(&printer);
   printer.Print("}\n\n");
@@ -1314,7 +1470,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   Outdent(&printer);
   printer.Print("}\n\n");
 
-  // write legacy file for backwards compatiblity with nested messages and enums
+  // write legacy file for backwards compatibility with nested messages and enums
   if (message->containing_type() != NULL) {
     printer.Print(
         "// Adding a class alias for backwards compatibility with the previous class name.\n");
@@ -1328,6 +1484,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Nested messages and enums.
   for (int i = 0; i < message->nested_type_count(); i++) {
     GenerateMessageFile(file, message->nested_type(i), is_descriptor,
+                        aggregate_metadata,
                         generator_context);
   }
   for (int i = 0; i < message->enum_type_count(); i++) {
@@ -1384,10 +1541,15 @@ void GenerateServiceFile(const FileDescriptor* file,
 }
 
 void GenerateFile(const FileDescriptor* file, bool is_descriptor,
+                  bool aggregate_metadata,
+                  const std::set<string>& aggregate_metadata_prefixes,
                   GeneratorContext* generator_context) {
-  GenerateMetadataFile(file, is_descriptor, generator_context);
+  GenerateMetadataFile(file, is_descriptor, aggregate_metadata,
+                       aggregate_metadata_prefixes, generator_context);
+
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessageFile(file, file->message_type(i), is_descriptor,
+                        aggregate_metadata,
                         generator_context);
   }
   for (int i = 0; i < file->enum_type_count(); i++) {
@@ -1397,7 +1559,7 @@ void GenerateFile(const FileDescriptor* file, bool is_descriptor,
   if (file->options().php_generic_services()) {
     for (int i = 0; i < file->service_count(); i++) {
       GenerateServiceFile(file, file->service(i), is_descriptor,
-                       generator_context);
+                          generator_context);
     }
   }
 }
@@ -1653,8 +1815,17 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
 bool Generator::Generate(const FileDescriptor* file, const string& parameter,
                          GeneratorContext* generator_context,
                          string* error) const {
-  bool is_descriptor = parameter == "internal";
+  return Generate(file, false, false, std::set<string>(),
+                  generator_context, error);
+}
 
+bool Generator::Generate(
+    const FileDescriptor* file,
+    bool is_descriptor,
+    bool aggregate_metadata,
+    const std::set<string>& aggregate_metadata_prefixes,
+    GeneratorContext* generator_context,
+    string* error) const {
   if (is_descriptor && file->name() != kDescriptorFile) {
     *error =
         "Can only generate PHP code for google/protobuf/descriptor.proto.\n";
@@ -1668,8 +1839,44 @@ bool Generator::Generate(const FileDescriptor* file, const string& parameter,
     return false;
   }
 
-  GenerateFile(file, is_descriptor, generator_context);
+  GenerateFile(file, is_descriptor, aggregate_metadata,
+               aggregate_metadata_prefixes, generator_context);
 
+  return true;
+}
+
+bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
+                            const std::string& parameter,
+                            GeneratorContext* generator_context,
+                            std::string* error) const {
+  bool is_descriptor = false;
+  bool aggregate_metadata = false;
+  std::set<string> aggregate_metadata_prefixes;
+
+  for (const auto& option : Split(parameter, ",")) {
+    const auto option_pair = Split(option, "=");
+    if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
+      string options_string = option_pair[1];
+      const auto options = Split(options_string, "#", false);
+      aggregate_metadata = true;
+      for (int i = 0; i < options.size(); i++) {
+        aggregate_metadata_prefixes.insert(options[i]);
+        GOOGLE_LOG(INFO) << options[i];
+      }
+    }
+    if (option_pair[0] == "internal") {
+      is_descriptor = true;
+    }
+  }
+
+  for (auto file : files) {
+    if (!Generate(
+             file, is_descriptor, aggregate_metadata,
+             aggregate_metadata_prefixes,
+             generator_context, error)) {
+      return false;
+    }
+  }
   return true;
 }
 

@@ -94,6 +94,7 @@ class Message
         $this->desc = $pool->getDescriptorByClassName(get_class($this));
         if (is_null($this->desc)) {
             user_error(get_class($this) . " is not found in descriptor pool.");
+            return;
         }
         foreach ($this->desc->getField() as $field) {
             $setter = $field->getSetter();
@@ -172,6 +173,42 @@ class Message
             $setter = $field->getSetter();
             $defaultValue = $this->defaultValue($field);
             $this->$setter($defaultValue);
+        }
+    }
+
+    protected function readWrapperValue($member)
+    {
+        $field = $this->desc->getFieldByName($member);
+        $oneof_index = $field->getOneofIndex();
+        if ($oneof_index === -1) {
+            $wrapper = $this->$member;
+        } else {
+            $wrapper = $this->readOneof($field->getNumber());
+        }
+
+        if (is_null($wrapper)) {
+            return NULL;
+        } else {
+            return $wrapper->getValue();
+        }
+    }
+
+    protected function writeWrapperValue($member, $value)
+    {
+        $field = $this->desc->getFieldByName($member);
+        $wrapped_value = $value;
+        if (!is_null($value)) {
+            $desc = $field->getMessageType();
+            $klass = $desc->getClass();
+            $wrapped_value = new $klass;
+            $wrapped_value->setValue($value);
+        }
+
+        $oneof_index = $field->getOneofIndex();
+        if ($oneof_index === -1) {
+            $this->$member = $wrapped_value;
+        } else {
+            $this->writeOneof($field->getNumber(), $wrapped_value);
         }
     }
 
@@ -643,8 +680,8 @@ class Message
      * This method merges the contents of the specified message into the
      * current message. Singular fields that are set in the specified message
      * overwrite the corresponding fields in the current message.  Repeated
-     * fields are appended. Map fields key-value pairs are overritten.
-     * Singular/Oneof sub-messages are recursively merged. All overritten
+     * fields are appended. Map fields key-value pairs are overwritten.
+     * Singular/Oneof sub-messages are recursively merged. All overwritten
      * sub-messages are deep-copied.
      *
      * @param object $msg Protobuf message to be merged from.
@@ -897,6 +934,10 @@ class Message
                    throw new GPBDecodeException(
                        "Invalid data type for int32 field");
                 }
+                if (is_string($value) && trim($value) !== $value) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for int32 field");
+                }
                 if (bccomp($value, "2147483647") > 0) {
                    throw new GPBDecodeException(
                        "Int32 too large");
@@ -915,6 +956,10 @@ class Message
                    throw new GPBDecodeException(
                        "Invalid data type for uint32 field");
                 }
+                if (is_string($value) && trim($value) !== $value) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for int32 field");
+                }
                 if (bccomp($value, 4294967295) > 0) {
                     throw new GPBDecodeException(
                         "Uint32 too large");
@@ -927,6 +972,10 @@ class Message
                     return $this->defaultValue($field);
                 }
                 if (!is_numeric($value)) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for int64 field");
+                }
+                if (is_string($value) && trim($value) !== $value) {
                    throw new GPBDecodeException(
                        "Invalid data type for int64 field");
                 }
@@ -945,6 +994,10 @@ class Message
                     return $this->defaultValue($field);
                 }
                 if (!is_numeric($value)) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for int64 field");
+                }
+                if (is_string($value) && trim($value) !== $value) {
                    throw new GPBDecodeException(
                        "Invalid data type for int64 field");
                 }

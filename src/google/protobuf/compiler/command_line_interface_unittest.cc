@@ -1074,7 +1074,7 @@ TEST_F(CommandLineInterfaceTest, UnrecognizedExtraParameters) {
 }
 
 TEST_F(CommandLineInterfaceTest, ExtraPluginParametersForOutParameters) {
-  // This doesn't rely on the plugin having been registred and instead that
+  // This doesn't rely on the plugin having been registered and instead that
   // the existence of --[name]_out is enough to make the --[name]_opt valid.
   // However, running out of process plugins found via the search path (i.e. -
   // not pre registered with --plugin) isn't support in this test suite, so we
@@ -1778,7 +1778,9 @@ TEST_F(CommandLineInterfaceTest, InputNotFoundError) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
-  ExpectErrorText("foo.proto: No such file or directory\n");
+  ExpectErrorText(
+      "Could not make proto path relative: foo.proto: No such file or "
+      "directory\n");
 }
 
 TEST_F(CommandLineInterfaceTest, InputNotFoundError_DescriptorSetIn) {
@@ -1797,7 +1799,9 @@ TEST_F(CommandLineInterfaceTest, CwdRelativeInputNotFoundError) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir $tmpdir/foo.proto");
 
-  ExpectErrorText("$tmpdir/foo.proto: No such file or directory\n");
+  ExpectErrorText(
+      "Could not make proto path relative: $tmpdir/foo.proto: No such file or "
+      "directory\n");
 }
 
 TEST_F(CommandLineInterfaceTest, CwdRelativeInputNotMappedError) {
@@ -1834,7 +1838,9 @@ TEST_F(CommandLineInterfaceTest, CwdRelativeInputNotFoundAndNotMappedError) {
   Run("protocol_compiler --test_out=$tmpdir "
       "--proto_path=$tmpdir/bar $tmpdir/foo.proto");
 
-  ExpectErrorText("$tmpdir/foo.proto: No such file or directory\n");
+  ExpectErrorText(
+      "Could not make proto path relative: $tmpdir/foo.proto: No such file or "
+      "directory\n");
 }
 
 TEST_F(CommandLineInterfaceTest, CwdRelativeInputShadowedError) {
@@ -1867,7 +1873,8 @@ TEST_F(CommandLineInterfaceTest, ProtoPathNotFoundError) {
 
   ExpectErrorText(
       "$tmpdir/foo: warning: directory does not exist.\n"
-      "foo.proto: No such file or directory\n");
+      "Could not make proto path relative: foo.proto: No such file or "
+      "directory\n");
 }
 
 TEST_F(CommandLineInterfaceTest, ProtoPathAndDescriptorSetIn) {
@@ -2479,6 +2486,11 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     EXPECT_EQ(StripCR(expected_text), StripCR(captured_stderr_));
   }
 
+  void ExpectStderrContainsText(const std::string& expected_text) {
+    EXPECT_NE(StripCR(captured_stderr_).find(StripCR(expected_text)),
+              std::string::npos);
+  }
+
  private:
   void WriteUnittestProtoDescriptorSet() {
     unittest_proto_descriptor_set_filename_ =
@@ -2569,7 +2581,7 @@ TEST_P(EncodeDecodeTest, ProtoParseError) {
       Run("net/proto2/internal/no_such_file.proto "
           "--encode=NoSuchType"));
   ExpectStdoutMatchesText("");
-  ExpectStderrMatchesText(
+  ExpectStderrContainsText(
       "net/proto2/internal/no_such_file.proto: No such file or directory\n");
 }
 

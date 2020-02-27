@@ -215,7 +215,10 @@ namespace Google.Protobuf.Reflection
         public FieldCollection Fields { get; }
 
         /// <summary>
-        /// An unmodifiable list of extensions defined in this message's scrope
+        /// An unmodifiable list of extensions defined in this message's scope.
+        /// Note that some extensions may be incomplete (FieldDescriptor.Extension may be null)
+        /// if they are declared in a file generated using a version of protoc that did not fully
+        /// support extensions in C#.
         /// </summary>
         public ExtensionCollection Extensions { get; }
 
@@ -261,7 +264,7 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this message.
         /// </summary>
         [Obsolete("CustomOptions are obsolete. Use GetOption")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options._extensions?.ValuesByNumber);
+        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
 
         /// <summary>
         /// Gets a single value message option for this descriptor

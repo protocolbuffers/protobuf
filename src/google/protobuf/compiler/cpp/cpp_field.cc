@@ -69,8 +69,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
   (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), descriptor->type()));
-  (*variables)["deprecated_attr"] =
-      DeprecatedAttribute(options, descriptor->options().deprecated());
+  (*variables)["deprecated_attr"] = DeprecatedAttribute(options, descriptor);
 
   (*variables)["set_hasbit"] = "";
   (*variables)["clear_hasbit"] = "";

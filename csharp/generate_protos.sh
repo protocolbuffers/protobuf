@@ -41,8 +41,11 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     src/google/protobuf/wrappers.proto
 
 # Test protos
+# Note that this deliberately does *not* include old_extensions1.proto
+# and old_extensions2.proto, which are generated with an older version
+# of protoc.
 $PROTOC -Isrc -Icsharp/protos \
-    --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    --csharp_out=csharp/src/Google.Protobuf.Test.TestProtos \
     --descriptor_set_out=csharp/src/Google.Protobuf.Test/testprotos.pb \
     --include_source_info \
     --include_imports \
@@ -55,6 +58,9 @@ $PROTOC -Isrc -Icsharp/protos \
     csharp/protos/unittest.proto \
     csharp/protos/unittest_import.proto \
     csharp/protos/unittest_import_public.proto \
+    csharp/protos/unittest_issue6936_a.proto \
+    csharp/protos/unittest_issue6936_b.proto \
+    csharp/protos/unittest_issue6936_c.proto \
     src/google/protobuf/unittest_well_known_types.proto \
     src/google/protobuf/test_messages_proto3.proto \
     src/google/protobuf/test_messages_proto2.proto
@@ -70,4 +76,9 @@ $PROTOC -Iconformance -Isrc --csharp_out=csharp/src/Google.Protobuf.Conformance 
 $PROTOC -Ibenchmarks \
   benchmarks/datasets/google_message1/proto3/*.proto \
   benchmarks/benchmarks.proto \
+  --csharp_out=csharp/src/Google.Protobuf.Benchmarks
+
+# C# only benchmark protos
+$PROTOC -Isrc -Icsharp/src/Google.Protobuf.Benchmarks \
+  csharp/src/Google.Protobuf.Benchmarks/*.proto \
   --csharp_out=csharp/src/Google.Protobuf.Benchmarks

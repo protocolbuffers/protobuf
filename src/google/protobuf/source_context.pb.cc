@@ -78,7 +78,7 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fsource_5fcontext_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto), true);
+static bool dynamic_init_dummy_google_2fprotobuf_2fsource_5fcontext_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto)), true);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
@@ -148,7 +148,9 @@ const char* SourceContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
       // string file_name = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_file_name(), ptr, ctx, "google.protobuf.SourceContext.file_name");
+          auto str = _internal_mutable_file_name();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.SourceContext.file_name"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -172,7 +174,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* SourceContext::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* SourceContext::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceContext)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;

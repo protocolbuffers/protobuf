@@ -1902,7 +1902,7 @@ TEST_F(ExtensionDescriptorTest, ExtensionRanges) {
 
   EXPECT_EQ(20, foo_->extension_range(0)->end);
   EXPECT_EQ(40, foo_->extension_range(1)->end);
-};
+}
 
 TEST_F(ExtensionDescriptorTest, Extensions) {
   EXPECT_EQ(0, foo_->extension_count());
@@ -1947,7 +1947,7 @@ TEST_F(ExtensionDescriptorTest, Extensions) {
   EXPECT_TRUE(foo_file_->extension(1)->extension_scope() == nullptr);
   EXPECT_EQ(bar_, bar_->extension(0)->extension_scope());
   EXPECT_EQ(bar_, bar_->extension(1)->extension_scope());
-};
+}
 
 TEST_F(ExtensionDescriptorTest, IsExtensionNumber) {
   EXPECT_FALSE(foo_->IsExtensionNumber(9));
@@ -2095,7 +2095,7 @@ TEST_F(ReservedDescriptorTest, ReservedRanges) {
 
   EXPECT_EQ(15, foo_->reserved_range(2)->start);
   EXPECT_EQ(16, foo_->reserved_range(2)->end);
-};
+}
 
 TEST_F(ReservedDescriptorTest, IsReservedNumber) {
   EXPECT_FALSE(foo_->IsReservedNumber(1));
@@ -2110,20 +2110,20 @@ TEST_F(ReservedDescriptorTest, IsReservedNumber) {
   EXPECT_FALSE(foo_->IsReservedNumber(14));
   EXPECT_TRUE(foo_->IsReservedNumber(15));
   EXPECT_FALSE(foo_->IsReservedNumber(16));
-};
+}
 
 TEST_F(ReservedDescriptorTest, ReservedNames) {
   ASSERT_EQ(2, foo_->reserved_name_count());
 
   EXPECT_EQ("foo", foo_->reserved_name(0));
   EXPECT_EQ("bar", foo_->reserved_name(1));
-};
+}
 
 TEST_F(ReservedDescriptorTest, IsReservedName) {
   EXPECT_TRUE(foo_->IsReservedName("foo"));
   EXPECT_TRUE(foo_->IsReservedName("bar"));
   EXPECT_FALSE(foo_->IsReservedName("baz"));
-};
+}
 
 // ===================================================================
 
@@ -2532,7 +2532,7 @@ TEST_F(MiscTest, DefaultValues) {
   AddField(message_proto, "empty_string", 11, label, FD::TYPE_STRING)
       ->set_default_value("");
 
-  // Add a second set of fields with implicit defalut values.
+  // Add a second set of fields with implicit default values.
   AddField(message_proto, "implicit_int32", 21, label, FD::TYPE_INT32);
   AddField(message_proto, "implicit_int64", 22, label, FD::TYPE_INT64);
   AddField(message_proto, "implicit_uint32", 23, label, FD::TYPE_UINT32);
@@ -5177,7 +5177,7 @@ TEST_F(ValidationErrorTest, RepeatedMessageOption) {
 }
 
 TEST_F(ValidationErrorTest, ResolveUndefinedOption) {
-  // The following should produce an eror that baz.bar is resolved but not
+  // The following should produce an error that baz.bar is resolved but not
   // defined.
   // foo.proto:
   //   package baz
@@ -7773,7 +7773,7 @@ TEST_F(LazilyBuildDependenciesTest, Message) {
   EXPECT_FALSE(pool_.InternalIsFileLoaded("bar.proto"));
 
   // Finally, verify that if we call message_type() on the field, we will
-  // buid the file where the message is defined, and get a valid descriptor
+  // build the file where the message is defined, and get a valid descriptor
   EXPECT_TRUE(field->message_type() != nullptr);
   EXPECT_TRUE(pool_.InternalIsFileLoaded("bar.proto"));
 }

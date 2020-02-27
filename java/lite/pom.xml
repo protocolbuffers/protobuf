@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.11.0-rc-0</version>
+    <version>3.11.4</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -89,7 +89,7 @@
                 <resource>
                   <directory>${basedir}/../core/src/main/java/com/google/protobuf</directory>
                   <includes>
-                    <!-- Keep in sync with //:BUILD  -->
+                    <!-- Keep in sync with //java/core:BUILD  -->
                     <include>AbstractMessageLite.java</include>
                     <include>AbstractParser.java</include>
                     <include>AbstractProtobufList.java</include>

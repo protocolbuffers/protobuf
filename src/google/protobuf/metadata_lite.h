@@ -192,10 +192,10 @@ class InternalMetadataWithArenaLite
 
   static const std::string& default_instance() {
     // Can't use GetEmptyStringAlreadyInited() here because empty string
-    // may not have been initalized yet. This happens when protocol compiler
+    // may not have been initialized yet. This happens when protocol compiler
     // statically determines the user can't access defaults and omits init code
     // from proto constructors. However unknown fields are always part of a
-    // proto so it needs to be lazily initailzed. See b/112613846.
+    // proto so it needs to be lazily initialized. See b/112613846.
     return GetEmptyString();
   }
 };

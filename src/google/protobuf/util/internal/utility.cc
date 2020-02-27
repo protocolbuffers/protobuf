@@ -31,6 +31,8 @@
 #include <google/protobuf/util/internal/utility.h>
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
@@ -41,7 +43,6 @@
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
-#include <google/protobuf/stubs/mathlimits.h>
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
@@ -377,15 +378,15 @@ bool IsMessageSetWireFormat(const google::protobuf::Type& type) {
 }
 
 std::string DoubleAsString(double value) {
-  if (MathLimits<double>::IsPosInf(value)) return "Infinity";
-  if (MathLimits<double>::IsNegInf(value)) return "-Infinity";
-  if (MathLimits<double>::IsNaN(value)) return "NaN";
+  if (value == std::numeric_limits<double>::infinity()) return "Infinity";
+  if (value == -std::numeric_limits<double>::infinity()) return "-Infinity";
+  if (std::isnan(value)) return "NaN";
 
   return SimpleDtoa(value);
 }
 
 std::string FloatAsString(float value) {
-  if (MathLimits<float>::IsFinite(value)) return SimpleFtoa(value);
+  if (std::isfinite(value)) return SimpleFtoa(value);
   return DoubleAsString(value);
 }
 
@@ -395,9 +396,7 @@ bool SafeStrToFloat(StringPiece str, float* value) {
     return false;
   }
 
-  if (MathLimits<double>::IsInf(double_value) ||
-      MathLimits<double>::IsNaN(double_value))
-    return false;
+  if (std::isinf(double_value) || std::isnan(double_value)) return false;
 
   // Fail if the value is not representable in float.
   if (double_value > std::numeric_limits<float>::max() ||

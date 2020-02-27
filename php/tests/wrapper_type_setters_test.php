@@ -132,7 +132,8 @@ class WrapperTypeSettersTest extends TestBase
                 [2.2, new DoubleValue(["value" => 2.2])],
                 [null, null],
                 [0, new DoubleValue()],
-            ]],[TestWrapperSetters::class, StringValue::class, "setStringValueOneof", "setStringValueOneofUnwrapped", "getStringValueOneof", "getStringValueOneofUnwrapped", [
+            ]],
+            [TestWrapperSetters::class, StringValue::class, "setStringValueOneof", "setStringValueOneofUnwrapped", "getStringValueOneof", "getStringValueOneofUnwrapped", [
                 ["asdf", new StringValue(["value" => "asdf"])],
                 ["", new StringValue(["value" => ""])],
                 [null, null],

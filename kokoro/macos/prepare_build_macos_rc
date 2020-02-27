@@ -5,10 +5,11 @@
 ##
 # Select Xcode version
 
-# Remember to udpate the Xcode version when xcode_9.4.1 is not available.
-# If xcode is not available, it will probaly encounter the failure for 
-# "autom4te: need GNU m4 1.4 or later: /usr/bin/m4""
-export DEVELOPER_DIR=/Applications/Xcode_9.4.1.app/Contents/Developer
+# Remember to update the Xcode version when Xcode_11.3.app is not available.
+# If xcode is not available, it will probably encounter the failure for
+# "autom4te: need GNU m4 1.4 or later: /usr/bin/m4"
+# go/kokoro/userdocs/macos/selecting_xcode.md for more information.
+export DEVELOPER_DIR=/Applications/Xcode_11.3.app/Contents/Developer
 
 ##
 # Select C/C++ compilers

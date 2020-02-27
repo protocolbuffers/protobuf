@@ -21,7 +21,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool allow_alias = 2;</code>
      */
-    private $allow_alias = false;
+    protected $allow_alias = false;
     private $has_allow_alias = false;
     /**
      * Is this enum deprecated?
@@ -31,7 +31,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
-    private $deprecated = false;
+    protected $deprecated = false;
     private $has_deprecated = false;
     /**
      * The parser stores options it doesn't recognize here. See above.

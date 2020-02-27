@@ -299,7 +299,7 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fwrappers_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto), true);
+static bool dynamic_init_dummy_google_2fprotobuf_2fwrappers_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto)), true);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
@@ -403,7 +403,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* DoubleValue::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* DoubleValue::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DoubleValue)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -602,7 +602,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* FloatValue::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* FloatValue::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FloatValue)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -777,7 +777,7 @@ const char* Int64Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
       // int64 value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -801,7 +801,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* Int64Value::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* Int64Value::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int64Value)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -978,7 +978,7 @@ const char* UInt64Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // uint64 value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1002,7 +1002,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* UInt64Value::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* UInt64Value::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt64Value)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -1179,7 +1179,7 @@ const char* Int32Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
       // int32 value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1203,7 +1203,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* Int32Value::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* Int32Value::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int32Value)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -1380,7 +1380,7 @@ const char* UInt32Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // uint32 value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1404,7 +1404,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* UInt32Value::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* UInt32Value::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt32Value)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -1581,7 +1581,7 @@ const char* BoolValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
       // bool value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1605,7 +1605,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* BoolValue::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* BoolValue::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BoolValue)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -1786,7 +1786,9 @@ const char* StringValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // string value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_value(), ptr, ctx, "google.protobuf.StringValue.value");
+          auto str = _internal_mutable_value();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.StringValue.value"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1810,7 +1812,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* StringValue::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* StringValue::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.StringValue)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -1998,7 +2000,8 @@ const char* BytesValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
       // bytes value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(_internal_mutable_value(), ptr, ctx);
+          auto str = _internal_mutable_value();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2022,7 +2025,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* BytesValue::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* BytesValue::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BytesValue)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;

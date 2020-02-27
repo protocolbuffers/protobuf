@@ -811,6 +811,7 @@ void CommandLineInterface::AllowPlugins(const std::string& exe_name_prefix) {
   plugin_prefix_ = exe_name_prefix;
 }
 
+
 int CommandLineInterface::Run(int argc, const char* const argv[]) {
   Clear();
   switch (ParseArguments(argc, argv)) {
@@ -869,7 +870,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
-  if (!ParseInputFiles(descriptor_pool.get(), &parsed_files)) {
+  if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
+                       &parsed_files)) {
     return 1;
   }
 
@@ -884,7 +886,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     for (int i = 0; i < output_directives_.size(); i++) {
       std::string output_location = output_directives_[i].output_location;
       if (!HasSuffixString(output_location, ".zip") &&
-          !HasSuffixString(output_location, ".jar")) {
+          !HasSuffixString(output_location, ".jar") &&
+          !HasSuffixString(output_location, ".srcjar")) {
         AddTrailingSlash(&output_location);
       }
 
@@ -1044,7 +1047,8 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
   for (const auto& input_file : input_files_) {
     FileDescriptorProto file_descriptor;
     if (!database->FindFileByName(input_file, &file_descriptor)) {
-      std::cerr << input_file << ": " << strerror(ENOENT) << std::endl;
+      std::cerr << "Could not find file in descriptor database: " << input_file
+                << ": " << strerror(ENOENT) << std::endl;
       return false;
     }
 
@@ -1061,7 +1065,7 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
 }
 
 bool CommandLineInterface::ParseInputFiles(
-    DescriptorPool* descriptor_pool,
+    DescriptorPool* descriptor_pool, DiskSourceTree* source_tree,
     std::vector<const FileDescriptor*>* parsed_files) {
 
   // Track unused imports in all source files
@@ -1154,7 +1158,8 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
         in_fallback_database) {
       return true;
     } else {
-      std::cerr << *proto << ": " << strerror(ENOENT) << std::endl;
+      std::cerr << "Could not make proto path relative: " << *proto << ": "
+                << strerror(ENOENT) << std::endl;
       return false;
     }
   }
@@ -1177,7 +1182,8 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
       if (in_fallback_database) {
         return true;
       }
-      std::cerr << *proto << ": " << strerror(errno) << std::endl;
+      std::cerr << "Could not map to virtual file: " << *proto << ": "
+                << strerror(errno) << std::endl;
       return false;
     case DiskSourceTree::NO_MAPPING: {
       // Try to interpret the path as a virtual path.
@@ -2223,12 +2229,20 @@ bool CommandLineInterface::WriteDescriptorSet(
   }
 
   io::FileOutputStream out(fd);
-  if (!file_set.SerializeToZeroCopyStream(&out)) {
-    std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
-              << std::endl;
-    out.Close();
-    return false;
+
+  {
+    io::CodedOutputStream coded_out(&out);
+    // Determinism is useful here because build outputs are sometimes checked
+    // into version control.
+    coded_out.SetSerializationDeterministic(true);
+    if (!file_set.SerializeToCodedStream(&coded_out)) {
+      std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
+                << std::endl;
+      out.Close();
+      return false;
+    }
   }
+
   if (!out.Close()) {
     std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
               << std::endl;
@@ -2275,7 +2289,7 @@ namespace {
 // Nested Messages:
 // Note that it only stores the nested message type, iff the nested type is
 // either a direct child of the given descriptor, or the nested type is a
-// decendent of the given descriptor and all the nodes between the
+// descendant of the given descriptor and all the nodes between the
 // nested type and the given descriptor are group types. e.g.
 //
 // message Foo {

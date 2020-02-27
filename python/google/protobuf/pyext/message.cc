@@ -216,15 +216,41 @@ static PyObject* New(PyTypeObject* type,
   }
 
   // Check dict['DESCRIPTOR']
-  PyObject* py_descriptor = PyDict_GetItem(dict, kDESCRIPTOR);
-  if (py_descriptor == NULL) {
+  PyObject* descriptor_or_name = PyDict_GetItem(dict, kDESCRIPTOR);
+  if (descriptor_or_name == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Message class has no DESCRIPTOR");
     return NULL;
   }
-  if (!PyObject_TypeCheck(py_descriptor, &PyMessageDescriptor_Type)) {
-    PyErr_Format(PyExc_TypeError, "Expected a message Descriptor, got %s",
-                 py_descriptor->ob_type->tp_name);
-    return NULL;
+
+  Py_ssize_t name_size;
+  char* full_name;
+  const Descriptor* message_descriptor;
+  PyObject* py_descriptor;
+
+  if (PyObject_TypeCheck(descriptor_or_name, &PyMessageDescriptor_Type)) {
+    py_descriptor = descriptor_or_name;
+    message_descriptor = PyMessageDescriptor_AsDescriptor(py_descriptor);
+    if (message_descriptor == nullptr) {
+      return nullptr;
+    }
+  } else {
+    if (PyString_AsStringAndSize(descriptor_or_name, &full_name, &name_size) <
+        0) {
+      return nullptr;
+    }
+    message_descriptor =
+        GetDefaultDescriptorPool()->pool->FindMessageTypeByName(
+            std::string(full_name, name_size));
+    if (message_descriptor == nullptr) {
+      PyErr_Format(PyExc_KeyError,
+                   "Can not find message descriptor %s "
+                   "from pool",
+                   full_name);
+      return nullptr;
+    }
+    py_descriptor = PyMessageDescriptor_FromDescriptor(message_descriptor);
+    // reset the dict['DESCRIPTOR'] to py_descriptor.
+    PyDict_SetItem(dict, kDESCRIPTOR, py_descriptor);
   }
 
   // Messages have no __dict__
@@ -236,11 +262,6 @@ static PyObject* New(PyTypeObject* type,
   // Build the arguments to the base metaclass.
   // We change the __bases__ classes.
   ScopedPyObjectPtr new_args;
-  const Descriptor* message_descriptor =
-      PyMessageDescriptor_AsDescriptor(py_descriptor);
-  if (message_descriptor == NULL) {
-    return NULL;
-  }
 
   if (WKT_classes == NULL) {
     ScopedPyObjectPtr well_known_types(PyImport_ImportModule(
@@ -2958,8 +2979,12 @@ bool InitProto2MessageModule(PyObject *m) {
         reinterpret_cast<PyObject*>(
             &RepeatedCompositeContainer_Type));
 
-    // Register them as collections.Sequence
+    // Register them as MutableSequence.
+#if PY_MAJOR_VERSION >= 3
+    ScopedPyObjectPtr collections(PyImport_ImportModule("collections.abc"));
+#else
     ScopedPyObjectPtr collections(PyImport_ImportModule("collections"));
+#endif
     if (collections == NULL) {
       return false;
     }
@@ -3028,10 +3053,6 @@ bool InitProto2MessageModule(PyObject *m) {
 
   PyModule_AddObject(m, "DescriptorPool", reinterpret_cast<PyObject*>(
       &PyDescriptorPool_Type));
-
-  // This implementation provides full Descriptor types, we advertise it so that
-  // descriptor.py can use them in replacement of the Python classes.
-  PyModule_AddIntConstant(m, "_USE_C_DESCRIPTORS", 1);
 
   PyModule_AddObject(m, "Descriptor", reinterpret_cast<PyObject*>(
       &PyMessageDescriptor_Type));

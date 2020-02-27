@@ -507,7 +507,7 @@ namespace Google.Protobuf
         {
             var nestedCodec = WrapperCodecs.GetCodec<T>();
             return new FieldCodec<T?>(
-                input => WrapperCodecs.Read<T>(input, nestedCodec),
+                WrapperCodecs.GetReader<T>(),
                 (output, value) => WrapperCodecs.Write<T>(output, value.Value, nestedCodec),
                 (CodedInputStream i, ref T? v) => v = WrapperCodecs.Read<T>(i, nestedCodec),
                 (ref T? v, T? v2) => { if (v2.HasValue) { v = v2; } return v.HasValue; },
@@ -539,6 +539,25 @@ namespace Google.Protobuf
                 { typeof(ByteString), ForBytes(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited)) }
             };
 
+            private static readonly Dictionary<System.Type, object> Readers = new Dictionary<System.Type, object>
+            {
+                // TODO: Provide more optimized readers.
+                { typeof(bool), (Func<CodedInputStream, bool?>)CodedInputStream.ReadBoolWrapper },
+                { typeof(int), (Func<CodedInputStream, int?>)CodedInputStream.ReadInt32Wrapper },
+                { typeof(long), (Func<CodedInputStream, long?>)CodedInputStream.ReadInt64Wrapper },
+                { typeof(uint), (Func<CodedInputStream, uint?>)CodedInputStream.ReadUInt32Wrapper },
+                { typeof(ulong), (Func<CodedInputStream, ulong?>)CodedInputStream.ReadUInt64Wrapper },
+                { typeof(float), BitConverter.IsLittleEndian ?
+                    (Func<CodedInputStream, float?>)CodedInputStream.ReadFloatWrapperLittleEndian :
+                    (Func<CodedInputStream, float?>)CodedInputStream.ReadFloatWrapperSlow },
+                { typeof(double), BitConverter.IsLittleEndian ?
+                    (Func<CodedInputStream, double?>)CodedInputStream.ReadDoubleWrapperLittleEndian :
+                    (Func<CodedInputStream, double?>)CodedInputStream.ReadDoubleWrapperSlow },
+                // `string` and `ByteString` less performance-sensitive. Do not implement for now.
+                { typeof(string), null },
+                { typeof(ByteString), null },
+            };
+
             /// <summary>
             /// Returns a field codec which effectively wraps a value of type T in a message.
             ///
@@ -551,6 +570,23 @@ namespace Google.Protobuf
                     throw new InvalidOperationException("Invalid type argument requested for wrapper codec: " + typeof(T));
                 }
                 return (FieldCodec<T>) value;
+            }
+
+            internal static Func<CodedInputStream, T?> GetReader<T>() where T : struct
+            {
+                object value;
+                if (!Readers.TryGetValue(typeof(T), out value))
+                {
+                    throw new InvalidOperationException("Invalid type argument requested for wrapper reader: " + typeof(T));
+                }
+                if (value == null)
+                {
+                    // Return default unoptimized reader for the wrapper type.
+                    var nestedCoded = GetCodec<T>();
+                    return input => Read<T>(input, nestedCoded);
+                }
+                // Return optimized read for the wrapper type.
+                return (Func<CodedInputStream, T?>)value;
             }
 
             internal static T Read<T>(CodedInputStream input, FieldCodec<T> codec)

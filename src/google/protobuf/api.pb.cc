@@ -168,7 +168,7 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fapi_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto), true);
+static bool dynamic_init_dummy_google_2fprotobuf_2fapi_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto)), true);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
@@ -282,7 +282,9 @@ const char* Api::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::intern
       // string name = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_name(), ptr, ctx, "google.protobuf.Api.name");
+          auto str = _internal_mutable_name();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.Api.name"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -313,7 +315,9 @@ const char* Api::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::intern
       // string version = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_version(), ptr, ctx, "google.protobuf.Api.version");
+          auto str = _internal_mutable_version();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.Api.version"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -339,7 +343,7 @@ const char* Api::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::intern
       // .google.protobuf.Syntax syntax = 7;
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_syntax(static_cast<PROTOBUF_NAMESPACE_ID::Syntax>(val));
         } else goto handle_unusual;
@@ -364,7 +368,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* Api::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* Api::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Api)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -385,7 +389,7 @@ failure:
       n = static_cast<unsigned int>(this->_internal_methods_size()); i < n; i++) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessageToArray(2, this->_internal_methods(i), target, stream);
+      InternalWriteMessage(2, this->_internal_methods(i), target, stream);
   }
 
   // repeated .google.protobuf.Option options = 3;
@@ -393,7 +397,7 @@ failure:
       n = static_cast<unsigned int>(this->_internal_options_size()); i < n; i++) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessageToArray(3, this->_internal_options(i), target, stream);
+      InternalWriteMessage(3, this->_internal_options(i), target, stream);
   }
 
   // string version = 4;
@@ -410,7 +414,7 @@ failure:
   if (this->has_source_context()) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessageToArray(
+      InternalWriteMessage(
         5, _Internal::source_context(this), target, stream);
   }
 
@@ -419,7 +423,7 @@ failure:
       n = static_cast<unsigned int>(this->_internal_mixins_size()); i < n; i++) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessageToArray(6, this->_internal_mixins(i), target, stream);
+      InternalWriteMessage(6, this->_internal_mixins(i), target, stream);
   }
 
   // .google.protobuf.Syntax syntax = 7;
@@ -675,35 +679,41 @@ const char* Method::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::int
       // string name = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_name(), ptr, ctx, "google.protobuf.Method.name");
+          auto str = _internal_mutable_name();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.Method.name"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // string request_type_url = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_request_type_url(), ptr, ctx, "google.protobuf.Method.request_type_url");
+          auto str = _internal_mutable_request_type_url();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.Method.request_type_url"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // bool request_streaming = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          request_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          request_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // string response_type_url = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 34)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_response_type_url(), ptr, ctx, "google.protobuf.Method.response_type_url");
+          auto str = _internal_mutable_response_type_url();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.Method.response_type_url"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // bool response_streaming = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          response_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          response_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -722,7 +732,7 @@ const char* Method::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::int
       // .google.protobuf.Syntax syntax = 7;
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_syntax(static_cast<PROTOBUF_NAMESPACE_ID::Syntax>(val));
         } else goto handle_unusual;
@@ -747,7 +757,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* Method::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* Method::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Method)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
@@ -800,7 +810,7 @@ failure:
       n = static_cast<unsigned int>(this->_internal_options_size()); i < n; i++) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessageToArray(6, this->_internal_options(i), target, stream);
+      InternalWriteMessage(6, this->_internal_options(i), target, stream);
   }
 
   // .google.protobuf.Syntax syntax = 7;
@@ -1037,14 +1047,18 @@ const char* Mixin::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
       // string name = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_name(), ptr, ctx, "google.protobuf.Mixin.name");
+          auto str = _internal_mutable_name();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.Mixin.name"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // string root = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParserUTF8(_internal_mutable_root(), ptr, ctx, "google.protobuf.Mixin.root");
+          auto str = _internal_mutable_root();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "google.protobuf.Mixin.root"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1068,7 +1082,7 @@ failure:
 #undef CHK_
 }
 
-::PROTOBUF_NAMESPACE_ID::uint8* Mixin::InternalSerializeWithCachedSizesToArray(
+::PROTOBUF_NAMESPACE_ID::uint8* Mixin::_InternalSerialize(
     ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Mixin)
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;

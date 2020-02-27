@@ -20,17 +20,17 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    private $name = '';
+    protected $name = '';
     private $has_name = false;
     /**
      * Generated from protobuf field <code>optional int32 number = 3;</code>
      */
-    private $number = 0;
+    protected $number = 0;
     private $has_number = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Label label = 4;</code>
      */
-    private $label = 0;
+    protected $label = 0;
     private $has_label = false;
     /**
      * If type_name is set, this need not be set.  If both this and type_name
@@ -38,7 +38,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Type type = 5;</code>
      */
-    private $type = 0;
+    protected $type = 0;
     private $has_type = false;
     /**
      * For message and enum types, this is the name of the type.  If the name
@@ -49,7 +49,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string type_name = 6;</code>
      */
-    private $type_name = '';
+    protected $type_name = '';
     private $has_type_name = false;
     /**
      * For extensions, this is the name of the type being extended.  It is
@@ -57,7 +57,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string extendee = 2;</code>
      */
-    private $extendee = '';
+    protected $extendee = '';
     private $has_extendee = false;
     /**
      * For numeric types, contains the original text representation of the value.
@@ -68,7 +68,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string default_value = 7;</code>
      */
-    private $default_value = '';
+    protected $default_value = '';
     private $has_default_value = false;
     /**
      * If set, gives the index of a oneof in the containing type's oneof_decl
@@ -76,7 +76,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 oneof_index = 9;</code>
      */
-    private $oneof_index = 0;
+    protected $oneof_index = 0;
     private $has_oneof_index = false;
     /**
      * JSON name of this field. The value is set by protocol compiler. If the
@@ -86,12 +86,12 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string json_name = 10;</code>
      */
-    private $json_name = '';
+    protected $json_name = '';
     private $has_json_name = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions options = 8;</code>
      */
-    private $options = null;
+    protected $options = null;
     private $has_options = false;
 
     /**

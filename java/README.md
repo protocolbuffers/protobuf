@@ -23,7 +23,7 @@ If you are using Maven, use the following:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>3.9.2</version>
+  <version>3.11.0</version>
 </dependency>
 ```
 
@@ -37,7 +37,7 @@ protobuf-java-util package:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java-util</artifactId>
-  <version>3.9.2</version>
+  <version>3.11.0</version>
 </dependency>
 ```
 
@@ -45,7 +45,7 @@ protobuf-java-util package:
 
 If you are using Gradle, add the following to your `build.gradle` file's dependencies:
 ```
-    compile 'com.google.protobuf:protobuf-java:3.9.2'
+    compile 'com.google.protobuf:protobuf-java:3.11.0'
 ```
 Again, be sure to check that the version number maches (or is newer than) the version number of protoc that you are using.
 
@@ -146,7 +146,7 @@ library (without the util package).
   are guaranteed for minor version releases if the user follows the guideline
   described in this section.
 
-* Protobuf major version releases may also be backwards-compatbile with the
+* Protobuf major version releases may also be backwards-compatible with the
   last release of the previous major version. See the release notice for more
   details.
 

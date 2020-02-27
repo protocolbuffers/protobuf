@@ -752,7 +752,7 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
   // Field mask on optional field.
   FieldMaskUtil::FromString("optional_int32", &mask);
 
-  // Verify that if a message is updted by FieldMaskUtil::TrimMessage(), the
+  // Verify that if a message is updated by FieldMaskUtil::TrimMessage(), the
   // function returns true.
   // Test on primary field.
   trimed_msg.set_optional_string("abc");
@@ -793,7 +793,7 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
   EXPECT_EQ(trimed_msg.optional_int32(), 123);
   trimed_msg.Clear();
 
-  // Field mask on repated field.
+  // Field mask on repeated field.
   FieldMaskUtil::FromString("repeated_string", &mask);
   trimed_msg.add_repeated_string("abc");
   trimed_msg.add_repeated_string("def");

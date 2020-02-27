@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 22:0:0
+PROTOBUF_VERSION = 22:4:0
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
@@ -228,8 +228,6 @@ libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
   google/protobuf/any.pb.cc                                    \
   google/protobuf/api.pb.cc                                    \
-  google/protobuf/stubs/mathlimits.cc                          \
-  google/protobuf/stubs/mathlimits.h                           \
   google/protobuf/any.cc                                       \
   google/protobuf/descriptor.cc                                \
   google/protobuf/descriptor_database.cc                       \

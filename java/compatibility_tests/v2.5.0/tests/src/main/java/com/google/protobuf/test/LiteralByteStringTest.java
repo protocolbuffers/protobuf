@@ -87,7 +87,7 @@ public class LiteralByteStringTest extends TestCase {
       stillEqual = (iter.hasNext() && referenceBytes[i] == iter.nextByte());
     }
     assertTrue(classUnderTest + " must capture the right bytes", stillEqual);
-    assertFalse(classUnderTest + " must have exhausted the itertor", iter.hasNext());
+    assertFalse(classUnderTest + " must have exhausted the iterator", iter.hasNext());
 
     try {
       iter.nextByte();
@@ -317,7 +317,7 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals("InputStream.skip(), no more input", 0, input.available());
     assertEquals("InputStream.skip(), no more input", -1, input.read());
     input.reset();
-    assertEquals("InputStream.reset() succeded",
+    assertEquals("InputStream.reset() succeeded",
                  stringSize - skipped1, input.available());
     assertEquals("InputStream.reset(), read()",
         stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());

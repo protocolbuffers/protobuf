@@ -32,11 +32,10 @@
 
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/java/java_generator.h>
+#include <google/protobuf/compiler/js/js_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/python/python_generator.h>
-
 #include <google/protobuf/compiler/csharp/csharp_generator.h>
-#include <google/protobuf/compiler/js/js_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
 #include <google/protobuf/compiler/php/php_generator.h>
 #include <google/protobuf/compiler/ruby/ruby_generator.h>
@@ -70,17 +69,17 @@ int ProtobufMain(int argc, char* argv[]) {
 
   // Proto2 Python
   python::Generator py_generator;
-  cli.RegisterGenerator("--python_out", &py_generator,
+  cli.RegisterGenerator("--python_out", "--python_opt", &py_generator,
                         "Generate Python source file.");
 
   // PHP
   php::Generator php_generator;
-  cli.RegisterGenerator("--php_out", &php_generator,
+  cli.RegisterGenerator("--php_out", "--php_opt", &php_generator,
                         "Generate PHP source file.");
 
   // Ruby
   ruby::Generator rb_generator;
-  cli.RegisterGenerator("--ruby_out", &rb_generator,
+  cli.RegisterGenerator("--ruby_out", "--ruby_opt", &rb_generator,
                         "Generate Ruby source file.");
 
   // CSharp
@@ -95,7 +94,7 @@ int ProtobufMain(int argc, char* argv[]) {
 
   // JavaScript
   js::Generator js_generator;
-  cli.RegisterGenerator("--js_out", &js_generator,
+  cli.RegisterGenerator("--js_out", "--js_opt", &js_generator,
                         "Generate JavaScript source.");
 
   return cli.Run(argc, argv);

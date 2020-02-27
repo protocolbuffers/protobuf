@@ -39,17 +39,20 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__
 
 #include <assert.h>
+
 #include <atomic>
 #include <climits>
 #include <string>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/any.h>
 #include <google/protobuf/has_bits.h>
 #include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/stubs/once.h>  // Add direct dep on port for pb.cc
 #include <google/protobuf/port.h>
+#include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/casts.h>
@@ -95,8 +98,8 @@ PROTOBUF_EXPORT inline const std::string& GetEmptyString() {
 // helper here to keep the protobuf compiler from ever having to emit loops in
 // IsInitialized() methods.  We want the C++ compiler to inline this or not
 // as it sees fit.
-template <class Type>
-bool AllAreInitialized(const Type& t) {
+template <typename Msg>
+bool AllAreInitialized(const RepeatedPtrField<Msg>& t) {
   for (int i = t.size(); --i >= 0;) {
     if (!t.Get(i).IsInitialized()) return false;
   }
@@ -187,7 +190,7 @@ struct PROTOBUF_EXPORT SCCInfoBase {
     kUninitialized = -1,  // initial state
   };
 #if defined(_MSC_VER) && !defined(__clang__)
-  // MSVC doesnt make std::atomic constant initialized. This union trick
+  // MSVC doesn't make std::atomic constant initialized. This union trick
   // makes it so.
   union {
     int visit_status_to_make_linker_init;

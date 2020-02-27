@@ -386,7 +386,7 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         [Test]
-        public void UnknownFieldInWrapper()
+        public void UnknownFieldInWrapperInt32FastPath()
         {
             var stream = new MemoryStream();
             var output = new CodedOutputStream(stream);
@@ -395,17 +395,94 @@ namespace Google.Protobuf.WellKnownTypes
             var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
 
             output.WriteTag(wrapperTag);
-            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            // Wrapper message is just long enough - 6 bytes - to use the wrapper fast-path.
+            output.WriteLength(6); // unknownTag + value 5 + valueType, each 1 byte, + value 65536, 3 bytes
             output.WriteTag(unknownTag);
             output.WriteInt32((int) valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt32(65536);
+            
+            output.Flush();
+            Assert.AreEqual(8, stream.Length); // tag (1 byte) + length (1 byte) + message (6 bytes)
+            stream.Position = 0;
+
+            var message = TestWellKnownTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(65536, message.Int32Field);
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt32SlowPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int32FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int32Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is too short to be used on the wrapper fast-path.
+            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            output.WriteTag(unknownTag);
+            output.WriteInt32((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
             output.WriteTag(valueTag);
             output.WriteInt32(6);
 
             output.Flush();
+            Assert.Less(stream.Length, 8); // tag (1 byte) + length (1 byte) + message
             stream.Position = 0;
 
             var message = TestWellKnownTypes.Parser.ParseFrom(stream);
             Assert.AreEqual(6, message.Int32Field);
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt64FastPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int64FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int64Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is just long enough - 10 bytes - to use the wrapper fast-path.
+            output.WriteLength(11); // unknownTag + value 5 + valueType, each 1 byte, + value 0xfffffffffffff, 8 bytes
+            output.WriteTag(unknownTag);
+            output.WriteInt64((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt64(0xfffffffffffffL);
+
+            output.Flush();
+            Assert.AreEqual(13, stream.Length); // tag (1 byte) + length (1 byte) + message (11 bytes)
+            stream.Position = 0;
+
+            var message = TestWellKnownTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(0xfffffffffffffL, message.Int64Field);
+        }
+
+        [Test]
+        public void UnknownFieldInWrapperInt64SlowPath()
+        {
+            var stream = new MemoryStream();
+            var output = new CodedOutputStream(stream);
+            var wrapperTag = WireFormat.MakeTag(TestWellKnownTypes.Int64FieldFieldNumber, WireFormat.WireType.LengthDelimited);
+            var unknownTag = WireFormat.MakeTag(15, WireFormat.WireType.Varint);
+            var valueTag = WireFormat.MakeTag(Int64Value.ValueFieldNumber, WireFormat.WireType.Varint);
+
+            output.WriteTag(wrapperTag);
+            // Wrapper message is too short to be used on the wrapper fast-path.
+            output.WriteLength(4); // unknownTag + value 5 + valueType + value 6, each 1 byte
+            output.WriteTag(unknownTag);
+            output.WriteInt64((int)valueTag); // Sneakily "pretend" it's a tag when it's really a value
+            output.WriteTag(valueTag);
+            output.WriteInt64(6);
+
+            output.Flush();
+            Assert.Less(stream.Length, 12); // tag (1 byte) + length (1 byte) + message
+            stream.Position = 0;
+
+            var message = TestWellKnownTypes.Parser.ParseFrom(stream);
+            Assert.AreEqual(6L, message.Int64Field);
         }
 
         [Test]

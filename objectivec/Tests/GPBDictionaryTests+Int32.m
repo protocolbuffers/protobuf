@@ -42,6 +42,7 @@
 
 //%PDDM-EXPAND TEST_FOR_POD_KEY(Int32, int32_t, 11, 12, 13, 14)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 // To let the testing macros work, add some extra methods to simplify things.
 @interface GPBInt32EnumDictionary (TestingTweak)
@@ -3672,5 +3673,6 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND-END TEST_FOR_POD_KEY(Int32, int32_t, 11, 12, 13, 14)
 

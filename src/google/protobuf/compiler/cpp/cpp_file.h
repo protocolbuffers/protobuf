@@ -148,7 +148,7 @@ class FileGenerator {
   // Generates extension identifiers.
   void GenerateExtensionIdentifiers(io::Printer* printer);
 
-  // Generates inline function defintions.
+  // Generates inline function definitions.
   void GenerateInlineFunctionDefinitions(io::Printer* printer);
 
   void GenerateProto2NamespaceEnumSpecializations(io::Printer* printer);

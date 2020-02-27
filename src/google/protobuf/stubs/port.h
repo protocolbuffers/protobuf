@@ -32,17 +32,11 @@
 #define GOOGLE_PROTOBUF_STUBS_PORT_H_
 
 #include <assert.h>
+#include <cstdint>
 #include <stdlib.h>
 #include <cstddef>
 #include <string>
 #include <string.h>
-#if defined(__osf__)
-// Tru64 lacks stdint.h, but has inttypes.h which defines a superset of
-// what stdint.h would define.
-#include <inttypes.h>
-#elif !defined(_MSC_VER)
-#include <stdint.h>
-#endif
 
 #include <google/protobuf/stubs/platform_macros.h>
 
@@ -105,7 +99,7 @@
 
 #define PROTOBUF_RUNTIME_DEPRECATED(message) PROTOBUF_DEPRECATED_MSG(message)
 #define GOOGLE_PROTOBUF_RUNTIME_DEPRECATED(message) \
-    PROTOBUF_DEPRECATED_MSG(message)
+  PROTOBUF_DEPRECATED_MSG(message)
 
 // ===================================================================
 // from google3/base/port.h
@@ -116,18 +110,8 @@
 // undefined otherwise.  Do NOT define it to 0 -- that causes
 // '#ifdef LANG_CXX11' to behave differently from '#if LANG_CXX11'.
 #define LANG_CXX11 1
-#endif
-
-#if LANG_CXX11 && !defined(__NVCC__)
-#define PROTOBUF_CXX11 1
 #else
-#define PROTOBUF_CXX11 0
-#endif
-
-#if PROTOBUF_CXX11
-#define PROTOBUF_FINAL final
-#else
-#define PROTOBUF_FINAL
+#error "Protobuf requires at least C++11."
 #endif
 
 namespace google {
@@ -135,17 +119,6 @@ namespace protobuf {
 
 typedef unsigned int uint;
 
-#ifdef _MSC_VER
-typedef signed __int8  int8;
-typedef __int16 int16;
-typedef __int32 int32;
-typedef __int64 int64;
-
-typedef unsigned __int8  uint8;
-typedef unsigned __int16 uint16;
-typedef unsigned __int32 uint32;
-typedef unsigned __int64 uint64;
-#else
 typedef int8_t int8;
 typedef int16_t int16;
 typedef int32_t int32;
@@ -155,7 +128,6 @@ typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
-#endif
 
 static const int32 kint32max = 0x7FFFFFFF;
 static const int32 kint32min = -kint32max - 1;

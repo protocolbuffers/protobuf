@@ -212,7 +212,7 @@
   // Proto3 gets:
 
   // Single fields
-  //  - has*/setHas* invalid for primative types.
+  //  - has*/setHas* invalid for primitive types.
   //  - has*/setHas* valid for Message.
 
   for (NSString *name in names) {
@@ -382,6 +382,7 @@
 //%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message2 message])
 //%PDDM-EXPAND PROTO2_TEST_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
   {  // optionalInt32 :: 1
     Message2 *msg = [[Message2 alloc] init];
@@ -735,6 +736,7 @@
     [msg release];
   }
 
+// clang-format on
 //%PDDM-EXPAND-END PROTO2_TEST_HAS_FIELDS()
 }
 
@@ -796,6 +798,7 @@
 //%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message3 message])
 //%PDDM-EXPAND PROTO3_TEST_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
   {  // optionalInt32
     Message3 *msg = [[Message3 alloc] init];
@@ -995,6 +998,7 @@
     [msg release];
   }
 
+// clang-format on
 //%PDDM-EXPAND-END PROTO3_TEST_HAS_FIELDS()
 }
 
@@ -2234,7 +2238,7 @@
 - (void)testProto3OneofSetToZero {
 
   // Normally setting a proto3 field to the zero value should result in it being
-  // reset/cleared.  But in a oneof, it still gets recored so it can go out
+  // reset/cleared.  But in a oneof, it still gets recorded so it can go out
   // over the wire and the other side can see what was set in the oneof.
 
   NSString *oneofStringDefault = @"";
@@ -2367,7 +2371,7 @@
   XCTAssertNotEqual(msg1, msg2);      // Ptr compare, new object.
   XCTAssertEqualObjects(msg1, msg2);  // Equal values.
 
-  // Pointer comparisions, different objects.
+  // Pointer comparisons, different objects.
 
   XCTAssertNotEqual(msg1.optionalGroup, msg2.optionalGroup);
   XCTAssertNotEqual(msg1.optionalNestedMessage, msg2.optionalNestedMessage);
@@ -2423,7 +2427,7 @@
   XCTAssertNotEqual(msg1, msg2);      // Ptr compare, new object.
   XCTAssertEqualObjects(msg1, msg2);  // Equal values.
 
-  // Pointer comparisions, different objects.
+  // Pointer comparisons, different objects.
   XCTAssertNotEqual(msg1.mapInt32Int32, msg2.mapInt32Int32);
   XCTAssertNotEqual(msg1.mapInt64Int64, msg2.mapInt64Int64);
   XCTAssertNotEqual(msg1.mapUint32Uint32, msg2.mapUint32Uint32);
@@ -2492,7 +2496,7 @@
 }
 
 - (void)test_StringFieldsCopy {
-  // ObjC conventions call for NSString properites to be copy, ensure
+  // ObjC conventions call for NSString properties to be copy, ensure
   // that is done correctly and the string isn't simply retained.
 
   Message2 *msg1 = [Message2 message];
@@ -2507,25 +2511,25 @@
 
   XCTAssertEqualObjects(msg1.optionalString, mutableStr);
   XCTAssertEqualObjects(msg1.optionalString, @"foo");
-  XCTAssertTrue(msg1.optionalString != mutableStr);  // Ptr comparision.
+  XCTAssertTrue(msg1.optionalString != mutableStr);  // Ptr comparison.
 
   XCTAssertEqualObjects(msg2.optionalString, mutableStr);
   XCTAssertEqualObjects(msg2.optionalString, @"foo");
-  XCTAssertTrue(msg2.optionalString != mutableStr);  // Ptr comparision.
+  XCTAssertTrue(msg2.optionalString != mutableStr);  // Ptr comparison.
 
   [mutableStr appendString:@"bar"];
 
   XCTAssertNotEqualObjects(msg1.optionalString, mutableStr);
   XCTAssertEqualObjects(msg1.optionalString, @"foo");
-  XCTAssertTrue(msg1.optionalString != mutableStr);  // Ptr comparision.
+  XCTAssertTrue(msg1.optionalString != mutableStr);  // Ptr comparison.
 
   XCTAssertNotEqualObjects(msg2.optionalString, mutableStr);
   XCTAssertEqualObjects(msg2.optionalString, @"foo");
-  XCTAssertTrue(msg2.optionalString != mutableStr);  // Ptr comparision.
+  XCTAssertTrue(msg2.optionalString != mutableStr);  // Ptr comparison.
 }
 
 - (void)test_BytesFieldsCopy {
-  // ObjC conventions call for NSData properites to be copy, ensure
+  // ObjC conventions call for NSData properties to be copy, ensure
   // that is done correctly and the data isn't simply retained.
 
   Message2 *msg1 = [Message2 message];
@@ -2540,21 +2544,21 @@
 
   XCTAssertEqualObjects(msg1.optionalBytes, mutableData);
   XCTAssertEqualObjects(msg1.optionalBytes, DataFromCStr("abc"));
-  XCTAssertTrue(msg1.optionalBytes != mutableData);  // Ptr comparision.
+  XCTAssertTrue(msg1.optionalBytes != mutableData);  // Ptr comparison.
 
   XCTAssertEqualObjects(msg2.optionalBytes, mutableData);
   XCTAssertEqualObjects(msg2.optionalBytes, DataFromCStr("abc"));
-  XCTAssertTrue(msg2.optionalBytes != mutableData);  // Ptr comparision.
+  XCTAssertTrue(msg2.optionalBytes != mutableData);  // Ptr comparison.
 
   [mutableData appendData:DataFromCStr("123")];
 
   XCTAssertNotEqualObjects(msg1.optionalBytes, mutableData);
   XCTAssertEqualObjects(msg1.optionalBytes, DataFromCStr("abc"));
-  XCTAssertTrue(msg1.optionalBytes != mutableData);  // Ptr comparision.
+  XCTAssertTrue(msg1.optionalBytes != mutableData);  // Ptr comparison.
 
   XCTAssertNotEqualObjects(msg2.optionalBytes, mutableData);
   XCTAssertEqualObjects(msg2.optionalBytes, DataFromCStr("abc"));
-  XCTAssertTrue(msg2.optionalBytes != mutableData);  // Ptr comparision.
+  XCTAssertTrue(msg2.optionalBytes != mutableData);  // Ptr comparison.
 }
 
 #pragma mark - Subset from from map_tests.cc
