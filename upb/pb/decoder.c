@@ -185,7 +185,7 @@ static int32_t skip(upb_pbdecoder *d, size_t bytes) {
   UPB_ASSERT(d->skip == 0);
   if (bytes > delim_remaining(d)) {
     seterr(d, "Skipped value extended beyond enclosing submessage.");
-    return upb_pbdecoder_suspend(d);
+    return (int32_t)upb_pbdecoder_suspend(d);
   } else if (bufleft(d) >= bytes) {
     /* Skipped data is all in current buffer, and more is still available. */
     advance(d, bytes);
@@ -198,7 +198,7 @@ static int32_t skip(upb_pbdecoder *d, size_t bytes) {
     d->bufstart_ofs += (d->end - d->buf);
     d->residual_end = d->residual;
     switchtobuf(d, d->residual, d->residual_end);
-    return d->size_param + d->skip;
+    return (int32_t)(d->size_param + d->skip);
   }
 }
 
@@ -238,7 +238,7 @@ int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
     /* NULL buf is ok if its entire span is covered by the "skip" above, but
      * by this point we know that "skip" doesn't cover the buffer. */
     seterr(d, "Passed NULL buffer over non-skippable region.");
-    return upb_pbdecoder_suspend(d);
+    return (int32_t)upb_pbdecoder_suspend(d);
   }
 
   if (d->residual_end > d->residual) {
@@ -348,9 +348,9 @@ UPB_NOINLINE static int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
     return DECODE_OK;
   } else if (d->data_end == d->delim_end) {
     seterr(d, "Submessage ended in the middle of a value or group");
-    return upb_pbdecoder_suspend(d);
+    return (int32_t)upb_pbdecoder_suspend(d);
   } else {
-    return suspend_save(d);
+    return (int32_t)suspend_save(d);
   }
 }
 
@@ -406,7 +406,7 @@ UPB_NOINLINE int32_t upb_pbdecoder_decode_varint_slow(upb_pbdecoder *d,
   }
   if(bitpos == 70 && (byte & 0x80)) {
     seterr(d, kUnterminatedVarint);
-    return upb_pbdecoder_suspend(d);
+    return (int32_t)upb_pbdecoder_suspend(d);
   }
   return DECODE_OK;
 }
@@ -423,7 +423,7 @@ UPB_FORCEINLINE static int32_t decode_varint(upb_pbdecoder *d, uint64_t *u64) {
     upb_decoderet r = upb_vdecode_fast(d->ptr);
     if (r.p == NULL) {
       seterr(d, kUnterminatedVarint);
-      return upb_pbdecoder_suspend(d);
+      return (int32_t)upb_pbdecoder_suspend(d);
     }
     advance(d, r.p - d->ptr);
     *u64 = r.val;
@@ -447,9 +447,9 @@ UPB_FORCEINLINE static int32_t decode_v32(upb_pbdecoder *d, uint32_t *u32) {
      * Right now the size_t -> int32_t can overflow and produce negative values.
      */
     *u32 = 0;
-    return upb_pbdecoder_suspend(d);
+    return (int32_t)upb_pbdecoder_suspend(d);
   }
-  *u32 = u64;
+  *u32 = (uint32_t)u64;
   return DECODE_OK;
 }
 
@@ -525,7 +525,7 @@ UPB_NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
     UPB_ASSERT(ok < 0);
     return DECODE_OK;
   } else if (read < bytes && memcmp(&data, &expected, read) == 0) {
-    return suspend_save(d);
+    return (int32_t)suspend_save(d);
   } else {
     return DECODE_MISMATCH;
   }
@@ -545,7 +545,7 @@ int32_t upb_pbdecoder_skipunknown(upb_pbdecoder *d, int32_t fieldnum,
 have_tag:
     if (fieldnum == 0) {
       seterr(d, "Saw invalid field number (0)");
-      return upb_pbdecoder_suspend(d);
+      return (int32_t)upb_pbdecoder_suspend(d);
     }
 
     switch (wire_type) {
@@ -567,7 +567,9 @@ have_tag:
         break;
       }
       case UPB_WIRE_TYPE_START_GROUP:
-        CHECK_SUSPEND(pushtagdelim(d, -fieldnum));
+        if (!pushtagdelim(d, -fieldnum)) {
+          return (int32_t)upb_pbdecoder_suspend(d);
+        }
         break;
       case UPB_WIRE_TYPE_END_GROUP:
         if (fieldnum == -d->top->groupnum) {
@@ -576,12 +578,12 @@ have_tag:
           return DECODE_ENDGROUP;
         } else {
           seterr(d, "Unmatched ENDGROUP tag.");
-          return upb_pbdecoder_suspend(d);
+          return (int32_t)upb_pbdecoder_suspend(d);
         }
         break;
       default:
         seterr(d, "Invalid wire type");
-        return upb_pbdecoder_suspend(d);
+        return (int32_t)upb_pbdecoder_suspend(d);
     }
 
     if (d->top->groupnum >= 0) {
@@ -753,7 +755,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         CHECK_SUSPEND(upb_sink_endsubmsg(d->top->sink, subsink, arg));
       )
       VMCASE(OP_STARTSTR,
-        uint32_t len = delim_remaining(d);
+        uint32_t len = (uint32_t)delim_remaining(d);
         upb_pbdecoder_frame *outer = outer_frame(d);
         CHECK_SUSPEND(upb_sink_startstr(outer->sink, arg, len, &d->top->sink));
         if (len == 0) {
@@ -761,7 +763,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         }
       )
       VMCASE(OP_STRING,
-        uint32_t len = curbufleft(d);
+        uint32_t len = (uint32_t)curbufleft(d);
         size_t n = upb_sink_putstring(d->top->sink, arg, d->ptr, len, handle);
         if (n > len) {
           if (n > delim_remaining(d)) {
