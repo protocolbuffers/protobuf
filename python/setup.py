@@ -19,17 +19,23 @@ from distutils.command.build_py import build_py as _build_py
 from distutils.command.clean import clean as _clean
 from distutils.spawn import find_executable
 
+
+current_dir = os.path.dirname(__file__)
+current_dir_relative = os.path.relpath(current_dir)
+src_dir = os.path.abspath(os.path.join(current_dir, "..", "src"))
+vsprojects_dir = os.path.abspath(os.path.join(current_dir, "..", "vsprojects"))
+
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
   protoc = os.environ['PROTOC']
-elif os.path.exists("../src/protoc"):
-  protoc = "../src/protoc"
-elif os.path.exists("../src/protoc.exe"):
-  protoc = "../src/protoc.exe"
-elif os.path.exists("../vsprojects/Debug/protoc.exe"):
-  protoc = "../vsprojects/Debug/protoc.exe"
-elif os.path.exists("../vsprojects/Release/protoc.exe"):
-  protoc = "../vsprojects/Release/protoc.exe"
+elif os.path.exists(os.path.join(src_dir, "protoc")):
+  protoc = os.path.join(src_dir, "protoc")
+elif os.path.exists(os.path.join(src_dir, "protoc.exe")):
+  protoc = os.path.join(src_dir, "protoc.exe")
+elif os.path.exists(os.path.join(vsprojects_dir, "Debug", "protoc.exe")):
+  protoc = os.path.join(vsprojects_dir, "Debug", "protoc.exe")
+elif os.path.exists(os.path.join(vsprojects_dir, "Release", "protoc.exe")):
+  protoc = os.path.join(vsprojects_dir, "Release", "protoc.exe")
 else:
   protoc = find_executable("protoc")
 
@@ -40,7 +46,7 @@ def GetVersion():
   Do not import google.protobuf.__init__ directly, because an installed
   protobuf library may be loaded instead."""
 
-  with open(os.path.join('google', 'protobuf', '__init__.py')) as version_file:
+  with open(os.path.join(current_dir, 'google', 'protobuf', '__init__.py')) as version_file:
     exec(version_file.read(), globals())
     global __version__
     return __version__
@@ -51,15 +57,21 @@ def generate_proto(source, require = True):
   .proto file.  Does nothing if the output already exists and is newer than
   the input."""
 
+  original_source = source
+  source = source.replace("../src", src_dir)
+
   if not require and not os.path.exists(source):
     return
 
-  output = source.replace(".proto", "_pb2.py").replace("../src/", "")
+  output = os.path.join(
+    current_dir,
+    original_source.replace(".proto", "_pb2.py").replace("../src/", "")
+  )
 
   if (not os.path.exists(output) or
       (os.path.exists(source) and
        os.path.getmtime(source) > os.path.getmtime(output))):
-    print("Generating %s..." % output)
+    print("Generating %s..." % os.path.relpath(output))
 
     if not os.path.exists(source):
       sys.stderr.write("Can't find required file: %s\n" % source)
@@ -71,7 +83,13 @@ def generate_proto(source, require = True):
           "or install the binary package.\n")
       sys.exit(-1)
 
-    protoc_command = [ protoc, "-I../src", "-I.", "--python_out=.", source ]
+    protoc_command = [
+      protoc,
+      "-I{}".format(src_dir),
+      "-I{}".format(current_dir),
+      "--python_out={}".format(current_dir),
+      source,
+    ]
     if subprocess.call(protoc_command) != 0:
       sys.exit(-1)
 
@@ -116,7 +134,7 @@ def GenerateUnittestProtos():
 class clean(_clean):
   def run(self):
     # Delete generated files in the code tree.
-    for (dirpath, dirnames, filenames) in os.walk("."):
+    for (dirpath, dirnames, filenames) in os.walk(current_dir):
       for filename in filenames:
         filepath = os.path.join(dirpath, filename)
         if filepath.endswith("_pb2.py") or filepath.endswith(".pyc") or \
@@ -269,7 +287,14 @@ if __name__ == '__main__':
         "Programming Language :: Python :: 3.7",
         ],
       namespace_packages=['google'],
+      # package_dir is required when setup.py is not run from the python/
+      # directory (such as from the ReadTheDocs build). See
+      # https://setuptools.readthedocs.io/en/latest/setuptools.html#using-find-packages
+      # package_dir must be a relative path. See:
+      # https://stackoverflow.com/a/53547931/101923
+      package_dir={"": current_dir_relative},
       packages=find_packages(
+          where=current_dir,
           exclude=[
               'import_test_package',
           ],
