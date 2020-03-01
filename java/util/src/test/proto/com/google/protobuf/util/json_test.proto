@@ -188,3 +188,15 @@ message TestRecursive {
   int32 value = 1;
   TestRecursive nested = 2;
 }
+
+message TestComplicatedType {
+  string type_string = 1;
+  int64 type_int64 = 2;
+  int32 type_int32 = 3;
+  uint32 type_uint32 = 4;
+  uint64 type_uint64 = 5;
+  float type_float = 6;
+  double type_double = 7;
+  bool type_bool = 8;
+  TestStruct type_TestStruct = 9;
+}
