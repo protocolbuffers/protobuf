@@ -189,7 +189,7 @@ message TestRecursive {
   TestRecursive nested = 2;
 }
 
-message TestComplicatedType {
+message TestJsonValidator {
   string type_string = 1;
   int64 type_int64 = 2;
   int32 type_int32 = 3;
@@ -198,5 +198,6 @@ message TestComplicatedType {
   float type_float = 6;
   double type_double = 7;
   bool type_bool = 8;
-  TestStruct type_TestStruct = 9;
+  repeated TestRecursive repeated_type_TestRecursive = 9;
+  map<string, string> type_map_string_string = 10;
 }

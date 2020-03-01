@@ -124,6 +124,7 @@ public final class JsonValidator
       for (Entry<String, Value> entry : node.getStructValue().getFieldsMap().entrySet()) {
         helper(++depth, fields.get(1), entry.getValue(), warnings);
       }
+      return;
     }
 
     if (field.isRepeated()) {
@@ -155,6 +156,8 @@ public final class JsonValidator
         break;
       case INT:
       case LONG:
+      case FLOAT:
+      case DOUBLE:
         if (!val.getKindCase().equals(KindCase.NUMBER_VALUE)) {
           warnings.add(field.getName() + " supposed to be numeric but not.");
         }
