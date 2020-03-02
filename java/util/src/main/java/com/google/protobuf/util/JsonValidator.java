@@ -81,13 +81,17 @@ public final class JsonValidator
         // schema defined but not included
         // possibly "optional"
         // generate warning for now
-        warnings.add(field.getName() + " is not included.");
+        // warnings.add(field.getName() + " is not included.");
       }
     }
   }
 
   static void helper(int depth, FieldDescriptor field, Value val, List<String> warnings)
   {
+    if (val.getKindCase().equals(KindCase.NULL_VALUE)) {
+      // allow any field to be null for now
+      return;
+    }
     if (field.getJavaType() == JavaType.MESSAGE) {
       if (!val.hasListValue() && !val.hasStructValue()) {
         warnings.add(field.getName() + " supposed to be object but not.");

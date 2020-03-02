@@ -4,10 +4,12 @@ import com.google.common.collect.Sets;
 import com.google.protobuf.Message;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.proto.JsonTestProto.TestJsonValidator;
+import com.google.protobuf.util.proto.JsonTestProto.TestStruct;
 import junit.framework.TestCase;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -19,30 +21,23 @@ public final class JsonValidatorTest extends TestCase
     JsonFormat.parser().merge(json, builder);
   }
 
-  public void test()
+  public void testBasic()
           throws IOException
   {
     Value.Builder builder = Value.newBuilder();
     mergeFromJson("{\n" +
             "  \"type_string\": \"\",\n" +
-            "  \"type_TestStruct\": 1\n" +
+            "  \"type_map_string_string\": 1\n" +
             "}", builder);
     Set<String> expected = new HashSet<String>()
     {{
-      add("type_int64 is not included.");
-      add("type_int32 is not included.");
-      add("type_uint32 is not included.");
-      add("type_uint64 is not included.");
-      add("type_float is not included.");
-      add("type_double is not included.");
-      add("type_bool is not included.");
-      add("type_TestStruct supposed to be object but not.");
+      add("type_map_string_string supposed to be object but not.");
     }};
     Set<String> principal = new HashSet<String>(JsonValidator.validate(builder.build(), TestJsonValidator.class));
     assertEquals(0, Sets.difference(expected, principal).size());
   }
 
-  public void test2()
+  public void testComplexSchema()
           throws IOException
   {
     Value.Builder builder = Value.newBuilder();
@@ -75,19 +70,8 @@ public final class JsonValidatorTest extends TestCase
             "    \"k2\": \"v2\"\n" +
             "  }\n" +
             "}\n", builder);
-//    Set<String> expected = new HashSet<String>()
-//    {{
-//      add("type_int64 is not included.");
-//      add("type_int32 is not included.");
-//      add("type_uint32 is not included.");
-//      add("type_uint64 is not included.");
-//      add("type_float is not included.");
-//      add("type_double is not included.");
-//      add("type_bool is not included.");
-//      add("type_TestStruct supposed to be object but not.");
-//    }};
-//    Set<String> principal = new HashSet<String>(JsonValidator.validate(builder.build(), TestJsonValidator.class));
-//    assertEquals(0, Sets.difference(expected, principal).size());
-    System.out.println(JsonValidator.validate(builder.build(), TestJsonValidator.class));
+    List<String> result = JsonValidator.validate(builder.build(), TestJsonValidator.class);
+    System.out.println(result);
+    assertEquals(0, result.size());
   }
 }
