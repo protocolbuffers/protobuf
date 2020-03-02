@@ -47,110 +47,6 @@ function tagToFieldNumber(tag) {
 }
 
 /**
- * An Indexer that indexes a given binary protobuf by fieldnumber.
- */
-class Indexer {
-  /**
-   * @param {!BufferDecoder} bufferDecoder
-   * @private
-   */
-  constructor(bufferDecoder) {
-    /** @private @const {!BufferDecoder} */
-    this.bufferDecoder_ = bufferDecoder;
-  }
-
-  /**
-   * @param {number|undefined} pivot
-   * @return {!Storage<!Field>}
-   */
-  index(pivot) {
-    this.bufferDecoder_.setCursor(this.bufferDecoder_.startIndex());
-
-    const storage = new Storage(pivot);
-    while (this.bufferDecoder_.hasNext()) {
-      const tag = this.bufferDecoder_.getUnsignedVarint32();
-      const wireType = tagToWireType(tag);
-      const fieldNumber = tagToFieldNumber(tag);
-      checkCriticalState(
-          fieldNumber > 0, `Invalid field number ${fieldNumber}`);
-
-      addIndexEntry(
-          storage, fieldNumber, wireType, this.bufferDecoder_.cursor());
-
-      checkCriticalState(
-          !this.skipField_(wireType, fieldNumber),
-          'Found unmatched stop group.');
-    }
-    return storage;
-  }
-
-  /**
-   * Skips over fields until the next field of the message.
-   * @param {!WireType} wireType
-   * @param {number} fieldNumber
-   * @return {boolean} Whether the field we skipped over was a stop group.
-   * @private
-   */
-  skipField_(wireType, fieldNumber) {
-    switch (wireType) {
-      case WireType.VARINT:
-        checkCriticalElementIndex(
-            this.bufferDecoder_.cursor(), this.bufferDecoder_.endIndex());
-        this.bufferDecoder_.skipVarint(this.bufferDecoder_.cursor());
-        return false;
-      case WireType.FIXED64:
-        this.bufferDecoder_.skip(8);
-        return false;
-      case WireType.DELIMITED:
-        checkCriticalElementIndex(
-            this.bufferDecoder_.cursor(), this.bufferDecoder_.endIndex());
-        const length = this.bufferDecoder_.getUnsignedVarint32();
-        this.bufferDecoder_.skip(length);
-        return false;
-      case WireType.START_GROUP:
-        checkCriticalState(this.skipGroup_(fieldNumber), 'No end group found.');
-        return false;
-      case WireType.END_GROUP:
-        // Signal that we found a stop group to the caller
-        return true;
-      case WireType.FIXED32:
-        this.bufferDecoder_.skip(4);
-        return false;
-      default:
-        throw new Error(`Invalid wire type: ${wireType}`);
-    }
-  }
-
-  /**
-   * Skips over fields until it finds the end of a given group.
-   * @param {number} groupFieldNumber
-   * @return {boolean} Returns true if an end was found.
-   * @private
-   */
-  skipGroup_(groupFieldNumber) {
-    // On a start group we need to keep skipping fields until we find a
-    // corresponding stop group
-    // Note: Since we are calling skipField from here nested groups will be
-    // handled by recursion of this method and thus we will not see a nested
-    // STOP GROUP here unless there is something wrong with the input data.
-    while (this.bufferDecoder_.hasNext()) {
-      const tag = this.bufferDecoder_.getUnsignedVarint32();
-      const wireType = tagToWireType(tag);
-      const fieldNumber = tagToFieldNumber(tag);
-
-      if (this.skipField_(wireType, fieldNumber)) {
-        checkCriticalState(
-            groupFieldNumber === fieldNumber,
-            `Expected stop group for fieldnumber ${
-                groupFieldNumber} not found.`);
-        return true;
-      }
-    }
-    return false;
-  }
-}
-
-/**
  * Creates an index of field locations in a given binary protobuf.
  * @param {!BufferDecoder} bufferDecoder
  * @param {number|undefined} pivot
@@ -158,7 +54,89 @@ class Indexer {
  * @package
  */
 function buildIndex(bufferDecoder, pivot) {
-  return new Indexer(bufferDecoder).index(pivot);
+  bufferDecoder.setCursor(bufferDecoder.startIndex());
+
+  const storage = new Storage(pivot);
+  while (bufferDecoder.hasNext()) {
+    const tag = bufferDecoder.getUnsignedVarint32();
+    const wireType = tagToWireType(tag);
+    const fieldNumber = tagToFieldNumber(tag);
+    checkCriticalState(fieldNumber > 0, `Invalid field number ${fieldNumber}`);
+
+    addIndexEntry(storage, fieldNumber, wireType, bufferDecoder.cursor());
+
+    checkCriticalState(
+        !skipField_(bufferDecoder, wireType, fieldNumber),
+        'Found unmatched stop group.');
+  }
+  return storage;
+}
+
+/**
+ * Skips over fields until the next field of the message.
+ * @param {!BufferDecoder} bufferDecoder
+ * @param {!WireType} wireType
+ * @param {number} fieldNumber
+ * @return {boolean} Whether the field we skipped over was a stop group.
+ * @private
+ */
+function skipField_(bufferDecoder, wireType, fieldNumber) {
+  switch (wireType) {
+    case WireType.VARINT:
+      checkCriticalElementIndex(
+          bufferDecoder.cursor(), bufferDecoder.endIndex());
+      bufferDecoder.skipVarint(bufferDecoder.cursor());
+      return false;
+    case WireType.FIXED64:
+      bufferDecoder.skip(8);
+      return false;
+    case WireType.DELIMITED:
+      checkCriticalElementIndex(
+          bufferDecoder.cursor(), bufferDecoder.endIndex());
+      const length = bufferDecoder.getUnsignedVarint32();
+      bufferDecoder.skip(length);
+      return false;
+    case WireType.START_GROUP:
+      checkCriticalState(
+          skipGroup_(bufferDecoder, fieldNumber), 'No end group found.');
+      return false;
+    case WireType.END_GROUP:
+      // Signal that we found a stop group to the caller
+      return true;
+    case WireType.FIXED32:
+      bufferDecoder.skip(4);
+      return false;
+    default:
+      throw new Error(`Invalid wire type: ${wireType}`);
+  }
+}
+
+/**
+ * Skips over fields until it finds the end of a given group.
+ * @param {!BufferDecoder} bufferDecoder
+ * @param {number} groupFieldNumber
+ * @return {boolean} Returns true if an end was found.
+ * @private
+ */
+function skipGroup_(bufferDecoder, groupFieldNumber) {
+  // On a start group we need to keep skipping fields until we find a
+  // corresponding stop group
+  // Note: Since we are calling skipField from here nested groups will be
+  // handled by recursion of this method and thus we will not see a nested
+  // STOP GROUP here unless there is something wrong with the input data.
+  while (bufferDecoder.hasNext()) {
+    const tag = bufferDecoder.getUnsignedVarint32();
+    const wireType = tagToWireType(tag);
+    const fieldNumber = tagToFieldNumber(tag);
+
+    if (skipField_(bufferDecoder, wireType, fieldNumber)) {
+      checkCriticalState(
+          groupFieldNumber === fieldNumber,
+          `Expected stop group for fieldnumber ${groupFieldNumber} not found.`);
+      return true;
+    }
+  }
+  return false;
 }
 
 exports = {
