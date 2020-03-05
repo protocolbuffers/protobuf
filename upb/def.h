@@ -99,10 +99,10 @@ upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f);
 upb_label_t upb_fielddef_label(const upb_fielddef *f);
 uint32_t upb_fielddef_number(const upb_fielddef *f);
 const char *upb_fielddef_name(const upb_fielddef *f);
+const char *upb_fielddef_jsonname(const upb_fielddef *f);
 bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_lazy(const upb_fielddef *f);
 bool upb_fielddef_packed(const upb_fielddef *f);
-size_t upb_fielddef_getjsonname(const upb_fielddef *f, char *buf, size_t len);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
 uint32_t upb_fielddef_index(const upb_fielddef *f);
@@ -151,31 +151,9 @@ class upb::FieldDefPtr {
   Type type() const { return upb_fielddef_type(ptr_); }
   Label label() const { return upb_fielddef_label(ptr_); }
   const char* name() const { return upb_fielddef_name(ptr_); }
+  const char* json_name() const { return upb_fielddef_jsonname(ptr_); }
   uint32_t number() const { return upb_fielddef_number(ptr_); }
   bool is_extension() const { return upb_fielddef_isextension(ptr_); }
-
-  /* Copies the JSON name for this field into the given buffer.  Returns the
-   * actual size of the JSON name, including the NULL terminator.  If the
-   * return value is 0, the JSON name is unset.  If the return value is
-   * greater than len, the JSON name was truncated.  The buffer is always
-   * NULL-terminated if len > 0.
-   *
-   * The JSON name always defaults to a camelCased version of the regular
-   * name.  However if the regular name is unset, the JSON name will be unset
-   * also.
-   */
-  size_t GetJsonName(char *buf, size_t len) const {
-    return upb_fielddef_getjsonname(ptr_, buf, len);
-  }
-
-  /* Convenience version of the above function which copies the JSON name
-   * into the given string, returning false if the name is not set. */
-  template <class T>
-  bool GetJsonName(T* str) {
-    str->resize(GetJsonName(NULL, 0));
-    GetJsonName(&(*str)[0], str->size());
-    return str->size() > 0;
-  }
 
   /* For UPB_TYPE_MESSAGE fields only where is_tag_delimited() == false,
    * indicates whether this field should have lazy parsing handlers that yield
@@ -454,6 +432,10 @@ UPB_INLINE bool upb_msgdef_lookupnamez(const upb_msgdef *m, const char *name,
                                        const upb_oneofdef **o) {
   return upb_msgdef_lookupname(m, name, strlen(name), f, o);
 }
+
+/* Returns a field by either JSON name or regular proto name. */
+const upb_fielddef *upb_msgdef_lookupjsonname(const upb_msgdef *m,
+                                              const char *name, size_t len);
 
 /* Iteration over fields and oneofs.  For example:
  *

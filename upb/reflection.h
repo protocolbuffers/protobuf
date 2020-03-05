@@ -44,6 +44,9 @@ upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f, upb_arena *a)
 /* May only be called for fields where upb_fielddef_haspresence(f) == true. */
 bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f);
 
+/* Returns whether any field is set in the oneof. */
+bool upb_msg_hasoneof(const upb_msg *msg, const upb_oneofdef *o);
+
 /* Sets the given field to the given value.  For a msg/array/map/string, the
  * value must be in the same arena.  */
 void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,

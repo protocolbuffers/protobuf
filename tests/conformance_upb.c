@@ -15,6 +15,7 @@
 #include "upb/decode.h"
 #include "upb/encode.h"
 #include "upb/reflection.h"
+#include "upb/json_decode.h"
 #include "upb/json_encode.h"
 #include "upb/text_encode.h"
 
@@ -85,15 +86,44 @@ void serialize_text(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
   size_t len2;
   int opts = 0;
   char *data;
+
   if (!conformance_ConformanceRequest_print_unknown_fields(c->request)) {
     opts |= UPB_TXTENC_SKIPUNKNOWN;
   }
+
   len = upb_text_encode(msg, m, c->symtab, opts, NULL, 0);
   data = upb_arena_malloc(c->arena, len + 1);
   len2 = upb_text_encode(msg, m, c->symtab, opts, data, len + 1);
   assert(len == len2);
   conformance_ConformanceResponse_set_text_payload(
       c->response, upb_strview_make(data, len));
+}
+
+bool parse_json(upb_msg *msg, const upb_msgdef *m, const ctx* c) {
+  upb_strview json =
+      conformance_ConformanceRequest_json_payload(c->request);
+  upb_status status;
+  int opts = 0;
+
+  if (conformance_ConformanceRequest_test_category(c->request) ==
+      conformance_JSON_IGNORE_UNKNOWN_PARSING_TEST) {
+    opts |= UPB_JSONDEC_IGNOREUNKNOWN;
+  }
+
+  upb_status_clear(&status);
+  if (upb_json_decode(json.data, json.size, msg, m, c->symtab, opts, c->arena,
+                      &status)) {
+    return true;
+  } else {
+    const char *inerr = upb_status_errmsg(&status);
+    size_t len = strlen(inerr);
+    char *err = upb_arena_malloc(c->arena, len + 1);
+    memcpy(err, inerr, strlen(inerr));
+    err[len] = '\0';
+    conformance_ConformanceResponse_set_parse_error(c->response,
+                                                    upb_strview_makez(err));
+    return false;
+  }
 }
 
 void serialize_json(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
@@ -104,16 +134,16 @@ void serialize_json(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
   upb_status status;
 
   upb_status_clear(&status);
-  if (!conformance_ConformanceRequest_print_unknown_fields(c->request)) {
-    opts |= UPB_TXTENC_SKIPUNKNOWN;
-  }
-
   len = upb_json_encode(msg, m, c->symtab, opts, NULL, 0, &status);
 
   if (len == -1) {
-    static const char msg[] = "Error serializing.";
-    conformance_ConformanceResponse_set_serialize_error(
-        c->response, upb_strview_make(msg, strlen(msg)));
+    const char *inerr = upb_status_errmsg(&status);
+    size_t len = strlen(inerr);
+    char *err = upb_arena_malloc(c->arena, len + 1);
+    memcpy(err, inerr, strlen(inerr));
+    err[len] = '\0';
+    conformance_ConformanceResponse_set_serialize_error(c->response,
+                                                        upb_strview_makez(err));
     return;
   }
 
@@ -128,6 +158,8 @@ bool parse_input(upb_msg *msg, const upb_msgdef *m, const ctx* c) {
   switch (conformance_ConformanceRequest_payload_case(c->request)) {
     case conformance_ConformanceRequest_payload_protobuf_payload:
       return parse_proto(msg, m, c);
+    case conformance_ConformanceRequest_payload_json_payload:
+      return parse_json(msg, m, c);
     case conformance_ConformanceRequest_payload_NOT_SET:
       fprintf(stderr, "conformance_upb: Request didn't have payload.\n");
       return false;
