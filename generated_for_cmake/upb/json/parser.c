@@ -970,7 +970,7 @@ static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
       } else if (val > INT32_MAX || val < INT32_MIN) {
         return false;
       } else {
-        upb_sink_putint32(p->top->sink, parser_getsel(p), val);
+        upb_sink_putint32(p->top->sink, parser_getsel(p), (int32_t)val);
         return true;
       }
     }
@@ -981,7 +981,7 @@ static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
       } else if (val > UINT32_MAX || errno == ERANGE) {
         return false;
       } else {
-        upb_sink_putuint32(p->top->sink, parser_getsel(p), val);
+        upb_sink_putuint32(p->top->sink, parser_getsel(p), (uint32_t)val);
         return true;
       }
     }

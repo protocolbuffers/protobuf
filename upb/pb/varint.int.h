@@ -40,7 +40,8 @@ UPB_INLINE uint64_t byteswap64(uint64_t val) {
 
 /* Zig-zag encoding/decoding **************************************************/
 
-UPB_INLINE int32_t upb_zzdec_32(uint32_t n) {
+UPB_INLINE int32_t upb_zzdec_32(uint64_t _n) {
+  uint32_t n = (uint32_t)_n;
   return (n >> 1) ^ -(int32_t)(n & 1);
 }
 UPB_INLINE int64_t upb_zzdec_64(uint64_t n) {

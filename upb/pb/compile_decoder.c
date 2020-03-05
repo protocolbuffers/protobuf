@@ -156,7 +156,9 @@ static void setofs(uint32_t *instruction, int32_t ofs) {
   UPB_ASSERT(getofs(*instruction) == ofs);  /* Would fail in cases of overflow. */
 }
 
-static uint32_t pcofs(compiler *c) { return c->pc - c->group->bytecode; }
+static uint32_t pcofs(compiler *c) {
+  return (uint32_t)(c->pc - c->group->bytecode);
+}
 
 /* Defines a local label at the current PC location.  All previous forward
  * references are updated to point to this location.  The location is noted
@@ -170,7 +172,7 @@ static void label(compiler *c, unsigned int label) {
   codep = (val == EMPTYLABEL) ? NULL : c->group->bytecode + val;
   while (codep) {
     int ofs = getofs(*codep);
-    setofs(codep, c->pc - codep - instruction_len(*codep));
+    setofs(codep, (int32_t)(c->pc - codep - instruction_len(*codep)));
     codep = ofs ? codep + ofs : NULL;
   }
   c->fwd_labels[label] = EMPTYLABEL;
@@ -192,7 +194,7 @@ static int32_t labelref(compiler *c, int label) {
     return 0;
   } else if (label < 0) {
     /* Backward local label.  Relative to the next instruction. */
-    uint32_t from = (c->pc + 1) - c->group->bytecode;
+    uint32_t from = (uint32_t)((c->pc + 1) - c->group->bytecode);
     return c->back_labels[-label] - from;
   } else {
     /* Forward local label: prepend to (possibly-empty) linked list. */
@@ -226,7 +228,7 @@ static void putop(compiler *c, int op, ...) {
     case OP_SETDISPATCH: {
       uintptr_t ptr = (uintptr_t)va_arg(ap, void*);
       put32(c, OP_SETDISPATCH);
-      put32(c, ptr);
+      put32(c, (uint32_t)ptr);
       if (sizeof(uintptr_t) > sizeof(uint32_t))
         put32(c, (uint64_t)ptr >> 32);
       break;
@@ -285,7 +287,7 @@ static void putop(compiler *c, int op, ...) {
     case OP_TAG2: {
       int label = va_arg(ap, int);
       uint64_t tag = va_arg(ap, uint64_t);
-      uint32_t instruction = op | (tag << 16);
+      uint32_t instruction = (uint32_t)(op | (tag << 16));
       UPB_ASSERT(tag <= 0xffff);
       setofs(&instruction, labelref(c, label));
       put32(c, instruction);
@@ -297,7 +299,7 @@ static void putop(compiler *c, int op, ...) {
       uint32_t instruction = op | (upb_value_size(tag) << 16);
       setofs(&instruction, labelref(c, label));
       put32(c, instruction);
-      put32(c, tag);
+      put32(c, (uint32_t)tag);
       put32(c, tag >> 32);
       break;
     }

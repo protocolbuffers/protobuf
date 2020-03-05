@@ -180,7 +180,8 @@ static upb_handlers *upb_handlers_new(const upb_msgdef *md,
   int extra;
   upb_handlers *h;
 
-  extra = sizeof(upb_handlers_tabent) * (upb_msgdef_selectorcount(md) - 1);
+  extra =
+      (int)(sizeof(upb_handlers_tabent) * (upb_msgdef_selectorcount(md) - 1));
   h = upb_calloc(arena, sizeof(*h) + extra);
   if (!h) return NULL;
 

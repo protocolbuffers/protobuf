@@ -359,7 +359,7 @@ int32_t upb_enumdef_default(const upb_enumdef *e) {
 }
 
 int upb_enumdef_numvals(const upb_enumdef *e) {
-  return upb_strtable_count(&e->ntoi);
+  return (int)upb_strtable_count(&e->ntoi);
 }
 
 void upb_enum_begin(upb_enum_iter *i, const upb_enumdef *e) {
@@ -496,7 +496,7 @@ int64_t upb_fielddef_defaultint64(const upb_fielddef *f) {
 
 int32_t upb_fielddef_defaultint32(const upb_fielddef *f) {
   chkdefaulttype(f, UPB_TYPE_INT32);
-  return f->defaultval.sint;
+  return (int32_t)f->defaultval.sint;
 }
 
 uint64_t upb_fielddef_defaultuint64(const upb_fielddef *f) {
@@ -506,7 +506,7 @@ uint64_t upb_fielddef_defaultuint64(const upb_fielddef *f) {
 
 uint32_t upb_fielddef_defaultuint32(const upb_fielddef *f) {
   chkdefaulttype(f, UPB_TYPE_UINT32);
-  return f->defaultval.uint;
+  return (uint32_t)f->defaultval.uint;
 }
 
 bool upb_fielddef_defaultbool(const upb_fielddef *f) {
@@ -778,7 +778,7 @@ const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o) {
 }
 
 int upb_oneofdef_numfields(const upb_oneofdef *o) {
-  return upb_strtable_count(&o->ntof);
+  return (int)upb_strtable_count(&o->ntof);
 }
 
 uint32_t upb_oneofdef_index(const upb_oneofdef *o) {
@@ -868,8 +868,8 @@ static uint8_t upb_msg_fielddefsize(const upb_fielddef *f) {
   }
 }
 
-static size_t upb_msglayout_place(upb_msglayout *l, size_t size) {
-  size_t ret;
+static uint32_t upb_msglayout_place(upb_msglayout *l, size_t size) {
+  uint32_t ret;
 
   l->size = align_up(l->size, size);
   ret = l->size;
@@ -1994,7 +1994,7 @@ const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name) 
 }
 
 int upb_symtab_filecount(const upb_symtab *s) {
-  return upb_strtable_count(&s->files);
+  return (int)upb_strtable_count(&s->files);
 }
 
 static const upb_filedef *_upb_symtab_addfile(

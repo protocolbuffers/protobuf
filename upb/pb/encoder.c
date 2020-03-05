@@ -248,7 +248,7 @@ static bool start_delim(upb_pb_encoder *e) {
     e->runbegin = e->ptr;
   }
 
-  *e->top = e->segptr - e->segbuf;
+  *e->top = (int)(e->segptr - e->segbuf);
   e->segptr->seglen = 0;
   e->segptr->msglen = 0;
 
