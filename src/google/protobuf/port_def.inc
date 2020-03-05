@@ -314,7 +314,7 @@
 #elif !defined(__cxx_rtti) && __cplusplus >= 199711L
 // https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros#C.2B.2B98
 #define PROTOBUF_RTTI 0
-#elif defined(defined(__GNUC__)) && !defined(__GXX_RTTI)
+#elif defined(__GNUC__) && !defined(__GXX_RTTI)
 # https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 #define PROTOBUF_RTTI 0
 #else
