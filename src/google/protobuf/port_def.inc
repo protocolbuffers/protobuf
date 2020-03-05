@@ -308,6 +308,15 @@
 
 #if defined(GOOGLE_PROTOBUF_NO_RTTI) && GOOGLE_PROTOBUF_NO_RTTI
 #define PROTOBUF_RTTI 0
+#elif defined(__has_feature)
+// https://clang.llvm.org/docs/LanguageExtensions.html#has-feature-and-has-extension
+#define PROTOBUF_RTTI __has_feature(cxx_rtti)
+#elif !defined(__cxx_rtti) && __cplusplus >= 199711L
+// https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros#C.2B.2B98
+#define PROTOBUF_RTTI 0
+#elif defined(defined(__GNUC__)) && !defined(__GXX_RTTI)
+# https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+#define PROTOBUF_RTTI 0
 #else
 #define PROTOBUF_RTTI 1
 #endif
