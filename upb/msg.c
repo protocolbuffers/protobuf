@@ -9,7 +9,7 @@
 
 /** upb_msg *******************************************************************/
 
-static char _upb_fieldtype_to_sizelg2[12] = {
+static const char _upb_fieldtype_to_sizelg2[12] = {
   0,
   0,  /* UPB_TYPE_BOOL */
   2,  /* UPB_TYPE_FLOAT */
