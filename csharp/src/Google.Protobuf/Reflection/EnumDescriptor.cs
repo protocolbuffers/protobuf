@@ -141,6 +141,24 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
+        /// Gets a single value enum option for this descriptor
+        /// </summary>
+        public bool TryGetOption<T>(Extension<EnumOptions, T> extension, out T value)
+        {
+            T temp;
+            if (Proto.HasOptions && Proto.Options.TryGetExtension(extension, out temp))
+            {
+                value = temp is IDeepCloneable<T> ? (temp as IDeepCloneable<T>).Clone() : temp;
+                return true;
+            }
+            else
+            {
+                value = default(T);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets a repeated value enum option for this descriptor
         /// </summary>
         public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumOptions, T> extension)

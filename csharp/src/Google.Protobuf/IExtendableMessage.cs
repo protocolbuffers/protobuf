@@ -46,6 +46,12 @@ namespace Google.Protobuf
         TValue GetExtension<TValue>(Extension<T, TValue> extension);
 
         /// <summary>
+        /// Gets the value of the specified extension.
+        /// Unlike <see cref="IExtendableMessage{T}.GetExtension{TValue}(Extension{T, TValue})"/>, this doesn't return the default value for the extension if it's not set.
+        /// </summary>
+        bool TryGetExtension<TValue>(Extension<T, TValue> extension, out TValue value);
+
+        /// <summary>
         /// Gets the value of the specified repeated extension or null if the extension isn't registered in this set.
         /// For a version of this method that never returns null, use <see cref="IExtendableMessage{T}.GetOrInitializeExtension{TValue}(RepeatedExtension{T, TValue})"/>
         /// </summary>

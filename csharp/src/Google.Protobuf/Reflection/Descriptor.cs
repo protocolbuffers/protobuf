@@ -1730,6 +1730,9 @@ namespace Google.Protobuf.Reflection {
     public TValue GetExtension<TValue>(pb::Extension<ExtensionRangeOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
+    public bool TryGetExtension<TValue>(pb::Extension<ExtensionRangeOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
+    }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<ExtensionRangeOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -4868,6 +4871,9 @@ namespace Google.Protobuf.Reflection {
     public TValue GetExtension<TValue>(pb::Extension<FileOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
+    public bool TryGetExtension<TValue>(pb::Extension<FileOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
+    }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<FileOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -5276,6 +5282,9 @@ namespace Google.Protobuf.Reflection {
 
     public TValue GetExtension<TValue>(pb::Extension<MessageOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public bool TryGetExtension<TValue>(pb::Extension<MessageOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MessageOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -5753,6 +5762,9 @@ namespace Google.Protobuf.Reflection {
     public TValue GetExtension<TValue>(pb::Extension<FieldOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
+    public bool TryGetExtension<TValue>(pb::Extension<FieldOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
+    }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<FieldOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -5947,6 +5959,9 @@ namespace Google.Protobuf.Reflection {
 
     public TValue GetExtension<TValue>(pb::Extension<OneofOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public bool TryGetExtension<TValue>(pb::Extension<OneofOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<OneofOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -6206,6 +6221,9 @@ namespace Google.Protobuf.Reflection {
     public TValue GetExtension<TValue>(pb::Extension<EnumOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
+    public bool TryGetExtension<TValue>(pb::Extension<EnumOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
+    }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<EnumOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -6419,6 +6437,9 @@ namespace Google.Protobuf.Reflection {
     public TValue GetExtension<TValue>(pb::Extension<EnumValueOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
+    public bool TryGetExtension<TValue>(pb::Extension<EnumValueOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
+    }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<EnumValueOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -6631,6 +6652,9 @@ namespace Google.Protobuf.Reflection {
 
     public TValue GetExtension<TValue>(pb::Extension<ServiceOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public bool TryGetExtension<TValue>(pb::Extension<ServiceOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<ServiceOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -6885,6 +6909,9 @@ namespace Google.Protobuf.Reflection {
 
     public TValue GetExtension<TValue>(pb::Extension<MethodOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
+    }
+    public bool TryGetExtension<TValue>(pb::Extension<MethodOptions,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
     }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MethodOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);

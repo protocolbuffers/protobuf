@@ -107,6 +107,24 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
+        /// Gets a single value service option for this descriptor
+        /// </summary>
+        public bool TryGetOption<T>(Extension<ServiceOptions, T> extension, out T value)
+        {
+            T temp;
+            if (Proto.HasOptions && Proto.Options.TryGetExtension(extension, out temp))
+            {
+                value = temp is IDeepCloneable<T> ? (temp as IDeepCloneable<T>).Clone() : temp;
+                return true;
+            }
+            else
+            {
+                value = default(T);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets a repeated value service option for this descriptor
         /// </summary>
         public RepeatedField<T> GetOption<T>(RepeatedExtension<ServiceOptions, T> extension)

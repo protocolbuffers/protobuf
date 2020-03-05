@@ -204,6 +204,27 @@ namespace Google.Protobuf
             Assert.False(message.HasExtension(DefaultStringPieceExtension));
             Assert.False(message.HasExtension(DefaultUint32Extension));
             Assert.False(message.HasExtension(DefaultUint64Extension));
+
+            Assert.False(message.TryGetExtension(DefaultBoolExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultBytesExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultCordExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultDoubleExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultFixed32Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultFixed64Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultFloatExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultForeignEnumExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultImportEnumExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultInt32Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultInt64Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultNestedEnumExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultSfixed32Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultSfixed64Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultSint32Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultSint64Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultStringExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultStringPieceExtension, out _));
+            Assert.False(message.TryGetExtension(DefaultUint32Extension, out _));
+            Assert.False(message.TryGetExtension(DefaultUint64Extension, out _));
         }
 
         [Test]

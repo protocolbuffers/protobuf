@@ -70,6 +70,22 @@ namespace Google.Protobuf
             }
         }
 
+        /// Gets the value of the specified extension if it's set.
+        public static bool TryGet<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension, out TValue value) where TTarget : IExtendableMessage<TTarget>
+        {
+            IExtensionValue extensionValue;
+            if (TryGetValue(ref set, extension, out extensionValue))
+            {
+                value = ((ExtensionValue<TValue>)extensionValue).GetValue();
+                return true;
+            }
+            else
+            {
+                value = default(TValue);
+                return false;
+            }
+        }
+
         /// <summary>
         /// Gets the value of the specified repeated extension or null if it doesn't exist in this set
         /// </summary>

@@ -3901,6 +3901,9 @@ namespace ProtobufTestMessages.Proto2 {
     public TValue GetExtension<TValue>(pb::Extension<TestAllTypesProto2, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
+    public bool TryGetExtension<TValue>(pb::Extension<TestAllTypesProto2,TValue> extension, out TValue value) {
+      return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
+    }
     public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<TestAllTypesProto2, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
     }
@@ -4434,6 +4437,9 @@ namespace ProtobufTestMessages.Proto2 {
 
         public TValue GetExtension<TValue>(pb::Extension<MessageSetCorrect, TValue> extension) {
           return pb::ExtensionSet.Get(ref _extensions, extension);
+        }
+        public bool TryGetExtension<TValue>(pb::Extension<MessageSetCorrect,TValue> extension, out TValue value) {
+          return pb::ExtensionSet.TryGet(ref _extensions, extension, out value);
         }
         public pbc::RepeatedField<TValue> GetExtension<TValue>(pb::RepeatedExtension<MessageSetCorrect, TValue> extension) {
           return pb::ExtensionSet.Get(ref _extensions, extension);

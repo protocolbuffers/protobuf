@@ -276,6 +276,24 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
+        /// Gets a single value message option for this descriptor
+        /// </summary>
+        public bool TryGetOption<T>(Extension<MessageOptions, T> extension, out T value)
+        {
+            T temp;
+            if (Proto.HasOptions && Proto.Options.TryGetExtension(extension, out temp))
+            {
+                value = temp is IDeepCloneable<T> ? (temp as IDeepCloneable<T>).Clone() : temp;
+                return true;
+            }
+            else
+            {
+                value = default(T);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Gets a repeated value message option for this descriptor
         /// </summary>
         public Collections.RepeatedField<T> GetOption<T>(RepeatedExtension<MessageOptions, T> extension)
