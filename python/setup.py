@@ -20,7 +20,7 @@ from distutils.command.clean import clean as _clean
 from distutils.spawn import find_executable
 
 
-current_dir = os.path.dirname(__file__)
+current_dir = (os.path.dirname(__file__) or os.curdir)
 current_dir_relative = os.path.relpath(current_dir)
 src_dir = os.path.abspath(os.path.join(current_dir, "..", "src"))
 vsprojects_dir = os.path.abspath(os.path.join(current_dir, "..", "vsprojects"))
