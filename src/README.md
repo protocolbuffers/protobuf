@@ -125,9 +125,9 @@ to install Xcode from the Mac AppStore and then run the following command from
 a terminal:
 ```shell
     sudo xcode-select --install
-```shell
+```
 To install Unix tools, you can install "port" following the instructions at
-https://www.macports.org . This will reside in /opt/local/bin/port for most
+https://www.macports.org . This will reside in `/opt/local/bin/port` for most
 Mac installations.
 ```shell
     sudo /opt/local/bin/port install autoconf automake libtool
