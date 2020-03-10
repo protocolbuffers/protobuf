@@ -85,7 +85,7 @@ function skipField_(bufferDecoder, wireType, fieldNumber) {
     case WireType.VARINT:
       checkCriticalElementIndex(
           bufferDecoder.cursor(), bufferDecoder.endIndex());
-      bufferDecoder.skipVarint(bufferDecoder.cursor());
+      bufferDecoder.skipVarint();
       return false;
     case WireType.FIXED64:
       bufferDecoder.skip(8);
