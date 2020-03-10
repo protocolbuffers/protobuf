@@ -311,7 +311,7 @@
 #elif defined(__has_feature)
 // https://clang.llvm.org/docs/LanguageExtensions.html#has-feature-and-has-extension
 #define PROTOBUF_RTTI __has_feature(cxx_rtti)
-#elif !defined(__cxx_rtti) && __cplusplus >= 199711L
+#elif !defined(__cxx_rtti)
 // https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros#C.2B.2B98
 #define PROTOBUF_RTTI 0
 #elif defined(__GNUC__) && !defined(__GXX_RTTI)
