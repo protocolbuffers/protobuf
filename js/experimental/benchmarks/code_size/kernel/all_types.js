@@ -6,7 +6,7 @@ goog.module('protobuf.benchmark.KernelCodeSizeBenchmarkAllTypes');
 
 const ByteString = goog.require('protobuf.ByteString');
 const Int64 = goog.require('protobuf.Int64');
-const LazyAccessor = goog.require('protobuf.binary.LazyAccessor');
+const LazyAccessor = goog.require('protobuf.runtime.Kernel');
 const TestMessage = goog.require('protobuf.testing.binary.TestMessage');
 const {ensureCommonBaseLine} = goog.require('protobuf.benchmark.codeSize.codeSizeBase');
 

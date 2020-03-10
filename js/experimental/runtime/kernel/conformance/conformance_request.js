@@ -3,7 +3,7 @@
  */
 goog.module('proto.conformance.ConformanceRequest');
 
-const LazyAccessor = goog.require('protobuf.binary.LazyAccessor');
+const LazyAccessor = goog.require('protobuf.runtime.Kernel');
 const WireFormat = goog.require('proto.conformance.WireFormat');
 
 /**

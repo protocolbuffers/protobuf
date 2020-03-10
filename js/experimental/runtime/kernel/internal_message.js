@@ -4,7 +4,7 @@
  */
 goog.module('protobuf.binary.InternalMessage');
 
-const LazyAccessor = goog.requireType('protobuf.binary.LazyAccessor');
+const LazyAccessor = goog.requireType('protobuf.runtime.Kernel');
 
 /**
  * Interface that needs to be implemented by messages implemented with the

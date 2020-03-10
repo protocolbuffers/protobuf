@@ -10,13 +10,13 @@
  * by binary_json_conformance_suite. Ultimately all of the tests in this file
  * should be moved to binary_json_conformance_suite.
  */
-goog.module('protobuf.binary.LazyAccessorCompatibilityTest');
+goog.module('protobuf.runtime.KernelCompatibilityTest');
 
 goog.setTestOnly();
 
 const ByteString = goog.require('protobuf.ByteString');
 const Int64 = goog.require('protobuf.Int64');
-const LazyAccessor = goog.require('protobuf.binary.LazyAccessor');
+const LazyAccessor = goog.require('protobuf.runtime.Kernel');
 const TestMessage = goog.require('protobuf.testing.binary.TestMessage');
 const {CHECK_CRITICAL_STATE} = goog.require('protobuf.internal.checks');
 

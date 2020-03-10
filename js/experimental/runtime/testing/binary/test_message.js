@@ -6,7 +6,7 @@ goog.module('protobuf.testing.binary.TestMessage');
 const ByteString = goog.require('protobuf.ByteString');
 const Int64 = goog.require('protobuf.Int64');
 const InternalMessage = goog.require('protobuf.binary.InternalMessage');
-const LazyAccessor = goog.require('protobuf.binary.LazyAccessor');
+const LazyAccessor = goog.require('protobuf.runtime.Kernel');
 
 /**
  * A protobuf message implemented as a LazyAccessor wrapper.
