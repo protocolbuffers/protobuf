@@ -242,7 +242,7 @@
 #endif
 #endif
 
-#if defined(__has_cpp_attribute)
+#if defined(__clang__) && defined(__has_cpp_attribute)
 #if __has_cpp_attribute(clang::reinitializes)
 #define PROTOBUF_ATTRIBUTE_REINITIALIZES [[clang::reinitializes]]
 #endif
