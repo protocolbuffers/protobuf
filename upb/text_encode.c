@@ -260,7 +260,7 @@ static const char *txtenc_unknown(txtenc *e, const char *ptr, const char *end,
     uint32_t tag;
     CHK(ptr = txtenc_parsevarint(ptr, end, &tag_64));
     CHK(tag_64 < UINT32_MAX);
-    tag = tag_64;
+    tag = (uint32_t)tag_64;
 
     if ((tag & 7) == UPB_WIRE_TYPE_END_GROUP) {
       CHK((tag >> 3) == groupnum);
