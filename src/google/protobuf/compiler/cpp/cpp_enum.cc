@@ -125,9 +125,9 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     if (descriptor_->value_count() > 0) format(",\n");
     format(
         "$classname$_$prefix$INT_MIN_SENTINEL_DO_NOT_USE_ = "
-        "std::numeric_limits<$int32$>::min(),\n"
+        "(std::numeric_limits<$int32$>::min)(),\n"
         "$classname$_$prefix$INT_MAX_SENTINEL_DO_NOT_USE_ = "
-        "std::numeric_limits<$int32$>::max()");
+        "(std::numeric_limits<$int32$>::max)()");
   }
 
   format.Outdent();
