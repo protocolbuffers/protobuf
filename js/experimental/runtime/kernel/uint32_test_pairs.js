@@ -10,7 +10,8 @@ const {createBufferDecoder} = goog.require('protobuf.binary.bufferDecoderHelper'
  * An array of Pairs of float values and their bit representation.
  * This is used to test encoding and decoding from/to the protobuf wire format.
  * @return {!Array<{name: string, intValue:number, bufferDecoder:
- *     !BufferDecoder, error: ?boolean, skip_writer: ?boolean}>}
+ *     !BufferDecoder, error: (boolean|undefined),
+ *    skip_reader: (boolean|undefined), skip_writer: (boolean|undefined)}>}
  */
 function getUint32Pairs() {
   const uint32Pairs = [
@@ -33,6 +34,12 @@ function getUint32Pairs() {
       name: 'max unsigned int 2^32 - 1',
       intValue: Math.pow(2, 32) - 1,
       bufferDecoder: createBufferDecoder(0xFF, 0xFF, 0xFF, 0xFF, 0x0F),
+    },
+    {
+      name: 'negative one',
+      intValue: -1,
+      bufferDecoder: createBufferDecoder(0xFF, 0xFF, 0xFF, 0xFF, 0x0F),
+      skip_reader: true,
     },
     {
       name: 'truncates more than 32 bits',
