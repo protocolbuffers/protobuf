@@ -45,7 +45,7 @@ namespace Google.Protobuf.Benchmarks
     public class ParseRawPrimitivesBenchmark
     {
         // key is the encodedSize of varint values
-        Dictionary<int, byte[]>  varintInputBuffers;
+        Dictionary<int, byte[]> varintInputBuffers;
 
         byte[] doubleInputBuffer;
         byte[] floatInputBuffer;
@@ -87,13 +87,13 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(5)]
         public int ParseRawVarint32(int encodedSize)
         {
-             CodedInputStream cis = new CodedInputStream(varintInputBuffers[encodedSize]);
-             int sum = 0;
-             for (int i = 0; i < BytesToParse / encodedSize; i++)
-             {
-                 sum += cis.ReadInt32();
-             }
-             return sum;
+            CodedInputStream cis = new CodedInputStream(varintInputBuffers[encodedSize]);
+            int sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += cis.ReadInt32();
+            }
+            return sum;
         }
 
         [Benchmark]
@@ -109,13 +109,13 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(10)]
         public long ParseRawVarint64(int encodedSize)
         {
-             CodedInputStream cis = new CodedInputStream(varintInputBuffers[encodedSize]);
-             long sum = 0;
-             for (int i = 0; i < BytesToParse / encodedSize; i++)
-             {
-                 sum += cis.ReadInt64();
-             }
-             return sum;
+            CodedInputStream cis = new CodedInputStream(varintInputBuffers[encodedSize]);
+            long sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += cis.ReadInt64();
+            }
+            return sum;
         }
 
         [Benchmark]
@@ -161,13 +161,13 @@ namespace Google.Protobuf.Benchmarks
         public double ParseRawDouble()
         {
             const int encodedSize = sizeof(double);
-             CodedInputStream cis = new CodedInputStream(doubleInputBuffer);
-             double sum = 0;
-             for (int i = 0; i < BytesToParse / encodedSize; i++)
-             {
-                 sum += cis.ReadDouble();
-             }
-             return sum;
+            CodedInputStream cis = new CodedInputStream(doubleInputBuffer);
+            double sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += cis.ReadDouble();
+            }
+            return sum;
         }
 
         private static byte[] CreateBufferWithRandomVarints(Random random, int valueCount, int encodedSize, int paddingValueCount)
