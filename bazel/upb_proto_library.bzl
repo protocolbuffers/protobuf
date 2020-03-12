@@ -6,11 +6,6 @@
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
 
-# copybara:strip_for_google3_begin
-load("@bazel_skylib//lib:versions.bzl", "versions")
-load("@upb_bazel_version//:bazel_version.bzl", "bazel_version")
-# copybara:strip_end
-
 # Generic support code #########################################################
 
 _is_bazel = not hasattr(native, "genmpm")
@@ -78,34 +73,6 @@ def _cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
         requested_features = ctx.features,
         unsupported_features = ctx.disabled_features,
     )
-
-    # copybara:strip_for_google3_begin
-    if bazel_version == "0.24.1":
-        # Compatibility code until gRPC is on 0.25.2 or later.
-        compilation_info = cc_common.compile(
-            ctx = ctx,
-            feature_configuration = feature_configuration,
-            cc_toolchain = toolchain,
-            srcs = srcs,
-            hdrs = hdrs,
-            compilation_contexts = compilation_contexts,
-        )
-        linking_info = cc_common.link(
-            ctx = ctx,
-            feature_configuration = feature_configuration,
-            cc_toolchain = toolchain,
-            cc_compilation_outputs = compilation_info.cc_compilation_outputs,
-            linking_contexts = linking_contexts,
-        )
-        return CcInfo(
-            compilation_context = compilation_info.compilation_context,
-            linking_context = linking_info.linking_context,
-        )
-
-    if not versions.is_at_least("0.25.2", bazel_version):
-        fail("upb requires Bazel >=0.25.2 or 0.24.1")
-
-    # copybara:strip_end
 
     blaze_only_args = {}
 
