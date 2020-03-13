@@ -1,15 +1,15 @@
 /**
- * @fileoverview LazyAccessor is a class to provide type-checked accessing
+ * @fileoverview Kernel is a class to provide type-checked accessing
  * (read/write bool/int32/string/...) on binary data.
  *
- * When creating the LazyAccessor with the binary data, there is no deep
+ * When creating the Kernel with the binary data, there is no deep
  * decoding done (which requires full type information). The deep decoding is
  * deferred until the first time accessing (when accessors can provide
  * full type information).
  *
  * Because accessors can be statically analyzed and stripped, unlike eager
  * binary decoding (which requires the full type information of all defined
- * fields), LazyAccessor will only need the full type information of used
+ * fields), Kernel will only need the full type information of used
  * fields.
  */
 goog.module('protobuf.runtime.Kernel');
@@ -53,12 +53,12 @@ function checkIsInternalMessage(obj) {
 /**
  * Checks if the instanceCreator returns an instance that implements the
  * InternalMessage interface.
- * @param {function(!LazyAccessor):T} instanceCreator
+ * @param {function(!Kernel):T} instanceCreator
  * @template T
  */
 function checkInstanceCreator(instanceCreator) {
   if (CHECK_TYPE) {
-    const emptyMessage = instanceCreator(LazyAccessor.createEmpty());
+    const emptyMessage = instanceCreator(Kernel.createEmpty());
     checkFunctionExists(emptyMessage.internalGetKernel);
   }
 }
@@ -156,7 +156,7 @@ function mergeMessageArrays(indexArray, bufferDecoder) {
  * @param {!Array<!IndexEntry>} indexArray
  * @param {!BufferDecoder} bufferDecoder
  * @param {number=} pivot
- * @return {!LazyAccessor}
+ * @return {!Kernel}
  */
 function readAccessor(indexArray, bufferDecoder, pivot = undefined) {
   checkState(indexArray.length > 0);
@@ -173,7 +173,7 @@ function readAccessor(indexArray, bufferDecoder, pivot = undefined) {
     });
     accessorBuffer = mergeMessageArrays(indexArray, bufferDecoder);
   }
-  return LazyAccessor.fromBufferDecoder_(accessorBuffer, pivot);
+  return Kernel.fromBufferDecoder_(accessorBuffer, pivot);
 }
 
 /**
@@ -181,7 +181,7 @@ function readAccessor(indexArray, bufferDecoder, pivot = undefined) {
  * This is used to implement parsing singular message fields.
  * @param {!Array<!IndexEntry>} indexArray
  * @param {!BufferDecoder} bufferDecoder
- * @param {function(!LazyAccessor):T} instanceCreator
+ * @param {function(!Kernel):T} instanceCreator
  * @param {number=} pivot
  * @return {T}
  * @template T
@@ -247,10 +247,10 @@ class ArrayIterable {
  * at the first access.
  * @final
  */
-class LazyAccessor {
+class Kernel {
   /**
-   * Create a LazyAccessor for the given binary bytes.
-   * The bytes array is kept by the LazyAccessor. DON'T MODIFY IT.
+   * Create a Kernel for the given binary bytes.
+   * The bytes array is kept by the Kernel. DON'T MODIFY IT.
    * @param {!ArrayBuffer} arrayBuffer Binary bytes.
    * @param {number=} pivot Fields with a field number no greater than the pivot
    *     value will be stored in an array for fast access. Other fields will be
@@ -259,15 +259,15 @@ class LazyAccessor {
    *     value to the max field number of the message unless the field numbers
    *     are too sparse. If the value is not set, a default value specified in
    *     storage.js will be used.
-   * @return {!LazyAccessor}
+   * @return {!Kernel}
    */
   static fromArrayBuffer(arrayBuffer, pivot = undefined) {
     const bufferDecoder = BufferDecoder.fromArrayBuffer(arrayBuffer);
-    return LazyAccessor.fromBufferDecoder_(bufferDecoder, pivot);
+    return Kernel.fromBufferDecoder_(bufferDecoder, pivot);
   }
 
   /**
-   * Creates an empty LazyAccessor.
+   * Creates an empty Kernel.
    * @param {number=} pivot Fields with a field number no greater than the pivot
    *     value will be stored in an array for fast access. Other fields will be
    *     stored in a map. A higher pivot value can improve runtime performance
@@ -275,22 +275,22 @@ class LazyAccessor {
    *     value to the max field number of the message unless the field numbers
    *     are too sparse. If the value is not set, a default value specified in
    *     storage.js will be used.
-   * @return {!LazyAccessor}
+   * @return {!Kernel}
    */
   static createEmpty(pivot = undefined) {
-    return new LazyAccessor(/* bufferDecoder= */ null, new Storage(pivot));
+    return new Kernel(/* bufferDecoder= */ null, new Storage(pivot));
   }
 
   /**
-   * Create a LazyAccessor for the given binary bytes.
-   * The bytes array is kept by the LazyAccessor. DON'T MODIFY IT.
+   * Create a Kernel for the given binary bytes.
+   * The bytes array is kept by the Kernel. DON'T MODIFY IT.
    * @param {!BufferDecoder} bufferDecoder Binary bytes.
    * @param {number|undefined} pivot
-   * @return {!LazyAccessor}
+   * @return {!Kernel}
    * @private
    */
   static fromBufferDecoder_(bufferDecoder, pivot) {
-    return new LazyAccessor(bufferDecoder, buildIndex(bufferDecoder, pivot));
+    return new Kernel(bufferDecoder, buildIndex(bufferDecoder, pivot));
   }
 
   /**
@@ -310,10 +310,10 @@ class LazyAccessor {
 
   /**
    * Creates a shallow copy of the accessor.
-   * @return {!LazyAccessor}
+   * @return {!Kernel}
    */
   shallowCopy() {
-    return new LazyAccessor(this.bufferDecoder_, this.fields_.shallowCopy());
+    return new Kernel(this.bufferDecoder_, this.fields_.shallowCopy());
   }
 
   /**
@@ -676,7 +676,7 @@ class LazyAccessor {
    * getMessageOrNull after getMessage will not register the encoder.
    *
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @param {number=} pivot
    * @return {?T}
    * @template T
@@ -698,7 +698,7 @@ class LazyAccessor {
    * getMessageAttach after getMessage will not register the encoder.
    *
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @param {number=} pivot
    * @return {T}
    * @template T
@@ -707,7 +707,7 @@ class LazyAccessor {
     checkInstanceCreator(instanceCreator);
     let instance = this.getMessageOrNull(fieldNumber, instanceCreator, pivot);
     if (!instance) {
-      instance = instanceCreator(LazyAccessor.createEmpty());
+      instance = instanceCreator(Kernel.createEmpty());
       this.setField_(fieldNumber, instance, writeMessage);
     }
     return instance;
@@ -726,7 +726,7 @@ class LazyAccessor {
    * getMessageAttach, since these methods register the encoder.
    *
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @param {number=} pivot
    * @return {T}
    * @template T
@@ -740,8 +740,7 @@ class LazyAccessor {
     // Returns an empty message as the default value if the field doesn't exist.
     // We don't pass the default value to getFieldWithDefault_ to reduce object
     // allocation.
-    return message === null ? instanceCreator(LazyAccessor.createEmpty()) :
-                              message;
+    return message === null ? instanceCreator(Kernel.createEmpty()) : message;
   }
 
   /**
@@ -749,7 +748,7 @@ class LazyAccessor {
    * it hasn't been set.
    * @param {number} fieldNumber
    * @param {number=} pivot
-   * @return {?LazyAccessor}
+   * @return {?Kernel}
    */
   getMessageAccessorOrNull(fieldNumber, pivot = undefined) {
     checkFieldNumber(fieldNumber);
@@ -1501,7 +1500,7 @@ class LazyAccessor {
    * Returns an Array instance containing boolean values for the given field
    * number.
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @param {number|undefined} pivot
    * @return {!Array<T>}
    * @template T
@@ -1531,8 +1530,8 @@ class LazyAccessor {
       const subMessageBuffer = reader.readDelimited(
           checkDefAndNotNull(this.bufferDecoder_),
           Field.getStartIndex(indexArray[i]));
-      result[i] = instanceCreator(
-          LazyAccessor.fromBufferDecoder_(subMessageBuffer, pivot));
+      result[i] =
+          instanceCreator(Kernel.fromBufferDecoder_(subMessageBuffer, pivot));
     }
     field.setCache(result, writeRepeatedMessage);
 
@@ -1542,7 +1541,7 @@ class LazyAccessor {
   /**
    * Returns the element at index for the given field number as a message.
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @param {number} index
    * @param {number=} pivot
    * @return {T}
@@ -1560,7 +1559,7 @@ class LazyAccessor {
    * Returns an Iterable instance containing message values for the given field
    * number.
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @param {number=} pivot
    * @return {!Iterable<T>}
    * @template T
@@ -1578,7 +1577,7 @@ class LazyAccessor {
    * field number.
    * @param {number} fieldNumber
    * @param {number=} pivot
-   * @return {!Iterable<!LazyAccessor>}
+   * @return {!Iterable<!Kernel>}
    */
   getRepeatedMessageAccessorIterable(fieldNumber, pivot = undefined) {
     checkFieldNumber(fieldNumber);
@@ -1593,9 +1592,8 @@ class LazyAccessor {
           value => checkIsInternalMessage(value).internalGetKernel()));
     }
 
-    const readMessageFunc = (bufferDecoder, start) =>
-        LazyAccessor.fromBufferDecoder_(
-            reader.readDelimited(bufferDecoder, start), pivot);
+    const readMessageFunc = (bufferDecoder, start) => Kernel.fromBufferDecoder_(
+        reader.readDelimited(bufferDecoder, start), pivot);
     const array = readRepeatedNonPrimitive(
         checkDefAndNotNull(field.getIndexArray()),
         checkDefAndNotNull(this.bufferDecoder_), readMessageFunc);
@@ -1605,7 +1603,7 @@ class LazyAccessor {
   /**
    * Returns the size of the repeated field.
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @return {number}
    * @param {number=} pivot
    * @template T
@@ -1804,7 +1802,7 @@ class LazyAccessor {
 
   /**
    * Sets a proto Message to the field with the given field number.
-   * Instead of working with the LazyAccessor inside of the message directly, we
+   * Instead of working with the Kernel inside of the message directly, we
    * need the message instance to keep its reference equality for subsequent
    * gettings.
    * @param {number} fieldNumber
@@ -3757,7 +3755,7 @@ class LazyAccessor {
    * Adds all message values into the field for the given field number.
    * @param {number} fieldNumber
    * @param {!Iterable<!InternalMessage>} values
-   * @param {function(!LazyAccessor):!InternalMessage} instanceCreator
+   * @param {function(!Kernel):!InternalMessage} instanceCreator
    * @param {number=} pivot
    */
   addRepeatedMessageIterable(
@@ -3779,7 +3777,7 @@ class LazyAccessor {
    * the given index.
    * @param {number} fieldNumber
    * @param {!InternalMessage} value
-   * @param {function(!LazyAccessor):!InternalMessage} instanceCreator
+   * @param {function(!Kernel):!InternalMessage} instanceCreator
    * @param {number} index
    * @param {number=} pivot
    * @throws {!Error} if index is out of range when check mode is critical
@@ -3799,7 +3797,7 @@ class LazyAccessor {
    * Adds a single message value into the field for the given field number.
    * @param {number} fieldNumber
    * @param {!InternalMessage} value
-   * @param {function(!LazyAccessor):!InternalMessage} instanceCreator
+   * @param {function(!Kernel):!InternalMessage} instanceCreator
    * @param {number=} pivot
    */
   addRepeatedMessageElement(
@@ -3809,4 +3807,4 @@ class LazyAccessor {
   }
 }
 
-exports = LazyAccessor;
+exports = Kernel;

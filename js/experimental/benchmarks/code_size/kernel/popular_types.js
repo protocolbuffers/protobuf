@@ -20,7 +20,7 @@
 goog.module('protobuf.benchmark.KernelCodeSizeBenchmarkPopularTypes');
 
 const Int64 = goog.require('protobuf.Int64');
-const LazyAccessor = goog.require('protobuf.runtime.Kernel');
+const Kernel = goog.require('protobuf.runtime.Kernel');
 const TestMessage = goog.require('protobuf.testing.binary.TestMessage');
 const {ensureCommonBaseLine} = goog.require('protobuf.benchmark.codeSize.codeSizeBase');
 
@@ -31,7 +31,7 @@ ensureCommonBaseLine();
  * @return {string}
  */
 function accessAllTypes() {
-  const message = new TestMessage(LazyAccessor.createEmpty());
+  const message = new TestMessage(Kernel.createEmpty());
 
   message.addRepeatedMessageElement(1, message, TestMessage.instanceCreator);
   message.addRepeatedMessageIterable(1, [message], TestMessage.instanceCreator);

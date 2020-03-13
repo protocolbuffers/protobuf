@@ -1,20 +1,20 @@
 /**
- * @fileoverview LazyAccessor wrapper message.
+ * @fileoverview Kernel wrapper message.
  */
 goog.module('protobuf.testing.binary.TestMessage');
 
 const ByteString = goog.require('protobuf.ByteString');
 const Int64 = goog.require('protobuf.Int64');
 const InternalMessage = goog.require('protobuf.binary.InternalMessage');
-const LazyAccessor = goog.require('protobuf.runtime.Kernel');
+const Kernel = goog.require('protobuf.runtime.Kernel');
 
 /**
- * A protobuf message implemented as a LazyAccessor wrapper.
+ * A protobuf message implemented as a Kernel wrapper.
  * @implements {InternalMessage}
  */
 class TestMessage {
   /**
-   * @param {!LazyAccessor} kernel
+   * @param {!Kernel} kernel
    * @return {!TestMessage}
    */
   static instanceCreator(kernel) {
@@ -22,17 +22,17 @@ class TestMessage {
   }
 
   /**
-   * @param {!LazyAccessor} kernel
+   * @param {!Kernel} kernel
    */
   constructor(kernel) {
-    /** @private @const {!LazyAccessor} */
+    /** @private @const {!Kernel} */
     this.kernel_ = kernel;
   }
 
   /**
    * @override
    * @package
-   * @return {!LazyAccessor}
+   * @return {!Kernel}
    */
   internalGetKernel() {
     return this.kernel_;
@@ -182,7 +182,7 @@ class TestMessage {
 
   /**
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @return {?T}
    * @template T
    */
@@ -192,7 +192,7 @@ class TestMessage {
 
   /**
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @return {T}
    * @template T
    */
@@ -202,7 +202,7 @@ class TestMessage {
 
   /**
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @return {T}
    * @template T
    */
@@ -212,7 +212,7 @@ class TestMessage {
 
   /**
    * @param {number} fieldNumber
-   * @return {?LazyAccessor}
+   * @return {?Kernel}
    * @template T
    */
   getMessageAccessorOrNull(fieldNumber) {
@@ -594,7 +594,7 @@ class TestMessage {
 
   /**
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @param {number} index
    * @return {T}
    * @template T
@@ -606,7 +606,7 @@ class TestMessage {
 
   /**
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @return {!Iterable<T>}
    * @template T
    */
@@ -617,7 +617,7 @@ class TestMessage {
 
   /**
    * @param {number} fieldNumber
-   * @return {!Iterable<!LazyAccessor>}
+   * @return {!Iterable<!Kernel>}
    * @template T
    */
   getRepeatedMessageAccessorIterable(fieldNumber) {
@@ -626,7 +626,7 @@ class TestMessage {
 
   /**
    * @param {number} fieldNumber
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @return {number}
    * @template T
    */
@@ -1728,7 +1728,7 @@ class TestMessage {
   /**
    * @param {number} fieldNumber
    * @param {!Iterable<T>} values
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @template T
    */
   addRepeatedMessageIterable(fieldNumber, values, instanceCreator) {
@@ -1739,7 +1739,7 @@ class TestMessage {
   /**
    * @param {number} fieldNumber
    * @param {T} value
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @param {number} index
    * @throws {!Error} if index is out of range when check mode is critical
    * @template T
@@ -1752,7 +1752,7 @@ class TestMessage {
   /**
    * @param {number} fieldNumber
    * @param {T} value
-   * @param {function(!LazyAccessor):T} instanceCreator
+   * @param {function(!Kernel):T} instanceCreator
    * @template T
    */
   addRepeatedMessageElement(fieldNumber, value, instanceCreator) {

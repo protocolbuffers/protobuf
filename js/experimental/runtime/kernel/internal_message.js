@@ -4,7 +4,7 @@
  */
 goog.module('protobuf.binary.InternalMessage');
 
-const LazyAccessor = goog.requireType('protobuf.runtime.Kernel');
+const Kernel = goog.requireType('protobuf.runtime.Kernel');
 
 /**
  * Interface that needs to be implemented by messages implemented with the
@@ -16,7 +16,7 @@ const LazyAccessor = goog.requireType('protobuf.runtime.Kernel');
 class InternalMessage {
   /**
    * @package
-   * @return {!LazyAccessor}
+   * @return {!Kernel}
    */
   internalGetKernel() {}
 }
