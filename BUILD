@@ -2,6 +2,7 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
+load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_proto//proto/private:native.bzl", "native_proto_common")
 load("@rules_python//python:defs.bzl", "py_library")
@@ -360,6 +361,12 @@ cc_library(
     deps = [dep + "_proto" for dep in proto[1][1]],
 ) for proto in WELL_KNOWN_PROTO_MAP.items()]
 
+[java_proto_library(
+    name = proto + "_java_proto",
+    deps = [proto + "_proto"],
+    visibility = ["//visibility:public"],
+) for proto in WELL_KNOWN_PROTO_MAP.keys()]
+
 [native_cc_proto_library(
     name = proto + "_cc_proto",
     deps = [proto + "_proto"],
@@ -489,6 +496,129 @@ RELATIVE_LITE_TEST_PROTOS = [
     "google/protobuf/unittest_no_arena_lite.proto",
 ]
 
+proto_library(
+    name = "map_lite_unittest_proto",
+    srcs = [
+        "src/google/protobuf/map_lite_unittest.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":unittest_lite_proto",
+        ":unittest_no_arena_lite_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_lite_proto_library(
+    name = "map_lite_unittest_java_proto",
+    deps = [
+        ":map_lite_unittest_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_import_lite_proto",
+    srcs = [
+        "src/google/protobuf/unittest_import_lite.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":unittest_import_public_lite_proto",
+    ],
+    exports = [
+        ":unittest_import_public_lite_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_lite_proto_library(
+    name = "unittest_import_lite_java_proto",
+    deps = [
+        ":unittest_import_lite_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_import_public_lite_proto",
+    srcs = [
+        "src/google/protobuf/unittest_import_public_lite.proto",
+    ],
+    strip_import_prefix = "src",
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_lite_proto_library(
+    name = "unittest_import_public_lite_java_proto",
+    deps = [
+        ":unittest_import_public_lite_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_lite_proto",
+    strip_import_prefix = "src",
+    srcs = [
+        "src/google/protobuf/unittest_lite.proto",
+    ],
+    deps = [
+        ":unittest_import_lite_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_lite_proto_library(
+    name = "unittest_lite_java_proto",
+    deps = [
+        ":unittest_lite_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_no_arena_lite_proto",
+    strip_import_prefix = "src",
+    srcs = [
+        "src/google/protobuf/unittest_no_arena_lite.proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_lite_proto_library(
+    name = "unittest_no_arena_lite_java_proto",
+    deps = [
+        ":unittest_no_arena_lite_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
 LITE_TEST_PROTOS = ["src/" + s for s in RELATIVE_LITE_TEST_PROTOS]
 
 RELATIVE_TEST_PROTOS = [
@@ -543,6 +673,306 @@ RELATIVE_TEST_PROTOS = [
 ]
 
 TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
+
+proto_library(
+    name = "unittest_proto",
+    srcs = [
+        "src/google/protobuf/unittest.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":unittest_import_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_java_proto",
+    deps = [
+        ":unittest_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_custom_options_proto",
+    srcs = [
+        "src/google/protobuf/unittest_custom_options.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":descriptor_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_custom_options_java_proto",
+    deps = [
+        ":unittest_custom_options_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_enormous_descriptor_proto",
+    srcs = [
+        "src/google/protobuf/unittest_enormous_descriptor.proto",
+    ],
+    strip_import_prefix = "src",
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_enormous_descriptor_java_proto",
+    deps = [
+        ":unittest_enormous_descriptor_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_import_proto",
+    srcs = [
+        "src/google/protobuf/unittest_import.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":unittest_import_public_proto",
+    ],
+    exports = [
+        ":unittest_import_public_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_import_java_proto",
+    deps = [
+        ":unittest_import_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_import_public_proto",
+    srcs = [
+        "src/google/protobuf/unittest_import_public.proto",
+    ],
+    strip_import_prefix = "src",
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_import_public_java_proto",
+    deps = [
+        ":unittest_import_public_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_mset_proto",
+    srcs = [
+        "src/google/protobuf/unittest_mset.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":unittest_mset_wire_format_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_mset_java_proto",
+    deps = [
+        ":unittest_mset_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_mset_wire_format_proto",
+    srcs = [
+        "src/google/protobuf/unittest_mset_wire_format.proto",
+    ],
+    strip_import_prefix = "src",
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_mset_wire_format_java_proto",
+    deps = [
+        ":unittest_mset_wire_format_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_no_generic_services_proto",
+    srcs = [
+        "src/google/protobuf/unittest_no_generic_services.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":unittest_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_no_generic_services_java_proto",
+    deps = [
+        ":unittest_no_generic_services_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_optimize_for_proto",
+    srcs = [
+        "src/google/protobuf/unittest_optimize_for.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":unittest_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_optimize_for_java_proto",
+    deps = [
+        ":unittest_optimize_for_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_proto3_proto",
+    srcs = [
+        "src/google/protobuf/unittest_proto3.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":unittest_import_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_proto3_java_proto",
+    deps = [
+        ":unittest_proto3_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_proto3_optional_proto",
+    srcs = [
+        "src/google/protobuf/unittest_proto3_optional.proto",
+    ],
+    strip_import_prefix = "src",
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_proto3_optional_java_proto",
+    deps = [
+        ":unittest_proto3_optional_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+proto_library(
+    name = "unittest_well_known_types_proto",
+    srcs = [
+        "src/google/protobuf/unittest_well_known_types.proto",
+    ],
+    strip_import_prefix = "src",
+    deps = [
+        ":any_proto",
+        ":api_proto",
+        ":duration_proto",
+        ":empty_proto",
+        ":field_mask_proto",
+        ":struct_proto",
+        ":source_context_proto",
+        ":timestamp_proto",
+        ":type_proto",
+        ":wrappers_proto",
+    ],
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+java_proto_library(
+    name = "unittest_well_known_types_java_proto",
+    deps = [
+        ":unittest_well_known_types_proto",
+    ],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
 
 cc_proto_library(
     name = "cc_test_protos",
@@ -675,6 +1105,7 @@ cc_test(
     copts = COPTS,
     data = [
         ":test_plugin",
+        "//src/google/protobuf/testdata",
     ] + glob([
         "src/google/protobuf/**/*",
         # Files for csharp_bootstrap_unittest.cc.
@@ -918,7 +1349,9 @@ internal_protobuf_py_tests(
     name = "python_tests_batch",
     data = glob([
         "src/google/protobuf/**/*",
-    ]),
+    ]) + [
+        "//src/google/protobuf/testdata",
+    ],
     modules = [
         "descriptor_database_test",
         "descriptor_pool_test",

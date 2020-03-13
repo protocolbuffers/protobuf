@@ -2,9 +2,84 @@ workspace(name = "com_google_protobuf")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-local_repository(
-    name = "com_google_protobuf_examples",
-    path = "examples",
+RULES_JVM_EXTERNAL_COMMIT = "0a58d828a5788c3f156435540fe24337ccee8616"
+RULES_JVM_EXTERNAL_SHA = "7a4e199606e4c68ee2d8018fc34f31f13a13cedf3f668ca81628aa8be93dc3c3"
+
+http_archive(
+    name = "rules_jvm_external",
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_COMMIT,
+    urls = [
+        "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_COMMIT,
+    ],
+)
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+load("@rules_jvm_external//:specs.bzl", "maven")
+
+VERSIONS = {
+    "easymock": "2.2",
+    "errorprone": "2.3.2",
+    "gson": "2.7",
+    "guava": "28.2-android",
+    "junit": "4.13",
+    "truth": "1.0.1",
+}
+
+maven_install(
+    name = "maven",
+    artifacts = [
+        maven.artifact(
+            group = "com.google.code.gson",
+            artifact = "gson",
+            version = VERSIONS["gson"],
+        ),
+        maven.artifact(
+            group = "com.google.errorprone",
+            artifact = "error_prone_annotations",
+            version = VERSIONS["errorprone"],
+        ),
+        maven.artifact(
+            group = "com.google.guava",
+            artifact = "guava",
+            version = VERSIONS["guava"],
+        ),
+        maven.artifact(
+            group = "com.google.guava",
+            artifact = "guava-testlib",
+            version = VERSIONS["guava"],
+            # testonly = True,
+        ),
+        maven.artifact(
+            group = "com.google.truth",
+            artifact = "truth",
+            version = VERSIONS["truth"],
+            # testonly = True,
+        ),
+        maven.artifact(
+            group = "junit",
+            artifact = "junit",
+            version = VERSIONS["junit"],
+            # testonly = True,
+        ),
+        maven.artifact(
+            group = "org.easymock",
+            artifact = "easymock",
+            version = VERSIONS["easymock"],
+            # testonly = True,
+        ),
+        maven.artifact(
+            group = "org.easymock",
+            artifact = "easymockclassextension",
+            version = VERSIONS["easymock"],
+            # testonly = True,
+        ),
+    ],
+    fetch_sources = True,
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+    strict_visibility = True,
 )
 
 http_archive(
@@ -41,49 +116,19 @@ bind(
     actual = "@com_google_googletest//:gtest_main",
 )
 
-jvm_maven_import_external(
-    name = "guava_maven",
-    artifact = "com.google.guava:guava:18.0",
-    artifact_sha256 = "d664fbfc03d2e5ce9cab2a44fb01f1d0bf9dfebeccc1a473b1f9ea31f79f6f99",
-    server_urls = [
-        "https://jcenter.bintray.com/",
-        "https://repo1.maven.org/maven2",
-    ],
-)
-
 bind(
     name = "guava",
-    actual = "@guava_maven//jar",
-)
-
-jvm_maven_import_external(
-    name = "gson_maven",
-    artifact = "com.google.code.gson:gson:2.7",
-    artifact_sha256 = "2d43eb5ea9e133d2ee2405cc14f5ee08951b8361302fdd93494a3a997b508d32",
-    server_urls = [
-        "https://jcenter.bintray.com/",
-        "https://repo1.maven.org/maven2",
-    ],
+    actual = "@maven//:com_google_guava_guava",
 )
 
 bind(
     name = "gson",
-    actual = "@gson_maven//jar",
-)
-
-jvm_maven_import_external(
-    name = "error_prone_annotations_maven",
-    artifact = "com.google.errorprone:error_prone_annotations:2.3.2",
-    artifact_sha256 = "357cd6cfb067c969226c442451502aee13800a24e950fdfde77bcdb4565a668d",
-    server_urls = [
-        "https://jcenter.bintray.com/",
-        "https://repo1.maven.org/maven2",
-    ],
+    actual = "@maven//:com_google_code_gson_gson",
 )
 
 bind(
     name = "error_prone_annotations",
-    actual = "@error_prone_annotations_maven//jar",
+    actual = "@maven//:com_google_errorprone_error_prone_annotations",
 )
 
 # For `cc_proto_blacklist_test`.

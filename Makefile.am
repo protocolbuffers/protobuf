@@ -391,6 +391,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/Utf8.java                            \
   java/core/src/main/java/com/google/protobuf/WireFormat.java                      \
   java/core/src/main/java/com/google/protobuf/Writer.java                          \
+  java/core/src/test/BUILD                                                         \
   java/core/src/test/java/com/google/protobuf/AbstractMessageTest.java             \
   java/core/src/test/java/com/google/protobuf/AbstractProto2LiteSchemaTest.java    \
   java/core/src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java        \
@@ -526,6 +527,7 @@ java_EXTRA_DIST=                                                                
   java/lite/lite.awk                                                               \
   java/lite/pom.xml                                                                \
   java/lite/process-lite-sources-build.xml                                         \
+  java/lite/src/test/BUILD                                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
   java/pom.xml                                                                     \
@@ -539,10 +541,11 @@ java_EXTRA_DIST=                                                                
   java/util/src/main/java/com/google/protobuf/util/Structs.java                    \
   java/util/src/main/java/com/google/protobuf/util/Timestamps.java                 \
   java/util/src/main/java/com/google/protobuf/util/Values.java                     \
+  java/util/src/test/BUILD                                                         \
   java/util/src/test/java/com/google/protobuf/util/FieldMaskTreeTest.java          \
   java/util/src/test/java/com/google/protobuf/util/FieldMaskUtilTest.java          \
   java/util/src/test/java/com/google/protobuf/util/JsonFormatTest.java             \
-  java/util/src/test/java/com/google/protobuf/util/StructsTest.java                 \
+  java/util/src/test/java/com/google/protobuf/util/StructsTest.java                \
   java/util/src/test/java/com/google/protobuf/util/TimeUtilTest.java               \
   java/util/src/test/java/com/google/protobuf/util/ValuesTest.java                 \
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
