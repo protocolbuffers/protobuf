@@ -262,7 +262,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs
 
 java_EXTRA_DIST=                                                                   \
-  java/BUILD                                                                       \
   java/README.md                                                                   \
   java/bom/pom.xml                                                                 \
   java/core/BUILD                                                                  \
