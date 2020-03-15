@@ -91,19 +91,10 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/Writer.java",
 ]
 
-javacopts = select({
-    "//java:jdk9": ["--add-modules=jdk.unsupported"],
-    "//conditions:default": [
-        "-source 7",
-        "-target 7",
-    ],
-})
-
 # Should be used as `//java/lite`.
 java_library(
     name = "lite",
     srcs = LITE_SRCS,
-    javacopts = javacopts,
     visibility = [
         "//java/lite:__pkg__",
     ],
@@ -119,7 +110,6 @@ java_library(
     ) + [
         "//:gen_well_known_protos_java",
     ],
-    javacopts = javacopts,
     visibility = ["//visibility:public"],
     exports = [
         "//java/lite",
