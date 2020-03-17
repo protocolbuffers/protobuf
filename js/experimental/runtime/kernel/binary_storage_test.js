@@ -1,11 +1,11 @@
 /**
  * @fileoverview Tests for storage.js.
  */
-goog.module('protobuf.binary.StorageTest');
+goog.module('protobuf.runtime.BinaryStorageTest');
 
 goog.setTestOnly();
 
-const Storage = goog.require('protobuf.binary.Storage');
+const BinaryStorage = goog.require('protobuf.runtime.BinaryStorage');
 const {Field} = goog.require('protobuf.binary.field');
 
 /**
@@ -25,7 +25,7 @@ const /** !Field */ field4 =
 /**
  * Returns the number of fields stored.
  *
- * @param {!Storage} storage
+ * @param {!BinaryStorage} storage
  * @return {number}
  */
 function getStorageSize(storage) {
@@ -34,9 +34,9 @@ function getStorageSize(storage) {
   return size;
 }
 
-describe('Storage', () => {
+describe('BinaryStorage', () => {
   it('sets and gets a field not greater than the pivot', () => {
-    const storage = new Storage(DEFAULT_PIVOT);
+    const storage = new BinaryStorage(DEFAULT_PIVOT);
 
     storage.set(1, field1);
     storage.set(DEFAULT_PIVOT, field2);
@@ -47,7 +47,7 @@ describe('Storage', () => {
   });
 
   it('sets and gets a field greater than the pivot', () => {
-    const storage = new Storage(DEFAULT_PIVOT);
+    const storage = new BinaryStorage(DEFAULT_PIVOT);
 
     storage.set(DEFAULT_PIVOT + 1, field1);
     storage.set(100000, field2);
@@ -57,7 +57,7 @@ describe('Storage', () => {
   });
 
   it('sets and gets a field when pivot is zero', () => {
-    const storage = new Storage(0);
+    const storage = new BinaryStorage(0);
 
     storage.set(0, field1);
     storage.set(100000, field2);
@@ -68,7 +68,7 @@ describe('Storage', () => {
   });
 
   it('sets and gets a field when pivot is undefined', () => {
-    const storage = new Storage();
+    const storage = new BinaryStorage();
 
     storage.set(0, field1);
     storage.set(DEFAULT_PIVOT, field2);
@@ -81,7 +81,7 @@ describe('Storage', () => {
   });
 
   it('returns undefined for nonexistent fields', () => {
-    const storage = new Storage(DEFAULT_PIVOT);
+    const storage = new BinaryStorage(DEFAULT_PIVOT);
 
     expect(storage.get(1)).toBeUndefined();
     expect(storage.get(DEFAULT_PIVOT)).toBeUndefined();
@@ -91,7 +91,7 @@ describe('Storage', () => {
 
   it('returns undefined for nonexistent fields after map initialization',
      () => {
-       const storage = new Storage(DEFAULT_PIVOT);
+       const storage = new BinaryStorage(DEFAULT_PIVOT);
        storage.set(100001, field1);
 
        expect(storage.get(1)).toBeUndefined();
@@ -101,7 +101,7 @@ describe('Storage', () => {
      });
 
   it('deletes a field in delete() when values are only in array', () => {
-    const storage = new Storage(DEFAULT_PIVOT);
+    const storage = new BinaryStorage(DEFAULT_PIVOT);
     storage.set(1, field1);
 
     storage.delete(1);
@@ -111,7 +111,7 @@ describe('Storage', () => {
 
   it('deletes a field in delete() when values are both in array and map',
      () => {
-       const storage = new Storage(DEFAULT_PIVOT);
+       const storage = new BinaryStorage(DEFAULT_PIVOT);
        storage.set(DEFAULT_PIVOT, field2);
        storage.set(DEFAULT_PIVOT + 1, field3);
 
@@ -123,7 +123,7 @@ describe('Storage', () => {
      });
 
   it('deletes a field in delete() when values are only in map', () => {
-    const storage = new Storage(DEFAULT_PIVOT);
+    const storage = new BinaryStorage(DEFAULT_PIVOT);
     storage.set(100000, field4);
 
     storage.delete(100000);
@@ -132,7 +132,7 @@ describe('Storage', () => {
   });
 
   it('loops over all the elements in forEach()', () => {
-    const storage = new Storage(DEFAULT_PIVOT);
+    const storage = new BinaryStorage(DEFAULT_PIVOT);
     storage.set(1, field1);
     storage.set(DEFAULT_PIVOT, field2);
     storage.set(DEFAULT_PIVOT + 1, field3);
@@ -150,7 +150,7 @@ describe('Storage', () => {
   });
 
   it('creates a shallow copy of the storage in shallowCopy()', () => {
-    const storage = new Storage(DEFAULT_PIVOT);
+    const storage = new BinaryStorage(DEFAULT_PIVOT);
     storage.set(1, field1);
     storage.set(100000, field2);
 

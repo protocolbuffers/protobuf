@@ -10,8 +10,8 @@ goog.setTestOnly();
 // in this file have to know which checking level is enabled to make correct
 // assertions.
 // Test are run in all checking levels.
+const BinaryStorage = goog.require('protobuf.runtime.BinaryStorage');
 const BufferDecoder = goog.require('protobuf.binary.BufferDecoder');
-const Storage = goog.require('protobuf.binary.Storage');
 const WireType = goog.require('protobuf.binary.WireType');
 const {CHECK_CRITICAL_STATE} = goog.require('protobuf.internal.checks');
 const {Field, IndexEntry} = goog.require('protobuf.binary.field');
@@ -21,7 +21,7 @@ const {createBufferDecoder} = goog.require('protobuf.binary.bufferDecoderHelper'
 /**
  * Returns the number of fields stored.
  *
- * @param {!Storage} storage
+ * @param {!BinaryStorage} storage
  * @return {number}
  */
 function getStorageSize(storage) {
@@ -37,7 +37,7 @@ const PIVOT = 1;
 
 /**
  * Asserts a single IndexEntry at a given field number.
- * @param {!Storage} storage
+ * @param {!BinaryStorage} storage
  * @param {number} fieldNumber
  * @param {...!IndexEntry} expectedEntries
  */

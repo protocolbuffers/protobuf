@@ -14,11 +14,12 @@
  */
 goog.module('protobuf.runtime.Kernel');
 
+const BinaryStorage = goog.require('protobuf.runtime.BinaryStorage');
 const BufferDecoder = goog.require('protobuf.binary.BufferDecoder');
 const ByteString = goog.require('protobuf.ByteString');
 const Int64 = goog.require('protobuf.Int64');
 const InternalMessage = goog.require('protobuf.binary.InternalMessage');
-const Storage = goog.require('protobuf.binary.Storage');
+const Storage = goog.require('protobuf.runtime.Storage');
 const WireType = goog.require('protobuf.binary.WireType');
 const Writer = goog.require('protobuf.binary.Writer');
 const reader = goog.require('protobuf.binary.reader');
@@ -278,7 +279,7 @@ class Kernel {
    * @return {!Kernel}
    */
   static createEmpty(pivot = undefined) {
-    return new Kernel(/* bufferDecoder= */ null, new Storage(pivot));
+    return new Kernel(/* bufferDecoder= */ null, new BinaryStorage(pivot));
   }
 
   /**

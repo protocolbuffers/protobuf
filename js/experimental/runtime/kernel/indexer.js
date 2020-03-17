@@ -4,15 +4,15 @@
  */
 goog.module('protobuf.binary.indexer');
 
+const BinaryStorage = goog.require('protobuf.runtime.BinaryStorage');
 const BufferDecoder = goog.require('protobuf.binary.BufferDecoder');
-const Storage = goog.require('protobuf.binary.Storage');
 const WireType = goog.require('protobuf.binary.WireType');
 const {Field} = goog.require('protobuf.binary.field');
 const {checkCriticalElementIndex, checkCriticalState} = goog.require('protobuf.internal.checks');
 
 /**
  * Appends a new entry in the index array for the given field number.
- * @param {!Storage<!Field>} storage
+ * @param {!BinaryStorage<!Field>} storage
  * @param {number} fieldNumber
  * @param {!WireType} wireType
  * @param {number} startIndex
@@ -50,13 +50,13 @@ function tagToFieldNumber(tag) {
  * Creates an index of field locations in a given binary protobuf.
  * @param {!BufferDecoder} bufferDecoder
  * @param {number|undefined} pivot
- * @return {!Storage<!Field>}
+ * @return {!BinaryStorage<!Field>}
  * @package
  */
 function buildIndex(bufferDecoder, pivot) {
   bufferDecoder.setCursor(bufferDecoder.startIndex());
 
-  const storage = new Storage(pivot);
+  const storage = new BinaryStorage(pivot);
   while (bufferDecoder.hasNext()) {
     const tag = bufferDecoder.getUnsignedVarint32();
     const wireType = tagToWireType(tag);
