@@ -228,3 +228,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Bazel, Failure Details
    * Website: https://github.com/bazelbuild/bazel
    * Extensions: 1078
+
+1. grpc-graphql-gateway
+   * Website: https://github.com/ysugimoto/grpc-graphql-gateway
+   * Extensions: 1079
