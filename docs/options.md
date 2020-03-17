@@ -232,3 +232,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. grpc-graphql-gateway
    * Website: https://github.com/ysugimoto/grpc-graphql-gateway
    * Extensions: 1079
+
+1. Cloudstate
+   * Website: https://cloudstate.io
+   * Extensions: 1080-1084
