@@ -37,16 +37,6 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/any.pb.h>
-#include <google/protobuf/api.pb.h>
-#include <google/protobuf/duration.pb.h>
-#include <google/protobuf/empty.pb.h>
-#include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/source_context.pb.h>
-#include <google/protobuf/struct.pb.h>
-#include <google/protobuf/timestamp.pb.h>
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/wrappers.pb.h>
 
 #include <sstream>
 
