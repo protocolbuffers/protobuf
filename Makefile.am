@@ -1232,7 +1232,6 @@ js_EXTRA_DIST=                                                         \
   js/experimental/runtime/kernel/typed_arrays.js                       \
   js/experimental/runtime/kernel/textencoding_test.js                  \
   js/experimental/runtime/kernel/textencoding.js                       \
-  js/experimental/runtime/kernel/storage_test.js                       \
   js/experimental/runtime/kernel/storage.js                            \
   js/experimental/runtime/kernel/sint64_test_pairs.js                  \
   js/experimental/runtime/kernel/sint32_test_pairs.js                  \
@@ -1251,10 +1250,10 @@ js_EXTRA_DIST=                                                         \
   js/experimental/runtime/kernel/packed_fixed32_test_pairs.js          \
   js/experimental/runtime/kernel/packed_double_test_pairs.js           \
   js/experimental/runtime/kernel/packed_bool_test_pairs.js             \
-  js/experimental/runtime/kernel/lazy_accessor_test.js                 \
-  js/experimental/runtime/kernel/lazy_accessor_repeated_test.js        \
-  js/experimental/runtime/kernel/lazy_accessor_compatibility_test.js   \
-  js/experimental/runtime/kernel/lazy_accessor.js                      \
+  js/experimental/runtime/kernel/kernel_test.js                        \
+  js/experimental/runtime/kernel/kernel_repeated_test.js               \
+  js/experimental/runtime/kernel/kernel_compatibility_test.js          \
+  js/experimental/runtime/kernel/kernel.js                             \
   js/experimental/runtime/kernel/internal_message.js                   \
   js/experimental/runtime/kernel/int64_test_pairs.js                   \
   js/experimental/runtime/kernel/int32_test_pairs.js                   \
@@ -1275,6 +1274,8 @@ js_EXTRA_DIST=                                                         \
   js/experimental/runtime/kernel/buffer_decoder_helper.js              \
   js/experimental/runtime/kernel/buffer_decoder.js                     \
   js/experimental/runtime/kernel/bool_test_pairs.js                    \
+  js/experimental/runtime/kernel/binary_storage_test.js                \
+  js/experimental/runtime/kernel/binary_storage.js                     \
   js/experimental/runtime/internal/checks_test.js                      \
   js/experimental/runtime/internal/checks.js                           \
   js/experimental/runtime/int64_test.js                                \
