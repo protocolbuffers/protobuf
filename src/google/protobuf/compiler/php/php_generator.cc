@@ -1843,11 +1843,12 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
   bool aggregate_metadata = false;
   std::set<string> aggregate_metadata_prefixes;
 
-  for (const auto& option : Split(parameter, ",")) {
-    const auto option_pair = Split(option, "=");
+  for (const auto& option : Split(parameter, ",", true)) {
+    const std::vector<std::string> option_pair = Split(option, "=", true);
     if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
       string options_string = option_pair[1];
-      const auto options = Split(options_string, "#", false);
+      const std::vector<std::string> options =
+          Split(options_string, "#", false);
       aggregate_metadata = true;
       for (int i = 0; i < options.size(); i++) {
         aggregate_metadata_prefixes.insert(options[i]);
