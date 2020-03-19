@@ -37,16 +37,6 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/any.pb.h>
-#include <google/protobuf/api.pb.h>
-#include <google/protobuf/duration.pb.h>
-#include <google/protobuf/empty.pb.h>
-#include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/source_context.pb.h>
-#include <google/protobuf/struct.pb.h>
-#include <google/protobuf/timestamp.pb.h>
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/wrappers.pb.h>
 
 #include <sstream>
 
@@ -1853,11 +1843,12 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
   bool aggregate_metadata = false;
   std::set<string> aggregate_metadata_prefixes;
 
-  for (const auto& option : Split(parameter, ",")) {
-    const auto option_pair = Split(option, "=");
+  for (const auto& option : Split(parameter, ",", true)) {
+    const std::vector<std::string> option_pair = Split(option, "=", true);
     if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
       string options_string = option_pair[1];
-      const auto options = Split(options_string, "#", false);
+      const std::vector<std::string> options =
+          Split(options_string, "#", false);
       aggregate_metadata = true;
       for (int i = 0; i < options.size(); i++) {
         aggregate_metadata_prefixes.insert(options[i]);
