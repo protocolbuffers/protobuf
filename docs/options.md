@@ -236,3 +236,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Cloudstate
    * Website: https://cloudstate.io
    * Extensions: 1080-1084
+
+1. SummaFT protoc-plugins
+   * Website: https://summaft.com/
+   * Extensions: 1085
