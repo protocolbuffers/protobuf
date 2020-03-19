@@ -3267,6 +3267,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
       File::GetContents(TestUtil::GetTestDataPath("net/proto2/internal/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
+  CleanStringLineEndings(&expected_text, false);
 
   EXPECT_EQ(message->DebugString(), expected_text);
 }
