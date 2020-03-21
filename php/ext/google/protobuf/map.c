@@ -178,15 +178,6 @@ static HashTable *map_field_get_gc(zval *object, CACHED_VALUE **table,
 }
 
 // Define map value element free function.
-#if PHP_MAJOR_VERSION < 7
-static inline void php_proto_map_string_release(void *value) {
-  zval_ptr_dtor(value);
-}
-
-static inline void php_proto_map_object_release(void *value) {
-  zval_ptr_dtor(value);
-}
-#else
 static inline void php_proto_map_string_release(void *value) {
   zend_string* object = *(zend_string**)value;
   zend_string_release(object);
@@ -198,7 +189,6 @@ static inline void php_proto_map_object_release(void *value) {
     zend_objects_store_del(object);
   }
 }
-#endif
 
 // Define object free method.
 PHP_PROTO_OBJECT_FREE_START(Map, map_field)
@@ -247,9 +237,6 @@ void map_field_ensure_created(const upb_fielddef *field,
                               CACHED_VALUE *map_field PHP_PROTO_TSRMLS_DC) {
   if (ZVAL_IS_NULL(CACHED_PTR_TO_ZVAL_PTR(map_field))) {
     zval_ptr_dtor(map_field);
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(CACHED_PTR_TO_ZVAL_PTR(map_field));
-#endif
     map_field_create_with_field(map_field_type, field,
                                 map_field PHP_PROTO_TSRMLS_CC);
   }
@@ -312,25 +299,17 @@ static void map_index_unset(Map *intern, const char* keyval, int length) {
   if (upb_strtable_remove2(&intern->table, keyval, length, &old_value)) {
     switch (intern->value_type) {
       case UPB_TYPE_MESSAGE: {
-#if PHP_MAJOR_VERSION < 7
-        zval_ptr_dtor(upb_value_memory(&old_value));
-#else
         zend_object* object = *(zend_object**)upb_value_memory(&old_value);
         GC_DELREF(object);
         if(GC_REFCOUNT(object) == 0) {
           zend_objects_store_del(object);
         }
-#endif
         break;
       }
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES: {
-#if PHP_MAJOR_VERSION < 7
-        zval_ptr_dtor(upb_value_memory(&old_value));
-#else
         zend_string* object = *(zend_string**)upb_value_memory(&old_value);
         zend_string_release(object);
-#endif
         break;
       }
       default:

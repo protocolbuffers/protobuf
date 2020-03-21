@@ -330,15 +330,6 @@ static inline int php_proto_zend_lookup_class(
 
 #define PHP_PROTO_RETVAL_ZVAL(value) ZVAL_COPY(return_value, value)
 
-#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
-#define PHP_PROTO_FAKE_SCOPE_BEGIN(klass)  \
-  zend_class_entry* old_scope = EG(scope); \
-  EG(scope) = klass;
-#define PHP_PROTO_FAKE_SCOPE_RESTART(klass) \
-  old_scope = EG(scope);                    \
-  EG(scope) = klass;
-#define PHP_PROTO_FAKE_SCOPE_END EG(scope) = old_scope;
-#else
 #define PHP_PROTO_FAKE_SCOPE_BEGIN(klass)       \
   zend_class_entry* old_scope = EG(fake_scope); \
   EG(fake_scope) = klass;
@@ -346,7 +337,6 @@ static inline int php_proto_zend_lookup_class(
   old_scope = EG(fake_scope);               \
   EG(fake_scope) = klass;
 #define PHP_PROTO_FAKE_SCOPE_END EG(fake_scope) = old_scope;
-#endif
 
 // Define PHP class
 #define DEFINE_PROTOBUF_INIT_CLASS(CLASSNAME, CAMELNAME, LOWERNAME) \
@@ -616,17 +606,10 @@ void add_handlers_for_message(const void* closure, upb_handlers* h);
 void register_class(void *desc, bool is_enum TSRMLS_DC);
 
 // wrapper of generated pool
-#if PHP_MAJOR_VERSION < 7
-extern zval* generated_pool_php;
-extern zval* internal_generated_pool_php;
-void descriptor_pool_free(void* object TSRMLS_DC);
-void internal_descriptor_pool_free(void* object TSRMLS_DC);
-#else
 extern zend_object *generated_pool_php;
 extern zend_object *internal_generated_pool_php;
 void descriptor_pool_free(zend_object* object);
 void internal_descriptor_pool_free(zend_object* object);
-#endif
 extern InternalDescriptorPoolImpl* generated_pool;
 // The actual generated pool
 extern InternalDescriptorPoolImpl generated_pool_impl;
@@ -977,11 +960,7 @@ extern zend_object_handlers* repeated_field_handlers;
 extern zend_object_handlers* repeated_field_iter_handlers;
 
 PHP_PROTO_WRAP_OBJECT_START(RepeatedField)
-#if PHP_MAJOR_VERSION < 7
-  zval* array;
-#else
   zval array;
-#endif
   upb_fieldtype_t type;
   const zend_class_entry* msg_ce;  // class entry for containing message
                                    // (for message field only).
@@ -1346,24 +1325,11 @@ CACHED_VALUE* find_zval_property(MessageHeader* msg, const upb_fielddef* field);
 // String argument.
 #define STR(str) (str), strlen(str)
 
-// Zend Value
-#if PHP_MAJOR_VERSION < 7
-#define Z_OBJ_P(zval_p)                                       \
-  ((zend_object*)(EG(objects_store)                           \
-                      .object_buckets[Z_OBJ_HANDLE_P(zval_p)] \
-                      .bucket.obj.object))
-#endif
-
 // Message handler
 static inline zval* php_proto_message_read_property(
     zval* msg, zval* member PHP_PROTO_TSRMLS_DC) {
-#if PHP_MAJOR_VERSION < 7
-  return message_handlers->read_property(msg, member, BP_VAR_R,
-                                         NULL PHP_PROTO_TSRMLS_CC);
-#else
   return message_handlers->read_property(msg, member, BP_VAR_R, NULL,
                                          NULL PHP_PROTO_TSRMLS_CC);
-#endif
 }
 
 // Reserved name

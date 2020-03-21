@@ -133,11 +133,7 @@ PHP_METHOD(Descriptor, getClass) {
   Descriptor* desc = UNBOX(Descriptor, getThis());
   DescriptorInternal* intern = desc->intern;
   register_class(intern, false TSRMLS_CC);
-#if PHP_MAJOR_VERSION < 7
-  const char* classname = intern->klass->name;
-#else
   const char* classname = ZSTR_VAL(intern->klass->name);
-#endif
   PHP_PROTO_RETVAL_STRINGL(classname, strlen(classname), 1);
 }
 
@@ -173,28 +169,17 @@ PHP_METHOD(Descriptor, getField) {
 
   PHP_PROTO_HASHTABLE_VALUE field_hashtable_value = get_def_obj(field);
   if (field_hashtable_value == NULL) {
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(field_hashtable_value);
-    ZVAL_OBJ(field_hashtable_value, field_descriptor_type->create_object(
-                                        field_descriptor_type TSRMLS_CC));
-    Z_DELREF_P(field_hashtable_value);
-#else
     field_hashtable_value =
         field_descriptor_type->create_object(field_descriptor_type TSRMLS_CC);
     GC_DELREF(field_hashtable_value);
-#endif
     FieldDescriptor *field_php =
         UNBOX_HASHTABLE_VALUE(FieldDescriptor, field_hashtable_value);
     field_php->fielddef = field;
     add_def_obj(field, field_hashtable_value);
   }
 
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(field_hashtable_value, 1, 0);
-#else
   GC_ADDREF(field_hashtable_value);
   RETURN_OBJ(field_hashtable_value);
-#endif
 }
 
 PHP_METHOD(Descriptor, getFieldCount) {
@@ -423,28 +408,17 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
   if (desc_php == NULL) {
     EnumDescriptorInternal* intern = get_enumdef_enumdesc(enumdef);
 
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(desc_php);
-    ZVAL_OBJ(desc_php, enum_descriptor_type->create_object(
-                                        enum_descriptor_type TSRMLS_CC));
-    Z_DELREF_P(desc_php);
-#else
     desc_php =
         enum_descriptor_type->create_object(enum_descriptor_type TSRMLS_CC);
     GC_DELREF(desc_php);
-#endif
     EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
     desc->intern = intern;
     add_def_obj(enumdef, desc_php);
     add_ce_obj(intern->klass, desc_php);
   }
 
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc_php, 1, 0);
-#else
   GC_ADDREF(desc_php);
   RETURN_OBJ(desc_php);
-#endif
 }
 
 PHP_METHOD(FieldDescriptor, getMessageType) {
@@ -461,28 +435,17 @@ PHP_METHOD(FieldDescriptor, getMessageType) {
   if (desc_php == NULL) {
     DescriptorInternal* intern = get_msgdef_desc(msgdef);
 
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(desc_php);
-    ZVAL_OBJ(desc_php, descriptor_type->create_object(
-                                   descriptor_type TSRMLS_CC));
-    Z_DELREF_P(desc_php);
-#else
     desc_php =
         descriptor_type->create_object(descriptor_type TSRMLS_CC);
     GC_DELREF(desc_php);
-#endif
     Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
     desc->intern = intern;
     add_def_obj(msgdef, desc_php);
     add_ce_obj(intern->klass, desc_php);
   }
 
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc_php, 1, 0);
-#else
   GC_ADDREF(desc_php);
   RETURN_OBJ(desc_php);
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -536,26 +499,16 @@ PHP_METHOD(Oneof, getField) {
 
   PHP_PROTO_HASHTABLE_VALUE field_hashtable_value = get_def_obj(field);
   if (field_hashtable_value == NULL) {
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(field_hashtable_value);
-    ZVAL_OBJ(field_hashtable_value, field_descriptor_type->create_object(
-                                        field_descriptor_type TSRMLS_CC));
-#else
     field_hashtable_value =
         field_descriptor_type->create_object(field_descriptor_type TSRMLS_CC);
-#endif
     FieldDescriptor *field_php =
         UNBOX_HASHTABLE_VALUE(FieldDescriptor, field_hashtable_value);
     field_php->fielddef = field;
     add_def_obj(field, field_hashtable_value);
   }
 
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(field_hashtable_value, 1, 0);
-#else
   GC_ADDREF(field_hashtable_value);
   RETURN_OBJ(field_hashtable_value);
-#endif
 }
 
 PHP_METHOD(Oneof, getFieldCount) {
@@ -588,32 +541,17 @@ DEFINE_CLASS(InternalDescriptorPool, internal_descriptor_pool,
              "Google\\Protobuf\\Internal\\DescriptorPool");
 
 // wrapper of generated pool
-#if PHP_MAJOR_VERSION < 7
-zval* generated_pool_php;
-zval* internal_generated_pool_php;
-#else
 zend_object *generated_pool_php;
 zend_object *internal_generated_pool_php;
-#endif
 InternalDescriptorPoolImpl *generated_pool;
 InternalDescriptorPoolImpl generated_pool_impl;  // The actual generated pool
 
 void init_generated_pool_once(TSRMLS_D) {
   if (generated_pool == NULL) {
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(generated_pool_php);
-    MAKE_STD_ZVAL(internal_generated_pool_php);
-    ZVAL_OBJ(internal_generated_pool_php,
-             internal_descriptor_pool_type->create_object(
-                 internal_descriptor_pool_type TSRMLS_CC));
-    ZVAL_OBJ(generated_pool_php, descriptor_pool_type->create_object(
-                                     descriptor_pool_type TSRMLS_CC));
-#else
     internal_generated_pool_php = internal_descriptor_pool_type->create_object(
         internal_descriptor_pool_type TSRMLS_CC);
     generated_pool_php =
         descriptor_pool_type->create_object(descriptor_pool_type TSRMLS_CC);
-#endif
     generated_pool = &generated_pool_impl;
   }
 }
@@ -660,22 +598,14 @@ static void descriptor_pool_free_c(DescriptorPool *pool TSRMLS_DC) {
 
 PHP_METHOD(DescriptorPool, getGeneratedPool) {
   init_generated_pool_once(TSRMLS_C);
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(generated_pool_php, 1, 0);
-#else
   GC_ADDREF(generated_pool_php);
   RETURN_OBJ(generated_pool_php);
-#endif
 }
 
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
   init_generated_pool_once(TSRMLS_C);
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(internal_generated_pool_php, 1, 0);
-#else
   GC_ADDREF(internal_generated_pool_php);
   RETURN_OBJ(internal_generated_pool_php);
-#endif
 }
 
 static bool is_reserved(const char *segment, int length) {
@@ -1046,16 +976,9 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
       RETURN_NULL();
     }
 
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(desc_php);
-    ZVAL_OBJ(desc_php, descriptor_type->create_object(
-                                   descriptor_type TSRMLS_CC));
-    Z_DELREF_P(desc_php);
-#else
     desc_php =
         descriptor_type->create_object(descriptor_type TSRMLS_CC);
     GC_DELREF(desc_php);
-#endif
     Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, desc_php);
     desc->intern = intern;
     add_def_obj(intern->msgdef, desc_php);
@@ -1068,12 +991,8 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
     RETURN_NULL();
   }
 
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc_php, 1, 0);
-#else
   GC_ADDREF(desc_php);
   RETURN_OBJ(desc_php);
-#endif
 }
 
 PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
@@ -1095,27 +1014,16 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
 
   PHP_PROTO_HASHTABLE_VALUE desc_php = get_ce_obj(ce);
   if (desc_php == NULL) {
-#if PHP_MAJOR_VERSION < 7
-    EnumDescriptorInternal* intern = get_class_enumdesc(ce->name);
-#else
     EnumDescriptorInternal* intern = get_class_enumdesc(ZSTR_VAL(ce->name));
-#endif
     register_class(intern, true TSRMLS_CC);
 
     if (intern == NULL) {
       RETURN_NULL();
     }
 
-#if PHP_MAJOR_VERSION < 7
-    MAKE_STD_ZVAL(desc_php);
-    ZVAL_OBJ(desc_php, enum_descriptor_type->create_object(
-                                        enum_descriptor_type TSRMLS_CC));
-    Z_DELREF_P(desc_php);
-#else
     desc_php =
         enum_descriptor_type->create_object(enum_descriptor_type TSRMLS_CC);
     GC_DELREF(desc_php);
-#endif
     EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(EnumDescriptor, desc_php);
     desc->intern = intern;
     add_def_obj(intern->enumdef, desc_php);
@@ -1128,10 +1036,6 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
     RETURN_NULL();
   }
 
-#if PHP_MAJOR_VERSION < 7
-  RETURN_ZVAL(desc_php, 1, 0);
-#else
   GC_ADDREF(desc_php);
   RETURN_OBJ(desc_php);
-#endif
 }

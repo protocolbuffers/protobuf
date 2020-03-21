@@ -78,11 +78,7 @@ static void* get_from_table(const HashTable* t, const void* def) {
 }
 
 void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value) {
-#if PHP_MAJOR_VERSION < 7
-  Z_ADDREF_P(value);
-#else
   GC_ADDREF(value);
-#endif
   add_to_table(upb_def_to_php_obj_map, def, value);
 }
 
@@ -125,11 +121,7 @@ EnumDescriptorInternal* get_enumdef_enumdesc(const upb_enumdef* e) {
 }
 
 void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value) {
-#if PHP_MAJOR_VERSION < 7
-  Z_ADDREF_P(value);
-#else
   GC_ADDREF(value);
-#endif
   add_to_table(ce_to_php_obj_map, ce, value);
 }
 
@@ -138,21 +130,13 @@ PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce) {
 }
 
 void add_ce_desc(const zend_class_entry* ce, DescriptorInternal* desc) {
-#if PHP_MAJOR_VERSION < 7
-  const char* klass = ce->name;
-#else
   const char* klass = ZSTR_VAL(ce->name);
-#endif
   upb_strtable_insert(&ce_to_desc_map_persistent, klass,
                       upb_value_ptr(desc));
 }
 
 DescriptorInternal* get_ce_desc(const zend_class_entry* ce) {
-#if PHP_MAJOR_VERSION < 7
-  const char* klass = ce->name;
-#else
   const char* klass = ZSTR_VAL(ce->name);
-#endif
 
   upb_value v;
 #ifndef NDEBUG
@@ -167,21 +151,13 @@ DescriptorInternal* get_ce_desc(const zend_class_entry* ce) {
 }
 
 void add_ce_enumdesc(const zend_class_entry* ce, EnumDescriptorInternal* desc) {
-#if PHP_MAJOR_VERSION < 7
-  const char* klass = ce->name;
-#else
   const char* klass = ZSTR_VAL(ce->name);
-#endif
   upb_strtable_insert(&ce_to_enumdesc_map_persistent, klass,
                       upb_value_ptr(desc));
 }
 
 EnumDescriptorInternal* get_ce_enumdesc(const zend_class_entry* ce) {
-#if PHP_MAJOR_VERSION < 7
-  const char* klass = ce->name;
-#else
   const char* klass = ZSTR_VAL(ce->name);
-#endif
   upb_value v;
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_PTR;
@@ -337,7 +313,6 @@ static PHP_GINIT_FUNCTION(protobuf) {
 static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 }
 
-#if PHP_MAJOR_VERSION >= 7
 static void php_proto_hashtable_descriptor_release(zval* value) {
   void* ptr = Z_PTR_P(value);
   zend_object* object = *(zend_object**)ptr;
@@ -347,7 +322,6 @@ static void php_proto_hashtable_descriptor_release(zval* value) {
   }
   efree(ptr);
 }
-#endif
 
 static void initialize_persistent_descriptor_pool(TSRMLS_D) {
   upb_inttable_init(&upb_def_to_desc_map_persistent, UPB_CTYPE_PTR);
@@ -467,16 +441,6 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   zend_hash_destroy(ce_to_php_obj_map);
   FREE_HASHTABLE(ce_to_php_obj_map);
 
-#if PHP_MAJOR_VERSION < 7
-  if (generated_pool_php != NULL) {
-    zval_dtor(generated_pool_php);
-    FREE_ZVAL(generated_pool_php);
-  }
-  if (internal_generated_pool_php != NULL) {
-    zval_dtor(internal_generated_pool_php);
-    FREE_ZVAL(internal_generated_pool_php);
-  }
-#else
   if (generated_pool_php != NULL) {
     zval tmp;
     ZVAL_OBJ(&tmp, generated_pool_php);
@@ -487,7 +451,6 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
     ZVAL_OBJ(&tmp, internal_generated_pool_php);
     zval_dtor(&tmp);
   }
-#endif
 
   if (!PROTOBUF_G(keep_descriptor_pool_after_request)) {
     cleanup_persistent_descriptor_pool(TSRMLS_C);

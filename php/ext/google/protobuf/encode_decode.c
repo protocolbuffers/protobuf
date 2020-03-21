@@ -297,15 +297,8 @@ static bool appendstr_end_handler(void *closure, const void *hd) {
   TSRMLS_FETCH();
   RepeatedField* intern = UNBOX(RepeatedField, array);
 
-#if PHP_MAJOR_VERSION < 7
-  zval* str;
-  MAKE_STD_ZVAL(str);
-  PHP_PROTO_ZVAL_STRINGL(str, frame->sink.ptr, frame->sink.len, 1);
-  repeated_field_push_native(intern, &str);
-#else
   zend_string* str = zend_string_init(frame->sink.ptr, frame->sink.len, 1);
   repeated_field_push_native(intern, &str);
-#endif
 
   stringsink_uninit(&frame->sink);
   free(frame);
@@ -333,23 +326,12 @@ DEFINE_SINGULAR_HANDLER(double, double)
 
 #undef DEFINE_SINGULAR_HANDLER
 
-#if PHP_MAJOR_VERSION < 7
-static void new_php_string(zval** value_ptr, const char* str, size_t len) {
-  SEPARATE_ZVAL_IF_NOT_REF(value_ptr);
-  if (Z_TYPE_PP(value_ptr) == IS_STRING &&
-      !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
-    FREE(Z_STRVAL_PP(value_ptr));
-  }
-  ZVAL_STRINGL(*value_ptr, str, len, 1);
-}
-#else
 static void new_php_string(zval* value_ptr, const char* str, size_t len) {
   if (Z_TYPE_P(value_ptr) == IS_STRING) {
     zend_string_release(Z_STR_P(value_ptr));
   }
   ZVAL_NEW_STR(value_ptr, zend_string_init(str, len, 0));
 }
-#endif
 
 // Sets a non-repeated string/bytes field in a message.
 static void* str_handler(void *closure,
@@ -414,17 +396,9 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
   zend_class_entry* subklass = subdesc->klass;
   MessageHeader* submsg;
 
-#if PHP_MAJOR_VERSION < 7
-  zval* val = NULL;
-  MAKE_STD_ZVAL(val);
-  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
-  repeated_field_push_native(intern, &val);
-  submsg = UNBOX(MessageHeader, val);
-#else
   zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
   repeated_field_push_native(intern, &obj);
   submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
-#endif
   custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
 
   return submsg;
@@ -444,17 +418,9 @@ static void *appendwrappersubmsg_handler(void *closure, const void *hd) {
   wrapperfields_parseframe_t* frame =
       (wrapperfields_parseframe_t*)malloc(sizeof(wrapperfields_parseframe_t));
 
-#if PHP_MAJOR_VERSION < 7
-  zval* val = NULL;
-  MAKE_STD_ZVAL(val);
-  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
-  repeated_field_push_native(intern, &val);
-  submsg = UNBOX(MessageHeader, val);
-#else
   zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
   repeated_field_push_native(intern, &obj);
   submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
-#endif
   custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
 
   frame->closure = closure;
@@ -478,19 +444,10 @@ static void *submsg_handler(void *closure, const void *hd) {
   CACHED_VALUE* cached = find_zval_property(msg, submsgdata->fd);
 
   if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
-#if PHP_MAJOR_VERSION < 7
-    zval val;
-    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
-    MessageHeader* intern = UNBOX(MessageHeader, &val);
-    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-    REPLACE_ZVAL_VALUE(cached, &val, 1);
-    zval_dtor(&val);
-#else
     zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
     ZVAL_OBJ(cached, obj);
     MessageHeader* intern = UNBOX_HASHTABLE_VALUE(MessageHeader, obj);
     custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-#endif
   }
 
   submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
@@ -513,19 +470,10 @@ static void *map_submsg_handler(void *closure, const void *hd) {
       DEREF(message_data(msg), submsgdata->ofs, CACHED_VALUE*);
 
   if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
-#if PHP_MAJOR_VERSION < 7
-    zval val;
-    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
-    MessageHeader* intern = UNBOX(MessageHeader, &val);
-    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-    REPLACE_ZVAL_VALUE(cached, &val, 1);
-    zval_dtor(&val);
-#else
     zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
     ZVAL_OBJ(cached, obj);
     MessageHeader* intern = UNBOX_HASHTABLE_VALUE(MessageHeader, obj);
     custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-#endif
   }
 
   submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
@@ -550,19 +498,10 @@ static void *map_wrapper_submsg_handler(void *closure, const void *hd) {
       DEREF(message_data(msg), submsgdata->ofs, CACHED_VALUE*);
 
   if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
-#if PHP_MAJOR_VERSION < 7
-    zval val;
-    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
-    MessageHeader* intern = UNBOX(MessageHeader, &val);
-    custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-    REPLACE_ZVAL_VALUE(cached, &val, 1);
-    zval_dtor(&val);
-#else
     zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
     ZVAL_OBJ(cached, obj);
     MessageHeader* intern = UNBOX_HASHTABLE_VALUE(MessageHeader, obj);
     custom_data_init(subklass, intern PHP_PROTO_TSRMLS_CC);
-#endif
   }
 
   submsg_php = CACHED_PTR_TO_ZVAL_PTR(cached);
@@ -610,19 +549,8 @@ static void map_slot_init(
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-#if PHP_MAJOR_VERSION < 7
-      // Store zval** in memory in order to be consistent with the layout of
-      // singular fields.
-      zval** holder = ALLOC(zval*);
-      *(zval***)memory = holder;
-      zval* tmp;
-      MAKE_STD_ZVAL(tmp);
-      PHP_PROTO_ZVAL_STRINGL(tmp, "", 0, 1);
-      *holder = tmp;
-#else
       *(zval**)memory = cache;
       PHP_PROTO_ZVAL_STRINGL(*(zval**)memory, "", 0, 1);
-#endif
       break;
     }
     case UPB_TYPE_MESSAGE: {
@@ -630,21 +558,10 @@ static void map_slot_init(
       register_class(subdesc, false TSRMLS_CC);
       zend_class_entry* subklass = subdesc->klass;
       MessageHeader* submsg;
-#if PHP_MAJOR_VERSION < 7
-      zval** holder = ALLOC(zval*);
-      zval* tmp;
-      MAKE_STD_ZVAL(tmp);
-      ZVAL_OBJ(tmp, subklass->create_object(subklass TSRMLS_CC));
-      submsg = UNBOX(MessageHeader, tmp);
-      custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
-      *holder = tmp;
-      *(zval***)memory = holder;
-#else
       *(zval**)memory = cache;
       ZVAL_OBJ(*(zval**)memory, subklass->create_object(subklass TSRMLS_CC));
       submsg = UNBOX(MessageHeader, cache);
       custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
-#endif
       break;
     }
     default:
@@ -657,13 +574,7 @@ static void map_slot_uninit(void* memory, upb_fieldtype_t type) {
     case UPB_TYPE_MESSAGE:
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-#if PHP_MAJOR_VERSION < 7
-      zval** holder = *(zval***)memory;
-      zval_ptr_dtor(holder);
-      FREE(holder);
-#else
       php_proto_zval_ptr_dtor(*(zval**)memory);
-#endif
       break;
     }
     default:
@@ -675,11 +586,7 @@ static void map_slot_key(upb_fieldtype_t type, const void* from,
                          const char** keyval,
                          size_t* length) {
   if (type == UPB_TYPE_STRING) {
-#if PHP_MAJOR_VERSION < 7
-    zval* key_php = **(zval***)from;
-#else
     zval* key_php = *(zval**)from;
-#endif
     *keyval = Z_STRVAL_P(key_php);
     *length = Z_STRLEN_P(key_php);
   } else {
@@ -699,15 +606,6 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
   memset(to, 0, native_slot_size(type));
 
   switch (type) {
-#if PHP_MAJOR_VERSION < 7
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
-    case UPB_TYPE_MESSAGE: {
-      *(zval**)to = **(zval***)from;
-      Z_ADDREF_PP((zval**)to);
-      break;
-    }
-#else
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
       *(zend_string**)to = Z_STR_P(*(zval**)from);
@@ -719,7 +617,6 @@ static void map_slot_value(upb_fieldtype_t type, const void* from,
         GC_ADDREF(*(zend_object**)to);
       }
       break;
-#endif
     default:
       len = native_slot_size(type);
       memcpy(to, from, len);
@@ -827,51 +724,11 @@ DEFINE_ONEOF_HANDLER(double, double)
 
 #undef DEFINE_ONEOF_HANDLER
 
-static void oneof_cleanup(MessageHeader* msg,
-                          const oneof_handlerdata_t* oneofdata) {
-  uint32_t old_case_num =
-      DEREF(message_data(msg), oneofdata->case_ofs, uint32_t);
-  if (old_case_num == 0) {
-    return;
-  }
-
-  const upb_fielddef* old_field =
-      upb_msgdef_itof(oneofdata->parent_md, old_case_num);
-  bool need_clean = false;
-
-  switch (upb_fielddef_type(old_field)) {
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
-      need_clean = true;
-      break;
-    case UPB_TYPE_MESSAGE:
-      if (oneofdata->oneof_case_num != old_case_num) {
-        need_clean = true;
-      }
-      break;
-    default:
-      break;
-  }
-
-  if (need_clean) {
-#if PHP_MAJOR_VERSION < 7
-    SEPARATE_ZVAL_IF_NOT_REF(
-        DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*));
-    php_proto_zval_ptr_dtor(
-        *DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*));
-    MAKE_STD_ZVAL(*DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*));
-    ZVAL_NULL(*DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*));
-#endif
-  }
-}
-
 // Handlers for string/bytes in a oneof.
 static bool oneofstr_end_handler(void *closure, const void *hd) {
   stringfields_parseframe_t* frame = closure;
   MessageHeader* msg = (MessageHeader*)frame->closure;
   const oneof_handlerdata_t *oneofdata = hd;
-
-  oneof_cleanup(msg, oneofdata);
 
   DEREF(message_data(msg), oneofdata->case_ofs, uint32_t) =
       oneofdata->oneof_case_num;
@@ -914,21 +771,11 @@ static void* oneofsubmsg_handler(void* closure, const void* hd) {
   MessageHeader* submsg;
 
   if (oldcase != oneofdata->oneof_case_num) {
-    oneof_cleanup(msg, oneofdata);
-
     // Create new message.
     DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*) =
         OBJ_PROP(&msg->std, oneofdata->property_ofs);
-#if PHP_MAJOR_VERSION < 7
-    zval val;
-    ZVAL_OBJ(&val, subklass->create_object(subklass TSRMLS_CC));
-    REPLACE_ZVAL_VALUE(DEREF(message_data(msg), oneofdata->ofs, zval**),
-                       &val, 1);
-    zval_dtor(&val);
-#else
     zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
     ZVAL_OBJ(DEREF(message_data(msg), oneofdata->ofs, zval*), obj);
-#endif
   }
 
   DEREF(message_data(msg), oneofdata->case_ofs, uint32_t) =
@@ -991,7 +838,6 @@ static void* wrapper_oneofsubmsg_handler(void* closure, const void* hd) {
   MessageHeader* submsg;
 
   if (oldcase != oneofdata->oneof_case_num) {
-    oneof_cleanup(msg, oneofdata);
     if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(cached)) == IS_NULL) {
       // Needs to initiate the wrapper message
       const upb_msgdef* msgdef = subdesc->msgdef;
@@ -1463,13 +1309,9 @@ static void put_optional_value(const void* memory, int len,
       putrawstr(memory, len, f, sink, is_json);
       break;
     case UPB_TYPE_MESSAGE: {
-#if PHP_MAJOR_VERSION < 7
-      MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
-#else
       MessageHeader *submsg =
           (MessageHeader*)((char*)(*(zend_object**)memory) -
               XtOffsetOf(MessageHeader, std));
-#endif
       putrawsubmsg(submsg, f, sink, depth, is_json TSRMLS_CC);
       break;
     }
@@ -1483,11 +1325,7 @@ static const char* raw_value(void* memory, const upb_fielddef* f) {
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-#if PHP_MAJOR_VERSION < 7
-      return Z_STRVAL_PP((zval**)memory);
-#else
       return ZSTR_VAL(*(zend_string**)memory);
-#endif
       break;
     default:
       return memory;
@@ -1498,11 +1336,7 @@ static int raw_value_len(void* memory, int len, const upb_fielddef* f) {
   switch (upb_fielddef_type(f)) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-#if PHP_MAJOR_VERSION < 7
-      return Z_STRLEN_PP((zval**)memory);
-#else
       return ZSTR_LEN(*(zend_string**)memory);
-#endif
     default:
       return len;
   }
@@ -1983,25 +1817,16 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink sink,
 
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES: {
-#if PHP_MAJOR_VERSION < 7
-        const char* rawstr = Z_STRVAL_P(*(zval**)memory);
-        int len = Z_STRLEN_P(*(zval**)memory);
-#else
         const char* rawstr = ZSTR_VAL(*(zend_string**)memory);
         int len = ZSTR_LEN(*(zend_string**)memory);
-#endif
         putrawstr(rawstr, len, f, subsink,
                   is_json && is_wrapper_msg(upb_fielddef_containingtype(f)));
         break;
       }
       case UPB_TYPE_MESSAGE: {
-#if PHP_MAJOR_VERSION < 7
-        MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
-#else
         MessageHeader *submsg =
             (MessageHeader*)((char*)(Z_OBJ_P((zval*)memory)) -
                 XtOffsetOf(MessageHeader, std));
-#endif
         putrawsubmsg(submsg, f, subsink, depth, is_json TSRMLS_CC);
         break;
       }
@@ -2236,13 +2061,9 @@ static void discard_unknown_fields(MessageHeader* msg) {
            !map_done(&map_it); map_next(&map_it)) {
         upb_value value = map_iter_value(&map_it, &len);
         const void* memory = raw_value(upb_value_memory(&value), value_field);
-#if PHP_MAJOR_VERSION < 7
-        MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
-#else
         MessageHeader *submsg =
             (MessageHeader*)((char*)(Z_OBJ_P((zval*)memory)) -
                 XtOffsetOf(MessageHeader, std));
-#endif
         discard_unknown_fields(submsg);
       }
     } else if (upb_fielddef_isseq(f)) {
@@ -2259,13 +2080,9 @@ static void discard_unknown_fields(MessageHeader* msg) {
 
       for (i = 0; i < size; i++) {
         void* memory = repeated_field_index_native(intern, i TSRMLS_CC);
-#if PHP_MAJOR_VERSION < 7
-        MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
-#else
         MessageHeader *submsg =
             (MessageHeader*)((char*)(Z_OBJ_P((zval*)memory)) -
                 XtOffsetOf(MessageHeader, std));
-#endif
         discard_unknown_fields(submsg);
       }
     } else if (upb_fielddef_issubmsg(f)) {

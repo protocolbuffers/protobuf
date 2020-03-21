@@ -98,9 +98,7 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
 
       zval* cached_zval = CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory);
       if (EXPECTED(cached_zval != NULL)) {
-#if PHP_MAJOR_VERSION < 7
-        REPLACE_ZVAL_VALUE((zval**)memory, value, 1);
-#elif PHP_VERSION_ID < 70400
+#if PHP_VERSION_ID < 70400
         zend_assign_to_variable(cached_zval, value, IS_CV);
 #else
         zend_assign_to_variable(cached_zval, value, IS_CV, 0);
@@ -118,16 +116,12 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
         return false;
       }
 
-#if PHP_MAJOR_VERSION < 7
-      REPLACE_ZVAL_VALUE((CACHED_VALUE*)memory, value, 1);
-#else
       zval* property_ptr = CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory);
       if (EXPECTED(property_ptr != value)) {
         php_proto_zval_ptr_dtor(property_ptr);
       }
 
       ZVAL_ZVAL(property_ptr, value, 1, 0);
-#endif
 
       break;
     }
@@ -161,11 +155,9 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
 bool native_slot_set_by_array(upb_fieldtype_t type,
                               const zend_class_entry* klass, void* memory,
                               zval* value TSRMLS_DC) {
-#if PHP_MAJOR_VERSION >= 7
   if (Z_ISREF_P(value)) {
     ZVAL_DEREF(value);
   }
-#endif
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -180,14 +172,8 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
 
       // Handles repeated/map string field. Memory provided by
       // RepeatedField/Map is not initialized.
-#if PHP_MAJOR_VERSION < 7
-      MAKE_STD_ZVAL(DEREF(memory, zval*));
-      PHP_PROTO_ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value),
-                             Z_STRLEN_P(value), 1);
-#else
       *(zend_string**)memory =
           zend_string_init(Z_STRVAL_P(value), Z_STRLEN_P(value), 0);
-#endif
       break;
     }
     case UPB_TYPE_MESSAGE: {
@@ -199,15 +185,8 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
         zend_error(E_USER_ERROR, "Given message does not have correct class.");
         return false;
       }
-#if PHP_MAJOR_VERSION < 7
-      if (EXPECTED(DEREF(memory, zval*) != value)) {
-        DEREF(memory, zval*) = value;
-        Z_ADDREF_P(value);
-      }
-#else
       DEREF(memory, zval*) = value;
       GC_ADDREF(Z_OBJ_P(value));
-#endif
       break;
     }
     default:
@@ -218,11 +197,9 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
 
 bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
                             void* memory, zval* value TSRMLS_DC) {
-#if PHP_MAJOR_VERSION >= 7
   if (Z_ISREF_P(value)) {
     ZVAL_DEREF(value);
   }
-#endif
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -237,14 +214,8 @@ bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
 
       // Handles repeated/map string field. Memory provided by
       // RepeatedField/Map is not initialized.
-#if PHP_MAJOR_VERSION < 7
-      MAKE_STD_ZVAL(DEREF(memory, zval*));
-      PHP_PROTO_ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value),
-                             Z_STRLEN_P(value), 1);
-#else
       *(zend_string**)memory =
           zend_string_init(Z_STRVAL_P(value), Z_STRLEN_P(value), 0);
-#endif
       break;
     }
     case UPB_TYPE_MESSAGE: {
@@ -256,15 +227,8 @@ bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
         zend_error(E_USER_ERROR, "Given message does not have correct class.");
         return false;
       }
-#if PHP_MAJOR_VERSION < 7
-      if (EXPECTED(DEREF(memory, zval*) != value)) {
-        DEREF(memory, zval*) = value;
-        Z_ADDREF_P(value);
-      }
-#else
       DEREF(memory, zend_object*) = Z_OBJ_P(value);
       GC_ADDREF(Z_OBJ_P(value));
-#endif
       break;
     }
     default:
@@ -389,26 +353,11 @@ void native_slot_get_by_array(upb_fieldtype_t type, const void* memory,
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-#if PHP_MAJOR_VERSION < 7
-      zval* value = CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory);
-      if (EXPECTED(CACHED_PTR_TO_ZVAL_PTR(cache) != value)) {
-        PHP_PROTO_ZVAL_STRINGL(CACHED_PTR_TO_ZVAL_PTR(cache),
-                               Z_STRVAL_P(value), Z_STRLEN_P(value), 1);
-      }
-#else
       ZVAL_NEW_STR(cache, zend_string_dup(*(zend_string**)memory, 0));
-#endif
       return;
     }
     case UPB_TYPE_MESSAGE: {
-#if PHP_MAJOR_VERSION < 7
-      zval* value = CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory);
-      if (EXPECTED(CACHED_PTR_TO_ZVAL_PTR(cache) != value)) {
-        ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), value, 1, 0);
-      }
-#else
       ZVAL_COPY(CACHED_PTR_TO_ZVAL_PTR(cache), memory);
-#endif
       return;
     }
     default:
@@ -433,15 +382,8 @@ void native_slot_get_by_map_value(upb_fieldtype_t type, const void* memory,
                               CACHED_VALUE* cache TSRMLS_DC) {
   switch (type) {
     case UPB_TYPE_MESSAGE: {
-#if PHP_MAJOR_VERSION < 7
-      zval* value = CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory);
-      if (EXPECTED(CACHED_PTR_TO_ZVAL_PTR(cache) != value)) {
-        ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), value, 1, 0);
-      }
-#else
       GC_ADDREF(*(zend_object**)memory);
       ZVAL_OBJ(cache, *(zend_object**)memory);
-#endif
       return;
     }
     default:
@@ -627,31 +569,15 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
 
     const char* fieldname = upb_fielddef_name(field);
 
-#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
-    zend_class_entry* old_scope = EG(scope);
-    EG(scope) = desc->klass;
-#else
     zend_class_entry* old_scope = EG(fake_scope);
     EG(fake_scope) = desc->klass;
-#endif
 
-#if PHP_MAJOR_VERSION < 7
-    zval member;
-    ZVAL_STRINGL(&member, fieldname, strlen(fieldname), 0);
-    zend_property_info* property_info =
-        zend_get_property_info(desc->klass, &member, true TSRMLS_CC);
-#else
     zend_string* member = zend_string_init(fieldname, strlen(fieldname), 1);
     zend_property_info* property_info =
         zend_get_property_info(desc->klass, member, true);
     zend_string_release(member);
-#endif
 
-#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
-    EG(scope) = old_scope;
-#else
     EG(fake_scope) = old_scope;
-#endif
 
     layout->fields[upb_fielddef_index(field)].cache_index =
         property_info->offset;
@@ -688,31 +614,15 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
       const upb_fielddef* field = upb_oneof_iter_field(&fit);
       layout->fields[upb_fielddef_index(field)].offset = off;
 
-#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
-      zend_class_entry* old_scope = EG(scope);
-      EG(scope) = desc->klass;
-#else
       zend_class_entry* old_scope = EG(fake_scope);
       EG(fake_scope) = desc->klass;
-#endif
 
-#if PHP_MAJOR_VERSION < 7
-      zval member;
-      ZVAL_STRINGL(&member, oneofname, strlen(oneofname), 0);
-      zend_property_info* property_info =
-          zend_get_property_info(desc->klass, &member, true TSRMLS_CC);
-#else
       zend_string* member = zend_string_init(oneofname, strlen(oneofname), 1);
       zend_property_info* property_info =
           zend_get_property_info(desc->klass, member, true);
       zend_string_release(member);
-#endif
 
-#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
-      EG(scope) = old_scope;
-#else
       EG(fake_scope) = old_scope;
-#endif
 
       layout->fields[upb_fielddef_index(field)].cache_index =
           property_info->offset;
@@ -811,9 +721,7 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE &&
       is_wrapper_msg(upb_fielddef_msgsubdef(field))) {
     zval * cached_zval = CACHED_PTR_TO_ZVAL_PTR(stored_cache);
-#if PHP_MAJOR_VERSION >= 7
     zend_object* obj;
-#endif
     if (Z_TYPE_P(cached_zval) != IS_OBJECT &&
         Z_TYPE_P(cached_zval) != IS_NULL) {
       // Needs to expand value to wrapper.
@@ -823,23 +731,12 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
       DescriptorInternal* subdesc = get_msgdef_desc(submsgdef);
       register_class(subdesc, false TSRMLS_CC);
       zend_class_entry* subklass = subdesc->klass;
-#if PHP_MAJOR_VERSION < 7
-      zval* val = NULL;
-      MAKE_STD_ZVAL(val);
-      ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
-      submsg = UNBOX(MessageHeader, val);
-#else
       obj = subklass->create_object(subklass TSRMLS_CC);
       submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
-#endif
       custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
 
       layout_set(subdesc->layout, submsg, value_field, cached_zval TSRMLS_CC);
-#if PHP_MAJOR_VERSION < 7
-      ZVAL_ZVAL(cached_zval, val, 1, 1);
-#else
       ZVAL_OBJ(cached_zval, obj);
-#endif
     }
     if (stored_cache != cache) {
       ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), cached_zval, 1, 0);
@@ -894,12 +791,8 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
         check_repeated_field(subce, upb_fielddef_descriptortype(field), val,
                              &converted_value);
       }
-#if PHP_MAJOR_VERSION < 7
-      REPLACE_ZVAL_VALUE((zval**)cached, &converted_value, 1);
-#else
       php_proto_zval_ptr_dtor(property_ptr);
       ZVAL_ZVAL(property_ptr, &converted_value, 1, 0);
-#endif
       zval_dtor(&converted_value);
     }
     return;
@@ -952,9 +845,6 @@ static void native_slot_merge(
         register_class(desc, false TSRMLS_CC);
         ce = desc->klass;
         if (native_slot_is_default(type, to_memory)) {
-#if PHP_MAJOR_VERSION < 7
-          SEPARATE_ZVAL_IF_NOT_REF((zval**)to_memory);
-#endif
           CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(
               CACHED_PTR_TO_ZVAL_PTR(to_memory), ce);
           MessageHeader* submsg =
@@ -982,27 +872,15 @@ static void native_slot_merge_by_array(const upb_fielddef* field, const void* fr
   switch (type) {
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-#if PHP_MAJOR_VERSION < 7
-      MAKE_STD_ZVAL(DEREF(to_memory, zval*));
-      PHP_PROTO_ZVAL_STRINGL(DEREF(to_memory, zval*),
-                             Z_STRVAL_P(*(zval**)from_memory),
-                             Z_STRLEN_P(*(zval**)from_memory), 1);
-#else
       DEREF(to_memory, zend_string*) =
           zend_string_dup(*(zend_string**)from_memory, 0);
-#endif
       break;
     }
     case UPB_TYPE_MESSAGE: {
       DescriptorInternal* desc = get_msgdef_desc(upb_fielddef_msgsubdef(field));
       register_class(desc, false TSRMLS_CC);
       zend_class_entry* ce = desc->klass;
-#if PHP_MAJOR_VERSION < 7
-      MAKE_STD_ZVAL(DEREF(to_memory, zval*));
-      CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(DEREF(to_memory, zval*), ce);
-#else
       DEREF(to_memory, zend_object*) = ce->create_object(ce TSRMLS_CC);
-#endif
       MessageHeader* sub_from = UNBOX_HASHTABLE_VALUE(
           MessageHeader, DEREF(from_memory, PHP_PROTO_HASHTABLE_VALUE));
       MessageHeader* sub_to = UNBOX_HASHTABLE_VALUE(
@@ -1128,9 +1006,7 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
           if (to_array->type == UPB_TYPE_MESSAGE) {
             php_proto_zend_hash_index_find_zval(
                 PHP_PROTO_HASH_OF(from_array->array), j, (void**)&from_memory);
-#if PHP_MAJOR_VERSION >= 7
             from_memory = &Z_OBJ_P((zval*)from_memory);
-#endif
           } else {
             php_proto_zend_hash_index_find_mem(
                 PHP_PROTO_HASH_OF(from_array->array), j, (void**)&from_memory);
