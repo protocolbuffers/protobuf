@@ -28,16 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <php.h>
-#include <Zend/zend_exceptions.h>
-#include <stdlib.h>
-#include <inttypes.h>
-
-#if PHP_MAJOR_VERSION < 7
-#include <Zend/zend_compile.h>
-#else
 #include <Zend/zend_inheritance.h>
-#endif
+#include <inttypes.h>
+#include <php.h>
+#include <stdlib.h>
+
+// This header does not include its dependencies.
+#include <Zend/zend_exceptions.h>
 
 #include "protobuf.h"
 #include "utf8.h"
@@ -66,15 +63,6 @@ static  zend_function_entry message_methods[] = {
 
 // Forward declare static functions.
 
-#if PHP_MAJOR_VERSION < 7
-static void message_set_property(zval* object, zval* member, zval* value,
-                                 php_proto_zend_literal key TSRMLS_DC);
-static zval* message_get_property(zval* object, zval* member, int type,
-                                  const zend_literal* key TSRMLS_DC);
-static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
-                                           php_proto_zend_literal key TSRMLS_DC);
-static HashTable* message_get_gc(zval* object, zval*** table, int* n TSRMLS_DC);
-#else
 #if PHP_VERSION_ID < 70400
 static void message_set_property(zval* object, zval* member, zval* value,
                                  void** cache_slot);
@@ -87,7 +75,6 @@ static zval* message_get_property(zval* object, zval* member, int type,
 static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
                                           void** cache_slot);
 static HashTable* message_get_gc(zval* object, zval** table, int* n);
-#endif
 static HashTable* message_get_properties(zval* object TSRMLS_DC);
 
 // -----------------------------------------------------------------------------
@@ -142,10 +129,7 @@ static void message_set_property_internal(zval* object, zval* member,
   layout_set(self->descriptor->layout, self, field, value TSRMLS_CC);
 }
 
-#if PHP_MAJOR_VERSION < 7
-static void message_set_property(zval* object, zval* member, zval* value,
-                                 php_proto_zend_literal key TSRMLS_DC) {
-#elif PHP_VERSION_ID < 70400
+#if PHP_VERSION_ID < 70400
 static void message_set_property(zval* object, zval* member, zval* value,
                                  void** cache_slot) {
 #else
@@ -161,11 +145,7 @@ static zval* message_set_property(zval* object, zval* member, zval* value,
 #endif
   }
 
-#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
-  if (Z_OBJCE_P(object) != EG(scope)) {
-#else
   if (Z_OBJCE_P(object) != zend_get_executed_scope()) {
-#endif
     // User cannot set property directly (e.g., $m->a = 1)
     zend_error(E_USER_ERROR, "Cannot access private property.");
 #if PHP_VERSION_ID < 70400
@@ -191,13 +171,8 @@ static zval* message_get_property_internal(zval* object,
   }
 
   zend_property_info* property_info;
-#if PHP_MAJOR_VERSION < 7
-  property_info =
-      zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
-#else
   property_info =
       zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
-#endif
   return layout_get(
       self->descriptor->layout, self, field,
       OBJ_PROP(Z_OBJ_P(object), property_info->offset) TSRMLS_CC);
@@ -216,23 +191,14 @@ static void message_get_oneof_property_internal(zval* object, zval* member,
              ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
-#if PHP_MAJOR_VERSION < 7
-static zval* message_get_property(zval* object, zval* member, int type,
-                                  const zend_literal* key TSRMLS_DC) {
-#else
 static zval* message_get_property(zval* object, zval* member, int type,
                                   void** cache_slot, zval* rv) {
-#endif
   if (Z_TYPE_P(member) != IS_STRING) {
     zend_error(E_USER_ERROR, "Property name has to be a string.");
     return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
   }
 
-#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
-  if (Z_OBJCE_P(object) != EG(scope)) {
-#else
   if (Z_OBJCE_P(object) != zend_get_executed_scope()) {
-#endif
     // User cannot get property directly (e.g., $a = $m->a)
     zend_error(E_USER_ERROR, "Cannot access private property.");
     return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
@@ -241,14 +207,8 @@ static zval* message_get_property(zval* object, zval* member, int type,
   return message_get_property_internal(object, member TSRMLS_CC);
 }
 
-#if PHP_MAJOR_VERSION < 7
-static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
-                                           php_proto_zend_literal key
-                                               TSRMLS_DC) {
-#else
 static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
                                           void** cache_slot) {
-#endif
   return NULL;
 }
 
@@ -301,17 +261,9 @@ static void append_wrapper_message(
     zend_class_entry* subklass, RepeatedField* intern, zval* value TSRMLS_DC) {
   MessageHeader* submsg;
   const upb_fielddef* field;
-#if PHP_MAJOR_VERSION < 7
-  zval* val = NULL;
-  MAKE_STD_ZVAL(val);
-  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
-  repeated_field_push_native(intern, &val);
-  submsg = UNBOX(MessageHeader, val);
-#else
   zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
   repeated_field_push_native(intern, &obj);
   submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
-#endif
   custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
 
   field = upb_msgdef_itof(submsg->descriptor->msgdef, 1);
@@ -322,20 +274,11 @@ static void set_wrapper_message_as_map_value(
     zend_class_entry* subklass, zval* map, zval* key,  zval* value TSRMLS_DC) {
   MessageHeader* submsg;
   const upb_fielddef* field;
-#if PHP_MAJOR_VERSION < 7
-  zval* val = NULL;
-  MAKE_STD_ZVAL(val);
-  ZVAL_OBJ(val, subklass->create_object(subklass TSRMLS_CC));
-  map_field_handlers->write_dimension(
-      map, key, val TSRMLS_CC);
-  submsg = UNBOX(MessageHeader, val);
-#else
   zval val;
   zend_object* obj = subklass->create_object(subklass TSRMLS_CC);
   ZVAL_OBJ(&val, obj);
   map_field_handlers->write_dimension(map, key, &val TSRMLS_CC);
   submsg = (MessageHeader*)((char*)obj - XtOffsetOf(MessageHeader, std));
-#endif
   custom_data_init(subklass, submsg PHP_PROTO_TSRMLS_CC);
 
   field = upb_msgdef_itof(submsg->descriptor->msgdef, 1);
@@ -348,11 +291,7 @@ void Message_construct(zval* msg, zval* array_wrapper) {
   MessageHeader* intern = NULL;
 
   if (!class_added(ce)) {
-#if PHP_MAJOR_VERSION < 7
-    DescriptorInternal* desc = get_class_desc(ce->name);
-#else
     DescriptorInternal* desc = get_class_desc(ZSTR_VAL(ce->name));
-#endif
     register_class(desc, false TSRMLS_CC);
   }
 
@@ -375,11 +314,9 @@ void Message_construct(zval* msg, zval* array_wrapper) {
        zend_hash_move_forward_ex(array, &pointer)) {
     zend_hash_get_current_key_zval_ex(array, &key, &pointer);
     field = upb_msgdef_ntofz(intern->descriptor->msgdef, Z_STRVAL_P(&key));
-#if PHP_MAJOR_VERSION >= 7
     if (Z_ISREF_P((CACHED_VALUE*)value)) {
       value = Z_REFVAL_P((CACHED_VALUE*)value);
     }
-#endif
     if (field == NULL) {
       zend_error(E_USER_ERROR, "Unknown field: %s", Z_STRVAL_P(&key));
     }
@@ -483,19 +420,11 @@ void Message_construct(zval* msg, zval* array_wrapper) {
       } else {
         zend_property_info* property_info;
         PHP_PROTO_FAKE_SCOPE_BEGIN(Z_OBJCE_P(msg));
-#if PHP_MAJOR_VERSION < 7
-        property_info =
-            zend_get_property_info(Z_OBJCE_P(msg), &key, true TSRMLS_CC);
-#else
         property_info =
             zend_get_property_info(Z_OBJCE_P(msg), Z_STR_P(&key), true);
-#endif
         PHP_PROTO_FAKE_SCOPE_END;
         cached = OBJ_PROP(Z_OBJ_P(msg), property_info->offset);
       }
-#if PHP_MAJOR_VERSION < 7
-      SEPARATE_ZVAL_IF_NOT_REF(cached);
-#endif
       zval* submsg = CACHED_PTR_TO_ZVAL_PTR(cached);
       ZVAL_OBJ(submsg, desc->klass->create_object(desc->klass TSRMLS_CC));
       Message_construct(submsg, NULL);
@@ -1175,11 +1104,7 @@ PHP_METHOD(Field_Cardinality, name) {
       zend_throw_exception_ex(
           NULL, 0 TSRMLS_CC,
           "Enum Google\\Protobuf\\Field_Cardinality has no name "
-#if PHP_MAJOR_VERSION < 7
-          "defined for value %d.",
-#else
           "defined for value " ZEND_LONG_FMT ".",
-#endif
           value);
   }
 }
@@ -1314,11 +1239,7 @@ PHP_METHOD(Field_Kind, name) {
     default:
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Enum Google\\Protobuf\\Field_Kind has no name "
-#if PHP_MAJOR_VERSION < 7
-                              "defined for value %d.",
-#else
                               "defined for value " ZEND_LONG_FMT ".",
-#endif
                               value);
   }
 }
@@ -1389,11 +1310,7 @@ PHP_METHOD(NullValue, name) {
     default:
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Enum Google\\Protobuf\\NullValue has no name "
-#if PHP_MAJOR_VERSION < 7
-                              "defined for value %d.",
-#else
                               "defined for value " ZEND_LONG_FMT ".",
-#endif
                               value);
   }
 }
@@ -1450,11 +1367,7 @@ PHP_METHOD(Syntax, name) {
     default:
       zend_throw_exception_ex(NULL, 0 TSRMLS_CC,
                               "Enum Google\\Protobuf\\Syntax has no name "
-#if PHP_MAJOR_VERSION < 7
-                              "defined for value %d.",
-#else
                               "defined for value " ZEND_LONG_FMT ".",
-#endif
                               value);
   }
 }
@@ -1755,11 +1668,6 @@ PHP_METHOD(Timestamp, fromDateTime) {
     zval retval;
     zval function_name;
 
-#if PHP_MAJOR_VERSION < 7
-    INIT_ZVAL(retval);
-    INIT_ZVAL(function_name);
-#endif
-
     PHP_PROTO_ZVAL_STRING(&function_name, "date_timestamp_get", 1);
 
     if (call_user_function(EG(function_table), NULL, &function_name, &retval, 1,
@@ -1779,12 +1687,6 @@ PHP_METHOD(Timestamp, fromDateTime) {
     zval retval;
     zval function_name;
     zval format_string;
-
-#if PHP_MAJOR_VERSION < 7
-    INIT_ZVAL(retval);
-    INIT_ZVAL(function_name);
-    INIT_ZVAL(format_string);
-#endif
 
     PHP_PROTO_ZVAL_STRING(&function_name, "date_format", 1);
     PHP_PROTO_ZVAL_STRING(&format_string, "u", 1);
@@ -1849,12 +1751,6 @@ PHP_METHOD(Timestamp, toDateTime) {
   zval format_string;
   zval formatted_time_php;
 
-#if PHP_MAJOR_VERSION < 7
-  INIT_ZVAL(function_name);
-  INIT_ZVAL(format_string);
-  INIT_ZVAL(formatted_time_php);
-#endif
-
   PHP_PROTO_ZVAL_STRING(&function_name, "date_create_from_format", 1);
   PHP_PROTO_ZVAL_STRING(&format_string, "U.u", 1);
   PHP_PROTO_ZVAL_STRING(&formatted_time_php, formatted_time, 1);
@@ -1874,12 +1770,7 @@ PHP_METHOD(Timestamp, toDateTime) {
   zval_dtor(&format_string);
   zval_dtor(&formatted_time_php);
 
-#if PHP_MAJOR_VERSION < 7
-  zval* datetime_ptr = &datetime;
-  PHP_PROTO_RETVAL_ZVAL(datetime_ptr);
-#else
   ZVAL_OBJ(return_value, Z_OBJ(datetime));
-#endif
 }
 
 // -----------------------------------------------------------------------------
