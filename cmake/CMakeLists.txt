@@ -15,6 +15,10 @@ endif ()
 if(POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
 endif()
+# Enable visibility settings for all targets
+if(POLICY CMP0063)
+  cmake_policy(SET CMP0063 NEW)
+endif()
 
 # Project
 project(protobuf C CXX)
