@@ -261,6 +261,18 @@ namespace Google.Protobuf
             Assert.True(message.IsInitialized());
         }
 
+        /// <summary>
+        /// Code was accidentally left in message parser that threw exceptions when missing required fields after parsing.
+        /// We've decided to not throw exceptions on missing fields, instead leaving it up to the consumer how they
+        /// want to check and handle missing fields.
+        /// </summary>
+        [Test]
+        public void RequiredFieldsNoThrow()
+        {
+            Assert.DoesNotThrow(() => TestRequired.Parser.ParseFrom(new byte[0]));
+            Assert.DoesNotThrow(() => (TestRequired.Parser as MessageParser).ParseFrom(new byte[0]));
+        }
+
         [Test]
         public void RequiredFieldsInExtensions()
         {

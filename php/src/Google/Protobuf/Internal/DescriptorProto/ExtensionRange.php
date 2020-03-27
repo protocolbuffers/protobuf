@@ -20,19 +20,19 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 start = 1;</code>
      */
-    private $start = 0;
+    protected $start = 0;
     private $has_start = false;
     /**
      * Exclusive.
      *
      * Generated from protobuf field <code>optional int32 end = 2;</code>
      */
-    private $end = 0;
+    protected $end = 0;
     private $has_end = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ExtensionRangeOptions options = 3;</code>
      */
-    private $options = null;
+    protected $options = null;
     private $has_options = false;
 
     /**

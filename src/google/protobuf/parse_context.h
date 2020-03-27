@@ -79,7 +79,7 @@ inline void WriteLengthDelimited(uint32 num, StringPiece val,
 //
 // Where the '-' represent the bytes which are vertically lined up with the
 // bytes of the stream. The proto parser requires its input to be presented
-// similarily with the extra
+// similarly with the extra
 // property that each chunk has kSlopBytes past its end that overlaps with the
 // first kSlopBytes of the next chunk, or if there is no next chunk at least its
 // still valid to read those bytes. Again, pictorially, we now have
@@ -580,8 +580,14 @@ inline uint32 ReadSize(const char** pp) {
 // function composition. We rely on the compiler to inline this.
 // Also in debug compiles having local scoped variables tend to generated
 // stack frames that scale as O(num fields).
-inline uint64 ReadVarint(const char** p) {
+inline uint64 ReadVarint64(const char** p) {
   uint64 tmp;
+  *p = VarintParse(*p, &tmp);
+  return tmp;
+}
+
+inline uint32 ReadVarint32(const char** p) {
+  uint32 tmp;
   *p = VarintParse(*p, &tmp);
   return tmp;
 }

@@ -1,5 +1,6 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 def _GetPath(ctx, path):
@@ -224,6 +225,29 @@ Args:
   outs: a list of labels of the expected outputs from the protocol compiler.
 """
 
+def _adapt_proto_library_impl(ctx):
+    deps = [dep[ProtoInfo] for dep in ctx.attr.deps]
+
+    srcs = [src for dep in deps for src in dep.direct_sources]
+    return struct(
+        proto = struct(
+            srcs = srcs,
+            import_flags = ["-I{}".format(path) for dep in deps for path in dep.transitive_proto_path.to_list()],
+            deps = srcs,
+        ),
+    )
+
+adapt_proto_library = rule(
+    implementation = _adapt_proto_library_impl,
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [ProtoInfo],
+        ),
+    },
+    doc = "Adapts `proto_library` from `@rules_proto` to be used with `{cc,py}_proto_library` from this file.",
+)
+
 def cc_proto_library(
         name,
         srcs = [],
@@ -231,7 +255,6 @@ def cc_proto_library(
         cc_libs = [],
         include = None,
         protoc = "@com_google_protobuf//:protoc",
-        internal_bootstrap_hack = False,
         use_grpc_plugin = False,
         default_runtime = "@com_google_protobuf//:protobuf",
         **kargs):
@@ -249,40 +272,16 @@ def cc_proto_library(
           cc_library.
       include: a string indicating the include path of the .proto files.
       protoc: the label of the protocol compiler to generate the sources.
-      internal_bootstrap_hack: a flag indicate the cc_proto_library is used only
-          for bootstraping. When it is set to True, no files will be generated.
-          The rule will simply be a provider for .proto files, so that other
-          cc_proto_library can depend on it.
       use_grpc_plugin: a flag to indicate whether to call the grpc C++ plugin
           when processing the proto files.
       default_runtime: the implicitly default runtime which will be depended on by
           the generated cc_library target.
       **kargs: other keyword arguments that are passed to cc_library.
-
     """
 
     includes = []
     if include != None:
         includes = [include]
-
-    if internal_bootstrap_hack:
-        # For pre-checked-in generated files, we add the internal_bootstrap_hack
-        # which will skip the codegen action.
-        proto_gen(
-            name = name + "_genproto",
-            srcs = srcs,
-            deps = [s + "_genproto" for s in deps],
-            includes = includes,
-            protoc = protoc,
-            visibility = ["//visibility:public"],
-        )
-
-        # An empty cc_library to make rule dependency consistent.
-        cc_library(
-            name = name,
-            **kargs
-        )
-        return
 
     grpc_cpp_plugin = None
     if use_grpc_plugin:
@@ -318,29 +317,58 @@ def cc_proto_library(
         **kargs
     )
 
-def internal_gen_well_known_protos_java(srcs):
-    """Bazel rule to generate the gen_well_known_protos_java genrule
+def _internal_gen_well_known_protos_java_impl(ctx):
+    args = ctx.actions.args()
 
-    Args:
-      srcs: the well known protos
-    """
-    root = Label("%s//protobuf_java" % (native.repository_name())).workspace_root
-    pkg = native.package_name() + "/" if native.package_name() else ""
-    if root == "":
-        include = " -I%ssrc " % pkg
-    else:
-        include = " -I%s/%ssrc " % (root, pkg)
-    native.genrule(
-        name = "gen_well_known_protos_java",
-        srcs = srcs,
-        outs = [
-            "wellknown.srcjar",
-        ],
-        cmd = "$(location :protoc) --java_out=$(@D)/wellknown.jar" +
-              " %s $(SRCS) " % include +
-              " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
-        tools = [":protoc"],
+    deps = [d[ProtoInfo] for d in ctx.attr.deps]
+
+    srcjar = ctx.actions.declare_file("{}.srcjar".format(ctx.attr.name))
+    args.add("--java_out", srcjar)
+
+    descriptors = depset(
+        transitive = [dep.transitive_descriptor_sets for dep in deps],
     )
+    args.add_joined(
+        "--descriptor_set_in",
+        descriptors,
+        join_with = ctx.configuration.host_path_separator,
+    )
+
+    for dep in deps:
+        if "." == dep.proto_source_root:
+            args.add_all([src.path for src in dep.direct_sources])
+        else:
+            source_root = dep.proto_source_root
+            offset = len(source_root) + 1  # + '/'.
+            args.add_all([src.path[offset:] for src in dep.direct_sources])
+
+    ctx.actions.run(
+        executable = ctx.executable._protoc,
+        inputs = descriptors,
+        outputs = [srcjar],
+        arguments = [args],
+    )
+
+    return [
+        DefaultInfo(
+            files = depset([srcjar]),
+        ),
+    ]
+
+internal_gen_well_known_protos_java = rule(
+    implementation = _internal_gen_well_known_protos_java_impl,
+    attrs = {
+        "deps": attr.label_list(
+            mandatory = True,
+            providers = [ProtoInfo],
+        ),
+        "_protoc": attr.label(
+            executable = True,
+            cfg = "host",
+            default = "@com_google_protobuf//:protoc",
+        ),
+    },
+)
 
 def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
     """Macro to copy files to a different directory and then create a filegroup.

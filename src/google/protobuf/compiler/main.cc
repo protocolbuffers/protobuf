@@ -69,17 +69,17 @@ int ProtobufMain(int argc, char* argv[]) {
 
   // Proto2 Python
   python::Generator py_generator;
-  cli.RegisterGenerator("--python_out", &py_generator,
+  cli.RegisterGenerator("--python_out", "--python_opt", &py_generator,
                         "Generate Python source file.");
 
   // PHP
   php::Generator php_generator;
-  cli.RegisterGenerator("--php_out", &php_generator,
+  cli.RegisterGenerator("--php_out", "--php_opt", &php_generator,
                         "Generate PHP source file.");
 
   // Ruby
   ruby::Generator rb_generator;
-  cli.RegisterGenerator("--ruby_out", &rb_generator,
+  cli.RegisterGenerator("--ruby_out", "--ruby_opt", &rb_generator,
                         "Generate Ruby source file.");
 
   // CSharp
@@ -94,7 +94,7 @@ int ProtobufMain(int argc, char* argv[]) {
 
   // JavaScript
   js::Generator js_generator;
-  cli.RegisterGenerator("--js_out", &js_generator,
+  cli.RegisterGenerator("--js_out", "--js_opt", &js_generator,
                         "Generate JavaScript source.");
 
   return cli.Run(argc, argv);

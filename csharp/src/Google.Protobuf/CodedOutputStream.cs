@@ -89,7 +89,7 @@ namespace Google.Protobuf
         private CodedOutputStream(byte[] buffer, int offset, int length)
         {
             this.output = null;
-            this.buffer = buffer;
+            this.buffer = ProtoPreconditions.CheckNotNull(buffer, nameof(buffer));
             this.position = offset;
             this.limit = offset + length;
             leaveOpen = true; // Simple way of avoiding trying to dispose of a null reference

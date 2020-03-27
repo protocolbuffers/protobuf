@@ -156,7 +156,7 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fstruct_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto), true);
+static bool dynamic_init_dummy_google_2fprotobuf_2fstruct_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto)), true);
 PROTOBUF_NAMESPACE_OPEN
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* NullValue_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto);
@@ -620,7 +620,7 @@ const char* Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
       // .google.protobuf.NullValue null_value = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_null_value(static_cast<PROTOBUF_NAMESPACE_ID::NullValue>(val));
         } else goto handle_unusual;
@@ -644,7 +644,7 @@ const char* Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
       // bool bool_value = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
-          _internal_set_bool_value(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
+          _internal_set_bool_value(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;

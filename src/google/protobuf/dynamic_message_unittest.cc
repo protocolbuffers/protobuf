@@ -291,7 +291,7 @@ TEST_F(DynamicMessageTest, Proto3) {
   const Reflection* refl = message->GetReflection();
   const Descriptor* desc = message->GetDescriptor();
 
-  // Just test a single primtive and single message field here to make sure we
+  // Just test a single primitive and single message field here to make sure we
   // are getting the no-field-presence semantics elsewhere. DynamicMessage uses
   // GeneratedMessageReflection under the hood, so the rest should be fine as
   // long as GMR recognizes that we're using a proto3 message.

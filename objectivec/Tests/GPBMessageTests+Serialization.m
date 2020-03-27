@@ -273,6 +273,7 @@
 //%
 //%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(2, NO)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 - (void)testProto2RoundTripOneof {
 
@@ -503,8 +504,10 @@
   [subMessage release];
 }
 
+// clang-format on
 //%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(3, YES)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 - (void)testProto3RoundTripOneof {
 
@@ -721,6 +724,7 @@
   [subMessage release];
 }
 
+// clang-format on
 //%PDDM-EXPAND-END (2 expansions)
 
 - (void)testPackedUnpackedMessageParsing {

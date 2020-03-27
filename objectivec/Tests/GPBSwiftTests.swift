@@ -276,7 +276,7 @@ class GPBBridgeTests: XCTestCase {
     msg5.optionalInt32 = 123
     msg.optional = msg5
     XCTAssertTrue(msg.hasOptionalMessage)
-    // Modifing the autocreated doesn't replaced the explicit set one.
+    // Modifying the autocreated doesn't replaced the explicit set one.
     autoCreated?.optionalInt32 = 456
     XCTAssertTrue(msg.hasOptionalMessage)
     XCTAssertTrue(msg.optional === msg5)

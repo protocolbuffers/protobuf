@@ -97,7 +97,7 @@ class TextFormatBase(unittest.TestCase):
     text = text.replace('e+0','e+').replace('e+0','e+') \
                .replace('e-0','e-').replace('e-0','e-')
     # Floating point fields are printed with .0 suffix even if they are
-    # actualy integer numbers.
+    # actually integer numbers.
     text = re.compile(r'\.0$', re.MULTILINE).sub('', text)
     return text
 

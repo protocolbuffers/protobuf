@@ -248,7 +248,7 @@ struct ArenaOptions {
 // well as protobuf container types like RepeatedPtrField and Map. The protocol
 // is internal to protobuf and is not guaranteed to be stable. Non-proto types
 // should not rely on this protocol.
-class PROTOBUF_EXPORT alignas(8) Arena final {
+class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
  public:
   // Arena constructor taking custom options. See ArenaOptions below for
   // descriptions of the options available.
@@ -338,8 +338,10 @@ class PROTOBUF_EXPORT alignas(8) Arena final {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CreateArray(Arena* arena,
                                                size_t num_elements) {
+#ifndef __INTEL_COMPILER // icc mis-evaluates some types as non-pod
     static_assert(std::is_pod<T>::value,
                   "CreateArray requires a trivially constructible type");
+#endif
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
     GOOGLE_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))

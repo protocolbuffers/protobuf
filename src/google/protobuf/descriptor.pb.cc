@@ -1202,7 +1202,7 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2fdescriptor_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto), true);
+static bool dynamic_init_dummy_google_2fprotobuf_2fdescriptor_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto)), true);
 PROTOBUF_NAMESPACE_OPEN
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldDescriptorProto_Type_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -1859,7 +1859,7 @@ const char* FileDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAME
           ptr -= 1;
           do {
             ptr += 1;
-            _internal_add_public_dependency(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
+            _internal_add_public_dependency(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<80>(ptr));
@@ -1874,7 +1874,7 @@ const char* FileDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAME
           ptr -= 1;
           do {
             ptr += 1;
-            _internal_add_weak_dependency(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
+            _internal_add_weak_dependency(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<88>(ptr));
@@ -2357,7 +2357,7 @@ const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::PR
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
           _Internal::set_has_start(&has_bits);
-          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2365,7 +2365,7 @@ const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::PR
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           _Internal::set_has_end(&has_bits);
-          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2641,7 +2641,7 @@ const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::PRO
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
           _Internal::set_has_start(&has_bits);
-          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -2649,7 +2649,7 @@ const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::PRO
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           _Internal::set_has_end(&has_bits);
-          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -3800,14 +3800,14 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
           _Internal::set_has_number(&has_bits);
-          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label_IsValid(val))) {
             _internal_set_label(static_cast<PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label>(val));
@@ -3819,7 +3819,7 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
       // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type_IsValid(val))) {
             _internal_set_type(static_cast<PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type>(val));
@@ -3861,7 +3861,7 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NAM
       case 9:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 72)) {
           _Internal::set_has_oneof_index(&has_bits);
-          oneof_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          oneof_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -4595,7 +4595,7 @@ const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* pt
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
           _Internal::set_has_start(&has_bits);
-          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          start_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -4603,7 +4603,7 @@ const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* pt
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           _Internal::set_has_end(&has_bits);
-          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -5276,7 +5276,7 @@ const char* EnumValueDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           _Internal::set_has_number(&has_bits);
-          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -5974,7 +5974,7 @@ const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NA
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
           _Internal::set_has_client_streaming(&has_bits);
-          client_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          client_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -5982,7 +5982,7 @@ const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::PROTOBUF_NA
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
           _Internal::set_has_server_streaming(&has_bits);
-          server_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          server_streaming_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6506,7 +6506,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
       case 9:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 72)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode_IsValid(val))) {
             _internal_set_optimize_for(static_cast<PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode>(val));
@@ -6519,7 +6519,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 10:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
           _Internal::set_has_java_multiple_files(&has_bits);
-          java_multiple_files_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          java_multiple_files_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6538,7 +6538,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 16:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 128)) {
           _Internal::set_has_cc_generic_services(&has_bits);
-          cc_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          cc_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6546,7 +6546,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 17:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 136)) {
           _Internal::set_has_java_generic_services(&has_bits);
-          java_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          java_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6554,7 +6554,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 18:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 144)) {
           _Internal::set_has_py_generic_services(&has_bits);
-          py_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          py_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6562,7 +6562,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 20:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 160)) {
           _Internal::set_has_java_generate_equals_and_hash(&has_bits);
-          java_generate_equals_and_hash_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          java_generate_equals_and_hash_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6570,7 +6570,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 23:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 184)) {
           _Internal::set_has_deprecated(&has_bits);
-          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6578,7 +6578,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 27:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 216)) {
           _Internal::set_has_java_string_check_utf8(&has_bits);
-          java_string_check_utf8_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          java_string_check_utf8_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6586,7 +6586,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 31:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 248)) {
           _Internal::set_has_cc_enable_arenas(&has_bits);
-          cc_enable_arenas_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          cc_enable_arenas_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -6649,7 +6649,7 @@ const char* FileOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 42:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
           _Internal::set_has_php_generic_services(&has_bits);
-          php_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          php_generic_services_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -7317,7 +7317,7 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
           _Internal::set_has_message_set_wire_format(&has_bits);
-          message_set_wire_format_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          message_set_wire_format_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -7325,7 +7325,7 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           _Internal::set_has_no_standard_descriptor_accessor(&has_bits);
-          no_standard_descriptor_accessor_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          no_standard_descriptor_accessor_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -7333,7 +7333,7 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
           _Internal::set_has_deprecated(&has_bits);
-          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -7341,7 +7341,7 @@ const char* MessageOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
           _Internal::set_has_map_entry(&has_bits);
-          map_entry_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          map_entry_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -7679,7 +7679,7 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FieldOptions_CType_IsValid(val))) {
             _internal_set_ctype(static_cast<PROTOBUF_NAMESPACE_ID::FieldOptions_CType>(val));
@@ -7692,7 +7692,7 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           _Internal::set_has_packed(&has_bits);
-          packed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          packed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -7700,7 +7700,7 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
           _Internal::set_has_deprecated(&has_bits);
-          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -7708,14 +7708,14 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
           _Internal::set_has_lazy(&has_bits);
-          lazy_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          lazy_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::FieldOptions_JSType_IsValid(val))) {
             _internal_set_jstype(static_cast<PROTOBUF_NAMESPACE_ID::FieldOptions_JSType>(val));
@@ -7728,7 +7728,7 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_I
       case 10:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 80)) {
           _Internal::set_has_weak(&has_bits);
-          weak_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          weak_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -8309,7 +8309,7 @@ const char* EnumOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           _Internal::set_has_allow_alias(&has_bits);
-          allow_alias_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          allow_alias_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -8317,7 +8317,7 @@ const char* EnumOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
           _Internal::set_has_deprecated(&has_bits);
-          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -8604,7 +8604,7 @@ const char* EnumValueOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPA
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
           _Internal::set_has_deprecated(&has_bits);
-          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -8866,7 +8866,7 @@ const char* ServiceOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE
       case 33:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
           _Internal::set_has_deprecated(&has_bits);
-          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -9140,14 +9140,14 @@ const char* MethodOptions::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
       case 33:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
           _Internal::set_has_deprecated(&has_bits);
-          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          deprecated_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
       case 34:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           if (PROTOBUF_PREDICT_TRUE(PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel_IsValid(val))) {
             _internal_set_idempotency_level(static_cast<PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel>(val));
@@ -9463,7 +9463,7 @@ const char* UninterpretedOption_NamePart::_InternalParse(const char* ptr, ::PROT
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
           _Internal::set_has_is_extension(&has_bits);
-          is_extension_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          is_extension_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -9797,7 +9797,7 @@ const char* UninterpretedOption::_InternalParse(const char* ptr, ::PROTOBUF_NAME
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
           _Internal::set_has_positive_int_value(&has_bits);
-          positive_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          positive_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -9805,7 +9805,7 @@ const char* UninterpretedOption::_InternalParse(const char* ptr, ::PROTOBUF_NAME
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
           _Internal::set_has_negative_int_value(&has_bits);
-          negative_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          negative_int_value_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -10197,7 +10197,7 @@ const char* SourceCodeInfo_Location::_InternalParse(const char* ptr, ::PROTOBUF_
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_path(), ptr, ctx);
           CHK_(ptr);
         } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8) {
-          _internal_add_path(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
+          _internal_add_path(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -10207,7 +10207,7 @@ const char* SourceCodeInfo_Location::_InternalParse(const char* ptr, ::PROTOBUF_
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_span(), ptr, ctx);
           CHK_(ptr);
         } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16) {
-          _internal_add_span(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
+          _internal_add_span(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -10792,7 +10792,7 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::PROT
           ptr = ::PROTOBUF_NAMESPACE_ID::internal::PackedInt32Parser(_internal_mutable_path(), ptr, ctx);
           CHK_(ptr);
         } else if (static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8) {
-          _internal_add_path(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr));
+          _internal_add_path(::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -10811,7 +10811,7 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::PROT
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
           _Internal::set_has_begin(&has_bits);
-          begin_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          begin_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -10819,7 +10819,7 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::PROT
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
           _Internal::set_has_end(&has_bits);
-          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;

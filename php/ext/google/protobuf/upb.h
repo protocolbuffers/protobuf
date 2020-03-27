@@ -3760,6 +3760,8 @@ const upb_msgdef *upb_symtab_lookupmsg2(
     const upb_symtab *s, const char *sym, size_t len);
 const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
 const upb_filedef *upb_symtab_lookupfile(const upb_symtab *s, const char *name);
+const upb_filedef *upb_symtab_lookupfile2(
+    const upb_symtab *s, const char *name, size_t len);
 int upb_symtab_filecount(const upb_symtab *s);
 const upb_filedef *upb_symtab_addfile(
     upb_symtab *s, const google_protobuf_FileDescriptorProto *file,
@@ -6376,7 +6378,7 @@ typedef struct {
 typedef struct {
   /* Space optimization note: we store two pointers here that the JIT
    * doesn't need at all; the upb_handlers* inside the sink and
-   * the dispatch table pointer.  We can optimze so that the JIT uses
+   * the dispatch table pointer.  We can optimize so that the JIT uses
    * smaller stack frames than the interpreter.  The only thing we need
    * to guarantee is that the fallback routines can find end_ofs. */
   upb_sink sink;
@@ -6453,7 +6455,7 @@ struct upb_pbdecoder {
   char residual[UPB_DECODER_MAX_RESIDUAL_BYTES];
   char *residual_end;
 
-  /* Bytes of data that should be discarded from the input beore we start
+  /* Bytes of data that should be discarded from the input before we start
    * parsing again.  We set this when we internally determine that we can
    * safely skip the next N bytes, but this region extends past the current
    * user buffer. */

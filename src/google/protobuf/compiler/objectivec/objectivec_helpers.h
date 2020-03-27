@@ -118,6 +118,14 @@ string PROTOC_EXPORT OneofEnumName(const OneofDescriptor* descriptor);
 string PROTOC_EXPORT OneofName(const OneofDescriptor* descriptor);
 string PROTOC_EXPORT OneofNameCapitalized(const OneofDescriptor* descriptor);
 
+// Returns a symbol that can be used in C code to refer to an Objective C
+// class without initializing the class.
+string PROTOC_EXPORT ObjCClass(const string& class_name);
+
+// Declares an Objective C class without initializing the class so that it can
+// be refrerred to by ObjCClass.
+string PROTOC_EXPORT ObjCClassDeclaration(const string& class_name);
+
 inline bool HasFieldPresence(const FileDescriptor* file) {
   return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
 }

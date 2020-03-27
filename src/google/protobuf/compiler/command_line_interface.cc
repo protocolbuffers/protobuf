@@ -944,7 +944,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     for (int i = 0; i < output_directives_.size(); i++) {
       std::string output_location = output_directives_[i].output_location;
       if (!HasSuffixString(output_location, ".zip") &&
-          !HasSuffixString(output_location, ".jar")) {
+          !HasSuffixString(output_location, ".jar") &&
+          !HasSuffixString(output_location, ".srcjar")) {
         AddTrailingSlash(&output_location);
       }
 
@@ -2346,12 +2347,20 @@ bool CommandLineInterface::WriteDescriptorSet(
   }
 
   io::FileOutputStream out(fd);
-  if (!file_set.SerializeToZeroCopyStream(&out)) {
-    std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
-              << std::endl;
-    out.Close();
-    return false;
+
+  {
+    io::CodedOutputStream coded_out(&out);
+    // Determinism is useful here because build outputs are sometimes checked
+    // into version control.
+    coded_out.SetSerializationDeterministic(true);
+    if (!file_set.SerializeToCodedStream(&coded_out)) {
+      std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
+                << std::endl;
+      out.Close();
+      return false;
+    }
   }
+
   if (!out.Close()) {
     std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
               << std::endl;
@@ -2398,7 +2407,7 @@ namespace {
 // Nested Messages:
 // Note that it only stores the nested message type, iff the nested type is
 // either a direct child of the given descriptor, or the nested type is a
-// decendent of the given descriptor and all the nodes between the
+// descendant of the given descriptor and all the nodes between the
 // nested type and the given descriptor are group types. e.g.
 //
 // message Foo {

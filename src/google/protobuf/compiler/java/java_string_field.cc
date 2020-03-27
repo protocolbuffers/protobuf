@@ -157,7 +157,7 @@ int ImmutableStringFieldGenerator::GetNumBitsForBuilder() const {
 // A note about how strings are handled. This code used to just store a String
 // in the Message. This had two issues:
 //
-//  1. It wouldn't roundtrip byte arrays that were not vaid UTF-8 encoded
+//  1. It wouldn't roundtrip byte arrays that were not valid UTF-8 encoded
 //     strings, but rather fields that were raw bytes incorrectly marked
 //     as strings in the proto file. This is common because in the proto1
 //     syntax, string was the way to indicate bytes and C++ engineers can

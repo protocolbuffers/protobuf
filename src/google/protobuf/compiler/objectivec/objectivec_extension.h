@@ -51,6 +51,7 @@ class ExtensionGenerator {
   void GenerateMembersHeader(io::Printer* printer);
   void GenerateStaticVariablesInitialization(io::Printer* printer);
   void GenerateRegistrationSource(io::Printer* printer);
+  void DetermineObjectiveCClassDefinitions(std::set<string>* fwd_decls);
 
  private:
   string method_name_;

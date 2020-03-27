@@ -216,3 +216,27 @@ with info about your project (name and website) so we can add an entry for you.
 1. Ocaml-protoc-plugin
    * Website: https://github.com/issuu/ocaml-protoc-plugin
    * Extensions: 1074
+
+1. Analyze Re Graphene
+   * Website: https://analyzere.com
+   * Extensions: 1075
+
+1. Wire since and until
+   * Website: https://square.github.io/wire/
+   * Extensions: 1076, 1077
+
+1. Bazel, Failure Details
+   * Website: https://github.com/bazelbuild/bazel
+   * Extensions: 1078
+
+1. grpc-graphql-gateway
+   * Website: https://github.com/ysugimoto/grpc-graphql-gateway
+   * Extensions: 1079
+
+1. Cloudstate
+   * Website: https://cloudstate.io
+   * Extensions: 1080-1084
+
+1. SummaFT protoc-plugins
+   * Website: https://summaft.com/
+   * Extensions: 1085

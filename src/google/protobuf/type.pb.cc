@@ -255,7 +255,7 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2ftype_2eproto = (  ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto), true);
+static bool dynamic_init_dummy_google_2fprotobuf_2ftype_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto)), true);
 PROTOBUF_NAMESPACE_OPEN
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Field_Kind_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
@@ -520,7 +520,7 @@ const char* Type::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inter
       // .google.protobuf.Syntax syntax = 6;
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 48)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_syntax(static_cast<PROTOBUF_NAMESPACE_ID::Syntax>(val));
         } else goto handle_unusual;
@@ -859,7 +859,7 @@ const char* Field::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
       // .google.protobuf.Field.Kind kind = 1;
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_kind(static_cast<PROTOBUF_NAMESPACE_ID::Field_Kind>(val));
         } else goto handle_unusual;
@@ -867,7 +867,7 @@ const char* Field::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
       // .google.protobuf.Field.Cardinality cardinality = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_cardinality(static_cast<PROTOBUF_NAMESPACE_ID::Field_Cardinality>(val));
         } else goto handle_unusual;
@@ -875,7 +875,7 @@ const char* Field::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
       // int32 number = 3;
       case 3:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 24)) {
-          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -900,14 +900,14 @@ const char* Field::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
       // int32 oneof_index = 7;
       case 7:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 56)) {
-          oneof_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          oneof_index_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
       // bool packed = 8;
       case 8:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
-          packed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          packed_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -1386,7 +1386,7 @@ const char* Enum::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inter
       // .google.protobuf.Syntax syntax = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 40)) {
-          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          ::PROTOBUF_NAMESPACE_ID::uint64 val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
           _internal_set_syntax(static_cast<PROTOBUF_NAMESPACE_ID::Syntax>(val));
         } else goto handle_unusual;
@@ -1684,7 +1684,7 @@ const char* EnumValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
       // int32 number = 2;
       case 2:
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint(&ptr);
+          number_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
           CHK_(ptr);
         } else goto handle_unusual;
         continue;

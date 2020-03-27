@@ -295,6 +295,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Int32, int32_t, %d)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Int32
 
@@ -541,8 +542,10 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(UInt32, uint32_t, %u)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - UInt32
 
@@ -789,8 +792,10 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Int64, int64_t, %lld)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Int64
 
@@ -1037,8 +1042,10 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(UInt64, uint64_t, %llu)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - UInt64
 
@@ -1285,8 +1292,10 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Float, float, %f)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Float
 
@@ -1533,8 +1542,10 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Double, double, %lf)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Double
 
@@ -1781,8 +1792,10 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Bool, BOOL, %d)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 #pragma mark - Bool
 
@@ -2029,6 +2042,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
+// clang-format on
 //%PDDM-EXPAND-END (7 expansions)
 
 #pragma mark - Enum
@@ -2126,6 +2140,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 //%PDDM-EXPAND ARRAY_IMMUTABLE_CORE(Enum, int32_t, Raw, %d)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 - (void)dealloc {
   NSAssert(!_autocreator,
@@ -2185,17 +2200,20 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
     }
   }
 }
+// clang-format on
 //%PDDM-EXPAND-END ARRAY_IMMUTABLE_CORE(Enum, int32_t, Raw, %d)
 
 - (int32_t)valueAtIndex:(NSUInteger)index {
 //%PDDM-EXPAND VALIDATE_RANGE(index, _count)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
   if (index >= _count) {
     [NSException raise:NSRangeException
                 format:@"Index (%lu) beyond bounds (%lu)",
                        (unsigned long)index, (unsigned long)_count];
   }
+// clang-format on
 //%PDDM-EXPAND-END VALIDATE_RANGE(index, _count)
   int32_t result = _values[index];
   if (!_validationFunc(result)) {
@@ -2207,12 +2225,14 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 - (int32_t)rawValueAtIndex:(NSUInteger)index {
 //%PDDM-EXPAND VALIDATE_RANGE(index, _count)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
   if (index >= _count) {
     [NSException raise:NSRangeException
                 format:@"Index (%lu) beyond bounds (%lu)",
                        (unsigned long)index, (unsigned long)_count];
   }
+// clang-format on
 //%PDDM-EXPAND-END VALIDATE_RANGE(index, _count)
   return _values[index];
 }
@@ -2253,6 +2273,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 //%PDDM-EXPAND ARRAY_MUTABLE_CORE(Enum, int32_t, Raw, %d)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 - (void)internalResizeToCapacity:(NSUInteger)newCapacity {
   _values = reallocf(_values, newCapacity * sizeof(int32_t));
@@ -2358,8 +2379,10 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   _values[idx2] = temp;
 }
 
+// clang-format on
 //%PDDM-EXPAND MUTATION_METHODS(Enum, int32_t, , EnumValidationList, EnumValidationOne)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 - (void)addValue:(int32_t)value {
   [self addValues:&value count:1];
@@ -2426,6 +2449,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   }
   _values[index] = value;
 }
+// clang-format on
 //%PDDM-EXPAND-END (2 expansions)
 
 //%PDDM-DEFINE MUTATION_HOOK_EnumValidationList()

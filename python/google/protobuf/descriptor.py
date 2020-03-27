@@ -205,7 +205,7 @@ class _NestedDescriptorBase(DescriptorBase):
         file.serialized_pb that describes this descriptor.
       serialized_end: The end index (exclusive) in block in the
         file.serialized_pb that describes this descriptor.
-      serialized_options: Protocol message serilized options or None.
+      serialized_options: Protocol message serialized options or None.
     """
     super(_NestedDescriptorBase, self).__init__(
         options, serialized_options, options_class_name)
@@ -780,18 +780,19 @@ class ServiceDescriptor(_NestedDescriptorBase):
 
   """Descriptor for a service.
 
-    name: (str) Name of the service.
-    full_name: (str) Full name of the service, including package name.
-    index: (int) 0-indexed index giving the order that this services
-      definition appears withing the .proto file.
-    methods: (list of MethodDescriptor) List of methods provided by this
+  Attributes:
+    name (str): Name of the service.
+    full_name (str): Full name of the service, including package name.
+    index (int): 0-indexed index giving the order that this services
+      definition appears within the .proto file.
+    methods (list[MethodDescriptor]): List of methods provided by this
       service.
-    methods_by_name: (dict str -> MethodDescriptor) Same MethodDescriptor
-      objects as in |methods_by_name|, but indexed by "name" attribute in each
-      MethodDescriptor.
-    options: (descriptor_pb2.ServiceOptions) Service options message or
+    methods_by_name (dict(str, MethodDescriptor)): Same
+      :class:`MethodDescriptor` objects as in :attr:`methods_by_name`, but
+      indexed by "name" attribute in each :class:`MethodDescriptor`.
+    options (descriptor_pb2.ServiceOptions): Service options message or
       None to use default service options.
-    file: (FileDescriptor) Reference to file info.
+    file (FileDescriptor): Reference to file info.
   """
 
   if _USE_C_DESCRIPTORS:

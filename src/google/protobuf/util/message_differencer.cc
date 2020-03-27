@@ -813,7 +813,7 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       continue;
     }
 
-    // By this point, field1 and field2 are guarenteed to point to the same
+    // By this point, field1 and field2 are guaranteed to point to the same
     // field, so we can now compare the values.
     if (IsIgnored(message1, message2, field1, *parent_fields)) {
       // Ignore this field. Report and move on.
@@ -1549,7 +1549,7 @@ bool MaximumMatcher::Match(int left, int right) {
 bool MaximumMatcher::FindArgumentPathDFS(int v, std::vector<bool>* visited) {
   (*visited)[v] = true;
   // We try to match those un-matched nodes on the right side first. This is
-  // the step that the navie greedy matching algorithm uses. In the best cases
+  // the step that the naive greedy matching algorithm uses. In the best cases
   // where the greedy algorithm can find a maximum matching, we will always
   // find a match in this step and the performance will be identical to the
   // greedy algorithm.
@@ -1561,7 +1561,7 @@ bool MaximumMatcher::FindArgumentPathDFS(int v, std::vector<bool>* visited) {
     }
   }
   // Then we try those already matched nodes and see if we can find an
-  // alternaive match for the node matched to them.
+  // alternative match for the node matched to them.
   // The greedy algorithm will stop before this and fail to produce the
   // correct result.
   for (int i = 0; i < count2_; ++i) {

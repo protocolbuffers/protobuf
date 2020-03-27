@@ -1,24 +1,51 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library")
-load("@rules_java//java:defs.bzl", "java_library")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("@rules_proto//proto/private:native.bzl", "native_proto_common")
 load("@rules_python//python:defs.bzl", "py_library")
+load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 
 licenses(["notice"])
 
 exports_files(["LICENSE"])
 
 ################################################################################
-# Java 9 configuration
+# build configuration
 ################################################################################
 
+string_flag(
+    name = "incompatible_use_com_google_googletest",
+    # TODO(yannic): Flip to `true` for `3.13.0`.
+    build_setting_default = "false",
+    values = ["true", "false"]
+)
+
 config_setting(
-    name = "jdk9",
-    values = {
-        "java_toolchain": "@bazel_tools//tools/jdk:toolchain_jdk9",
+    name = "use_com_google_googletest",
+    flag_values = {
+        "//:incompatible_use_com_google_googletest": "true"
     },
 )
+
+GTEST = select({
+    "//:use_com_google_googletest": [
+        "@com_google_googletest//:gtest",
+    ],
+    "//conditions:default": [
+        "//external:gtest",
+    ],
+})
+
+GTEST_MAIN = select({
+    "//:use_com_google_googletest": [
+        "@com_google_googletest//:gtest_main",
+    ],
+    "//conditions:default": [
+        "//external:gtest_main",
+    ],
+})
 
 ################################################################################
 # ZLIB configuration
@@ -68,6 +95,10 @@ load(":compiler_config_setting.bzl", "create_compiler_config_setting")
 create_compiler_config_setting(
     name = "msvc",
     value = "msvc-cl",
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
 )
 
 config_setting(
@@ -75,6 +106,10 @@ config_setting(
     values = {
         "crosstool_top": "//external:android/crosstool",
     },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
 )
 
 config_setting(
@@ -82,6 +117,10 @@ config_setting(
     values = {
         "crosstool_top": "@androidndk//:toolchain-libcpp",
     },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
 )
 
 config_setting(
@@ -89,6 +128,10 @@ config_setting(
     values = {
         "crosstool_top": "@androidndk//:toolchain-gnu-libstdcpp",
     },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
 )
 
 # Android and MSVC builds do not need to link in a separate pthread library.
@@ -108,6 +151,7 @@ LINK_OPTS = select({
 
 load(
     ":protobuf.bzl",
+    "adapt_proto_library",
     "cc_proto_library",
     "internal_copied_filegroup",
     "internal_gen_well_known_protos_java",
@@ -284,13 +328,15 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-cc_proto_library(
+adapt_proto_library(
+    name = "cc_wkt_protos_genproto",
+    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "cc_wkt_protos",
-    srcs = WELL_KNOWN_PROTOS,
-    include = "src",
-    default_runtime = ":protobuf",
-    internal_bootstrap_hack = 1,
-    protoc = ":protoc",
+    deprecation = "Only for backward compatibility. Do not use.",
     visibility = ["//visibility:public"],
 )
 
@@ -313,6 +359,17 @@ cc_proto_library(
     visibility = ["//visibility:public"],
     deps = [dep + "_proto" for dep in proto[1][1]],
 ) for proto in WELL_KNOWN_PROTO_MAP.items()]
+
+[native_cc_proto_library(
+    name = proto + "_cc_proto",
+    deps = [proto + "_proto"],
+    visibility = ["//visibility:private"],
+) for proto in WELL_KNOWN_PROTO_MAP.keys()]
+
+cc_proto_blacklist_test(
+    name = "cc_proto_blacklist_test",
+    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()]
+)
 
 ################################################################################
 # Protocol Buffers Compiler
@@ -516,8 +573,7 @@ cc_binary(
     deps = [
         ":protobuf",
         ":protoc_lib",
-        "//external:gtest",
-    ],
+    ] + GTEST,
 )
 
 cc_test(
@@ -529,8 +585,7 @@ cc_test(
     ],
     deps = [
         ":protobuf_lite",
-        "//external:gtest_main",
-    ],
+    ] + GTEST_MAIN,
 )
 
 cc_test(
@@ -633,151 +688,49 @@ cc_test(
         ":cc_test_protos",
         ":protobuf",
         ":protoc_lib",
-        "//external:gtest_main",
-    ] + PROTOBUF_DEPS,
+    ] + PROTOBUF_DEPS + GTEST_MAIN,
 )
 
 ################################################################################
 # Java support
 ################################################################################
+
 internal_gen_well_known_protos_java(
-    srcs = WELL_KNOWN_PROTOS,
+    name = "gen_well_known_protos_java",
+    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    visibility = [
+        "//java:__subpackages__",
+    ],
 )
 
-java_library(
+alias(
     name = "protobuf_java",
-    srcs = glob([
-        "java/core/src/main/java/com/google/protobuf/*.java",
-    ]) + [
-        ":gen_well_known_protos_java",
-    ],
-    javacopts = select({
-        "//:jdk9": ["--add-modules=jdk.unsupported"],
-        "//conditions:default": [
-            "-source 7",
-            "-target 7",
-        ],
-    }),
+    actual = "//java/core",
     visibility = ["//visibility:public"],
 )
 
-java_library(
+alias(
     name = "protobuf_javalite",
-    srcs = [
-        # Keep in sync with java/lite/pom.xml
-        "java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java",
-        "java/core/src/main/java/com/google/protobuf/AbstractParser.java",
-        "java/core/src/main/java/com/google/protobuf/AbstractProtobufList.java",
-        "java/core/src/main/java/com/google/protobuf/AllocatedBuffer.java",
-        "java/core/src/main/java/com/google/protobuf/Android.java",
-        "java/core/src/main/java/com/google/protobuf/ArrayDecoders.java",
-        "java/core/src/main/java/com/google/protobuf/BinaryReader.java",
-        "java/core/src/main/java/com/google/protobuf/BinaryWriter.java",
-        "java/core/src/main/java/com/google/protobuf/BooleanArrayList.java",
-        "java/core/src/main/java/com/google/protobuf/BufferAllocator.java",
-        "java/core/src/main/java/com/google/protobuf/ByteBufferWriter.java",
-        "java/core/src/main/java/com/google/protobuf/ByteOutput.java",
-        "java/core/src/main/java/com/google/protobuf/ByteString.java",
-        "java/core/src/main/java/com/google/protobuf/CodedInputStream.java",
-        "java/core/src/main/java/com/google/protobuf/CodedInputStreamReader.java",
-        "java/core/src/main/java/com/google/protobuf/CodedOutputStream.java",
-        "java/core/src/main/java/com/google/protobuf/CodedOutputStreamWriter.java",
-        "java/core/src/main/java/com/google/protobuf/DoubleArrayList.java",
-        "java/core/src/main/java/com/google/protobuf/ExperimentalApi.java",
-        "java/core/src/main/java/com/google/protobuf/ExtensionLite.java",
-        "java/core/src/main/java/com/google/protobuf/ExtensionRegistryFactory.java",
-        "java/core/src/main/java/com/google/protobuf/ExtensionRegistryLite.java",
-        "java/core/src/main/java/com/google/protobuf/ExtensionSchema.java",
-        "java/core/src/main/java/com/google/protobuf/ExtensionSchemaLite.java",
-        "java/core/src/main/java/com/google/protobuf/ExtensionSchemas.java",
-        "java/core/src/main/java/com/google/protobuf/FieldInfo.java",
-        "java/core/src/main/java/com/google/protobuf/FieldSet.java",
-        "java/core/src/main/java/com/google/protobuf/FieldType.java",
-        "java/core/src/main/java/com/google/protobuf/FloatArrayList.java",
-        "java/core/src/main/java/com/google/protobuf/GeneratedMessageInfoFactory.java",
-        "java/core/src/main/java/com/google/protobuf/GeneratedMessageLite.java",
-        "java/core/src/main/java/com/google/protobuf/IntArrayList.java",
-        "java/core/src/main/java/com/google/protobuf/Internal.java",
-        "java/core/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java",
-        "java/core/src/main/java/com/google/protobuf/IterableByteBufferInputStream.java",
-        "java/core/src/main/java/com/google/protobuf/JavaType.java",
-        "java/core/src/main/java/com/google/protobuf/LazyField.java",
-        "java/core/src/main/java/com/google/protobuf/LazyFieldLite.java",
-        "java/core/src/main/java/com/google/protobuf/LazyStringArrayList.java",
-        "java/core/src/main/java/com/google/protobuf/LazyStringList.java",
-        "java/core/src/main/java/com/google/protobuf/ListFieldSchema.java",
-        "java/core/src/main/java/com/google/protobuf/LongArrayList.java",
-        "java/core/src/main/java/com/google/protobuf/ManifestSchemaFactory.java",
-        "java/core/src/main/java/com/google/protobuf/MapEntryLite.java",
-        "java/core/src/main/java/com/google/protobuf/MapFieldLite.java",
-        "java/core/src/main/java/com/google/protobuf/MapFieldSchema.java",
-        "java/core/src/main/java/com/google/protobuf/MapFieldSchemaLite.java",
-        "java/core/src/main/java/com/google/protobuf/MapFieldSchemas.java",
-        "java/core/src/main/java/com/google/protobuf/MessageInfo.java",
-        "java/core/src/main/java/com/google/protobuf/MessageInfoFactory.java",
-        "java/core/src/main/java/com/google/protobuf/MessageLite.java",
-        "java/core/src/main/java/com/google/protobuf/MessageLiteOrBuilder.java",
-        "java/core/src/main/java/com/google/protobuf/MessageLiteToString.java",
-        "java/core/src/main/java/com/google/protobuf/MessageSchema.java",
-        "java/core/src/main/java/com/google/protobuf/MessageSetSchema.java",
-        "java/core/src/main/java/com/google/protobuf/MutabilityOracle.java",
-        "java/core/src/main/java/com/google/protobuf/NewInstanceSchema.java",
-        "java/core/src/main/java/com/google/protobuf/NewInstanceSchemaLite.java",
-        "java/core/src/main/java/com/google/protobuf/NewInstanceSchemas.java",
-        "java/core/src/main/java/com/google/protobuf/NioByteString.java",
-        "java/core/src/main/java/com/google/protobuf/OneofInfo.java",
-        "java/core/src/main/java/com/google/protobuf/Parser.java",
-        "java/core/src/main/java/com/google/protobuf/PrimitiveNonBoxingCollection.java",
-        "java/core/src/main/java/com/google/protobuf/ProtoSyntax.java",
-        "java/core/src/main/java/com/google/protobuf/Protobuf.java",
-        "java/core/src/main/java/com/google/protobuf/ProtobufArrayList.java",
-        "java/core/src/main/java/com/google/protobuf/ProtobufLists.java",
-        "java/core/src/main/java/com/google/protobuf/ProtocolStringList.java",
-        "java/core/src/main/java/com/google/protobuf/RawMessageInfo.java",
-        "java/core/src/main/java/com/google/protobuf/Reader.java",
-        "java/core/src/main/java/com/google/protobuf/RopeByteString.java",
-        "java/core/src/main/java/com/google/protobuf/Schema.java",
-        "java/core/src/main/java/com/google/protobuf/SchemaFactory.java",
-        "java/core/src/main/java/com/google/protobuf/SchemaUtil.java",
-        "java/core/src/main/java/com/google/protobuf/SmallSortedMap.java",
-        "java/core/src/main/java/com/google/protobuf/StructuralMessageInfo.java",
-        "java/core/src/main/java/com/google/protobuf/TextFormatEscaper.java",
-        "java/core/src/main/java/com/google/protobuf/UninitializedMessageException.java",
-        "java/core/src/main/java/com/google/protobuf/UnknownFieldSchema.java",
-        "java/core/src/main/java/com/google/protobuf/UnknownFieldSetLite.java",
-        "java/core/src/main/java/com/google/protobuf/UnknownFieldSetLiteSchema.java",
-        "java/core/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java",
-        "java/core/src/main/java/com/google/protobuf/UnsafeUtil.java",
-        "java/core/src/main/java/com/google/protobuf/Utf8.java",
-        "java/core/src/main/java/com/google/protobuf/WireFormat.java",
-        "java/core/src/main/java/com/google/protobuf/Writer.java",
-    ],
-    javacopts = select({
-        "//:jdk9": ["--add-modules=jdk.unsupported"],
-        "//conditions:default": [
-            "-source 7",
-            "-target 7",
-        ],
-    }),
+    actual = "//java/lite",
     visibility = ["//visibility:public"],
 )
 
-java_library(
+alias(
     name = "protobuf_java_util",
-    srcs = glob([
-        "java/util/src/main/java/com/google/protobuf/util/*.java",
-    ]),
-    javacopts = [
-        "-source 7",
-        "-target 7",
-    ],
+    actual = "//java/util",
     visibility = ["//visibility:public"],
-    deps = [
-        "protobuf_java",
-        "//external:error_prone_annotations",
-        "//external:gson",
-        "//external:guava",
-    ],
+)
+
+alias(
+    name = "java_toolchain",
+    actual = "//java/core:toolchain",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "javalite_toolchain",
+    actual = "//java/lite:toolchain",
+    visibility = ["//visibility:public"],
 )
 
 ################################################################################
@@ -846,6 +799,10 @@ config_setting(
     values = {
         "define": "use_fast_cpp_protos=true",
     },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
 )
 
 config_setting(
@@ -853,6 +810,10 @@ config_setting(
     values = {
         "define": "allow_oversize_protos=true",
     },
+    visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
 )
 
 # Copy the builtin proto files from src/google/protobuf to
@@ -986,18 +947,15 @@ cc_library(
     ],
 )
 
+# Note: We use `native_proto_common` here because we depend on an implementation-detail of
+# `proto_lang_toolchain`, which may not be available on `proto_common`.
+reject_blacklisted_files = hasattr(native_proto_common, "proto_lang_toolchain_rejects_files_do_not_use_or_we_will_break_you_without_mercy")
+cc_toolchain_blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()] if reject_blacklisted_files else [":well_known_protos"]
 proto_lang_toolchain(
     name = "cc_toolchain",
-    blacklisted_protos = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    blacklisted_protos = cc_toolchain_blacklisted_protos,
     command_line = "--cpp_out=$(OUT)",
     runtime = ":protobuf",
-    visibility = ["//visibility:public"],
-)
-
-proto_lang_toolchain(
-    name = "java_toolchain",
-    command_line = "--java_out=$(OUT)",
-    runtime = ":protobuf_java",
     visibility = ["//visibility:public"],
 )
 

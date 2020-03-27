@@ -617,16 +617,16 @@ class DescriptorPool(object):
       return self._extensions_by_number[message_descriptor][number]
 
   def FindAllExtensions(self, message_descriptor):
-    """Gets all the known extension of a given message.
+    """Gets all the known extensions of a given message.
 
     Extensions have to be registered to this pool by build related
-    FileDescirptorProto.
+    :func:`Add` or :func:`AddExtensionDescriptor`.
 
     Args:
-      message_descriptor: descriptor of the extended message.
+      message_descriptor (Descriptor): Descriptor of the extended message.
 
     Returns:
-      A list of FieldDescriptor describing the extensions.
+      list[FieldDescriptor]: Field descriptors describing the extensions.
     """
     # Fallback to descriptor db if FindAllExtensionNumbers is provided.
     if self._descriptor_db and hasattr(
@@ -641,7 +641,7 @@ class DescriptorPool(object):
     return list(self._extensions_by_number[message_descriptor].values())
 
   def _TryLoadExtensionFromDB(self, message_descriptor, number):
-    """Try to Load extensions from decriptor db.
+    """Try to Load extensions from descriptor db.
 
     Args:
       message_descriptor: descriptor of the extended message.
@@ -1044,7 +1044,7 @@ class DescriptorPool(object):
 
     Args:
       field_proto: Data about the field in proto format.
-      field_desc: The descriptor to modiy.
+      field_desc: The descriptor to modify.
       package: The package the field's container is in.
       scope: Enclosing scope of available types.
     """

@@ -118,7 +118,7 @@ class FooUnitTest(unittest.TestCase):
     rpc_controller = 'controller'
     request = 'request'
 
-    # GetDescriptor now static, still works as instance method for compatability
+    # GetDescriptor now static, still works as instance method for compatibility
     self.assertEqual(unittest_pb2.TestService_Stub.GetDescriptor(),
                      stub.GetDescriptor())
 

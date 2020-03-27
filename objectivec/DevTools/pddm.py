@@ -288,7 +288,7 @@ class MacroCollection(object):
     name = macro_ref_match.group('name')
     for prev_name, prev_macro_ref in macro_stack:
       if name == prev_name:
-        raise PDDMError('Found macro recusion, invoking "%s":%s' %
+        raise PDDMError('Found macro recursion, invoking "%s":%s' %
                         (macro_ref_str, self._FormatStack(macro_stack)))
     macro = self._macros[name]
     args_str = macro_ref_match.group('args').strip()
@@ -395,7 +395,7 @@ class SourceFile(object):
         wasn't append.  If SUCCESS is True, then CAN_ADD_MORE is True/False to
         indicate if more lines can be added after this one.
       """
-      assert False, "sublcass should have overridden"
+      assert False, "subclass should have overridden"
       return (False, False)
 
     def HitEOF(self):
@@ -482,13 +482,14 @@ class SourceFile(object):
         if self._macro_collection:
           # Always add a blank line, seems to read better. (If need be, add an
           # option to the EXPAND to indicate if this should be done.)
-          result.extend([_GENERATED_CODE_LINE, ''])
+          result.extend([_GENERATED_CODE_LINE, '// clang-format off', ''])
           macro = line[directive_len:].strip()
           try:
             expand_result = self._macro_collection.Expand(macro)
             # Since expansions are line oriented, strip trailing whitespace
             # from the lines.
             lines = [x.rstrip() for x in expand_result.split('\n')]
+            lines.append('// clang-format on')
             result.append('\n'.join(lines))
           except PDDMError as e:
             raise PDDMError('%s\n...while expanding "%s" from the section'
@@ -503,7 +504,6 @@ class SourceFile(object):
       else:
         result.append('//%%PDDM-EXPAND-END (%s expansions)' %
                       len(captured_lines))
-
       return result
 
   class DefinitionSection(SectionBase):

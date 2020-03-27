@@ -100,8 +100,10 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
       if (EXPECTED(cached_zval != NULL)) {
 #if PHP_MAJOR_VERSION < 7
         REPLACE_ZVAL_VALUE((zval**)memory, value, 1);
-#else
+#elif PHP_VERSION_ID < 70400
         zend_assign_to_variable(cached_zval, value, IS_CV);
+#else
+        zend_assign_to_variable(cached_zval, value, IS_CV, 0);
 #endif
       }
       break;
@@ -272,7 +274,6 @@ bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
 }
 
 void native_slot_init(upb_fieldtype_t type, void* memory, CACHED_VALUE* cache) {
-  zval* tmp = NULL;
   switch (type) {
     case UPB_TYPE_FLOAT:
       DEREF(memory, float) = 0.0;
@@ -550,12 +551,13 @@ const upb_fielddef* map_entry_value(const upb_msgdef* msgdef) {
 const zend_class_entry* field_type_class(
     const upb_fielddef* field PHP_PROTO_TSRMLS_DC) {
   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
-    Descriptor* desc = UNBOX_HASHTABLE_VALUE(
-        Descriptor, get_def_obj(upb_fielddef_msgsubdef(field)));
+    DescriptorInternal* desc = get_msgdef_desc(upb_fielddef_msgsubdef(field));
+    register_class(desc, false TSRMLS_CC);
     return desc->klass;
   } else if (upb_fielddef_type(field) == UPB_TYPE_ENUM) {
-    EnumDescriptor* desc = UNBOX_HASHTABLE_VALUE(
-        EnumDescriptor, get_def_obj(upb_fielddef_enumsubdef(field)));
+    EnumDescriptorInternal* desc =
+        get_enumdef_enumdesc(upb_fielddef_enumsubdef(field));
+    register_class(desc, false TSRMLS_CC);
     return desc->klass;
   }
   return NULL;
@@ -576,18 +578,13 @@ uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
                      layout->fields[upb_fielddef_index(field)].case_offset);
 }
 
-static int slot_property_cache(MessageLayout* layout, const void* storage,
-                               const upb_fielddef* field) {
-  return layout->fields[upb_fielddef_index(field)].cache_index;
-}
-
 void* slot_memory(MessageLayout* layout, const void* storage,
                          const upb_fielddef* field) {
   return ((uint8_t*)storage) + layout->fields[upb_fielddef_index(field)].offset;
 }
 
 MessageLayout* create_layout(const upb_msgdef* msgdef) {
-  MessageLayout* layout = ALLOC(MessageLayout);
+  MessageLayout* layout = SYS_MALLOC(MessageLayout);
   int nfields = upb_msgdef_numfields(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
@@ -600,8 +597,9 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   layout->empty_template = NULL;
 
   TSRMLS_FETCH();
-  Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(msgdef));
-  layout->fields = ALLOC_N(MessageField, nfields);
+  DescriptorInternal* desc = get_msgdef_desc(msgdef);
+  register_class(desc, false TSRMLS_CC);
+  layout->fields = SYS_MALLOC_N(MessageField, nfields);
 
   for (upb_msg_field_begin(&it, msgdef); !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
@@ -745,16 +743,16 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   layout->msgdef = msgdef;
 
   // Create the empty message template.
-  layout->empty_template = ALLOC_N(char, layout->size);
+  layout->empty_template = SYS_MALLOC_N(char, layout->size);
   memset(layout->empty_template, 0, layout->size);
 
   return layout;
 }
 
 void free_layout(MessageLayout* layout) {
-  FREE(layout->empty_template);
-  FREE(layout->fields);
-  FREE(layout);
+  SYS_FREE(layout->empty_template);
+  SYS_FREE(layout->fields);
+  SYS_FREE(layout);
 }
 
 void layout_init(MessageLayout* layout, void* storage,
@@ -822,9 +820,8 @@ zval* layout_get(MessageLayout* layout, MessageHeader* header,
       const upb_msgdef* submsgdef = upb_fielddef_msgsubdef(field);
       const upb_fielddef* value_field = upb_msgdef_itof(submsgdef, 1);
       MessageHeader* submsg;
-      Descriptor* subdesc =
-          UNBOX_HASHTABLE_VALUE(
-              Descriptor, get_def_obj((void*)submsgdef));
+      DescriptorInternal* subdesc = get_msgdef_desc(submsgdef);
+      register_class(subdesc, false TSRMLS_CC);
       zend_class_entry* subklass = subdesc->klass;
 #if PHP_MAJOR_VERSION < 7
       zval* val = NULL;
@@ -879,8 +876,8 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
         if (upb_fielddef_descriptortype(valuefield) ==
             UPB_DESCRIPTOR_TYPE_MESSAGE) {
           const upb_msgdef* submsg = upb_fielddef_msgsubdef(valuefield);
-          Descriptor* subdesc =
-              UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(submsg));
+          DescriptorInternal* subdesc = get_msgdef_desc(submsg);
+          register_class(subdesc, false TSRMLS_CC);
           subce = subdesc->klass;
         }
         check_map_field(subce, upb_fielddef_descriptortype(keyfield),
@@ -889,8 +886,8 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
       } else {
         if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
           const upb_msgdef* submsg = upb_fielddef_msgsubdef(field);
-          Descriptor* subdesc =
-              UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(submsg));
+          DescriptorInternal* subdesc = get_msgdef_desc(submsg);
+          register_class(subdesc, false TSRMLS_CC);
           subce = subdesc->klass;
         }
 
@@ -912,7 +909,8 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
   zend_class_entry *ce = NULL;
   if (type == UPB_TYPE_MESSAGE) {
     const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
-    Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(msg));
+    DescriptorInternal* desc = get_msgdef_desc(msg);
+    register_class(desc, false TSRMLS_CC);
     ce = desc->klass;
   }
   CACHED_VALUE* cache = find_zval_property(header, field);
@@ -950,7 +948,8 @@ static void native_slot_merge(
         break;
       case UPB_TYPE_MESSAGE: {
         const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
-        Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(msg));
+        DescriptorInternal* desc = get_msgdef_desc(msg);
+        register_class(desc, false TSRMLS_CC);
         ce = desc->klass;
         if (native_slot_is_default(type, to_memory)) {
 #if PHP_MAJOR_VERSION < 7
@@ -995,8 +994,8 @@ static void native_slot_merge_by_array(const upb_fielddef* field, const void* fr
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
-      Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(msg));
+      DescriptorInternal* desc = get_msgdef_desc(upb_fielddef_msgsubdef(field));
+      register_class(desc, false TSRMLS_CC);
       zend_class_entry* ce = desc->klass;
 #if PHP_MAJOR_VERSION < 7
       MAKE_STD_ZVAL(DEREF(to_memory, zval*));
@@ -1164,7 +1163,7 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
 const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC) {
   upb_oneof_iter i;
-  const upb_fielddef* first_field;
+  const upb_fielddef* first_field = NULL;
 
   // Oneof is guaranteed to have at least one field. Get the first field.
   for(upb_oneof_begin(&i, oneof); !upb_oneof_done(&i); upb_oneof_next(&i)) {

@@ -4,6 +4,7 @@ require_once('test_base.php');
 require_once('test_util.php');
 
 use Foo\TestMessage;
+use Foo\TestImportDescriptorProto;
 use Google\Protobuf\Any;
 use Google\Protobuf\Api;
 use Google\Protobuf\BoolValue;
