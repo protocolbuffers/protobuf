@@ -1196,27 +1196,28 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
   }
 }
 
-const char* ExtensionSet::ParseField(
-    uint64 tag, const char* ptr, const MessageLite* containing_type,
-    internal::InternalMetadataWithArenaLite* metadata,
-    internal::ParseContext* ctx) {
+const char* ExtensionSet::ParseField(uint64 tag, const char* ptr,
+                                     const MessageLite* containing_type,
+                                     internal::InternalMetadata* metadata,
+                                     internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(containing_type);
   int number = tag >> 3;
   bool was_packed_on_wire;
   ExtensionInfo extension;
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
-    return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
+    return UnknownFieldParse(
+        tag, metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
   }
-  return ParseFieldWithExtensionInfo(number, was_packed_on_wire, extension,
-                                     metadata, ptr, ctx);
+  return ParseFieldWithExtensionInfo<std::string>(
+      number, was_packed_on_wire, extension, metadata, ptr, ctx);
 }
 
 const char* ExtensionSet::ParseMessageSetItem(
     const char* ptr, const MessageLite* containing_type,
-    internal::InternalMetadataWithArenaLite* metadata,
-    internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
+    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl<MessageLite, std::string>(ptr, containing_type,
+                                                           metadata, ctx);
 }
 
 bool ExtensionSet::ParseFieldWithExtensionInfo(int number,

@@ -26,7 +26,7 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/metadata.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
@@ -98,10 +98,10 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-class PROTOBUF_EXPORT DoubleValue :
+class PROTOBUF_EXPORT DoubleValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
  public:
-  DoubleValue();
+  inline DoubleValue() : DoubleValue(nullptr) {};
   virtual ~DoubleValue();
 
   DoubleValue(const DoubleValue& from);
@@ -123,12 +123,6 @@ class PROTOBUF_EXPORT DoubleValue :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -205,9 +199,6 @@ class PROTOBUF_EXPORT DoubleValue :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -239,7 +230,6 @@ class PROTOBUF_EXPORT DoubleValue :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -249,10 +239,10 @@ class PROTOBUF_EXPORT DoubleValue :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT FloatValue :
+class PROTOBUF_EXPORT FloatValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
  public:
-  FloatValue();
+  inline FloatValue() : FloatValue(nullptr) {};
   virtual ~FloatValue();
 
   FloatValue(const FloatValue& from);
@@ -274,12 +264,6 @@ class PROTOBUF_EXPORT FloatValue :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -356,9 +340,6 @@ class PROTOBUF_EXPORT FloatValue :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -390,7 +371,6 @@ class PROTOBUF_EXPORT FloatValue :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -400,10 +380,10 @@ class PROTOBUF_EXPORT FloatValue :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int64Value :
+class PROTOBUF_EXPORT Int64Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
  public:
-  Int64Value();
+  inline Int64Value() : Int64Value(nullptr) {};
   virtual ~Int64Value();
 
   Int64Value(const Int64Value& from);
@@ -425,12 +405,6 @@ class PROTOBUF_EXPORT Int64Value :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -507,9 +481,6 @@ class PROTOBUF_EXPORT Int64Value :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -541,7 +512,6 @@ class PROTOBUF_EXPORT Int64Value :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -551,10 +521,10 @@ class PROTOBUF_EXPORT Int64Value :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt64Value :
+class PROTOBUF_EXPORT UInt64Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
  public:
-  UInt64Value();
+  inline UInt64Value() : UInt64Value(nullptr) {};
   virtual ~UInt64Value();
 
   UInt64Value(const UInt64Value& from);
@@ -576,12 +546,6 @@ class PROTOBUF_EXPORT UInt64Value :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -658,9 +622,6 @@ class PROTOBUF_EXPORT UInt64Value :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -692,7 +653,6 @@ class PROTOBUF_EXPORT UInt64Value :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -702,10 +662,10 @@ class PROTOBUF_EXPORT UInt64Value :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Int32Value :
+class PROTOBUF_EXPORT Int32Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
  public:
-  Int32Value();
+  inline Int32Value() : Int32Value(nullptr) {};
   virtual ~Int32Value();
 
   Int32Value(const Int32Value& from);
@@ -727,12 +687,6 @@ class PROTOBUF_EXPORT Int32Value :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -809,9 +763,6 @@ class PROTOBUF_EXPORT Int32Value :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -843,7 +794,6 @@ class PROTOBUF_EXPORT Int32Value :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -853,10 +803,10 @@ class PROTOBUF_EXPORT Int32Value :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT UInt32Value :
+class PROTOBUF_EXPORT UInt32Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
  public:
-  UInt32Value();
+  inline UInt32Value() : UInt32Value(nullptr) {};
   virtual ~UInt32Value();
 
   UInt32Value(const UInt32Value& from);
@@ -878,12 +828,6 @@ class PROTOBUF_EXPORT UInt32Value :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -960,9 +904,6 @@ class PROTOBUF_EXPORT UInt32Value :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -994,7 +935,6 @@ class PROTOBUF_EXPORT UInt32Value :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1004,10 +944,10 @@ class PROTOBUF_EXPORT UInt32Value :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BoolValue :
+class PROTOBUF_EXPORT BoolValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
  public:
-  BoolValue();
+  inline BoolValue() : BoolValue(nullptr) {};
   virtual ~BoolValue();
 
   BoolValue(const BoolValue& from);
@@ -1029,12 +969,6 @@ class PROTOBUF_EXPORT BoolValue :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -1111,9 +1045,6 @@ class PROTOBUF_EXPORT BoolValue :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -1145,7 +1076,6 @@ class PROTOBUF_EXPORT BoolValue :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1155,10 +1085,10 @@ class PROTOBUF_EXPORT BoolValue :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT StringValue :
+class PROTOBUF_EXPORT StringValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
  public:
-  StringValue();
+  inline StringValue() : StringValue(nullptr) {};
   virtual ~StringValue();
 
   StringValue(const StringValue& from);
@@ -1180,12 +1110,6 @@ class PROTOBUF_EXPORT StringValue :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -1262,9 +1186,6 @@ class PROTOBUF_EXPORT StringValue :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -1312,7 +1233,6 @@ class PROTOBUF_EXPORT StringValue :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1322,10 +1242,10 @@ class PROTOBUF_EXPORT StringValue :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT BytesValue :
+class PROTOBUF_EXPORT BytesValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
  public:
-  BytesValue();
+  inline BytesValue() : BytesValue(nullptr) {};
   virtual ~BytesValue();
 
   BytesValue(const BytesValue& from);
@@ -1347,12 +1267,6 @@ class PROTOBUF_EXPORT BytesValue :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -1429,9 +1343,6 @@ class PROTOBUF_EXPORT BytesValue :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -1479,7 +1390,6 @@ class PROTOBUF_EXPORT BytesValue :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;

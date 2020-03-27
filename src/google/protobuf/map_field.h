@@ -75,7 +75,9 @@ class PROTOBUF_EXPORT MapFieldBase {
       : arena_(arena), repeated_field_(NULL), state_(STATE_MODIFIED_MAP) {
     // Mutex's destructor needs to be called explicitly to release resources
     // acquired in its constructor.
-    arena->OwnDestructor(&mutex_);
+    if (arena) {
+      arena->OwnDestructor(&mutex_);
+    }
   }
   virtual ~MapFieldBase();
 
@@ -286,12 +288,12 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   const char* _InternalParse(const char* ptr, ParseContext* ctx) {
     return impl_._InternalParse(ptr, ctx);
   }
-  template <typename Metadata>
+  template <typename UnknownType>
   const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
                                       bool (*is_valid)(int), uint32 field_num,
-                                      Metadata* metadata) {
-    return impl_.ParseWithEnumValidation(ptr, ctx, is_valid, field_num,
-                                         metadata);
+                                      InternalMetadata* metadata) {
+    return impl_.template ParseWithEnumValidation<UnknownType>(
+        ptr, ctx, is_valid, field_num, metadata);
   }
 
  private:

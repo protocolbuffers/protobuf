@@ -34,13 +34,13 @@
 #include <stack>
 
 #include <google/protobuf/stubs/once.h>
-#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
 #include <google/protobuf/util/internal/object_location_tracker.h>
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
 
@@ -449,7 +449,8 @@ void ProtoWriter::MissingField(StringPiece missing_name) {
   listener_->MissingField(location(), missing_name);
 }
 
-ProtoWriter* ProtoWriter::StartObject(StringPiece name) {
+ProtoWriter* ProtoWriter::StartObject(
+    StringPiece name) {
   // Starting the root message. Create the root ProtoElement and return.
   if (element_ == nullptr) {
     if (!name.empty()) {
@@ -459,8 +460,8 @@ ProtoWriter* ProtoWriter::StartObject(StringPiece name) {
     return this;
   }
 
-  const google::protobuf::Field* field = nullptr;
-  field = BeginNamed(name, false);
+  const google::protobuf::Field* field = BeginNamed(name, false);
+
   if (field == nullptr) return this;
 
   // Check to see if this field is a oneof and that no oneof in that group has
@@ -481,6 +482,7 @@ ProtoWriter* ProtoWriter::StartObject(StringPiece name) {
   return StartObjectField(*field, *type);
 }
 
+
 ProtoWriter* ProtoWriter::EndObject() {
   if (invalid_depth_ > 0) {
     --invalid_depth_;
@@ -500,8 +502,11 @@ ProtoWriter* ProtoWriter::EndObject() {
   return this;
 }
 
-ProtoWriter* ProtoWriter::StartList(StringPiece name) {
+ProtoWriter* ProtoWriter::StartList(
+    StringPiece name) {
+
   const google::protobuf::Field* field = BeginNamed(name, true);
+
   if (field == nullptr) return this;
 
   if (!ValidOneof(*field, name)) {
@@ -520,6 +525,7 @@ ProtoWriter* ProtoWriter::StartList(StringPiece name) {
   return StartListField(*field, *type);
 }
 
+
 ProtoWriter* ProtoWriter::EndList() {
   if (invalid_depth_ > 0) {
     --invalid_depth_;
@@ -529,12 +535,13 @@ ProtoWriter* ProtoWriter::EndList() {
   return this;
 }
 
-ProtoWriter* ProtoWriter::RenderDataPiece(StringPiece name,
-                                          const DataPiece& data) {
+ProtoWriter* ProtoWriter::RenderDataPiece(
+    StringPiece name, const DataPiece& data) {
   Status status;
   if (invalid_depth_ > 0) return this;
 
   const google::protobuf::Field* field = Lookup(name);
+
   if (field == nullptr) return this;
 
   if (!ValidOneof(*field, name)) return this;

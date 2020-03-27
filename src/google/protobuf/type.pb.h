@@ -26,7 +26,7 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/metadata.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
@@ -179,10 +179,10 @@ inline bool Syntax_Parse(
 }
 // ===================================================================
 
-class PROTOBUF_EXPORT Type :
+class PROTOBUF_EXPORT Type PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
-  Type();
+  inline Type() : Type(nullptr) {};
   virtual ~Type();
 
   Type(const Type& from);
@@ -204,12 +204,6 @@ class PROTOBUF_EXPORT Type :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -285,9 +279,6 @@ class PROTOBUF_EXPORT Type :
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
-  }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
   }
   public:
 
@@ -428,7 +419,6 @@ class PROTOBUF_EXPORT Type :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -443,10 +433,10 @@ class PROTOBUF_EXPORT Type :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Field :
+class PROTOBUF_EXPORT Field PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
-  Field();
+  inline Field() : Field(nullptr) {};
   virtual ~Field();
 
   Field(const Field& from);
@@ -468,12 +458,6 @@ class PROTOBUF_EXPORT Field :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -549,9 +533,6 @@ class PROTOBUF_EXPORT Field :
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
-  }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
   }
   public:
 
@@ -845,7 +826,6 @@ class PROTOBUF_EXPORT Field :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -864,10 +844,10 @@ class PROTOBUF_EXPORT Field :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Enum :
+class PROTOBUF_EXPORT Enum PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
-  Enum();
+  inline Enum() : Enum(nullptr) {};
   virtual ~Enum();
 
   Enum(const Enum& from);
@@ -889,12 +869,6 @@ class PROTOBUF_EXPORT Enum :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -970,9 +944,6 @@ class PROTOBUF_EXPORT Enum :
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
-  }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
   }
   public:
 
@@ -1088,7 +1059,6 @@ class PROTOBUF_EXPORT Enum :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1102,10 +1072,10 @@ class PROTOBUF_EXPORT Enum :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT EnumValue :
+class PROTOBUF_EXPORT EnumValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
-  EnumValue();
+  inline EnumValue() : EnumValue(nullptr) {};
   virtual ~EnumValue();
 
   EnumValue(const EnumValue& from);
@@ -1127,12 +1097,6 @@ class PROTOBUF_EXPORT EnumValue :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -1208,9 +1172,6 @@ class PROTOBUF_EXPORT EnumValue :
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
-  }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
   }
   public:
 
@@ -1288,7 +1249,6 @@ class PROTOBUF_EXPORT EnumValue :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1300,10 +1260,10 @@ class PROTOBUF_EXPORT EnumValue :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Option :
+class PROTOBUF_EXPORT Option PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
-  Option();
+  inline Option() : Option(nullptr) {};
   virtual ~Option();
 
   Option(const Option& from);
@@ -1325,12 +1285,6 @@ class PROTOBUF_EXPORT Option :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -1407,9 +1361,6 @@ class PROTOBUF_EXPORT Option :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
   }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -1476,7 +1427,6 @@ class PROTOBUF_EXPORT Option :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -1745,6 +1695,19 @@ inline const PROTOBUF_NAMESPACE_ID::SourceContext& Type::_internal_source_contex
 inline const PROTOBUF_NAMESPACE_ID::SourceContext& Type::source_context() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.source_context)
   return _internal_source_context();
+}
+inline void Type::unsafe_arena_set_allocated_source_context(
+    PROTOBUF_NAMESPACE_ID::SourceContext* source_context) {
+  if (GetArenaNoVirtual() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(source_context_);
+  }
+  source_context_ = source_context;
+  if (source_context) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Type.source_context)
 }
 inline PROTOBUF_NAMESPACE_ID::SourceContext* Type::release_source_context() {
   auto temp = unsafe_arena_release_source_context();
@@ -2462,6 +2425,19 @@ inline const PROTOBUF_NAMESPACE_ID::SourceContext& Enum::source_context() const 
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.source_context)
   return _internal_source_context();
 }
+inline void Enum::unsafe_arena_set_allocated_source_context(
+    PROTOBUF_NAMESPACE_ID::SourceContext* source_context) {
+  if (GetArenaNoVirtual() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(source_context_);
+  }
+  source_context_ = source_context;
+  if (source_context) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Enum.source_context)
+}
 inline PROTOBUF_NAMESPACE_ID::SourceContext* Enum::release_source_context() {
   auto temp = unsafe_arena_release_source_context();
   if (GetArenaNoVirtual() != nullptr) {
@@ -2773,6 +2749,19 @@ inline const PROTOBUF_NAMESPACE_ID::Any& Option::_internal_value() const {
 inline const PROTOBUF_NAMESPACE_ID::Any& Option::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Option.value)
   return _internal_value();
+}
+inline void Option::unsafe_arena_set_allocated_value(
+    PROTOBUF_NAMESPACE_ID::Any* value) {
+  if (GetArenaNoVirtual() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(value_);
+  }
+  value_ = value;
+  if (value) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Option.value)
 }
 inline PROTOBUF_NAMESPACE_ID::Any* Option::release_value() {
   auto temp = unsafe_arena_release_value();

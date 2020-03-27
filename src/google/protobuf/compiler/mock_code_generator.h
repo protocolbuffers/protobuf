@@ -110,8 +110,12 @@ class MockCodeGenerator : public CodeGenerator {
                         const std::string& parameter, GeneratorContext* context,
                         std::string* error) const;
 
+  uint64 GetSupportedFeatures() const override;
+  void SuppressFeatures(uint64 features);
+
  private:
   std::string name_;
+  uint64 suppressed_features_ = 0;
 
   static std::string GetOutputFileContent(const std::string& generator_name,
                                           const std::string& parameter,

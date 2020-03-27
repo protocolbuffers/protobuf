@@ -32,6 +32,8 @@ syntax = "proto2";
 
 package proto2_arena_unittest;
 
+option cc_enable_arenas = false;
+
 message ImportNoArenaNestedMessage {
   optional int32 d = 1;
-};
+}

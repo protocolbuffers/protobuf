@@ -441,7 +441,8 @@ void Generator::PrintFileDescriptor() const {
       "  name='$name$',\n"
       "  package='$package$',\n"
       "  syntax='$syntax$',\n"
-      "  serialized_options=$options$,\n";
+      "  serialized_options=$options$,\n"
+      "  create_key=_descriptor._internal_create_key,\n";
   printer_->Print(m, file_descriptor_template);
   printer_->Indent();
   if (pure_python_workable_) {
@@ -531,6 +532,7 @@ void Generator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
       "  full_name='$full_name$',\n"
       "  filename=None,\n"
       "  file=$file$,\n"
+      "  create_key=_descriptor._internal_create_key,\n"
       "  values=[\n";
   std::string options_string;
   enum_descriptor.options().SerializeToString(&options_string);
@@ -635,7 +637,8 @@ void Generator::PrintServiceDescriptor(
       "full_name='$full_name$',\n"
       "file=$file$,\n"
       "index=$index$,\n"
-      "serialized_options=$options_value$,\n";
+      "serialized_options=$options_value$,\n"
+      "create_key=_descriptor._internal_create_key,\n";
   printer_->Print(m, required_function_arguments);
 
   ServiceDescriptorProto sdp;
@@ -663,7 +666,8 @@ void Generator::PrintServiceDescriptor(
                     "containing_service=None,\n"
                     "input_type=$input_type$,\n"
                     "output_type=$output_type$,\n"
-                    "serialized_options=$options_value$,\n");
+                    "serialized_options=$options_value$,\n"
+                    "create_key=_descriptor._internal_create_key,\n");
     printer_->Outdent();
     printer_->Print("),\n");
   }
@@ -733,7 +737,8 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
       "full_name='$full_name$',\n"
       "filename=None,\n"
       "file=$file$,\n"
-      "containing_type=None,\n";
+      "containing_type=None,\n"
+      "create_key=_descriptor._internal_create_key,\n";
   printer_->Print(m, required_function_arguments);
   PrintFieldsInDescriptor(message_descriptor);
   PrintExtensionsInDescriptor(message_descriptor);
@@ -796,7 +801,8 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
     printer_->Print(m,
                     "_descriptor.OneofDescriptor(\n"
                     "  name='$name$', full_name='$full_name$',\n"
-                    "  index=$index$, containing_type=None, "
+                    "  index=$index$, containing_type=None,\n"
+                    "  create_key=_descriptor._internal_create_key,\n"
                     "fields=[]$serialized_options$),\n");
   }
   printer_->Outdent();
@@ -1037,8 +1043,8 @@ std::string Generator::FieldReferencingExpression(
     return ResolveKeyword(field.name());
   }
   return strings::Substitute("$0.$1['$2']",
-                             ModuleLevelDescriptorName(*containing_type),
-                             python_dict_name, field.name());
+                          ModuleLevelDescriptorName(*containing_type),
+                          python_dict_name, field.name());
 }
 
 // Prints containing_type for nested descriptors or enum descriptors.
@@ -1144,7 +1150,8 @@ void Generator::PrintEnumValueDescriptor(
                   "_descriptor.EnumValueDescriptor(\n"
                   "  name='$name$', index=$index$, number=$number$,\n"
                   "  serialized_options=$options$,\n"
-                  "  type=None)");
+                  "  type=None,\n"
+                  "  create_key=_descriptor._internal_create_key)");
 }
 
 // Returns a CEscaped string of serialized_options.
@@ -1187,7 +1194,8 @@ void Generator::PrintFieldDescriptor(const FieldDescriptor& field,
       "default_value=$default_value$,\n"
       "  message_type=None, enum_type=None, containing_type=None,\n"
       "  is_extension=$is_extension$, extension_scope=None,\n"
-      "  serialized_options=$serialized_options$$json_name$, file=DESCRIPTOR)";
+      "  serialized_options=$serialized_options$$json_name$, file=DESCRIPTOR,"
+      "  create_key=_descriptor._internal_create_key)";
   printer_->Print(m, field_descriptor_decl);
 }
 

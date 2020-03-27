@@ -35,6 +35,7 @@
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_proto3_arena.pb.h>
+#include <google/protobuf/unittest_proto3_optional.pb.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -192,6 +193,32 @@ TEST(Proto3ArenaTest, MessageFieldClearViaReflection) {
   r->ClearField(message, msg_field);
   EXPECT_FALSE(message->has_optional_nested_message());
   EXPECT_EQ(0, message->optional_nested_message().bb());
+}
+
+TEST(Proto3OptionalTest, OptionalFields) {
+  const Descriptor* d = protobuf_unittest::TestProto3Optional::descriptor();
+
+  for (int i = 0; i < d->field_count(); i++) {
+    const FieldDescriptor* f = d->field(i);
+    EXPECT_TRUE(f->has_optional_keyword()) << f->full_name();
+    EXPECT_TRUE(f->is_singular_with_presence()) << f->full_name();
+    EXPECT_TRUE(f->containing_oneof()) << f->full_name();
+  }
+}
+
+TEST(Proto3OptionalTest, PlainFields) {
+  const Descriptor* d = TestAllTypes::descriptor();
+
+  for (int i = 0; i < d->field_count(); i++) {
+    const FieldDescriptor* f = d->field(i);
+    EXPECT_FALSE(f->has_optional_keyword()) << f->full_name();
+    if (f->is_optional() && f->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+      EXPECT_FALSE(f->is_singular_with_presence()) << f->full_name();
+    }
+  }
+
+  EXPECT_FALSE(
+      d->FindFieldByName("oneof_nested_message")->is_singular_with_presence());
 }
 
 }  // namespace

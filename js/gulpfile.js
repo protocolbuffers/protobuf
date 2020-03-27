@@ -37,6 +37,7 @@ var group1Protos = [
   'testbinary.proto',
   'testempty.proto',
   'test.proto',
+  'testlargenumbers.proto',
 ];
 
 var group2Protos = [

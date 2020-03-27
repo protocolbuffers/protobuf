@@ -30,7 +30,7 @@
 
 """Contains routines for printing protocol messages in text format.
 
-Simple usage example:
+Simple usage example::
 
   # Create a proto object and serialize it to a text proto string.
   message = my_proto_pb2.MyMessage(foo='bar')
@@ -132,7 +132,8 @@ def MessageToString(message,
                     descriptor_pool=None,
                     indent=0,
                     message_formatter=None,
-                    print_unknown_fields=False):
+                    print_unknown_fields=False,
+                    force_colon=False):
   # type: (...) -> str
   """Convert protobuf message to text format.
 
@@ -155,31 +156,43 @@ def MessageToString(message,
       will be printed at the end of the message and their relative order is
       determined by the extension number. By default, use the field number
       order.
-    float_format: If set, use this to specify float field formatting
-      (per the "Format Specification Mini-Language"); otherwise, 8 valid digits
-      is used (default '.8g'). Also affect double field if double_format is
-      not set but float_format is set.
-    double_format: If set, use this to specify double field formatting
+    float_format (str): If set, use this to specify float field formatting
+      (per the "Format Specification Mini-Language"); otherwise, 8 valid
+      digits is used (default '.8g'). Also affect double field if
+      double_format is not set but float_format is set.
+    double_format (str): If set, use this to specify double field formatting
       (per the "Format Specification Mini-Language"); if it is not set but
-      float_format is set, use float_format. Otherwise, use str()
+      float_format is set, use float_format. Otherwise, use ``str()``
     use_field_number: If True, print field numbers instead of names.
-    descriptor_pool: A DescriptorPool used to resolve Any types.
-    indent: The initial indent level, in terms of spaces, for pretty print.
-    message_formatter: A function(message, indent, as_one_line): unicode|None
-      to custom format selected sub-messages (usually based on message type).
-      Use to pretty print parts of the protobuf for easier diffing.
+    descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
+    indent (int): The initial indent level, in terms of spaces, for pretty
+      print.
+    message_formatter (function(message, indent, as_one_line) -> unicode|None):
+      Custom formatter for selected sub-messages (usually based on message
+      type). Use to pretty print parts of the protobuf for easier diffing.
     print_unknown_fields: If True, unknown fields will be printed.
+    force_colon: If set, a colon will be added after the field name even if the
+      field is a proto message.
 
   Returns:
-    A string of the text formatted protocol buffer message.
+    str: A string of the text formatted protocol buffer message.
   """
   out = TextWriter(as_utf8)
-  printer = _Printer(out, indent, as_utf8, as_one_line,
-                     use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, double_format,
-                     use_field_number,
-                     descriptor_pool, message_formatter,
-                     print_unknown_fields=print_unknown_fields)
+  printer = _Printer(
+      out,
+      indent,
+      as_utf8,
+      as_one_line,
+      use_short_repeated_primitives,
+      pointy_brackets,
+      use_index_order,
+      float_format,
+      double_format,
+      use_field_number,
+      descriptor_pool,
+      message_formatter,
+      print_unknown_fields=print_unknown_fields,
+      force_colon=force_colon)
   printer.PrintMessage(message)
   result = out.getvalue()
   out.close()
@@ -217,7 +230,8 @@ def PrintMessage(message,
                  use_field_number=False,
                  descriptor_pool=None,
                  message_formatter=None,
-                 print_unknown_fields=False):
+                 print_unknown_fields=False,
+                 force_colon=False):
   printer = _Printer(
       out=out, indent=indent, as_utf8=as_utf8,
       as_one_line=as_one_line,
@@ -229,7 +243,8 @@ def PrintMessage(message,
       use_field_number=use_field_number,
       descriptor_pool=descriptor_pool,
       message_formatter=message_formatter,
-      print_unknown_fields=print_unknown_fields)
+      print_unknown_fields=print_unknown_fields,
+      force_colon=force_colon)
   printer.PrintMessage(message)
 
 
@@ -245,13 +260,15 @@ def PrintField(field,
                float_format=None,
                double_format=None,
                message_formatter=None,
-               print_unknown_fields=False):
+               print_unknown_fields=False,
+               force_colon=False):
   """Print a single field name/value pair."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
                      use_index_order, float_format, double_format,
                      message_formatter=message_formatter,
-                     print_unknown_fields=print_unknown_fields)
+                     print_unknown_fields=print_unknown_fields,
+                     force_colon=force_colon)
   printer.PrintField(field, value)
 
 
@@ -267,13 +284,15 @@ def PrintFieldValue(field,
                     float_format=None,
                     double_format=None,
                     message_formatter=None,
-                    print_unknown_fields=False):
+                    print_unknown_fields=False,
+                    force_colon=False):
   """Print a single field value (not including name)."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
                      use_index_order, float_format, double_format,
                      message_formatter=message_formatter,
-                     print_unknown_fields=print_unknown_fields)
+                     print_unknown_fields=print_unknown_fields,
+                     force_colon=force_colon)
   printer.PrintFieldValue(field, value)
 
 
@@ -323,7 +342,8 @@ class _Printer(object):
                use_field_number=False,
                descriptor_pool=None,
                message_formatter=None,
-               print_unknown_fields=False):
+               print_unknown_fields=False,
+               force_colon=False):
     """Initialize the Printer.
 
     Double values can be formatted compactly with 15 digits of precision
@@ -357,6 +377,8 @@ class _Printer(object):
         to custom format selected sub-messages (usually based on message type).
         Use to pretty print parts of the protobuf for easier diffing.
       print_unknown_fields: If True, unknown fields will be printed.
+      force_colon: If set, a colon will be added after the field name even if
+        the field is a proto message.
     """
     self.out = out
     self.indent = indent
@@ -374,6 +396,7 @@ class _Printer(object):
     self.descriptor_pool = descriptor_pool
     self.message_formatter = message_formatter
     self.print_unknown_fields = print_unknown_fields
+    self.force_colon = force_colon
 
   def _TryPrintAsAnyMessage(self, message):
     """Serializes if message is a google.protobuf.Any field."""
@@ -383,7 +406,8 @@ class _Printer(object):
                                                self.descriptor_pool)
     if packed_message:
       packed_message.MergeFromString(message.value)
-      self.out.write('%s[%s] ' % (self.indent * ' ', message.type_url))
+      colon = ':' if self.force_colon else ''
+      self.out.write('%s[%s]%s ' % (self.indent * ' ', message.type_url, colon))
       self._PrintMessageFieldValue(packed_message)
       self.out.write(' ' if self.as_one_line else '\n')
       return True
@@ -517,9 +541,11 @@ class _Printer(object):
       else:
         out.write(field.name)
 
-    if field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
+    if (self.force_colon or
+        field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE):
       # The colon is optional in this case, but our cross-language golden files
-      # don't include it.
+      # don't include it. Here, the colon is only included if force_colon is
+      # set to True
       out.write(':')
 
   def PrintField(self, field, value):
@@ -530,6 +556,7 @@ class _Printer(object):
     self.out.write(' ' if self.as_one_line else '\n')
 
   def _PrintShortRepeatedPrimitivesValue(self, field, value):
+    """"Prints short repeated primitives value."""
     # Note: this is called only when value has at least one element.
     self._PrintFieldName(field)
     self.out.write(' [')
@@ -538,6 +565,8 @@ class _Printer(object):
       self.out.write(', ')
     self.PrintFieldValue(field, value[-1])
     self.out.write(']')
+    if self.force_colon:
+      self.out.write(':')
     self.out.write(' ' if self.as_one_line else '\n')
 
   def _PrintMessageFieldValue(self, value):
@@ -620,7 +649,8 @@ def Parse(text,
   If text contains a field already set in message, the value is appended if the
   field is repeated. Otherwise, an error is raised.
 
-  Example
+  Example::
+
     a = MyProto()
     a.repeated_field.append('test')
     b = MyProto()
@@ -640,18 +670,18 @@ def Parse(text,
   Caller is responsible for clearing the message as needed.
 
   Args:
-    text: Message text representation.
-    message: A protocol buffer message to merge into.
+    text (str): Message text representation.
+    message (Message): A protocol buffer message to merge into.
     allow_unknown_extension: if True, skip over missing extensions and keep
       parsing
     allow_field_number: if True, both field number and field name are allowed.
-    descriptor_pool: A DescriptorPool used to resolve Any types.
+    descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
 
   Returns:
-    The same message passed as argument.
+    Message: The same message passed as argument.
 
   Raises:
     ParseError: On text parsing problems.
@@ -677,18 +707,18 @@ def Merge(text,
   replace those in the message.
 
   Args:
-    text: Message text representation.
-    message: A protocol buffer message to merge into.
+    text (str): Message text representation.
+    message (Message): A protocol buffer message to merge into.
     allow_unknown_extension: if True, skip over missing extensions and keep
       parsing
     allow_field_number: if True, both field number and field name are allowed.
-    descriptor_pool: A DescriptorPool used to resolve Any types.
+    descriptor_pool (DescriptorPool): Descriptor pool used to resolve Any types.
     allow_unknown_field: if True, skip over unknown field and keep
       parsing. Avoid to use this option if possible. It may hide some
       errors (e.g. spelling error on field name)
 
   Returns:
-    The same message passed as argument.
+    Message: The same message passed as argument.
 
   Raises:
     ParseError: On text parsing problems.

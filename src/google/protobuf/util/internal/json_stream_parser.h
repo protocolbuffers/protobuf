@@ -269,6 +269,9 @@ class PROTOBUF_EXPORT JsonStreamParser {
   // Whether to allow non UTF-8 encoded input and replace invalid code points.
   bool coerce_to_utf8_;
 
+  // Replacement character for invalid UTF-8 code points.
+  std::string utf8_replacement_character_;
+
   // Whether allows empty string represented null array value or object entry
   // value.
   bool allow_empty_null_;

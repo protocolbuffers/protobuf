@@ -106,6 +106,9 @@ def IsNegInf(val):
   return isinf(val) and (val < 0)
 
 
+warnings.simplefilter('error', DeprecationWarning)
+
+
 @_parameterized.named_parameters(
     ('_proto2', unittest_pb2),
     ('_proto3', unittest_proto3_arena_pb2))
@@ -438,12 +441,19 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(str(message), 'optional_float: 2.0\n')
 
   def testHighPrecisionFloatPrinting(self, message_module):
-    message = message_module.TestAllTypes()
-    message.optional_double = 0.12345678912345678
+    msg = message_module.TestAllTypes()
+    msg.optional_float = 0.12345678912345678
+    old_float = msg.optional_float
+    msg.ParseFromString(msg.SerializeToString())
+    self.assertEqual(old_float, msg.optional_float)
+
+  def testHighPrecisionDoublePrinting(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.optional_double = 0.12345678912345678
     if sys.version_info >= (3,):
-      self.assertEqual(str(message), 'optional_double: 0.12345678912345678\n')
+      self.assertEqual(str(msg), 'optional_double: 0.12345678912345678\n')
     else:
-      self.assertEqual(str(message), 'optional_double: 0.123456789123\n')
+      self.assertEqual(str(msg), 'optional_double: 0.123456789123\n')
 
   def testUnknownFieldPrinting(self, message_module):
     populated = message_module.TestAllTypes()
@@ -885,11 +895,13 @@ class MessageTest(unittest.TestCase):
   def testOneofDefaultValues(self, message_module):
     m = message_module.TestAllTypes()
     self.assertIs(None, m.WhichOneof('oneof_field'))
+    self.assertFalse(m.HasField('oneof_field'))
     self.assertFalse(m.HasField('oneof_uint32'))
 
     # Oneof is set even when setting it to a default value.
     m.oneof_uint32 = 0
     self.assertEqual('oneof_uint32', m.WhichOneof('oneof_field'))
+    self.assertTrue(m.HasField('oneof_field'))
     self.assertTrue(m.HasField('oneof_uint32'))
     self.assertFalse(m.HasField('oneof_string'))
 

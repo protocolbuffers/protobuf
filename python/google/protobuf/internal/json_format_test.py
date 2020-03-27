@@ -821,6 +821,10 @@ class JsonFormatTest(JsonFormatBase):
   def testFloatPrecision(self):
     message = json_format_proto3_pb2.TestMessage()
     message.float_value = 1.123456789
+    # Default to 8 valid digits.
+    text = '{\n  "floatValue": 1.1234568\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message), text)
     # Set to 7 valid digits.
     text = '{\n  "floatValue": 1.123457\n}'
     self.assertEqual(

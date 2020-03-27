@@ -106,6 +106,46 @@ inline int CalculateReserve(Iter begin, Iter end) {
   typedef typename std::iterator_traits<Iter>::iterator_category Category;
   return CalculateReserve(begin, end, Category());
 }
+
+// Swaps two blocks of memory of size sizeof(T).
+template <typename T>
+inline void SwapBlock(char* p, char* q) {
+  T tmp;
+  memcpy(&tmp, p, sizeof(T));
+  memcpy(p, q, sizeof(T));
+  memcpy(q, &tmp, sizeof(T));
+}
+
+// Swaps two blocks of memory of size kSize:
+//  template <int kSize> void memswap(char* p, char* q);
+
+template <int kSize>
+inline typename std::enable_if<(kSize == 0), void>::type memswap(char*, char*) {
+}
+
+#define PROTO_MEMSWAP_DEF_SIZE(reg_type, max_size)                           \
+  template <int kSize>                                                       \
+  typename std::enable_if<(kSize >= sizeof(reg_type) && kSize < (max_size)), \
+                          void>::type                                        \
+  memswap(char* p, char* q) {                                                \
+    SwapBlock<reg_type>(p, q);                                               \
+    memswap<kSize - sizeof(reg_type)>(p + sizeof(reg_type),                  \
+                                      q + sizeof(reg_type));                 \
+  }
+
+PROTO_MEMSWAP_DEF_SIZE(uint8, 2)
+PROTO_MEMSWAP_DEF_SIZE(uint16, 4)
+PROTO_MEMSWAP_DEF_SIZE(uint32, 8)
+
+#ifdef __SIZEOF_INT128__
+PROTO_MEMSWAP_DEF_SIZE(uint64, 16)
+PROTO_MEMSWAP_DEF_SIZE(__uint128_t, (1u << 31))
+#else
+PROTO_MEMSWAP_DEF_SIZE(uint64, (1u << 31))
+#endif
+
+#undef PROTO_MEMSWAP_DEF_SIZE
+
 }  // namespace internal
 
 // RepeatedField is used to represent repeated fields of a primitive type (in
@@ -1321,9 +1361,14 @@ inline void RepeatedField<Element>::InternalSwap(RepeatedField* other) {
   GOOGLE_DCHECK(this != other);
   GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
 
-  std::swap(arena_or_elements_, other->arena_or_elements_);
-  std::swap(current_size_, other->current_size_);
-  std::swap(total_size_, other->total_size_);
+  // Swap all fields at once.
+  static_assert(std::is_standard_layout<RepeatedField<Element>>::value,
+                "offsetof() requires standard layout before c++17");
+  internal::memswap<offsetof(RepeatedField, arena_or_elements_) +
+                    sizeof(this->arena_or_elements_) -
+                    offsetof(RepeatedField, current_size_)>(
+      reinterpret_cast<char*>(this) + offsetof(RepeatedField, current_size_),
+      reinterpret_cast<char*>(other) + offsetof(RepeatedField, current_size_));
 }
 
 template <typename Element>
@@ -1515,13 +1560,12 @@ void RepeatedPtrFieldBase::SwapFallback(RepeatedPtrFieldBase* other) {
   GOOGLE_DCHECK(other->GetArenaNoVirtual() != GetArenaNoVirtual());
 
   // Copy semantics in this case. We try to improve efficiency by placing the
-  // temporary on |other|'s arena so that messages are copied cross-arena only
-  // once, not twice.
+  // temporary on |other|'s arena so that messages are copied twice rather than
+  // three times.
   RepeatedPtrFieldBase temp(other->GetArenaNoVirtual());
   temp.MergeFrom<TypeHandler>(*this);
   this->Clear<TypeHandler>();
   this->MergeFrom<TypeHandler>(*other);
-  other->Clear<TypeHandler>();
   other->InternalSwap(&temp);
   temp.Destroy<TypeHandler>();  // Frees rep_ if `other` had no arena.
 }
@@ -2420,9 +2464,15 @@ void RepeatedPtrFieldBase::InternalSwap(RepeatedPtrFieldBase* other) {
   GOOGLE_DCHECK(this != other);
   GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
 
-  std::swap(rep_, other->rep_);
-  std::swap(current_size_, other->current_size_);
-  std::swap(total_size_, other->total_size_);
+  // Swap all fields at once.
+  static_assert(std::is_standard_layout<RepeatedPtrFieldBase>::value,
+                "offsetof() requires standard layout before c++17");
+  internal::memswap<offsetof(RepeatedPtrFieldBase, rep_) + sizeof(this->rep_) -
+                    offsetof(RepeatedPtrFieldBase, current_size_)>(
+      reinterpret_cast<char*>(this) +
+          offsetof(RepeatedPtrFieldBase, current_size_),
+      reinterpret_cast<char*>(other) +
+          offsetof(RepeatedPtrFieldBase, current_size_));
 }
 
 }  // namespace internal
@@ -2653,14 +2703,21 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
 }
 
 // Extern declarations of common instantiations to reduce libray bloat.
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<bool>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int32>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint32>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int64>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint64>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<float>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<double>;
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<bool>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<int32>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<uint32>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<int64>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<uint64>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<float>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
+    RepeatedField<double>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
     RepeatedPtrField<std::string>;
 
 }  // namespace protobuf

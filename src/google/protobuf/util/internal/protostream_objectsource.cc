@@ -36,7 +36,6 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
@@ -49,6 +48,7 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status_macros.h>
 
@@ -201,14 +201,14 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
   uint32 tag = stream_->ReadTag(), last_tag = tag + 1;
   UnknownFieldSet unknown_fields;
 
-  if (tag == end_tag && suppress_empty_object_) {
+  if (!name.empty() && tag == end_tag && suppress_empty_object_) {
     return util::Status();
   }
 
   if (include_start_and_end) {
     ow->StartObject(name);
   }
-  while (tag != end_tag) {
+  while (tag != end_tag && tag != 0) {
     if (tag != last_tag) {  // Update field only if tag is changed.
       last_tag = tag;
       field = FindAndVerifyField(type, tag);

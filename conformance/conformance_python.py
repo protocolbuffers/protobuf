@@ -39,10 +39,10 @@ import sys
 import os
 from google.protobuf import json_format
 from google.protobuf import message
-from google.protobuf import test_messages_proto3_pb2
-from google.protobuf import test_messages_proto2_pb2
+from google3.third_party.protobuf.src.google.protobuf import test_messages_proto3_pb2
+from google3.third_party.protobuf.src.google.protobuf import test_messages_proto2_pb2
 from google.protobuf import text_format
-import conformance_pb2
+from google3.third_party.protobuf.conformance import conformance_pb2
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'wb', 0)
 sys.stdin = os.fdopen(sys.stdin.fileno(), 'rb', 0)
@@ -157,7 +157,8 @@ def do_test(request):
 
     elif request.requested_output_format == conformance_pb2.JSON:
       try:
-        response.json_payload = json_format.MessageToJson(test_message)
+        response.json_payload = json_format.MessageToJson(
+            test_message, float_precision=None)
       except Exception as e:
         response.serialize_error = str(e)
         return response

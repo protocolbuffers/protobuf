@@ -313,6 +313,66 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
         }
       }
       )");
+
+  // Map fields
+  TestAllTypesProto3 prototype;
+  (*prototype.mutable_map_string_string())["c"] = "value";
+  (*prototype.mutable_map_string_string())["b"] = "value";
+  (*prototype.mutable_map_string_string())["a"] = "value";
+  RunValidTextFormatTestWithMessage("AlphabeticallySortedMapStringKeys",
+                                    REQUIRED,
+                                    R"(
+      map_string_string {
+        key: "a"
+        value: "value"
+      }
+      map_string_string {
+        key: "b"
+        value: "value"
+      }
+      map_string_string {
+        key: "c"
+        value: "value"
+      }
+      )",
+                                    prototype);
+
+  prototype.Clear();
+  (*prototype.mutable_map_int32_int32())[3] = 0;
+  (*prototype.mutable_map_int32_int32())[2] = 0;
+  (*prototype.mutable_map_int32_int32())[1] = 0;
+  RunValidTextFormatTestWithMessage("AlphabeticallySortedMapIntKeys", REQUIRED,
+                                    R"(
+      map_int32_int32 {
+        key: 1
+        value: 0
+      }
+      map_int32_int32 {
+        key: 2
+        value: 0
+      }
+      map_int32_int32 {
+        key: 3
+        value: 0
+      }
+      )",
+                                    prototype);
+
+  prototype.Clear();
+  (*prototype.mutable_map_bool_bool())[true] = false;
+  (*prototype.mutable_map_bool_bool())[false] = false;
+  RunValidTextFormatTestWithMessage("AlphabeticallySortedMapBoolKeys", REQUIRED,
+                                    R"(
+      map_bool_bool {
+        key: false
+        value: false
+      }
+      map_bool_bool {
+        key: true
+        value: false
+      }
+      )",
+                                    prototype);
 }
 
 }  // namespace protobuf

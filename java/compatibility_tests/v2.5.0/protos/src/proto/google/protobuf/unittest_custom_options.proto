@@ -321,7 +321,7 @@ message Aggregate {
 }
 
 // Allow Aggregate to be used as an option at all possible locations
-// in the .proto grammer.
+// in the .proto grammar.
 extend google.protobuf.FileOptions      { optional Aggregate fileopt    = 15478479; }
 extend google.protobuf.MessageOptions   { optional Aggregate msgopt     = 15480088; }
 extend google.protobuf.FieldOptions     { optional Aggregate fieldopt   = 15481374; }

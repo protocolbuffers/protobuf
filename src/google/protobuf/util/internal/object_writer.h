@@ -42,6 +42,7 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
+
 class DataPiece;
 
 // An ObjectWriter is an interface for writing a stream of events
@@ -92,7 +93,6 @@ class PROTOBUF_EXPORT ObjectWriter {
 
   // Renders a double value.
   virtual ObjectWriter* RenderDouble(StringPiece name, double value) = 0;
-
   // Renders a float value.
   virtual ObjectWriter* RenderFloat(StringPiece name, float value) = 0;
 
@@ -110,6 +110,7 @@ class PROTOBUF_EXPORT ObjectWriter {
   // Renders a DataPiece object to a ObjectWriter.
   static void RenderDataPieceTo(const DataPiece& data, StringPiece name,
                                 ObjectWriter* ow);
+
 
   // Indicates whether this ObjectWriter has completed writing the root message,
   // usually this means writing of one complete object. Subclasses must override

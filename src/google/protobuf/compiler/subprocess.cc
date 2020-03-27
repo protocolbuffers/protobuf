@@ -255,8 +255,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   child_handle_ = NULL;
 
   if (exit_code != 0) {
-    *error =
-        strings::Substitute("Plugin failed with status code $0.", exit_code);
+    *error = strings::Substitute("Plugin failed with status code $0.", exit_code);
     return false;
   }
 

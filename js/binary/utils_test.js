@@ -506,7 +506,7 @@ describe('binaryUtilsTest', function() {
     function makeHiLoPair(lo, hi) {
       return {lo: lo >>> 0, hi: hi >>> 0};
     }
-    // Test cases direcly from the protobuf dev guide.
+    // Test cases directly from the protobuf dev guide.
     // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
     var testCases = [
       {original: stringToHiLoPair('0'), zigzag: stringToHiLoPair('0')},

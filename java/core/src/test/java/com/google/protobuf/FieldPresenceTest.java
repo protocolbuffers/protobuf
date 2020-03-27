@@ -34,6 +34,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
 import com.google.protobuf.FieldPresenceTestProto.TestOptionalFieldsOnly;
 import com.google.protobuf.FieldPresenceTestProto.TestRepeatedFieldsOnly;
@@ -100,10 +101,11 @@ public class FieldPresenceTest extends TestCase {
         UnittestProto.TestAllTypes.Builder.class, TestAllTypes.Builder.class, "OneofBytes");
   }
 
+
   public void testOneofEquals() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestAllTypes message1 = builder.build();
-    // Set message2's oneof_uint32 field to defalut value. The two
+    // Set message2's oneof_uint32 field to default value. The two
     // messages should be different when check with oneof case.
     builder.setOneofUint32(0);
     TestAllTypes message2 = builder.build();

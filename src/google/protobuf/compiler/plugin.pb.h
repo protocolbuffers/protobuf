@@ -26,11 +26,12 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/metadata.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/descriptor.pb.h>
 // @@protoc_insertion_point(includes)
@@ -86,9 +87,32 @@ PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
+enum CodeGeneratorResponse_Feature : int {
+  CodeGeneratorResponse_Feature_FEATURE_NONE = 0,
+  CodeGeneratorResponse_Feature_FEATURE_PROTO3_OPTIONAL = 1
+};
+PROTOC_EXPORT bool CodeGeneratorResponse_Feature_IsValid(int value);
+constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MIN = CodeGeneratorResponse_Feature_FEATURE_NONE;
+constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse_Feature_Feature_MAX = CodeGeneratorResponse_Feature_FEATURE_PROTO3_OPTIONAL;
+constexpr int CodeGeneratorResponse_Feature_Feature_ARRAYSIZE = CodeGeneratorResponse_Feature_Feature_MAX + 1;
+
+PROTOC_EXPORT const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* CodeGeneratorResponse_Feature_descriptor();
+template<typename T>
+inline const std::string& CodeGeneratorResponse_Feature_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, CodeGeneratorResponse_Feature>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function CodeGeneratorResponse_Feature_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    CodeGeneratorResponse_Feature_descriptor(), enum_t_value);
+}
+inline bool CodeGeneratorResponse_Feature_Parse(
+    const std::string& name, CodeGeneratorResponse_Feature* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<CodeGeneratorResponse_Feature>(
+    CodeGeneratorResponse_Feature_descriptor(), name, value);
+}
 // ===================================================================
 
-class PROTOC_EXPORT Version :
+class PROTOC_EXPORT Version PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
  public:
   Version();
@@ -114,10 +138,10 @@ class PROTOC_EXPORT Version :
   }
 
   inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
   }
   inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
   }
 
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
@@ -180,9 +204,6 @@ class PROTOC_EXPORT Version :
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
     return nullptr;
   }
   public:
@@ -269,7 +290,6 @@ class PROTOC_EXPORT Version :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr suffix_;
@@ -280,7 +300,7 @@ class PROTOC_EXPORT Version :
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorRequest :
+class PROTOC_EXPORT CodeGeneratorRequest PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
   CodeGeneratorRequest();
@@ -306,10 +326,10 @@ class PROTOC_EXPORT CodeGeneratorRequest :
   }
 
   inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
   }
   inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
   }
 
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
@@ -372,9 +392,6 @@ class PROTOC_EXPORT CodeGeneratorRequest :
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
     return nullptr;
   }
   public:
@@ -479,7 +496,6 @@ class PROTOC_EXPORT CodeGeneratorRequest :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> file_to_generate_;
@@ -490,7 +506,7 @@ class PROTOC_EXPORT CodeGeneratorRequest :
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse_File :
+class PROTOC_EXPORT CodeGeneratorResponse_File PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
   CodeGeneratorResponse_File();
@@ -516,10 +532,10 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   }
 
   inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
   }
   inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
   }
 
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
@@ -582,9 +598,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
   }
   private:
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
     return nullptr;
   }
   public:
@@ -671,7 +684,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
@@ -681,7 +693,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File :
 };
 // -------------------------------------------------------------------
 
-class PROTOC_EXPORT CodeGeneratorResponse :
+class PROTOC_EXPORT CodeGeneratorResponse PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
   CodeGeneratorResponse();
@@ -707,10 +719,10 @@ class PROTOC_EXPORT CodeGeneratorResponse :
   }
 
   inline const ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
+    return _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance);
   }
   inline ::PROTOBUF_NAMESPACE_ID::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
+    return _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
   }
 
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
@@ -775,9 +787,6 @@ class PROTOC_EXPORT CodeGeneratorResponse :
   inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
     return nullptr;
   }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -793,11 +802,42 @@ class PROTOC_EXPORT CodeGeneratorResponse :
 
   typedef CodeGeneratorResponse_File File;
 
+  typedef CodeGeneratorResponse_Feature Feature;
+  static constexpr Feature FEATURE_NONE =
+    CodeGeneratorResponse_Feature_FEATURE_NONE;
+  static constexpr Feature FEATURE_PROTO3_OPTIONAL =
+    CodeGeneratorResponse_Feature_FEATURE_PROTO3_OPTIONAL;
+  static inline bool Feature_IsValid(int value) {
+    return CodeGeneratorResponse_Feature_IsValid(value);
+  }
+  static constexpr Feature Feature_MIN =
+    CodeGeneratorResponse_Feature_Feature_MIN;
+  static constexpr Feature Feature_MAX =
+    CodeGeneratorResponse_Feature_Feature_MAX;
+  static constexpr int Feature_ARRAYSIZE =
+    CodeGeneratorResponse_Feature_Feature_ARRAYSIZE;
+  static inline const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor*
+  Feature_descriptor() {
+    return CodeGeneratorResponse_Feature_descriptor();
+  }
+  template<typename T>
+  static inline const std::string& Feature_Name(T enum_t_value) {
+    static_assert(::std::is_same<T, Feature>::value ||
+      ::std::is_integral<T>::value,
+      "Incorrect type passed to function Feature_Name.");
+    return CodeGeneratorResponse_Feature_Name(enum_t_value);
+  }
+  static inline bool Feature_Parse(const std::string& name,
+      Feature* value) {
+    return CodeGeneratorResponse_Feature_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
 
   enum : int {
     kFileFieldNumber = 15,
     kErrorFieldNumber = 1,
+    kSupportedFeaturesFieldNumber = 2,
   };
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   int file_size() const;
@@ -837,15 +877,28 @@ class PROTOC_EXPORT CodeGeneratorResponse :
   std::string* _internal_mutable_error();
   public:
 
+  // optional uint64 supported_features = 2;
+  bool has_supported_features() const;
+  private:
+  bool _internal_has_supported_features() const;
+  public:
+  void clear_supported_features();
+  ::PROTOBUF_NAMESPACE_ID::uint64 supported_features() const;
+  void set_supported_features(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_supported_features() const;
+  void _internal_set_supported_features(::PROTOBUF_NAMESPACE_ID::uint64 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File > file_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr error_;
+  ::PROTOBUF_NAMESPACE_ID::uint64 supported_features_;
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
 // ===================================================================
@@ -1551,6 +1604,34 @@ inline void CodeGeneratorResponse::set_allocated_error(std::string* error) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 
+// optional uint64 supported_features = 2;
+inline bool CodeGeneratorResponse::_internal_has_supported_features() const {
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline bool CodeGeneratorResponse::has_supported_features() const {
+  return _internal_has_supported_features();
+}
+inline void CodeGeneratorResponse::clear_supported_features() {
+  supported_features_ = PROTOBUF_ULONGLONG(0);
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 CodeGeneratorResponse::_internal_supported_features() const {
+  return supported_features_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint64 CodeGeneratorResponse::supported_features() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
+  return _internal_supported_features();
+}
+inline void CodeGeneratorResponse::_internal_set_supported_features(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _has_bits_[0] |= 0x00000002u;
+  supported_features_ = value;
+}
+inline void CodeGeneratorResponse::set_supported_features(::PROTOBUF_NAMESPACE_ID::uint64 value) {
+  _internal_set_supported_features(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.supported_features)
+}
+
 // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
 inline int CodeGeneratorResponse::_internal_file_size() const {
   return file_.size();
@@ -1603,6 +1684,16 @@ CodeGeneratorResponse::file() const {
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace compiler
+PROTOBUF_NAMESPACE_CLOSE
+
+PROTOBUF_NAMESPACE_OPEN
+
+template <> struct is_proto_enum< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_Feature> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_Feature>() {
+  return PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_Feature_descriptor();
+}
+
 PROTOBUF_NAMESPACE_CLOSE
 
 // @@protoc_insertion_point(global_scope)

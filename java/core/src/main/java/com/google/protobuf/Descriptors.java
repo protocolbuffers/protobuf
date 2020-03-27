@@ -1126,6 +1126,34 @@ public final class Descriptors {
     }
 
     /**
+     * Returns true if this field was syntactically written with "optional" in the .proto file.
+     * Excludes singular proto3 fields that do not have a label.
+     */
+    public boolean hasOptionalKeyword() {
+      return isProto3Optional
+          || (file.getSyntax() == Syntax.PROTO2 && isOptional() && getContainingOneof() == null);
+    }
+
+    /**
+     * Returns true if this is a non-oneof field that tracks presence.
+     *
+     * <p>This includes all "required" and "optional" fields in the .proto file, but excludes oneof
+     * fields and singular proto3 fields without "optional".
+     *
+     * <p>In implementations that use hasbits, this method will probably indicate whether this field
+     * uses a hasbit.
+     */
+    boolean isSingularWithPresence() {
+      if (isRepeated()) {
+        return false;
+      }
+      if (getContainingOneof() != null && !getContainingOneof().isSynthetic()) {
+        return false;
+      }
+      return getType() == Type.MESSAGE || isProto3Optional || file.getSyntax() == Syntax.PROTO2;
+    }
+
+    /**
      * For extensions defined nested within message types, gets the outer type. Not valid for
      * non-extension fields. For example, consider this {@code .proto} file:
      *
@@ -1203,6 +1231,7 @@ public final class Descriptors {
     private final String jsonName;
     private final FileDescriptor file;
     private final Descriptor extensionScope;
+    private final boolean isProto3Optional;
 
     // Possibly initialized during cross-linking.
     private Type type;
@@ -1326,6 +1355,8 @@ public final class Descriptors {
       if (proto.hasType()) {
         type = Type.valueOf(proto.getType());
       }
+
+      isProto3Optional = proto.getProto3Optional();
 
       if (getNumber() <= 0) {
         throw new DescriptorValidationException(this, "Field numbers must be positive integers.");
@@ -2625,6 +2656,10 @@ public final class Descriptors {
 
     public OneofOptions getOptions() {
       return proto.getOptions();
+    }
+
+    public boolean isSynthetic() {
+      return fields.length == 1 && fields[0].isProto3Optional;
     }
 
     /** Get a list of this message type's fields. */

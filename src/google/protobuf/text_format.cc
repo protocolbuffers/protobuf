@@ -101,7 +101,7 @@ std::string Message::ShortDebugString() const {
 
   printer.PrintToString(*this, &debug_string);
   // Single line mode currently might have an extra space at the end.
-  if (debug_string.size() > 0 && debug_string[debug_string.size() - 1] == ' ') {
+  if (!debug_string.empty() && debug_string[debug_string.size() - 1] == ' ') {
     debug_string.resize(debug_string.size() - 1);
   }
 
@@ -1670,6 +1670,11 @@ void TextFormat::FastFieldValuePrinter::PrintMessageStart(
     generator->PrintLiteral(" {\n");
   }
 }
+bool TextFormat::FastFieldValuePrinter::PrintMessageContent(
+    const Message& message, int field_index, int field_count,
+    bool single_line_mode, BaseTextGenerator* generator) const {
+  return false;  // Use the default printing function.
+}
 void TextFormat::FastFieldValuePrinter::PrintMessageEnd(
     const Message& message, int field_index, int field_count,
     bool single_line_mode, BaseTextGenerator* generator) const {
@@ -1886,12 +1891,16 @@ bool TextFormat::Printer::Print(const Message& message,
   return !generator.failed();
 }
 
+// Maximum recursion depth for heuristically printing out length-delimited
+// unknown fields as messages.
+static constexpr int kUnknownFieldRecursionLimit = 10;
+
 bool TextFormat::Printer::PrintUnknownFields(
     const UnknownFieldSet& unknown_fields,
     io::ZeroCopyOutputStream* output) const {
   TextGenerator generator(output, initial_indent_level_);
 
-  PrintUnknownFields(unknown_fields, &generator);
+  PrintUnknownFields(unknown_fields, &generator, kUnknownFieldRecursionLimit);
 
   // Output false if the generator failed internally.
   return !generator.failed();
@@ -1941,7 +1950,8 @@ bool TextFormat::Printer::PrintAny(const Message& message,
       finder_ ? finder_->FindAnyType(message, url_prefix, full_type_name)
               : DefaultFinderFindAnyType(message, url_prefix, full_type_name);
   if (value_descriptor == nullptr) {
-    GOOGLE_LOG(WARNING) << "Proto type " << type_url << " not found";
+    GOOGLE_LOG(WARNING) << "Can't print proto content: proto type " << type_url
+                 << " not found";
     return false;
   }
   DynamicMessageFactory factory;
@@ -1976,7 +1986,7 @@ void TextFormat::Printer::Print(const Message& message,
       io::ArrayInputStream input(serialized.data(), serialized.size());
       unknown_fields.ParseFromZeroCopyStream(&input);
     }
-    PrintUnknownFields(unknown_fields, generator);
+    PrintUnknownFields(unknown_fields, generator, kUnknownFieldRecursionLimit);
     return;
   }
   const Descriptor* descriptor = message.GetDescriptor();
@@ -2004,7 +2014,8 @@ void TextFormat::Printer::Print(const Message& message,
     PrintField(message, reflection, fields[i], generator);
   }
   if (!hide_unknown_fields_) {
-    PrintUnknownFields(reflection->GetUnknownFields(message), generator);
+    PrintUnknownFields(reflection->GetUnknownFields(message), generator,
+                       kUnknownFieldRecursionLimit);
   }
 }
 
@@ -2239,7 +2250,10 @@ void TextFormat::Printer::PrintField(const Message& message,
       printer->PrintMessageStart(sub_message, field_index, count,
                                  single_line_mode_, generator);
       generator->Indent();
-      Print(sub_message, generator);
+      if (!printer->PrintMessageContent(sub_message, field_index, count,
+                                        single_line_mode_, generator)) {
+        Print(sub_message, generator);
+      }
       generator->Outdent();
       printer->PrintMessageEnd(sub_message, field_index, count,
                                single_line_mode_, generator);
@@ -2413,7 +2427,8 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
 }
 
 void TextFormat::Printer::PrintUnknownFields(
-    const UnknownFieldSet& unknown_fields, TextGenerator* generator) const {
+    const UnknownFieldSet& unknown_fields, TextGenerator* generator,
+    int recursion_budget) const {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
     const UnknownField& field = unknown_fields.field(i);
     std::string field_number = StrCat(field.number());
@@ -2456,8 +2471,15 @@ void TextFormat::Printer::PrintUnknownFields(
       case UnknownField::TYPE_LENGTH_DELIMITED: {
         generator->PrintString(field_number);
         const std::string& value = field.length_delimited();
+        // We create a CodedInputStream so that we can adhere to our recursion
+        // budget when we attempt to parse the data. UnknownFieldSet parsing is
+        // recursive because of groups.
+        io::CodedInputStream input_stream(
+            reinterpret_cast<const uint8*>(value.data()), value.size());
+        input_stream.SetRecursionLimit(recursion_budget);
         UnknownFieldSet embedded_unknown_fields;
-        if (!value.empty() && embedded_unknown_fields.ParseFromString(value)) {
+        if (!value.empty() && recursion_budget > 0 &&
+            embedded_unknown_fields.ParseFromCodedStream(&input_stream)) {
           // This field is parseable as a Message.
           // So it is probably an embedded message.
           if (single_line_mode_) {
@@ -2466,7 +2488,8 @@ void TextFormat::Printer::PrintUnknownFields(
             generator->PrintLiteral(" {\n");
             generator->Indent();
           }
-          PrintUnknownFields(embedded_unknown_fields, generator);
+          PrintUnknownFields(embedded_unknown_fields, generator,
+                             recursion_budget - 1);
           if (single_line_mode_) {
             generator->PrintLiteral("} ");
           } else {
@@ -2474,8 +2497,8 @@ void TextFormat::Printer::PrintUnknownFields(
             generator->PrintLiteral("}\n");
           }
         } else {
-          // This field is not parseable as a Message.
-          // So it is probably just a plain string.
+          // This field is not parseable as a Message (or we ran out of
+          // recursion budget). So it is probably just a plain string.
           generator->PrintLiteral(": \"");
           generator->PrintString(CEscape(value));
           if (single_line_mode_) {
@@ -2494,7 +2517,10 @@ void TextFormat::Printer::PrintUnknownFields(
           generator->PrintLiteral(" {\n");
           generator->Indent();
         }
-        PrintUnknownFields(field.group(), generator);
+        // For groups, we recurse without checking the budget. This is OK,
+        // because if the groups were too deeply nested then we would have
+        // already rejected the message when we originally parsed it.
+        PrintUnknownFields(field.group(), generator, recursion_budget - 1);
         if (single_line_mode_) {
           generator->PrintLiteral("} ");
         } else {
