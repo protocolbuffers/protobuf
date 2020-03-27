@@ -6,6 +6,7 @@
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="${protobuf.source.dir}/google/protobuf/any.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/api.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/descriptor.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/duration.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/empty.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/field_mask.proto"/>
