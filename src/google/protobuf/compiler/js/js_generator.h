@@ -249,7 +249,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   // Generate definition for one class.
   void GenerateClass(const GeneratorOptions& options, io::Printer* printer,
                      const Descriptor* desc) const;
-  bool IsFinal(const GeneratorOptions& options, const Descriptor* desc) const;
   void GenerateClassConstructor(const GeneratorOptions& options,
                                 io::Printer* printer,
                                 const Descriptor* desc) const;
