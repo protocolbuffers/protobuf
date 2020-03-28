@@ -554,6 +554,15 @@ PROTOBUF_EXPORT_TEMPLATE_TEST(DEFAULT, __declspec(dllimport));
 #undef max
 #endif  // _MSC_VER
 
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+// Don't let the YES/NO Objective-C Macros interfere with proto identifiers with
+// the same name.
+#pragma push_macro("YES")
+#undef YES
+#pragma push_macro("NO")
+#undef NO
+#endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+
 #if defined(__clang__)
 #pragma clang diagnostic push
 // TODO(gerbens) ideally we cleanup the code. But a cursory try shows many

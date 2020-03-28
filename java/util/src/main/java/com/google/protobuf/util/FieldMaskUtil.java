@@ -34,6 +34,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -45,7 +46,6 @@ import com.google.protobuf.Message;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Utility helper functions to work with {@link com.google.protobuf.FieldMask}.
@@ -121,7 +121,7 @@ public final class FieldMaskUtil {
    * paths.
    */
   public static FieldMask fromStringList(Iterable<String> paths) {
-    return fromStringList(Optional.<Descriptor>empty(), paths);
+    return fromStringList(Optional.<Descriptor>absent(), paths);
   }
 
   private static FieldMask fromStringList(Optional<Descriptor> descriptor, Iterable<String> paths) {
