@@ -96,6 +96,11 @@
 #pragma pop_macro("max")
 #endif
 
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+#pragma pop_macro("YES")
+#pragma pop_macro("NO")
+#endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
