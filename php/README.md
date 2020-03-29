@@ -67,6 +67,10 @@ sudo pecl install protobuf-{VERSION}
 Simply add "google/protobuf" to the 'require' section of composer.json in your
 project.
 
+```
+composer require google/protobuf
+```
+
 ### Protoc
 
 Once the extension or package is installed, if you wish to generate PHP code
