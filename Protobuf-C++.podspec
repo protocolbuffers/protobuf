@@ -14,14 +14,21 @@ Pod::Spec.new do |s|
                    'src/google/protobuf/stubs/*.{h,cc}',
                    'src/google/protobuf/io/*.{h,cc}',
                    'src/google/protobuf/util/*.{h,cc}',
-                   'src/google/protobuf/util/internal/*.{h,cc}'
+                   'src/google/protobuf/util/internal/*.{h,cc}',
+                   'src/google/protobuf/compiler/*.{h,cc}',
+                   'src/google/protobuf/compiler/cpp/*.{h,cc}'
 
   # Excluding all the tests in the directories above
   s.exclude_files = 'src/google/**/*_test.{h,cc,inc}',
                     'src/google/**/*_unittest.{h,cc}',
                     'src/google/protobuf/test_util*.{h,cc}',
                     'src/google/protobuf/map_lite_test_util.{h,cc}',
-                    'src/google/protobuf/map_test_util*.{h,cc,inc}'
+                    'src/google/protobuf/map_test_util*.{h,cc,inc}',
+                    'src/google/protobuf/compiler/mock*.{h,cc}',
+                    'src/google/protobuf/compiler/test*.{h,cc}',
+                    'src/google/protobuf/compiler/*_test_util.{h,cc}',
+                    'src/google/protobuf/compiler/*_unittest.{h,cc}',
+                    'src/google/protobuf/compiler/main.{h,cc}'
 
   s.header_mappings_dir = 'src'
 
