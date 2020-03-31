@@ -111,6 +111,17 @@ Then in your `.c` file you can #include the generated header:
 /* Insert code that uses generated types. */
 ```
 
+Alternatively, you can build and install upb using [vcpkg](https://github.com/microsoft/vcpkg/) dependency manager:
+
+    git clone https://github.com/Microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    ./vcpkg install upb
+
+The upb port in vcpkg is kept up to date by microsoft team members and community contributors.
+If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
 ## Old "handlers" interfaces
 
 This library contains several semi-deprecated interfaces (see BUILD
