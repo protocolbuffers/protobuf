@@ -93,7 +93,20 @@ namespace Google.Protobuf
 
         public void MergeFrom(CodedInputStream input)
         {
-            codec.ValueMerger(input, ref field);
+            var ctx = new ParseContext(input);
+            try
+            {
+                codec.ValueMerger(ref ctx, ref field);
+            }
+            finally
+            {
+                ctx.CopyStateTo(input);
+            }
+        }
+
+        public void MergeFrom(ref ParseContext ctx)
+        {
+            codec.ValueMerger(ref ctx, ref field);
         }
 
         public void MergeFrom(IExtensionValue value)

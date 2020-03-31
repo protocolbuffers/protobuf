@@ -35,29 +35,15 @@ namespace Google.Protobuf
 #if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
     /// <summary>
     /// Interface for a Protocol Buffers message, supporting
-    /// <see cref="CodedInputReader"/> and <see cref="CodedOutputWriter"/>
-    /// serialization operations.
+    /// parsing from <see cref="ParseContext"/>.
     /// </summary>
     public interface IBufferMessage : IMessage
     {
-        /// <summary>
-        /// Merges the data from the specified <see cref="CodedInputReader"/> with the current message.
-        /// </summary>
-        /// <remarks>See the user guide for precise merge semantics.</remarks>
-        /// <param name="input"><see cref="CodedInputReader"/> to read data from. Must not be null.</param>
-        void MergeFrom(ref CodedInputReader input);
-
         /// <summary>
         /// Internal implementation of merging data from given parse context into this message.
         /// Users should never invoke this method directly.
         /// </summary>        
         void MergeFrom_Internal(ref ParseContext ctx);
-
-        /// <summary>
-        /// Writes the data to the given <see cref="CodedOutputWriter"/>.
-        /// </summary>
-        /// <param name="output"><see cref="CodedOutputWriter"/> to write the data to. Must not be null.</param>
-        void WriteTo(ref CodedOutputWriter output);
     }
 #endif
 }

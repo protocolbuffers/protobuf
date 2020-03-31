@@ -318,5 +318,10 @@ namespace Google.Protobuf
         {
             input.InternalState = state;
         }
+
+        internal void LoadStateFrom(CodedInputStream input)
+        {
+            state = input.InternalState;
+        }
     }
 }

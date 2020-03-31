@@ -431,15 +431,14 @@ namespace Google.Protobuf
         public void ReadMessage(IMessage builder)
         {
             var span = new ReadOnlySpan<byte>(buffer);
-            var ctx = new CodedInputReader(ref span, ref state);
+            var ctx = new ParseContext(ref span, ref state);
             try
             {
                 ParsingPrimitivesMessages.ReadMessage(ref ctx, builder);
             }
             finally
             {
-                // store the state
-                state = ctx.state;
+                ctx.CopyStateTo(this);
             }
         }
 

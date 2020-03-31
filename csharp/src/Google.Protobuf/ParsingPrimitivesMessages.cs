@@ -110,28 +110,6 @@ namespace Google.Protobuf
             state.recursionDepth--;
         }
 
-        public static void ReadMessage(ref CodedInputReader ctx, IMessage message)
-        {
-            int length = ParsingPrimitives.ParseLength(ref ctx.buffer, ref ctx.state);
-            if (ctx.state.recursionDepth >= ctx.state.recursionLimit)
-            {
-                throw InvalidProtocolBufferException.RecursionLimitExceeded();
-            }
-            int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
-            ++ctx.state.recursionDepth;
-
-            ReadRawMessage(ref ctx, message);
-
-            CheckReadEndOfStreamTag(ref ctx.state);
-            // Check that we've read exactly as much data as expected.
-            if (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
-            {
-                throw InvalidProtocolBufferException.TruncatedMessage();
-            }
-            --ctx.state.recursionDepth;
-            SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
-        }
-
         public static void ReadMessage(ref ParseContext ctx, IMessage message)
         {
             int length = ParsingPrimitives.ParseLength(ref ctx.buffer, ref ctx.state);
@@ -154,19 +132,6 @@ namespace Google.Protobuf
             SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
         }
 
-        public static void ReadGroup(ref CodedInputReader ctx, IMessage message)
-        {
-            if (ctx.state.recursionDepth >= ctx.state.recursionLimit)
-            {
-                throw InvalidProtocolBufferException.RecursionLimitExceeded();
-            }
-            ++ctx.state.recursionDepth;
-            
-            ReadRawMessage(ref ctx, message);
-
-            --ctx.state.recursionDepth;
-        }
-
         public static void ReadGroup(ref ParseContext ctx, IMessage message)
         {
             if (ctx.state.recursionDepth >= ctx.state.recursionLimit)
@@ -175,26 +140,26 @@ namespace Google.Protobuf
             }
             ++ctx.state.recursionDepth;
             
+            uint tag = ctx.state.lastTag;
+            int fieldNumber = WireFormat.GetTagFieldNumber(tag);
             ReadRawMessage(ref ctx, message);
+            CheckLastTagWas(ref ctx.state, WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
 
             --ctx.state.recursionDepth;
         }
 
-        public static void ReadRawMessage(ref CodedInputReader ctx, IMessage message)
+        public static void ReadGroup(ref ParseContext ctx, int fieldNumber, UnknownFieldSet set)
         {
-            if (message is IBufferMessage bufferMessage)
+            if (ctx.state.recursionDepth >= ctx.state.recursionLimit)
             {
-                bufferMessage.MergeFrom(ref ctx);
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
             }
-            else
-            {
-                if (ctx.state.codedInputStream == null)
-                {
-                    // TODO: improve the msg
-                    throw new InvalidProtocolBufferException("Cannot parse message with current parse context. Do you need to regenerate the code?");
-                }
-                message.MergeFrom(ctx.state.codedInputStream);
-            }
+            ++ctx.state.recursionDepth;
+
+            set.MergeGroupFrom(ref ctx);
+            CheckLastTagWas(ref ctx.state, WireFormat.MakeTag(fieldNumber, WireFormat.WireType.EndGroup));
+
+            --ctx.state.recursionDepth;
         }
 
         public static void ReadRawMessage(ref ParseContext ctx, IMessage message)
@@ -205,12 +170,36 @@ namespace Google.Protobuf
             }
             else
             {
+                // If we reached here, it means we've ran into a nested message with older generated code
+                // which doesn't provide the MergeFrom_Internal method that takes a ParseContext.
+                // With a slight performance overhead, we can still parse this message just fine,
+                // but we need to find the original CodedInputStream instance that initiated this
+                // parsing process and make sure its internal state is up to date.
+                // Note that this performance overhead is not very high (basically copying contents of a struct)
+                // and it will only be incurred in case the application mixes older and newer generated code.
+                // Regenerating the code from .proto files will remove this overhead because it will
+                // generate the MergeFrom_Internal method we need.
+
                 if (ctx.state.codedInputStream == null)
                 {
-                    // TODO: improve the msg
-                    throw new InvalidProtocolBufferException("Cannot parse message with current parse context. Do you need to regenerate the code?");
+                    // This can only happen when the parsing started without providing a CodedInputStream instance
+                    // (e.g. ParseContext was created directly from a ReadOnlySequence).
+                    // That also means that one of the new parsing APIs was used at the top level
+                    // and in such case it is reasonable to require that all the nested message provide
+                    // up-to-date generated code with ParseContext support (and fail otherwise).
+                    throw new InvalidProtocolBufferException($"Message ${message.GetType()} doesn't provide the generated method that enables ParseContext-based parsing. You might need to regenerate the generated protobuf code.");
                 }
-                message.MergeFrom(ctx.state.codedInputStream);
+
+                ctx.CopyStateTo(ctx.state.codedInputStream);
+                try
+                {
+                    // fallback parse using the CodedInputStream that started current parsing tree
+                    message.MergeFrom(ctx.state.codedInputStream);
+                }
+                finally
+                {
+                    ctx.LoadStateFrom(ctx.state.codedInputStream);
+                }
             }
         }
 
@@ -225,6 +214,13 @@ namespace Google.Protobuf
             if (state.lastTag != 0)
             {
                 throw InvalidProtocolBufferException.MoreDataAvailable();
+            }
+        }
+
+        private static void CheckLastTagWas(ref ParserInternalState state, uint expectedTag)
+        {
+            if (state.lastTag != expectedTag) {
+               throw InvalidProtocolBufferException.InvalidEndTag();
             }
         }
     }
