@@ -54,14 +54,15 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
-
 #include <google/protobuf/port_def.inc>
 
 // TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
@@ -277,6 +278,36 @@ class PROTOBUF_EXPORT Descriptor {
   // with AllowUnknownDependencies() set.
   bool is_placeholder() const;
 
+  enum WellKnownType {
+    WELLKNOWNTYPE_UNSPECIFIED,  // Not a well-known type.
+
+    // Wrapper types.
+    WELLKNOWNTYPE_DOUBLEVALUE,  // google.protobuf.DoubleValue
+    WELLKNOWNTYPE_FLOATVALUE,   // google.protobuf.FloatValue
+    WELLKNOWNTYPE_INT64VALUE,   // google.protobuf.Int64Value
+    WELLKNOWNTYPE_UINT64VALUE,  // google.protobuf.UInt64Value
+    WELLKNOWNTYPE_INT32VALUE,   // google.protobuf.Int32Value
+    WELLKNOWNTYPE_UINT32VALUE,  // google.protobuf.UInt32Value
+    WELLKNOWNTYPE_STRINGVALUE,  // google.protobuf.StringValue
+    WELLKNOWNTYPE_BYTESVALUE,   // google.protobuf.BytesValue
+    WELLKNOWNTYPE_BOOLVALUE,    // google.protobuf.BoolValue
+
+    // Other well known types.
+    WELLKNOWNTYPE_ANY,        // google.protobuf.Any
+    WELLKNOWNTYPE_FIELDMASK,  // google.protobuf.FieldMask
+    WELLKNOWNTYPE_DURATION,   // google.protobuf.Duration
+    WELLKNOWNTYPE_TIMESTAMP,  // google.protobuf.Timestamp
+    WELLKNOWNTYPE_VALUE,      // google.protobuf.Value
+    WELLKNOWNTYPE_LISTVALUE,  // google.protobuf.ListValue
+    WELLKNOWNTYPE_STRUCT,     // google.protobuf.Struct
+
+    // New well-known types may be added in the future.
+    // Please make sure any switch() statements have a 'default' case.
+    __WELLKNOWNTYPE__DO_NOT_USE__ADD_DEFAULT_INSTEAD__,
+  };
+
+  WellKnownType well_known_type() const;
+
   // Field stuff -----------------------------------------------------
 
   // The number of fields in this message type.
@@ -372,8 +403,30 @@ class PROTOBUF_EXPORT Descriptor {
   // Returns nullptr if no extension range contains the given number.
   const ExtensionRange* FindExtensionRangeContainingNumber(int number) const;
 
-  // The number of extensions -- extending *other* messages -- that were
-  // defined nested within this message type's scope.
+  // The number of extensions defined nested within this message type's scope.
+  // See doc:
+  // https://developers.google.com/protocol-buffers/docs/proto#nested-extensions
+  //
+  // Note that the extensions may be extending *other* messages.
+  //
+  // For example:
+  // message M1 {
+  //   extensions 1 to max;
+  // }
+  //
+  // message M2 {
+  //   extend M1 {
+  //     optional int32 foo = 1;
+  //   }
+  // }
+  //
+  // In this case,
+  // DescriptorPool::generated_pool()
+  //     ->FindMessageTypeByName("M2")
+  //     ->extension(0)
+  // will return "foo", even though "foo" is an extension of M1.
+  // To find all known extensions of a given message, instead use
+  // DescriptorPool::FindAllExtensions.
   int extension_count() const;
   // Get an extension by index, where 0 <= index < extension_count().
   // These are returned in the order they were defined in the .proto file.
@@ -484,6 +537,8 @@ class PROTOBUF_EXPORT Descriptor {
   bool is_placeholder_;
   // True if this is a placeholder and the type name wasn't fully-qualified.
   bool is_unqualified_placeholder_;
+  // Well known type.  Stored as char to conserve space.
+  char well_known_type_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<Descriptor>() and AllocateArray<Descriptor>() in descriptor.cc
@@ -629,6 +684,18 @@ class PROTOBUF_EXPORT FieldDescriptor {
   bool is_map() const;       // shorthand for type() == TYPE_MESSAGE &&
                              // message_type()->options().map_entry()
 
+  // Returns true if this field was syntactically written with "optional" in the
+  // .proto file. Excludes singular proto3 fields that do not have a label.
+  bool has_optional_keyword() const;
+
+  // Returns true if this is a non-oneof field that tracks presence.
+  // This includes all "required" and "optional" fields in the .proto file,
+  // but excludes oneof fields and singular proto3 fields without "optional".
+  //
+  // In implementations that use hasbits, this method will probably indicate
+  // whether this field uses a hasbit.
+  bool is_singular_with_presence() const;
+
   // Index of this field within the message's field array, or the file or
   // extension scope's extensions array.
   int index() const;
@@ -756,9 +823,7 @@ class PROTOBUF_EXPORT FieldDescriptor {
   void CopyJsonNameTo(FieldDescriptorProto* proto) const;
 
   // See Descriptor::DebugString().
-  enum PrintLabelFlag { PRINT_LABEL, OMIT_LABEL };
-  void DebugString(int depth, PrintLabelFlag print_label_flag,
-                   std::string* contents,
+  void DebugString(int depth, std::string* contents,
                    const DebugStringOptions& options) const;
 
   // formats the default value appropriately and returns it as a string.
@@ -790,6 +855,7 @@ class PROTOBUF_EXPORT FieldDescriptor {
   mutable Type type_;
   Label label_;
   bool has_default_value_;
+  bool proto3_optional_;
   // Whether the user has specified the json_name field option in the .proto
   // file.
   bool has_json_name_;
@@ -849,6 +915,10 @@ class PROTOBUF_EXPORT OneofDescriptor {
 
   // Index of this oneof within the message's oneof array.
   int index() const;
+
+  // Returns whether this oneof was inserted by the compiler to wrap a proto3
+  // optional field. If this returns true, code generators should *not* emit it.
+  bool is_synthetic() const;
 
   // The .proto file in which this oneof was defined.  Never nullptr.
   const FileDescriptor* file() const;
@@ -1783,8 +1853,9 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool InternalIsFileLoaded(const std::string& filename) const;
 
   // Add a file to unused_import_track_files_. DescriptorBuilder will log
-  // warnings for those files if there is any unused import.
-  void AddUnusedImportTrackFile(const std::string& file_name);
+  // warnings or errors for those files if there is any unused import.
+  void AddUnusedImportTrackFile(const std::string& file_name,
+                                bool is_error = false);
   void ClearUnusedImportTrackFiles();
 
  private:
@@ -1868,7 +1939,10 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool allow_unknown_;
   bool enforce_weak_;
   bool disallow_enforce_utf8_;
-  std::set<std::string> unused_import_track_files_;
+
+  // Set of files to track for unused imports. The bool value when true means
+  // unused imports are treated as errors (and as warnings when false).
+  std::map<std::string, bool> unused_import_track_files_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorPool);
 };
@@ -2013,6 +2087,10 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(FileDescriptor, extension,
 
 // A few accessors differ from the macros...
 
+inline Descriptor::WellKnownType Descriptor::well_known_type() const {
+  return static_cast<Descriptor::WellKnownType>(well_known_type_);
+}
+
 inline bool Descriptor::IsExtensionNumber(int number) const {
   return FindExtensionRangeContainingNumber(number) != nullptr;
 }
@@ -2082,6 +2160,19 @@ inline bool FieldDescriptor::is_map() const {
   return type() == TYPE_MESSAGE && is_map_message_type();
 }
 
+inline bool FieldDescriptor::has_optional_keyword() const {
+  return proto3_optional_ ||
+         (file()->syntax() == FileDescriptor::SYNTAX_PROTO2 && is_optional() &&
+          !containing_oneof());
+}
+
+inline bool FieldDescriptor::is_singular_with_presence() const {
+  if (is_repeated()) return false;
+  if (containing_oneof() && !containing_oneof()->is_synthetic()) return false;
+  return cpp_type() == CPPTYPE_MESSAGE || proto3_optional_ ||
+         file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
 // To save space, index() is computed by looking at the descriptor's position
 // in the parent's array of children.
 inline int FieldDescriptor::index() const {
@@ -2108,6 +2199,10 @@ inline const FileDescriptor* OneofDescriptor::file() const {
 
 inline int OneofDescriptor::index() const {
   return static_cast<int>(this - containing_type_->oneof_decls_);
+}
+
+inline bool OneofDescriptor::is_synthetic() const {
+  return field_count() == 1 && field(0)->proto3_optional_;
 }
 
 inline int EnumDescriptor::index() const {

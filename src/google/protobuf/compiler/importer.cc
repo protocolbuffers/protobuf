@@ -231,8 +231,9 @@ const FileDescriptor* Importer::Import(const std::string& filename) {
   return pool_.FindFileByName(filename);
 }
 
-void Importer::AddUnusedImportTrackFile(const std::string& file_name) {
-  pool_.AddUnusedImportTrackFile(file_name);
+void Importer::AddUnusedImportTrackFile(const std::string& file_name,
+                                        bool is_error) {
+  pool_.AddUnusedImportTrackFile(file_name, is_error);
 }
 
 void Importer::ClearUnusedImportTrackFiles() {

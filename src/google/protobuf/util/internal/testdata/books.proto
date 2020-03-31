@@ -34,6 +34,7 @@
 
 // Some of the older enums don't use CAPITALS_WITH_UNDERSCORES for testing.
 // LINT: LEGACY_NAMES
+// LINT: ALLOW_GROUPS
 
 syntax = "proto2";
 
@@ -211,4 +212,40 @@ message TestJsonName1 {
 }
 message TestJsonName2 {
   optional int32 another_value = 1 [json_name = "value"];
+}
+
+message TestPrimitiveFieldsWithSameJsonName {
+  optional string val_str1 = 1;
+  optional string val_str_1 = 2;
+
+  optional int32 val_int321 = 3;
+  optional int32 val_int32_1 = 4;
+
+  optional uint32 val_uint321 = 5;
+  optional uint32 val_uint32_1 = 6;
+
+  optional int64 val_int641 = 7;
+  optional int64 val_int64_1 = 8;
+
+  optional uint64 val_uint641 = 9;
+  optional uint64 val_uint64_1 = 10;
+
+  optional bool val_bool1 = 11;
+  optional bool val_bool_1 = 12;
+
+  optional double val_double1 = 13;
+  optional double val_double_1 = 14;
+
+  optional float val_float1 = 15;
+  optional float val_float_1 = 16;
+}
+
+message TestRepeatedFieldsWithSameJsonName {
+  repeated string rep_str1 = 1;
+  repeated string rep_str_1 = 2;
+}
+
+message TestMessageFieldsWithSameJsonName {
+  optional Primitive prim1 = 1;
+  optional Primitive prim_1 = 2;
 }

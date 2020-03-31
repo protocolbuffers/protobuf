@@ -26,7 +26,7 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/metadata.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
@@ -66,10 +66,10 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-class PROTOBUF_EXPORT Any :
+class PROTOBUF_EXPORT Any PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
-  Any();
+  inline Any() : Any(nullptr) {};
   virtual ~Any();
 
   Any(const Any& from);
@@ -83,7 +83,7 @@ class PROTOBUF_EXPORT Any :
     return *this;
   }
   inline Any& operator=(Any&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+    if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -148,6 +148,15 @@ class PROTOBUF_EXPORT Any :
   }
   inline void Swap(Any* other) {
     if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(Any* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -182,13 +191,11 @@ class PROTOBUF_EXPORT Any :
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.Any";
   }
+  protected:
+  explicit Any(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -218,6 +225,15 @@ class PROTOBUF_EXPORT Any :
   std::string* mutable_type_url();
   std::string* release_type_url();
   void set_allocated_type_url(std::string* type_url);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_type_url();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_type_url(
+      std::string* type_url);
   private:
   const std::string& _internal_type_url() const;
   void _internal_set_type_url(const std::string& value);
@@ -234,6 +250,15 @@ class PROTOBUF_EXPORT Any :
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_value();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_value(
+      std::string* value);
   private:
   const std::string& _internal_value() const;
   void _internal_set_value(const std::string& value);
@@ -244,7 +269,9 @@ class PROTOBUF_EXPORT Any :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr type_url_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr value_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
@@ -264,7 +291,7 @@ class PROTOBUF_EXPORT Any :
 
 // string type_url = 1;
 inline void Any::clear_type_url() {
-  type_url_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  type_url_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline const std::string& Any::type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.type_url)
@@ -279,38 +306,40 @@ inline std::string* Any::mutable_type_url() {
   return _internal_mutable_type_url();
 }
 inline const std::string& Any::_internal_type_url() const {
-  return type_url_.GetNoArena();
+  return type_url_.Get();
 }
 inline void Any::_internal_set_type_url(const std::string& value) {
   
-  type_url_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  type_url_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
 inline void Any::set_type_url(std::string&& value) {
   
-  type_url_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  type_url_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Any.type_url)
 }
 inline void Any::set_type_url(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  type_url_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  type_url_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.Any.type_url)
 }
-inline void Any::set_type_url(const char* value, size_t size) {
+inline void Any::set_type_url(const char* value,
+    size_t size) {
   
-  type_url_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
+  type_url_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Any.type_url)
 }
 inline std::string* Any::_internal_mutable_type_url() {
   
-  return type_url_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  return type_url_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline std::string* Any::release_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Any.type_url)
   
-  return type_url_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  return type_url_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Any::set_allocated_type_url(std::string* type_url) {
   if (type_url != nullptr) {
@@ -318,13 +347,33 @@ inline void Any::set_allocated_type_url(std::string* type_url) {
   } else {
     
   }
-  type_url_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), type_url);
+  type_url_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), type_url,
+      GetArena());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.type_url)
+}
+inline std::string* Any::unsafe_arena_release_type_url() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Any.type_url)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return type_url_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void Any::unsafe_arena_set_allocated_type_url(
+    std::string* type_url) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (type_url != nullptr) {
+    
+  } else {
+    
+  }
+  type_url_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      type_url, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Any.type_url)
 }
 
 // bytes value = 2;
 inline void Any::clear_value() {
-  value_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline const std::string& Any::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Any.value)
@@ -339,38 +388,40 @@ inline std::string* Any::mutable_value() {
   return _internal_mutable_value();
 }
 inline const std::string& Any::_internal_value() const {
-  return value_.GetNoArena();
+  return value_.Get();
 }
 inline void Any::_internal_set_value(const std::string& value) {
   
-  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
 inline void Any::set_value(std::string&& value) {
   
-  value_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  value_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Any.value)
 }
 inline void Any::set_value(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.Any.value)
 }
-inline void Any::set_value(const void* value, size_t size) {
+inline void Any::set_value(const void* value,
+    size_t size) {
   
-  value_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
+  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Any.value)
 }
 inline std::string* Any::_internal_mutable_value() {
   
-  return value_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  return value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline std::string* Any::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Any.value)
   
-  return value_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  return value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Any::set_allocated_value(std::string* value) {
   if (value != nullptr) {
@@ -378,8 +429,28 @@ inline void Any::set_allocated_value(std::string* value) {
   } else {
     
   }
-  value_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value,
+      GetArena());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.value)
+}
+inline std::string* Any::unsafe_arena_release_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Any.value)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return value_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void Any::unsafe_arena_set_allocated_value(
+    std::string* value) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (value != nullptr) {
+    
+  } else {
+    
+  }
+  value_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      value, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Any.value)
 }
 
 #ifdef __GNUC__

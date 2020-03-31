@@ -49,6 +49,7 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/stubs/casts.h>
 
 // Do UTF-8 validation on string type in Debug build only
 #ifndef NDEBUG
@@ -806,39 +807,19 @@ inline size_t WireFormatLite::TagSize(int field_number,
 }
 
 inline uint32 WireFormatLite::EncodeFloat(float value) {
-  union {
-    float f;
-    uint32 i;
-  };
-  f = value;
-  return i;
+  return bit_cast<uint32>(value);
 }
 
 inline float WireFormatLite::DecodeFloat(uint32 value) {
-  union {
-    float f;
-    uint32 i;
-  };
-  i = value;
-  return f;
+  return bit_cast<float>(value);
 }
 
 inline uint64 WireFormatLite::EncodeDouble(double value) {
-  union {
-    double f;
-    uint64 i;
-  };
-  f = value;
-  return i;
+  return bit_cast<uint64>(value);
 }
 
 inline double WireFormatLite::DecodeDouble(uint64 value) {
-  union {
-    double f;
-    uint64 i;
-  };
-  i = value;
-  return f;
+  return bit_cast<double>(value);
 }
 
 // ZigZag Transform:  Encodes signed integers so that they can be

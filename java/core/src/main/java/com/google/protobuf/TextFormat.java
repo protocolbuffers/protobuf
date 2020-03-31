@@ -34,10 +34,12 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -137,7 +139,7 @@ public final class TextFormat {
   /**
    * Like {@code print()}, but writes directly to a {@code String} and returns it.
    *
-   * @deprecated Use {@link MessageOrBuilder#toString()}
+   * @deprecated Use {@code message.toString()}
    */
   @Deprecated
   public static String printToString(final MessageOrBuilder message) {
@@ -419,13 +421,111 @@ public final class TextFormat {
     private void printField(
         final FieldDescriptor field, final Object value, final TextGenerator generator)
         throws IOException {
-      if (field.isRepeated()) {
+      // Sort map field entries by key
+      if (field.isMapField()) {
+        List<MapEntryAdapter> adapters = new ArrayList<>();
+        for (Object entry : (List<?>) value) {
+          adapters.add(new MapEntryAdapter(entry, field));
+        }
+        Collections.sort(adapters);
+        for (MapEntryAdapter adapter : adapters) {
+          printSingleField(field, adapter.getEntry(), generator);
+        }
+      } else if (field.isRepeated()) {
         // Repeated field.  Print each element.
         for (Object element : (List<?>) value) {
           printSingleField(field, element, generator);
         }
       } else {
         printSingleField(field, value, generator);
+      }
+    }
+
+    /**
+     * An adapter class that can take a MapEntry or a MutableMapEntry and returns its key and entry.
+     * This class is created solely for the purpose of sorting map entries by its key and prevent
+     * duplicated logic by having a separate comparator for MapEntry and MutableMapEntry.
+     */
+    private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
+      private Object entry;
+
+      @SuppressWarnings({"rawtypes"})
+      private MapEntry mapEntry;
+
+
+      private final FieldDescriptor.JavaType fieldType;
+
+      public MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
+        if (entry instanceof MapEntry) {
+          this.mapEntry = (MapEntry) entry;
+        } else {
+          this.entry = entry;
+        }
+        this.fieldType = extractFieldType(fieldDescriptor);
+      }
+
+      private static FieldDescriptor.JavaType extractFieldType(FieldDescriptor fieldDescriptor) {
+        return fieldDescriptor.getMessageType().getFields().get(0).getJavaType();
+      }
+
+      public Object getKey() {
+        if (mapEntry != null) {
+          return mapEntry.getKey();
+        }
+        return null;
+      }
+
+      public Object getEntry() {
+        if (mapEntry != null) {
+          return mapEntry;
+        }
+        return entry;
+      }
+
+      @Override
+      public int compareTo(MapEntryAdapter b) {
+        if (getKey() == null || b.getKey() == null) {
+          logger.info("Invalid key for map field.");
+          return -1;
+        }
+        switch (fieldType) {
+          case BOOLEAN:
+            boolean aBoolean = (boolean) getKey();
+            boolean bBoolean = (boolean) b.getKey();
+            if (aBoolean == bBoolean) {
+              return 0;
+            } else if (aBoolean) {
+              return 1;
+            } else {
+              return -1;
+            }
+          case LONG:
+            long aLong = (long) getKey();
+            long bLong = (long) b.getKey();
+            if (aLong < bLong) {
+              return -1;
+            } else if (aLong > bLong) {
+              return 1;
+            } else {
+              return 0;
+            }
+          case INT:
+            return (int) getKey() - (int) b.getKey();
+          case STRING:
+            String aString = (String) getKey();
+            String bString = (String) b.getKey();
+            if (aString == null && bString == null) {
+              return 0;
+            } else if (aString == null && bString != null) {
+              return -1;
+            } else if (aString != null && bString == null) {
+              return 1;
+            } else {
+              return aString.compareTo(bString);
+            }
+          default:
+            return 0;
+        }
       }
     }
 
@@ -1708,6 +1808,12 @@ public final class TextFormat {
       final Descriptor type = target.getDescriptorForType();
       ExtensionRegistry.ExtensionInfo extension = null;
 
+      if ("google.protobuf.Any".equals(type.getFullName()) && tokenizer.tryConsume("[")) {
+        mergeAnyFieldValue(tokenizer, extensionRegistry, target, parseTreeBuilder, unknownFields,
+            type);
+        return;
+      }
+
       if (tokenizer.tryConsume("[")) {
         // An extension.
         final StringBuilder name = new StringBuilder(tokenizer.consumeIdentifier());
@@ -1928,9 +2034,13 @@ public final class TextFormat {
         // Try to parse human readable format of Any in the form: [type_url]: { ... }
         if (field.getMessageType().getFullName().equals("google.protobuf.Any")
             && tokenizer.tryConsume("[")) {
-          value =
-              consumeAnyFieldValue(
-                  tokenizer, extensionRegistry, field, parseTreeBuilder, unknownFields);
+          // Use Proto reflection here since depending on Any would intoduce a cyclic dependency
+          // (java_proto_library for any_java_proto depends on the protobuf_impl).
+          Message anyBuilder = DynamicMessage.getDefaultInstance(field.getMessageType());
+          MessageReflection.MergeTarget anyField = target.newMergeTargetForField(field, anyBuilder);
+          mergeAnyFieldValue(tokenizer, extensionRegistry, anyField, parseTreeBuilder,
+              unknownFields, field.getMessageType());
+          value = anyField.finish();
           tokenizer.consume(endToken);
         } else {
           Message defaultInstance = (extension == null) ? null : extension.defaultInstance;
@@ -2052,12 +2162,13 @@ public final class TextFormat {
       }
     }
 
-    private Object consumeAnyFieldValue(
+    private void mergeAnyFieldValue(
         final Tokenizer tokenizer,
         final ExtensionRegistry extensionRegistry,
-        final FieldDescriptor field,
+        MergeTarget target,
         final TextFormatParseInfoTree.Builder parseTreeBuilder,
-        List<UnknownField> unknownFields)
+        List<UnknownField> unknownFields,
+        Descriptor anyDescriptor)
         throws ParseException {
       // Try to parse human readable format of Any in the form: [type_url]: { ... }
       StringBuilder typeUrlBuilder = new StringBuilder();
@@ -2105,21 +2216,13 @@ public final class TextFormat {
         mergeField(tokenizer, extensionRegistry, contentTarget, parseTreeBuilder, unknownFields);
       }
 
-      // Serialize the content and put it back into an Any. Note that we can't depend on Any here
-      // because of a cyclic dependency (java_proto_library for any_java_proto depends on the
-      // protobuf_impl), so we need to construct the Any using proto reflection.
-      Descriptor anyDescriptor = field.getMessageType();
-      Message.Builder anyBuilder =
-          DynamicMessage.getDefaultInstance(anyDescriptor).newBuilderForType();
-      anyBuilder.setField(anyDescriptor.findFieldByName("type_url"), typeUrlBuilder.toString());
-      anyBuilder.setField(
+      target.setField(anyDescriptor.findFieldByName("type_url"), typeUrlBuilder.toString());
+      target.setField(
           anyDescriptor.findFieldByName("value"), contentBuilder.build().toByteString());
-
-      return anyBuilder.build();
     }
 
     /** Skips the next field including the field's name and value. */
-    private void skipField(Tokenizer tokenizer) throws ParseException {
+    private static void skipField(Tokenizer tokenizer) throws ParseException {
       if (tokenizer.tryConsume("[")) {
         // Extension name.
         do {
@@ -2151,7 +2254,7 @@ public final class TextFormat {
     /**
      * Skips the whole body of a message including the beginning delimiter and the ending delimiter.
      */
-    private void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
+    private static void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
       final String delimiter;
       if (tokenizer.tryConsume("<")) {
         delimiter = ">";
@@ -2166,7 +2269,7 @@ public final class TextFormat {
     }
 
     /** Skips a field value. */
-    private void skipFieldValue(Tokenizer tokenizer) throws ParseException {
+    private static void skipFieldValue(Tokenizer tokenizer) throws ParseException {
       if (tokenizer.tryConsumeString()) {
         while (tokenizer.tryConsumeString()) {}
         return;

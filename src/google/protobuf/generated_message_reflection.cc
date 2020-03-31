@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/generated_message_reflection.h>
+
 #include <algorithm>
 #include <set>
 
@@ -40,13 +42,13 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 
 
@@ -60,7 +62,7 @@ using google::protobuf::internal::ExtensionSet;
 using google::protobuf::internal::GenericTypeHandler;
 using google::protobuf::internal::GetEmptyString;
 using google::protobuf::internal::InlinedStringField;
-using google::protobuf::internal::InternalMetadataWithArena;
+using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::LazyField;
 using google::protobuf::internal::MapFieldBase;
 using google::protobuf::internal::MigrationSchema;
@@ -100,21 +102,9 @@ const std::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
 
 namespace {
 
-template <class To>
-To* GetPointerAtOffset(Message* message, uint32 offset) {
-  return reinterpret_cast<To*>(reinterpret_cast<char*>(message) + offset);
-}
-
-template <class To>
-const To* GetConstPointerAtOffset(const Message* message, uint32 offset) {
-  return reinterpret_cast<const To*>(reinterpret_cast<const char*>(message) +
-                                     offset);
-}
-
-template <class To>
-const To& GetConstRefAtOffset(const Message& message, uint32 offset) {
-  return *GetConstPointerAtOffset<To>(&message, offset);
-}
+using internal::GetConstPointerAtOffset;
+using internal::GetConstRefAtOffset;
+using internal::GetPointerAtOffset;
 
 void ReportReflectionUsageError(const Descriptor* descriptor,
                                 const FieldDescriptor* field,
@@ -231,11 +221,13 @@ Reflection::Reflection(const Descriptor* descriptor,
 
 const UnknownFieldSet& Reflection::GetUnknownFields(
     const Message& message) const {
-  return GetInternalMetadataWithArena(message).unknown_fields();
+  return GetInternalMetadata(message).unknown_fields<UnknownFieldSet>(
+      UnknownFieldSet::default_instance);
 }
 
 UnknownFieldSet* Reflection::MutableUnknownFields(Message* message) const {
-  return MutableInternalMetadataWithArena(message)->mutable_unknown_fields();
+  return MutableInternalMetadata(message)
+      ->mutable_unknown_fields<UnknownFieldSet>();
 }
 
 size_t Reflection::SpaceUsedLong(const Message& message) const {
@@ -1026,6 +1018,14 @@ bool CreateUnknownEnumValues(const FileDescriptor* file) {
 }
 }  // namespace
 
+namespace internal {
+bool CreateUnknownEnumValues(const FieldDescriptor* field) {
+  bool open_enum = false;
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 || open_enum;
+}
+}  // namespace internal
+using internal::CreateUnknownEnumValues;
+
 void Reflection::ListFields(const Message& message,
                             std::vector<const FieldDescriptor*>* output) const {
   output->clear();
@@ -1323,7 +1323,7 @@ void Reflection::SetEnum(Message* message, const FieldDescriptor* field,
 void Reflection::SetEnumValue(Message* message, const FieldDescriptor* field,
                               int value) const {
   USAGE_CHECK_ALL(SetEnumValue, SINGULAR, ENUM);
-  if (!CreateUnknownEnumValues(descriptor_->file())) {
+  if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
@@ -1380,7 +1380,7 @@ void Reflection::SetRepeatedEnumValue(Message* message,
                                       const FieldDescriptor* field, int index,
                                       int value) const {
   USAGE_CHECK_ALL(SetRepeatedEnum, REPEATED, ENUM);
-  if (!CreateUnknownEnumValues(descriptor_->file())) {
+  if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
@@ -1414,7 +1414,7 @@ void Reflection::AddEnum(Message* message, const FieldDescriptor* field,
 void Reflection::AddEnumValue(Message* message, const FieldDescriptor* field,
                               int value) const {
   USAGE_CHECK_ALL(AddEnum, REPEATED, ENUM);
-  if (!CreateUnknownEnumValues(descriptor_->file())) {
+  if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
@@ -1899,24 +1899,18 @@ ExtensionSet* Reflection::MutableExtensionSet(Message* message) const {
 }
 
 Arena* Reflection::GetArena(Message* message) const {
-  return GetInternalMetadataWithArena(*message).arena();
+  return GetInternalMetadata(*message).arena();
 }
 
-const InternalMetadataWithArena& Reflection::GetInternalMetadataWithArena(
+const InternalMetadata& Reflection::GetInternalMetadata(
     const Message& message) const {
-  return GetConstRefAtOffset<InternalMetadataWithArena>(
-      message, schema_.GetMetadataOffset());
+  return GetConstRefAtOffset<InternalMetadata>(message,
+                                               schema_.GetMetadataOffset());
 }
 
-InternalMetadataWithArena* Reflection::MutableInternalMetadataWithArena(
-    Message* message) const {
-  return GetPointerAtOffset<InternalMetadataWithArena>(
-      message, schema_.GetMetadataOffset());
-}
-
-template <typename Type>
-const Type& Reflection::DefaultRaw(const FieldDescriptor* field) const {
-  return *reinterpret_cast<const Type*>(schema_.GetFieldDefault(field));
+InternalMetadata* Reflection::MutableInternalMetadata(Message* message) const {
+  return GetPointerAtOffset<InternalMetadata>(message,
+                                              schema_.GetMetadataOffset());
 }
 
 // Simple accessors for manipulating has_bits_.
@@ -2331,7 +2325,7 @@ struct MetadataOwner {
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
-void AssignDescriptorsImpl(const DescriptorTable* table) {
+void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   // Ensure the file descriptor is added to the pool.
   {
     // This only happens once per proto file. So a global mutex to serialize
@@ -2341,6 +2335,25 @@ void AssignDescriptorsImpl(const DescriptorTable* table) {
     AddDescriptors(table);
     mu.Unlock();
   }
+  if (eager) {
+    // Normally we do not want to eagerly build descriptors of our deps.
+    // However if this proto is optimized for code size (ie using reflection)
+    // and it has a message extending a custom option of a descriptor with that
+    // message being optimized for code size as well. Building the descriptors
+    // in this file requires parsing the serialized file descriptor, which now
+    // requires parsing the message extension, which potentially requires
+    // building the descriptor of the message extending one of the options.
+    // However we are already updating descriptor pool under a lock. To prevent
+    // this the compiler statically looks for this case and we just make sure we
+    // first build the descriptors of all our dependencies, preventing the
+    // deadlock.
+    int num_deps = table->num_deps;
+    for (int i = 0; i < num_deps; i++) {
+      // In case of weak fields deps[i] could be null.
+      if (table->deps[i]) AssignDescriptors(table->deps[i], true);
+    }
+  }
+
   // Fill the arrays with pointers to descriptors and reflection classes.
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
@@ -2378,7 +2391,8 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
 
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.
-  for (int i = 0; i < table->num_deps; i++) {
+  int num_deps = table->num_deps;
+  for (int i = 0; i < num_deps; i++) {
     // In case of weak fields deps[i] could be null.
     if (table->deps[i]) AddDescriptors(table->deps[i]);
   }
@@ -2403,8 +2417,9 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
 
 namespace internal {
 
-void AssignDescriptors(const DescriptorTable* table) {
-  call_once(*table->once, AssignDescriptorsImpl, table);
+void AssignDescriptors(const DescriptorTable* table, bool eager) {
+  if (!eager) eager = table->is_eager;
+  call_once(*table->once, AssignDescriptorsImpl, table, eager);
 }
 
 void AddDescriptors(const DescriptorTable* table) {
@@ -2412,8 +2427,8 @@ void AddDescriptors(const DescriptorTable* table) {
   // properly serialized. This function is only called pre-main by global
   // descriptors and we can assume single threaded access or it's called
   // by AssignDescriptorImpl which uses a mutex to sequence calls.
-  if (*table->is_initialized) return;
-  *table->is_initialized = true;
+  if (table->is_initialized) return;
+  table->is_initialized = true;
   AddDescriptorsImpl(table);
 }
 
@@ -2426,11 +2441,12 @@ void UnknownFieldSetSerializer(const uint8* base, uint32 offset, uint32 tag,
                                uint32 has_offset,
                                io::CodedOutputStream* output) {
   const void* ptr = base + offset;
-  const InternalMetadataWithArena* metadata =
-      static_cast<const InternalMetadataWithArena*>(ptr);
+  const InternalMetadata* metadata = static_cast<const InternalMetadata*>(ptr);
   if (metadata->have_unknown_fields()) {
-    internal::WireFormat::SerializeUnknownFields(metadata->unknown_fields(),
-                                                 output);
+    internal::WireFormat::SerializeUnknownFields(
+        metadata->unknown_fields<UnknownFieldSet>(
+            UnknownFieldSet::default_instance),
+        output);
   }
 }
 

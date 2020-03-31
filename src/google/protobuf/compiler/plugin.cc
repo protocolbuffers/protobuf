@@ -132,6 +132,8 @@ bool GenerateCode(const CodeGeneratorRequest& request,
   bool succeeded = generator.GenerateAll(parsed_files, request.parameter(),
                                          &context, &error);
 
+  response->set_supported_features(generator.GetSupportedFeatures());
+
   if (!succeeded && error.empty()) {
     error =
         "Code generator returned false but provided no error "

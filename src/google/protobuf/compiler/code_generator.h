@@ -102,6 +102,16 @@ class PROTOC_EXPORT CodeGenerator {
                            GeneratorContext* generator_context,
                            std::string* error) const;
 
+  // Sync with plugin.proto.
+  enum Feature {
+    FEATURE_PROTO3_OPTIONAL = 1,
+  };
+
+  // Implement this to indicate what features this code generator supports.
+  // This should be a bitwise OR of features from the Features enum in
+  // plugin.proto.
+  virtual uint64 GetSupportedFeatures() const { return 0; }
+
   // This is no longer used, but this class is part of the opensource protobuf
   // library, so it has to remain to keep vtables the same for the current
   // version of the library. When protobufs does a api breaking change, the

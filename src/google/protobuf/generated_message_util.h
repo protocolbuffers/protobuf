@@ -67,6 +67,7 @@ namespace google {
 namespace protobuf {
 
 class Arena;
+class Message;
 
 namespace io {
 class CodedInputStream;
@@ -149,6 +150,8 @@ PROTOBUF_EXPORT MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                                      MessageLite* submessage,
                                                      Arena* submessage_arena);
 PROTOBUF_EXPORT void GenericSwap(MessageLite* m1, MessageLite* m2);
+// We specialize GenericSwap for non-lite messages to benefit from reflection.
+PROTOBUF_EXPORT void GenericSwap(Message* m1, Message* m2);
 
 template <typename T>
 T* DuplicateIfNonNull(T* message) {

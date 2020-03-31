@@ -225,6 +225,19 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // FieldDescriptors. The first will be the field of the embedded message
   // itself and the second will be the actual field in the embedded message
   // that was added/deleted/modified.
+  // Fields will be reported in PostTraversalOrder.
+  // For example, given following proto, if both baz and quux are changed.
+  // foo {
+  //   bar {
+  //     baz: 1
+  //     quux: 2
+  //   }
+  // }
+  // ReportModified will be invoked with following order:
+  // 1. foo.bar.baz or foo.bar.quux
+  // 2. foo.bar.quux or foo.bar.baz
+  // 2. foo.bar
+  // 3. foo
   class PROTOBUF_EXPORT Reporter {
    public:
     Reporter();

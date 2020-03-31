@@ -73,6 +73,11 @@ ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
   GOOGLE_CHECK(!HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A lite message generator is used to "
          "generate non-lite messages.";
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    if (IsRealOneof(descriptor_->field(i))) {
+      oneofs_.insert(descriptor_->field(i)->containing_oneof());
+    }
+  }
 }
 
 ImmutableMessageLiteGenerator::~ImmutableMessageLiteGenerator() {}
@@ -134,15 +139,13 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
     field_generators_.get(descriptor_->field(i))
         .GenerateInterfaceMembers(printer);
   }
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+  for (auto oneof : oneofs_) {
     printer->Print(
         "\n"
         "public $classname$.$oneof_capitalized_name$Case "
         "get$oneof_capitalized_name$Case();\n",
         "oneof_capitalized_name",
-        context_->GetOneofGeneratorInfo(descriptor_->oneof_decl(i))
-            ->capitalized_name,
-        "classname",
+        context_->GetOneofGeneratorInfo(oneof)->capitalized_name, "classname",
         context_->GetNameResolver()->GetImmutableClassName(descriptor_));
   }
   printer->Outdent();
@@ -224,12 +227,11 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   // oneof
   std::map<std::string, std::string> vars;
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
+  for (auto oneof : oneofs_) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-    vars["oneof_index"] = StrCat(oneof->index());
+    vars["oneof_index"] = StrCat((oneof)->index());
     // oneofCase_ and oneof_
     printer->Print(vars,
                    "private int $oneof_name$Case_ = 0;\n"
@@ -237,8 +239,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     // OneofCase enum
     printer->Print(vars, "public enum $oneof_capitalized_name$Case {\n");
     printer->Indent();
-    for (int j = 0; j < oneof->field_count(); j++) {
-      const FieldDescriptor* field = oneof->field(j);
+    for (int j = 0; j < (oneof)->field_count(); j++) {
+      const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("$field_name$($field_number$),\n", "field_name",
                      ToUpper(field->name()), "field_number",
                      StrCat(field->number()));
@@ -262,8 +264,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "\n"
         "public static $oneof_capitalized_name$Case forNumber(int value) {\n"
         "  switch (value) {\n");
-    for (int j = 0; j < oneof->field_count(); j++) {
-      const FieldDescriptor* field = oneof->field(j);
+    for (int j = 0; j < (oneof)->field_count(); j++) {
+      const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("    case $field_number$: return $field_name$;\n",
                      "field_number", StrCat(field->number()),
                      "field_name", ToUpper(field->name()));
@@ -472,7 +474,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
   std::vector<uint16> chars;
 
   int flags = 0;
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (IsProto2(descriptor_->file())) {
     flags |= 0x1;
   }
   if (descriptor_->options().message_set_wire_format()) {
@@ -489,9 +491,8 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
     printer->Indent();
 
     // Record the number of oneofs.
-    WriteIntToUtf16CharSequence(descriptor_->oneof_decl_count(), &chars);
-    for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-      const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
+    WriteIntToUtf16CharSequence(oneofs_.size(), &chars);
+    for (auto oneof : oneofs_) {
       printer->Print(
           "\"$oneof_name$_\",\n"
           "\"$oneof_name$Case_\",\n",
@@ -715,7 +716,7 @@ void ImmutableMessageLiteGenerator::GenerateParser(io::Printer* printer) {
 // ===================================================================
 void ImmutableMessageLiteGenerator::GenerateInitializers(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (!descriptor_->field(i)->containing_oneof()) {
+    if (!IsRealOneof(descriptor_->field(i))) {
       field_generators_.get(descriptor_->field(i))
           .GenerateInitializationCode(printer);
     }

@@ -474,36 +474,6 @@ const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx) {
   return VarintParser<int, false>(object, ptr, ctx);
 }
 
-const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
-                             bool (*is_valid)(int),
-                             InternalMetadataWithArenaLite* metadata,
-                             int field_num) {
-  return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, metadata, field_num](uint64 val) {
-        if (is_valid(val)) {
-          static_cast<RepeatedField<int>*>(object)->Add(val);
-        } else {
-          WriteVarint(field_num, val, metadata->mutable_unknown_fields());
-        }
-      });
-}
-
-const char* PackedEnumParserArg(void* object, const char* ptr,
-                                ParseContext* ctx,
-                                bool (*is_valid)(const void*, int),
-                                const void* data,
-                                InternalMetadataWithArenaLite* metadata,
-                                int field_num) {
-  return ctx->ReadPackedVarint(
-      ptr, [object, is_valid, data, metadata, field_num](uint64 val) {
-        if (is_valid(data, val)) {
-          static_cast<RepeatedField<int>*>(object)->Add(val);
-        } else {
-          WriteVarint(field_num, val, metadata->mutable_unknown_fields());
-        }
-      });
-}
-
 const char* PackedBoolParser(void* object, const char* ptr, ParseContext* ctx) {
   return VarintParser<bool, false>(object, ptr, ctx);
 }
@@ -602,12 +572,6 @@ const char* UnknownFieldParse(uint32 tag, std::string* unknown, const char* ptr,
                               ParseContext* ctx) {
   UnknownFieldLiteParserHelper field_parser(unknown);
   return FieldParser(tag, field_parser, ptr, ctx);
-}
-
-const char* UnknownFieldParse(uint32 tag,
-                              InternalMetadataWithArenaLite* metadata,
-                              const char* ptr, ParseContext* ctx) {
-  return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
 }
 
 }  // namespace internal

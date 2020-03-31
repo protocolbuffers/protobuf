@@ -87,6 +87,15 @@ MockCodeGenerator::MockCodeGenerator(const std::string& name) : name_(name) {}
 
 MockCodeGenerator::~MockCodeGenerator() {}
 
+uint64 MockCodeGenerator::GetSupportedFeatures() const {
+  uint64 all_features = CodeGenerator::FEATURE_PROTO3_OPTIONAL;
+  return all_features & ~suppressed_features_;
+}
+
+void MockCodeGenerator::SuppressFeatures(uint64 features) {
+  suppressed_features_ = features;
+}
+
 void MockCodeGenerator::ExpectGenerated(
     const std::string& name, const std::string& parameter,
     const std::string& insertions, const std::string& file,
@@ -320,7 +329,7 @@ std::string MockCodeGenerator::GetOutputFileContent(
     const std::string& file, const std::string& parsed_file_list,
     const std::string& first_message_name) {
   return strings::Substitute("$0: $1, $2, $3, $4\n", generator_name, parameter,
-                             file, first_message_name, parsed_file_list);
+                          file, first_message_name, parsed_file_list);
 }
 
 }  // namespace compiler

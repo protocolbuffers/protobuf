@@ -2194,5 +2194,23 @@ class WhitespaceTest(TextFormatBase):
             }"""))
 
 
+class OptionalColonMessageToStringTest(unittest.TestCase):
+
+  def testForcePrintOptionalColon(self):
+    packed_message = unittest_pb2.OneString()
+    packed_message.data = 'string'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    output = text_format.MessageToString(
+        message,
+        force_colon=True)
+    expected = ('any_value: {\n'
+                '  [type.googleapis.com/protobuf_unittest.OneString]: {\n'
+                '    data: "string"\n'
+                '  }\n'
+                '}\n')
+    self.assertEqual(expected, output)
+
+
 if __name__ == '__main__':
   unittest.main()

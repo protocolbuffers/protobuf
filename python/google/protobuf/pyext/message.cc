@@ -1425,16 +1425,7 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
   }
 
   if (field_descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
-    // HasField() for a oneof *itself* isn't supported.
-    if (in_oneof) {
-      PyErr_Format(PyExc_ValueError,
-                   "Can't test oneof field \"%s.%s\" for presence in proto3, "
-                   "use WhichOneof instead.", message_name.c_str(),
-                   field_descriptor->containing_oneof()->name().c_str());
-      return false;
-    }
-
-    // ...but HasField() for fields *in* a oneof is supported.
+    // HasField() is supported for oneof fields.
     if (field_descriptor->containing_oneof() != NULL) {
       return true;
     }

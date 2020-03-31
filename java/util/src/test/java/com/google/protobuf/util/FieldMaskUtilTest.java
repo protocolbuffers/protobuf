@@ -30,10 +30,12 @@
 
 package com.google.protobuf.util;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import protobuf_unittest.UnittestProto.NestedTestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-
 import junit.framework.TestCase;
 
 /** Unit tests for {@link FieldMaskUtil}. */
@@ -170,6 +172,38 @@ public class FieldMaskUtilTest extends TestCase {
     assertEquals(2, mask.getPathsCount());
     assertEquals("foo", mask.getPaths(0));
     assertEquals("bar_baz", mask.getPaths(1));
+  }
+
+  public void testFromStringList() throws Exception {
+    FieldMask mask =
+        FieldMaskUtil.fromStringList(
+            NestedTestAllTypes.class, ImmutableList.of("payload.repeated_nested_message", "child"));
+    assertThat(mask)
+        .isEqualTo(
+            FieldMask.newBuilder()
+                .addPaths("payload.repeated_nested_message")
+                .addPaths("child")
+                .build());
+
+    mask =
+        FieldMaskUtil.fromStringList(
+            NestedTestAllTypes.getDescriptor(),
+            ImmutableList.of("payload.repeated_nested_message", "child"));
+    assertThat(mask)
+        .isEqualTo(
+            FieldMask.newBuilder()
+                .addPaths("payload.repeated_nested_message")
+                .addPaths("child")
+                .build());
+
+    mask =
+        FieldMaskUtil.fromStringList(ImmutableList.of("payload.repeated_nested_message", "child"));
+    assertThat(mask)
+        .isEqualTo(
+            FieldMask.newBuilder()
+                .addPaths("payload.repeated_nested_message")
+                .addPaths("child")
+                .build());
   }
 
   public void testUnion() throws Exception {
