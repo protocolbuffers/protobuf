@@ -1105,6 +1105,9 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
 bool CommandLineInterface::AllowProto3Optional(
     const FileDescriptor& file) const {
   if (allow_proto3_optional_) return true;
+  if (file.name() == "google/protobuf/unittest_proto3_optional.proto") {
+    return true;
+  }
   return false;
 }
 
