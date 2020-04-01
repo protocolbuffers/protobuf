@@ -58,9 +58,7 @@ message Message24345 {
   optional string field24536 = 3;
   optional string field24537 = 4;
   optional .benchmarks.google_message3.UnusedEnum field24538 = 23;
-
-  // LINT: ALLOW_GROUPS
-
+  optional string field24539 = 5;
   required string field24540 = 6;
   optional string field24541 = 7;
   optional string field24542 = 8;
