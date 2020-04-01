@@ -157,7 +157,8 @@ def do_test(request):
 
     elif request.requested_output_format == conformance_pb2.JSON:
       try:
-        response.json_payload = json_format.MessageToJson(test_message)
+        response.json_payload = json_format.MessageToJson(
+            test_message, float_precision=None)
       except Exception as e:
         response.serialize_error = str(e)
         return response

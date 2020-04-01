@@ -83,7 +83,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
-  if (SupportFieldPresence(descriptor->file())) {
+  if (SupportFieldPresence(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
 
@@ -140,12 +140,12 @@ ImmutableEnumFieldLiteGenerator::ImmutableEnumFieldLiteGenerator(
 ImmutableEnumFieldLiteGenerator::~ImmutableEnumFieldLiteGenerator() {}
 
 int ImmutableEnumFieldLiteGenerator::GetNumBitsForMessage() const {
-  return SupportFieldPresence(descriptor_->file()) ? 1 : 0;
+  return SupportFieldPresence(descriptor_) ? 1 : 0;
 }
 
 void ImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
@@ -163,7 +163,7 @@ void ImmutableEnumFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_, "private int $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -217,7 +217,7 @@ void ImmutableEnumFieldLiteGenerator::GenerateMembers(
 
 void ImmutableEnumFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -288,11 +288,11 @@ void ImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (HasHasbit(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (!SupportUnknownEnumValue((descriptor_))) {
     PrintEnumVerifierLogic(printer, descriptor_, variables_,
                            /*var_name=*/"$type$",
                            /*terminating_string=*/",\n",
@@ -319,7 +319,7 @@ ImmutableEnumOneofFieldLiteGenerator::~ImmutableEnumOneofFieldLiteGenerator() {}
 void ImmutableEnumOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -386,7 +386,7 @@ void ImmutableEnumOneofFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
   WriteIntToUtf16CharSequence(descriptor_->containing_oneof()->index(), output);
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (!SupportUnknownEnumValue(descriptor_)) {
     PrintEnumVerifierLogic(printer, descriptor_, variables_,
                            /*var_name=*/"$type$",
                            /*terminating_string=*/",\n",
@@ -396,7 +396,7 @@ void ImmutableEnumOneofFieldLiteGenerator::GenerateFieldInfo(
 
 void ImmutableEnumOneofFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -640,7 +640,7 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
   printer->Print(variables_, "\"$name$_\",\n");
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (!SupportUnknownEnumValue(descriptor_->file())) {
     PrintEnumVerifierLogic(printer, descriptor_, variables_,
                            /*var_name=*/"$type$",
                            /*terminating_string=*/",\n",

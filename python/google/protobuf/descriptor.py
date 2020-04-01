@@ -35,6 +35,7 @@ file, in types that make this information accessible in Python.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import threading
+import warnings
 import six
 
 from google.protobuf.internal import api_implementation
@@ -89,6 +90,25 @@ class _Lock(object):
 
 
 _lock = threading.Lock()
+
+
+def _Deprecated(name):
+  if _Deprecated.count > 0:
+    _Deprecated.count -= 1
+    warnings.warn(
+        'Call to deprecated create function %s(). Note: Create unlinked '
+        'descriptors is going to go away. Please use get/find descriptors from '
+        'generated code or query the descriptor_pool.'
+        % name,
+        category=DeprecationWarning, stacklevel=3)
+
+
+# Deprecated warnings will print 100 times at most which should be enough for
+# users to notice and do not cause timeout.
+_Deprecated.count = 100
+
+
+_internal_create_key = object()
 
 
 class DescriptorBase(six.with_metaclass(DescriptorMetaclass)):
@@ -271,7 +291,7 @@ class Descriptor(_NestedDescriptorBase):
                 serialized_options=None,
                 is_extendable=True, extension_ranges=None, oneofs=None,
                 file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-                syntax=None):
+                syntax=None, create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindMessageTypeByName(full_name)
 
@@ -283,13 +303,16 @@ class Descriptor(_NestedDescriptorBase):
                serialized_options=None,
                is_extendable=True, extension_ranges=None, oneofs=None,
                file=None, serialized_start=None, serialized_end=None,  # pylint: disable=redefined-builtin
-               syntax=None):
+               syntax=None, create_key=None):
     """Arguments to __init__() are as described in the description
     of Descriptor fields above.
 
     Note that filename is an obsolete argument, that is not used anymore.
     Please use file.name to access this as an attribute.
     """
+    if create_key is not _internal_create_key:
+      _Deprecated('Descriptor')
+
     super(Descriptor, self).__init__(
         options, 'MessageOptions', name, full_name, file,
         containing_type, serialized_start=serialized_start,
@@ -515,7 +538,7 @@ class FieldDescriptor(DescriptorBase):
                 is_extension, extension_scope, options=None,
                 serialized_options=None,
                 has_default_value=True, containing_oneof=None, json_name=None,
-                file=None):  # pylint: disable=redefined-builtin
+                file=None, create_key=None):  # pylint: disable=redefined-builtin
       _message.Message._CheckCalledFromGeneratedFile()
       if is_extension:
         return _message.default_pool.FindExtensionByName(full_name)
@@ -527,7 +550,7 @@ class FieldDescriptor(DescriptorBase):
                is_extension, extension_scope, options=None,
                serialized_options=None,
                has_default_value=True, containing_oneof=None, json_name=None,
-               file=None):  # pylint: disable=redefined-builtin
+               file=None, create_key=None):  # pylint: disable=redefined-builtin
     """The arguments are as described in the description of FieldDescriptor
     attributes above.
 
@@ -535,6 +558,9 @@ class FieldDescriptor(DescriptorBase):
     (to deal with circular references between message types, for example).
     Likewise for extension_scope.
     """
+    if create_key is not _internal_create_key:
+      _Deprecated('FieldDescriptor')
+
     super(FieldDescriptor, self).__init__(
         options, serialized_options, 'FieldOptions')
     self.name = name
@@ -628,19 +654,22 @@ class EnumDescriptor(_NestedDescriptorBase):
     def __new__(cls, name, full_name, filename, values,
                 containing_type=None, options=None,
                 serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-                serialized_start=None, serialized_end=None):
+                serialized_start=None, serialized_end=None, create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindEnumTypeByName(full_name)
 
   def __init__(self, name, full_name, filename, values,
                containing_type=None, options=None,
                serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-               serialized_start=None, serialized_end=None):
+               serialized_start=None, serialized_end=None, create_key=None):
     """Arguments are as described in the attribute description above.
 
     Note that filename is an obsolete argument, that is not used anymore.
     Please use file.name to access this as an attribute.
     """
+    if create_key is not _internal_create_key:
+      _Deprecated('EnumDescriptor')
+
     super(EnumDescriptor, self).__init__(
         options, 'EnumOptions', name, full_name, file,
         containing_type, serialized_start=serialized_start,
@@ -684,7 +713,7 @@ class EnumValueDescriptor(DescriptorBase):
 
     def __new__(cls, name, index, number,
                 type=None,  # pylint: disable=redefined-builtin
-                options=None, serialized_options=None):
+                options=None, serialized_options=None, create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       # There is no way we can build a complete EnumValueDescriptor with the
       # given parameters (the name of the Enum is not known, for example).
@@ -694,8 +723,11 @@ class EnumValueDescriptor(DescriptorBase):
 
   def __init__(self, name, index, number,
                type=None,  # pylint: disable=redefined-builtin
-               options=None, serialized_options=None):
+               options=None, serialized_options=None, create_key=None):
     """Arguments are as described in the attribute description above."""
+    if create_key is not _internal_create_key:
+      _Deprecated('EnumValueDescriptor')
+
     super(EnumValueDescriptor, self).__init__(
         options, serialized_options, 'EnumValueOptions')
     self.name = name
@@ -724,14 +756,17 @@ class OneofDescriptor(DescriptorBase):
 
     def __new__(
         cls, name, full_name, index, containing_type, fields, options=None,
-        serialized_options=None):
+        serialized_options=None, create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()
       return _message.default_pool.FindOneofByName(full_name)
 
   def __init__(
       self, name, full_name, index, containing_type, fields, options=None,
-      serialized_options=None):
+      serialized_options=None, create_key=None):
     """Arguments are as described in the attribute description above."""
+    if create_key is not _internal_create_key:
+      _Deprecated('OneofDescriptor')
+
     super(OneofDescriptor, self).__init__(
         options, serialized_options, 'OneofOptions')
     self.name = name
@@ -765,13 +800,16 @@ class ServiceDescriptor(_NestedDescriptorBase):
 
     def __new__(cls, name, full_name, index, methods, options=None,
                 serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-                serialized_start=None, serialized_end=None):
+                serialized_start=None, serialized_end=None, create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindServiceByName(full_name)
 
   def __init__(self, name, full_name, index, methods, options=None,
                serialized_options=None, file=None,  # pylint: disable=redefined-builtin
-               serialized_start=None, serialized_end=None):
+               serialized_start=None, serialized_end=None, create_key=None):
+    if create_key is not _internal_create_key:
+      _Deprecated('ServiceDescriptor')
+
     super(ServiceDescriptor, self).__init__(
         options, 'ServiceOptions', name, full_name, file,
         None, serialized_start=serialized_start,
@@ -826,17 +864,22 @@ class MethodDescriptor(DescriptorBase):
     _C_DESCRIPTOR_CLASS = _message.MethodDescriptor
 
     def __new__(cls, name, full_name, index, containing_service,
-                input_type, output_type, options=None, serialized_options=None):
+                input_type, output_type, options=None, serialized_options=None,
+                create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindMethodByName(full_name)
 
   def __init__(self, name, full_name, index, containing_service,
-               input_type, output_type, options=None, serialized_options=None):
+               input_type, output_type, options=None, serialized_options=None,
+               create_key=None):
     """The arguments are as described in the description of MethodDescriptor
     attributes above.
 
     Note that containing_service may be None, and may be set later if necessary.
     """
+    if create_key is not _internal_create_key:
+      _Deprecated('MethodDescriptor')
+
     super(MethodDescriptor, self).__init__(
         options, serialized_options, 'MethodOptions')
     self.name = name
@@ -884,11 +927,11 @@ class FileDescriptor(DescriptorBase):
     def __new__(cls, name, package, options=None,
                 serialized_options=None, serialized_pb=None,
                 dependencies=None, public_dependencies=None,
-                syntax=None, pool=None):
+                syntax=None, pool=None, create_key=None):
       # FileDescriptor() is called from various places, not only from generated
       # files, to register dynamic proto files and messages.
       # pylint: disable=g-explicit-bool-comparison
-      if serialized_pb == '':
+      if serialized_pb == b'':
         # Cpp generated code must be linked in if serialized_pb is ''
         try:
           return _message.default_pool.FindFileByName(name)
@@ -902,8 +945,11 @@ class FileDescriptor(DescriptorBase):
   def __init__(self, name, package, options=None,
                serialized_options=None, serialized_pb=None,
                dependencies=None, public_dependencies=None,
-               syntax=None, pool=None):
+               syntax=None, pool=None, create_key=None):
     """Constructor."""
+    if create_key is not _internal_create_key:
+      _Deprecated('FileDescriptor')
+
     super(FileDescriptor, self).__init__(
         options, serialized_options, 'FileOptions')
 
@@ -1042,9 +1088,11 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
   for enum_proto in desc_proto.enum_type:
     full_name = '.'.join(full_message_name + [enum_proto.name])
     enum_desc = EnumDescriptor(
-      enum_proto.name, full_name, None, [
-          EnumValueDescriptor(enum_val.name, ii, enum_val.number)
-          for ii, enum_val in enumerate(enum_proto.value)])
+        enum_proto.name, full_name, None, [
+            EnumValueDescriptor(enum_val.name, ii, enum_val.number,
+                                create_key=_internal_create_key)
+            for ii, enum_val in enumerate(enum_proto.value)],
+        create_key=_internal_create_key)
     enum_types[full_name] = enum_desc
 
   # Create Descriptors for nested types
@@ -1083,10 +1131,11 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
         FieldDescriptor.ProtoTypeToCppProtoType(field_proto.type),
         field_proto.label, None, nested_desc, enum_desc, None, False, None,
         options=_OptionsOrNone(field_proto), has_default_value=False,
-        json_name=json_name)
+        json_name=json_name, create_key=_internal_create_key)
     fields.append(field)
 
   desc_name = '.'.join(full_message_name)
   return Descriptor(desc_proto.name, desc_name, None, None, fields,
                     list(nested_types.values()), list(enum_types.values()), [],
-                    options=_OptionsOrNone(desc_proto))
+                    options=_OptionsOrNone(desc_proto),
+                    create_key=_internal_create_key)

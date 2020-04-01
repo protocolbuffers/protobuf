@@ -718,8 +718,8 @@ void UnknownFieldSerializerLite(const uint8* ptr, uint32 offset, uint32 tag,
                                 uint32 has_offset,
                                 io::CodedOutputStream* output) {
   output->WriteString(
-      reinterpret_cast<const InternalMetadataWithArenaLite*>(ptr + offset)
-          ->unknown_fields());
+      reinterpret_cast<const InternalMetadata*>(ptr + offset)
+          ->unknown_fields<std::string>(&internal::GetEmptyString));
 }
 
 MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {

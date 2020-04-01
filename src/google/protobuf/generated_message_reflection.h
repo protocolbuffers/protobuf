@@ -46,7 +46,6 @@
 // is released to components.
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_enum_reflection.h>
-#include <google/protobuf/metadata.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/unknown_field_set.h>
@@ -73,8 +72,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 class DefaultEmptyOneof;
-class ReflectionAccessor;
-
 // Defined in other files.
 class ExtensionSet;  // extension_set.h
 class WeakFieldMap;  // weak_field_map.h
@@ -262,8 +259,11 @@ struct MigrationSchema {
   int object_size;
 };
 
+struct SCCInfoBase;
+
 struct PROTOBUF_EXPORT DescriptorTable {
-  bool* is_initialized;
+  mutable bool is_initialized;
+  bool is_eager;
   const char* descriptor;
   const char* filename;
   int size;  // of serialized descriptor
@@ -287,7 +287,8 @@ struct PROTOBUF_EXPORT DescriptorTable {
 // the descriptor objects.  It also constructs the reflection objects.  It is
 // called the first time anyone calls descriptor() or GetReflection() on one of
 // the types defined in the file.  AssignDescriptors() is thread-safe.
-void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table);
+void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
+                                       bool eager = false);
 
 // AddDescriptors() is a file-level procedure which adds the encoded
 // FileDescriptorProto for this .proto file to the global DescriptorPool for

@@ -42,9 +42,12 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/casts.h>
 
@@ -105,6 +108,11 @@ class PROTOBUF_EXPORT WireFormat {
   // IsInitialized() on the resulting message yourself.
   static bool ParseAndMergePartial(io::CodedInputStream* input,
                                    Message* message);
+
+  // This is meant for internal protobuf use (WireFormat is an internal class).
+  // This is the reflective implementation of the _InternalParse functionality.
+  static const char* _InternalParse(Message* msg, const char* ptr,
+                                    internal::ParseContext* ctx);
 
   // Serialize a message in protocol buffer wire format.
   //
@@ -275,6 +283,7 @@ class PROTOBUF_EXPORT WireFormat {
                                          Operation op, const char* field_name);
 
  private:
+  struct MessageSetParser;
   // Skip a MessageSet field.
   static bool SkipMessageSetField(io::CodedInputStream* input,
                                   uint32 field_number,
@@ -285,6 +294,12 @@ class PROTOBUF_EXPORT WireFormat {
                                            const FieldDescriptor* field,
                                            Message* message,
                                            io::CodedInputStream* input);
+  // Parses the value from the wire that belongs to tag.
+  static const char* _InternalParseAndMergeField(Message* msg, const char* ptr,
+                                                 internal::ParseContext* ctx,
+                                                 uint64 tag,
+                                                 const Reflection* reflection,
+                                                 const FieldDescriptor* field);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormat);
 };
@@ -380,8 +395,8 @@ inline size_t ComputeUnknownMessageSetItemsSize(
 
 // Compute the size of the UnknownFieldSet on the wire.
 PROTOBUF_EXPORT
-size_t ComputeUnknownFieldsSize(const InternalMetadataWithArena& metadata,
-                                size_t size, CachedSize* cached_size);
+size_t ComputeUnknownFieldsSize(const InternalMetadata& metadata, size_t size,
+                                CachedSize* cached_size);
 
 }  // namespace internal
 }  // namespace protobuf

@@ -76,6 +76,7 @@ class MessageBuilderGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
   FieldGeneratorMap<ImmutableFieldGenerator> field_generators_;
+  std::set<const OneofDescriptor*> oneofs_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageBuilderGenerator);
 };

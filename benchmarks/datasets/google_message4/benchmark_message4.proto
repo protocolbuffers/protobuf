@@ -28,12 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// LINT: ALLOW_GROUPS
+
 syntax = "proto2";
+
+package benchmarks.google_message4;
 
 import "datasets/google_message4/benchmark_message4_1.proto";
 import "datasets/google_message4/benchmark_message4_2.proto";
 import "datasets/google_message4/benchmark_message4_3.proto";
-package benchmarks.google_message4;
 
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf.benchmarks";
@@ -176,8 +179,7 @@ message Message176 {
   optional .benchmarks.google_message4.UnusedEnum field455 = 37;
   optional .benchmarks.google_message4.UnusedEnum field456 = 34;
   optional int32 field457 = 35;
-  repeated group Message178 = 101 {
-  }
+  repeated group Message178 = 101 {}
   optional bool field459 = 52;
   optional uint64 field460 = 58;
   optional uint64 field461 = 59;
@@ -458,10 +460,8 @@ message Message2356 {
     optional bytes field2410 = 124;
   }
   optional string field2389 = 120;
-  optional group Message2358 = 107 {
-  }
-  repeated group Message2359 = 40 {
-  }
+  optional group Message2358 = 107 {}
+  repeated group Message2359 = 40 {}
   optional int32 field2392 = 50;
   optional .benchmarks.google_message4.UnusedEmptyMessage field2393 = 60;
   optional .benchmarks.google_message4.UnusedEmptyMessage field2394 = 70;
@@ -473,6 +473,7 @@ message Message2356 {
 
 message Message0 {
   option message_set_wire_format = true;
+
   extensions 4 to 2147483646;
 }
 

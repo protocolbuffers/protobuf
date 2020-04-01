@@ -87,7 +87,7 @@ ImmutableFieldGenerator* MakeImmutableGenerator(const FieldDescriptor* field,
             field, messageBitIndex, builderBitIndex, context);
     }
   } else {
-    if (field->containing_oneof()) {
+    if (IsRealOneof(field)) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
           return new ImmutableMessageOneofFieldGenerator(
@@ -144,7 +144,7 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
             field, messageBitIndex, context);
     }
   } else {
-    if (field->containing_oneof()) {
+    if (IsRealOneof(field)) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
           return new ImmutableMessageOneofFieldLiteGenerator(

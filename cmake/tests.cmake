@@ -67,6 +67,7 @@ set(tests_protos
   google/protobuf/unittest_proto3_arena.proto
   google/protobuf/unittest_proto3_arena_lite.proto
   google/protobuf/unittest_proto3_lite.proto
+  google/protobuf/unittest_proto3_optional.proto
   google/protobuf/unittest_well_known_types.proto
   google/protobuf/util/internal/testdata/anys.proto
   google/protobuf/util/internal/testdata/books.proto
@@ -93,6 +94,7 @@ macro(compile_proto_file filename)
     COMMAND protoc ${protobuf_source_dir}/src/${dirname}/${basename}.proto
         --proto_path=${protobuf_source_dir}/src
         --cpp_out=${protobuf_source_dir}/src
+        --experimental_allow_proto3_optional
   )
 endmacro(compile_proto_file)
 

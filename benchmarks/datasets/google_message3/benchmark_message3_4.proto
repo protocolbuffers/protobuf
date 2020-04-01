@@ -28,19 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// LINT: ALLOW_GROUPS
+
 syntax = "proto2";
+
+package benchmarks.google_message3;
 
 import "datasets/google_message3/benchmark_message3_5.proto";
 import "datasets/google_message3/benchmark_message3_6.proto";
 import "datasets/google_message3/benchmark_message3_7.proto";
 import "datasets/google_message3/benchmark_message3_8.proto";
-package benchmarks.google_message3;
 
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf.benchmarks";
 
-message Message24346 {
-}
+message Message24346 {}
 
 message Message24401 {
   optional .benchmarks.google_message3.Message24400 field24679 = 1;
@@ -219,12 +221,9 @@ message Message13083 {
   optional float field13099 = 45;
   optional uint64 field13100 = 46;
   optional float field13101 = 47;
-  optional group Message13085 = 16 {
-  }
-  repeated group Message13086 = 23 {
-  }
-  repeated group Message13087 = 29 {
-  }
+  optional group Message13085 = 16 {}
+  repeated group Message13086 = 23 {}
+  repeated group Message13087 = 29 {}
   optional .benchmarks.google_message3.UnusedEmptyMessage field13105 = 43;
 }
 
@@ -292,12 +291,10 @@ message Message16816 {
   optional float field16826 = 1;
   optional .benchmarks.google_message3.Enum16819 field16827 = 2;
   optional float field16828 = 3;
-  repeated group Message16817 = 4 {
-  }
+  repeated group Message16817 = 4 {}
   optional bool field16830 = 7;
   optional bool field16831 = 8;
-  repeated group Message16818 = 12 {
-  }
+  repeated group Message16818 = 12 {}
   optional string field16833 = 10;
   optional bool field16834 = 13;
   optional bool field16835 = 14;
@@ -338,11 +335,9 @@ message Message1374 {
   optional string field1376 = 2;
 }
 
-message Message18943 {
-}
+message Message18943 {}
 
-message Message18944 {
-}
+message Message18944 {}
 
 message Message18856 {
   optional string field18857 = 1;
@@ -466,8 +461,7 @@ message Message8475 {
   optional int64 field8482 = 2;
 }
 
-message Message12559 {
-}
+message Message12559 {}
 
 message Message12817 {
   optional int32 field12826 = 1;

@@ -187,14 +187,14 @@ class MapEntryImpl : public Base {
   static const WireFormatLite::FieldType kEntryValueFieldType = kValueFieldType;
   static const int kEntryDefaultEnumValue = default_enum_value;
 
-  MapEntryImpl() : arena_(NULL) {
+  MapEntryImpl() {
     KeyTypeHandler::Initialize(&key_, NULL);
     ValueTypeHandler::InitializeMaybeByDefaultEnum(&value_, default_enum_value,
                                                    NULL);
     _has_bits_[0] = 0;
   }
 
-  explicit MapEntryImpl(Arena* arena) : arena_(arena) {
+  explicit MapEntryImpl(Arena* arena) : Base(arena) {
     KeyTypeHandler::Initialize(&key_, arena);
     ValueTypeHandler::InitializeMaybeByDefaultEnum(&value_, default_enum_value,
                                                    arena);
@@ -202,7 +202,7 @@ class MapEntryImpl : public Base {
   }
 
   ~MapEntryImpl() {
-    if (GetArenaNoVirtual() != NULL) return;
+    if (Base::GetArena() != NULL) return;
     KeyTypeHandler::DeleteNoArena(key_);
     ValueTypeHandler::DeleteNoArena(value_);
   }
@@ -218,11 +218,11 @@ class MapEntryImpl : public Base {
   }
   inline KeyMapEntryAccessorType* mutable_key() {
     set_has_key();
-    return KeyTypeHandler::EnsureMutable(&key_, GetArenaNoVirtual());
+    return KeyTypeHandler::EnsureMutable(&key_, Base::GetArena());
   }
   inline ValueMapEntryAccessorType* mutable_value() {
     set_has_value();
-    return ValueTypeHandler::EnsureMutable(&value_, GetArenaNoVirtual());
+    return ValueTypeHandler::EnsureMutable(&value_, Base::GetArena());
   }
 
   // implements MessageLite =========================================
@@ -315,13 +315,13 @@ class MapEntryImpl : public Base {
   void MergeFromInternal(const MapEntryImpl& from) {
     if (from._has_bits_[0]) {
       if (from.has_key()) {
-        KeyTypeHandler::EnsureMutable(&key_, GetArenaNoVirtual());
-        KeyTypeHandler::Merge(from.key(), &key_, GetArenaNoVirtual());
+        KeyTypeHandler::EnsureMutable(&key_, Base::GetArena());
+        KeyTypeHandler::Merge(from.key(), &key_, Base::GetArena());
         set_has_key();
       }
       if (from.has_value()) {
-        ValueTypeHandler::EnsureMutable(&value_, GetArenaNoVirtual());
-        ValueTypeHandler::Merge(from.value(), &value_, GetArenaNoVirtual());
+        ValueTypeHandler::EnsureMutable(&value_, Base::GetArena());
+        ValueTypeHandler::Merge(from.value(), &value_, Base::GetArena());
         set_has_value();
       }
     }
@@ -329,8 +329,8 @@ class MapEntryImpl : public Base {
 
  public:
   void Clear() override {
-    KeyTypeHandler::Clear(&key_, GetArenaNoVirtual());
-    ValueTypeHandler::ClearMaybeByDefaultEnum(&value_, GetArenaNoVirtual(),
+    KeyTypeHandler::Clear(&key_, Base::GetArena());
+    ValueTypeHandler::ClearMaybeByDefaultEnum(&value_, Base::GetArena(),
                                               default_enum_value);
     clear_has_key();
     clear_has_value();
@@ -341,8 +341,6 @@ class MapEntryImpl : public Base {
     KeyTypeHandler::AssignDefaultValue(&d->key_);
     ValueTypeHandler::AssignDefaultValue(&d->value_);
   }
-
-  Arena* GetArena() const override { return GetArenaNoVirtual(); }
 
   // Parsing using MergePartialFromCodedStream, above, is not as
   // efficient as it could be.  This helper class provides a speedier way.
@@ -440,10 +438,10 @@ class MapEntryImpl : public Base {
       return ptr;
     }
 
-    template <typename Metadata>
+    template <typename UnknownType>
     const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
                                         bool (*is_valid)(int), uint32 field_num,
-                                        Metadata* metadata) {
+                                        InternalMetadata* metadata) {
       auto entry = NewEntry();
       ptr = entry->_InternalParse(ptr, ctx);
       if (!ptr) return nullptr;
@@ -451,7 +449,7 @@ class MapEntryImpl : public Base {
         UseKeyAndValueFromEntry();
       } else {
         WriteLengthDelimited(field_num, entry->SerializeAsString(),
-                             metadata->mutable_unknown_fields());
+                             metadata->mutable_unknown_fields<UnknownType>());
       }
       return ptr;
     }
@@ -515,12 +513,11 @@ class MapEntryImpl : public Base {
   void clear_has_value() { _has_bits_[0] &= ~0x00000002u; }
 
  public:
-  inline Arena* GetArenaNoVirtual() const { return arena_; }
+  inline Arena* GetArena() const { return Base::GetArena(); }
 
  public:  // Needed for constructing tables
   KeyOnMemory key_;
   ValueOnMemory value_;
-  Arena* arena_;
   uint32 _has_bits_[1];
 
  private:
@@ -549,6 +546,7 @@ class MapEntryLite
       SuperType;
   MapEntryLite() {}
   explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
+  ~MapEntryLite() { MessageLite::_internal_metadata_.Delete<std::string>(); }
   void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }
 
  private:

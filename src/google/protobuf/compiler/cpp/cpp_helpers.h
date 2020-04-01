@@ -83,6 +83,10 @@ extern const char kThinSeparator[];
 void SetCommonVars(const Options& options,
                    std::map<std::string, std::string>* variables);
 
+void SetUnknkownFieldsVariable(const Descriptor* descriptor,
+                               const Options& options,
+                               std::map<std::string, std::string>* variables);
+
 bool GetBootstrapBasename(const Options& options, const std::string& basename,
                           std::string* bootstrap_basename);
 bool MaybeBootstrap(const Options& options, GeneratorContext* generator_context,
@@ -129,6 +133,10 @@ inline std::string ClassName(const EnumDescriptor* descriptor, bool qualified) {
   return qualified ? QualifiedClassName(descriptor, Options())
                    : ClassName(descriptor);
 }
+
+std::string QualifiedExtensionName(const FieldDescriptor* d,
+                                   const Options& options);
+std::string QualifiedExtensionName(const FieldDescriptor* d);
 
 // Type name of default instance.
 std::string DefaultInstanceType(const Descriptor* descriptor,
@@ -339,6 +347,12 @@ inline bool IsLazy(const FieldDescriptor* field, const Options& options) {
          !options.opensource_runtime;
 }
 
+// Returns true if "field" is used.
+inline bool IsFieldUsed(const FieldDescriptor* /*field*/,
+                        const Options& /*options*/) {
+  return true;
+}
+
 // Does the file contain any definitions that need extension_set.h?
 bool HasExtensionsOrExtendableMessage(const FileDescriptor* file);
 
@@ -414,6 +428,12 @@ inline bool HasFieldPresence(const FileDescriptor* file) {
   return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
 }
 
+inline bool HasHasbit(const FieldDescriptor* field) {
+  // TODO(haberman): remove, and give some proto3 fields hasbits.
+  if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) return false;
+  return field->is_singular_with_presence();
+}
+
 // Returns true if 'enum' semantics are such that unknown values are preserved
 // in the enum field itself, rather than going to the UnknownFieldSet.
 inline bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
@@ -475,16 +495,32 @@ inline std::string IncludeGuard(const FileDescriptor* file, bool pb_h,
   }
 }
 
+// Returns the OptimizeMode for this file, furthermore it updates a status
+// bool if has_opt_codesize_extension is non-null. If this status bool is true
+// it means this file contains an extension that itself is defined as
+// optimized_for = CODE_SIZE.
+FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
+                                        const Options& options,
+                                        bool* has_opt_codesize_extension);
 inline FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
                                                const Options& options) {
-  switch (options.enforce_mode) {
-    case EnforceOptimizeMode::kSpeed:
-      return FileOptions::SPEED;
-    case EnforceOptimizeMode::kLiteRuntime:
-      return FileOptions::LITE_RUNTIME;
-    case EnforceOptimizeMode::kNoEnforcement:
-    default:
-      return file->options().optimize_for();
+  return GetOptimizeFor(file, options, nullptr);
+}
+inline bool NeedsEagerDescriptorAssignment(const FileDescriptor* file,
+                                           const Options& options) {
+  bool has_opt_codesize_extension;
+  if (GetOptimizeFor(file, options, &has_opt_codesize_extension) ==
+          FileOptions::CODE_SIZE &&
+      has_opt_codesize_extension) {
+    // If this filedescriptor contains an extension from another file which
+    // is optimized_for = CODE_SIZE. We need to be careful in the ordering so
+    // we eagerly build the descriptors in the dependencies before building
+    // the descriptors of this file.
+    return true;
+  } else {
+    // If we have a generated code based parser we never need eager
+    // initialization of descriptors of our deps.
+    return false;
   }
 }
 

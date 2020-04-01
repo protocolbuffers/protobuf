@@ -387,9 +387,10 @@ EncodedDescriptorDatabase::~EncodedDescriptorDatabase() {
 
 bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
                                     int size) {
-  FileDescriptorProto file;
-  if (file.ParseFromArray(encoded_file_descriptor, size)) {
-    return index_.AddFile(file, std::make_pair(encoded_file_descriptor, size));
+  google::protobuf::Arena arena;
+  auto* file = google::protobuf::Arena::CreateMessage<FileDescriptorProto>(&arena);
+  if (file->ParseFromArray(encoded_file_descriptor, size)) {
+    return index_.AddFile(*file, std::make_pair(encoded_file_descriptor, size));
   } else {
     GOOGLE_LOG(ERROR) << "Invalid file descriptor data passed to "
                   "EncodedDescriptorDatabase::Add().";

@@ -26,7 +26,7 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/metadata.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
@@ -66,10 +66,10 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-class PROTOBUF_EXPORT SourceContext :
+class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
  public:
-  SourceContext();
+  inline SourceContext() : SourceContext(nullptr) {};
   virtual ~SourceContext();
 
   SourceContext(const SourceContext& from);
@@ -83,7 +83,7 @@ class PROTOBUF_EXPORT SourceContext :
     return *this;
   }
   inline SourceContext& operator=(SourceContext&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+    if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -115,6 +115,15 @@ class PROTOBUF_EXPORT SourceContext :
   }
   inline void Swap(SourceContext* other) {
     if (other == this) return;
+    if (GetArena() == other->GetArena()) {
+      InternalSwap(other);
+    } else {
+      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
+    }
+  }
+  void UnsafeArenaSwap(SourceContext* other) {
+    if (other == this) return;
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -149,13 +158,11 @@ class PROTOBUF_EXPORT SourceContext :
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
     return "google.protobuf.SourceContext";
   }
+  protected:
+  explicit SourceContext(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -184,6 +191,15 @@ class PROTOBUF_EXPORT SourceContext :
   std::string* mutable_file_name();
   std::string* release_file_name();
   void set_allocated_file_name(std::string* file_name);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_file_name();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_file_name(
+      std::string* file_name);
   private:
   const std::string& _internal_file_name() const;
   void _internal_set_file_name(const std::string& value);
@@ -194,7 +210,9 @@ class PROTOBUF_EXPORT SourceContext :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr file_name_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto;
@@ -212,7 +230,7 @@ class PROTOBUF_EXPORT SourceContext :
 
 // string file_name = 1;
 inline void SourceContext::clear_file_name() {
-  file_name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  file_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline const std::string& SourceContext::file_name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
@@ -227,38 +245,40 @@ inline std::string* SourceContext::mutable_file_name() {
   return _internal_mutable_file_name();
 }
 inline const std::string& SourceContext::_internal_file_name() const {
-  return file_name_.GetNoArena();
+  return file_name_.Get();
 }
 inline void SourceContext::_internal_set_file_name(const std::string& value) {
   
-  file_name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
+  file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
 inline void SourceContext::set_file_name(std::string&& value) {
   
-  file_name_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  file_name_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.SourceContext.file_name)
 }
 inline void SourceContext::set_file_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  file_name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceContext.file_name)
 }
-inline void SourceContext::set_file_name(const char* value, size_t size) {
+inline void SourceContext::set_file_name(const char* value,
+    size_t size) {
   
-  file_name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
+  file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceContext.file_name)
 }
 inline std::string* SourceContext::_internal_mutable_file_name() {
   
-  return file_name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  return file_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline std::string* SourceContext::release_file_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
   
-  return file_name_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  return file_name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void SourceContext::set_allocated_file_name(std::string* file_name) {
   if (file_name != nullptr) {
@@ -266,8 +286,28 @@ inline void SourceContext::set_allocated_file_name(std::string* file_name) {
   } else {
     
   }
-  file_name_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), file_name);
+  file_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), file_name,
+      GetArena());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
+}
+inline std::string* SourceContext::unsafe_arena_release_file_name() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.SourceContext.file_name)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return file_name_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void SourceContext::unsafe_arena_set_allocated_file_name(
+    std::string* file_name) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (file_name != nullptr) {
+    
+  } else {
+    
+  }
+  file_name_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      file_name, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
 #ifdef __GNUC__

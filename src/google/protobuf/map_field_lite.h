@@ -108,13 +108,13 @@ class MapFieldLite {
     return parser._InternalParse(ptr, ctx);
   }
 
-  template <typename Metadata>
+  template <typename UnknownType>
   const char* ParseWithEnumValidation(const char* ptr, ParseContext* ctx,
                                       bool (*is_valid)(int), uint32 field_num,
-                                      Metadata* metadata) {
+                                      InternalMetadata* metadata) {
     typename Derived::template Parser<MapFieldLite, Map<Key, T>> parser(this);
-    return parser.ParseWithEnumValidation(ptr, ctx, is_valid, field_num,
-                                          metadata);
+    return parser.template ParseWithEnumValidation<UnknownType>(
+        ptr, ctx, is_valid, field_num, metadata);
   }
 
  private:
@@ -125,28 +125,27 @@ class MapFieldLite {
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;
 };
 
-template <typename T, typename Metadata>
+template <typename UnknownType, typename T>
 struct EnumParseWrapper {
   const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-    return map_field->ParseWithEnumValidation(ptr, ctx, is_valid, field_num,
-                                              metadata);
+    return map_field->template ParseWithEnumValidation<UnknownType>(
+        ptr, ctx, is_valid, field_num, metadata);
   }
   T* map_field;
   bool (*is_valid)(int);
   uint32 field_num;
-  Metadata* metadata;
+  InternalMetadata* metadata;
 };
 
 // Helper function because the typenames of maps are horrendous to print. This
 // leverages compiler type deduction, to keep all type data out of the
 // generated code
-template <typename T, typename Metadata>
-EnumParseWrapper<T, Metadata> InitEnumParseWrapper(T* map_field,
-                                                   bool (*is_valid)(int),
-                                                   uint32 field_num,
-                                                   Metadata* metadata) {
-  return EnumParseWrapper<T, Metadata>{map_field, is_valid, field_num,
-                                       metadata};
+template <typename UnknownType, typename T>
+EnumParseWrapper<UnknownType, T> InitEnumParseWrapper(
+    T* map_field, bool (*is_valid)(int), uint32 field_num,
+    InternalMetadata* metadata) {
+  return EnumParseWrapper<UnknownType, T>{map_field, is_valid, field_num,
+                                          metadata};
 }
 
 // True if IsInitialized() is true for value field in all elements of t. T is

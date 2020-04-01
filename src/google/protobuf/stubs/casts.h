@@ -31,11 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_CASTS_H__
 #define GOOGLE_PROTOBUF_CASTS_H__
 
-#include <type_traits>
-
 #include <google/protobuf/stubs/common.h>
 
 #include <google/protobuf/port_def.inc>
+#include <type_traits>
 
 namespace google {
 namespace protobuf {

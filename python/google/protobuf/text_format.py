@@ -132,7 +132,8 @@ def MessageToString(message,
                     descriptor_pool=None,
                     indent=0,
                     message_formatter=None,
-                    print_unknown_fields=False):
+                    print_unknown_fields=False,
+                    force_colon=False):
   # type: (...) -> str
   """Convert protobuf message to text format.
 
@@ -170,17 +171,28 @@ def MessageToString(message,
       Custom formatter for selected sub-messages (usually based on message
       type). Use to pretty print parts of the protobuf for easier diffing.
     print_unknown_fields: If True, unknown fields will be printed.
+    force_colon: If set, a colon will be added after the field name even if the
+      field is a proto message.
 
   Returns:
     str: A string of the text formatted protocol buffer message.
   """
   out = TextWriter(as_utf8)
-  printer = _Printer(out, indent, as_utf8, as_one_line,
-                     use_short_repeated_primitives, pointy_brackets,
-                     use_index_order, float_format, double_format,
-                     use_field_number,
-                     descriptor_pool, message_formatter,
-                     print_unknown_fields=print_unknown_fields)
+  printer = _Printer(
+      out,
+      indent,
+      as_utf8,
+      as_one_line,
+      use_short_repeated_primitives,
+      pointy_brackets,
+      use_index_order,
+      float_format,
+      double_format,
+      use_field_number,
+      descriptor_pool,
+      message_formatter,
+      print_unknown_fields=print_unknown_fields,
+      force_colon=force_colon)
   printer.PrintMessage(message)
   result = out.getvalue()
   out.close()
@@ -218,7 +230,8 @@ def PrintMessage(message,
                  use_field_number=False,
                  descriptor_pool=None,
                  message_formatter=None,
-                 print_unknown_fields=False):
+                 print_unknown_fields=False,
+                 force_colon=False):
   printer = _Printer(
       out=out, indent=indent, as_utf8=as_utf8,
       as_one_line=as_one_line,
@@ -230,7 +243,8 @@ def PrintMessage(message,
       use_field_number=use_field_number,
       descriptor_pool=descriptor_pool,
       message_formatter=message_formatter,
-      print_unknown_fields=print_unknown_fields)
+      print_unknown_fields=print_unknown_fields,
+      force_colon=force_colon)
   printer.PrintMessage(message)
 
 
@@ -246,13 +260,15 @@ def PrintField(field,
                float_format=None,
                double_format=None,
                message_formatter=None,
-               print_unknown_fields=False):
+               print_unknown_fields=False,
+               force_colon=False):
   """Print a single field name/value pair."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
                      use_index_order, float_format, double_format,
                      message_formatter=message_formatter,
-                     print_unknown_fields=print_unknown_fields)
+                     print_unknown_fields=print_unknown_fields,
+                     force_colon=force_colon)
   printer.PrintField(field, value)
 
 
@@ -268,13 +284,15 @@ def PrintFieldValue(field,
                     float_format=None,
                     double_format=None,
                     message_formatter=None,
-                    print_unknown_fields=False):
+                    print_unknown_fields=False,
+                    force_colon=False):
   """Print a single field value (not including name)."""
   printer = _Printer(out, indent, as_utf8, as_one_line,
                      use_short_repeated_primitives, pointy_brackets,
                      use_index_order, float_format, double_format,
                      message_formatter=message_formatter,
-                     print_unknown_fields=print_unknown_fields)
+                     print_unknown_fields=print_unknown_fields,
+                     force_colon=force_colon)
   printer.PrintFieldValue(field, value)
 
 
@@ -324,7 +342,8 @@ class _Printer(object):
                use_field_number=False,
                descriptor_pool=None,
                message_formatter=None,
-               print_unknown_fields=False):
+               print_unknown_fields=False,
+               force_colon=False):
     """Initialize the Printer.
 
     Double values can be formatted compactly with 15 digits of precision
@@ -358,6 +377,8 @@ class _Printer(object):
         to custom format selected sub-messages (usually based on message type).
         Use to pretty print parts of the protobuf for easier diffing.
       print_unknown_fields: If True, unknown fields will be printed.
+      force_colon: If set, a colon will be added after the field name even if
+        the field is a proto message.
     """
     self.out = out
     self.indent = indent
@@ -375,6 +396,7 @@ class _Printer(object):
     self.descriptor_pool = descriptor_pool
     self.message_formatter = message_formatter
     self.print_unknown_fields = print_unknown_fields
+    self.force_colon = force_colon
 
   def _TryPrintAsAnyMessage(self, message):
     """Serializes if message is a google.protobuf.Any field."""
@@ -384,7 +406,8 @@ class _Printer(object):
                                                self.descriptor_pool)
     if packed_message:
       packed_message.MergeFromString(message.value)
-      self.out.write('%s[%s] ' % (self.indent * ' ', message.type_url))
+      colon = ':' if self.force_colon else ''
+      self.out.write('%s[%s]%s ' % (self.indent * ' ', message.type_url, colon))
       self._PrintMessageFieldValue(packed_message)
       self.out.write(' ' if self.as_one_line else '\n')
       return True
@@ -518,9 +541,11 @@ class _Printer(object):
       else:
         out.write(field.name)
 
-    if field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
+    if (self.force_colon or
+        field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE):
       # The colon is optional in this case, but our cross-language golden files
-      # don't include it.
+      # don't include it. Here, the colon is only included if force_colon is
+      # set to True
       out.write(':')
 
   def PrintField(self, field, value):
@@ -531,6 +556,7 @@ class _Printer(object):
     self.out.write(' ' if self.as_one_line else '\n')
 
   def _PrintShortRepeatedPrimitivesValue(self, field, value):
+    """"Prints short repeated primitives value."""
     # Note: this is called only when value has at least one element.
     self._PrintFieldName(field)
     self.out.write(' [')
@@ -539,6 +565,8 @@ class _Printer(object):
       self.out.write(', ')
     self.PrintFieldValue(field, value[-1])
     self.out.write(']')
+    if self.force_colon:
+      self.out.write(':')
     self.out.write(' ' if self.as_one_line else '\n')
 
   def _PrintMessageFieldValue(self, value):

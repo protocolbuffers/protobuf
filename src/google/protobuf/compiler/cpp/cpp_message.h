@@ -144,6 +144,7 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizesBody(io::Printer* printer);
   void GenerateByteSize(io::Printer* printer);
   void GenerateMergeFrom(io::Printer* printer);
+  void GenerateClassSpecificMergeFrom(io::Printer* printer);
   void GenerateCopyFrom(io::Printer* printer);
   void GenerateSwap(io::Printer* printer);
   void GenerateIsInitialized(io::Printer* printer);
@@ -180,6 +181,10 @@ class MessageGenerator {
                                bool copy_constructor) const;
 
   size_t HasBitsSize() const;
+  int HasBitIndex(const FieldDescriptor* a) const;
+  int HasByteIndex(const FieldDescriptor* a) const;
+  int HasWordIndex(const FieldDescriptor* a) const;
+  bool SameHasByte(const FieldDescriptor* a, const FieldDescriptor* b) const;
   std::vector<uint32> RequiredFieldsBitMask() const;
 
   const Descriptor* descriptor_;

@@ -70,7 +70,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
-  if (SupportFieldPresence(descriptor->file())) {
+  if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
 
@@ -119,7 +119,11 @@ ImmutableMessageFieldLiteGenerator::ImmutableMessageFieldLiteGenerator(
 ImmutableMessageFieldLiteGenerator::~ImmutableMessageFieldLiteGenerator() {}
 
 int ImmutableMessageFieldLiteGenerator::GetNumBitsForMessage() const {
-  return SupportFieldPresence(descriptor_->file()) ? 1 : 0;
+  // TODO(dweis): We don't need a has bit for messages as they have null
+  // sentinels and no user should be reflecting on this. We could save some
+  // bits by setting to 0 and updating the runtimes but this might come at a
+  // runtime performance cost since we can't memoize has-bit reads.
+  return HasHasbit(descriptor_) ? 1 : 0;
 }
 
 void ImmutableMessageFieldLiteGenerator::GenerateInterfaceMembers(
@@ -136,7 +140,7 @@ void ImmutableMessageFieldLiteGenerator::GenerateMembers(
   printer->Print(variables_, "private $type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
 
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (HasHasbit(descriptor_)) {
     WriteFieldDocComment(printer, descriptor_);
     printer->Print(
         variables_,
@@ -279,7 +283,7 @@ void ImmutableMessageFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (HasHasbit(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");

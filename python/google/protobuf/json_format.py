@@ -104,7 +104,7 @@ def MessageToJson(
     sort_keys=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None):
+    float_precision=8):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -123,6 +123,7 @@ def MessageToJson(
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
         default.
     float_precision: If set, use this to specify float field valid digits.
+        Otherwise, 8 valid digits is used (default '.8g').
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -142,7 +143,7 @@ def MessageToDict(
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None):
+    float_precision=8):
   """Converts protobuf message to a dictionary.
 
   When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
@@ -160,6 +161,7 @@ def MessageToDict(
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
         default.
     float_precision: If set, use this to specify float field valid digits.
+        Otherwise, 8 valid digits is used (default '.8g').
 
   Returns:
     A dict representation of the protocol buffer message.

@@ -86,6 +86,7 @@ void ObjectWriter::RenderDataPieceTo(const DataPiece& data,
   }
 }
 
+
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf

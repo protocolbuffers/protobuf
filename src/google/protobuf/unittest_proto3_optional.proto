@@ -28,54 +28,46 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto2";
+syntax = "proto3";
 
-package benchmarks.google_message3;
+package protobuf_unittest;
 
-option cc_enable_arenas = true;
-option java_package = "com.google.protobuf.benchmarks";
+option java_multiple_files = true;
+option java_package = "com.google.protobuf.testing.proto";
 
-message Message11018 {}
+message TestProto3Optional {
+  message NestedMessage {
+    // The field name "b" fails to compile in proto1 because it conflicts with
+    // a local variable named "b" in one of the generated methods.  Doh.
+    // This file needs to compile in proto1 to test backwards-compatibility.
+    optional int32 bb = 1;
+  }
 
-message Message10800 {
-  optional string field10808 = 1;
-  optional int64 field10809 = 2;
-  optional bool field10810 = 3;
-  optional float field10811 = 4;
-}
+  enum NestedEnum {
+    UNSPECIFIED = 0;
+    FOO = 1;
+    BAR = 2;
+    BAZ = 3;
+    NEG = -1;  // Intentionally negative.
+  }
 
-message Message10802 {}
+  // Singular
+  optional    int32 optional_int32    =  1;
+  optional    int64 optional_int64    =  2;
+  optional   uint32 optional_uint32   =  3;
+  optional   uint64 optional_uint64   =  4;
+  optional   sint32 optional_sint32   =  5;
+  optional   sint64 optional_sint64   =  6;
+  optional  fixed32 optional_fixed32  =  7;
+  optional  fixed64 optional_fixed64  =  8;
+  optional sfixed32 optional_sfixed32 =  9;
+  optional sfixed64 optional_sfixed64 = 10;
+  optional    float optional_float    = 11;
+  optional   double optional_double   = 12;
+  optional     bool optional_bool     = 13;
+  optional   string optional_string   = 14;
+  optional    bytes optional_bytes    = 15;
 
-message Message10748 {
-  optional string field10750 = 1;
-  optional int32 field10751 = 2;
-  optional int32 field10752 = 3;
-  optional int32 field10753 = 4;
-}
-
-message Message7966 {
-  optional string field7969 = 1;
-  optional bool field7970 = 2;
-}
-
-message Message708 {
-  optional .benchmarks.google_message3.Message741 field823 = 1;
-  repeated string field824 = 6;
-  optional string field825 = 2;
-  optional string field826 = 3;
-  repeated string field827 = 4;
-  repeated string field828 = 5;
-}
-
-message Message8942 {}
-
-message Message11011 {
-  required bytes field11752 = 1;
-  required bytes field11753 = 2;
-}
-
-message UnusedEmptyMessage {}
-
-message Message741 {
-  repeated string field936 = 1;
+  optional NestedMessage optional_nested_message  = 18;
+  optional NestedEnum optional_nested_enum     = 21;
 }

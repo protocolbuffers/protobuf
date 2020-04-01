@@ -35,6 +35,7 @@
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import sys
+import warnings
 
 try:
   import unittest2 as unittest  #PY26
@@ -56,6 +57,9 @@ from google.protobuf import text_format
 TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """
 name: 'TestEmptyMessage'
 """
+
+
+warnings.simplefilter('error', DeprecationWarning)
 
 
 class DescriptorTest(unittest.TestCase):

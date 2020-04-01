@@ -149,6 +149,14 @@ class PROTOBUF_EXPORT TextFormat {
     virtual void PrintMessageStart(const Message& message, int field_index,
                                    int field_count, bool single_line_mode,
                                    BaseTextGenerator* generator) const;
+    // Allows to override the logic on how to print the content of a message.
+    // Return false to use the default printing logic. Note that it is legal for
+    // this function to print something and then return false to use the default
+    // content printing (although at that point it would behave similarly to
+    // PrintMessageStart).
+    virtual bool PrintMessageContent(const Message& message, int field_index,
+                                     int field_count, bool single_line_mode,
+                                     BaseTextGenerator* generator) const;
     virtual void PrintMessageEnd(const Message& message, int field_index,
                                  int field_count, bool single_line_mode,
                                  BaseTextGenerator* generator) const;
@@ -391,9 +399,10 @@ class PROTOBUF_EXPORT TextFormat {
 
     // Print the fields in an UnknownFieldSet.  They are printed by tag number
     // only.  Embedded messages are heuristically identified by attempting to
-    // parse them.
+    // parse them (subject to the recursion budget).
     void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
-                            TextGenerator* generator) const;
+                            TextGenerator* generator,
+                            int recursion_budget) const;
 
     bool PrintAny(const Message& message, TextGenerator* generator) const;
 

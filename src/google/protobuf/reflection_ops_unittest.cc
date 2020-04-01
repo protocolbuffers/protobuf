@@ -473,6 +473,36 @@ TEST(ReflectionOpsTest, FindOneofInitializationErrors) {
   EXPECT_EQ("foo_message.required_double", FindInitializationErrors(message));
 }
 
+TEST(ReflectionOpsTest, GenericSwap) {
+  Arena arena;
+  {
+    unittest::TestAllTypes message;
+    auto* arena_message = Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+    TestUtil::SetAllFields(arena_message);
+    const uint64 initial_arena_size = arena.SpaceUsed();
+
+    GenericSwap(&message, arena_message);
+
+    TestUtil::ExpectAllFieldsSet(message);
+    TestUtil::ExpectClear(*arena_message);
+    // The temp should be allocated on the arena in this case.
+    EXPECT_GT(arena.SpaceUsed(), initial_arena_size);
+  }
+  {
+    unittest::TestAllTypes message;
+    auto* arena_message = Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+    TestUtil::SetAllFields(arena_message);
+    const uint64 initial_arena_size = arena.SpaceUsed();
+
+    GenericSwap(arena_message, &message);
+
+    TestUtil::ExpectAllFieldsSet(message);
+    TestUtil::ExpectClear(*arena_message);
+    // The temp shouldn't be allocated on the arena in this case.
+    EXPECT_EQ(arena.SpaceUsed(), initial_arena_size);
+  }
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

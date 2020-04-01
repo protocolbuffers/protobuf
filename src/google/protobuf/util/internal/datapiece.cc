@@ -317,7 +317,9 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     // If ignore_unknown_enum_values is true an unknown enum value is ignored.
     if (ignore_unknown_enum_values) {
       *is_unknown_enum_value = true;
-      return enum_type->enumvalue(0).number();
+      if (enum_type->enumvalue_size() > 0) {
+        return enum_type->enumvalue(0).number();
+      }
     }
   } else {
     // We don't need to check whether the value is actually declared in the

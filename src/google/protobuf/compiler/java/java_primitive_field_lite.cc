@@ -139,7 +139,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
     (*variables)["fixed_size"] = StrCat(fixed_size);
   }
 
-  if (SupportFieldPresence(descriptor->file())) {
+  if (SupportFieldPresence(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
 
@@ -190,12 +190,12 @@ ImmutablePrimitiveFieldLiteGenerator::ImmutablePrimitiveFieldLiteGenerator(
 ImmutablePrimitiveFieldLiteGenerator::~ImmutablePrimitiveFieldLiteGenerator() {}
 
 int ImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
-  return SupportFieldPresence(descriptor_->file()) ? 1 : 0;
+  return SupportFieldPresence(descriptor_) ? 1 : 0;
 }
 
 void ImmutablePrimitiveFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
@@ -215,7 +215,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
   }
   printer->Print(variables_, "private $field_type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -261,7 +261,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
 
 void ImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -308,7 +308,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateFieldInfo(
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (HasHasbit(descriptor_)) {
     WriteIntToUtf16CharSequence(messageBitIndex_, output);
   }
   printer->Print(variables_, "\"$name$_\",\n");
@@ -346,7 +346,7 @@ ImmutablePrimitiveOneofFieldLiteGenerator::
 void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -396,7 +396,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateFieldInfo(
 
 void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_->file())) {
+  if (SupportFieldPresence(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,

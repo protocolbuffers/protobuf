@@ -62,17 +62,19 @@
 // Item 8 of "More Effective C++" discusses this in more detail, though
 // I don't have the book on me right now so I'm not sure.
 
+#include <google/protobuf/dynamic_message.h>
+
 #include <algorithm>
+#include <cstddef>
 #include <memory>
 #include <unordered_map>
 
-#include <google/protobuf/stubs/hash.h>
-
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/unknown_field_set.h>
+#include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/map_field.h>
@@ -82,12 +84,13 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format.h>
 
+#include <google/protobuf/port_def.inc>  // NOLINT
+
 namespace google {
 namespace protobuf {
 
 using internal::DynamicMapField;
 using internal::ExtensionSet;
-using internal::InternalMetadataWithArena;
 using internal::MapField;
 
 
@@ -235,7 +238,6 @@ class DynamicMessage : public Message {
     int size;
     int has_bits_offset;
     int oneof_case_offset;
-    int internal_metadata_offset;
     int extensions_offset;
 
     // Not owned by the TypeInfo.
@@ -274,7 +276,6 @@ class DynamicMessage : public Message {
 
   Message* New() const override;
   Message* New(Arena* arena) const override;
-  Arena* GetArena() const override { return arena_; }
 
   int GetCachedSize() const override;
   void SetCachedSize(int size) const override;
@@ -294,6 +295,9 @@ class DynamicMessage : public Message {
   DynamicMessage(const TypeInfo* type_info, Arena* arena);
 
   void SharedCtor(bool lock_factory);
+
+  // Needed to get the offset of the internal metadata member.
+  friend class DynamicMessageFactory;
 
   inline bool is_prototype() const {
     return type_info_->prototype == this ||
@@ -321,7 +325,10 @@ DynamicMessage::DynamicMessage(const TypeInfo* type_info)
 }
 
 DynamicMessage::DynamicMessage(const TypeInfo* type_info, Arena* arena)
-    : type_info_(type_info), arena_(arena), cached_byte_size_(0) {
+    : Message(arena),
+      type_info_(type_info),
+      arena_(arena),
+      cached_byte_size_(0) {
   SharedCtor(true);
 }
 
@@ -353,9 +360,6 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
     new (OffsetToPointer(type_info_->oneof_case_offset + sizeof(uint32) * i))
         uint32(0);
   }
-
-  new (OffsetToPointer(type_info_->internal_metadata_offset))
-      InternalMetadataWithArena(arena_);
 
   if (type_info_->extensions_offset != -1) {
     new (OffsetToPointer(type_info_->extensions_offset)) ExtensionSet(arena_);
@@ -458,9 +462,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
 DynamicMessage::~DynamicMessage() {
   const Descriptor* descriptor = type_info_->type;
 
-  reinterpret_cast<InternalMetadataWithArena*>(
-      OffsetToPointer(type_info_->internal_metadata_offset))
-      ->~InternalMetadataWithArena();
+  _internal_metadata_.Delete<UnknownFieldSet>();
 
   if (type_info_->extensions_offset != -1) {
     reinterpret_cast<ExtensionSet*>(
@@ -749,11 +751,6 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     size += kMaxOneofUnionSize;
   }
 
-  // Add the InternalMetadataWithArena to the end.
-  size = AlignOffset(size);
-  type_info->internal_metadata_offset = size;
-  size += sizeof(InternalMetadataWithArena);
-
   type_info->weak_field_map_offset = -1;
 
   // Align the final size to make sure no clever allocators think that
@@ -790,15 +787,16 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
                                   prototype);
   }
 
-  internal::ReflectionSchema schema = {type_info->prototype,
-                                       type_info->offsets.get(),
-                                       type_info->has_bits_indices.get(),
-                                       type_info->has_bits_offset,
-                                       type_info->internal_metadata_offset,
-                                       type_info->extensions_offset,
-                                       type_info->oneof_case_offset,
-                                       type_info->size,
-                                       type_info->weak_field_map_offset};
+  internal::ReflectionSchema schema = {
+      type_info->prototype,
+      type_info->offsets.get(),
+      type_info->has_bits_indices.get(),
+      type_info->has_bits_offset,
+      PROTOBUF_FIELD_OFFSET(DynamicMessage, _internal_metadata_),
+      type_info->extensions_offset,
+      type_info->oneof_case_offset,
+      type_info->size,
+      type_info->weak_field_map_offset};
 
   type_info->reflection.reset(
       new Reflection(type_info->type, schema, type_info->pool, this));
@@ -874,3 +872,5 @@ void DynamicMessageFactory::DeleteDefaultOneofInstance(
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>  // NOLINT

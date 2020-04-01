@@ -28,14 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// LINT: ALLOW_GROUPS
+
 syntax = "proto2";
+
+package benchmarks.google_message3;
 
 import "datasets/google_message3/benchmark_message3_3.proto";
 import "datasets/google_message3/benchmark_message3_4.proto";
 import "datasets/google_message3/benchmark_message3_5.proto";
 import "datasets/google_message3/benchmark_message3_7.proto";
 import "datasets/google_message3/benchmark_message3_8.proto";
-package benchmarks.google_message3;
 
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf.benchmarks";
@@ -109,8 +112,7 @@ message Message24391 {
   repeated string field24655 = 6;
 }
 
-message Message27454 {
-}
+message Message27454 {}
 
 message Message27357 {
   optional string field27410 = 1;
@@ -192,8 +194,7 @@ message Message36869 {
 }
 
 message Message33968 {
-  repeated group Message33969 = 1 {
-  }
+  repeated group Message33969 = 1 {}
   repeated .benchmarks.google_message3.Message33958 field33989 = 3;
   optional .benchmarks.google_message3.UnusedEmptyMessage field33990 = 106;
   optional bool field33991 = 108;
@@ -268,8 +269,7 @@ message Message35573 {
   optional string field35696 = 1000;
   optional string field35697 = 1004;
   optional int32 field35698 = 1003;
-  repeated group Message35574 = 1012 {
-  }
+  repeated group Message35574 = 1012 {}
   optional int64 field35700 = 1011;
   optional int64 field35701 = 1005;
   optional int64 field35702 = 1006;

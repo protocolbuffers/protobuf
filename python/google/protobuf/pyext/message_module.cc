@@ -107,9 +107,12 @@ PyMODINIT_FUNC INITFUNC() {
   }
 
   // Adds the C++ API
-  if (PyObject* api =
-          PyCapsule_New(new ApiImplementation(),
-                        google::protobuf::python::PyProtoAPICapsuleName(), NULL)) {
+  if (PyObject* api = PyCapsule_New(
+          new ApiImplementation(), google::protobuf::python::PyProtoAPICapsuleName(),
+          [](PyObject* o) {
+            delete (ApiImplementation*)PyCapsule_GetPointer(
+                o, google::protobuf::python::PyProtoAPICapsuleName());
+          })) {
     PyModule_AddObject(m, "proto_API", api);
   } else {
     return INITFUNC_ERRORVAL;

@@ -3444,6 +3444,7 @@ TEST_F(MatchingTest, ReportMatchedForMovedFields) {
       RunWithResult(&differencer, msg1, msg2, true));
 }
 
+
 TEST_F(MatchingTest, MatchesAppearInPostTraversalOrderForMovedFields) {
   protobuf_unittest::TestDiffMessage msg1, msg2;
   protobuf_unittest::TestDiffMessage::Item* item;

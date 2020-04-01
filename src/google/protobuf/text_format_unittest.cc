@@ -356,6 +356,39 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
       text);
 }
 
+TEST_F(TextFormatTest, PrintDeeplyNestedUnknownMessage) {
+  // Create a deeply nested message.
+  static constexpr int kNestingDepth = 25000;
+  static constexpr int kUnknownFieldNumber = 1;
+  std::vector<int> lengths;
+  lengths.reserve(kNestingDepth);
+  lengths.push_back(0);
+  for (int i = 0; i < kNestingDepth - 1; ++i) {
+    lengths.push_back(
+        internal::WireFormatLite::TagSize(
+            kUnknownFieldNumber, internal::WireFormatLite::TYPE_BYTES) +
+        internal::WireFormatLite::LengthDelimitedSize(lengths.back()));
+  }
+  std::string serialized;
+  {
+    io::StringOutputStream zero_copy_stream(&serialized);
+    io::CodedOutputStream coded_stream(&zero_copy_stream);
+    for (int i = kNestingDepth - 1; i >= 0; --i) {
+      internal::WireFormatLite::WriteTag(
+          kUnknownFieldNumber,
+          internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, &coded_stream);
+      coded_stream.WriteVarint32(lengths[i]);
+    }
+  }
+
+  // Parse the data and verify that we can print it without overflowing the
+  // stack.
+  unittest::TestEmptyMessage message;
+  ASSERT_TRUE(message.ParseFromString(serialized));
+  std::string text;
+  EXPECT_TRUE(TextFormat::PrintToString(message, &text));
+}
+
 TEST_F(TextFormatTest, PrintMessageWithIndent) {
   // Test adding an initial indent to printing.
 
@@ -535,6 +568,54 @@ TEST_F(TextFormatTest, CustomPrinterForComments) {
       "}\n"
       "repeated_import_message {  # ImportMessage: 1\n"
       "  d: 44  # x2c\n"
+      "}\n",
+      text);
+}
+
+class CustomMessageContentFieldValuePrinter
+    : public TextFormat::FastFieldValuePrinter {
+ public:
+  bool PrintMessageContent(
+      const Message& message, int field_index, int field_count,
+      bool single_line_mode,
+      TextFormat::BaseTextGenerator* generator) const override {
+    if (message.ByteSizeLong() > 0) {
+      generator->PrintString(
+          strings::Substitute("# REDACTED, $0 bytes\n", message.ByteSizeLong()));
+    }
+    return true;
+  }
+};
+
+TEST_F(TextFormatTest, CustomPrinterForMessageContent) {
+  protobuf_unittest::TestAllTypes message;
+  message.mutable_optional_nested_message();
+  message.mutable_optional_import_message()->set_d(42);
+  message.add_repeated_nested_message();
+  message.add_repeated_nested_message();
+  message.add_repeated_import_message()->set_d(43);
+  message.add_repeated_import_message()->set_d(44);
+  TextFormat::Printer printer;
+  CustomMessageContentFieldValuePrinter my_field_printer;
+  printer.SetDefaultFieldValuePrinter(
+      new CustomMessageContentFieldValuePrinter());
+  std::string text;
+  printer.PrintToString(message, &text);
+  EXPECT_EQ(
+      "optional_nested_message {\n"
+      "}\n"
+      "optional_import_message {\n"
+      "  # REDACTED, 2 bytes\n"
+      "}\n"
+      "repeated_nested_message {\n"
+      "}\n"
+      "repeated_nested_message {\n"
+      "}\n"
+      "repeated_import_message {\n"
+      "  # REDACTED, 2 bytes\n"
+      "}\n"
+      "repeated_import_message {\n"
+      "  # REDACTED, 2 bytes\n"
       "}\n",
       text);
 }
@@ -726,8 +807,8 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
 
 TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
   // Create a parse string with a numerical value for an enum field.
-  std::string parse_string = strings::Substitute("optional_nested_enum: $0",
-                                                 unittest::TestAllTypes::BAZ);
+  std::string parse_string =
+      strings::Substitute("optional_nested_enum: $0", unittest::TestAllTypes::BAZ);
   EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
   EXPECT_TRUE(proto_.has_optional_nested_enum());
   EXPECT_EQ(unittest::TestAllTypes::BAZ, proto_.optional_nested_enum());
@@ -1365,7 +1446,7 @@ class TextFormatParserTest : public testing::Test {
     // implements ErrorCollector -------------------------------------
     void AddError(int line, int column, const std::string& message) {
       strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line + 1, column + 1,
-                                   message);
+                                message);
     }
 
     void AddWarning(int line, int column, const std::string& message) {

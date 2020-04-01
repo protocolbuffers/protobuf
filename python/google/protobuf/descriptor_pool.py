@@ -619,7 +619,7 @@ class DescriptorPool(object):
   def FindAllExtensions(self, message_descriptor):
     """Gets all the known extensions of a given message.
 
-    Extensions have to be registered to this pool by calling
+    Extensions have to be registered to this pool by build related
     :func:`Add` or :func:`AddExtensionDescriptor`.
 
     Args:
@@ -662,18 +662,7 @@ class DescriptorPool(object):
       return
 
     try:
-      file_desc = self._ConvertFileProtoToFileDescriptor(file_proto)
-      for extension in file_desc.extensions_by_name.values():
-        self._extensions_by_number[extension.containing_type][
-            extension.number] = extension
-        self._extensions_by_name[extension.containing_type][
-            extension.full_name] = extension
-      for message_type in file_desc.message_types_by_name.values():
-        for extension in message_type.extensions:
-          self._extensions_by_number[extension.containing_type][
-              extension.number] = extension
-          self._extensions_by_name[extension.containing_type][
-              extension.full_name] = extension
+      self._ConvertFileProtoToFileDescriptor(file_proto)
     except:
       warn_msg = ('Unable to load proto file %s for extension number %d.' %
                   (file_proto.name, number))
@@ -761,7 +750,9 @@ class DescriptorPool(object):
           options=_OptionsOrNone(file_proto),
           serialized_pb=file_proto.SerializeToString(),
           dependencies=direct_deps,
-          public_dependencies=public_deps)
+          public_dependencies=public_deps,
+          # pylint: disable=protected-access
+          create_key=descriptor._internal_create_key)
       scope = {}
 
       # This loop extracts all the message and enum types from all the
@@ -820,7 +811,15 @@ class DescriptorPool(object):
       self.Add(file_proto)
       self._file_descriptors[file_proto.name] = file_descriptor
 
-    return self._file_descriptors[file_proto.name]
+    # Add extensions to the pool
+    file_desc = self._file_descriptors[file_proto.name]
+    for extension in file_desc.extensions_by_name.values():
+      self._AddExtensionDescriptor(extension)
+    for message_type in file_desc.message_types_by_name.values():
+      for extension in message_type.extensions:
+        self._AddExtensionDescriptor(extension)
+
+    return file_desc
 
   def _ConvertMessageDescriptor(self, desc_proto, package=None, file_desc=None,
                                 scope=None, syntax=None):
@@ -865,8 +864,11 @@ class DescriptorPool(object):
                                   is_extension=True)
         for index, extension in enumerate(desc_proto.extension)]
     oneofs = [
+        # pylint: disable=g-complex-comprehension
         descriptor.OneofDescriptor(desc.name, '.'.join((desc_name, desc.name)),
-                                   index, None, [], desc.options)
+                                   index, None, [], desc.options,
+                                   # pylint: disable=protected-access
+                                   create_key=descriptor._internal_create_key)
         for index, desc in enumerate(desc_proto.oneof_decl)]
     extension_ranges = [(r.start, r.end) for r in desc_proto.extension_range]
     if extension_ranges:
@@ -889,7 +891,9 @@ class DescriptorPool(object):
         file=file_desc,
         serialized_start=None,
         serialized_end=None,
-        syntax=syntax)
+        syntax=syntax,
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
     for nested in desc.nested_types:
       nested.containing_type = desc
     for enum in desc.enum_types:
@@ -940,7 +944,9 @@ class DescriptorPool(object):
                                      file=file_desc,
                                      values=values,
                                      containing_type=containing_type,
-                                     options=_OptionsOrNone(enum_proto))
+                                     options=_OptionsOrNone(enum_proto),
+                                     # pylint: disable=protected-access
+                                     create_key=descriptor._internal_create_key)
     scope['.%s' % enum_name] = desc
     self._CheckConflictRegister(desc, desc.full_name, desc.file.name)
     self._enum_descriptors[enum_name] = desc
@@ -997,7 +1003,9 @@ class DescriptorPool(object):
         is_extension=is_extension,
         extension_scope=None,
         options=_OptionsOrNone(field_proto),
-        file=file_desc)
+        file=file_desc,
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
 
   def _SetAllFieldTypes(self, package, desc_proto, scope):
     """Sets all the descriptor's fields's types.
@@ -1121,7 +1129,9 @@ class DescriptorPool(object):
         index=index,
         number=value_proto.number,
         options=_OptionsOrNone(value_proto),
-        type=None)
+        type=None,
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
 
   def _MakeServiceDescriptor(self, service_proto, service_index, scope,
                              package, file_desc):
@@ -1146,12 +1156,15 @@ class DescriptorPool(object):
     methods = [self._MakeMethodDescriptor(method_proto, service_name, package,
                                           scope, index)
                for index, method_proto in enumerate(service_proto.method)]
-    desc = descriptor.ServiceDescriptor(name=service_proto.name,
-                                        full_name=service_name,
-                                        index=service_index,
-                                        methods=methods,
-                                        options=_OptionsOrNone(service_proto),
-                                        file=file_desc)
+    desc = descriptor.ServiceDescriptor(
+        name=service_proto.name,
+        full_name=service_name,
+        index=service_index,
+        methods=methods,
+        options=_OptionsOrNone(service_proto),
+        file=file_desc,
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
     self._CheckConflictRegister(desc, desc.full_name, desc.file.name)
     self._service_descriptors[service_name] = desc
     return desc
@@ -1175,13 +1188,16 @@ class DescriptorPool(object):
         package, method_proto.input_type, scope)
     output_type = self._GetTypeFromScope(
         package, method_proto.output_type, scope)
-    return descriptor.MethodDescriptor(name=method_proto.name,
-                                       full_name=full_name,
-                                       index=index,
-                                       containing_service=None,
-                                       input_type=input_type,
-                                       output_type=output_type,
-                                       options=_OptionsOrNone(method_proto))
+    return descriptor.MethodDescriptor(
+        name=method_proto.name,
+        full_name=full_name,
+        index=index,
+        containing_service=None,
+        input_type=input_type,
+        output_type=output_type,
+        options=_OptionsOrNone(method_proto),
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
 
   def _ExtractSymbols(self, descriptors):
     """Pulls out all the symbols from descriptor protos.

@@ -89,6 +89,7 @@ final class MessageSchema<T> implements Schema<T> {
   private static final int FIELD_TYPE_MASK = 0x0FF00000;
   private static final int REQUIRED_MASK = 0x10000000;
   private static final int ENFORCE_UTF8_MASK = 0x20000000;
+  private static final int NO_PRESENCE_SENTINEL = -1 & OFFSET_MASK;
   private static final int[] EMPTY_INT_ARRAY = new int[0];
 
   /** An offset applied to the field type ID for scalar fields that are a member of a oneof. */
@@ -118,6 +119,11 @@ final class MessageSchema<T> implements Schema<T> {
    * [70 -   75] field presence mask shift (unused for oneof/repeated fields)
    * [76 -   95] presence field offset / oneof case field offset / cached size field offset
    * </pre>
+   *
+   * Note that presence field offset can only use 20 bits - 1. All bits set to 1 is the sentinel
+   * value for non-presence. This is not validated at runtime, we simply assume message layouts
+   * will not exceed 1MB (assuming ~10 bytes per field, that implies 100k fields which should hit
+   * other javac limits first).
    */
   private final int[] buffer;
 
@@ -260,7 +266,7 @@ final class MessageSchema<T> implements Schema<T> {
       }
       next = result | (next << shift);
     }
-    final int flags = next;
+    final int unusedFlags = next;
 
     next = info.charAt(i++);
     if (next >= 0xD800) {
@@ -464,8 +470,7 @@ final class MessageSchema<T> implements Schema<T> {
             || oneofFieldType == 17 /* FieldType.GROUP */) {
           objects[bufferIndex / INTS_PER_FIELD * 2 + 1] = messageInfoObjects[objectsPosition++];
         } else if (oneofFieldType == 12 /* FieldType.ENUM */) {
-          // proto2
-          if ((flags & 0x1) == 0x1) {
+          if (!isProto3) {
             objects[bufferIndex / INTS_PER_FIELD * 2 + 1] = messageInfoObjects[objectsPosition++];
           }
         }
@@ -508,7 +513,7 @@ final class MessageSchema<T> implements Schema<T> {
         } else if (fieldType == 12 /* FieldType.ENUM */
             || fieldType == 30 /* FieldType.ENUM_LIST */
             || fieldType == 44 /* FieldType.ENUM_LIST_PACKED */) {
-          if ((flags & 0x1) == 0x1) {
+          if (!isProto3) {
             objects[bufferIndex / INTS_PER_FIELD * 2 + 1] = messageInfoObjects[objectsPosition++];
           }
         } else if (fieldType == 50 /* FieldType.MAP */) {
@@ -520,7 +525,8 @@ final class MessageSchema<T> implements Schema<T> {
         }
 
         fieldOffset = (int) unsafe.objectFieldOffset(field);
-        if ((flags & 0x1) == 0x1 && fieldType <= 17 /* FieldType.GROUP */) {
+        boolean hasHasBit = (fieldTypeWithExtraBits & 0x1000) == 0x1000;
+        if (hasHasBit && fieldType <= 17 /* FieldType.GROUP */) {
           next = info.charAt(i++);
           if (next >= 0xD800) {
             int result = next & 0x1FFF;
@@ -546,7 +552,7 @@ final class MessageSchema<T> implements Schema<T> {
           presenceFieldOffset = (int) unsafe.objectFieldOffset(hasBitsField);
           presenceMaskShift = hasBitsIndex % 32;
         } else {
-          presenceFieldOffset = 0;
+          presenceFieldOffset = NO_PRESENCE_SENTINEL;
           presenceMaskShift = 0;
         }
 
@@ -662,7 +668,7 @@ final class MessageSchema<T> implements Schema<T> {
 
       // We found the entry for the next field. Store the entry in the manifest for
       // this field and increment the field index.
-      storeFieldData(fi, buffer, bufferIndex, isProto3, objects);
+      storeFieldData(fi, buffer, bufferIndex, objects);
 
       // Convert field number to index
       if (checkInitializedIndex < checkInitialized.length
@@ -719,7 +725,7 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   private static void storeFieldData(
-      FieldInfo fi, int[] buffer, int bufferIndex, boolean proto3, Object[] objects) {
+      FieldInfo fi, int[] buffer, int bufferIndex, Object[] objects) {
     final int fieldOffset;
     final int typeId;
     final int presenceMaskShift;
@@ -735,8 +741,13 @@ final class MessageSchema<T> implements Schema<T> {
       FieldType type = fi.getType();
       fieldOffset = (int) UnsafeUtil.objectFieldOffset(fi.getField());
       typeId = type.id();
-      if (!proto3 && !type.isList() && !type.isMap()) {
-        presenceFieldOffset = (int) UnsafeUtil.objectFieldOffset(fi.getPresenceField());
+      if (!type.isList() && !type.isMap()) {
+        Field presenceField = fi.getPresenceField();
+        if (presenceField == null) {
+          presenceFieldOffset = NO_PRESENCE_SENTINEL;
+        } else {
+          presenceFieldOffset = (int) UnsafeUtil.objectFieldOffset(presenceField);
+        }
         presenceMaskShift = Integer.numberOfTrailingZeros(fi.getPresenceMask());
       } else {
         if (fi.getCachedSizeField() == null) {
@@ -1408,13 +1419,13 @@ final class MessageSchema<T> implements Schema<T> {
   public int getSerializedSize(T message) {
     return proto3 ? getSerializedSizeProto3(message) : getSerializedSizeProto2(message);
   }
-  
+
   @SuppressWarnings("unchecked")
   private int getSerializedSizeProto2(T message) {
     int size = 0;
 
     final sun.misc.Unsafe unsafe = UNSAFE;
-    int currentPresenceFieldOffset = -1;
+    int currentPresenceFieldOffset = NO_PRESENCE_SENTINEL;
     int currentPresenceField = 0;
     for (int i = 0; i < buffer.length; i += INTS_PER_FIELD) {
       final int typeAndOffset = typeAndOffsetAt(i);
@@ -2548,7 +2559,7 @@ final class MessageSchema<T> implements Schema<T> {
         nextExtension = extensionIterator.next();
       }
     }
-    int currentPresenceFieldOffset = -1;
+    int currentPresenceFieldOffset = NO_PRESENCE_SENTINEL;
     int currentPresenceField = 0;
     final int bufferLength = buffer.length;
     final sun.misc.Unsafe unsafe = UNSAFE;
@@ -2924,7 +2935,6 @@ final class MessageSchema<T> implements Schema<T> {
         nextExtension = extensionIterator.next();
       }
     }
-
     final int bufferLength = buffer.length;
     for (int pos = 0; pos < bufferLength; pos += INTS_PER_FIELD) {
       final int typeAndOffset = typeAndOffsetAt(pos);
@@ -4867,7 +4877,7 @@ final class MessageSchema<T> implements Schema<T> {
       T message, byte[] data, int position, int limit, int endGroup, Registers registers)
       throws IOException {
     final sun.misc.Unsafe unsafe = UNSAFE;
-    int currentPresenceFieldOffset = -1;
+    int currentPresenceFieldOffset = NO_PRESENCE_SENTINEL;
     int currentPresenceField = 0;
     int tag = 0;
     int oldNumber = -1;
@@ -4901,7 +4911,7 @@ final class MessageSchema<T> implements Schema<T> {
           // We cache the 32-bit has-bits integer value and only write it back when parsing a field
           // using a different has-bits integer.
           if (presenceFieldOffset != currentPresenceFieldOffset) {
-            if (currentPresenceFieldOffset != -1) {
+            if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
               unsafe.putInt(message, (long) currentPresenceFieldOffset, currentPresenceField);
             }
             currentPresenceFieldOffset = presenceFieldOffset;
@@ -5143,7 +5153,7 @@ final class MessageSchema<T> implements Schema<T> {
             tag, data, position, limit, getMutableUnknownFields(message), registers);
       }
     }
-    if (currentPresenceFieldOffset != -1) {
+    if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
       unsafe.putInt(message, (long) currentPresenceFieldOffset, currentPresenceField);
     }
     UnknownFieldSetLite unknownFields = null;
@@ -5175,6 +5185,8 @@ final class MessageSchema<T> implements Schema<T> {
   private int parseProto3Message(
       T message, byte[] data, int position, int limit, Registers registers) throws IOException {
     final sun.misc.Unsafe unsafe = UNSAFE;
+    int currentPresenceFieldOffset = NO_PRESENCE_SENTINEL;
+    int currentPresenceField = 0;
     int tag = 0;
     int oldNumber = -1;
     int pos = 0;
@@ -5200,11 +5212,30 @@ final class MessageSchema<T> implements Schema<T> {
         final int fieldType = type(typeAndOffset);
         final long fieldOffset = offset(typeAndOffset);
         if (fieldType <= 17) {
+          // Proto3 optional fields have has-bits.
+          final int presenceMaskAndOffset = buffer[pos + 2];
+          final int presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
+          final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
+          // We cache the 32-bit has-bits integer value and only write it back when parsing a field
+          // using a different has-bits integer.
+          //
+          // Note that for fields that do not have hasbits, we unconditionally write and discard
+          // the data.
+          if (presenceFieldOffset != currentPresenceFieldOffset) {
+            if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
+              unsafe.putInt(message, (long) currentPresenceFieldOffset, currentPresenceField);
+            }
+            if (presenceFieldOffset != NO_PRESENCE_SENTINEL) {
+              currentPresenceField = unsafe.getInt(message, (long) presenceFieldOffset);
+            }
+            currentPresenceFieldOffset = presenceFieldOffset;
+          }
           switch (fieldType) {
             case 0: // DOUBLE:
               if (wireType == WireFormat.WIRETYPE_FIXED64) {
                 UnsafeUtil.putDouble(message, fieldOffset, decodeDouble(data, position));
                 position += 8;
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5212,6 +5243,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (wireType == WireFormat.WIRETYPE_FIXED32) {
                 UnsafeUtil.putFloat(message, fieldOffset, decodeFloat(data, position));
                 position += 4;
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5220,6 +5252,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (wireType == WireFormat.WIRETYPE_VARINT) {
                 position = decodeVarint64(data, position, registers);
                 unsafe.putLong(message, fieldOffset, registers.long1);
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5228,6 +5261,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (wireType == WireFormat.WIRETYPE_VARINT) {
                 position = decodeVarint32(data, position, registers);
                 unsafe.putInt(message, fieldOffset, registers.int1);
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5236,6 +5270,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (wireType == WireFormat.WIRETYPE_FIXED64) {
                 unsafe.putLong(message, fieldOffset, decodeFixed64(data, position));
                 position += 8;
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5244,6 +5279,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (wireType == WireFormat.WIRETYPE_FIXED32) {
                 unsafe.putInt(message, fieldOffset, decodeFixed32(data, position));
                 position += 4;
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5251,6 +5287,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (wireType == WireFormat.WIRETYPE_VARINT) {
                 position = decodeVarint64(data, position, registers);
                 UnsafeUtil.putBoolean(message, fieldOffset, registers.long1 != 0);
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5262,6 +5299,7 @@ final class MessageSchema<T> implements Schema<T> {
                   position = decodeStringRequireUtf8(data, position, registers);
                 }
                 unsafe.putObject(message, fieldOffset, registers.object1);
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5277,6 +5315,7 @@ final class MessageSchema<T> implements Schema<T> {
                   unsafe.putObject(
                       message, fieldOffset, Internal.mergeMessage(oldValue, registers.object1));
                 }
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5284,6 +5323,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
                 position = decodeBytes(data, position, registers);
                 unsafe.putObject(message, fieldOffset, registers.object1);
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5291,6 +5331,7 @@ final class MessageSchema<T> implements Schema<T> {
               if (wireType == WireFormat.WIRETYPE_VARINT) {
                 position = decodeVarint32(data, position, registers);
                 unsafe.putInt(message, fieldOffset, registers.int1);
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5299,6 +5340,7 @@ final class MessageSchema<T> implements Schema<T> {
                 position = decodeVarint32(data, position, registers);
                 unsafe.putInt(
                     message, fieldOffset, CodedInputStream.decodeZigZag32(registers.int1));
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5307,6 +5349,7 @@ final class MessageSchema<T> implements Schema<T> {
                 position = decodeVarint64(data, position, registers);
                 unsafe.putLong(
                     message, fieldOffset, CodedInputStream.decodeZigZag64(registers.long1));
+                currentPresenceField |= presenceMask;
                 continue;
               }
               break;
@@ -5380,6 +5423,9 @@ final class MessageSchema<T> implements Schema<T> {
       }
       position = decodeUnknownField(
           tag, data, position, limit, getMutableUnknownFields(message), registers);
+    }
+    if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
+      unsafe.putInt(message, (long) currentPresenceFieldOffset, currentPresenceField);
     }
     if (position != limit) {
       throw InvalidProtocolBufferException.parseFailure();
@@ -5502,28 +5548,26 @@ final class MessageSchema<T> implements Schema<T> {
 
   @Override
   public final boolean isInitialized(T message) {
-    int currentPresenceFieldOffset = -1;
+    int currentPresenceFieldOffset = NO_PRESENCE_SENTINEL;
     int currentPresenceField = 0;
     for (int i = 0; i < checkInitializedCount; i++) {
       final int pos = intArray[i];
       final int number = numberAt(pos);
-
       final int typeAndOffset = typeAndOffsetAt(pos);
 
-      int presenceMaskAndOffset = 0;
-      int presenceMask = 0;
-      if (!proto3) {
-        presenceMaskAndOffset = buffer[pos + 2];
-        final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
-        presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
-        if (presenceFieldOffset != currentPresenceFieldOffset) {
-          currentPresenceFieldOffset = presenceFieldOffset;
+      int presenceMaskAndOffset = buffer[pos + 2];
+      final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
+      int presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
+      if (presenceFieldOffset != currentPresenceFieldOffset) {
+        currentPresenceFieldOffset = presenceFieldOffset;
+        if (currentPresenceFieldOffset != NO_PRESENCE_SENTINEL) {
           currentPresenceField = UNSAFE.getInt(message, (long) presenceFieldOffset);
         }
       }
 
       if (isRequired(typeAndOffset)) {
-        if (!isFieldPresent(message, pos, currentPresenceField, presenceMask)) {
+        if (!isFieldPresent(
+            message, pos, currentPresenceFieldOffset, currentPresenceField, presenceMask)) {
           return false;
         }
         // If a required message field is set but has no required fields of it's own, we still
@@ -5534,7 +5578,8 @@ final class MessageSchema<T> implements Schema<T> {
       switch (type(typeAndOffset)) {
         case 9: // MESSAGE
         case 17: // GROUP
-          if (isFieldPresent(message, pos, currentPresenceField, presenceMask)
+          if (isFieldPresent(
+                  message, pos, currentPresenceFieldOffset, currentPresenceField, presenceMask)
               && !isInitialized(message, typeAndOffset, getMessageFieldSchema(pos))) {
             return false;
           }
@@ -5744,8 +5789,9 @@ final class MessageSchema<T> implements Schema<T> {
     return isFieldPresent(message, pos) == isFieldPresent(other, pos);
   }
 
-  private boolean isFieldPresent(T message, int pos, int presenceField, int presenceMask) {
-    if (proto3) {
+  private boolean isFieldPresent(
+      T message, int pos, int presenceFieldOffset, int presenceField, int presenceMask) {
+    if (presenceFieldOffset == NO_PRESENCE_SENTINEL) {
       return isFieldPresent(message, pos);
     } else {
       return (presenceField & presenceMask) != 0;
@@ -5753,7 +5799,9 @@ final class MessageSchema<T> implements Schema<T> {
   }
 
   private boolean isFieldPresent(T message, int pos) {
-    if (proto3) {
+    final int presenceMaskAndOffset = presenceMaskAndOffsetAt(pos);
+    final long presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
+    if (presenceFieldOffset == NO_PRESENCE_SENTINEL) {
       final int typeAndOffset = typeAndOffsetAt(pos);
       final long offset = offset(typeAndOffset);
       switch (type(typeAndOffset)) {
@@ -5804,20 +5852,18 @@ final class MessageSchema<T> implements Schema<T> {
           throw new IllegalArgumentException();
       }
     } else {
-      int presenceMaskAndOffset = presenceMaskAndOffsetAt(pos);
       final int presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
       return (UnsafeUtil.getInt(message, presenceMaskAndOffset & OFFSET_MASK) & presenceMask) != 0;
     }
   }
 
   private void setFieldPresent(T message, int pos) {
-    if (proto3) {
-      // Proto3 doesn't have presence fields
+    int presenceMaskAndOffset = presenceMaskAndOffsetAt(pos);
+    final long presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
+    if (presenceFieldOffset == NO_PRESENCE_SENTINEL) {
       return;
     }
-    int presenceMaskAndOffset = presenceMaskAndOffsetAt(pos);
     final int presenceMask = 1 << (presenceMaskAndOffset >>> OFFSET_BITS);
-    final long presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
     UnsafeUtil.putInt(
         message,
         presenceFieldOffset,
