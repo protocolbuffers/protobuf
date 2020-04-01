@@ -240,3 +240,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. SummaFT protoc-plugins
    * Website: https://summaft.com/
    * Extensions: 1085
+
+1. ADLINK EdgeSDK
+   * Website: https://www.adlinktech.com/en/Edge-SDK-IoT
+   * Extensions: 1086
