@@ -30,6 +30,10 @@
 
 #include "protobuf.h"
 
+VALUE initialize_rb_class_with_no_args(VALUE klass) {
+  return rb_funcall(klass, rb_intern("new"), 0);
+}
+
 // This function is equivalent to rb_str_cat(), but unlike the real
 // rb_str_cat(), it doesn't leak memory in some versions of Ruby.
 // For more information, see:
@@ -295,7 +299,7 @@ static void *appendsubmsg_handler(void *closure, const void *hd) {
   const submsg_handlerdata_t *submsgdata = hd;
   MessageHeader* submsg;
 
-  VALUE submsg_rb = rb_class_new_instance(0, NULL, submsgdata->subklass);
+  VALUE submsg_rb = initialize_rb_class_with_no_args(submsgdata->subklass);
   RepeatedField_push(ary, submsg_rb);
 
   TypedData_Get_Struct(submsg_rb, MessageHeader, &Message_type, submsg);
@@ -322,7 +326,7 @@ static void *submsg_handler(void *closure, const void *hd) {
 
   if (DEREF(msg, submsgdata->ofs, VALUE) == Qnil) {
     DEREF(msg, submsgdata->ofs, VALUE) =
-        rb_class_new_instance(0, NULL, submsgdata->subklass);
+        initialize_rb_class_with_no_args(submsgdata->subklass);
   }
 
   set_hasbit(closure, submsgdata->hasbit);
@@ -549,7 +553,7 @@ static void *oneofsubmsg_handler(void *closure,
   if (oldcase != oneofdata->oneof_case_num ||
       DEREF(msg, oneofdata->ofs, VALUE) == Qnil) {
     DEREF(msg, oneofdata->ofs, VALUE) =
-        rb_class_new_instance(0, NULL, oneofdata->subklass);
+        initialize_rb_class_with_no_args(oneofdata->subklass);
   }
   // Set the oneof case *after* allocating the new class instance -- otherwise,
   // if the Ruby GC is invoked as part of a call into the VM, it might invoke
@@ -1038,7 +1042,7 @@ VALUE Message_decode(VALUE klass, VALUE data) {
     rb_raise(rb_eArgError, "Expected string for binary protobuf data.");
   }
 
-  msg_rb = rb_class_new_instance(0, NULL, msgklass);
+  msg_rb = initialize_rb_class_with_no_args(msgklass);
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
   {
@@ -1114,7 +1118,7 @@ VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   // convert, because string handlers pass data directly to message string
   // fields.
 
-  msg_rb = rb_class_new_instance(0, NULL, msgklass);
+  msg_rb = initialize_rb_class_with_no_args(msgklass);
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
   {
