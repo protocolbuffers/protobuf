@@ -116,7 +116,7 @@ void WrapperFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void WrapperFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "$type_name$ value = _single_$name$_codec.Read(input);\n"
+    "$type_name$ value = _single_$name$_codec.Read(ref input);\n"
     "if ($has_not_property_check$ || value != $default_value$) {\n"
     "  $property_name$ = value;\n"
     "}\n");
@@ -250,7 +250,7 @@ void WrapperOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
 void WrapperOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
-    "$property_name$ = _oneof_$name$_codec.Read(input);\n");
+    "$property_name$ = _oneof_$name$_codec.Read(ref input);\n");
 }
 
 void WrapperOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
