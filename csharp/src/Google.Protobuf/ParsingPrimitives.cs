@@ -138,8 +138,8 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Peeks at the next field tag. This is like calling <see cref="ReadTag"/>, but the
-        /// tag is not consumed. (So a subsequent call to <see cref="ReadTag"/> will return the
+        /// Peeks at the next field tag. This is like calling <see cref="ParseTag"/>, but the
+        /// tag is not consumed. (So a subsequent call to <see cref="ParseTag"/> will return the
         /// same value.)
         /// </summary>
         public static uint PeekTag(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)

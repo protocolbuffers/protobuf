@@ -33,6 +33,7 @@
 using Google.Protobuf.Compatibility;
 using Google.Protobuf.Reflection;
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -432,6 +433,28 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
+        /// Adds entries to the map from the given parse context.
+        /// </summary>
+        /// <remarks>
+        /// It is assumed that the input is initially positioned after the tag specified by the codec.
+        /// This method will continue reading entries from the input until the end is reached, or
+        /// a different tag is encountered.
+        /// </remarks>
+        /// <param name="ctx">Input to read from</param>
+        /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
+        public void AddEntriesFrom(ref ParseContext ctx, Codec codec)
+        {
+            // TODO: deduplicate code?
+            var adapter = new Codec.MessageAdapter(codec);
+            do
+            {
+                adapter.Reset();
+                ctx.ReadMessage(adapter);
+                this[adapter.Key] = adapter.Value;
+            } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, codec.MapTag));
+        }
+
+        /// <summary>
         /// Writes the contents of this map to the given coded output stream, using the specified codec
         /// to encode each entry.
         /// </summary>
@@ -620,7 +643,7 @@ namespace Google.Protobuf.Collections
             /// This is nested inside Codec as it's tightly coupled to the associated codec,
             /// and it's simpler if it has direct access to all its fields.
             /// </summary>
-            internal class MessageAdapter : IMessage
+            internal class MessageAdapter : IMessage, IBufferMessage
             {
                 private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
 
@@ -663,6 +686,35 @@ namespace Google.Protobuf.Collections
                     if (Value == null)
                     {
                         Value = codec.valueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
+                    }
+                }
+
+                public void MergeFrom_Internal(ref ParseContext ctx)
+                {
+                    // TODO(jtattermusch): deduplicate code
+                    uint tag;
+                    while ((tag = ctx.ReadTag()) != 0)
+                    {
+                        if (tag == codec.keyCodec.Tag)
+                        {
+                            Key = codec.keyCodec.Read(ref ctx);
+                        }
+                        else if (tag == codec.valueCodec.Tag)
+                        {
+                            Value = codec.valueCodec.Read(ref ctx);
+                        }
+                        else 
+                        {
+                            ParsingPrimitivesMessages.SkipLastField(ref ctx.buffer, ref ctx.state);
+                        }
+                    }
+
+                    // Corner case: a map entry with a key but no value, where the value type is a message.
+                    // Read it as if we'd seen input with no data (i.e. create a "default" message).
+                    if (Value == null)
+                    {
+                        var zeroLengthCtx = new ParseContext(new ReadOnlySequence<byte>(ZeroLengthMessageStreamData));
+                        Value = codec.valueCodec.Read(ref zeroLengthCtx);
                     }
                 }
 
