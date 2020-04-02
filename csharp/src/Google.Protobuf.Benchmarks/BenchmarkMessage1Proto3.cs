@@ -64,7 +64,7 @@ namespace Benchmarks.Proto3 {
 
   }
   #region Messages
-  public sealed partial class GoogleMessage1 : pb::IMessage<GoogleMessage1> {
+  public sealed partial class GoogleMessage1 : pb::IMessage<GoogleMessage1>, pb::IBufferMessage {
     private static readonly pb::MessageParser<GoogleMessage1> _parser = new pb::MessageParser<GoogleMessage1>(() => new GoogleMessage1());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1132,11 +1132,16 @@ namespace Benchmarks.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom_Internal(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
             Field1 = input.ReadString();
@@ -1156,7 +1161,7 @@ namespace Benchmarks.Proto3 {
           }
           case 42:
           case 41: {
-            field5_.AddEntriesFrom(input, _repeated_field5_codec);
+            field5_.AddEntriesFrom(ref input, _repeated_field5_codec);
             break;
           }
           case 48: {
@@ -1312,7 +1317,7 @@ namespace Benchmarks.Proto3 {
 
   }
 
-  public sealed partial class GoogleMessage1SubMessage : pb::IMessage<GoogleMessage1SubMessage> {
+  public sealed partial class GoogleMessage1SubMessage : pb::IMessage<GoogleMessage1SubMessage>, pb::IBufferMessage {
     private static readonly pb::MessageParser<GoogleMessage1SubMessage> _parser = new pb::MessageParser<GoogleMessage1SubMessage>(() => new GoogleMessage1SubMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1881,11 +1886,16 @@ namespace Benchmarks.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom_Internal(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
             Field1 = input.ReadInt32();

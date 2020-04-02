@@ -259,7 +259,7 @@ namespace ProtobufTestMessages.Proto3 {
   /// could trigger bugs that occur in any message type in this file.  We verify
   /// this stays true in a unit test.
   /// </summary>
-  public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3> {
+  public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3>, pb::IBufferMessage {
     private static readonly pb::MessageParser<TestAllTypesProto3> _parser = new pb::MessageParser<TestAllTypesProto3>(() => new TestAllTypesProto3());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3383,11 +3383,16 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom_Internal(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
             OptionalInt32 = input.ReadInt32();
@@ -3492,317 +3497,317 @@ namespace ProtobufTestMessages.Proto3 {
           }
           case 250:
           case 248: {
-            repeatedInt32_.AddEntriesFrom(input, _repeated_repeatedInt32_codec);
+            repeatedInt32_.AddEntriesFrom(ref input, _repeated_repeatedInt32_codec);
             break;
           }
           case 258:
           case 256: {
-            repeatedInt64_.AddEntriesFrom(input, _repeated_repeatedInt64_codec);
+            repeatedInt64_.AddEntriesFrom(ref input, _repeated_repeatedInt64_codec);
             break;
           }
           case 266:
           case 264: {
-            repeatedUint32_.AddEntriesFrom(input, _repeated_repeatedUint32_codec);
+            repeatedUint32_.AddEntriesFrom(ref input, _repeated_repeatedUint32_codec);
             break;
           }
           case 274:
           case 272: {
-            repeatedUint64_.AddEntriesFrom(input, _repeated_repeatedUint64_codec);
+            repeatedUint64_.AddEntriesFrom(ref input, _repeated_repeatedUint64_codec);
             break;
           }
           case 282:
           case 280: {
-            repeatedSint32_.AddEntriesFrom(input, _repeated_repeatedSint32_codec);
+            repeatedSint32_.AddEntriesFrom(ref input, _repeated_repeatedSint32_codec);
             break;
           }
           case 290:
           case 288: {
-            repeatedSint64_.AddEntriesFrom(input, _repeated_repeatedSint64_codec);
+            repeatedSint64_.AddEntriesFrom(ref input, _repeated_repeatedSint64_codec);
             break;
           }
           case 298:
           case 301: {
-            repeatedFixed32_.AddEntriesFrom(input, _repeated_repeatedFixed32_codec);
+            repeatedFixed32_.AddEntriesFrom(ref input, _repeated_repeatedFixed32_codec);
             break;
           }
           case 306:
           case 305: {
-            repeatedFixed64_.AddEntriesFrom(input, _repeated_repeatedFixed64_codec);
+            repeatedFixed64_.AddEntriesFrom(ref input, _repeated_repeatedFixed64_codec);
             break;
           }
           case 314:
           case 317: {
-            repeatedSfixed32_.AddEntriesFrom(input, _repeated_repeatedSfixed32_codec);
+            repeatedSfixed32_.AddEntriesFrom(ref input, _repeated_repeatedSfixed32_codec);
             break;
           }
           case 322:
           case 321: {
-            repeatedSfixed64_.AddEntriesFrom(input, _repeated_repeatedSfixed64_codec);
+            repeatedSfixed64_.AddEntriesFrom(ref input, _repeated_repeatedSfixed64_codec);
             break;
           }
           case 330:
           case 333: {
-            repeatedFloat_.AddEntriesFrom(input, _repeated_repeatedFloat_codec);
+            repeatedFloat_.AddEntriesFrom(ref input, _repeated_repeatedFloat_codec);
             break;
           }
           case 338:
           case 337: {
-            repeatedDouble_.AddEntriesFrom(input, _repeated_repeatedDouble_codec);
+            repeatedDouble_.AddEntriesFrom(ref input, _repeated_repeatedDouble_codec);
             break;
           }
           case 346:
           case 344: {
-            repeatedBool_.AddEntriesFrom(input, _repeated_repeatedBool_codec);
+            repeatedBool_.AddEntriesFrom(ref input, _repeated_repeatedBool_codec);
             break;
           }
           case 354: {
-            repeatedString_.AddEntriesFrom(input, _repeated_repeatedString_codec);
+            repeatedString_.AddEntriesFrom(ref input, _repeated_repeatedString_codec);
             break;
           }
           case 362: {
-            repeatedBytes_.AddEntriesFrom(input, _repeated_repeatedBytes_codec);
+            repeatedBytes_.AddEntriesFrom(ref input, _repeated_repeatedBytes_codec);
             break;
           }
           case 386: {
-            repeatedNestedMessage_.AddEntriesFrom(input, _repeated_repeatedNestedMessage_codec);
+            repeatedNestedMessage_.AddEntriesFrom(ref input, _repeated_repeatedNestedMessage_codec);
             break;
           }
           case 394: {
-            repeatedForeignMessage_.AddEntriesFrom(input, _repeated_repeatedForeignMessage_codec);
+            repeatedForeignMessage_.AddEntriesFrom(ref input, _repeated_repeatedForeignMessage_codec);
             break;
           }
           case 410:
           case 408: {
-            repeatedNestedEnum_.AddEntriesFrom(input, _repeated_repeatedNestedEnum_codec);
+            repeatedNestedEnum_.AddEntriesFrom(ref input, _repeated_repeatedNestedEnum_codec);
             break;
           }
           case 418:
           case 416: {
-            repeatedForeignEnum_.AddEntriesFrom(input, _repeated_repeatedForeignEnum_codec);
+            repeatedForeignEnum_.AddEntriesFrom(ref input, _repeated_repeatedForeignEnum_codec);
             break;
           }
           case 434: {
-            repeatedStringPiece_.AddEntriesFrom(input, _repeated_repeatedStringPiece_codec);
+            repeatedStringPiece_.AddEntriesFrom(ref input, _repeated_repeatedStringPiece_codec);
             break;
           }
           case 442: {
-            repeatedCord_.AddEntriesFrom(input, _repeated_repeatedCord_codec);
+            repeatedCord_.AddEntriesFrom(ref input, _repeated_repeatedCord_codec);
             break;
           }
           case 450: {
-            mapInt32Int32_.AddEntriesFrom(input, _map_mapInt32Int32_codec);
+            mapInt32Int32_.AddEntriesFrom(ref input, _map_mapInt32Int32_codec);
             break;
           }
           case 458: {
-            mapInt64Int64_.AddEntriesFrom(input, _map_mapInt64Int64_codec);
+            mapInt64Int64_.AddEntriesFrom(ref input, _map_mapInt64Int64_codec);
             break;
           }
           case 466: {
-            mapUint32Uint32_.AddEntriesFrom(input, _map_mapUint32Uint32_codec);
+            mapUint32Uint32_.AddEntriesFrom(ref input, _map_mapUint32Uint32_codec);
             break;
           }
           case 474: {
-            mapUint64Uint64_.AddEntriesFrom(input, _map_mapUint64Uint64_codec);
+            mapUint64Uint64_.AddEntriesFrom(ref input, _map_mapUint64Uint64_codec);
             break;
           }
           case 482: {
-            mapSint32Sint32_.AddEntriesFrom(input, _map_mapSint32Sint32_codec);
+            mapSint32Sint32_.AddEntriesFrom(ref input, _map_mapSint32Sint32_codec);
             break;
           }
           case 490: {
-            mapSint64Sint64_.AddEntriesFrom(input, _map_mapSint64Sint64_codec);
+            mapSint64Sint64_.AddEntriesFrom(ref input, _map_mapSint64Sint64_codec);
             break;
           }
           case 498: {
-            mapFixed32Fixed32_.AddEntriesFrom(input, _map_mapFixed32Fixed32_codec);
+            mapFixed32Fixed32_.AddEntriesFrom(ref input, _map_mapFixed32Fixed32_codec);
             break;
           }
           case 506: {
-            mapFixed64Fixed64_.AddEntriesFrom(input, _map_mapFixed64Fixed64_codec);
+            mapFixed64Fixed64_.AddEntriesFrom(ref input, _map_mapFixed64Fixed64_codec);
             break;
           }
           case 514: {
-            mapSfixed32Sfixed32_.AddEntriesFrom(input, _map_mapSfixed32Sfixed32_codec);
+            mapSfixed32Sfixed32_.AddEntriesFrom(ref input, _map_mapSfixed32Sfixed32_codec);
             break;
           }
           case 522: {
-            mapSfixed64Sfixed64_.AddEntriesFrom(input, _map_mapSfixed64Sfixed64_codec);
+            mapSfixed64Sfixed64_.AddEntriesFrom(ref input, _map_mapSfixed64Sfixed64_codec);
             break;
           }
           case 530: {
-            mapInt32Float_.AddEntriesFrom(input, _map_mapInt32Float_codec);
+            mapInt32Float_.AddEntriesFrom(ref input, _map_mapInt32Float_codec);
             break;
           }
           case 538: {
-            mapInt32Double_.AddEntriesFrom(input, _map_mapInt32Double_codec);
+            mapInt32Double_.AddEntriesFrom(ref input, _map_mapInt32Double_codec);
             break;
           }
           case 546: {
-            mapBoolBool_.AddEntriesFrom(input, _map_mapBoolBool_codec);
+            mapBoolBool_.AddEntriesFrom(ref input, _map_mapBoolBool_codec);
             break;
           }
           case 554: {
-            mapStringString_.AddEntriesFrom(input, _map_mapStringString_codec);
+            mapStringString_.AddEntriesFrom(ref input, _map_mapStringString_codec);
             break;
           }
           case 562: {
-            mapStringBytes_.AddEntriesFrom(input, _map_mapStringBytes_codec);
+            mapStringBytes_.AddEntriesFrom(ref input, _map_mapStringBytes_codec);
             break;
           }
           case 570: {
-            mapStringNestedMessage_.AddEntriesFrom(input, _map_mapStringNestedMessage_codec);
+            mapStringNestedMessage_.AddEntriesFrom(ref input, _map_mapStringNestedMessage_codec);
             break;
           }
           case 578: {
-            mapStringForeignMessage_.AddEntriesFrom(input, _map_mapStringForeignMessage_codec);
+            mapStringForeignMessage_.AddEntriesFrom(ref input, _map_mapStringForeignMessage_codec);
             break;
           }
           case 586: {
-            mapStringNestedEnum_.AddEntriesFrom(input, _map_mapStringNestedEnum_codec);
+            mapStringNestedEnum_.AddEntriesFrom(ref input, _map_mapStringNestedEnum_codec);
             break;
           }
           case 594: {
-            mapStringForeignEnum_.AddEntriesFrom(input, _map_mapStringForeignEnum_codec);
+            mapStringForeignEnum_.AddEntriesFrom(ref input, _map_mapStringForeignEnum_codec);
             break;
           }
           case 602:
           case 600: {
-            packedInt32_.AddEntriesFrom(input, _repeated_packedInt32_codec);
+            packedInt32_.AddEntriesFrom(ref input, _repeated_packedInt32_codec);
             break;
           }
           case 610:
           case 608: {
-            packedInt64_.AddEntriesFrom(input, _repeated_packedInt64_codec);
+            packedInt64_.AddEntriesFrom(ref input, _repeated_packedInt64_codec);
             break;
           }
           case 618:
           case 616: {
-            packedUint32_.AddEntriesFrom(input, _repeated_packedUint32_codec);
+            packedUint32_.AddEntriesFrom(ref input, _repeated_packedUint32_codec);
             break;
           }
           case 626:
           case 624: {
-            packedUint64_.AddEntriesFrom(input, _repeated_packedUint64_codec);
+            packedUint64_.AddEntriesFrom(ref input, _repeated_packedUint64_codec);
             break;
           }
           case 634:
           case 632: {
-            packedSint32_.AddEntriesFrom(input, _repeated_packedSint32_codec);
+            packedSint32_.AddEntriesFrom(ref input, _repeated_packedSint32_codec);
             break;
           }
           case 642:
           case 640: {
-            packedSint64_.AddEntriesFrom(input, _repeated_packedSint64_codec);
+            packedSint64_.AddEntriesFrom(ref input, _repeated_packedSint64_codec);
             break;
           }
           case 650:
           case 653: {
-            packedFixed32_.AddEntriesFrom(input, _repeated_packedFixed32_codec);
+            packedFixed32_.AddEntriesFrom(ref input, _repeated_packedFixed32_codec);
             break;
           }
           case 658:
           case 657: {
-            packedFixed64_.AddEntriesFrom(input, _repeated_packedFixed64_codec);
+            packedFixed64_.AddEntriesFrom(ref input, _repeated_packedFixed64_codec);
             break;
           }
           case 666:
           case 669: {
-            packedSfixed32_.AddEntriesFrom(input, _repeated_packedSfixed32_codec);
+            packedSfixed32_.AddEntriesFrom(ref input, _repeated_packedSfixed32_codec);
             break;
           }
           case 674:
           case 673: {
-            packedSfixed64_.AddEntriesFrom(input, _repeated_packedSfixed64_codec);
+            packedSfixed64_.AddEntriesFrom(ref input, _repeated_packedSfixed64_codec);
             break;
           }
           case 682:
           case 685: {
-            packedFloat_.AddEntriesFrom(input, _repeated_packedFloat_codec);
+            packedFloat_.AddEntriesFrom(ref input, _repeated_packedFloat_codec);
             break;
           }
           case 690:
           case 689: {
-            packedDouble_.AddEntriesFrom(input, _repeated_packedDouble_codec);
+            packedDouble_.AddEntriesFrom(ref input, _repeated_packedDouble_codec);
             break;
           }
           case 698:
           case 696: {
-            packedBool_.AddEntriesFrom(input, _repeated_packedBool_codec);
+            packedBool_.AddEntriesFrom(ref input, _repeated_packedBool_codec);
             break;
           }
           case 706:
           case 704: {
-            packedNestedEnum_.AddEntriesFrom(input, _repeated_packedNestedEnum_codec);
+            packedNestedEnum_.AddEntriesFrom(ref input, _repeated_packedNestedEnum_codec);
             break;
           }
           case 714:
           case 712: {
-            unpackedInt32_.AddEntriesFrom(input, _repeated_unpackedInt32_codec);
+            unpackedInt32_.AddEntriesFrom(ref input, _repeated_unpackedInt32_codec);
             break;
           }
           case 722:
           case 720: {
-            unpackedInt64_.AddEntriesFrom(input, _repeated_unpackedInt64_codec);
+            unpackedInt64_.AddEntriesFrom(ref input, _repeated_unpackedInt64_codec);
             break;
           }
           case 730:
           case 728: {
-            unpackedUint32_.AddEntriesFrom(input, _repeated_unpackedUint32_codec);
+            unpackedUint32_.AddEntriesFrom(ref input, _repeated_unpackedUint32_codec);
             break;
           }
           case 738:
           case 736: {
-            unpackedUint64_.AddEntriesFrom(input, _repeated_unpackedUint64_codec);
+            unpackedUint64_.AddEntriesFrom(ref input, _repeated_unpackedUint64_codec);
             break;
           }
           case 746:
           case 744: {
-            unpackedSint32_.AddEntriesFrom(input, _repeated_unpackedSint32_codec);
+            unpackedSint32_.AddEntriesFrom(ref input, _repeated_unpackedSint32_codec);
             break;
           }
           case 754:
           case 752: {
-            unpackedSint64_.AddEntriesFrom(input, _repeated_unpackedSint64_codec);
+            unpackedSint64_.AddEntriesFrom(ref input, _repeated_unpackedSint64_codec);
             break;
           }
           case 762:
           case 765: {
-            unpackedFixed32_.AddEntriesFrom(input, _repeated_unpackedFixed32_codec);
+            unpackedFixed32_.AddEntriesFrom(ref input, _repeated_unpackedFixed32_codec);
             break;
           }
           case 770:
           case 769: {
-            unpackedFixed64_.AddEntriesFrom(input, _repeated_unpackedFixed64_codec);
+            unpackedFixed64_.AddEntriesFrom(ref input, _repeated_unpackedFixed64_codec);
             break;
           }
           case 778:
           case 781: {
-            unpackedSfixed32_.AddEntriesFrom(input, _repeated_unpackedSfixed32_codec);
+            unpackedSfixed32_.AddEntriesFrom(ref input, _repeated_unpackedSfixed32_codec);
             break;
           }
           case 786:
           case 785: {
-            unpackedSfixed64_.AddEntriesFrom(input, _repeated_unpackedSfixed64_codec);
+            unpackedSfixed64_.AddEntriesFrom(ref input, _repeated_unpackedSfixed64_codec);
             break;
           }
           case 794:
           case 797: {
-            unpackedFloat_.AddEntriesFrom(input, _repeated_unpackedFloat_codec);
+            unpackedFloat_.AddEntriesFrom(ref input, _repeated_unpackedFloat_codec);
             break;
           }
           case 802:
           case 801: {
-            unpackedDouble_.AddEntriesFrom(input, _repeated_unpackedDouble_codec);
+            unpackedDouble_.AddEntriesFrom(ref input, _repeated_unpackedDouble_codec);
             break;
           }
           case 810:
           case 808: {
-            unpackedBool_.AddEntriesFrom(input, _repeated_unpackedBool_codec);
+            unpackedBool_.AddEntriesFrom(ref input, _repeated_unpackedBool_codec);
             break;
           }
           case 818:
           case 816: {
-            unpackedNestedEnum_.AddEntriesFrom(input, _repeated_unpackedNestedEnum_codec);
+            unpackedNestedEnum_.AddEntriesFrom(ref input, _repeated_unpackedNestedEnum_codec);
             break;
           }
           case 888: {
@@ -3848,102 +3853,102 @@ namespace ProtobufTestMessages.Proto3 {
             break;
           }
           case 1610: {
-            bool? value = _single_optionalBoolWrapper_codec.Read(input);
+            bool? value = _single_optionalBoolWrapper_codec.Read(ref input);
             if (optionalBoolWrapper_ == null || value != false) {
               OptionalBoolWrapper = value;
             }
             break;
           }
           case 1618: {
-            int? value = _single_optionalInt32Wrapper_codec.Read(input);
+            int? value = _single_optionalInt32Wrapper_codec.Read(ref input);
             if (optionalInt32Wrapper_ == null || value != 0) {
               OptionalInt32Wrapper = value;
             }
             break;
           }
           case 1626: {
-            long? value = _single_optionalInt64Wrapper_codec.Read(input);
+            long? value = _single_optionalInt64Wrapper_codec.Read(ref input);
             if (optionalInt64Wrapper_ == null || value != 0L) {
               OptionalInt64Wrapper = value;
             }
             break;
           }
           case 1634: {
-            uint? value = _single_optionalUint32Wrapper_codec.Read(input);
+            uint? value = _single_optionalUint32Wrapper_codec.Read(ref input);
             if (optionalUint32Wrapper_ == null || value != 0) {
               OptionalUint32Wrapper = value;
             }
             break;
           }
           case 1642: {
-            ulong? value = _single_optionalUint64Wrapper_codec.Read(input);
+            ulong? value = _single_optionalUint64Wrapper_codec.Read(ref input);
             if (optionalUint64Wrapper_ == null || value != 0UL) {
               OptionalUint64Wrapper = value;
             }
             break;
           }
           case 1650: {
-            float? value = _single_optionalFloatWrapper_codec.Read(input);
+            float? value = _single_optionalFloatWrapper_codec.Read(ref input);
             if (optionalFloatWrapper_ == null || value != 0F) {
               OptionalFloatWrapper = value;
             }
             break;
           }
           case 1658: {
-            double? value = _single_optionalDoubleWrapper_codec.Read(input);
+            double? value = _single_optionalDoubleWrapper_codec.Read(ref input);
             if (optionalDoubleWrapper_ == null || value != 0D) {
               OptionalDoubleWrapper = value;
             }
             break;
           }
           case 1666: {
-            string value = _single_optionalStringWrapper_codec.Read(input);
+            string value = _single_optionalStringWrapper_codec.Read(ref input);
             if (optionalStringWrapper_ == null || value != "") {
               OptionalStringWrapper = value;
             }
             break;
           }
           case 1674: {
-            pb::ByteString value = _single_optionalBytesWrapper_codec.Read(input);
+            pb::ByteString value = _single_optionalBytesWrapper_codec.Read(ref input);
             if (optionalBytesWrapper_ == null || value != pb::ByteString.Empty) {
               OptionalBytesWrapper = value;
             }
             break;
           }
           case 1690: {
-            repeatedBoolWrapper_.AddEntriesFrom(input, _repeated_repeatedBoolWrapper_codec);
+            repeatedBoolWrapper_.AddEntriesFrom(ref input, _repeated_repeatedBoolWrapper_codec);
             break;
           }
           case 1698: {
-            repeatedInt32Wrapper_.AddEntriesFrom(input, _repeated_repeatedInt32Wrapper_codec);
+            repeatedInt32Wrapper_.AddEntriesFrom(ref input, _repeated_repeatedInt32Wrapper_codec);
             break;
           }
           case 1706: {
-            repeatedInt64Wrapper_.AddEntriesFrom(input, _repeated_repeatedInt64Wrapper_codec);
+            repeatedInt64Wrapper_.AddEntriesFrom(ref input, _repeated_repeatedInt64Wrapper_codec);
             break;
           }
           case 1714: {
-            repeatedUint32Wrapper_.AddEntriesFrom(input, _repeated_repeatedUint32Wrapper_codec);
+            repeatedUint32Wrapper_.AddEntriesFrom(ref input, _repeated_repeatedUint32Wrapper_codec);
             break;
           }
           case 1722: {
-            repeatedUint64Wrapper_.AddEntriesFrom(input, _repeated_repeatedUint64Wrapper_codec);
+            repeatedUint64Wrapper_.AddEntriesFrom(ref input, _repeated_repeatedUint64Wrapper_codec);
             break;
           }
           case 1730: {
-            repeatedFloatWrapper_.AddEntriesFrom(input, _repeated_repeatedFloatWrapper_codec);
+            repeatedFloatWrapper_.AddEntriesFrom(ref input, _repeated_repeatedFloatWrapper_codec);
             break;
           }
           case 1738: {
-            repeatedDoubleWrapper_.AddEntriesFrom(input, _repeated_repeatedDoubleWrapper_codec);
+            repeatedDoubleWrapper_.AddEntriesFrom(ref input, _repeated_repeatedDoubleWrapper_codec);
             break;
           }
           case 1746: {
-            repeatedStringWrapper_.AddEntriesFrom(input, _repeated_repeatedStringWrapper_codec);
+            repeatedStringWrapper_.AddEntriesFrom(ref input, _repeated_repeatedStringWrapper_codec);
             break;
           }
           case 1754: {
-            repeatedBytesWrapper_.AddEntriesFrom(input, _repeated_repeatedBytesWrapper_codec);
+            repeatedBytesWrapper_.AddEntriesFrom(ref input, _repeated_repeatedBytesWrapper_codec);
             break;
           }
           case 2410: {
@@ -3989,31 +3994,31 @@ namespace ProtobufTestMessages.Proto3 {
             break;
           }
           case 2490: {
-            repeatedDuration_.AddEntriesFrom(input, _repeated_repeatedDuration_codec);
+            repeatedDuration_.AddEntriesFrom(ref input, _repeated_repeatedDuration_codec);
             break;
           }
           case 2498: {
-            repeatedTimestamp_.AddEntriesFrom(input, _repeated_repeatedTimestamp_codec);
+            repeatedTimestamp_.AddEntriesFrom(ref input, _repeated_repeatedTimestamp_codec);
             break;
           }
           case 2506: {
-            repeatedFieldmask_.AddEntriesFrom(input, _repeated_repeatedFieldmask_codec);
+            repeatedFieldmask_.AddEntriesFrom(ref input, _repeated_repeatedFieldmask_codec);
             break;
           }
           case 2522: {
-            repeatedAny_.AddEntriesFrom(input, _repeated_repeatedAny_codec);
+            repeatedAny_.AddEntriesFrom(ref input, _repeated_repeatedAny_codec);
             break;
           }
           case 2530: {
-            repeatedValue_.AddEntriesFrom(input, _repeated_repeatedValue_codec);
+            repeatedValue_.AddEntriesFrom(ref input, _repeated_repeatedValue_codec);
             break;
           }
           case 2538: {
-            repeatedListValue_.AddEntriesFrom(input, _repeated_repeatedListValue_codec);
+            repeatedListValue_.AddEntriesFrom(ref input, _repeated_repeatedListValue_codec);
             break;
           }
           case 2594: {
-            repeatedStruct_.AddEntriesFrom(input, _repeated_repeatedStruct_codec);
+            repeatedStruct_.AddEntriesFrom(ref input, _repeated_repeatedStruct_codec);
             break;
           }
           case 3208: {
@@ -4115,7 +4120,7 @@ namespace ProtobufTestMessages.Proto3 {
         [pbr::OriginalName("bAz", PreferredAlias = false)] BAz = 2,
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, pb::IBufferMessage {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4255,11 +4260,16 @@ namespace ProtobufTestMessages.Proto3 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+          input.ReadRawMessage(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom_Internal(ref pb::ParseContext input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                 break;
               case 8: {
                 A = input.ReadInt32();
@@ -4283,7 +4293,7 @@ namespace ProtobufTestMessages.Proto3 {
 
   }
 
-  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
+  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage>, pb::IBufferMessage {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4396,11 +4406,16 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom_Internal(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
             C = input.ReadInt32();

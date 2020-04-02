@@ -179,7 +179,7 @@ namespace Google.Protobuf.TestProtos {
   /// Each wrapper type is included separately, as languages
   /// map handle different wrappers in different ways.
   /// </summary>
-  public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes> {
+  public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes>, pb::IBufferMessage {
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -784,11 +784,16 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom_Internal(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
             if (anyField_ == null) {
@@ -854,63 +859,63 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 82: {
-            double? value = _single_doubleField_codec.Read(input);
+            double? value = _single_doubleField_codec.Read(ref input);
             if (doubleField_ == null || value != 0D) {
               DoubleField = value;
             }
             break;
           }
           case 90: {
-            float? value = _single_floatField_codec.Read(input);
+            float? value = _single_floatField_codec.Read(ref input);
             if (floatField_ == null || value != 0F) {
               FloatField = value;
             }
             break;
           }
           case 98: {
-            long? value = _single_int64Field_codec.Read(input);
+            long? value = _single_int64Field_codec.Read(ref input);
             if (int64Field_ == null || value != 0L) {
               Int64Field = value;
             }
             break;
           }
           case 106: {
-            ulong? value = _single_uint64Field_codec.Read(input);
+            ulong? value = _single_uint64Field_codec.Read(ref input);
             if (uint64Field_ == null || value != 0UL) {
               Uint64Field = value;
             }
             break;
           }
           case 114: {
-            int? value = _single_int32Field_codec.Read(input);
+            int? value = _single_int32Field_codec.Read(ref input);
             if (int32Field_ == null || value != 0) {
               Int32Field = value;
             }
             break;
           }
           case 122: {
-            uint? value = _single_uint32Field_codec.Read(input);
+            uint? value = _single_uint32Field_codec.Read(ref input);
             if (uint32Field_ == null || value != 0) {
               Uint32Field = value;
             }
             break;
           }
           case 130: {
-            bool? value = _single_boolField_codec.Read(input);
+            bool? value = _single_boolField_codec.Read(ref input);
             if (boolField_ == null || value != false) {
               BoolField = value;
             }
             break;
           }
           case 138: {
-            string value = _single_stringField_codec.Read(input);
+            string value = _single_stringField_codec.Read(ref input);
             if (stringField_ == null || value != "") {
               StringField = value;
             }
             break;
           }
           case 146: {
-            pb::ByteString value = _single_bytesField_codec.Read(input);
+            pb::ByteString value = _single_bytesField_codec.Read(ref input);
             if (bytesField_ == null || value != pb::ByteString.Empty) {
               BytesField = value;
             }
@@ -932,7 +937,7 @@ namespace Google.Protobuf.TestProtos {
   /// <summary>
   /// A repeated field for each well-known type.
   /// </summary>
-  public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes> {
+  public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes>, pb::IBufferMessage {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1312,82 +1317,87 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom_Internal(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            anyField_.AddEntriesFrom(input, _repeated_anyField_codec);
+            anyField_.AddEntriesFrom(ref input, _repeated_anyField_codec);
             break;
           }
           case 18: {
-            apiField_.AddEntriesFrom(input, _repeated_apiField_codec);
+            apiField_.AddEntriesFrom(ref input, _repeated_apiField_codec);
             break;
           }
           case 26: {
-            durationField_.AddEntriesFrom(input, _repeated_durationField_codec);
+            durationField_.AddEntriesFrom(ref input, _repeated_durationField_codec);
             break;
           }
           case 34: {
-            emptyField_.AddEntriesFrom(input, _repeated_emptyField_codec);
+            emptyField_.AddEntriesFrom(ref input, _repeated_emptyField_codec);
             break;
           }
           case 42: {
-            fieldMaskField_.AddEntriesFrom(input, _repeated_fieldMaskField_codec);
+            fieldMaskField_.AddEntriesFrom(ref input, _repeated_fieldMaskField_codec);
             break;
           }
           case 50: {
-            sourceContextField_.AddEntriesFrom(input, _repeated_sourceContextField_codec);
+            sourceContextField_.AddEntriesFrom(ref input, _repeated_sourceContextField_codec);
             break;
           }
           case 58: {
-            structField_.AddEntriesFrom(input, _repeated_structField_codec);
+            structField_.AddEntriesFrom(ref input, _repeated_structField_codec);
             break;
           }
           case 66: {
-            timestampField_.AddEntriesFrom(input, _repeated_timestampField_codec);
+            timestampField_.AddEntriesFrom(ref input, _repeated_timestampField_codec);
             break;
           }
           case 74: {
-            typeField_.AddEntriesFrom(input, _repeated_typeField_codec);
+            typeField_.AddEntriesFrom(ref input, _repeated_typeField_codec);
             break;
           }
           case 82: {
-            doubleField_.AddEntriesFrom(input, _repeated_doubleField_codec);
+            doubleField_.AddEntriesFrom(ref input, _repeated_doubleField_codec);
             break;
           }
           case 90: {
-            floatField_.AddEntriesFrom(input, _repeated_floatField_codec);
+            floatField_.AddEntriesFrom(ref input, _repeated_floatField_codec);
             break;
           }
           case 98: {
-            int64Field_.AddEntriesFrom(input, _repeated_int64Field_codec);
+            int64Field_.AddEntriesFrom(ref input, _repeated_int64Field_codec);
             break;
           }
           case 106: {
-            uint64Field_.AddEntriesFrom(input, _repeated_uint64Field_codec);
+            uint64Field_.AddEntriesFrom(ref input, _repeated_uint64Field_codec);
             break;
           }
           case 114: {
-            int32Field_.AddEntriesFrom(input, _repeated_int32Field_codec);
+            int32Field_.AddEntriesFrom(ref input, _repeated_int32Field_codec);
             break;
           }
           case 122: {
-            uint32Field_.AddEntriesFrom(input, _repeated_uint32Field_codec);
+            uint32Field_.AddEntriesFrom(ref input, _repeated_uint32Field_codec);
             break;
           }
           case 130: {
-            boolField_.AddEntriesFrom(input, _repeated_boolField_codec);
+            boolField_.AddEntriesFrom(ref input, _repeated_boolField_codec);
             break;
           }
           case 138: {
-            stringField_.AddEntriesFrom(input, _repeated_stringField_codec);
+            stringField_.AddEntriesFrom(ref input, _repeated_stringField_codec);
             break;
           }
           case 146: {
-            bytesField_.AddEntriesFrom(input, _repeated_bytesField_codec);
+            bytesField_.AddEntriesFrom(ref input, _repeated_bytesField_codec);
             break;
           }
         }
@@ -1396,7 +1406,7 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
-  public sealed partial class OneofWellKnownTypes : pb::IMessage<OneofWellKnownTypes> {
+  public sealed partial class OneofWellKnownTypes : pb::IMessage<OneofWellKnownTypes>, pb::IBufferMessage {
     private static readonly pb::MessageParser<OneofWellKnownTypes> _parser = new pb::MessageParser<OneofWellKnownTypes>(() => new OneofWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2023,11 +2033,16 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom_Internal(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
             global::Google.Protobuf.WellKnownTypes.Any subBuilder = new global::Google.Protobuf.WellKnownTypes.Any();
@@ -2111,39 +2126,39 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 82: {
-            DoubleField = _oneof_doubleField_codec.Read(input);
+            DoubleField = _oneof_doubleField_codec.Read(ref input);
             break;
           }
           case 90: {
-            FloatField = _oneof_floatField_codec.Read(input);
+            FloatField = _oneof_floatField_codec.Read(ref input);
             break;
           }
           case 98: {
-            Int64Field = _oneof_int64Field_codec.Read(input);
+            Int64Field = _oneof_int64Field_codec.Read(ref input);
             break;
           }
           case 106: {
-            Uint64Field = _oneof_uint64Field_codec.Read(input);
+            Uint64Field = _oneof_uint64Field_codec.Read(ref input);
             break;
           }
           case 114: {
-            Int32Field = _oneof_int32Field_codec.Read(input);
+            Int32Field = _oneof_int32Field_codec.Read(ref input);
             break;
           }
           case 122: {
-            Uint32Field = _oneof_uint32Field_codec.Read(input);
+            Uint32Field = _oneof_uint32Field_codec.Read(ref input);
             break;
           }
           case 130: {
-            BoolField = _oneof_boolField_codec.Read(input);
+            BoolField = _oneof_boolField_codec.Read(ref input);
             break;
           }
           case 138: {
-            StringField = _oneof_stringField_codec.Read(input);
+            StringField = _oneof_stringField_codec.Read(ref input);
             break;
           }
           case 146: {
-            BytesField = _oneof_bytesField_codec.Read(input);
+            BytesField = _oneof_bytesField_codec.Read(ref input);
             break;
           }
         }
@@ -2157,7 +2172,7 @@ namespace Google.Protobuf.TestProtos {
   /// need to worry about the value part of the map being the
   /// well-known types, as messages can't be map keys.
   /// </summary>
-  public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes> {
+  public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes>, pb::IBufferMessage {
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2534,82 +2549,87 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom_Internal(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            anyField_.AddEntriesFrom(input, _map_anyField_codec);
+            anyField_.AddEntriesFrom(ref input, _map_anyField_codec);
             break;
           }
           case 18: {
-            apiField_.AddEntriesFrom(input, _map_apiField_codec);
+            apiField_.AddEntriesFrom(ref input, _map_apiField_codec);
             break;
           }
           case 26: {
-            durationField_.AddEntriesFrom(input, _map_durationField_codec);
+            durationField_.AddEntriesFrom(ref input, _map_durationField_codec);
             break;
           }
           case 34: {
-            emptyField_.AddEntriesFrom(input, _map_emptyField_codec);
+            emptyField_.AddEntriesFrom(ref input, _map_emptyField_codec);
             break;
           }
           case 42: {
-            fieldMaskField_.AddEntriesFrom(input, _map_fieldMaskField_codec);
+            fieldMaskField_.AddEntriesFrom(ref input, _map_fieldMaskField_codec);
             break;
           }
           case 50: {
-            sourceContextField_.AddEntriesFrom(input, _map_sourceContextField_codec);
+            sourceContextField_.AddEntriesFrom(ref input, _map_sourceContextField_codec);
             break;
           }
           case 58: {
-            structField_.AddEntriesFrom(input, _map_structField_codec);
+            structField_.AddEntriesFrom(ref input, _map_structField_codec);
             break;
           }
           case 66: {
-            timestampField_.AddEntriesFrom(input, _map_timestampField_codec);
+            timestampField_.AddEntriesFrom(ref input, _map_timestampField_codec);
             break;
           }
           case 74: {
-            typeField_.AddEntriesFrom(input, _map_typeField_codec);
+            typeField_.AddEntriesFrom(ref input, _map_typeField_codec);
             break;
           }
           case 82: {
-            doubleField_.AddEntriesFrom(input, _map_doubleField_codec);
+            doubleField_.AddEntriesFrom(ref input, _map_doubleField_codec);
             break;
           }
           case 90: {
-            floatField_.AddEntriesFrom(input, _map_floatField_codec);
+            floatField_.AddEntriesFrom(ref input, _map_floatField_codec);
             break;
           }
           case 98: {
-            int64Field_.AddEntriesFrom(input, _map_int64Field_codec);
+            int64Field_.AddEntriesFrom(ref input, _map_int64Field_codec);
             break;
           }
           case 106: {
-            uint64Field_.AddEntriesFrom(input, _map_uint64Field_codec);
+            uint64Field_.AddEntriesFrom(ref input, _map_uint64Field_codec);
             break;
           }
           case 114: {
-            int32Field_.AddEntriesFrom(input, _map_int32Field_codec);
+            int32Field_.AddEntriesFrom(ref input, _map_int32Field_codec);
             break;
           }
           case 122: {
-            uint32Field_.AddEntriesFrom(input, _map_uint32Field_codec);
+            uint32Field_.AddEntriesFrom(ref input, _map_uint32Field_codec);
             break;
           }
           case 130: {
-            boolField_.AddEntriesFrom(input, _map_boolField_codec);
+            boolField_.AddEntriesFrom(ref input, _map_boolField_codec);
             break;
           }
           case 138: {
-            stringField_.AddEntriesFrom(input, _map_stringField_codec);
+            stringField_.AddEntriesFrom(ref input, _map_stringField_codec);
             break;
           }
           case 146: {
-            bytesField_.AddEntriesFrom(input, _map_bytesField_codec);
+            bytesField_.AddEntriesFrom(ref input, _map_bytesField_codec);
             break;
           }
         }
