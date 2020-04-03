@@ -126,10 +126,6 @@ string PROTOC_EXPORT ObjCClass(const string& class_name);
 // be refrerred to by ObjCClass.
 string PROTOC_EXPORT ObjCClassDeclaration(const string& class_name);
 
-inline bool HasFieldPresence(const FileDescriptor* file) {
-  return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
-}
-
 inline bool HasPreservingUnknownEnumSemantics(const FileDescriptor* file) {
   return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }

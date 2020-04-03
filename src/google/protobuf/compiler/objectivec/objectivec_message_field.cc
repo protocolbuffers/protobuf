@@ -77,16 +77,6 @@ void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
   fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 
-bool MessageFieldGenerator::WantsHasProperty(void) const {
-  if (descriptor_->containing_oneof() != NULL) {
-    // If in a oneof, it uses the oneofcase instead of a has bit.
-    return false;
-  }
-  // In both proto2 & proto3, message fields have a has* property to tell
-  // when it is a non default value.
-  return true;
-}
-
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
     : RepeatedFieldGenerator(descriptor, options) {
