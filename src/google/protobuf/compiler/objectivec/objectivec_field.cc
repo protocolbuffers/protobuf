@@ -245,6 +245,10 @@ void FieldGenerator::SetOneofIndexBase(int index_base) {
   }
 }
 
+bool FieldGenerator::WantsHasProperty(void) const {
+  return descriptor_->has_presence() && !descriptor_->real_containing_oneof();
+}
+
 void FieldGenerator::FinishInitialization(void) {
   // If "property_type" wasn't set, make it "storage_type".
   if ((variables_.find("property_type") == variables_.end()) &&
@@ -287,18 +291,6 @@ void SingleFieldGenerator::GeneratePropertyImplementation(
   } else {
     printer->Print(variables_, "@dynamic $name$;\n");
   }
-}
-
-bool SingleFieldGenerator::WantsHasProperty(void) const {
-  if (descriptor_->containing_oneof() != NULL) {
-    // If in a oneof, it uses the oneofcase instead of a has bit.
-    return false;
-  }
-  if (HasFieldPresence(descriptor_->file())) {
-    // In proto1/proto2, every field has a has_$name$() method.
-    return true;
-  }
-  return false;
 }
 
 bool SingleFieldGenerator::RuntimeUsesHasBit(void) const {
@@ -400,11 +392,6 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
                    "- ($array_property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$deprecated_attribute$;\n");
   }
   printer->Print("\n");
-}
-
-bool RepeatedFieldGenerator::WantsHasProperty(void) const {
-  // Consumer check the array size/existence rather than a has bit.
-  return false;
 }
 
 bool RepeatedFieldGenerator::RuntimeUsesHasBit(void) const {
