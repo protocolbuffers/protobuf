@@ -524,6 +524,7 @@ RELATIVE_TEST_PROTOS = [
     "google/protobuf/unittest_proto3_arena.proto",
     "google/protobuf/unittest_proto3_arena_lite.proto",
     "google/protobuf/unittest_proto3_lite.proto",
+    "google/protobuf/unittest_proto3_optional.proto",
     "google/protobuf/unittest_well_known_types.proto",
     "google/protobuf/util/internal/testdata/anys.proto",
     "google/protobuf/util/internal/testdata/books.proto",

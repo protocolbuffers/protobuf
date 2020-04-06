@@ -60,6 +60,7 @@ import sys
 
 import six
 
+from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import symbol_database
 
@@ -104,7 +105,7 @@ def MessageToJson(
     sort_keys=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=8):
+    float_precision=None):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -123,7 +124,6 @@ def MessageToJson(
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
         default.
     float_precision: If set, use this to specify float field valid digits.
-        Otherwise, 8 valid digits is used (default '.8g').
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -143,7 +143,7 @@ def MessageToDict(
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=8):
+    float_precision=None):
   """Converts protobuf message to a dictionary.
 
   When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
@@ -161,7 +161,6 @@ def MessageToDict(
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
         default.
     float_precision: If set, use this to specify float field valid digits.
-        Otherwise, 8 valid digits is used (default '.8g').
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -284,6 +283,25 @@ class _Printer(object):
 
   def _FieldToJsonObject(self, field, value):
     """Converts field value according to Proto3 JSON Specification."""
+
+    def _ToShortestFloat(original):
+      """Returns the shortest float that has same value in wire."""
+      # Return the original value if it is not truncated. This may happen
+      # if someone mixes this code with an old protobuf runtime.
+      if type_checkers.TruncateToFourByteFloat(original) != original:
+        return original
+      # All 4 byte floats have between 6 and 9 significant digits, so we
+      # start with 6 as the lower bound.
+      # It has to be iterative because use '.9g' directly can not get rid
+      # of the noises for most values. For example if set a float_field=0.9
+      # use '.9g' will print 0.899999976.
+      precision = 6
+      rounded = float('{0:.{1}g}'.format(original, precision))
+      while type_checkers.TruncateToFourByteFloat(rounded) != original:
+        precision += 1
+        rounded = float('{0:.{1}g}'.format(original, precision))
+      return rounded
+
     if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
       return self._MessageToJsonObject(value)
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
@@ -315,9 +333,12 @@ class _Printer(object):
           return _INFINITY
       if math.isnan(value):
         return _NAN
-      if (self.float_format and
-          field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT):
-        return float(format(value, self.float_format))
+      if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
+        if self.float_format:
+          return float(format(value, self.float_format))
+        else:
+          return _ToShortestFloat(value)
+
     return value
 
   def _AnyMessageToJsonObject(self, message):

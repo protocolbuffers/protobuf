@@ -219,14 +219,15 @@ struct ArenaOptions {
 // any special requirements on the type T, and will invoke the object's
 // destructor when the arena is destroyed.
 //
-// The arena message allocation protocol, required by CreateMessage<T>, is as
-// follows:
+// The arena message allocation protocol, required by
+// CreateMessage<T>(Arena* arena, Args&&... args), is as follows:
 //
-// - The type T must have (at least) two constructors: a constructor with no
-//   arguments, called when a T is allocated on the heap; and a constructor with
-//   a Arena* argument, called when a T is allocated on an arena. If the
-//   second constructor is called with a NULL arena pointer, it must be
-//   equivalent to invoking the first (no-argument) constructor.
+// - The type T must have (at least) two constructors: a constructor callable
+//   with `args` (without `arena`), called when a T is allocated on the heap;
+//   and a constructor callable with `Arena* arena, Args&&... args`, called when
+//   a T is allocated on an arena. If the second constructor is called with a
+//   NULL arena pointer, it must be equivalent to invoking the first
+//   (`args`-only) constructor.
 //
 // - The type T must have a particular type trait: a nested type
 //   |InternalArenaConstructable_|. This is usually a typedef to |void|. If no
@@ -238,11 +239,6 @@ struct ArenaOptions {
 //   only if it was passed a non-NULL arena pointer. If this type trait is not
 //   present on the type, then its destructor is always called when the
 //   containing arena is destroyed.
-//
-// - One- and two-user-argument forms of CreateMessage<T>() also exist that
-//   forward these constructor arguments to T's constructor: for example,
-//   CreateMessage<T>(Arena*, arg1, arg2) forwards to a constructor T(Arena*,
-//   arg1, arg2).
 //
 // This protocol is implemented by all arena-enabled proto2 message classes as
 // well as protobuf container types like RepeatedPtrField and Map. The protocol

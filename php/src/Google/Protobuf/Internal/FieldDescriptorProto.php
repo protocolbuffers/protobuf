@@ -93,6 +93,20 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     protected $options = null;
     private $has_options = false;
+    /**
+     * If true, this is a proto3 "optional". When a proto3 field is optional, it
+     * tracks presence regardless of field type.
+     * For message fields this doesn't create any semantic change, since
+     * non-repeated message fields always track presence. However it still
+     * indicates the semantic detail of whether the user wrote "optional" or not.
+     * This can be useful for round-tripping the .proto file.
+     * Proto2 optional fields do not set this flag, because they already indicate
+     * optional with `LABEL_OPTIONAL`.
+     *
+     * Generated from protobuf field <code>optional bool proto3_optional = 17;</code>
+     */
+    protected $proto3_optional = false;
+    private $has_proto3_optional = false;
 
     /**
      * Constructor.
@@ -130,6 +144,15 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *           will be used. Otherwise, it's deduced from the field's name by converting
      *           it to camelCase.
      *     @type \Google\Protobuf\Internal\FieldOptions $options
+     *     @type bool $proto3_optional
+     *           If true, this is a proto3 "optional". When a proto3 field is optional, it
+     *           tracks presence regardless of field type.
+     *           For message fields this doesn't create any semantic change, since
+     *           non-repeated message fields always track presence. However it still
+     *           indicates the semantic detail of whether the user wrote "optional" or not.
+     *           This can be useful for round-tripping the .proto file.
+     *           Proto2 optional fields do not set this flag, because they already indicate
+     *           optional with `LABEL_OPTIONAL`.
      * }
      */
     public function __construct($data = NULL) {
@@ -467,6 +490,52 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     public function hasOptions()
     {
         return $this->has_options;
+    }
+
+    /**
+     * If true, this is a proto3 "optional". When a proto3 field is optional, it
+     * tracks presence regardless of field type.
+     * For message fields this doesn't create any semantic change, since
+     * non-repeated message fields always track presence. However it still
+     * indicates the semantic detail of whether the user wrote "optional" or not.
+     * This can be useful for round-tripping the .proto file.
+     * Proto2 optional fields do not set this flag, because they already indicate
+     * optional with `LABEL_OPTIONAL`.
+     *
+     * Generated from protobuf field <code>optional bool proto3_optional = 17;</code>
+     * @return bool
+     */
+    public function getProto3Optional()
+    {
+        return $this->proto3_optional;
+    }
+
+    /**
+     * If true, this is a proto3 "optional". When a proto3 field is optional, it
+     * tracks presence regardless of field type.
+     * For message fields this doesn't create any semantic change, since
+     * non-repeated message fields always track presence. However it still
+     * indicates the semantic detail of whether the user wrote "optional" or not.
+     * This can be useful for round-tripping the .proto file.
+     * Proto2 optional fields do not set this flag, because they already indicate
+     * optional with `LABEL_OPTIONAL`.
+     *
+     * Generated from protobuf field <code>optional bool proto3_optional = 17;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setProto3Optional($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->proto3_optional = $var;
+        $this->has_proto3_optional = true;
+
+        return $this;
+    }
+
+    public function hasProto3Optional()
+    {
+        return $this->has_proto3_optional;
     }
 
 }
