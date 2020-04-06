@@ -47,11 +47,6 @@ static char _upb_fieldtype_to_mapsize[12] = {
 
 /** upb_msg *******************************************************************/
 
-/* If we always read/write as a consistent type to each address, this shouldn't
- * violate aliasing.
- */
-#define PTR_AT(msg, ofs, type) (type*)((char*)msg + ofs)
-
 upb_msg *upb_msg_new(const upb_msgdef *m, upb_arena *a) {
   return _upb_msg_new(upb_msgdef_layout(m), a);
 }
@@ -63,12 +58,12 @@ static bool in_oneof(const upb_msglayout_field *field) {
 static uint32_t *oneofcase(const upb_msg *msg,
                            const upb_msglayout_field *field) {
   UPB_ASSERT(in_oneof(field));
-  return PTR_AT(msg, ~field->presence, uint32_t);
+  return UPB_PTR_AT(msg, -field->presence, uint32_t);
 }
 
 static upb_msgval _upb_msg_getraw(const upb_msg *msg, const upb_fielddef *f) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
-  const char *mem = PTR_AT(msg, field->offset, char);
+  const char *mem = UPB_PTR_AT(msg, field->offset, char);
   upb_msgval val = {0};
   int size = upb_fielddef_isseq(f) ? sizeof(void *)
                                    : field_size[field->descriptortype];
@@ -82,7 +77,7 @@ bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f) {
     return *oneofcase(msg, field) == field->number;
   } else if (field->presence > 0) {
     uint32_t hasbit = field->presence;
-    return *PTR_AT(msg, hasbit / 8, char) & (1 << (hasbit % 8));
+    return *UPB_PTR_AT(msg, hasbit / 8, uint8_t) & (1 << (hasbit % 8));
   } else {
     UPB_ASSERT(field->descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
                field->descriptortype == UPB_DESCRIPTOR_TYPE_GROUP);
@@ -147,7 +142,7 @@ upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
                               upb_arena *a) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
   upb_mutmsgval ret;
-  char *mem = PTR_AT(msg, field->offset, char);
+  char *mem = UPB_PTR_AT(msg, field->offset, char);
   bool wrong_oneof = in_oneof(field) && *oneofcase(msg, field) != field->number;
 
   memcpy(&ret, mem, sizeof(void*));
@@ -177,7 +172,7 @@ upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
 void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
                  upb_arena *a) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
-  char *mem = PTR_AT(msg, field->offset, char);
+  char *mem = UPB_PTR_AT(msg, field->offset, char);
   int size = upb_fielddef_isseq(f) ? sizeof(void *)
                                    : field_size[field->descriptortype];
   memcpy(mem, &val, size);

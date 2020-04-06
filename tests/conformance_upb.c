@@ -19,6 +19,8 @@
 #include "upb/json_encode.h"
 #include "upb/text_encode.h"
 
+#include "upb/port_def.inc"
+
 int test_count = 0;
 bool verbose = false;  /* Set to true to get req/resp printed on stderr. */
 
@@ -94,7 +96,7 @@ void serialize_text(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
   len = upb_text_encode(msg, m, c->symtab, opts, NULL, 0);
   data = upb_arena_malloc(c->arena, len + 1);
   len2 = upb_text_encode(msg, m, c->symtab, opts, data, len + 1);
-  assert(len == len2);
+  UPB_ASSERT(len == len2);
   conformance_ConformanceResponse_set_text_payload(
       c->response, upb_strview_make(data, len));
 }
@@ -149,7 +151,7 @@ void serialize_json(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
 
   data = upb_arena_malloc(c->arena, len + 1);
   len2 = upb_json_encode(msg, m, c->symtab, opts, data, len + 1, &status);
-  assert(len == len2);
+  UPB_ASSERT(len == len2);
   conformance_ConformanceResponse_set_json_payload(
       c->response, upb_strview_make(data, len));
 }

@@ -28,20 +28,19 @@
 #define UPB_SIZE(size32, size64) size64
 #endif
 
-/* These macros aren't really "port", they are helper macros that we don't want
- * to leak.
+/* If we always read/write as a consistent type to each address, this shouldn't
+ * violate aliasing.
  */
-#define UPB_FIELD_AT(msg, fieldtype, offset) \
-  *(fieldtype*)((const char*)(msg) + offset)
+#define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
 
 #define UPB_READ_ONEOF(msg, fieldtype, offset, case_offset, case_val, default) \
-  UPB_FIELD_AT(msg, int, case_offset) == case_val                              \
-      ? UPB_FIELD_AT(msg, fieldtype, offset)                                   \
+  *UPB_PTR_AT(msg, case_offset, int) == case_val                              \
+      ? *UPB_PTR_AT(msg, offset, fieldtype)                                   \
       : default
 
 #define UPB_WRITE_ONEOF(msg, fieldtype, offset, value, case_offset, case_val) \
-  UPB_FIELD_AT(msg, int, case_offset) = case_val;                             \
-  UPB_FIELD_AT(msg, fieldtype, offset) = value;
+  *UPB_PTR_AT(msg, case_offset, int) = case_val;                             \
+  *UPB_PTR_AT(msg, offset, fieldtype) = value;
 
 #define UPB_MAPTYPE_STRING 0
 

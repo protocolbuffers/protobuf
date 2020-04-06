@@ -113,15 +113,14 @@ static bool upb_put_float(upb_encstate *e, float d) {
 
 static uint32_t upb_readcase(const char *msg, const upb_msglayout_field *f) {
   uint32_t ret;
-  uint32_t offset = ~f->presence;
-  memcpy(&ret, msg + offset, sizeof(ret));
+  memcpy(&ret, msg - f->presence, sizeof(ret));
   return ret;
 }
 
 static bool upb_readhasbit(const char *msg, const upb_msglayout_field *f) {
   uint32_t hasbit = f->presence;
   UPB_ASSERT(f->presence > 0);
-  return msg[hasbit / 8] & (1 << (hasbit % 8));
+  return (*UPB_PTR_AT(msg, hasbit / 8, uint8_t)) & (1 << (hasbit % 8));
 }
 
 static bool upb_put_tag(upb_encstate *e, int field_number, int wire_type) {

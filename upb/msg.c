@@ -5,8 +5,6 @@
 
 #include "upb/port_def.inc"
 
-#define VOIDPTR_AT(msg, ofs) (void*)((char*)msg + (int)ofs)
-
 /** upb_msg *******************************************************************/
 
 static const char _upb_fieldtype_to_sizelg2[12] = {
@@ -38,22 +36,22 @@ static size_t upb_msg_sizeof(const upb_msglayout *l) {
 }
 
 static upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
-  return VOIDPTR_AT(msg, -sizeof(upb_msg_internal));
+  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
 }
 
 static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
-  return VOIDPTR_AT(msg, -sizeof(upb_msg_internal));
+  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
 }
 
 static upb_msg_internal_withext *upb_msg_getinternalwithext(
     upb_msg *msg, const upb_msglayout *l) {
   UPB_ASSERT(l->extendable);
-  return VOIDPTR_AT(msg, -sizeof(upb_msg_internal_withext));
+  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal_withext),
+                    upb_msg_internal_withext);
 }
 
 upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
-  upb_alloc *alloc = upb_arena_alloc(a);
-  void *mem = upb_malloc(alloc, upb_msg_sizeof(l));
+  void *mem = upb_arena_malloc(a, upb_msg_sizeof(l));
   upb_msg_internal *in;
   upb_msg *msg;
 
@@ -61,7 +59,7 @@ upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
     return NULL;
   }
 
-  msg = VOIDPTR_AT(mem, upb_msg_internalsize(l));
+  msg = UPB_PTR_AT(mem, upb_msg_internalsize(l), upb_msg);
 
   /* Initialize normal members. */
   memset(msg, 0, l->size);
@@ -79,18 +77,21 @@ upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   return msg;
 }
 
-void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
-                        upb_arena *arena) {
+bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
+                         upb_arena *arena) {
   upb_msg_internal *in = upb_msg_getinternal(msg);
   if (len > in->unknown_size - in->unknown_len) {
     upb_alloc *alloc = upb_arena_alloc(arena);
     size_t need = in->unknown_size + len;
     size_t newsize = UPB_MAX(in->unknown_size * 2, need);
-    in->unknown = upb_realloc(alloc, in->unknown, in->unknown_size, newsize);
+    void *mem = upb_realloc(alloc, in->unknown, in->unknown_size, newsize);
+    if (!mem) return false;
+    in->unknown = mem;
     in->unknown_size = newsize;
   }
   memcpy(in->unknown + in->unknown_len, data, len);
   in->unknown_len += len;
+  return true;
 }
 
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len) {
@@ -192,5 +193,3 @@ upb_map *_upb_map_new(upb_arena *a, size_t key_size, size_t value_size) {
 
   return map;
 }
-
-#undef VOIDPTR_AT

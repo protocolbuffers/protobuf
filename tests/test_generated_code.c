@@ -123,6 +123,11 @@ static void test_string_double_map() {
   double val;
 
   upb_test_MapTest_map_string_double_set(msg, test_str_view, 1.5, arena);
+  ASSERT(msg);
+  ASSERT(upb_test_MapTest_map_string_double_get(msg, test_str_view, &val));
+  ASSERT(val == 1.5);
+  val = 0;
+
   serialized.data = upb_test_MapTest_serialize(msg, arena, &serialized.size);
   ASSERT(serialized.data);
 

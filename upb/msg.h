@@ -39,7 +39,7 @@ enum {
 typedef struct {
   uint32_t number;
   uint16_t offset;
-  int16_t presence;      /* If >0, hasbit_index+1.  If <0, oneof_index+1. */
+  int16_t presence;      /* If >0, hasbit_index.  If <0, -oneof_index. */
   uint16_t submsg_index;  /* undefined if descriptortype != MESSAGE or GROUP. */
   uint8_t descriptortype;
   uint8_t label;
@@ -82,8 +82,8 @@ upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a);
 
 /* Adds unknown data (serialized protobuf data) to the given message.  The data
  * is copied into the message instance. */
-void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
-                        upb_arena *arena);
+bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
+                         upb_arena *arena);
 
 /* Returns a reference to the message's unknown data. */
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
@@ -315,21 +315,21 @@ UPB_INLINE void _upb_map_clear(upb_map *map) {
 /* Message map operations, these get the map from the message first. */
 
 UPB_INLINE size_t _upb_msg_map_size(const upb_msg *msg, size_t ofs) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
+  upb_map *map = *UPB_PTR_AT(msg, ofs, upb_map *);
   return map ? _upb_map_size(map) : 0;
 }
 
 UPB_INLINE bool _upb_msg_map_get(const upb_msg *msg, size_t ofs,
                                  const void *key, size_t key_size, void *val,
                                  size_t val_size) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
+  upb_map *map = *UPB_PTR_AT(msg, ofs, upb_map *);
   if (!map) return false;
   return _upb_map_get(map, key, key_size, val, val_size);
 }
 
 UPB_INLINE void *_upb_msg_map_next(const upb_msg *msg, size_t ofs,
                                    size_t *iter) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
+  upb_map *map = *UPB_PTR_AT(msg, ofs, upb_map *);
   if (!map) return NULL;
   return _upb_map_next(map, iter);
 }
@@ -346,13 +346,13 @@ UPB_INLINE bool _upb_msg_map_set(upb_msg *msg, size_t ofs, const void *key,
 
 UPB_INLINE bool _upb_msg_map_delete(upb_msg *msg, size_t ofs, const void *key,
                                     size_t key_size) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
+  upb_map *map = *UPB_PTR_AT(msg, ofs, upb_map *);
   if (!map) return false;
   return _upb_map_delete(map, key, key_size);
 }
 
 UPB_INLINE void _upb_msg_map_clear(upb_msg *msg, size_t ofs) {
-  upb_map *map = UPB_FIELD_AT(msg, upb_map *, ofs);
+  upb_map *map = *UPB_PTR_AT(msg, ofs, upb_map *);
   if (!map) return;
   _upb_map_clear(map);
 }
