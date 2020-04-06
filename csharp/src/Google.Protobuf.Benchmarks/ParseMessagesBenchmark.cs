@@ -34,36 +34,86 @@ using BenchmarkDotNet.Attributes;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Buffers;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Google.Protobuf.Benchmarks
 {
     /// <summary>
-    /// Benchmark that tests serialization/deserialization of wrapper fields.
+    /// Benchmark that tests parsing performance for various messages.
     /// </summary>
     [MemoryDiagnoser]
-    public class WrapperBenchmark
+    public class ParseMessagesBenchmark
     {
+        const int MaxMessages = 100;
+
         byte[] manyWrapperFieldsData;
         byte[] manyPrimitiveFieldsData;
+
+        byte[] manyWrapperFieldsMultipleMessagesData;
+        byte[] manyPrimitiveFieldsMultipleMessagesData;
+
+        byte[] emptyData = new byte[0];
+
+        public IEnumerable<int> MessageCountValues => new[] { 10, 100 };
 
         [GlobalSetup]
         public void GlobalSetup()
         {
             manyWrapperFieldsData = CreateManyWrapperFieldsMessage().ToByteArray();
             manyPrimitiveFieldsData = CreateManyPrimitiveFieldsMessage().ToByteArray();
+            manyWrapperFieldsMultipleMessagesData = CreateBufferWithMultipleMessages(CreateManyWrapperFieldsMessage(), MaxMessages);
+            manyPrimitiveFieldsMultipleMessagesData = CreateBufferWithMultipleMessages(CreateManyPrimitiveFieldsMessage(), MaxMessages);
         }
 
         [Benchmark]
-        public ManyWrapperFieldsMessage ParseWrapperFields()
+        public ManyWrapperFieldsMessage ManyWrapperFieldsMessage_ParseFromByteArray()
         {
             return ManyWrapperFieldsMessage.Parser.ParseFrom(manyWrapperFieldsData);
         }
 
         [Benchmark]
-        public ManyPrimitiveFieldsMessage ParsePrimitiveFields()
+        public ManyPrimitiveFieldsMessage ManyPrimitiveFieldsMessage_ParseFromByteArray()
         {
             return ManyPrimitiveFieldsMessage.Parser.ParseFrom(manyPrimitiveFieldsData);
         }
+
+        [Benchmark]
+        public Empty EmptyMessage_ParseFromByteArray()
+        {
+            return Empty.Parser.ParseFrom(emptyData);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(MessageCountValues))]
+        public long ManyWrapperFieldsMessage_ParseDelimitedMessagesFromByteArray(int messageCount)
+        {
+            long sum = 0;
+            var input = new CodedInputStream(manyWrapperFieldsMultipleMessagesData);
+            for (int i = 0; i < messageCount; i++)
+            {
+                var msg = new ManyWrapperFieldsMessage();
+                input.ReadMessage(msg);
+                sum += msg.Int64Field19.Value;
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(MessageCountValues))]
+        public long ManyPrimitiveFieldsMessage_ParseDelimitedMessagesFromByteArray(int messageCount)
+        {
+            long sum = 0;
+            var input = new CodedInputStream(manyPrimitiveFieldsMultipleMessagesData);
+            for (int i = 0; i < messageCount; i++)
+            {
+                var msg = new ManyPrimitiveFieldsMessage();
+                input.ReadMessage(msg);
+                sum += msg.Int64Field19;
+            }
+            return sum;
+        }
+
 
         private static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()
         {
@@ -97,6 +147,18 @@ namespace Google.Protobuf.Benchmarks
                 DoubleField7 = 234,
                 DoubleField50 = 2.45
             };
+        }
+
+        private static byte[] CreateBufferWithMultipleMessages(IMessage msg, int msgCount)
+        {
+            var ms = new MemoryStream();
+            var cos = new CodedOutputStream(ms);
+            for (int i = 0; i < msgCount; i++)
+            {
+                cos.WriteMessage(msg);
+            }
+            cos.Flush();
+            return ms.ToArray();
         }
     }
 }
