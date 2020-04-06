@@ -368,6 +368,7 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
   upb_map **map_p = UPB_PTR_AT(msg, field->offset, upb_map *);
   upb_map *map = *map_p;
   upb_map_entry ent;
+  const upb_msglayout *entry = layout->submsgs[field->submsg_index];
 
   if (!map) {
     /* Lazily create map. */
@@ -384,6 +385,13 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
 
   /* Parse map entry. */
   memset(&ent, 0, sizeof(ent));
+
+  if (entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
+      entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_GROUP) {
+    /* Create proactively to handle the case where it doesn't appear. */
+    ent.v.val.val = (uint64_t)_upb_msg_new(entry->submsgs[0], d->arena);
+  }
+
   decode_tosubmsg(d, &ent.k, layout, field, val.str_val);
 
   /* Insert into map. */
@@ -482,7 +490,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
       case UPB_WIRE_TYPE_DELIMITED: {
         uint32_t size;
         int ndx = field->descriptortype;
-        if (field->label == UPB_LABEL_REPEATED) ndx += 18;
+        if (_upb_isrepeated(field)) ndx += 18;
         ptr = decode_varint32(d, ptr, d->limit, &size);
         if (size >= INT32_MAX || (size_t)(d->limit - ptr) < size) {
           decode_err(d); /* Length overflow. */
@@ -509,9 +517,10 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
       /* Parse, using op for dispatch. */
       switch (field->label) {
         case UPB_LABEL_REPEATED:
+        case _UPB_LABEL_PACKED:
           ptr = decode_toarray(d, ptr, msg, layout, field, val, op);
           break;
-        case UPB_LABEL_MAP:
+        case _UPB_LABEL_MAP:
           decode_tomap(d, msg, layout, field, val);
           break;
         default:

@@ -755,8 +755,15 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
           assert(case_offset.size64 != 0);
           presence = GetSizeInit(case_offset);
         }
-        // Sync '4' with UPB_LABEL_MAP in upb/msg.h.
-        int label = field->is_map() ? 4 : field->label();
+
+        std::string label;
+        if (field->is_map()) {
+          label = "_UPB_LABEL_MAP";
+        } else if (field->is_packed()) {
+          label = "_UPB_LABEL_PACKED";
+        } else {
+          label = absl::StrCat(field->label());
+        }
 
         output("  {$0, $1, $2, $3, $4, $5},\n",
                field->number(),

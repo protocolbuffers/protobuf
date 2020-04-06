@@ -441,8 +441,8 @@ const upb_msglayout google_protobuf_SourceCodeInfo_msginit = {
 };
 
 static const upb_msglayout_field google_protobuf_SourceCodeInfo_Location__fields[5] = {
-  {1, UPB_SIZE(20, 40), 0, 0, 5, 3},
-  {2, UPB_SIZE(24, 48), 0, 0, 5, 3},
+  {1, UPB_SIZE(20, 40), 0, 0, 5, _UPB_LABEL_PACKED},
+  {2, UPB_SIZE(24, 48), 0, 0, 5, _UPB_LABEL_PACKED},
   {3, UPB_SIZE(4, 8), 1, 0, 9, 1},
   {4, UPB_SIZE(12, 24), 2, 0, 9, 1},
   {6, UPB_SIZE(28, 56), 0, 0, 9, 3},
@@ -469,7 +469,7 @@ const upb_msglayout google_protobuf_GeneratedCodeInfo_msginit = {
 };
 
 static const upb_msglayout_field google_protobuf_GeneratedCodeInfo_Annotation__fields[4] = {
-  {1, UPB_SIZE(20, 32), 0, 0, 5, 3},
+  {1, UPB_SIZE(20, 32), 0, 0, 5, _UPB_LABEL_PACKED},
   {2, UPB_SIZE(12, 16), 3, 0, 9, 1},
   {3, UPB_SIZE(4, 4), 1, 0, 5, 1},
   {4, UPB_SIZE(8, 8), 2, 0, 5, 1},

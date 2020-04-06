@@ -128,10 +128,20 @@ static bool upb_put_tag(upb_encstate *e, int field_number, int wire_type) {
 }
 
 static bool upb_put_fixedarray(upb_encstate *e, const upb_array *arr,
-                               size_t size) {
-  size_t bytes = arr->len * size;
-  const void* data = _upb_array_constptr(arr);
-  return upb_put_bytes(e, data, bytes) && upb_put_varint(e, bytes);
+                               size_t elem_size, uint32_t tag) {
+  size_t bytes = arr->len * elem_size;
+  const char* data = _upb_array_constptr(arr);
+  const char* ptr = data + bytes - elem_size;
+  if (tag) {
+    while (true) {
+      CHK(upb_put_bytes(e, ptr, elem_size) && upb_put_varint(e, tag));
+      if (ptr == data) break;
+      ptr -= elem_size;
+    }
+    return true;
+  } else {
+    return upb_put_bytes(e, data, bytes) && upb_put_varint(e, bytes);
+  }
 }
 
 bool upb_encode_message(upb_encstate *e, const char *msg,
@@ -217,38 +227,46 @@ static bool upb_encode_array(upb_encstate *e, const char *field_mem,
                              const upb_msglayout *m,
                              const upb_msglayout_field *f) {
   const upb_array *arr = *(const upb_array**)field_mem;
+  bool packed = f->label == _UPB_LABEL_PACKED;
 
   if (arr == NULL || arr->len == 0) {
     return true;
   }
 
-#define VARINT_CASE(ctype, encode) { \
-  const ctype *start = _upb_array_constptr(arr); \
-  const ctype *ptr = start + arr->len; \
-  size_t pre_len = e->limit - e->ptr; \
-  do { \
-    ptr--; \
-    CHK(upb_put_varint(e, encode)); \
-  } while (ptr != start); \
-  CHK(upb_put_varint(e, e->limit - e->ptr - pre_len)); \
-} \
-break; \
-do { ; } while(0)
+#define VARINT_CASE(ctype, encode)                                       \
+  {                                                                      \
+    const ctype *start = _upb_array_constptr(arr);                       \
+    const ctype *ptr = start + arr->len;                                 \
+    size_t pre_len = e->limit - e->ptr;                                  \
+    uint32_t tag = packed ? 0 : (f->number << 3) | UPB_WIRE_TYPE_VARINT; \
+    do {                                                                 \
+      ptr--;                                                             \
+      CHK(upb_put_varint(e, encode));                                    \
+      if (tag) CHK(upb_put_varint(e, tag));                              \
+    } while (ptr != start);                                              \
+    if (!tag) CHK(upb_put_varint(e, e->limit - e->ptr - pre_len));       \
+  }                                                                      \
+  break;                                                                 \
+  do {                                                                   \
+    ;                                                                    \
+  } while (0)
+
+#define TAG(wire_type) (packed ? 0 : (f->number << 3 | wire_type))
 
   switch (f->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
-      CHK(upb_put_fixedarray(e, arr, sizeof(double)));
+      CHK(upb_put_fixedarray(e, arr, sizeof(double), TAG(UPB_WIRE_TYPE_64BIT)));
       break;
     case UPB_DESCRIPTOR_TYPE_FLOAT:
-      CHK(upb_put_fixedarray(e, arr, sizeof(float)));
+      CHK(upb_put_fixedarray(e, arr, sizeof(float), TAG(UPB_WIRE_TYPE_32BIT)));
       break;
     case UPB_DESCRIPTOR_TYPE_SFIXED64:
     case UPB_DESCRIPTOR_TYPE_FIXED64:
-      CHK(upb_put_fixedarray(e, arr, sizeof(uint64_t)));
+      CHK(upb_put_fixedarray(e, arr, sizeof(uint64_t), TAG(UPB_WIRE_TYPE_64BIT)));
       break;
     case UPB_DESCRIPTOR_TYPE_FIXED32:
     case UPB_DESCRIPTOR_TYPE_SFIXED32:
-      CHK(upb_put_fixedarray(e, arr, sizeof(uint32_t)));
+      CHK(upb_put_fixedarray(e, arr, sizeof(uint32_t), TAG(UPB_WIRE_TYPE_32BIT)));
       break;
     case UPB_DESCRIPTOR_TYPE_INT64:
     case UPB_DESCRIPTOR_TYPE_UINT64:
@@ -305,9 +323,9 @@ do { ; } while(0)
   }
 #undef VARINT_CASE
 
-  /* We encode all primitive arrays as packed, regardless of what was specified
-   * in the .proto file.  Could special case 1-sized arrays. */
-  CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
+  if (packed) {
+    CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
+  }
   return true;
 }
 
@@ -361,9 +379,9 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
   for (i = m->field_count - 1; i >= 0; i--) {
     const upb_msglayout_field *f = &m->fields[i];
 
-    if (f->label == UPB_LABEL_REPEATED) {
+    if (_upb_isrepeated(f)) {
       CHK(upb_encode_array(e, msg + f->offset, m, f));
-    } else if (f->label == UPB_LABEL_MAP) {
+    } else if (f->label == _UPB_LABEL_MAP) {
       CHK(upb_encode_map(e, msg + f->offset, m, f));
     } else {
       bool skip_empty = false;

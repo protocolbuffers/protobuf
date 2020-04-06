@@ -7,16 +7,31 @@ def upb_deps():
     maybe(
         git_repository,
         name = "com_google_absl",
-        commit = "070f6e47b33a2909d039e620c873204f78809492",
+        commit = "df3ea785d8c30a9503321a3d35ee7d35808f190d",  # LTS 2020-02-25
         remote = "https://github.com/abseil/abseil-cpp.git",
-        shallow_since = "1541627663 -0500",
+        shallow_since = "1583355457 -0500"
     )
 
     maybe(
-        git_repository,
+        http_archive,
         name = "com_google_protobuf",
-        remote = "https://github.com/protocolbuffers/protobuf.git",
-        commit = "d41002663fd04325ead28439dfd5ce2822b0d6fb",
+        sha256 = "a79d19dcdf9139fa4b81206e318e33d245c4c9da1ffed21c87288ed4380426f9",
+        strip_prefix = "protobuf-3.11.4",
+        urls = [
+            "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.11.4.tar.gz",
+            "https://github.com/protocolbuffers/protobuf/archive/v3.11.4.tar.gz",
+        ],
+    )
+
+    maybe(
+        http_archive,
+        name = "rules_python",
+        sha256 = "e5470e92a18aa51830db99a4d9c492cc613761d5bdb7131c04bd92b9834380f6",
+        strip_prefix = "rules_python-4b84ad270387a7c439ebdccfd530e2339601ef27",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_python/archive/4b84ad270387a7c439ebdccfd530e2339601ef27.tar.gz",
+            "https://github.com/bazelbuild/rules_python/archive/4b84ad270387a7c439ebdccfd530e2339601ef27.tar.gz",
+        ],
     )
 
     maybe(

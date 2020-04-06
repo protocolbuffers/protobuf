@@ -30,10 +30,11 @@ typedef void upb_msg;
  * members are public so generated code can initialize them, but users MUST NOT
  * read or write any of its members. */
 
-/* This isn't a real label according to descriptor.proto, but in the table we
- * use this for map fields instead of UPB_LABEL_REPEATED. */
+/* These aren't real labels according to descriptor.proto, but in the table we
+ * use these for map/packed fields instead of UPB_LABEL_REPEATED. */
 enum {
-  UPB_LABEL_MAP = 4
+  _UPB_LABEL_MAP = 4,
+  _UPB_LABEL_PACKED = 7  /* Low 3 bits are common with UPB_LABEL_REPEATED. */
 };
 
 typedef struct {
@@ -102,6 +103,10 @@ UPB_INLINE bool _upb_clearhas(const void *msg, size_t idx) {
 
 UPB_INLINE bool _upb_has_oneof_field(const void *msg, size_t case_ofs, int32_t num) {
   return *PTR_AT(msg, case_ofs, int32_t) == num;
+}
+
+UPB_INLINE bool _upb_isrepeated(const upb_msglayout_field *field) {
+  return (field->label & 3) == UPB_LABEL_REPEATED;
 }
 
 /** upb_array *****************************************************************/

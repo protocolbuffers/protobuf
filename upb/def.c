@@ -952,7 +952,9 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
     field->label = upb_fielddef_label(f);
 
     if (upb_fielddef_ismap(f)) {
-      field->label = UPB_LABEL_MAP;
+      field->label = _UPB_LABEL_MAP;
+    } else if (upb_fielddef_packed(f)) {
+      field->label = _UPB_LABEL_PACKED;
     }
 
     /* TODO: we probably should sort the fields by field number to match the
