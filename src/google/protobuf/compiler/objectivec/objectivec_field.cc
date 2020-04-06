@@ -238,8 +238,9 @@ void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
 }
 
 void FieldGenerator::SetOneofIndexBase(int index_base) {
-  if (descriptor_->containing_oneof() != NULL) {
-    int index = descriptor_->containing_oneof()->index() + index_base;
+  const OneofDescriptor *oneof = descriptor_->real_containing_oneof();
+  if (oneof != NULL) {
+    int index = oneof->index() + index_base;
     // Flip the sign to mark it as a oneof.
     variables_["has_index"] = StrCat(-index);
   }
@@ -294,7 +295,7 @@ void SingleFieldGenerator::GeneratePropertyImplementation(
 }
 
 bool SingleFieldGenerator::RuntimeUsesHasBit(void) const {
-  if (descriptor_->containing_oneof() != NULL) {
+  if (descriptor_->real_containing_oneof()) {
     // The oneof tracks what is set instead.
     return false;
   }
@@ -395,7 +396,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
 }
 
 bool RepeatedFieldGenerator::RuntimeUsesHasBit(void) const {
-  return false;  // The array having anything is what is used.
+  return false;  // The array (or map/dict) having anything is what is used.
 }
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
