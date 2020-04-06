@@ -56,8 +56,213 @@
 namespace google {
 namespace protobuf {
 class DynamicMessage;
-class MapKey;
 class MapIterator;
+
+#define TYPE_CHECK(EXPECTEDTYPE, METHOD)                                   \
+  if (type() != EXPECTEDTYPE) {                                            \
+    GOOGLE_LOG(FATAL) << "Protocol Buffer map usage error:\n"                     \
+               << METHOD << " type does not match\n"                       \
+               << "  Expected : "                                          \
+               << FieldDescriptor::CppTypeName(EXPECTEDTYPE) << "\n"       \
+               << "  Actual   : " << FieldDescriptor::CppTypeName(type()); \
+  }
+
+// MapKey is an union type for representing any possible
+// map key.
+class PROTOBUF_EXPORT MapKey {
+ public:
+  MapKey() : type_(0) {}
+  MapKey(const MapKey& other) : type_(0) { CopyFrom(other); }
+
+  MapKey& operator=(const MapKey& other) {
+    CopyFrom(other);
+    return *this;
+  }
+
+  ~MapKey() {
+    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
+      val_.string_value_.Destruct();
+    }
+  }
+
+  FieldDescriptor::CppType type() const {
+    if (type_ == 0) {
+      GOOGLE_LOG(FATAL) << "Protocol Buffer map usage error:\n"
+                 << "MapKey::type MapKey is not initialized. "
+                 << "Call set methods to initialize MapKey.";
+    }
+    return (FieldDescriptor::CppType)type_;
+  }
+
+  void SetInt64Value(int64 value) {
+    SetType(FieldDescriptor::CPPTYPE_INT64);
+    val_.int64_value_ = value;
+  }
+  void SetUInt64Value(uint64 value) {
+    SetType(FieldDescriptor::CPPTYPE_UINT64);
+    val_.uint64_value_ = value;
+  }
+  void SetInt32Value(int32 value) {
+    SetType(FieldDescriptor::CPPTYPE_INT32);
+    val_.int32_value_ = value;
+  }
+  void SetUInt32Value(uint32 value) {
+    SetType(FieldDescriptor::CPPTYPE_UINT32);
+    val_.uint32_value_ = value;
+  }
+  void SetBoolValue(bool value) {
+    SetType(FieldDescriptor::CPPTYPE_BOOL);
+    val_.bool_value_ = value;
+  }
+  void SetStringValue(std::string val) {
+    SetType(FieldDescriptor::CPPTYPE_STRING);
+    *val_.string_value_.get_mutable() = std::move(val);
+  }
+
+  int64 GetInt64Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64, "MapKey::GetInt64Value");
+    return val_.int64_value_;
+  }
+  uint64 GetUInt64Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64, "MapKey::GetUInt64Value");
+    return val_.uint64_value_;
+  }
+  int32 GetInt32Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32, "MapKey::GetInt32Value");
+    return val_.int32_value_;
+  }
+  uint32 GetUInt32Value() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32, "MapKey::GetUInt32Value");
+    return val_.uint32_value_;
+  }
+  bool GetBoolValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL, "MapKey::GetBoolValue");
+    return val_.bool_value_;
+  }
+  const std::string& GetStringValue() const {
+    TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING, "MapKey::GetStringValue");
+    return val_.string_value_.get();
+  }
+
+  bool operator<(const MapKey& other) const {
+    if (type_ != other.type_) {
+      // We could define a total order that handles this case, but
+      // there currently no need.  So, for now, fail.
+      GOOGLE_LOG(FATAL) << "Unsupported: type mismatch";
+    }
+    switch (type()) {
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(FATAL) << "Unsupported";
+        return false;
+      case FieldDescriptor::CPPTYPE_STRING:
+        return val_.string_value_.get() < other.val_.string_value_.get();
+      case FieldDescriptor::CPPTYPE_INT64:
+        return val_.int64_value_ < other.val_.int64_value_;
+      case FieldDescriptor::CPPTYPE_INT32:
+        return val_.int32_value_ < other.val_.int32_value_;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return val_.uint64_value_ < other.val_.uint64_value_;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return val_.uint32_value_ < other.val_.uint32_value_;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return val_.bool_value_ < other.val_.bool_value_;
+    }
+    return false;
+  }
+
+  bool operator==(const MapKey& other) const {
+    if (type_ != other.type_) {
+      // To be consistent with operator<, we don't allow this either.
+      GOOGLE_LOG(FATAL) << "Unsupported: type mismatch";
+    }
+    switch (type()) {
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(FATAL) << "Unsupported";
+        break;
+      case FieldDescriptor::CPPTYPE_STRING:
+        return val_.string_value_.get() == other.val_.string_value_.get();
+      case FieldDescriptor::CPPTYPE_INT64:
+        return val_.int64_value_ == other.val_.int64_value_;
+      case FieldDescriptor::CPPTYPE_INT32:
+        return val_.int32_value_ == other.val_.int32_value_;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return val_.uint64_value_ == other.val_.uint64_value_;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return val_.uint32_value_ == other.val_.uint32_value_;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return val_.bool_value_ == other.val_.bool_value_;
+    }
+    GOOGLE_LOG(FATAL) << "Can't get here.";
+    return false;
+  }
+
+  void CopyFrom(const MapKey& other) {
+    SetType(other.type());
+    switch (type_) {
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+      case FieldDescriptor::CPPTYPE_FLOAT:
+      case FieldDescriptor::CPPTYPE_ENUM:
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(FATAL) << "Unsupported";
+        break;
+      case FieldDescriptor::CPPTYPE_STRING:
+        *val_.string_value_.get_mutable() = other.val_.string_value_.get();
+        break;
+      case FieldDescriptor::CPPTYPE_INT64:
+        val_.int64_value_ = other.val_.int64_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_INT32:
+        val_.int32_value_ = other.val_.int32_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        val_.uint64_value_ = other.val_.uint64_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        val_.uint32_value_ = other.val_.uint32_value_;
+        break;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        val_.bool_value_ = other.val_.bool_value_;
+        break;
+    }
+  }
+
+ private:
+  template <typename K, typename V>
+  friend class internal::TypeDefinedMapFieldBase;
+  friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
+  friend class internal::DynamicMapField;
+
+  union KeyValue {
+    KeyValue() {}
+    internal::ExplicitlyConstructed<std::string> string_value_;
+    int64 int64_value_;
+    int32 int32_value_;
+    uint64 uint64_value_;
+    uint32 uint32_value_;
+    bool bool_value_;
+  } val_;
+
+  void SetType(FieldDescriptor::CppType type) {
+    if (type_ == type) return;
+    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
+      val_.string_value_.Destruct();
+    }
+    type_ = type;
+    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
+      val_.string_value_.DefaultConstruct();
+    }
+  }
+
+  // type_ is 0 or a valid FieldDescriptor::CppType.
+  int type_;
+};
+
 namespace internal {
 
 class ContendedMapCleanTest;
@@ -373,211 +578,6 @@ class PROTOBUF_EXPORT DynamicMapField
 };
 
 }  // namespace internal
-
-#define TYPE_CHECK(EXPECTEDTYPE, METHOD)                                   \
-  if (type() != EXPECTEDTYPE) {                                            \
-    GOOGLE_LOG(FATAL) << "Protocol Buffer map usage error:\n"                     \
-               << METHOD << " type does not match\n"                       \
-               << "  Expected : "                                          \
-               << FieldDescriptor::CppTypeName(EXPECTEDTYPE) << "\n"       \
-               << "  Actual   : " << FieldDescriptor::CppTypeName(type()); \
-  }
-
-// MapKey is an union type for representing any possible
-// map key.
-class PROTOBUF_EXPORT MapKey {
- public:
-  MapKey() : type_(0) {}
-  MapKey(const MapKey& other) : type_(0) { CopyFrom(other); }
-
-  MapKey& operator=(const MapKey& other) {
-    CopyFrom(other);
-    return *this;
-  }
-
-  ~MapKey() {
-    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
-      val_.string_value_.Destruct();
-    }
-  }
-
-  FieldDescriptor::CppType type() const {
-    if (type_ == 0) {
-      GOOGLE_LOG(FATAL) << "Protocol Buffer map usage error:\n"
-                 << "MapKey::type MapKey is not initialized. "
-                 << "Call set methods to initialize MapKey.";
-    }
-    return (FieldDescriptor::CppType)type_;
-  }
-
-  void SetInt64Value(int64 value) {
-    SetType(FieldDescriptor::CPPTYPE_INT64);
-    val_.int64_value_ = value;
-  }
-  void SetUInt64Value(uint64 value) {
-    SetType(FieldDescriptor::CPPTYPE_UINT64);
-    val_.uint64_value_ = value;
-  }
-  void SetInt32Value(int32 value) {
-    SetType(FieldDescriptor::CPPTYPE_INT32);
-    val_.int32_value_ = value;
-  }
-  void SetUInt32Value(uint32 value) {
-    SetType(FieldDescriptor::CPPTYPE_UINT32);
-    val_.uint32_value_ = value;
-  }
-  void SetBoolValue(bool value) {
-    SetType(FieldDescriptor::CPPTYPE_BOOL);
-    val_.bool_value_ = value;
-  }
-  void SetStringValue(std::string val) {
-    SetType(FieldDescriptor::CPPTYPE_STRING);
-    *val_.string_value_.get_mutable() = std::move(val);
-  }
-
-  int64 GetInt64Value() const {
-    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64, "MapKey::GetInt64Value");
-    return val_.int64_value_;
-  }
-  uint64 GetUInt64Value() const {
-    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT64, "MapKey::GetUInt64Value");
-    return val_.uint64_value_;
-  }
-  int32 GetInt32Value() const {
-    TYPE_CHECK(FieldDescriptor::CPPTYPE_INT32, "MapKey::GetInt32Value");
-    return val_.int32_value_;
-  }
-  uint32 GetUInt32Value() const {
-    TYPE_CHECK(FieldDescriptor::CPPTYPE_UINT32, "MapKey::GetUInt32Value");
-    return val_.uint32_value_;
-  }
-  bool GetBoolValue() const {
-    TYPE_CHECK(FieldDescriptor::CPPTYPE_BOOL, "MapKey::GetBoolValue");
-    return val_.bool_value_;
-  }
-  const std::string& GetStringValue() const {
-    TYPE_CHECK(FieldDescriptor::CPPTYPE_STRING, "MapKey::GetStringValue");
-    return val_.string_value_.get();
-  }
-
-  bool operator<(const MapKey& other) const {
-    if (type_ != other.type_) {
-      // We could define a total order that handles this case, but
-      // there currently no need.  So, for now, fail.
-      GOOGLE_LOG(FATAL) << "Unsupported: type mismatch";
-    }
-    switch (type()) {
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-      case FieldDescriptor::CPPTYPE_FLOAT:
-      case FieldDescriptor::CPPTYPE_ENUM:
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_LOG(FATAL) << "Unsupported";
-        return false;
-      case FieldDescriptor::CPPTYPE_STRING:
-        return val_.string_value_.get() < other.val_.string_value_.get();
-      case FieldDescriptor::CPPTYPE_INT64:
-        return val_.int64_value_ < other.val_.int64_value_;
-      case FieldDescriptor::CPPTYPE_INT32:
-        return val_.int32_value_ < other.val_.int32_value_;
-      case FieldDescriptor::CPPTYPE_UINT64:
-        return val_.uint64_value_ < other.val_.uint64_value_;
-      case FieldDescriptor::CPPTYPE_UINT32:
-        return val_.uint32_value_ < other.val_.uint32_value_;
-      case FieldDescriptor::CPPTYPE_BOOL:
-        return val_.bool_value_ < other.val_.bool_value_;
-    }
-    return false;
-  }
-
-  bool operator==(const MapKey& other) const {
-    if (type_ != other.type_) {
-      // To be consistent with operator<, we don't allow this either.
-      GOOGLE_LOG(FATAL) << "Unsupported: type mismatch";
-    }
-    switch (type()) {
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-      case FieldDescriptor::CPPTYPE_FLOAT:
-      case FieldDescriptor::CPPTYPE_ENUM:
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_LOG(FATAL) << "Unsupported";
-        break;
-      case FieldDescriptor::CPPTYPE_STRING:
-        return val_.string_value_.get() == other.val_.string_value_.get();
-      case FieldDescriptor::CPPTYPE_INT64:
-        return val_.int64_value_ == other.val_.int64_value_;
-      case FieldDescriptor::CPPTYPE_INT32:
-        return val_.int32_value_ == other.val_.int32_value_;
-      case FieldDescriptor::CPPTYPE_UINT64:
-        return val_.uint64_value_ == other.val_.uint64_value_;
-      case FieldDescriptor::CPPTYPE_UINT32:
-        return val_.uint32_value_ == other.val_.uint32_value_;
-      case FieldDescriptor::CPPTYPE_BOOL:
-        return val_.bool_value_ == other.val_.bool_value_;
-    }
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return false;
-  }
-
-  void CopyFrom(const MapKey& other) {
-    SetType(other.type());
-    switch (type_) {
-      case FieldDescriptor::CPPTYPE_DOUBLE:
-      case FieldDescriptor::CPPTYPE_FLOAT:
-      case FieldDescriptor::CPPTYPE_ENUM:
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_LOG(FATAL) << "Unsupported";
-        break;
-      case FieldDescriptor::CPPTYPE_STRING:
-        *val_.string_value_.get_mutable() = other.val_.string_value_.get();
-        break;
-      case FieldDescriptor::CPPTYPE_INT64:
-        val_.int64_value_ = other.val_.int64_value_;
-        break;
-      case FieldDescriptor::CPPTYPE_INT32:
-        val_.int32_value_ = other.val_.int32_value_;
-        break;
-      case FieldDescriptor::CPPTYPE_UINT64:
-        val_.uint64_value_ = other.val_.uint64_value_;
-        break;
-      case FieldDescriptor::CPPTYPE_UINT32:
-        val_.uint32_value_ = other.val_.uint32_value_;
-        break;
-      case FieldDescriptor::CPPTYPE_BOOL:
-        val_.bool_value_ = other.val_.bool_value_;
-        break;
-    }
-  }
-
- private:
-  template <typename K, typename V>
-  friend class internal::TypeDefinedMapFieldBase;
-  friend class ::PROTOBUF_NAMESPACE_ID::MapIterator;
-  friend class internal::DynamicMapField;
-
-  union KeyValue {
-    KeyValue() {}
-    internal::ExplicitlyConstructed<std::string> string_value_;
-    int64 int64_value_;
-    int32 int32_value_;
-    uint64 uint64_value_;
-    uint32 uint32_value_;
-    bool bool_value_;
-  } val_;
-
-  void SetType(FieldDescriptor::CppType type) {
-    if (type_ == type) return;
-    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
-      val_.string_value_.Destruct();
-    }
-    type_ = type;
-    if (type_ == FieldDescriptor::CPPTYPE_STRING) {
-      val_.string_value_.DefaultConstruct();
-    }
-  }
-
-  // type_ is 0 or a valid FieldDescriptor::CppType.
-  int type_;
-};
 
 // MapValueRef points to a map value.
 class PROTOBUF_EXPORT MapValueRef {

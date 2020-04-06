@@ -71,21 +71,27 @@ class MockObjectWriter : public ObjectWriter {
  public:
   MockObjectWriter() {}
 
-  MOCK_METHOD1(StartObject, ObjectWriter*(StringPiece));
-  MOCK_METHOD0(EndObject, ObjectWriter*());
-  MOCK_METHOD1(StartList, ObjectWriter*(StringPiece));
-  MOCK_METHOD0(EndList, ObjectWriter*());
-  MOCK_METHOD2(RenderBool, ObjectWriter*(StringPiece, bool));
-  MOCK_METHOD2(RenderInt32, ObjectWriter*(StringPiece, int32));
-  MOCK_METHOD2(RenderUint32, ObjectWriter*(StringPiece, uint32));
-  MOCK_METHOD2(RenderInt64, ObjectWriter*(StringPiece, int64));
-  MOCK_METHOD2(RenderUint64, ObjectWriter*(StringPiece, uint64));
-  MOCK_METHOD2(RenderDouble, ObjectWriter*(StringPiece, double));
-  MOCK_METHOD2(RenderFloat, ObjectWriter*(StringPiece, float));
-  MOCK_METHOD2(RenderString,
-               ObjectWriter*(StringPiece, StringPiece));
-  MOCK_METHOD2(RenderBytes, ObjectWriter*(StringPiece, StringPiece));
-  MOCK_METHOD1(RenderNull, ObjectWriter*(StringPiece));
+  MOCK_METHOD(ObjectWriter*, StartObject, (StringPiece), (override));
+  MOCK_METHOD(ObjectWriter*, EndObject, (), (override));
+  MOCK_METHOD(ObjectWriter*, StartList, (StringPiece), (override));
+  MOCK_METHOD(ObjectWriter*, EndList, (), (override));
+  MOCK_METHOD(ObjectWriter*, RenderBool, (StringPiece, bool), (override));
+  MOCK_METHOD(ObjectWriter*, RenderInt32, (StringPiece, int32),
+              (override));
+  MOCK_METHOD(ObjectWriter*, RenderUint32, (StringPiece, uint32),
+              (override));
+  MOCK_METHOD(ObjectWriter*, RenderInt64, (StringPiece, int64),
+              (override));
+  MOCK_METHOD(ObjectWriter*, RenderUint64, (StringPiece, uint64),
+              (override));
+  MOCK_METHOD(ObjectWriter*, RenderDouble, (StringPiece, double),
+              (override));
+  MOCK_METHOD(ObjectWriter*, RenderFloat, (StringPiece, float),
+              (override));
+  MOCK_METHOD(ObjectWriter*, RenderString,
+              (StringPiece, StringPiece), (override));
+  MOCK_METHOD(ObjectWriter*, RenderBytes, (StringPiece, StringPiece));
+  MOCK_METHOD(ObjectWriter*, RenderNull, (StringPiece), (override));
 };
 
 class ExpectingObjectWriter : public ObjectWriter {

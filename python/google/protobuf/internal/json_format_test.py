@@ -36,6 +36,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 import json
 import math
+import struct
 import sys
 
 try:
@@ -821,14 +822,40 @@ class JsonFormatTest(JsonFormatBase):
   def testFloatPrecision(self):
     message = json_format_proto3_pb2.TestMessage()
     message.float_value = 1.123456789
-    # Default to 8 valid digits.
+    # Set to 8 valid digits.
     text = '{\n  "floatValue": 1.1234568\n}'
     self.assertEqual(
-        json_format.MessageToJson(message), text)
+        json_format.MessageToJson(message, float_precision=8), text)
     # Set to 7 valid digits.
     text = '{\n  "floatValue": 1.123457\n}'
     self.assertEqual(
         json_format.MessageToJson(message, float_precision=7), text)
+
+    # Default float_precision will automatic print shortest float.
+    message.float_value = 1.1000000011
+    text = '{\n  "floatValue": 1.1\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message), text)
+    message.float_value = 1.00000075e-36
+    text = '{\n  "floatValue": 1.00000075e-36\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message), text)
+    message.float_value = 12345678912345e+11
+    text = '{\n  "floatValue": 1.234568e+24\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message), text)
+
+    # Test a bunch of data and check json encode/decode do not
+    # lose precision
+    value_list = [0x00, 0xD8, 0x6E, 0x00]
+    msg2 = json_format_proto3_pb2.TestMessage()
+    for a in range(0, 256):
+      value_list[3] = a
+      for b in range(0, 256):
+        value_list[0] = b
+        byte_array = bytearray(value_list)
+        message.float_value = struct.unpack('<f', byte_array)[0]
+        self.CheckParseBack(message, msg2)
 
   def testParseEmptyText(self):
     self.CheckError('',

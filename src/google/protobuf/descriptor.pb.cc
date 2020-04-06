@@ -567,13 +567,12 @@ static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptor
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto = nullptr;
 
 const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::FileDescriptorSet, _has_bits_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::FileDescriptorSet, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::FileDescriptorSet, file_),
-  ~0u,
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _has_bits_),
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -648,13 +647,12 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fdescriptor
   1,
   ~0u,
   ~0u,
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions, _has_bits_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions, _internal_metadata_),
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions, _extensions_),
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions, uninterpreted_option_),
-  ~0u,
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::FieldDescriptorProto, _has_bits_),
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::FieldDescriptorProto, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -835,13 +833,12 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fdescriptor
   3,
   4,
   ~0u,
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::OneofOptions, _has_bits_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::OneofOptions, _internal_metadata_),
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::OneofOptions, _extensions_),
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::OneofOptions, uninterpreted_option_),
-  ~0u,
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::EnumOptions, _has_bits_),
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::EnumOptions, _internal_metadata_),
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::EnumOptions, _extensions_),
@@ -925,13 +922,12 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fdescriptor
   0,
   1,
   ~0u,
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::SourceCodeInfo, _has_bits_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::SourceCodeInfo, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::SourceCodeInfo, location_),
-  ~0u,
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _has_bits_),
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -945,42 +941,41 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_google_2fprotobuf_2fdescriptor
   0,
   1,
   2,
-  PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo, _has_bits_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo, annotation_),
-  ~0u,
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 6, sizeof(PROTOBUF_NAMESPACE_ID::FileDescriptorSet)},
-  { 7, 24, sizeof(PROTOBUF_NAMESPACE_ID::FileDescriptorProto)},
-  { 36, 44, sizeof(PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange)},
-  { 47, 54, sizeof(PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange)},
-  { 56, 71, sizeof(PROTOBUF_NAMESPACE_ID::DescriptorProto)},
-  { 81, 87, sizeof(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions)},
-  { 88, 104, sizeof(PROTOBUF_NAMESPACE_ID::FieldDescriptorProto)},
-  { 115, 122, sizeof(PROTOBUF_NAMESPACE_ID::OneofDescriptorProto)},
-  { 124, 131, sizeof(PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange)},
-  { 133, 143, sizeof(PROTOBUF_NAMESPACE_ID::EnumDescriptorProto)},
-  { 148, 156, sizeof(PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto)},
-  { 159, 167, sizeof(PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto)},
-  { 170, 181, sizeof(PROTOBUF_NAMESPACE_ID::MethodDescriptorProto)},
-  { 187, 213, sizeof(PROTOBUF_NAMESPACE_ID::FileOptions)},
-  { 234, 244, sizeof(PROTOBUF_NAMESPACE_ID::MessageOptions)},
-  { 249, 261, sizeof(PROTOBUF_NAMESPACE_ID::FieldOptions)},
-  { 268, 274, sizeof(PROTOBUF_NAMESPACE_ID::OneofOptions)},
-  { 275, 283, sizeof(PROTOBUF_NAMESPACE_ID::EnumOptions)},
-  { 286, 293, sizeof(PROTOBUF_NAMESPACE_ID::EnumValueOptions)},
-  { 295, 302, sizeof(PROTOBUF_NAMESPACE_ID::ServiceOptions)},
-  { 304, 312, sizeof(PROTOBUF_NAMESPACE_ID::MethodOptions)},
-  { 315, 322, sizeof(PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart)},
-  { 324, 336, sizeof(PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
-  { 343, 353, sizeof(PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
-  { 358, 364, sizeof(PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
-  { 365, 374, sizeof(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
-  { 378, 384, sizeof(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
+  { 0, -1, sizeof(PROTOBUF_NAMESPACE_ID::FileDescriptorSet)},
+  { 6, 23, sizeof(PROTOBUF_NAMESPACE_ID::FileDescriptorProto)},
+  { 35, 43, sizeof(PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange)},
+  { 46, 53, sizeof(PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange)},
+  { 55, 70, sizeof(PROTOBUF_NAMESPACE_ID::DescriptorProto)},
+  { 80, -1, sizeof(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions)},
+  { 86, 102, sizeof(PROTOBUF_NAMESPACE_ID::FieldDescriptorProto)},
+  { 113, 120, sizeof(PROTOBUF_NAMESPACE_ID::OneofDescriptorProto)},
+  { 122, 129, sizeof(PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange)},
+  { 131, 141, sizeof(PROTOBUF_NAMESPACE_ID::EnumDescriptorProto)},
+  { 146, 154, sizeof(PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto)},
+  { 157, 165, sizeof(PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto)},
+  { 168, 179, sizeof(PROTOBUF_NAMESPACE_ID::MethodDescriptorProto)},
+  { 185, 211, sizeof(PROTOBUF_NAMESPACE_ID::FileOptions)},
+  { 232, 242, sizeof(PROTOBUF_NAMESPACE_ID::MessageOptions)},
+  { 247, 259, sizeof(PROTOBUF_NAMESPACE_ID::FieldOptions)},
+  { 266, -1, sizeof(PROTOBUF_NAMESPACE_ID::OneofOptions)},
+  { 272, 280, sizeof(PROTOBUF_NAMESPACE_ID::EnumOptions)},
+  { 283, 290, sizeof(PROTOBUF_NAMESPACE_ID::EnumValueOptions)},
+  { 292, 299, sizeof(PROTOBUF_NAMESPACE_ID::ServiceOptions)},
+  { 301, 309, sizeof(PROTOBUF_NAMESPACE_ID::MethodOptions)},
+  { 312, 319, sizeof(PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart)},
+  { 321, 333, sizeof(PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
+  { 340, 350, sizeof(PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
+  { 355, -1, sizeof(PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
+  { 361, 370, sizeof(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
+  { 374, -1, sizeof(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -1384,7 +1379,6 @@ void FileDescriptorSet::InitAsDefaultInstance() {
 }
 class FileDescriptorSet::_Internal {
  public:
-  using HasBits = decltype(std::declval<FileDescriptorSet>()._has_bits_);
 };
 
 FileDescriptorSet::FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -1396,7 +1390,6 @@ FileDescriptorSet::FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 }
 FileDescriptorSet::FileDescriptorSet(const FileDescriptorSet& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _has_bits_(from._has_bits_),
       file_(from.file_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorSet)
@@ -1438,7 +1431,6 @@ void FileDescriptorSet::Clear() {
   (void) cached_has_bits;
 
   file_.Clear();
-  _has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -1577,7 +1569,6 @@ bool FileDescriptorSet::IsInitialized() const {
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  swap(_has_bits_[0], other->_has_bits_[0]);
   file_.InternalSwap(&other->file_);
 }
 
@@ -3369,7 +3360,6 @@ void ExtensionRangeOptions::InitAsDefaultInstance() {
 }
 class ExtensionRangeOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<ExtensionRangeOptions>()._has_bits_);
 };
 
 ExtensionRangeOptions::ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -3382,7 +3372,6 @@ ExtensionRangeOptions::ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::Arena* are
 }
 ExtensionRangeOptions::ExtensionRangeOptions(const ExtensionRangeOptions& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _extensions_.MergeFrom(from._extensions_);
@@ -3426,7 +3415,6 @@ void ExtensionRangeOptions::Clear() {
 
   _extensions_.Clear();
   uninterpreted_option_.Clear();
-  _has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -3583,7 +3571,6 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  swap(_has_bits_[0], other->_has_bits_[0]);
   uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
 }
 
@@ -7985,7 +7972,6 @@ void OneofOptions::InitAsDefaultInstance() {
 }
 class OneofOptions::_Internal {
  public:
-  using HasBits = decltype(std::declval<OneofOptions>()._has_bits_);
 };
 
 OneofOptions::OneofOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -7998,7 +7984,6 @@ OneofOptions::OneofOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 }
 OneofOptions::OneofOptions(const OneofOptions& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _has_bits_(from._has_bits_),
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _extensions_.MergeFrom(from._extensions_);
@@ -8042,7 +8027,6 @@ void OneofOptions::Clear() {
 
   _extensions_.Clear();
   uninterpreted_option_.Clear();
-  _has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -8199,7 +8183,6 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
   using std::swap;
   _extensions_.Swap(&other->_extensions_);
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  swap(_has_bits_[0], other->_has_bits_[0]);
   uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
 }
 
@@ -10473,7 +10456,6 @@ void SourceCodeInfo::InitAsDefaultInstance() {
 }
 class SourceCodeInfo::_Internal {
  public:
-  using HasBits = decltype(std::declval<SourceCodeInfo>()._has_bits_);
 };
 
 SourceCodeInfo::SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -10485,7 +10467,6 @@ SourceCodeInfo::SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 }
 SourceCodeInfo::SourceCodeInfo(const SourceCodeInfo& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _has_bits_(from._has_bits_),
       location_(from.location_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo)
@@ -10527,7 +10508,6 @@ void SourceCodeInfo::Clear() {
   (void) cached_has_bits;
 
   location_.Clear();
-  _has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -10665,7 +10645,6 @@ bool SourceCodeInfo::IsInitialized() const {
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  swap(_has_bits_[0], other->_has_bits_[0]);
   location_.InternalSwap(&other->location_);
 }
 
@@ -11021,7 +11000,6 @@ void GeneratedCodeInfo::InitAsDefaultInstance() {
 }
 class GeneratedCodeInfo::_Internal {
  public:
-  using HasBits = decltype(std::declval<GeneratedCodeInfo>()._has_bits_);
 };
 
 GeneratedCodeInfo::GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena)
@@ -11033,7 +11011,6 @@ GeneratedCodeInfo::GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 }
 GeneratedCodeInfo::GeneratedCodeInfo(const GeneratedCodeInfo& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _has_bits_(from._has_bits_),
       annotation_(from.annotation_) {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo)
@@ -11075,7 +11052,6 @@ void GeneratedCodeInfo::Clear() {
   (void) cached_has_bits;
 
   annotation_.Clear();
-  _has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -11213,7 +11189,6 @@ bool GeneratedCodeInfo::IsInitialized() const {
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
   using std::swap;
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  swap(_has_bits_[0], other->_has_bits_[0]);
   annotation_.InternalSwap(&other->annotation_);
 }
 
