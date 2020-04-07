@@ -206,11 +206,6 @@ GPBGetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBMessageFieldDescription *fieldDesc = field->description_;
   return GPBGetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number);
 }
-GPB_INLINE void GPBSetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field,
-                                   BOOL value) {
-  GPBMessageFieldDescription *fieldDesc = field->description_;
-  GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, value);
-}
 
 void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
                         int32_t oneofHasIndex, uint32_t fieldNumberNotToClear);
