@@ -386,6 +386,11 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           msgname, field->name(),
           GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
           field->number());
+    } else if (field->message_type()) {
+      output(
+          "UPB_INLINE bool $0_has_$1(const $0 *msg) { "
+          "return _upb_has_submsg_nohasbit(msg, $2); }\n",
+          msgname, field->name(), GetSizeInit(layout.GetFieldOffset(field)));
     }
 
     // Generate getter.

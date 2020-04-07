@@ -105,6 +105,10 @@ UPB_INLINE bool _upb_has_oneof_field(const void *msg, size_t case_ofs, int32_t n
   return *PTR_AT(msg, case_ofs, int32_t) == num;
 }
 
+UPB_INLINE bool _upb_has_submsg_nohasbit(const void *msg, size_t ofs) {
+  return *PTR_AT(msg, ofs, const void*) != NULL;
+}
+
 UPB_INLINE bool _upb_isrepeated(const upb_msglayout_field *field) {
   return (field->label & 3) == UPB_LABEL_REPEATED;
 }
