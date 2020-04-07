@@ -11,17 +11,6 @@
 
 #include "upb/port_def.inc"
 
-/* Guarantee null-termination and provide ellipsis truncation.
- * It may be tempting to "optimize" this by initializing these final
- * four bytes up-front and then being careful never to overwrite them,
- * this is safer and simpler. */
-static void nullz(upb_status *status) {
-  const char *ellipsis = "...";
-  size_t len = strlen(ellipsis);
-  UPB_ASSERT(sizeof(status->msg) > len);
-  memcpy(status->msg + sizeof(status->msg) - len, ellipsis, len);
-}
-
 /* upb_status *****************************************************************/
 
 void upb_status_clear(upb_status *status) {
@@ -37,8 +26,8 @@ const char *upb_status_errmsg(const upb_status *status) { return status->msg; }
 void upb_status_seterrmsg(upb_status *status, const char *msg) {
   if (!status) return;
   status->ok = false;
-  strncpy(status->msg, msg, sizeof(status->msg));
-  nullz(status);
+  strncpy(status->msg, msg, UPB_STATUS_MAX_MESSAGE - 1);
+  status->msg[UPB_STATUS_MAX_MESSAGE - 1] = '\0';
 }
 
 void upb_status_seterrf(upb_status *status, const char *fmt, ...) {
@@ -52,7 +41,7 @@ void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args) {
   if (!status) return;
   status->ok = false;
   _upb_vsnprintf(status->msg, sizeof(status->msg), fmt, args);
-  nullz(status);
+  status->msg[UPB_STATUS_MAX_MESSAGE - 1] = '\0';
 }
 
 /* upb_alloc ******************************************************************/

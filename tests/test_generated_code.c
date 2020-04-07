@@ -7,6 +7,8 @@
 #include "tests/upb_test.h"
 #include "tests/test.upb.h"
 
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+
 const char test_str[] = "abcdefg";
 const char test_str2[] = "12345678910";
 const char test_str3[] = "rstlnezxcvbnm";
@@ -354,6 +356,36 @@ void test_null_decode_buf() {
   ASSERT(msg);
   protobuf_test_messages_proto3_TestAllTypesProto3_serialize(msg, arena, &size);
   ASSERT(size == 0);
+  upb_arena_free(arena);
+}
+
+void test_status_truncation() {
+  int i, j;
+  upb_status status;
+  upb_status status2;
+  for (i = 0; i < UPB_STATUS_MAX_MESSAGE + 20; i++) {
+    char *msg = malloc(i + 1);
+    int end;
+    char ch = (i % 96) + 33;  /* Cycle through printable chars. */
+
+    for (j = 0; j < i; j++) {
+      msg[j] = ch;
+    }
+    msg[i] = '\0';
+
+    upb_status_seterrmsg(&status, msg);
+    upb_status_seterrf(&status2, "%s", msg);
+    end = MIN(i, UPB_STATUS_MAX_MESSAGE - 1);
+    ASSERT(strlen(status.msg) == end);
+    ASSERT(strlen(status2.msg) == end);
+
+    for (j = 0; j < end; j++) {
+      ASSERT(status.msg[j] == ch);
+      ASSERT(status2.msg[j] == ch);
+    }
+
+    free(msg);
+  }
 }
 
 int run_tests(int argc, char *argv[]) {
@@ -363,5 +395,6 @@ int run_tests(int argc, char *argv[]) {
   test_int32_map();
   test_repeated();
   test_null_decode_buf();
+  test_status_truncation();
   return 0;
 }
