@@ -195,7 +195,7 @@ namespace Google.Protobuf.Benchmarks
 
             public void ParseDelimitedMessagesFromReadOnlySequence(int messageCount)
             {
-                var ctx = new ParseContext(multipleMessagesDataSequence);
+                ParseContext.Initialize(multipleMessagesDataSequence, out ParseContext ctx);
                 for (int i = 0; i < messageCount; i++)
                 {
                     var msg = factory();

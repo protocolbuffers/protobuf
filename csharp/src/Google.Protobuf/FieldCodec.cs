@@ -844,7 +844,7 @@ namespace Google.Protobuf
         /// <returns>The value read from the stream.</returns>
         public T Read(CodedInputStream input)
         {
-            var ctx = new ParseContext(input);
+            ParseContext.Initialize(input, out ParseContext ctx);
             try
             {
                 return ValueReader(ref ctx);

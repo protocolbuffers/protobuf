@@ -95,7 +95,7 @@ namespace Google.Protobuf.Collections
         /// <param name="codec">The codec to use in order to read each entry.</param>
         public void AddEntriesFrom(CodedInputStream input, FieldCodec<T> codec)
         {
-            var ctx = new ParseContext(input);
+            ParseContext.Initialize(input, out ParseContext ctx);
             try
             {
                 AddEntriesFrom(ref ctx, codec);

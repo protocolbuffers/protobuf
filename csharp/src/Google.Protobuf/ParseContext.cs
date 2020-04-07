@@ -58,10 +58,11 @@ namespace Google.Protobuf
         internal ReadOnlySpan<byte> buffer;
         internal ParserInternalState state;
 
-        internal ParseContext(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, out ParseContext ctx)
         {
-            this.buffer = buffer;
-            this.state = state;
+            ctx.buffer = buffer;
+            ctx.state = state;
         }
 
         /// <summary>
@@ -69,33 +70,37 @@ namespace Google.Protobuf
         /// WARNING: internally this copies the CodedInputStream's state, so after done with the ParseContext,
         /// the CodedInputStream's state needs to be updated.
         /// </summary>
-        internal ParseContext(CodedInputStream input)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(CodedInputStream input, out ParseContext ctx)
         {
-            this.buffer = new ReadOnlySpan<byte>(input.InternalBuffer);
+            ctx.buffer = new ReadOnlySpan<byte>(input.InternalBuffer);
             // TODO: ideally we would use a reference to the original state, but that doesn't seem possible
-            this.state = input.InternalState;  // creates copy of the state
+            ctx.state = input.InternalState;  // creates copy of the state
         }
 
-        internal ParseContext(ReadOnlySequence<byte> input) : this(input, DefaultRecursionLimit)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ReadOnlySequence<byte> input, out ParseContext ctx)
         {
+            Initialize(input, DefaultRecursionLimit, out ctx);
         }
 
-        internal ParseContext(ReadOnlySequence<byte> input, int recursionLimit)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ReadOnlySequence<byte> input, int recursionLimit, out ParseContext ctx)
         {
-            this.buffer = default;
-            this.state = default;
-            this.state.lastTag = 0;
-            this.state.recursionDepth = 0;
-            this.state.sizeLimit = DefaultSizeLimit;
-            this.state.recursionLimit = recursionLimit;
-            this.state.currentLimit = int.MaxValue;
-            SegmentedBufferHelper.Initialize(input, out this.state.segmentedBufferHelper, out this.buffer);
-            this.state.bufferPos = 0;
-            this.state.bufferSize = this.buffer.Length;
-            this.state.codedInputStream = null;
+            ctx.buffer = default;
+            ctx.state = default;
+            ctx.state.lastTag = 0;
+            ctx.state.recursionDepth = 0;
+            ctx.state.sizeLimit = DefaultSizeLimit;
+            ctx.state.recursionLimit = recursionLimit;
+            ctx.state.currentLimit = int.MaxValue;
+            SegmentedBufferHelper.Initialize(input, out ctx.state.segmentedBufferHelper, out ctx.buffer);
+            ctx.state.bufferPos = 0;
+            ctx.state.bufferSize = ctx.buffer.Length;
+            ctx.state.codedInputStream = null;
 
-            this.state.DiscardUnknownFields = false;
-            this.state.ExtensionRegistry = null;
+            ctx.state.DiscardUnknownFields = false;
+            ctx.state.ExtensionRegistry = null;
         }
 
         /// <summary>

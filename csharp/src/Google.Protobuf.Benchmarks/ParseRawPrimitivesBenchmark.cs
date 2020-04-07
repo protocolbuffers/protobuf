@@ -105,7 +105,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(5)]
         public int ParseRawVarint32_ParseContext(int encodedSize)
         {
-            var ctx = CreateParseContext(varintInputBuffers[encodedSize]);
+            InitializeParseContext(varintInputBuffers[encodedSize], out ParseContext ctx);
             int sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -149,7 +149,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(10)]
         public long ParseRawVarint64_ParseContext(int encodedSize)
         {
-            var ctx = CreateParseContext(varintInputBuffers[encodedSize]);
+            InitializeParseContext(varintInputBuffers[encodedSize], out ParseContext ctx);
             long sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -175,7 +175,7 @@ namespace Google.Protobuf.Benchmarks
         public uint ParseFixed32_ParseContext()
         {
             const int encodedSize = sizeof(uint);
-            var ctx = CreateParseContext(fixedIntInputBuffer);
+            InitializeParseContext(fixedIntInputBuffer, out ParseContext ctx);
             uint sum = 0;
             for (uint i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -201,7 +201,7 @@ namespace Google.Protobuf.Benchmarks
         public ulong ParseFixed64_ParseContext()
         {
             const int encodedSize = sizeof(ulong);
-            var ctx = CreateParseContext(fixedIntInputBuffer);
+            InitializeParseContext(fixedIntInputBuffer, out ParseContext ctx);
             ulong sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -227,7 +227,7 @@ namespace Google.Protobuf.Benchmarks
         public float ParseRawFloat_ParseContext()
         {
             const int encodedSize = sizeof(float);
-            var ctx = CreateParseContext(floatInputBuffer);
+            InitializeParseContext(floatInputBuffer, out ParseContext ctx);
             float sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -253,7 +253,7 @@ namespace Google.Protobuf.Benchmarks
         public double ParseRawDouble_ParseContext()
         {
             const int encodedSize = sizeof(double);
-            var ctx = CreateParseContext(doubleInputBuffer);
+            InitializeParseContext(doubleInputBuffer, out ParseContext ctx);
             double sum = 0;
             for (int i = 0; i < BytesToParse / encodedSize; i++)
             {
@@ -262,9 +262,9 @@ namespace Google.Protobuf.Benchmarks
             return sum;
         }
 
-        private static ParseContext CreateParseContext(byte[] buffer)
+        private static void InitializeParseContext(byte[] buffer, out ParseContext ctx)
         {
-            return new ParseContext(new ReadOnlySequence<byte>(buffer));
+            ParseContext.Initialize(new ReadOnlySequence<byte>(buffer), out ctx);
         }
 
         private static byte[] CreateBufferWithRandomVarints(Random random, int valueCount, int encodedSize, int paddingValueCount)

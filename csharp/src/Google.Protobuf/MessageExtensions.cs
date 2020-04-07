@@ -253,7 +253,7 @@ namespace Google.Protobuf
         [SecuritySafeCritical]
         internal static void MergeFrom(this IMessage message, ReadOnlySequence<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
         {
-            var ctx = new ParseContext(data);
+            ParseContext.Initialize(data, out ParseContext ctx);
             ctx.DiscardUnknownFields = discardUnknownFields;
             ctx.ExtensionRegistry = registry;
             ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);

@@ -713,7 +713,7 @@ namespace Google.Protobuf.Collections
                     // Read it as if we'd seen input with no data (i.e. create a "default" message).
                     if (Value == null)
                     {
-                        var zeroLengthCtx = new ParseContext(new ReadOnlySequence<byte>(ZeroLengthMessageStreamData));
+                        ParseContext.Initialize(new ReadOnlySequence<byte>(ZeroLengthMessageStreamData), out ParseContext zeroLengthCtx);
                         Value = codec.valueCodec.Read(ref zeroLengthCtx);
                     }
                 }

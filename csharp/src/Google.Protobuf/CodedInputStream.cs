@@ -431,7 +431,7 @@ namespace Google.Protobuf
         public void ReadMessage(IMessage builder)
         {
             var span = new ReadOnlySpan<byte>(buffer);
-            var ctx = new ParseContext(ref span, ref state);
+            ParseContext.Initialize(ref span, ref state, out ParseContext ctx);
             try
             {
                 ParsingPrimitivesMessages.ReadMessage(ref ctx, builder);
@@ -447,7 +447,7 @@ namespace Google.Protobuf
         /// </summary>
         public void ReadGroup(IMessage builder)
         {
-            var ctx = new ParseContext(this);
+            ParseContext.Initialize(this, out ParseContext ctx);
             try
             {
                 ParsingPrimitivesMessages.ReadGroup(ref ctx, builder);
@@ -691,7 +691,7 @@ namespace Google.Protobuf
         /// </summary>
         public void ReadRawMessage(IMessage message)
         {
-            var ctx = new ParseContext(this);
+            ParseContext.Initialize(this, out ParseContext ctx);
             try
             {
                 ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);

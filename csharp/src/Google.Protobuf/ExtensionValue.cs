@@ -96,7 +96,7 @@ namespace Google.Protobuf
 
         public void MergeFrom(CodedInputStream input)
         {
-            var ctx = new ParseContext(input);
+            ParseContext.Initialize(input, out ParseContext ctx);
             try
             {
                 codec.ValueMerger(ref ctx, ref field);

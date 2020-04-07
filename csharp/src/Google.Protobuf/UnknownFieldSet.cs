@@ -258,7 +258,7 @@ namespace Google.Protobuf
         public static UnknownFieldSet MergeFieldFrom(UnknownFieldSet unknownFields,
                                                      CodedInputStream input)
         {
-            var ctx = new ParseContext(input);
+            ParseContext.Initialize(input, out ParseContext ctx);
             try
             {
                 return MergeFieldFrom(unknownFields, ref ctx);
