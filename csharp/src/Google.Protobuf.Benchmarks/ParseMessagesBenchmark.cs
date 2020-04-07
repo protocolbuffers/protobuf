@@ -31,6 +31,7 @@
 #endregion
 
 using BenchmarkDotNet.Attributes;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,73 +48,48 @@ namespace Google.Protobuf.Benchmarks
     {
         const int MaxMessages = 100;
 
-        byte[] manyWrapperFieldsData;
-        byte[] manyPrimitiveFieldsData;
-
-        byte[] manyWrapperFieldsMultipleMessagesData;
-        byte[] manyPrimitiveFieldsMultipleMessagesData;
-
-        byte[] emptyData = new byte[0];
+        SubTest manyWrapperFieldsTest = new SubTest(CreateManyWrapperFieldsMessage(), ManyWrapperFieldsMessage.Parser, () => new ManyWrapperFieldsMessage(), MaxMessages);
+        SubTest manyPrimitiveFieldsTest = new SubTest(CreateManyPrimitiveFieldsMessage(), ManyPrimitiveFieldsMessage.Parser, () => new ManyPrimitiveFieldsMessage(), MaxMessages);
+        SubTest emptyMessageTest = new SubTest(new Empty(), Empty.Parser, () => new Empty(), MaxMessages);
 
         public IEnumerable<int> MessageCountValues => new[] { 10, 100 };
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            manyWrapperFieldsData = CreateManyWrapperFieldsMessage().ToByteArray();
-            manyPrimitiveFieldsData = CreateManyPrimitiveFieldsMessage().ToByteArray();
-            manyWrapperFieldsMultipleMessagesData = CreateBufferWithMultipleMessages(CreateManyWrapperFieldsMessage(), MaxMessages);
-            manyPrimitiveFieldsMultipleMessagesData = CreateBufferWithMultipleMessages(CreateManyPrimitiveFieldsMessage(), MaxMessages);
         }
 
         [Benchmark]
-        public ManyWrapperFieldsMessage ManyWrapperFieldsMessage_ParseFromByteArray()
+        public IMessage ManyWrapperFieldsMessage_ParseFromByteArray()
         {
-            return ManyWrapperFieldsMessage.Parser.ParseFrom(manyWrapperFieldsData);
+            return manyWrapperFieldsTest.ParseFromByteArray();
         }
 
         [Benchmark]
-        public ManyPrimitiveFieldsMessage ManyPrimitiveFieldsMessage_ParseFromByteArray()
+        public IMessage ManyPrimitiveFieldsMessage_ParseFromByteArray()
         {
-            return ManyPrimitiveFieldsMessage.Parser.ParseFrom(manyPrimitiveFieldsData);
+            return manyPrimitiveFieldsTest.ParseFromByteArray();
         }
 
         [Benchmark]
-        public Empty EmptyMessage_ParseFromByteArray()
+        public IMessage EmptyMessage_ParseFromByteArray()
         {
-            return Empty.Parser.ParseFrom(emptyData);
+            return emptyMessageTest.ParseFromByteArray();
         }
 
         [Benchmark]
         [ArgumentsSource(nameof(MessageCountValues))]
-        public long ManyWrapperFieldsMessage_ParseDelimitedMessagesFromByteArray(int messageCount)
+        public void ManyWrapperFieldsMessage_ParseDelimitedMessagesFromByteArray(int messageCount)
         {
-            long sum = 0;
-            var input = new CodedInputStream(manyWrapperFieldsMultipleMessagesData);
-            for (int i = 0; i < messageCount; i++)
-            {
-                var msg = new ManyWrapperFieldsMessage();
-                input.ReadMessage(msg);
-                sum += msg.Int64Field19.Value;
-            }
-            return sum;
+            manyWrapperFieldsTest.ParseDelimitedMessagesFromByteArray(messageCount);
         }
 
         [Benchmark]
         [ArgumentsSource(nameof(MessageCountValues))]
-        public long ManyPrimitiveFieldsMessage_ParseDelimitedMessagesFromByteArray(int messageCount)
+        public void ManyPrimitiveFieldsMessage_ParseDelimitedMessagesFromByteArray(int messageCount)
         {
-            long sum = 0;
-            var input = new CodedInputStream(manyPrimitiveFieldsMultipleMessagesData);
-            for (int i = 0; i < messageCount; i++)
-            {
-                var msg = new ManyPrimitiveFieldsMessage();
-                input.ReadMessage(msg);
-                sum += msg.Int64Field19;
-            }
-            return sum;
+            manyPrimitiveFieldsTest.ParseDelimitedMessagesFromByteArray(messageCount);
         }
-
 
         private static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()
         {
@@ -149,16 +125,46 @@ namespace Google.Protobuf.Benchmarks
             };
         }
 
-        private static byte[] CreateBufferWithMultipleMessages(IMessage msg, int msgCount)
+        private class SubTest
         {
-            var ms = new MemoryStream();
-            var cos = new CodedOutputStream(ms);
-            for (int i = 0; i < msgCount; i++)
+            private readonly IMessage message;
+            private readonly MessageParser parser;
+            private readonly Func<IMessage> factory;
+            private readonly byte[] data;
+            private readonly byte[] multipleMessagesData;
+
+            public SubTest(IMessage message, MessageParser parser, Func<IMessage> factory, int maxMessageCount)
             {
-                cos.WriteMessage(msg);
+                this.message = message;
+                this.parser = parser;
+                this.factory = factory;
+                this.data = message.ToByteArray();
+                this.multipleMessagesData = CreateBufferWithMultipleMessages(message, maxMessageCount);
             }
-            cos.Flush();
-            return ms.ToArray();
+
+            public IMessage ParseFromByteArray() => parser.ParseFrom(data);
+
+            public void ParseDelimitedMessagesFromByteArray(int messageCount)
+            {
+                var input = new CodedInputStream(multipleMessagesData);
+                for (int i = 0; i < messageCount; i++)
+                {
+                    var msg = factory();
+                    input.ReadMessage(msg);
+                }
+            }
+
+            private static byte[] CreateBufferWithMultipleMessages(IMessage msg, int msgCount)
+            {
+                var ms = new MemoryStream();
+                var cos = new CodedOutputStream(ms);
+                for (int i = 0; i < msgCount; i++)
+                {
+                    cos.WriteMessage(msg);
+                }
+                cos.Flush();
+                return ms.ToArray();
+            }
         }
     }
 }
