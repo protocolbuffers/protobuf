@@ -14,3 +14,9 @@ bazel version
 
 cd $(dirname $0)/../..
 bazel test --test_output=errors :all
+
+if [[ $(uname) = "Linux" ]]; then
+  # Verify the ASAN build.  Have to exclude test_conformance_upb as protobuf
+  # currently leaks memory in the conformance test runner.
+  bazel test --copt=-fsanitize=address --linkopt=-fsanitize=address --test_output=errors -- :all -:test_conformance_upb
+fi
