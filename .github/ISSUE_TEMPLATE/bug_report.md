@@ -1,5 +1,5 @@
 ---
-name: Bug report
+name: Dpcomefast47 
 about: Create a report to help us improve
 title: ''
 labels: ''
