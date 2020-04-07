@@ -43,18 +43,37 @@ namespace Google.Protobuf
     /// </summary>
     internal struct SegmentedBufferHelper
     {
-        private readonly int? totalLength;
+        private int? totalLength;
         private ReadOnlySequence<byte>.Enumerator readOnlySequenceEnumerator;
-        private readonly CodedInputStream codedInputStream;
+        private CodedInputStream codedInputStream;
 
-        public SegmentedBufferHelper(ReadOnlySequence<byte> sequence, out ReadOnlySpan<byte> firstSpan)
+        /// <summary>
+        /// Initialize an instance with a coded input stream.
+        /// This approach is faster than using a constructor because the instance to initialize is passed by reference
+        /// and we can write directly into it without copying.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Initialize(CodedInputStream codedInputStream, out SegmentedBufferHelper instance)
         {
-            this.codedInputStream = null;
+            instance.totalLength = codedInputStream.InternalInputStream == null ? (int?)codedInputStream.InternalBuffer.Length : null;
+            instance.readOnlySequenceEnumerator = default;
+            instance.codedInputStream = codedInputStream;
+        }
+
+        /// <summary>
+        /// Initialize an instance with a read only sequence.
+        /// This approach is faster than using a constructor because the instance to initialize is passed by reference
+        /// and we can write directly into it without copying.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Initialize(ReadOnlySequence<byte> sequence, out SegmentedBufferHelper instance, out ReadOnlySpan<byte> firstSpan)
+        {
+            instance.codedInputStream = null;
             if (sequence.IsSingleSegment)
             {
                 firstSpan = sequence.First.Span;
-                this.totalLength = firstSpan.Length;
-                this.readOnlySequenceEnumerator = default;
+                instance.totalLength = firstSpan.Length;
+                instance.readOnlySequenceEnumerator = default;
             }
             else
             {
@@ -62,16 +81,9 @@ namespace Google.Protobuf
                 // very first read will result in slowpath (because the first thing to do is to
                 // refill to get the first buffer segment)
                 firstSpan = default;
-                this.totalLength = (int) sequence.Length;
-                this.readOnlySequenceEnumerator = sequence.GetEnumerator();
+                instance.totalLength = (int) sequence.Length;
+                instance.readOnlySequenceEnumerator = sequence.GetEnumerator();
             }
-        }
-
-        public SegmentedBufferHelper(CodedInputStream codedInputStream)
-        {
-            this.totalLength = codedInputStream.InternalInputStream == null ? (int?)codedInputStream.InternalBuffer.Length : null;
-            this.readOnlySequenceEnumerator = default;
-            this.codedInputStream = codedInputStream;
         }
         
         public bool RefillBuffer(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, bool mustSucceed)
