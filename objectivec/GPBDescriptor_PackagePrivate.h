@@ -45,6 +45,10 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   GPBFieldOptional        = 1 << 3,
   GPBFieldHasDefaultValue = 1 << 4,
 
+  // Indicate that the field should "clear" when set to zero value. This is the
+  // proto3 non optional behavior for singular data (ints, data, string, enum)
+  // fields.
+  GPBFieldClearHasIvarOnZero = 1 << 5,
   // Indicates the field needs custom handling for the TextFormat name, if not
   // set, the name can be derived from the ObjC name.
   GPBFieldTextFormatNameCustom = 1 << 6,
@@ -149,7 +153,13 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   // This is used as a stopgap as we move from using class names to class
   // references. The runtime needs to support both until we allow a
   // breaking change in the runtime.
-  GPBDescriptorInitializationFlag_UsesClassRefs        = 1 << 2,
+  GPBDescriptorInitializationFlag_UsesClassRefs     = 1 << 2,
+
+  // This flag is used to indicate that the generated sources already containg
+  // the `GPBFieldClearHasIvarOnZero` flag and it doesn't have to be computed
+  // at startup, this allows older generated code to still work with the
+  // current runtime library.
+  GPBDescriptorInitializationFlag_Proto3OptionalKnown = 1 << 3,
 };
 
 @interface GPBDescriptor () {
@@ -225,13 +235,8 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 - (instancetype)initWithFieldDescription:(void *)description
                          includesDefault:(BOOL)includesDefault
                            usesClassRefs:(BOOL)usesClassRefs
+                     proto3OptionalKnown:(BOOL)proto3OptionalKnown
                                   syntax:(GPBFileSyntax)syntax;
-
-// Deprecated. Equivalent to calling above with `usesClassRefs = NO`.
-- (instancetype)initWithFieldDescription:(void *)description
-                         includesDefault:(BOOL)includesDefault
-                                  syntax:(GPBFileSyntax)syntax;
-
 
 @end
 
