@@ -1589,7 +1589,6 @@ inline std::string* StringValue::_internal_mutable_value() {
 }
 inline std::string* StringValue::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
-  
   return value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void StringValue::set_allocated_value(std::string* value) {
@@ -1675,7 +1674,6 @@ inline std::string* BytesValue::_internal_mutable_value() {
 }
 inline std::string* BytesValue::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)
-  
   return value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void BytesValue::set_allocated_value(std::string* value) {

@@ -845,7 +845,6 @@ inline std::string* Api::_internal_mutable_name() {
 }
 inline std::string* Api::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Api.name)
-  
   return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Api::set_allocated_name(std::string* name) {
@@ -1002,7 +1001,6 @@ inline std::string* Api::_internal_mutable_version() {
 }
 inline std::string* Api::release_version() {
   // @@protoc_insertion_point(field_release:google.protobuf.Api.version)
-  
   return version_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Api::set_allocated_version(std::string* version) {
@@ -1222,7 +1220,6 @@ inline std::string* Method::_internal_mutable_name() {
 }
 inline std::string* Method::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Method.name)
-  
   return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Method::set_allocated_name(std::string* name) {
@@ -1304,7 +1301,6 @@ inline std::string* Method::_internal_mutable_request_type_url() {
 }
 inline std::string* Method::release_request_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Method.request_type_url)
-  
   return request_type_url_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Method::set_allocated_request_type_url(std::string* request_type_url) {
@@ -1406,7 +1402,6 @@ inline std::string* Method::_internal_mutable_response_type_url() {
 }
 inline std::string* Method::release_response_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Method.response_type_url)
-  
   return response_type_url_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Method::set_allocated_response_type_url(std::string* response_type_url) {
@@ -1568,7 +1563,6 @@ inline std::string* Mixin::_internal_mutable_name() {
 }
 inline std::string* Mixin::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.name)
-  
   return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Mixin::set_allocated_name(std::string* name) {
@@ -1650,7 +1644,6 @@ inline std::string* Mixin::_internal_mutable_root() {
 }
 inline std::string* Mixin::release_root() {
   // @@protoc_insertion_point(field_release:google.protobuf.Mixin.root)
-  
   return root_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Mixin::set_allocated_root(std::string* root) {

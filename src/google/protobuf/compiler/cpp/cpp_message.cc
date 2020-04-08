@@ -201,10 +201,11 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
 // Emits an if-statement with a condition that evaluates to true if |field| is
 // considered non-default (will be sent over the wire), for message types
 // without true field presence. Should only be called if
-// !HasFieldPresence(message_descriptor).
+// !HasHasbit(field).
 bool EmitFieldNonDefaultCondition(io::Printer* printer,
                                   const std::string& prefix,
                                   const FieldDescriptor* field) {
+  GOOGLE_CHECK(!HasHasbit(field));
   Formatter format(printer);
   format.Set("prefix", prefix);
   format.Set("name", FieldName(field));
@@ -225,7 +226,7 @@ bool EmitFieldNonDefaultCondition(io::Printer* printer,
     }
     format.Indent();
     return true;
-  } else if (field->containing_oneof()) {
+  } else if (InRealOneof(field)) {
     format("if (_internal_has_$name$()) {\n");
     format.Indent();
     return true;
@@ -281,8 +282,7 @@ void CollectMapInfo(const Options& options, const Descriptor* descriptor,
 bool HasPrivateHasMethod(const FieldDescriptor* field) {
   // Only for oneofs in message types with no field presence. has_$name$(),
   // based on the oneof case, is still useful internally for generated code.
-  return (!HasFieldPresence(field->file()) &&
-          field->containing_oneof() != NULL);
+  return (!HasFieldPresence(field->file()) && InRealOneof(field));
 }
 
 // TODO(ckennelly):  Cull these exclusions if/when these protos do not have
@@ -597,7 +597,7 @@ MessageGenerator::MessageGenerator(
 
     if (IsWeak(field, options_)) {
       num_weak_fields_++;
-    } else if (!field->containing_oneof()) {
+    } else if (!InRealOneof(field)) {
       optimized_order_.push_back(field);
     }
   }
@@ -677,7 +677,7 @@ void MessageGenerator::AddGenerators(
 void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
   Formatter format(printer, variables_);
   // optimized_fields_ does not contain fields where
-  //    field->containing_oneof() != NULL
+  //    InRealOneof(field) == true
   // so we need to iterate over those as well.
   //
   // We place the non-oneof fields in optimized_order_, as that controls the
@@ -689,7 +689,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
   ordered_fields.insert(ordered_fields.begin(), optimized_order_.begin(),
                         optimized_order_.end());
   for (auto field : FieldRange(descriptor_)) {
-    if (field->containing_oneof() == nullptr && !field->options().weak() &&
+    if (!InRealOneof(field) && !field->options().weak() &&
         IsFieldUsed(field, options_)) {
       continue;
     }
@@ -922,7 +922,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
 
   format.Indent();
 
-  if (field->containing_oneof()) {
+  if (InRealOneof(field)) {
     // Clear this field only if it is the active field in this oneof,
     // otherwise ignore
     format("if (_internal_has_$name$()) {\n");
@@ -983,7 +983,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
                 ? ".weak"
                 : "");
       }
-    } else if (field->containing_oneof()) {
+    } else if (InRealOneof(field)) {
       format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
       format.Set("oneof_name", field->containing_oneof()->name());
       format.Set("oneof_index",
@@ -1485,7 +1485,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   for (auto field : FieldRange(descriptor_)) {
     // set_has_***() generated in all oneofs.
     if (!field->is_repeated() && !field->options().weak() &&
-        field->containing_oneof()) {
+        InRealOneof(field)) {
       format("void set_has_$1$();\n", FieldName(field));
     }
   }
@@ -1594,11 +1594,12 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   }
 
   // Generate _oneof_case_.
-  if (descriptor_->oneof_decl_count() > 0) {
+  int count = RealOneofCount(descriptor_);
+  if (count > 0) {
     format(
         "$uint32$ _oneof_case_[$1$];\n"
         "\n",
-        descriptor_->oneof_decl_count());
+        count);
   }
 
   if (num_weak_fields_) {
@@ -1642,24 +1643,22 @@ void MessageGenerator::GenerateExtraDefaultFields(io::Printer* printer) {
   // Generate oneof default instance and weak field instances for reflection
   // usage.
   Formatter format(printer, variables_);
-  if (descriptor_->oneof_decl_count() > 0 || num_weak_fields_ > 0) {
-    for (auto oneof : OneOfRange(descriptor_)) {
-      for (auto field : FieldRange(oneof)) {
-        if (!IsFieldUsed(field, options_)) {
-          continue;
-        }
-        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-            (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-             EffectiveStringCType(field, options_) != FieldOptions::STRING)) {
-          format("const ");
-        }
-        field_generators_.get(field).GeneratePrivateMembers(printer);
+  for (auto oneof : OneOfRange(descriptor_)) {
+    for (auto field : FieldRange(oneof)) {
+      if (!IsFieldUsed(field, options_)) {
+        continue;
       }
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+          (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+           EffectiveStringCType(field, options_) != FieldOptions::STRING)) {
+        format("const ");
+      }
+      field_generators_.get(field).GeneratePrivateMembers(printer);
     }
-    for (auto field : FieldRange(descriptor_)) {
-      if (field->options().weak() && IsFieldUsed(field, options_)) {
-        format("  const ::$proto_ns$::Message* $1$_;\n", FieldName(field));
-      }
+  }
+  for (auto field : FieldRange(descriptor_)) {
+    if (field->options().weak() && IsFieldUsed(field, options_)) {
+      format("  const ::$proto_ns$::Message* $1$_;\n", FieldName(field));
     }
   }
 }
@@ -1696,7 +1695,7 @@ bool MessageGenerator::GenerateParseTable(io::Printer* printer, size_t offset,
     format("PROTOBUF_FIELD_OFFSET($classtype$, _has_bits_),\n");
   }
 
-  if (descriptor_->oneof_decl_count() > 0) {
+  if (RealOneofCount(descriptor_) > 0) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, _oneof_case_),\n");
   } else {
     format("-1,  // no _oneof_case_\n");
@@ -1755,17 +1754,17 @@ uint32 CalcFieldNum(const FieldGenerator& generator,
       type = internal::FieldMetadata::kStringPieceType;
     }
   }
-  if (field->containing_oneof()) {
+
+  if (InRealOneof(field)) {
     return internal::FieldMetadata::CalculateType(
         type, internal::FieldMetadata::kOneOf);
-  }
-  if (field->is_packed()) {
+  } else if (field->is_packed()) {
     return internal::FieldMetadata::CalculateType(
         type, internal::FieldMetadata::kPacked);
   } else if (field->is_repeated()) {
     return internal::FieldMetadata::CalculateType(
         type, internal::FieldMetadata::kRepeated);
-  } else if (HasHasbit(field) || field->containing_oneof() || is_a_map) {
+  } else if (HasHasbit(field) || InRealOneof(field) || is_a_map) {
     return internal::FieldMetadata::CalculateType(
         type, internal::FieldMetadata::kPresence);
   } else {
@@ -1860,7 +1859,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     }
 
     std::string classfieldname = FieldName(field);
-    if (field->containing_oneof()) {
+    if (InRealOneof(field)) {
       classfieldname = field->containing_oneof()->name();
     }
     format.Set("field_name", classfieldname);
@@ -1896,7 +1895,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       type = internal::FieldMetadata::kSpecial;
       ptr = "reinterpret_cast<const void*>(::" + variables_["proto_ns"] +
             "::internal::LazyFieldSerializer";
-      if (field->containing_oneof()) {
+      if (InRealOneof(field)) {
         ptr += "OneOf";
       } else if (!HasHasbit(field)) {
         ptr += "NoPresence";
@@ -1913,7 +1912,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
           "reinterpret_cast<const "
           "void*>(::$proto_ns$::internal::WeakFieldSerializer)},\n",
           tag);
-    } else if (field->containing_oneof()) {
+    } else if (InRealOneof(field)) {
       format.Set("oneofoffset",
                  sizeof(uint32) * field->containing_oneof()->index());
       format(
@@ -1973,10 +1972,10 @@ void MessageGenerator::GenerateDefaultInstanceInitializer(
 
     if (!field->is_repeated() && !IsLazy(field, options_) &&
         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        (field->containing_oneof() == NULL ||
+        (!InRealOneof(field) ||
          HasDescriptorMethods(descriptor_->file(), options_))) {
       std::string name;
-      if (field->containing_oneof() || field->options().weak()) {
+      if (InRealOneof(field) || field->options().weak()) {
         name = "_" + classname_ + "_default_instance_.";
       } else {
         name =
@@ -2008,7 +2007,7 @@ void MessageGenerator::GenerateDefaultInstanceInitializer(
             "    $1$::internal_default_instance());\n",
             FieldMessageTypeName(field, options_));
       }
-    } else if (field->containing_oneof() &&
+    } else if (InRealOneof(field) &&
                HasDescriptorMethods(descriptor_->file(), options_)) {
       field_generators_.get(field).GenerateConstructorCode(printer);
     }
@@ -2083,6 +2082,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     }
     if (HasHasbit(field)) {
       int has_bit_index = HasBitIndex(field);
+      GOOGLE_CHECK_NE(has_bit_index, kNoHasbit) << field->full_name();
       format(
           "static void set_has_$1$(HasBits* has_bits) {\n"
           "  (*has_bits)[$2$] |= $3$u;\n"
@@ -2118,7 +2118,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
       Formatter::SaveState saver(&format);
       std::map<std::string, std::string> vars;
       SetCommonFieldVariables(field, &vars, options_);
-      if (field->containing_oneof()) {
+      if (InRealOneof(field)) {
         SetCommonOneofFieldVariables(field, &vars);
       }
       format.AddMap(vars);
@@ -2129,7 +2129,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   GenerateStructors(printer);
   format("\n");
 
-  if (descriptor_->oneof_decl_count() > 0) {
+  if (RealOneofCount(descriptor_) > 0) {
     GenerateOneofClear(printer);
     format("\n");
   }
@@ -2258,8 +2258,8 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
 
     processing_type |= static_cast<unsigned>(
         field->is_repeated() ? internal::kRepeatedMask : 0);
-    processing_type |= static_cast<unsigned>(
-        field->containing_oneof() ? internal::kOneofMask : 0);
+    processing_type |=
+        static_cast<unsigned>(InRealOneof(field) ? internal::kOneofMask : 0);
 
     if (field->is_map()) {
       processing_type = internal::TYPE_MAP;
@@ -2269,7 +2269,7 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
         WireFormat::TagSize(field->number(), field->type());
 
     std::map<std::string, std::string> vars;
-    if (field->containing_oneof() != NULL) {
+    if (InRealOneof(field)) {
       vars["name"] = field->containing_oneof()->name();
       vars["presence"] = StrCat(field->containing_oneof()->index());
     } else {
@@ -2400,7 +2400,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   } else {
     format("~0u,  // no _extensions_\n");
   }
-  if (descriptor_->oneof_decl_count() > 0) {
+  if (RealOneofCount(descriptor_) > 0) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, _oneof_case_[0]),\n");
   } else {
     format("~0u,  // no _oneof_case_\n");
@@ -2418,13 +2418,13 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   }
   const int kNumGenericOffsets = 5;  // the number of fixed offsets above
   const size_t offsets = kNumGenericOffsets + descriptor_->field_count() +
-                         descriptor_->oneof_decl_count() - num_stripped;
+                         RealOneofCount(descriptor_) - num_stripped;
   size_t entries = offsets;
   for (auto field : FieldRange(descriptor_)) {
     if (!IsFieldUsed(field, options_)) {
       continue;
     }
-    if (field->containing_oneof() || field->options().weak()) {
+    if (InRealOneof(field) || field->options().weak()) {
       format("offsetof($classtype$DefaultTypeInternal, $1$_)",
              FieldName(field));
     } else {
@@ -2439,9 +2439,12 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     format(",\n");
   }
 
+  int count = 0;
   for (auto oneof : OneOfRange(descriptor_)) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, $1$_),\n", oneof->name());
+    count++;
   }
+  GOOGLE_CHECK_EQ(count, RealOneofCount(descriptor_));
 
   if (IsMapEntryMessage(descriptor_)) {
     entries += 2;
@@ -2653,7 +2656,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
   for (auto field : optimized_order_) {
     GOOGLE_DCHECK(IsFieldUsed(field, options_));
     bool has_arena_constructor = field->is_repeated();
-    if (field->containing_oneof() == NULL &&
+    if (!InRealOneof(field) &&
         (IsLazy(field, options_) || IsStringPiece(field, options_))) {
       has_arena_constructor = true;
     }
@@ -3010,8 +3013,8 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
 
 void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
   // Generated function clears the active field and union case (e.g. foo_case_).
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    auto oneof = descriptor_->oneof_decl(i);
+  int i = 0;
+  for (auto oneof : OneOfRange(descriptor_)) {
     Formatter format(printer, variables_);
     format.Set("oneofname", oneof->name());
 
@@ -3048,6 +3051,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
     format(
         "}\n"
         "\n");
+    i++;
   }
 }
 
@@ -3118,7 +3122,8 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
       format("swap($1$_, other->$1$_);\n", oneof->name());
     }
 
-    for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    int count = RealOneofCount(descriptor_);
+    for (int i = 0; i < count; i++) {
       format("swap(_oneof_case_[$1$], other->_oneof_case_[$1$]);\n", i);
     }
 
@@ -3567,7 +3572,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
       if (eager_ || MustFlush(field)) {
         Flush();
       }
-      if (field->containing_oneof() == NULL) {
+      if (!InRealOneof(field)) {
         // TODO(ckennelly): Defer non-oneof fields similarly to oneof fields.
 
         if (!field->options().weak() && !field->is_repeated() && !eager_) {
@@ -4009,7 +4014,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
       } else if (field->options().weak()) {
         continue;
       } else {
-        GOOGLE_CHECK(!field->containing_oneof());
+        GOOGLE_CHECK(!InRealOneof(field));
         format(
             "if (_internal_has_$1$()) {\n"
             "  if (!$1$_->IsInitialized()) return false;\n"
@@ -4049,7 +4054,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
           field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
           !ShouldIgnoreRequiredFieldCheck(field, options_) &&
           scc_analyzer_->HasRequiredFields(field->message_type())) {
-        GOOGLE_CHECK(!(field->options().weak() || !field->containing_oneof()));
+        GOOGLE_CHECK(!(field->options().weak() || !InRealOneof(field)));
         if (field->options().weak()) {
           // Just skip.
         } else {

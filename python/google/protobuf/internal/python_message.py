@@ -826,7 +826,8 @@ def _AddListFieldsMethod(message_descriptor, cls):
   cls.ListFields = ListFields
 
 _PROTO3_ERROR_TEMPLATE = \
-  'Protocol message %s has no non-repeated submessage field "%s"'
+  ('Protocol message %s has no non-repeated submessage field "%s" '
+   'nor marked as optional')
 _PROTO2_ERROR_TEMPLATE = 'Protocol message %s has no non-repeated field "%s"'
 
 def _AddHasFieldMethod(message_descriptor, cls):

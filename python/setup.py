@@ -110,6 +110,7 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/no_package.proto", False)
   generate_proto("google/protobuf/internal/packed_field_test.proto", False)
   generate_proto("google/protobuf/internal/test_bad_identifiers.proto", False)
+  generate_proto("google/protobuf/internal/test_proto3_optional.proto", False)
   generate_proto("google/protobuf/pyext/python.proto", False)
 
 

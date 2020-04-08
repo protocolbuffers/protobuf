@@ -429,9 +429,6 @@ inline bool HasFieldPresence(const FileDescriptor* file) {
 }
 
 inline bool HasHasbit(const FieldDescriptor* field) {
-  // TODO(haberman): remove, so proto3 optional fields have hasbits.
-  if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) return false;
-
   // This predicate includes proto3 message fields only if they have "optional".
   //   Foo submsg1 = 1;           // HasHasbit() == false
   //   optional Foo submsg2 = 2;  // HasHasbit() == true
@@ -445,6 +442,23 @@ inline bool HasHasbit(const FieldDescriptor* field) {
   // primitive fields also.
   return (field->has_optional_keyword() || field->is_required()) &&
          !field->options().weak();
+}
+
+inline bool InRealOneof(const FieldDescriptor* field) {
+  return field->containing_oneof() &&
+         !field->containing_oneof()->is_synthetic();
+}
+
+// In practice all synthetic oneofs should be at the end of the list, but we
+// decline to depend on this for correctness of the function.
+inline int RealOneofCount(const Descriptor* descriptor) {
+  int count = 0;
+  for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
+    if (!descriptor->oneof_decl(i)->is_synthetic()) {
+      count++;
+    }
+  }
+  return count;
 }
 
 // Returns true if 'enum' semantics are such that unknown values are preserved
@@ -872,6 +886,14 @@ struct OneOfRangeImpl {
     using value_type = const OneofDescriptor*;
     using difference_type = int;
 
+    explicit Iterator(const Descriptor* _descriptor)
+        : idx(-1), descriptor(_descriptor) {
+      Next();
+    }
+
+    Iterator(int _idx, const Descriptor* _descriptor)
+        : idx(_idx), descriptor(_descriptor) {}
+
     value_type operator*() { return descriptor->oneof_decl(idx); }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
@@ -883,15 +905,22 @@ struct OneOfRangeImpl {
     }
 
     Iterator& operator++() {
-      idx++;
+      Next();
       return *this;
+    }
+
+    void Next() {
+      do {
+        idx++;
+      } while (idx < descriptor->oneof_decl_count() &&
+               descriptor->oneof_decl(idx)->is_synthetic());
     }
 
     int idx;
     const Descriptor* descriptor;
   };
 
-  Iterator begin() const { return {0, descriptor}; }
+  Iterator begin() const { return Iterator(descriptor); }
   Iterator end() const { return {descriptor->oneof_decl_count(), descriptor}; }
 
   const Descriptor* descriptor;

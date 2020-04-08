@@ -1475,7 +1475,6 @@ inline std::string* Type::_internal_mutable_name() {
 }
 inline std::string* Type::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Type.name)
-  
   return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Type::set_allocated_name(std::string* name) {
@@ -1868,7 +1867,6 @@ inline std::string* Field::_internal_mutable_name() {
 }
 inline std::string* Field::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Field.name)
-  
   return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Field::set_allocated_name(std::string* name) {
@@ -1950,7 +1948,6 @@ inline std::string* Field::_internal_mutable_type_url() {
 }
 inline std::string* Field::release_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Field.type_url)
-  
   return type_url_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Field::set_allocated_type_url(std::string* type_url) {
@@ -2111,7 +2108,6 @@ inline std::string* Field::_internal_mutable_json_name() {
 }
 inline std::string* Field::release_json_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Field.json_name)
-  
   return json_name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Field::set_allocated_json_name(std::string* json_name) {
@@ -2193,7 +2189,6 @@ inline std::string* Field::_internal_mutable_default_value() {
 }
 inline std::string* Field::release_default_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Field.default_value)
-  
   return default_value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Field::set_allocated_default_value(std::string* default_value) {
@@ -2279,7 +2274,6 @@ inline std::string* Enum::_internal_mutable_name() {
 }
 inline std::string* Enum::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Enum.name)
-  
   return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Enum::set_allocated_name(std::string* name) {
@@ -2538,7 +2532,6 @@ inline std::string* EnumValue::_internal_mutable_name() {
 }
 inline std::string* EnumValue::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValue.name)
-  
   return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void EnumValue::set_allocated_name(std::string* name) {
@@ -2683,7 +2676,6 @@ inline std::string* Option::_internal_mutable_name() {
 }
 inline std::string* Option::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.Option.name)
-  
   return name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Option::set_allocated_name(std::string* name) {
