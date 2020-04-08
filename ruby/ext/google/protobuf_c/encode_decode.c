@@ -434,8 +434,8 @@ static void *startmap_handler(void *closure, const void *hd) {
 }
 
 static bool endmap_handler(void *closure, const void *hd) {
-  VALUE map_rb = (VALUE)closure;
-  Map_set_frame(map_rb, Qnil);
+  map_parse_frame_t* frame = closure;
+  Map_set_frame(frame->map, Qnil);
   return true;
 }
 
@@ -1343,7 +1343,7 @@ static void putmap(VALUE map, const upb_fielddef* f, upb_sink sink, int depth,
                    entry_sink, emit_defaults, is_json);
 
     upb_sink_endmsg(entry_sink, &status);
-    upb_sink_endsubmsg(entry_sink, subsink, getsel(f, UPB_HANDLER_ENDSUBMSG));
+    upb_sink_endsubmsg(subsink, entry_sink, getsel(f, UPB_HANDLER_ENDSUBMSG));
   }
 
   upb_sink_endseq(sink, getsel(f, UPB_HANDLER_ENDSEQ));

@@ -3545,7 +3545,6 @@ bool upb_fielddef_hassubdef(const upb_fielddef *f) {
 bool upb_fielddef_haspresence(const upb_fielddef *f) {
   if (upb_fielddef_isseq(f)) return false;
   if (upb_fielddef_issubmsg(f)) return true;
-  if (upb_fielddef_containingoneof(f)) return true;
   if (f->proto3_optional_) return true;
   return f->file->syntax == UPB_SYNTAX_PROTO2;
 }
