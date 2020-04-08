@@ -795,10 +795,10 @@ bool IsStringInlined(const FieldDescriptor* descriptor,
   if (IsAnyMessage(descriptor->containing_type(), options)) return false;
   if (descriptor->containing_type()->options().map_entry()) return false;
 
-  // Limit to proto2, as we rely on has bits to distinguish field presence for
-  // release_$name$.  On proto3, we cannot use the address of the string
-  // instance when the field has been inlined.
-  if (!HasFieldPresence(descriptor->file())) return false;
+  // We rely on has bits to distinguish field presence for release_$name$.  When
+  // there is no hasbit, we cannot use the address of the string instance when
+  // the field has been inlined.
+  if (!HasHasbit(descriptor)) return false;
 
   if (options.access_info_map) {
     if (descriptor->is_required()) return true;
@@ -1151,7 +1151,7 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
   return UsingImplicitWeakFields(field->file(), options) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          !field->is_required() && !field->is_map() && !field->is_extension() &&
-         field->containing_oneof() == nullptr &&
+         !InRealOneof(field) &&
          !IsWellKnownMessage(field->message_type()->file()) &&
          field->message_type()->file()->name() !=
              "net/proto2/proto/descriptor.proto" &&
@@ -1403,7 +1403,7 @@ class ParseLoopGenerator {
         "#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure\n");
     format_.Indent();
     int hasbits_size = 0;
-    if (HasFieldPresence(descriptor->file())) {
+    if (num_hasbits_ > 0) {
       hasbits_size = (num_hasbits_ + 31) / 32;
     }
     // For now only optimize small hasbits.
@@ -1442,7 +1442,7 @@ class ParseLoopGenerator {
   using WireFormatLite = internal::WireFormatLite;
 
   void GenerateArenaString(const FieldDescriptor* field) {
-    if (HasFieldPresence(field->file())) {
+    if (HasHasbit(field)) {
       format_("_Internal::set_has_$1$(&$has_bits$);\n", FieldName(field));
     }
     std::string default_string =
@@ -1474,8 +1474,8 @@ class ParseLoopGenerator {
         GetOptimizeFor(field->file(), options_) != FileOptions::LITE_RUNTIME &&
         // For now only use arena string for strings with empty defaults.
         field->default_value_string().empty() &&
-        !IsStringInlined(field, options_) &&
-        field->containing_oneof() == nullptr && ctype == FieldOptions::STRING) {
+        !IsStringInlined(field, options_) && !InRealOneof(field) &&
+        ctype == FieldOptions::STRING) {
       GenerateArenaString(field);
     } else {
       std::string name;
@@ -1565,8 +1565,8 @@ class ParseLoopGenerator {
             const FieldDescriptor* val =
                 field->message_type()->FindFieldByName("value");
             GOOGLE_CHECK(val);
-            if (HasFieldPresence(field->file()) &&
-                val->type() == FieldDescriptor::TYPE_ENUM) {
+            if (val->type() == FieldDescriptor::TYPE_ENUM &&
+                !HasPreservingUnknownEnumSemantics(field)) {
               format_(
                   "auto object = "
                   "::$proto_ns$::internal::InitEnumParseWrapper<$unknown_"
@@ -1580,7 +1580,7 @@ class ParseLoopGenerator {
                       FieldName(field));
             }
           } else if (IsLazy(field, options_)) {
-            if (field->containing_oneof() != nullptr) {
+            if (InRealOneof(field)) {
               format_(
                   "if (!_internal_has_$1$()) {\n"
                   "  clear_$2$();\n"
@@ -1590,7 +1590,7 @@ class ParseLoopGenerator {
                   "}\n"
                   "ptr = ctx->ParseMessage($2$_.$1$_, ptr);\n",
                   FieldName(field), field->containing_oneof()->name());
-            } else if (HasFieldPresence(field->file())) {
+            } else if (HasHasbit(field)) {
               format_(
                   "_Internal::set_has_$1$(&$has_bits$);\n"
                   "ptr = ctx->ParseMessage(&$1$_, ptr);\n",
@@ -1684,14 +1684,14 @@ class ParseLoopGenerator {
                field->type() == FieldDescriptor::TYPE_SINT64)) {
             zigzag = "ZigZag";
           }
-          if (field->is_repeated() || field->containing_oneof()) {
+          if (field->is_repeated() || InRealOneof(field)) {
             std::string prefix = field->is_repeated() ? "add" : "set";
             format_(
                 "_internal_$1$_$2$($pi_ns$::ReadVarint$3$$4$(&ptr));\n"
                 "CHK_(ptr);\n",
                 prefix, FieldName(field), zigzag, size);
           } else {
-            if (HasFieldPresence(field->file())) {
+            if (HasHasbit(field)) {
               format_("_Internal::set_has_$1$(&$has_bits$);\n",
                       FieldName(field));
             }
@@ -1706,14 +1706,14 @@ class ParseLoopGenerator {
       case WireFormatLite::WIRETYPE_FIXED32:
       case WireFormatLite::WIRETYPE_FIXED64: {
         std::string type = PrimitiveTypeName(options_, field->cpp_type());
-        if (field->is_repeated() || field->containing_oneof()) {
+        if (field->is_repeated() || InRealOneof(field)) {
           std::string prefix = field->is_repeated() ? "add" : "set";
           format_(
               "_internal_$1$_$2$($pi_ns$::UnalignedLoad<$3$>(ptr));\n"
               "ptr += sizeof($3$);\n",
               prefix, FieldName(field), type);
         } else {
-          if (HasFieldPresence(field->file())) {
+          if (HasHasbit(field)) {
             format_("_Internal::set_has_$1$(&$has_bits$);\n", FieldName(field));
           }
           format_(

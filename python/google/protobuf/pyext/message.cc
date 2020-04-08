@@ -1424,19 +1424,13 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
     return false;
   }
 
-  if (field_descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
-    // HasField() is supported for oneof fields.
-    if (field_descriptor->containing_oneof() != NULL) {
-      return true;
-    }
-
-    if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-      PyErr_Format(
-          PyExc_ValueError,
-          "Can't test non-submessage field \"%s.%s\" for presence in proto3.",
-          message_name.c_str(), field_descriptor->name().c_str());
-      return false;
-    }
+  if (field_descriptor->containing_oneof() == NULL &&
+      !field_descriptor->is_singular_with_presence()) {
+    PyErr_Format(PyExc_ValueError,
+                 "Can't test non-optional, non-submessage field \"%s.%s\" for "
+                 "presence in proto3.",
+                 message_name.c_str(), field_descriptor->name().c_str());
+    return false;
   }
 
   return true;

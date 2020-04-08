@@ -978,6 +978,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/service_reflection_test.py                 \
   python/google/protobuf/internal/symbol_database_test.py                    \
   python/google/protobuf/internal/test_bad_identifiers.proto                 \
+  python/google/protobuf/internal/test_proto3_optional.proto                 \
   python/google/protobuf/internal/test_util.py                               \
   python/google/protobuf/internal/testing_refleaks.py                        \
   python/google/protobuf/internal/text_encoding_test.py                      \

@@ -74,6 +74,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                         GeneratorContext* generator_context,
                         std::string* error) const;
 
+  uint64 GetSupportedFeatures() const override;
+
  private:
   void PrintImports() const;
   void PrintFileDescriptor() const;

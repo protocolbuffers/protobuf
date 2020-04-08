@@ -277,7 +277,6 @@ inline std::string* SourceContext::_internal_mutable_file_name() {
 }
 inline std::string* SourceContext::release_file_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
-  
   return file_name_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void SourceContext::set_allocated_file_name(std::string* file_name) {
