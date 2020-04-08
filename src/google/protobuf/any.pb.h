@@ -338,7 +338,6 @@ inline std::string* Any::_internal_mutable_type_url() {
 }
 inline std::string* Any::release_type_url() {
   // @@protoc_insertion_point(field_release:google.protobuf.Any.type_url)
-  
   return type_url_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Any::set_allocated_type_url(std::string* type_url) {
@@ -420,7 +419,6 @@ inline std::string* Any::_internal_mutable_value() {
 }
 inline std::string* Any::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Any.value)
-  
   return value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline void Any::set_allocated_value(std::string* value) {

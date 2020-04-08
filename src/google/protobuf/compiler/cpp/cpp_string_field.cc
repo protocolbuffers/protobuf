@@ -281,7 +281,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         "$annotate_accessor$"
         "  // @@protoc_insertion_point(field_release:$full_name$)\n");
 
-    if (HasFieldPresence(descriptor_->file())) {
+    if (HasHasbit(descriptor_)) {
       format(
           "  if (!_internal_has_$name$()) {\n"
           "    return nullptr;\n"
@@ -291,7 +291,6 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
           "$default_variable$, GetArena());\n");
     } else {
       format(
-          "  $clear_hasbit$\n"
           "  return $name$_.Release($default_variable$, GetArena());\n");
     }
 
@@ -386,7 +385,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         "$annotate_accessor$"
         "  // @@protoc_insertion_point(field_release:$full_name$)\n");
 
-    if (HasFieldPresence(descriptor_->file())) {
+    if (HasHasbit(descriptor_)) {
       format(
           "  if (!_internal_has_$name$()) {\n"
           "    return nullptr;\n"
@@ -454,10 +453,10 @@ void StringFieldGenerator::GenerateMessageClearingCode(
   // the minimal number of branches / amount of extraneous code at runtime
   // (given that the below methods are inlined one-liners)!
 
-  // If we have field presence, then the Clear() method of the protocol buffer
+  // If we have a hasbit, then the Clear() method of the protocol buffer
   // will have checked that this field is set.  If so, we can avoid redundant
   // checks against default_variable.
-  const bool must_be_present = HasFieldPresence(descriptor_->file());
+  const bool must_be_present = HasHasbit(descriptor_);
 
   if (inlined_ && must_be_present) {
     // Calling mutable_$name$() gives us a string reference and sets the has bit
@@ -502,7 +501,7 @@ void StringFieldGenerator::GenerateMessageClearingCode(
 
 void StringFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (SupportsArenas(descriptor_) || descriptor_->containing_oneof() != NULL) {
+  if (SupportsArenas(descriptor_) || InRealOneof(descriptor_)) {
     // TODO(gpike): improve this
     format("_internal_set_$name$(from._internal_$name$());\n");
   } else {
@@ -538,7 +537,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
   Formatter format(printer, variables_);
   GenerateConstructorCode(printer);
 
-  if (HasFieldPresence(descriptor_->file())) {
+  if (HasHasbit(descriptor_)) {
     format("if (from._internal_has_$name$()) {\n");
   } else {
     format("if (!from._internal_$name$().empty()) {\n");
@@ -546,7 +545,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
 
   format.Indent();
 
-  if (SupportsArenas(descriptor_) || descriptor_->containing_oneof() != NULL) {
+  if (SupportsArenas(descriptor_) || InRealOneof(descriptor_)) {
     // TODO(gpike): improve this
     format(
         "$name$_.Set$lite$($default_variable$, from._internal_$name$(),\n"

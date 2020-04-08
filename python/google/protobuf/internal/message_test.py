@@ -83,6 +83,7 @@ from google.protobuf.internal import encoder
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_util
+from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import testing_refleaks
 from google.protobuf import message
 from google.protobuf.internal import _parameterized
@@ -1673,6 +1674,59 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual('', message.optional_string)
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
+
+  def testProto3Optional(self):
+    msg = test_proto3_optional_pb2.TestProto3Optional()
+    self.assertFalse(msg.HasField('optional_int32'))
+    self.assertFalse(msg.HasField('optional_float'))
+    self.assertFalse(msg.HasField('optional_string'))
+    self.assertFalse(msg.HasField('optional_nested_message'))
+    self.assertFalse(msg.optional_nested_message.HasField('bb'))
+
+    # Set fields.
+    msg.optional_int32 = 1
+    msg.optional_float = 1.0
+    msg.optional_string = '123'
+    msg.optional_nested_message.bb = 1
+    self.assertTrue(msg.HasField('optional_int32'))
+    self.assertTrue(msg.HasField('optional_float'))
+    self.assertTrue(msg.HasField('optional_string'))
+    self.assertTrue(msg.HasField('optional_nested_message'))
+    self.assertTrue(msg.optional_nested_message.HasField('bb'))
+    # Set to default value does not clear the fields
+    msg.optional_int32 = 0
+    msg.optional_float = 0.0
+    msg.optional_string = ''
+    msg.optional_nested_message.bb = 0
+    self.assertTrue(msg.HasField('optional_int32'))
+    self.assertTrue(msg.HasField('optional_float'))
+    self.assertTrue(msg.HasField('optional_string'))
+    self.assertTrue(msg.HasField('optional_nested_message'))
+    self.assertTrue(msg.optional_nested_message.HasField('bb'))
+
+    # Test serialize
+    msg2 = test_proto3_optional_pb2.TestProto3Optional()
+    msg2.ParseFromString(msg.SerializeToString())
+    self.assertTrue(msg2.HasField('optional_int32'))
+    self.assertTrue(msg2.HasField('optional_float'))
+    self.assertTrue(msg2.HasField('optional_string'))
+    self.assertTrue(msg2.HasField('optional_nested_message'))
+    self.assertTrue(msg2.optional_nested_message.HasField('bb'))
+
+    self.assertEqual(msg.WhichOneof('_optional_int32'), 'optional_int32')
+
+    # Clear these fields.
+    msg.ClearField('optional_int32')
+    msg.ClearField('optional_float')
+    msg.ClearField('optional_string')
+    msg.ClearField('optional_nested_message')
+    self.assertFalse(msg.HasField('optional_int32'))
+    self.assertFalse(msg.HasField('optional_float'))
+    self.assertFalse(msg.HasField('optional_string'))
+    self.assertFalse(msg.HasField('optional_nested_message'))
+    self.assertFalse(msg.optional_nested_message.HasField('bb'))
+
+    self.assertEqual(msg.WhichOneof('_optional_int32'), None)
 
   def testAssignUnknownEnum(self):
     """Assigning an unknown enum value is allowed and preserves the value."""

@@ -301,6 +301,10 @@ Generator::Generator() : file_(nullptr) {}
 
 Generator::~Generator() {}
 
+uint64 Generator::GetSupportedFeatures() const {
+  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
+}
+
 bool Generator::Generate(const FileDescriptor* file,
                          const std::string& parameter,
                          GeneratorContext* context, std::string* error) const {

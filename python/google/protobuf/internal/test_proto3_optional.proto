@@ -67,9 +67,7 @@ message TestProto3Optional {
   optional bool optional_bool = 13;
   optional string optional_string = 14;
   optional bytes optional_bytes = 15;
-  optional string optional_cord = 16 [ctype = CORD];
 
   optional NestedMessage optional_nested_message = 18;
-  optional NestedMessage lazy_nested_message = 19 [lazy = true];
   optional NestedEnum optional_nested_enum = 21;
 }

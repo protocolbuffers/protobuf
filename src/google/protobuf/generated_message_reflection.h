@@ -124,16 +124,21 @@ struct ReflectionSchema {
   // Size of a google::protobuf::Message object of this type.
   uint32 GetObjectSize() const { return static_cast<uint32>(object_size_); }
 
+  bool InRealOneof(const FieldDescriptor* field) const {
+    return field->containing_oneof() &&
+           !field->containing_oneof()->is_synthetic();
+  }
+
   // Offset of a non-oneof field.  Getting a field offset is slightly more
   // efficient when we know statically that it is not a oneof field.
   uint32 GetFieldOffsetNonOneof(const FieldDescriptor* field) const {
-    GOOGLE_DCHECK(!field->containing_oneof());
+    GOOGLE_DCHECK(!InRealOneof(field));
     return OffsetValue(offsets_[field->index()], field->type());
   }
 
   // Offset of any field.
   uint32 GetFieldOffset(const FieldDescriptor* field) const {
-    if (field->containing_oneof()) {
+    if (InRealOneof(field)) {
       size_t offset =
           static_cast<size_t>(field->containing_type()->field_count() +
                               field->containing_oneof()->index());
@@ -144,7 +149,7 @@ struct ReflectionSchema {
   }
 
   bool IsFieldInlined(const FieldDescriptor* field) const {
-    if (field->containing_oneof()) {
+    if (InRealOneof(field)) {
       size_t offset =
           static_cast<size_t>(field->containing_type()->field_count() +
                               field->containing_oneof()->index());
@@ -164,6 +169,7 @@ struct ReflectionSchema {
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
   uint32 HasBitIndex(const FieldDescriptor* field) const {
+    if (has_bits_offset_ == -1) return -1;
     GOOGLE_DCHECK(HasHasbits());
     return has_bit_indices_[field->index()];
   }

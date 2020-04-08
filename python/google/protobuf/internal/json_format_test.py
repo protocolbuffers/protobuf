@@ -53,6 +53,7 @@ from google.protobuf import wrappers_pb2
 from google.protobuf import any_test_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
+from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import json_format
 from google.protobuf.util import json_format_pb2
@@ -338,6 +339,20 @@ class JsonFormatTest(JsonFormatBase):
                    '"repeatedMessageValue": []}'))
     parsed_message = json_format_proto3_pb2.TestMessage()
     self.CheckParseBack(message, parsed_message)
+
+  def testProto3Optional(self):
+    message = test_proto3_optional_pb2.TestProto3Optional()
+    self.assertEqual(
+        json.loads(
+            json_format.MessageToJson(
+                message, including_default_value_fields=True)),
+        json.loads('{}'))
+    message.optional_int32 = 0
+    self.assertEqual(
+        json.loads(
+            json_format.MessageToJson(
+                message, including_default_value_fields=True)),
+        json.loads('{"optionalInt32": 0}'))
 
   def testIntegersRepresentedAsFloat(self):
     message = json_format_proto3_pb2.TestMessage()
