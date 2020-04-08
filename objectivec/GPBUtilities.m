@@ -400,6 +400,7 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%            NAME$S                     GPBFieldDescriptor *field,
 //%            NAME$S                     TYPE value,
 //%            NAME$S                     GPBFileSyntax syntax) {
+//%#pragma unused(syntax)
 //%  GPBOneofDescriptor *oneof = field->containingOneof_;
 //%  GPBMessageFieldDescription *fieldDesc = field->description_;
 //%  if (oneof) {
@@ -416,11 +417,10 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%  uint8_t *storage = (uint8_t *)self->messageStorage_;
 //%  TYPE *typePtr = (TYPE *)&storage[fieldDesc->offset];
 //%  *typePtr = value;
-//%  // proto2: any value counts as having been set; proto3, it
-//%  // has to be a non zero value or be in a oneof.
-//%  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-//%                   || (value != (TYPE)0)
-//%                   || (field->containingOneof_ != NULL));
+//%  // If the value is zero, then we only count the field as "set" if the field
+//%  // shouldn't auto clear on zero.
+//%  BOOL hasValue = ((value != (TYPE)0)
+//%                   || ((fieldDesc->flags & GPBFieldClearHasIvarOnZero) == 0));
 //%  GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, hasValue);
 //%  GPBBecomeVisibleToAutocreator(self);
 //%}
@@ -548,6 +548,7 @@ void GPBSetObjectIvarWithFieldInternal(GPBMessage *self,
 void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
                                                GPBFieldDescriptor *field,
                                                id value, GPBFileSyntax syntax) {
+#pragma unused(syntax)
   NSCAssert(self->messageStorage_ != NULL,
             @"%@: All messages should have storage (from init)",
             [self class]);
@@ -596,24 +597,15 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
     }
     // Clear "has" if they are being set to nil.
     BOOL setHasValue = (value != nil);
-    // Under proto3, Bytes & String fields get cleared by resetting them to
-    // their default (empty) values, so if they are set to something of length
-    // zero, they are being cleared.
-    if ((syntax == GPBFileSyntaxProto3) && !fieldIsMessage &&
+    // If the field should clear on a "zero" value, then check if the string/data
+    // was zero length, and clear instead.
+    if (((fieldDesc->flags & GPBFieldClearHasIvarOnZero) != 0) &&
         ([value length] == 0)) {
-      // Except, if the field was in a oneof, then it still gets recorded as
-      // having been set so the state of the oneof can be serialized back out.
-      if (!oneof) {
-        setHasValue = NO;
-      }
-      if (setHasValue) {
-        NSCAssert(value != nil, @"Should never be setting has for nil");
-      } else {
-        // The value passed in was retained, it must be released since we
-        // aren't saving anything in the field.
-        [value release];
-        value = nil;
-      }
+      setHasValue = NO;
+      // The value passed in was retained, it must be released since we
+      // aren't saving anything in the field.
+      [value release];
+      value = nil;
     }
     GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, setHasValue);
   }
@@ -802,6 +794,7 @@ void GPBSetBoolIvarWithFieldInternal(GPBMessage *self,
                                      GPBFieldDescriptor *field,
                                      BOOL value,
                                      GPBFileSyntax syntax) {
+#pragma unused(syntax)
   GPBMessageFieldDescription *fieldDesc = field->description_;
   GPBOneofDescriptor *oneof = field->containingOneof_;
   if (oneof) {
@@ -814,11 +807,10 @@ void GPBSetBoolIvarWithFieldInternal(GPBMessage *self,
   // the offset is never negative)
   GPBSetHasIvar(self, (int32_t)(fieldDesc->offset), fieldDesc->number, value);
 
-  // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (BOOL)0)
-                   || (field->containingOneof_ != NULL));
+  // If the value is zero, then we only count the field as "set" if the field
+  // shouldn't auto clear on zero.
+  BOOL hasValue = ((value != (BOOL)0)
+                   || ((fieldDesc->flags & GPBFieldClearHasIvarOnZero) == 0));
   GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -873,6 +865,7 @@ void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
                                       GPBFieldDescriptor *field,
                                       int32_t value,
                                       GPBFileSyntax syntax) {
+#pragma unused(syntax)
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -889,11 +882,10 @@ void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   int32_t *typePtr = (int32_t *)&storage[fieldDesc->offset];
   *typePtr = value;
-  // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (int32_t)0)
-                   || (field->containingOneof_ != NULL));
+  // If the value is zero, then we only count the field as "set" if the field
+  // shouldn't auto clear on zero.
+  BOOL hasValue = ((value != (int32_t)0)
+                   || ((fieldDesc->flags & GPBFieldClearHasIvarOnZero) == 0));
   GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -949,6 +941,7 @@ void GPBSetUInt32IvarWithFieldInternal(GPBMessage *self,
                                        GPBFieldDescriptor *field,
                                        uint32_t value,
                                        GPBFileSyntax syntax) {
+#pragma unused(syntax)
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -965,11 +958,10 @@ void GPBSetUInt32IvarWithFieldInternal(GPBMessage *self,
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   uint32_t *typePtr = (uint32_t *)&storage[fieldDesc->offset];
   *typePtr = value;
-  // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (uint32_t)0)
-                   || (field->containingOneof_ != NULL));
+  // If the value is zero, then we only count the field as "set" if the field
+  // shouldn't auto clear on zero.
+  BOOL hasValue = ((value != (uint32_t)0)
+                   || ((fieldDesc->flags & GPBFieldClearHasIvarOnZero) == 0));
   GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -1025,6 +1017,7 @@ void GPBSetInt64IvarWithFieldInternal(GPBMessage *self,
                                       GPBFieldDescriptor *field,
                                       int64_t value,
                                       GPBFileSyntax syntax) {
+#pragma unused(syntax)
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -1041,11 +1034,10 @@ void GPBSetInt64IvarWithFieldInternal(GPBMessage *self,
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   int64_t *typePtr = (int64_t *)&storage[fieldDesc->offset];
   *typePtr = value;
-  // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (int64_t)0)
-                   || (field->containingOneof_ != NULL));
+  // If the value is zero, then we only count the field as "set" if the field
+  // shouldn't auto clear on zero.
+  BOOL hasValue = ((value != (int64_t)0)
+                   || ((fieldDesc->flags & GPBFieldClearHasIvarOnZero) == 0));
   GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -1101,6 +1093,7 @@ void GPBSetUInt64IvarWithFieldInternal(GPBMessage *self,
                                        GPBFieldDescriptor *field,
                                        uint64_t value,
                                        GPBFileSyntax syntax) {
+#pragma unused(syntax)
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -1117,11 +1110,10 @@ void GPBSetUInt64IvarWithFieldInternal(GPBMessage *self,
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   uint64_t *typePtr = (uint64_t *)&storage[fieldDesc->offset];
   *typePtr = value;
-  // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (uint64_t)0)
-                   || (field->containingOneof_ != NULL));
+  // If the value is zero, then we only count the field as "set" if the field
+  // shouldn't auto clear on zero.
+  BOOL hasValue = ((value != (uint64_t)0)
+                   || ((fieldDesc->flags & GPBFieldClearHasIvarOnZero) == 0));
   GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -1177,6 +1169,7 @@ void GPBSetFloatIvarWithFieldInternal(GPBMessage *self,
                                       GPBFieldDescriptor *field,
                                       float value,
                                       GPBFileSyntax syntax) {
+#pragma unused(syntax)
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -1193,11 +1186,10 @@ void GPBSetFloatIvarWithFieldInternal(GPBMessage *self,
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   float *typePtr = (float *)&storage[fieldDesc->offset];
   *typePtr = value;
-  // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (float)0)
-                   || (field->containingOneof_ != NULL));
+  // If the value is zero, then we only count the field as "set" if the field
+  // shouldn't auto clear on zero.
+  BOOL hasValue = ((value != (float)0)
+                   || ((fieldDesc->flags & GPBFieldClearHasIvarOnZero) == 0));
   GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
@@ -1253,6 +1245,7 @@ void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
                                        GPBFieldDescriptor *field,
                                        double value,
                                        GPBFileSyntax syntax) {
+#pragma unused(syntax)
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -1269,11 +1262,10 @@ void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
   uint8_t *storage = (uint8_t *)self->messageStorage_;
   double *typePtr = (double *)&storage[fieldDesc->offset];
   *typePtr = value;
-  // proto2: any value counts as having been set; proto3, it
-  // has to be a non zero value or be in a oneof.
-  BOOL hasValue = ((syntax == GPBFileSyntaxProto2)
-                   || (value != (double)0)
-                   || (field->containingOneof_ != NULL));
+  // If the value is zero, then we only count the field as "set" if the field
+  // shouldn't auto clear on zero.
+  BOOL hasValue = ((value != (double)0)
+                   || ((fieldDesc->flags & GPBFieldClearHasIvarOnZero) == 0));
   GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, hasValue);
   GPBBecomeVisibleToAutocreator(self);
 }
