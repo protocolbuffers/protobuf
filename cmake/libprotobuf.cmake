@@ -127,6 +127,9 @@ if(MSVC AND protobuf_BUILD_SHARED_LIBS)
     PUBLIC  PROTOBUF_USE_DLLS
     PRIVATE LIBPROTOBUF_EXPORTS)
 endif()
+if(ANDROID)
+  target_link_libraries(libprotobuf log)
+endif()
 set_target_properties(libprotobuf PROPERTIES
     VERSION ${protobuf_VERSION}
     OUTPUT_NAME ${LIB_PREFIX}protobuf
