@@ -1,7 +1,7 @@
 #include <cstdint>
 
 #include "google/protobuf/descriptor.upb.h"
-#include "upb/upb.h"
+#include "upb/upb.hpp"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   upb::Arena arena;

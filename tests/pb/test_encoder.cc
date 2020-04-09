@@ -1,14 +1,15 @@
 
+#include <iostream>
+
+#include "google/protobuf/descriptor.upb.h"
+#include "google/protobuf/descriptor.upbdefs.h"
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
 #include "upb/bindings/stdc++/string.h"
-#include "google/protobuf/descriptor.upb.h"
-#include "google/protobuf/descriptor.upbdefs.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/encoder.h"
-
 #include "upb/port_def.inc"
-#include <iostream>
+#include "upb/upb.hpp"
 
 void test_pb_roundtrip() {
   std::string input(

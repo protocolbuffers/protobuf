@@ -25,6 +25,7 @@
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus
+#include "upb/def.hpp"
 namespace upb {
 class HandlersPtr;
 class HandlerCache;

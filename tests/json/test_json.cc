@@ -3,18 +3,18 @@
  * A set of tests for JSON parsing and serialization.
  */
 
+#include <string>
+
+#include "tests/json/test.upb.h"  // Test that it compiles for C++.
 #include "tests/json/test.upbdefs.h"
-#include "tests/json/test.upb.h"   // Test that it compiles for C++.
 #include "tests/test_util.h"
 #include "tests/upb_test.h"
+#include "upb/def.hpp"
 #include "upb/handlers.h"
 #include "upb/json/parser.h"
 #include "upb/json/printer.h"
-#include "upb/upb.h"
-
-#include <string>
-
 #include "upb/port_def.inc"
+#include "upb/upb.h"
 
 // Macros for readability in test case list: allows us to give TEST("...") /
 // EXPECT("...") pairs.

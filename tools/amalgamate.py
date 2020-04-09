@@ -45,14 +45,24 @@ class Amalgamator:
         raise RuntimeError("Couldn't open file " + infile_name)
 
     for line in file:
-      include = parse_include(line)
-      if include is not None and (include.startswith("upb") or
-                                  include.startswith("google")):
-        if include not in self.included:
-          self.included.add(include)
-          self._add_header(include)
-      else:
+      if not self._process_include(line, outfile):
         outfile.write(line)
+
+  def _process_include(self, line, outfile):
+    include = parse_include(line)
+    if not include:
+      return False
+    if not (include.startswith("upb") or include.startswith("google")):
+      return False
+    if include.endswith("hpp"):
+      # Skip, we don't support the amalgamation from C++.
+      return True
+    else:
+      # Include this upb header inline.
+      if include not in self.included:
+        self.included.add(include)
+        self._add_header(include)
+      return True
 
   def _add_header(self, filename):
     self._process_file(filename, self.output_h)

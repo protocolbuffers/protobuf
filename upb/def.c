@@ -239,6 +239,10 @@ static uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
   return ret;
 }
 
+static void upb_status_setoom(upb_status *status) {
+  upb_status_seterrmsg(status, "out of memory");
+}
+
 static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   /* Sort fields.  upb internally relies on UPB_TYPE_MESSAGE fields having the
    * lowest indexes, but we do not publicly guarantee this. */

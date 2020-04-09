@@ -72,7 +72,8 @@ add_library(upb
   upb/upb.c
   upb/decode.h
   upb/encode.h
-  upb/upb.h)
+  upb/upb.h
+  upb/upb.hpp)
 target_link_libraries(upb
   port)
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
@@ -84,6 +85,7 @@ add_library(reflection
   upb/msg.h
   upb/reflection.c
   upb/def.h
+  upb/def.hpp
   upb/reflection.h)
 target_link_libraries(reflection
   descriptor_upbproto
