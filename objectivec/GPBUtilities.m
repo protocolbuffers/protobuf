@@ -392,15 +392,12 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%            [self class], field.name,
 //%            TypeToString(GPBGetFieldDataType(field)));
 //%#endif
-//%  GPBFileSyntax syntax = [self descriptor].file.syntax;
-//%  GPBSet##NAME##IvarWithFieldInternal(self, field, value, syntax);
+//%  GPBSet##NAME##IvarWithFieldPrivate(self, field, value);
 //%}
 //%
-//%void GPBSet##NAME##IvarWithFieldInternal(GPBMessage *self,
-//%            NAME$S                     GPBFieldDescriptor *field,
-//%            NAME$S                     TYPE value,
-//%            NAME$S                     GPBFileSyntax syntax) {
-//%#pragma unused(syntax)
+//%void GPBSet##NAME##IvarWithFieldPrivate(GPBMessage *self,
+//%            NAME$S                    GPBFieldDescriptor *field,
+//%            NAME$S                    TYPE value) {
 //%  GPBOneofDescriptor *oneof = field->containingOneof_;
 //%  GPBMessageFieldDescription *fieldDesc = field->description_;
 //%  if (oneof) {
@@ -515,16 +512,14 @@ void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
 static void GPBSetObjectIvarWithField(GPBMessage *self,
                                       GPBFieldDescriptor *field, id value) {
   if (self == nil || field == nil) return;
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetRetainedObjectIvarWithFieldInternal(self, field, [value retain],
-                                            syntax);
+  GPBSetRetainedObjectIvarWithFieldPrivate(self, field, [value retain]);
 }
 
 static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
                                           GPBFieldDescriptor *field, id value);
 
 // GPBSetCopyObjectIvarWithField is blocked from the analyzer because it flags
-// a leak for the -copy even though GPBSetRetainedObjectIvarWithFieldInternal
+// a leak for the -copy even though GPBSetRetainedObjectIvarWithFieldPrivate
 // is marked as consuming the value. Note: For some reason this doesn't happen
 // with the -retain in GPBSetObjectIvarWithField.
 #if !defined(__clang_analyzer__)
@@ -532,23 +527,18 @@ static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
 static void GPBSetCopyObjectIvarWithField(GPBMessage *self,
                                           GPBFieldDescriptor *field, id value) {
   if (self == nil || field == nil) return;
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetRetainedObjectIvarWithFieldInternal(self, field, [value copy],
-                                            syntax);
+  GPBSetRetainedObjectIvarWithFieldPrivate(self, field, [value copy]);
 }
 #endif  // !defined(__clang_analyzer__)
 
-void GPBSetObjectIvarWithFieldInternal(GPBMessage *self,
-                                       GPBFieldDescriptor *field, id value,
-                                       GPBFileSyntax syntax) {
-  GPBSetRetainedObjectIvarWithFieldInternal(self, field, [value retain],
-                                            syntax);
+void GPBSetObjectIvarWithFieldPrivate(GPBMessage *self,
+                                      GPBFieldDescriptor *field, id value) {
+  GPBSetRetainedObjectIvarWithFieldPrivate(self, field, [value retain]);
 }
 
-void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
-                                               GPBFieldDescriptor *field,
-                                               id value, GPBFileSyntax syntax) {
-#pragma unused(syntax)
+void GPBSetRetainedObjectIvarWithFieldPrivate(GPBMessage *self,
+                                              GPBFieldDescriptor *field,
+                                              id value) {
   NSCAssert(self->messageStorage_ != NULL,
             @"%@: All messages should have storage (from init)",
             [self class]);
@@ -687,16 +677,12 @@ int32_t GPBGetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field) {
               [self class], field.name,
               TypeToString(GPBGetFieldDataType(field)));
   #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  return GPBGetEnumIvarWithFieldInternal(self, field, syntax);
-}
 
-int32_t GPBGetEnumIvarWithFieldInternal(GPBMessage *self,
-                                        GPBFieldDescriptor *field,
-                                        GPBFileSyntax syntax) {
   int32_t result = GPBGetMessageInt32Field(self, field);
   // If this is presevering unknown enums, make sure the value is valid before
   // returning it.
+
+  GPBFileSyntax syntax = [self descriptor].file.syntax;
   if (GPBHasPreservingUnknownEnumSemantics(syntax) &&
       ![field isValidEnumValue:result]) {
     result = kGPBUnrecognizedEnumeratorValue;
@@ -717,20 +703,18 @@ void GPBSetMessageEnumField(GPBMessage *self, GPBFieldDescriptor *field,
               [self class], field.name,
               TypeToString(GPBGetFieldDataType(field)));
   #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetInt32IvarWithFieldInternal(self, field, value, syntax);
+  GPBSetEnumIvarWithFieldPrivate(self, field, value);
 }
 
-void GPBSetEnumIvarWithFieldInternal(GPBMessage *self,
-                                     GPBFieldDescriptor *field, int32_t value,
-                                     GPBFileSyntax syntax) {
+void GPBSetEnumIvarWithFieldPrivate(GPBMessage *self,
+                                    GPBFieldDescriptor *field, int32_t value) {
   // Don't allow in unknown values.  Proto3 can use the Raw method.
   if (![field isValidEnumValue:value]) {
     [NSException raise:NSInvalidArgumentException
                 format:@"%@.%@: Attempt to set an unknown enum value (%d)",
                        [self class], field.name, value];
   }
-  GPBSetInt32IvarWithFieldInternal(self, field, value, syntax);
+  GPBSetInt32IvarWithFieldPrivate(self, field, value);
 }
 
 // Only exists for public api, no core code should use this.
@@ -743,8 +727,7 @@ int32_t GPBGetMessageRawEnumField(GPBMessage *self,
 // Only exists for public api, no core code should use this.
 void GPBSetMessageRawEnumField(GPBMessage *self, GPBFieldDescriptor *field,
                                int32_t value) {
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetInt32IvarWithFieldInternal(self, field, value, syntax);
+  GPBSetInt32IvarWithFieldPrivate(self, field, value);
 }
 
 BOOL GPBGetMessageBoolField(GPBMessage *self,
@@ -786,15 +769,12 @@ void GPBSetMessageBoolField(GPBMessage *self,
               [self class], field.name,
               TypeToString(GPBGetFieldDataType(field)));
   #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetBoolIvarWithFieldInternal(self, field, value, syntax);
+  GPBSetBoolIvarWithFieldPrivate(self, field, value);
 }
 
-void GPBSetBoolIvarWithFieldInternal(GPBMessage *self,
-                                     GPBFieldDescriptor *field,
-                                     BOOL value,
-                                     GPBFileSyntax syntax) {
-#pragma unused(syntax)
+void GPBSetBoolIvarWithFieldPrivate(GPBMessage *self,
+                                    GPBFieldDescriptor *field,
+                                    BOOL value) {
   GPBMessageFieldDescription *fieldDesc = field->description_;
   GPBOneofDescriptor *oneof = field->containingOneof_;
   if (oneof) {
@@ -857,15 +837,12 @@ void GPBSetMessageInt32Field(GPBMessage *self,
             [self class], field.name,
             TypeToString(GPBGetFieldDataType(field)));
 #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetInt32IvarWithFieldInternal(self, field, value, syntax);
+  GPBSetInt32IvarWithFieldPrivate(self, field, value);
 }
 
-void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      int32_t value,
-                                      GPBFileSyntax syntax) {
-#pragma unused(syntax)
+void GPBSetInt32IvarWithFieldPrivate(GPBMessage *self,
+                                     GPBFieldDescriptor *field,
+                                     int32_t value) {
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -933,15 +910,12 @@ void GPBSetMessageUInt32Field(GPBMessage *self,
             [self class], field.name,
             TypeToString(GPBGetFieldDataType(field)));
 #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetUInt32IvarWithFieldInternal(self, field, value, syntax);
+  GPBSetUInt32IvarWithFieldPrivate(self, field, value);
 }
 
-void GPBSetUInt32IvarWithFieldInternal(GPBMessage *self,
-                                       GPBFieldDescriptor *field,
-                                       uint32_t value,
-                                       GPBFileSyntax syntax) {
-#pragma unused(syntax)
+void GPBSetUInt32IvarWithFieldPrivate(GPBMessage *self,
+                                      GPBFieldDescriptor *field,
+                                      uint32_t value) {
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -1009,15 +983,12 @@ void GPBSetMessageInt64Field(GPBMessage *self,
             [self class], field.name,
             TypeToString(GPBGetFieldDataType(field)));
 #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetInt64IvarWithFieldInternal(self, field, value, syntax);
+  GPBSetInt64IvarWithFieldPrivate(self, field, value);
 }
 
-void GPBSetInt64IvarWithFieldInternal(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      int64_t value,
-                                      GPBFileSyntax syntax) {
-#pragma unused(syntax)
+void GPBSetInt64IvarWithFieldPrivate(GPBMessage *self,
+                                     GPBFieldDescriptor *field,
+                                     int64_t value) {
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -1085,15 +1056,12 @@ void GPBSetMessageUInt64Field(GPBMessage *self,
             [self class], field.name,
             TypeToString(GPBGetFieldDataType(field)));
 #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetUInt64IvarWithFieldInternal(self, field, value, syntax);
+  GPBSetUInt64IvarWithFieldPrivate(self, field, value);
 }
 
-void GPBSetUInt64IvarWithFieldInternal(GPBMessage *self,
-                                       GPBFieldDescriptor *field,
-                                       uint64_t value,
-                                       GPBFileSyntax syntax) {
-#pragma unused(syntax)
+void GPBSetUInt64IvarWithFieldPrivate(GPBMessage *self,
+                                      GPBFieldDescriptor *field,
+                                      uint64_t value) {
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -1161,15 +1129,12 @@ void GPBSetMessageFloatField(GPBMessage *self,
             [self class], field.name,
             TypeToString(GPBGetFieldDataType(field)));
 #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetFloatIvarWithFieldInternal(self, field, value, syntax);
+  GPBSetFloatIvarWithFieldPrivate(self, field, value);
 }
 
-void GPBSetFloatIvarWithFieldInternal(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      float value,
-                                      GPBFileSyntax syntax) {
-#pragma unused(syntax)
+void GPBSetFloatIvarWithFieldPrivate(GPBMessage *self,
+                                     GPBFieldDescriptor *field,
+                                     float value) {
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -1237,15 +1202,12 @@ void GPBSetMessageDoubleField(GPBMessage *self,
             [self class], field.name,
             TypeToString(GPBGetFieldDataType(field)));
 #endif
-  GPBFileSyntax syntax = [self descriptor].file.syntax;
-  GPBSetDoubleIvarWithFieldInternal(self, field, value, syntax);
+  GPBSetDoubleIvarWithFieldPrivate(self, field, value);
 }
 
-void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
-                                       GPBFieldDescriptor *field,
-                                       double value,
-                                       GPBFileSyntax syntax) {
-#pragma unused(syntax)
+void GPBSetDoubleIvarWithFieldPrivate(GPBMessage *self,
+                                      GPBFieldDescriptor *field,
+                                      double value) {
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
@@ -2260,6 +2222,19 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
 }
 
 #pragma clang diagnostic pop
+
+#pragma mark Legacy methods old generated code calls
+
+// Shim from the older generated code into the runtime.
+void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
+                                      GPBFieldDescriptor *field,
+                                      int32_t value,
+                                      GPBFileSyntax syntax) {
+#pragma unused(syntax)
+  GPBSetMessageInt32Field(self, field, value);
+}
+
+#pragma mark Misc Helpers
 
 BOOL GPBClassHasSel(Class aClass, SEL sel) {
   // NOTE: We have to use class_copyMethodList, all other runtime method
