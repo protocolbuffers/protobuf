@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/cpp/cpp_file.h>
 
+#include <iostream>
 #include <map>
 #include <memory>
 #include <set>
