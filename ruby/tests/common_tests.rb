@@ -1723,7 +1723,7 @@ module CommonTests
     m.duration = Rational(3, 2)
     assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 500_000_000), m.duration
 
-    m.duration = BigDecimal.new("5")
+    m.duration = BigDecimal("5")
     assert_equal Google::Protobuf::Duration.new(seconds: 5, nanos: 0), m.duration
 
     m = proto_module::TimeMessage.new(duration: 1.1)
