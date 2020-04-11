@@ -35,6 +35,7 @@ using Google.Protobuf.Compatibility;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
+using System.Security;
 
 namespace Google.Protobuf
 {
@@ -614,6 +615,7 @@ namespace Google.Protobuf
                 return value;
             }
 
+            [SecuritySafeCritical]
             internal static T Read<T>(ref ParseContext ctx, FieldCodec<T> codec)
             {
                 int length = ctx.ReadLength();

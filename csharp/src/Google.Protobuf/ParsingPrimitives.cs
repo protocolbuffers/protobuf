@@ -46,6 +46,7 @@ namespace Google.Protobuf
     /// <summary>
     /// Primitives for parsing protobuf wire format.
     /// </summary>
+    [SecuritySafeCritical]
     internal static class ParsingPrimitives
     {
 
@@ -595,6 +596,7 @@ namespace Google.Protobuf
         /// <exception cref="InvalidProtocolBufferException">
         /// the end of the stream or the current limit was reached
         /// </exception>
+        [SecuritySafeCritical]
         public static string ReadRawString(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int length)
         {
             // No need to read any data for an empty string.
@@ -643,7 +645,8 @@ namespace Google.Protobuf
             // Slow path: Build a byte array first then copy it.
             return CodedOutputStream.Utf8Encoding.GetString(ReadRawBytes(ref buffer, ref state, length), 0, length);
         }
-        
+
+        [SecuritySafeCritical]
         private static byte ReadRawByte(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             if (state.bufferPos == state.bufferSize)

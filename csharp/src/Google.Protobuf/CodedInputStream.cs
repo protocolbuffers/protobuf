@@ -54,6 +54,7 @@ namespace Google.Protobuf
     /// and <see cref="MapField{TKey, TValue}"/> to serialize such fields.
     /// </para>
     /// </remarks>
+    [SecuritySafeCritical]
     public sealed class CodedInputStream : IDisposable
     {
         /// <summary>

@@ -34,6 +34,7 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Security;
 
 namespace Google.Protobuf
 {
@@ -41,6 +42,7 @@ namespace Google.Protobuf
     /// Abstraction for reading from a stream / read only sequence.
     /// Parsing from the buffer is a loop of reading from current buffer / refreshing the buffer once done.
     /// </summary>
+    [SecuritySafeCritical]
     internal struct SegmentedBufferHelper
     {
         private int? totalLength;

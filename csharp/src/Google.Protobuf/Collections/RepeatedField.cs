@@ -34,6 +34,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 
 namespace Google.Protobuf.Collections
 {
@@ -111,6 +112,7 @@ namespace Google.Protobuf.Collections
         /// </summary>
         /// <param name="ctx">The input to read from.</param>
         /// <param name="codec">The codec to use in order to read each entry.</param>
+        [SecuritySafeCritical]
         public void AddEntriesFrom(ref ParseContext ctx, FieldCodec<T> codec)
         {
             // TODO: Inline some of the Add code, so we can avoid checking the size on every

@@ -46,6 +46,7 @@ namespace Google.Protobuf
     /// <summary>
     /// Fast parsing primitives for wrapper types
     /// </summary>
+    [SecuritySafeCritical]
     internal static class ParsingPrimitivesWrappers
     {
         internal static float? ReadFloatWrapperLittleEndian(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)

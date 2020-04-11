@@ -34,12 +34,14 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Security;
 
 namespace Google.Protobuf
 {
     /// <summary>
     /// Reading and skipping messages / groups
     /// </summary>
+    [SecuritySafeCritical]
     internal static class ParsingPrimitivesMessages
     {
         public static void SkipLastField(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)

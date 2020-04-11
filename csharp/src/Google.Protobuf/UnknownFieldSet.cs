@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 using Google.Protobuf.Reflection;
 
 namespace Google.Protobuf
@@ -278,6 +279,7 @@ namespace Google.Protobuf
         /// <param name="unknownFields">The UnknownFieldSet which need to be merged</param>
         /// <param name="ctx">The parse context from which to read the field</param>
         /// <returns>The merged UnknownFieldSet</returns>
+        [SecuritySafeCritical]
         public static UnknownFieldSet MergeFieldFrom(UnknownFieldSet unknownFields,
                                                      ref ParseContext ctx)
         {

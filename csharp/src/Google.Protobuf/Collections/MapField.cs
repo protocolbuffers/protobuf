@@ -38,6 +38,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf.Collections
 {
@@ -442,6 +443,7 @@ namespace Google.Protobuf.Collections
         /// </remarks>
         /// <param name="ctx">Input to read from</param>
         /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
+        [SecuritySafeCritical]
         public void AddEntriesFrom(ref ParseContext ctx, Codec codec)
         {
             // TODO: deduplicate code?
@@ -689,6 +691,7 @@ namespace Google.Protobuf.Collections
                     }
                 }
 
+                [SecuritySafeCritical]
                 public void MergeFrom_Internal(ref ParseContext ctx)
                 {
                     // TODO(jtattermusch): deduplicate code
