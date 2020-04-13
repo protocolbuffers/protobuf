@@ -62,6 +62,12 @@ static GPBDataType BaseDataType(GPBDataType type) __attribute__ ((unused));
 // Marked unused because currently only called from asserts/debug.
 static NSString *TypeToString(GPBDataType dataType) __attribute__ ((unused));
 
+// Helper for clearing oneofs.
+static void GPBMaybeClearOneofPrivate(GPBMessage *self,
+                                      GPBOneofDescriptor *oneof,
+                                      int32_t oneofHasIndex,
+                                      uint32_t fieldNumberNotToClear);
+
 NSData *GPBEmptyNSData(void) {
   static dispatch_once_t onceToken;
   static NSData *defaultNSData = nil;
@@ -281,6 +287,16 @@ void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, NO);
 }
 
+void GPBClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof) {
+  #if defined(DEBUG) && DEBUG
+    NSCAssert([[self descriptor] oneofWithName:oneof.name] == oneof,
+              @"OneofDescriptor %@ doesn't appear to be for %@ messages.",
+              oneof.name, [self class]);
+  #endif
+  GPBFieldDescriptor *firstField = oneof->fields_[0];
+  GPBMaybeClearOneofPrivate(self, oneof, firstField->description_->hasIndex, 0);
+}
+
 BOOL GPBGetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber) {
   NSCAssert(self->messageStorage_ != NULL,
             @"%@: All messages should have storage (from init)",
@@ -325,8 +341,10 @@ void GPBSetHasIvar(GPBMessage *self, int32_t idx, uint32_t fieldNumber,
   }
 }
 
-void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
-                        int32_t oneofHasIndex, uint32_t fieldNumberNotToClear) {
+static void GPBMaybeClearOneofPrivate(GPBMessage *self,
+                                      GPBOneofDescriptor *oneof,
+                                      int32_t oneofHasIndex,
+                                      uint32_t fieldNumberNotToClear) {
   uint32_t fieldNumberSet = GPBGetHasOneof(self, oneofHasIndex);
   if ((fieldNumberSet == fieldNumberNotToClear) || (fieldNumberSet == 0)) {
     // Do nothing/nothing set in the oneof.
@@ -401,7 +419,7 @@ void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
 //%  GPBOneofDescriptor *oneof = field->containingOneof_;
 //%  GPBMessageFieldDescription *fieldDesc = field->description_;
 //%  if (oneof) {
-//%    GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+//%    GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
 //%  }
 //%#if defined(DEBUG) && DEBUG
 //%  NSCAssert(self->messageStorage_ != NULL,
@@ -583,7 +601,7 @@ void GPBSetRetainedObjectIvarWithFieldPrivate(GPBMessage *self,
     // oneof.
     GPBOneofDescriptor *oneof = field->containingOneof_;
     if (oneof) {
-      GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+      GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
     }
     // Clear "has" if they are being set to nil.
     BOOL setHasValue = (value != nil);
@@ -778,7 +796,7 @@ void GPBSetBoolIvarWithFieldPrivate(GPBMessage *self,
   GPBMessageFieldDescription *fieldDesc = field->description_;
   GPBOneofDescriptor *oneof = field->containingOneof_;
   if (oneof) {
-    GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+    GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
   }
 
   // Bools are stored in the has bits to avoid needing explicit space in the
@@ -846,7 +864,7 @@ void GPBSetInt32IvarWithFieldPrivate(GPBMessage *self,
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
-    GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+    GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
   }
 #if defined(DEBUG) && DEBUG
   NSCAssert(self->messageStorage_ != NULL,
@@ -919,7 +937,7 @@ void GPBSetUInt32IvarWithFieldPrivate(GPBMessage *self,
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
-    GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+    GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
   }
 #if defined(DEBUG) && DEBUG
   NSCAssert(self->messageStorage_ != NULL,
@@ -992,7 +1010,7 @@ void GPBSetInt64IvarWithFieldPrivate(GPBMessage *self,
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
-    GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+    GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
   }
 #if defined(DEBUG) && DEBUG
   NSCAssert(self->messageStorage_ != NULL,
@@ -1065,7 +1083,7 @@ void GPBSetUInt64IvarWithFieldPrivate(GPBMessage *self,
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
-    GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+    GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
   }
 #if defined(DEBUG) && DEBUG
   NSCAssert(self->messageStorage_ != NULL,
@@ -1138,7 +1156,7 @@ void GPBSetFloatIvarWithFieldPrivate(GPBMessage *self,
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
-    GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+    GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
   }
 #if defined(DEBUG) && DEBUG
   NSCAssert(self->messageStorage_ != NULL,
@@ -1211,7 +1229,7 @@ void GPBSetDoubleIvarWithFieldPrivate(GPBMessage *self,
   GPBOneofDescriptor *oneof = field->containingOneof_;
   GPBMessageFieldDescription *fieldDesc = field->description_;
   if (oneof) {
-    GPBMaybeClearOneof(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
+    GPBMaybeClearOneofPrivate(self, oneof, fieldDesc->hasIndex, fieldDesc->number);
   }
 #if defined(DEBUG) && DEBUG
   NSCAssert(self->messageStorage_ != NULL,
@@ -2221,8 +2239,6 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
   return result;
 }
 
-#pragma clang diagnostic pop
-
 #pragma mark Legacy methods old generated code calls
 
 // Shim from the older generated code into the runtime.
@@ -2233,6 +2249,23 @@ void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
 #pragma unused(syntax)
   GPBSetMessageInt32Field(self, field, value);
 }
+
+void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
+                        int32_t oneofHasIndex, uint32_t fieldNumberNotToClear) {
+#pragma unused(fieldNumberNotToClear)
+  #if defined(DEBUG) && DEBUG
+    NSCAssert([[self descriptor] oneofWithName:oneof.name] == oneof,
+              @"OneofDescriptor %@ doesn't appear to be for %@ messages.",
+              oneof.name, [self class]);
+    GPBFieldDescriptor *firstField = oneof->fields_[0];
+    NSCAssert(firstField->description_->hasIndex == oneofHasIndex,
+              @"Internal error, oneofHasIndex (%d) doesn't match (%d).",
+              firstField->description_->hasIndex, oneofHasIndex);
+  #endif
+  GPBMaybeClearOneofPrivate(self, oneof, oneofHasIndex, 0);
+}
+
+#pragma clang diagnostic pop
 
 #pragma mark Misc Helpers
 

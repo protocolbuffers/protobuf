@@ -207,9 +207,6 @@ GPBGetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field) {
   return GPBGetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number);
 }
 
-void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
-                        int32_t oneofHasIndex, uint32_t fieldNumberNotToClear);
-
 #pragma clang diagnostic pop
 
 //%PDDM-DEFINE GPB_IVAR_SET_DECL(NAME, TYPE)
@@ -313,11 +310,13 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
                                   NSString *inputString);
 
 
-// Shim from the older generated code into the runtime.
+// Shims from the older generated code into the runtime.
 void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
                                       GPBFieldDescriptor *field,
                                       int32_t value,
                                       GPBFileSyntax syntax);
+void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
+                        int32_t oneofHasIndex, uint32_t fieldNumberNotToClear);
 
 // A series of selectors that are used solely to get @encoding values
 // for them by the dynamic protobuf runtime code. See
