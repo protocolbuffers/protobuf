@@ -516,6 +516,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
 
     std::vector<string> init_flags;
     init_flags.push_back("GPBDescriptorInitializationFlag_UsesClassRefs");
+    init_flags.push_back("GPBDescriptorInitializationFlag_Proto3OptionalKnown");
     if (need_defaults) {
       init_flags.push_back("GPBDescriptorInitializationFlag_FieldsWithDefault");
     }
