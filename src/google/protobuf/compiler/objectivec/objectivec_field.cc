@@ -91,6 +91,14 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
   }
+  // It will clear on a zero value if...
+  //  - not repeated/map
+  //  - doesn't have presence
+  bool clear_on_zero =
+      (!descriptor->is_repeated() && !descriptor->has_presence());
+  if (clear_on_zero) {
+    field_flags.push_back("GPBFieldClearHasIvarOnZero");
+  }
 
   (*variables)["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
 
