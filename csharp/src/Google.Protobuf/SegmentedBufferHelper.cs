@@ -79,12 +79,12 @@ namespace Google.Protobuf
             }
             else
             {
-                // TODO(jtattermusch): try to initialize the first segment, otherwise the
-                // very first read will result in slowpath (because the first thing to do is to
-                // refill to get the first buffer segment)
-                firstSpan = default;
-                instance.totalLength = (int) sequence.Length;
                 instance.readOnlySequenceEnumerator = sequence.GetEnumerator();
+                instance.totalLength = (int) sequence.Length;
+
+                // set firstSpan to the first segment
+                instance.readOnlySequenceEnumerator.MoveNext();
+                firstSpan = instance.readOnlySequenceEnumerator.Current.Span;
             }
         }
         
