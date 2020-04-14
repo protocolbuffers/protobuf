@@ -640,7 +640,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print("}\n\n");
 
   WriteGeneratedCodeAttributes(printer);
-  printer->Print("public void MergeFrom_Internal(ref pb::ParseContext input) {\n");
+  printer->Print("void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {\n");
   printer->Indent();
   printer->Print(
     "uint tag;\n"
