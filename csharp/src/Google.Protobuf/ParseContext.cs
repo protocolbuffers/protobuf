@@ -136,7 +136,6 @@ namespace Google.Protobuf
         /// </remarks>
         /// <returns>The next field tag, or 0 for end of input. (0 is never a valid tag.)</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-
         public uint ReadTag()
         {
             return ParsingPrimitives.ParseTag(ref buffer, ref state);
