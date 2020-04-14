@@ -716,8 +716,17 @@ namespace Google.Protobuf.Collections
                     // Read it as if we'd seen input with no data (i.e. create a "default" message).
                     if (Value == null)
                     {
-                        ParseContext.Initialize(new ReadOnlySequence<byte>(ZeroLengthMessageStreamData), out ParseContext zeroLengthCtx);
-                        Value = codec.valueCodec.Read(ref zeroLengthCtx);
+                        if (ctx.state.codedInputStream != null)
+                        {
+                            // the decoded message might not support parsing from ParseContext, so
+                            // we need to allow fallback to the legacy MergeFrom(CodedInputStream) parsing.
+                            Value = codec.valueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
+                        }
+                        else
+                        {
+                            ParseContext.Initialize(new ReadOnlySequence<byte>(ZeroLengthMessageStreamData), out ParseContext zeroLengthCtx);
+                            Value = codec.valueCodec.Read(ref zeroLengthCtx);
+                        }
                     }
                 }
 
