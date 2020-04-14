@@ -647,7 +647,7 @@ Status ProtoStreamObjectSource::RenderAny(const ProtoStreamObjectSource* os,
                         resolved_type.status().message());
   }
   // nested_type cannot be null at this time.
-  const google::protobuf::Type* nested_type = resolved_type.ValueOrDie();
+  const google::protobuf::Type* nested_type = resolved_type.value();
 
   io::ArrayInputStream zero_copy_stream(value.data(), value.size());
   io::CodedInputStream in_stream(&zero_copy_stream);
