@@ -270,6 +270,23 @@
                    @"field: %@", name);
   }
 
+  // Single Optional fields
+  //  - has*/setHas* thanks to the optional keyword in proto3, they exist
+  //    for primitive types.
+  //  - has*/setHas* valid for Message.
+
+  for (NSString *name in names) {
+    // build the selector, i.e. - hasOptionalInt32/setHasOptionalInt32:
+    SEL hasSel = NSSelectorFromString(
+        [NSString stringWithFormat:@"hasOptional%@", name]);
+    SEL setHasSel = NSSelectorFromString(
+        [NSString stringWithFormat:@"setHasOptional%@:", name]);
+    XCTAssertTrue([Message3Optional instancesRespondToSelector:hasSel], @"field: %@",
+                  name);
+    XCTAssertTrue([Message3Optional instancesRespondToSelector:setHasSel],
+                  @"field: %@", name);
+  }
+
   // map<> fields
   //  - no has*/setHas*
   //  - *Count
@@ -1000,6 +1017,249 @@
 
 // clang-format on
 //%PDDM-EXPAND-END PROTO3_TEST_HAS_FIELDS()
+}
+
+- (void)testProto3SingleOptionalFieldHasBehavior {
+  //
+  // Setting to any value including the default (0) should result in true.
+  //
+
+//%PDDM-DEFINE PROTO3_TEST_OPTIONAL_HAS_FIELD(FIELD, NON_ZERO_VALUE, ZERO_VALUE)
+//%  {  // optional##FIELD
+//%    Message3Optional *msg = [[Message3Optional alloc] init];
+//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_Optional##FIELD));
+//%    msg.optional##FIELD = NON_ZERO_VALUE;
+//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_Optional##FIELD));
+//%    msg.hasOptional##FIELD = NO;
+//%    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_Optional##FIELD));
+//%    msg.optional##FIELD = ZERO_VALUE;
+//%    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_Optional##FIELD));
+//%    [msg release];
+//%  }
+//%
+//%PDDM-DEFINE PROTO3_TEST_OPTIONAL_HAS_FIELDS()
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Int32, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Int64, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Uint32, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Uint64, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Sint32, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Sint64, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Fixed32, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Fixed64, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Sfixed32, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Sfixed64, 1, 0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Float, 1.0f, 0.0f)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Double, 1.0, 0.0)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Bool, YES, NO)
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(String, @"foo", @"")
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Bytes, [@"foo" dataUsingEncoding:NSUTF8StringEncoding], [NSData data])
+//%  //
+//%  // Test doesn't apply to optionalMessage (no groups in proto3).
+//%  //
+//%
+//%PROTO3_TEST_OPTIONAL_HAS_FIELD(Enum, Message3Optional_Enum_Bar, Message3Optional_Enum_Foo)
+//%PDDM-EXPAND PROTO3_TEST_OPTIONAL_HAS_FIELDS()
+// This block of code is generated, do not edit it directly.
+// clang-format off
+
+  {  // optionalInt32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalInt32));
+    msg.optionalInt32 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalInt32));
+    msg.hasOptionalInt32 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalInt32));
+    msg.optionalInt32 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalInt32));
+    [msg release];
+  }
+
+  {  // optionalInt64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalInt64));
+    msg.optionalInt64 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalInt64));
+    msg.hasOptionalInt64 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalInt64));
+    msg.optionalInt64 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalInt64));
+    [msg release];
+  }
+
+  {  // optionalUint32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalUint32));
+    msg.optionalUint32 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalUint32));
+    msg.hasOptionalUint32 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalUint32));
+    msg.optionalUint32 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalUint32));
+    [msg release];
+  }
+
+  {  // optionalUint64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalUint64));
+    msg.optionalUint64 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalUint64));
+    msg.hasOptionalUint64 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalUint64));
+    msg.optionalUint64 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalUint64));
+    [msg release];
+  }
+
+  {  // optionalSint32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSint32));
+    msg.optionalSint32 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSint32));
+    msg.hasOptionalSint32 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSint32));
+    msg.optionalSint32 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSint32));
+    [msg release];
+  }
+
+  {  // optionalSint64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSint64));
+    msg.optionalSint64 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSint64));
+    msg.hasOptionalSint64 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSint64));
+    msg.optionalSint64 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSint64));
+    [msg release];
+  }
+
+  {  // optionalFixed32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFixed32));
+    msg.optionalFixed32 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFixed32));
+    msg.hasOptionalFixed32 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFixed32));
+    msg.optionalFixed32 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFixed32));
+    [msg release];
+  }
+
+  {  // optionalFixed64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFixed64));
+    msg.optionalFixed64 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFixed64));
+    msg.hasOptionalFixed64 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFixed64));
+    msg.optionalFixed64 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFixed64));
+    [msg release];
+  }
+
+  {  // optionalSfixed32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSfixed32));
+    msg.optionalSfixed32 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSfixed32));
+    msg.hasOptionalSfixed32 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSfixed32));
+    msg.optionalSfixed32 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSfixed32));
+    [msg release];
+  }
+
+  {  // optionalSfixed64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSfixed64));
+    msg.optionalSfixed64 = 1;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSfixed64));
+    msg.hasOptionalSfixed64 = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSfixed64));
+    msg.optionalSfixed64 = 0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalSfixed64));
+    [msg release];
+  }
+
+  {  // optionalFloat
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFloat));
+    msg.optionalFloat = 1.0f;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFloat));
+    msg.hasOptionalFloat = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFloat));
+    msg.optionalFloat = 0.0f;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalFloat));
+    [msg release];
+  }
+
+  {  // optionalDouble
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalDouble));
+    msg.optionalDouble = 1.0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalDouble));
+    msg.hasOptionalDouble = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalDouble));
+    msg.optionalDouble = 0.0;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalDouble));
+    [msg release];
+  }
+
+  {  // optionalBool
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalBool));
+    msg.optionalBool = YES;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalBool));
+    msg.hasOptionalBool = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalBool));
+    msg.optionalBool = NO;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalBool));
+    [msg release];
+  }
+
+  {  // optionalString
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalString));
+    msg.optionalString = @"foo";
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalString));
+    msg.hasOptionalString = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalString));
+    msg.optionalString = @"";
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalString));
+    [msg release];
+  }
+
+  {  // optionalBytes
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalBytes));
+    msg.optionalBytes = [@"foo" dataUsingEncoding:NSUTF8StringEncoding];
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalBytes));
+    msg.hasOptionalBytes = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalBytes));
+    msg.optionalBytes = [NSData data];
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalBytes));
+    [msg release];
+  }
+
+  //
+  // Test doesn't apply to optionalMessage (no groups in proto3).
+  //
+
+  {  // optionalEnum
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalEnum));
+    msg.optionalEnum = Message3Optional_Enum_Bar;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalEnum));
+    msg.hasOptionalEnum = NO;
+    XCTAssertFalse(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalEnum));
+    msg.optionalEnum = Message3Optional_Enum_Foo;
+    XCTAssertTrue(GPBMessageHasFieldNumberSet(msg, Message3Optional_FieldNumber_OptionalEnum));
+    [msg release];
+  }
+
+// clang-format on
+//%PDDM-EXPAND-END PROTO3_TEST_OPTIONAL_HAS_FIELDS()
 }
 
 - (void)testAccessingProto2UnknownEnumValues {

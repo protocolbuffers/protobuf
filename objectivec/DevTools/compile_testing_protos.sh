@@ -158,6 +158,7 @@ compile_protos() {
     --objc_out="${OUTPUT_DIR}/google/protobuf" \
     --proto_path=src/google/protobuf/          \
     --proto_path=src                           \
+    --experimental_allow_proto3_optional       \
     "$@"
 }
 
