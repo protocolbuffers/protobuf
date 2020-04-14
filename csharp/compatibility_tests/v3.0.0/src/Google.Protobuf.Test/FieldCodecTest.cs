@@ -128,7 +128,7 @@ namespace Google.Protobuf
                 codedOutput.Flush();
                 stream.Position = 0;
                 var codedInput = new CodedInputStream(stream);
-                Assert.AreEqual(sampleValue, codec.ValueReader(codedInput));
+                Assert.AreEqual(sampleValue, codec.Read(codedInput));
                 Assert.IsTrue(codedInput.IsAtEnd);
             }
 
@@ -178,7 +178,7 @@ namespace Google.Protobuf
                     Assert.AreEqual(stream.Position, codec.ValueSizeCalculator(codec.DefaultValue));
                     stream.Position = 0;
                     var codedInput = new CodedInputStream(stream);
-                    Assert.AreEqual(codec.DefaultValue, codec.ValueReader(codedInput));
+                    Assert.AreEqual(codec.DefaultValue, codec.Read(codedInput));
                 }
             }
 

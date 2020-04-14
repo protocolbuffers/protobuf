@@ -247,26 +247,26 @@ namespace Google.Protobuf
         {
             // Some easier-to-verify round-trip tests.  The inputs (other than 0, 1, -1)
             // were chosen semi-randomly via keyboard bashing.
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(0)));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(1)));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-1)));
-            Assert.AreEqual(14927, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(14927)));
-            Assert.AreEqual(-3612, CodedInputStream.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-3612)));
+            Assert.AreEqual(0, ParsingPrimitives.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(0)));
+            Assert.AreEqual(1, ParsingPrimitives.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(1)));
+            Assert.AreEqual(-1, ParsingPrimitives.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-1)));
+            Assert.AreEqual(14927, ParsingPrimitives.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(14927)));
+            Assert.AreEqual(-3612, ParsingPrimitives.DecodeZigZag32(CodedOutputStream.EncodeZigZag32(-3612)));
         }
 
         [Test]
         public void RoundTripZigZag64()
         {
-            Assert.AreEqual(0, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(0)));
-            Assert.AreEqual(1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(1)));
-            Assert.AreEqual(-1, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-1)));
-            Assert.AreEqual(14927, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(14927)));
-            Assert.AreEqual(-3612, CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-3612)));
+            Assert.AreEqual(0, ParsingPrimitives.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(0)));
+            Assert.AreEqual(1, ParsingPrimitives.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(1)));
+            Assert.AreEqual(-1, ParsingPrimitives.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-1)));
+            Assert.AreEqual(14927, ParsingPrimitives.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(14927)));
+            Assert.AreEqual(-3612, ParsingPrimitives.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-3612)));
 
             Assert.AreEqual(856912304801416L,
-                            CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(856912304801416L)));
+                            ParsingPrimitives.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(856912304801416L)));
             Assert.AreEqual(-75123905439571256L,
-                            CodedInputStream.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-75123905439571256L)));
+                            ParsingPrimitives.DecodeZigZag64(CodedOutputStream.EncodeZigZag64(-75123905439571256L)));
         }
 
         [Test]
