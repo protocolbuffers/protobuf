@@ -501,7 +501,7 @@ void StringFieldGenerator::GenerateMessageClearingCode(
 
 void StringFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  if (SupportsArenas(descriptor_) || InRealOneof(descriptor_)) {
+  if (SupportsArenas(descriptor_) || descriptor_->real_containing_oneof()) {
     // TODO(gpike): improve this
     format("_internal_set_$name$(from._internal_$name$());\n");
   } else {
@@ -545,7 +545,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
 
   format.Indent();
 
-  if (SupportsArenas(descriptor_) || InRealOneof(descriptor_)) {
+  if (SupportsArenas(descriptor_) || descriptor_->real_containing_oneof()) {
     // TODO(gpike): improve this
     format(
         "$name$_.Set$lite$($default_variable$, from._internal_$name$(),\n"

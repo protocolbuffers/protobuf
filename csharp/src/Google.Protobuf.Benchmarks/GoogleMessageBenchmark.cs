@@ -38,23 +38,27 @@ using System.Linq;
 namespace Google.Protobuf.Benchmarks
 {
     /// <summary>
-    /// Benchmark for serializing (to a MemoryStream) and deserializing (from a ByteString).
+    /// Benchmark for serializing and deserializing of standard datasets that are also
+    /// measured by benchmarks in other languages.
     /// Over time we may wish to test the various different approaches to serialization and deserialization separately.
+    /// See https://github.com/protocolbuffers/protobuf/blob/master/benchmarks/README.md
+    /// See https://github.com/protocolbuffers/protobuf/blob/master/docs/performance.md
     /// </summary>
     [MemoryDiagnoser]
-    public class SerializationBenchmark
+    public class GoogleMessageBenchmark
     {
         /// <summary>
-        /// All the configurations to be tested. Add more datasets to the array as they're available.
+        /// All the datasets to be tested. Add more datasets to the array as they're available.
         /// (When C# supports proto2, this will increase significantly.)
         /// </summary>
-        public static SerializationConfig[] Configurations => new[]
+        public static BenchmarkDatasetConfig[] DatasetConfigurations => new[]
         {
-            new SerializationConfig("dataset.google_message1_proto3.pb")
+            // short name is specified to make results table more readable
+            new BenchmarkDatasetConfig("dataset.google_message1_proto3.pb", "goog_msg1_proto3")
         };
 
-        [ParamsSource(nameof(Configurations))]
-        public SerializationConfig Configuration { get; set; }
+        [ParamsSource(nameof(DatasetConfigurations))]
+        public BenchmarkDatasetConfig Dataset { get; set; }
 
         private MessageParser parser;
         /// <summary>
@@ -67,8 +71,8 @@ namespace Google.Protobuf.Benchmarks
         [GlobalSetup]
         public void GlobalSetup()
         {
-            parser = Configuration.Parser;
-            subTests = Configuration.Payloads.Select(p => new SubTest(p, parser.ParseFrom(p))).ToList();
+            parser = Dataset.Parser;
+            subTests = Dataset.Payloads.Select(p => new SubTest(p, parser.ParseFrom(p))).ToList();
         }
 
         [Benchmark]
@@ -78,7 +82,7 @@ namespace Google.Protobuf.Benchmarks
         public void ToByteArray() => subTests.ForEach(item => item.ToByteArray());
 
         [Benchmark]
-        public void ParseFromByteString() => subTests.ForEach(item => item.ParseFromByteString(parser));
+        public void ParseFromByteArray() => subTests.ForEach(item => item.ParseFromByteArray(parser));
 
         [Benchmark]
         public void ParseFromStream() => subTests.ForEach(item => item.ParseFromStream(parser));
@@ -87,13 +91,13 @@ namespace Google.Protobuf.Benchmarks
         {
             private readonly Stream destinationStream;
             private readonly Stream sourceStream;
-            private readonly ByteString data;
+            private readonly byte[] data;
             private readonly IMessage message;
 
-            public SubTest(ByteString data, IMessage message)
+            public SubTest(byte[] data, IMessage message)
             {
                 destinationStream = new MemoryStream(data.Length);
-                sourceStream = new MemoryStream(data.ToByteArray());
+                sourceStream = new MemoryStream(data);
                 this.data = data;
                 this.message = message;
             }
@@ -108,7 +112,7 @@ namespace Google.Protobuf.Benchmarks
 
             public void ToByteArray() => message.ToByteArray();
 
-            public void ParseFromByteString(MessageParser parser) => parser.ParseFrom(data);
+            public void ParseFromByteArray(MessageParser parser) => parser.ParseFrom(data);
 
             public void ParseFromStream(MessageParser parser)
             {

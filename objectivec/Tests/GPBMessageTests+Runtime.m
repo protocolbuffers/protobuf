@@ -252,7 +252,7 @@
     // build the selector, i.e. - repeatedInt32Array_Count
     SEL countSel = NSSelectorFromString(
         [NSString stringWithFormat:@"repeated%@Array_Count", name]);
-    XCTAssertTrue([Message2 instancesRespondToSelector:countSel], @"field: %@",
+    XCTAssertTrue([Message3 instancesRespondToSelector:countSel], @"field: %@",
                   name);
   }
 
@@ -264,9 +264,9 @@
         NSSelectorFromString([NSString stringWithFormat:@"hasOneof%@", name]);
     SEL setHasSel = NSSelectorFromString(
         [NSString stringWithFormat:@"setHasOneof%@:", name]);
-    XCTAssertFalse([Message2 instancesRespondToSelector:hasSel], @"field: %@",
+    XCTAssertFalse([Message3 instancesRespondToSelector:hasSel], @"field: %@",
                    name);
-    XCTAssertFalse([Message2 instancesRespondToSelector:setHasSel],
+    XCTAssertFalse([Message3 instancesRespondToSelector:setHasSel],
                    @"field: %@", name);
   }
 
@@ -302,14 +302,14 @@
         [NSString stringWithFormat:@"hasMap%@", name]);
     SEL setHasSel = NSSelectorFromString(
         [NSString stringWithFormat:@"setHasMap%@:", name]);
-    XCTAssertFalse([Message2 instancesRespondToSelector:hasSel], @"field: %@",
+    XCTAssertFalse([Message3 instancesRespondToSelector:hasSel], @"field: %@",
                    name);
-    XCTAssertFalse([Message2 instancesRespondToSelector:setHasSel],
+    XCTAssertFalse([Message3 instancesRespondToSelector:setHasSel],
                    @"field: %@", name);
     // build the selector, i.e. - mapInt32Int32Count
     SEL countSel = NSSelectorFromString(
         [NSString stringWithFormat:@"map%@_Count", name]);
-    XCTAssertTrue([Message2 instancesRespondToSelector:countSel], @"field: %@",
+    XCTAssertTrue([Message3 instancesRespondToSelector:countSel], @"field: %@",
                    name);
   }
 }

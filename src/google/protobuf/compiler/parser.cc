@@ -783,8 +783,7 @@ bool Parser::ParseMessageDefinition(
     }
 
     for (auto& field : *message->mutable_field()) {
-      if (field.proto3_optional() &&
-          field.type() != FieldDescriptorProto::TYPE_MESSAGE) {
+      if (field.proto3_optional()) {
         std::string oneof_name = field.name();
 
         // Prepend 'XXXXX_' until we are no longer conflicting.
