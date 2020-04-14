@@ -33,11 +33,14 @@
 
 #include <google/protobuf/pyext/message.h>
 
+#include <structmember.h>  // A Python header file.
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <structmember.h>  // A Python header file.
+
+#include <google/protobuf/stubs/strutil.h>
 
 #ifndef PyVarObject_HEAD_INIT
 #define PyVarObject_HEAD_INIT(type, size) PyObject_HEAD_INIT(type) size,
@@ -456,7 +459,7 @@ static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
   Py_ssize_t attr_size;
   static const char kSuffix[] = "_FIELD_NUMBER";
   if (PyString_AsStringAndSize(name, &attr, &attr_size) >= 0 &&
-      strings::EndsWith(StringPiece(attr, attr_size), kSuffix)) {
+      HasSuffixString(StringPiece(attr, attr_size), kSuffix)) {
     std::string field_name(attr, attr_size - sizeof(kSuffix) + 1);
     LowerString(&field_name);
 

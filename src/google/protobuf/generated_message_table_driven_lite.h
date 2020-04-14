@@ -280,9 +280,13 @@ static inline bool HandleString(io::CodedInputStream* input, MessageLite* msg,
           }
           utf8_string_data = field->Get();
         } break;
+        default:
+          PROTOBUF_ASSUME(false);
       }
       break;
     }
+    default:
+      PROTOBUF_ASSUME(false);
   }
 
   if (kValidateUtf8) {
@@ -322,6 +326,8 @@ inline bool HandleEnum(const ParseTable& table, io::CodedInputStream* input,
         SetOneofField(msg, presence, presence_index, offset, field_number,
                       value);
         break;
+      default:
+        PROTOBUF_ASSUME(false);
     }
   } else {
     UnknownFieldHandler::Varint(msg, table, tag, value);
@@ -406,9 +412,6 @@ bool MergePartialFromCodedStreamInlined(MessageLite* msg,
     const unsigned char processing_type = data->processing_type;
 
     if (data->normal_wiretype == static_cast<unsigned char>(wire_type)) {
-      // TODO(ckennelly): Use a computed goto on GCC/LLVM or otherwise eliminate
-      // the bounds check on processing_type.
-
       switch (processing_type) {
 #define HANDLE_TYPE(TYPE, CPPTYPE)                                             \
   case (WireFormatLite::TYPE_##TYPE): {                                        \
@@ -739,7 +742,7 @@ bool MergePartialFromCodedStreamInlined(MessageLite* msg,
           return true;
         }
         default:
-          break;
+          PROTOBUF_ASSUME(false);
       }
     } else if (data->packed_wiretype == static_cast<unsigned char>(wire_type)) {
       // Non-packable fields have their packed_wiretype masked with
@@ -751,8 +754,6 @@ bool MergePartialFromCodedStreamInlined(MessageLite* msg,
       GOOGLE_DCHECK_NE(TYPE_BYTES_INLINED | kRepeatedMask, processing_type);
       GOOGLE_DCHECK_NE(TYPE_STRING_INLINED | kRepeatedMask, processing_type);
 
-      // TODO(ckennelly): Use a computed goto on GCC/LLVM.
-      //
       // Mask out kRepeatedMask bit, allowing the jump table to be smaller.
       switch (static_cast<WireFormatLite::FieldType>(processing_type ^
                                                      kRepeatedMask)) {
@@ -825,7 +826,7 @@ bool MergePartialFromCodedStreamInlined(MessageLite* msg,
           GOOGLE_DCHECK(false);
           return false;
         default:
-          break;
+          PROTOBUF_ASSUME(false);
       }
     } else {
       if (wire_type == WireFormatLite::WIRETYPE_END_GROUP) {

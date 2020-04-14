@@ -737,7 +737,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
         uint32* has_bits_indices = new uint32[type->field_count()];
         for (int i = 0; i < type->field_count(); i++) {
           // Initialize to -1, fields that need a hasbit will overwrite.
-          has_bits_indices[i] = -1;
+          has_bits_indices[i] = static_cast<uint32>(-1);
         }
         type_info->has_bits_indices.reset(has_bits_indices);
       }

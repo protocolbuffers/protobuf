@@ -444,23 +444,6 @@ inline bool HasHasbit(const FieldDescriptor* field) {
          !field->options().weak();
 }
 
-inline bool InRealOneof(const FieldDescriptor* field) {
-  return field->containing_oneof() &&
-         !field->containing_oneof()->is_synthetic();
-}
-
-// In practice all synthetic oneofs should be at the end of the list, but we
-// decline to depend on this for correctness of the function.
-inline int RealOneofCount(const Descriptor* descriptor) {
-  int count = 0;
-  for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
-    if (!descriptor->oneof_decl(i)->is_synthetic()) {
-      count++;
-    }
-  }
-  return count;
-}
-
 // Returns true if 'enum' semantics are such that unknown values are preserved
 // in the enum field itself, rather than going to the UnknownFieldSet.
 inline bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
@@ -886,14 +869,6 @@ struct OneOfRangeImpl {
     using value_type = const OneofDescriptor*;
     using difference_type = int;
 
-    explicit Iterator(const Descriptor* _descriptor)
-        : idx(-1), descriptor(_descriptor) {
-      Next();
-    }
-
-    Iterator(int _idx, const Descriptor* _descriptor)
-        : idx(_idx), descriptor(_descriptor) {}
-
     value_type operator*() { return descriptor->oneof_decl(idx); }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
@@ -905,23 +880,18 @@ struct OneOfRangeImpl {
     }
 
     Iterator& operator++() {
-      Next();
+      idx++;
       return *this;
-    }
-
-    void Next() {
-      do {
-        idx++;
-      } while (idx < descriptor->oneof_decl_count() &&
-               descriptor->oneof_decl(idx)->is_synthetic());
     }
 
     int idx;
     const Descriptor* descriptor;
   };
 
-  Iterator begin() const { return Iterator(descriptor); }
-  Iterator end() const { return {descriptor->oneof_decl_count(), descriptor}; }
+  Iterator begin() const { return {0, descriptor}; }
+  Iterator end() const {
+    return {descriptor->real_oneof_decl_count(), descriptor};
+  }
 
   const Descriptor* descriptor;
 };
