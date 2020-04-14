@@ -21,7 +21,7 @@ rm -rf ~/.rake-compiler
 
 CROSS_RUBY=$(mktemp tmpfile.XXXXXXXX)
 
-curl https://raw.githubusercontent.com/rake-compiler/rake-compiler/v1.0.9/tasks/bin/cross-ruby.rake > "$CROSS_RUBY"
+curl https://raw.githubusercontent.com/rake-compiler/rake-compiler/v1.1.0/tasks/bin/cross-ruby.rake > "$CROSS_RUBY"
 
 # See https://github.com/grpc/grpc/issues/12161 for verconf.h patch details
 patch "$CROSS_RUBY" << EOF
