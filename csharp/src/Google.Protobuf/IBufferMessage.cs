@@ -43,7 +43,7 @@ namespace Google.Protobuf
         /// Internal implementation of merging data from given parse context into this message.
         /// Users should never invoke this method directly.
         /// </summary>        
-        void MergeFrom_Internal(ref ParseContext ctx);
+        void InternalMergeFrom(ref ParseContext ctx);
     }
 #endif
 }

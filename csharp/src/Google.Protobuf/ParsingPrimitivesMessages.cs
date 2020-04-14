@@ -168,19 +168,19 @@ namespace Google.Protobuf
         {
             if (message is IBufferMessage bufferMessage)
             {
-                bufferMessage.MergeFrom_Internal(ref ctx);   
+                bufferMessage.InternalMergeFrom(ref ctx);   
             }
             else
             {
                 // If we reached here, it means we've ran into a nested message with older generated code
-                // which doesn't provide the MergeFrom_Internal method that takes a ParseContext.
+                // which doesn't provide the InternalMergeFrom method that takes a ParseContext.
                 // With a slight performance overhead, we can still parse this message just fine,
                 // but we need to find the original CodedInputStream instance that initiated this
                 // parsing process and make sure its internal state is up to date.
                 // Note that this performance overhead is not very high (basically copying contents of a struct)
                 // and it will only be incurred in case the application mixes older and newer generated code.
                 // Regenerating the code from .proto files will remove this overhead because it will
-                // generate the MergeFrom_Internal method we need.
+                // generate the InternalMergeFrom method we need.
 
                 if (ctx.state.codedInputStream == null)
                 {

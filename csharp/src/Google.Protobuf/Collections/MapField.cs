@@ -692,7 +692,7 @@ namespace Google.Protobuf.Collections
                 }
 
                 [SecuritySafeCritical]
-                public void MergeFrom_Internal(ref ParseContext ctx)
+                public void InternalMergeFrom(ref ParseContext ctx)
                 {
                     // TODO(jtattermusch): deduplicate code
                     uint tag;
