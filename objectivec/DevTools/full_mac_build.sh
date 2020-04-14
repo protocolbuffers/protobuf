@@ -290,12 +290,9 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
       )
       ;;
     11.*)
+      # Dropped 32bit as Apple doesn't seem support the simulators either.
       XCODEBUILD_TEST_BASE_IOS+=(
-          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" # 64bit
-          # 10.x also seems to often fail running destinations in parallel (with
-          # 32bit one include atleast)
-          -disable-concurrent-destination-testing
       )
       ;;
     * )
