@@ -189,7 +189,7 @@ namespace Google.Protobuf
                     // That also means that one of the new parsing APIs was used at the top level
                     // and in such case it is reasonable to require that all the nested message provide
                     // up-to-date generated code with ParseContext support (and fail otherwise).
-                    throw new InvalidProtocolBufferException($"Message ${message.GetType()} doesn't provide the generated method that enables ParseContext-based parsing. You might need to regenerate the generated protobuf code.");
+                    throw new InvalidProtocolBufferException($"Message {message.GetType().Name} doesn't provide the generated method that enables ParseContext-based parsing. You might need to regenerate the generated protobuf code.");
                 }
 
                 ctx.CopyStateTo(ctx.state.codedInputStream);
