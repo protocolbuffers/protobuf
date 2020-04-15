@@ -1513,6 +1513,17 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
           field_proto,
           FileBuilderContext_strdup(self->file_builder, default_value));
     }
+
+    if (rb_funcall(options, rb_intern("key?"), 1,
+                   ID2SYM(rb_intern("packed"))) == Qtrue) {
+      VALUE packed =
+          rb_hash_lookup(options, ID2SYM(rb_intern("packed")));
+      google_protobuf_FieldOptions *options =
+        google_protobuf_FieldDescriptorProto_mutable_options(
+          field_proto,
+          file_context->arena);
+      google_protobuf_FieldOptions_set_packed(options, RTEST(packed));
+    }
   }
 
   if (oneof_index >= 0) {
@@ -1614,7 +1625,8 @@ VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self) {
 
 /*
  * call-seq:
- *     MessageBuilderContext.repeated(name, type, number, type_class = nil)
+ *     MessageBuilderContext.repeated(name, type, number, type_class = nil,
+ *                                    options = nil)
  *
  * Defines a new repeated field on this message type with the given type, tag
  * number, and type class (for message and enum fields). The type must be a Ruby
@@ -1622,18 +1634,20 @@ VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self) {
  * string, if present (as accepted by FieldDescriptor#submsg_name=).
  */
 VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self) {
-  VALUE name, type, number, type_class;
+  VALUE name, type, number;
+  VALUE type_class = Qnil, options = Qnil;
 
-  if (argc < 3) {
-    rb_raise(rb_eArgError, "Expected at least 3 arguments.");
+  rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
+
+  // Allow passing (name, type, number, options) or
+  // (name, type, number, type_class, options)
+  if (argc == 4 && RB_TYPE_P(type_class, T_HASH)) {
+    options = type_class;
+    type_class = Qnil;
   }
-  name = argv[0];
-  type = argv[1];
-  number = argv[2];
-  type_class = (argc > 3) ? argv[3] : Qnil;
 
   msgdef_add_field(_self, UPB_LABEL_REPEATED, name, type, number, type_class,
-                   Qnil, -1);
+                   options, -1);
 
   return Qnil;
 }

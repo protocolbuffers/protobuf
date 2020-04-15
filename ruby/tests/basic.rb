@@ -521,5 +521,15 @@ module BasicTest
       assert_raise(FrozenErrorType) { m.map_string_int32.delete('a') }
       assert_raise(FrozenErrorType) { m.map_string_int32.clear }
     end
+
+    def test_packed_unpacked
+      m = proto_module::PackedUnpackedMessage.new
+      m.packed_repeated_int32.replace([42, 84, 300])
+      assert_equal proto_module::PackedUnpackedMessage.encode(m), "\x0A\x04\x2A\x54\xAC\x02".b
+
+      m = proto_module::PackedUnpackedMessage.new
+      m.repeated_int32.replace([42, 84, 300])
+      assert_equal proto_module::PackedUnpackedMessage.encode(m), "\x58\x2A\x58\x54\x58\xAC\x02".b
+    end
   end
 end

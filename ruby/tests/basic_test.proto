@@ -192,3 +192,23 @@ message MyStruct {
   string string = 1;
   google.protobuf.Struct struct = 2;
 }
+
+message PackedUnpackedMessage {
+  repeated int32 packed_repeated_int32 = 1;
+  repeated int64 packed_repeated_int64 = 2;
+  repeated uint32 packed_repeated_uint32 = 3;
+  repeated uint64 packed_repeated_uint64 = 4;
+  repeated bool packed_repeated_bool = 5;
+  repeated float packed_repeated_float = 6;
+  repeated double packed_repeated_double = 7;
+  repeated TestEnum packed_repeated_enum = 8;
+
+  repeated int32 repeated_int32 = 11 [packed=false];
+  repeated int64 repeated_int64 = 12 [packed=false];
+  repeated uint32 repeated_uint32 = 13 [packed=false];
+  repeated uint64 repeated_uint64 = 14 [packed=false];
+  repeated bool repeated_bool = 15 [packed=false];
+  repeated float repeated_float = 16 [packed=false];
+  repeated double repeated_double = 17 [packed=false];
+  repeated TestEnum repeated_enum = 18 [packed=false];
+}

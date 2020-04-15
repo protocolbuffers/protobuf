@@ -216,6 +216,11 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer) {
                      DefaultValueForField(field));
     }
 
+    if (field->is_packable()) {
+      printer->Print(", packed: $packed$", "packed",
+                     field->is_packed() ? "true" : "false");
+    }
+
     printer->Print("\n");
   }
 }
