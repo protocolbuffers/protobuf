@@ -207,6 +207,15 @@ jspb.BinaryReader.prototype.getWireType = function() {
 
 
 /**
+ * @return {boolean} Whether the current wire type is a delimited field. Used to
+ * conditionally parse packed repeated fields.
+ */
+jspb.BinaryReader.prototype.isDelimited = function() {
+  return this.nextWireType_ == jspb.BinaryConstants.WireType.DELIMITED;
+};
+
+
+/**
  * @return {boolean} Whether the current wire type is an end-group tag. Used as
  * an exit condition in decoder loops in generated code.
  */
