@@ -323,13 +323,16 @@ namespace Google.Protobuf
         /// </summary>
         public static uint ParseRawLittleEndian32(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
-            const int length = sizeof(uint);
-            if (state.bufferPos + length > state.bufferSize)
+            const int uintLength = sizeof(uint);
+            const int ulongLength = sizeof(ulong);
+            if (state.bufferPos + ulongLength > state.bufferSize)
             {
                 return ParseRawLittleEndian32SlowPath(ref buffer, ref state);
             }
-            uint result = BinaryPrimitives.ReadUInt32LittleEndian(buffer.Slice(state.bufferPos, length));
-            state.bufferPos += length;
+            // ReadUInt32LittleEndian is many times slower than ReadUInt64LittleEndian (at least on some runtimes)
+            // so it's faster better to use ReadUInt64LittleEndian and truncate the result.
+            uint result = (uint) BinaryPrimitives.ReadUInt64LittleEndian(buffer.Slice(state.bufferPos, ulongLength));
+            state.bufferPos += uintLength;
             return result;
         }
 
