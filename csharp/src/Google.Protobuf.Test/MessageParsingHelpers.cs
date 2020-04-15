@@ -32,7 +32,6 @@
 
 using NUnit.Framework;
 using System;
-using Google.Protobuf.Buffers;
 using System.Buffers;
 
 namespace Google.Protobuf
@@ -65,7 +64,7 @@ namespace Google.Protobuf
             // Load content as multiple segments
             parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
             assert(parsedBuffer);
-            
+
             assert(parsedStream);
         }
 

@@ -31,6 +31,7 @@
 #endregion
 
 using System;
+using System.Buffers;
 using System.IO;
 using Google.Protobuf.TestProtos;
 using Proto2 = Google.Protobuf.TestProtos.Proto2;
@@ -68,6 +69,16 @@ namespace Google.Protobuf
             Assert.AreEqual(value, input.ReadRawVarint64());
             Assert.IsTrue(input.IsAtEnd);
 
+            AssertReadFromParseContext(new ReadOnlySequence<byte>(data), (ref ParseContext ctx) =>
+            {
+                Assert.AreEqual((uint) value, ctx.ReadUInt32());
+            }, true);
+
+            AssertReadFromParseContext(new ReadOnlySequence<byte>(data), (ref ParseContext ctx) =>
+            {
+                Assert.AreEqual(value, ctx.ReadUInt64());
+            }, true);
+
             // Try different block sizes.
             for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2)
             {
@@ -77,6 +88,16 @@ namespace Google.Protobuf
                 input = new CodedInputStream(new SmallBlockInputStream(data, bufferSize));
                 Assert.AreEqual(value, input.ReadRawVarint64());
                 Assert.IsTrue(input.IsAtEnd);
+
+                AssertReadFromParseContext(ReadOnlySequenceFactory.CreateWithContent(data, bufferSize), (ref ParseContext ctx) =>
+                {
+                    Assert.AreEqual((uint) value, ctx.ReadUInt32());
+                }, true);
+
+                AssertReadFromParseContext(ReadOnlySequenceFactory.CreateWithContent(data, bufferSize), (ref ParseContext ctx) =>
+                {
+                    Assert.AreEqual(value, ctx.ReadUInt64());
+                }, true);
             }
 
             // Try reading directly from a MemoryStream. We want to verify that it
@@ -105,9 +126,47 @@ namespace Google.Protobuf
             exception = Assert.Throws<InvalidProtocolBufferException>(() => input.ReadRawVarint64());
             Assert.AreEqual(expected.Message, exception.Message);
 
+            AssertReadFromParseContext(new ReadOnlySequence<byte>(data), (ref ParseContext ctx) =>
+            {
+                try
+                {
+                    ctx.ReadUInt32();
+                    Assert.Fail();
+                }
+                catch (InvalidProtocolBufferException ex)
+                {
+                    Assert.AreEqual(expected.Message, ex.Message);
+                }
+            }, false);
+
+            AssertReadFromParseContext(new ReadOnlySequence<byte>(data), (ref ParseContext ctx) =>
+            {
+                try
+                {
+                    ctx.ReadUInt64();
+                    Assert.Fail();
+                }
+                catch (InvalidProtocolBufferException ex)
+                {
+                    Assert.AreEqual(expected.Message, ex.Message);
+                }
+            }, false);
+
             // Make sure we get the same error when reading directly from a Stream.
             exception = Assert.Throws<InvalidProtocolBufferException>(() => CodedInputStream.ReadRawVarint32(new MemoryStream(data)));
             Assert.AreEqual(expected.Message, exception.Message);
+        }
+
+        private delegate void ParseContextAssertAction(ref ParseContext ctx);
+
+        private static void AssertReadFromParseContext(ReadOnlySequence<byte> input, ParseContextAssertAction assertAction, bool assertIsAtEnd)
+        {
+            ParseContext.Initialize(input, out ParseContext parseCtx);
+            assertAction(ref parseCtx);
+            if (assertIsAtEnd)
+            {
+                Assert.IsTrue(SegmentedBufferHelper.IsAtEnd(ref parseCtx.buffer, ref parseCtx.state));
+            }
         }
 
         [Test]
@@ -158,6 +217,11 @@ namespace Google.Protobuf
             Assert.AreEqual(value, input.ReadRawLittleEndian32());
             Assert.IsTrue(input.IsAtEnd);
 
+            AssertReadFromParseContext(new ReadOnlySequence<byte>(data), (ref ParseContext ctx) =>
+            {
+                Assert.AreEqual(value, ctx.ReadFixed32());
+            }, true);
+
             // Try different block sizes.
             for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
             {
@@ -165,6 +229,11 @@ namespace Google.Protobuf
                     new SmallBlockInputStream(data, blockSize));
                 Assert.AreEqual(value, input.ReadRawLittleEndian32());
                 Assert.IsTrue(input.IsAtEnd);
+
+                AssertReadFromParseContext(ReadOnlySequenceFactory.CreateWithContent(data, blockSize), (ref ParseContext ctx) =>
+                {
+                    Assert.AreEqual(value, ctx.ReadFixed32());
+                }, true);
             }
         }
 
@@ -178,6 +247,11 @@ namespace Google.Protobuf
             Assert.AreEqual(value, input.ReadRawLittleEndian64());
             Assert.IsTrue(input.IsAtEnd);
 
+            AssertReadFromParseContext(new ReadOnlySequence<byte>(data), (ref ParseContext ctx) =>
+            {
+                Assert.AreEqual(value, ctx.ReadFixed64());
+            }, true);
+
             // Try different block sizes.
             for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
             {
@@ -185,6 +259,11 @@ namespace Google.Protobuf
                     new SmallBlockInputStream(data, blockSize));
                 Assert.AreEqual(value, input.ReadRawLittleEndian64());
                 Assert.IsTrue(input.IsAtEnd);
+
+                AssertReadFromParseContext(ReadOnlySequenceFactory.CreateWithContent(data, blockSize), (ref ParseContext ctx) =>
+                {
+                    Assert.AreEqual(value, ctx.ReadFixed64());
+                }, true);
             }
         }
 
