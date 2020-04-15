@@ -34,12 +34,14 @@ namespace Google.Protobuf
             message.SetExtension(OptionalBoolExtension, true);
             var serialized = message.ToByteArray();
 
-            var other = TestAllExtensions.Parser
-                .WithExtensionRegistry(new ExtensionRegistry() { OptionalBoolExtension })
-                .ParseFrom(serialized);
-
-            Assert.AreEqual(message, other);
-            Assert.AreEqual(message.CalculateSize(), other.CalculateSize());
+            MessageParsingHelpers.AssertReadingMessage(
+                TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { OptionalBoolExtension }),
+                serialized,
+                other =>
+                {
+                    Assert.AreEqual(message, other);
+                    Assert.AreEqual(message.CalculateSize(), other.CalculateSize());
+                });
         }
 
         [Test]

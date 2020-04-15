@@ -54,6 +54,21 @@ namespace Google.Protobuf
             assert(parsedStream);
         }
 
+        public static void AssertReadingMessage(MessageParser parser, byte[] bytes, Action<IMessage> assert)
+        {
+            var parsedStream = parser.ParseFrom(bytes);
+
+            // Load content as single segment
+            var parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
+            assert(parsedBuffer);
+
+            // Load content as multiple segments
+            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
+            assert(parsedBuffer);
+            
+            assert(parsedStream);
+        }
+
         public static void AssertReadingMessageThrows<TMessage, TException>(MessageParser<TMessage> parser, byte[] bytes)
             where TMessage : IMessage<TMessage>
             where TException : Exception
