@@ -62,6 +62,7 @@ namespace Google.Protobuf
         {
             CodedInputStream input = new CodedInputStream(data);
             Assert.AreEqual((uint) value, input.ReadRawVarint32());
+            Assert.IsTrue(input.IsAtEnd);
 
             input = new CodedInputStream(data);
             Assert.AreEqual(value, input.ReadRawVarint64());
