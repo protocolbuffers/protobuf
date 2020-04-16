@@ -1151,7 +1151,7 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
   return UsingImplicitWeakFields(field->file(), options) &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          !field->is_required() && !field->is_map() && !field->is_extension() &&
-         !InRealOneof(field) &&
+         !field->real_containing_oneof() &&
          !IsWellKnownMessage(field->message_type()->file()) &&
          field->message_type()->file()->name() !=
              "net/proto2/proto/descriptor.proto" &&
@@ -1474,7 +1474,7 @@ class ParseLoopGenerator {
         GetOptimizeFor(field->file(), options_) != FileOptions::LITE_RUNTIME &&
         // For now only use arena string for strings with empty defaults.
         field->default_value_string().empty() &&
-        !IsStringInlined(field, options_) && !InRealOneof(field) &&
+        !IsStringInlined(field, options_) && !field->real_containing_oneof() &&
         ctype == FieldOptions::STRING) {
       GenerateArenaString(field);
     } else {
@@ -1580,7 +1580,7 @@ class ParseLoopGenerator {
                       FieldName(field));
             }
           } else if (IsLazy(field, options_)) {
-            if (InRealOneof(field)) {
+            if (field->real_containing_oneof()) {
               format_(
                   "if (!_internal_has_$1$()) {\n"
                   "  clear_$2$();\n"
@@ -1684,7 +1684,7 @@ class ParseLoopGenerator {
                field->type() == FieldDescriptor::TYPE_SINT64)) {
             zigzag = "ZigZag";
           }
-          if (field->is_repeated() || InRealOneof(field)) {
+          if (field->is_repeated() || field->real_containing_oneof()) {
             std::string prefix = field->is_repeated() ? "add" : "set";
             format_(
                 "_internal_$1$_$2$($pi_ns$::ReadVarint$3$$4$(&ptr));\n"
@@ -1706,7 +1706,7 @@ class ParseLoopGenerator {
       case WireFormatLite::WIRETYPE_FIXED32:
       case WireFormatLite::WIRETYPE_FIXED64: {
         std::string type = PrimitiveTypeName(options_, field->cpp_type());
-        if (field->is_repeated() || InRealOneof(field)) {
+        if (field->is_repeated() || field->real_containing_oneof()) {
           std::string prefix = field->is_repeated() ? "add" : "set";
           format_(
               "_internal_$1$_$2$($pi_ns$::UnalignedLoad<$3$>(ptr));\n"

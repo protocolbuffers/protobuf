@@ -43,20 +43,20 @@ namespace Google.Protobuf.Benchmarks
     /// <summary>
     /// The configuration for a single serialization test, loaded from a dataset.
     /// </summary>
-    public class SerializationConfig
+    public class BenchmarkDatasetConfig
     {
         private static readonly Dictionary<string, MessageParser> parsersByMessageName = 
-            typeof(SerializationBenchmark).Assembly.GetTypes()
+            typeof(GoogleMessageBenchmark).Assembly.GetTypes()
                 .Where(t => typeof(IMessage).IsAssignableFrom(t))
                 .ToDictionary(
                     t => ((MessageDescriptor) t.GetProperty("Descriptor", BindingFlags.Static | BindingFlags.Public).GetValue(null)).FullName,
                     t => ((MessageParser) t.GetProperty("Parser", BindingFlags.Static | BindingFlags.Public).GetValue(null)));
 
         public MessageParser Parser { get; }
-        public IEnumerable<ByteString> Payloads { get; }
+        public List<byte[]> Payloads { get; }
         public string Name { get; }
 
-        public SerializationConfig(string resource)
+        public BenchmarkDatasetConfig(string resource, string shortName = null)
         {
             var data = LoadData(resource);
             var dataset = BenchmarkDataset.Parser.ParseFrom(data);
@@ -66,13 +66,13 @@ namespace Google.Protobuf.Benchmarks
                 throw new ArgumentException($"No parser for message {dataset.MessageName} in this assembly");
             }
             Parser = parser;
-            Payloads = dataset.Payload;
-            Name = dataset.Name;
+            Payloads = new List<byte[]>(dataset.Payload.Select(p => p.ToByteArray()));
+            Name = shortName ?? dataset.Name;
         }
 
         private static byte[] LoadData(string resource)
         {
-            using (var stream = typeof(SerializationBenchmark).Assembly.GetManifestResourceStream($"Google.Protobuf.Benchmarks.{resource}"))
+            using (var stream = typeof(GoogleMessageBenchmark).Assembly.GetManifestResourceStream($"Google.Protobuf.Benchmarks.{resource}"))
             {
                 if (stream == null)
                 {

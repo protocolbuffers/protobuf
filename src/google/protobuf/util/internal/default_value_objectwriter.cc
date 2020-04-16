@@ -52,7 +52,7 @@ T ConvertTo(StringPiece value,
             StatusOr<T> (DataPiece::*converter_fn)() const, T default_value) {
   if (value.empty()) return default_value;
   StatusOr<T> result = (DataPiece(value, true).*converter_fn)();
-  return result.ok() ? result.ValueOrDie() : default_value;
+  return result.ok() ? result.value() : default_value;
 }
 }  // namespace
 
@@ -290,7 +290,7 @@ const google::protobuf::Type* DefaultValueObjectWriter::Node::GetMapValueType(
     if (!sub_type.ok()) {
       GOOGLE_LOG(WARNING) << "Cannot resolve type '" << sub_field.type_url() << "'.";
     } else {
-      return sub_type.ValueOrDie();
+      return sub_type.value();
     }
     break;
   }
@@ -354,7 +354,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
         // "field" is of an unknown type.
         GOOGLE_LOG(WARNING) << "Cannot resolve type '" << field.type_url() << "'.";
       } else {
-        const google::protobuf::Type* found_type = found_result.ValueOrDie();
+        const google::protobuf::Type* found_type = found_result.value();
         is_map = IsMap(field, *found_type);
 
         if (!is_map) {
@@ -587,7 +587,7 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
       name == "@type") {
     util::StatusOr<std::string> data_string = data.ToString();
     if (data_string.ok()) {
-      const std::string& string_value = data_string.ValueOrDie();
+      const std::string& string_value = data_string.value();
       // If the type of current_ is "Any" and its "@type" field is being set
       // here, sets the type of current_ to be the type specified by the
       // "@type".
@@ -596,7 +596,7 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
       if (!found_type.ok()) {
         GOOGLE_LOG(WARNING) << "Failed to resolve type '" << string_value << "'.";
       } else {
-        current_->set_type(found_type.ValueOrDie());
+        current_->set_type(found_type.value());
       }
       current_->set_is_any(true);
       // If the "@type" field is placed after other fields, we should populate
