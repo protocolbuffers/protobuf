@@ -74,8 +74,10 @@ namespace Google.Protobuf
         internal static void Initialize(CodedInputStream input, out ParseContext ctx)
         {
             ctx.buffer = new ReadOnlySpan<byte>(input.InternalBuffer);
-            // TODO: ideally we would use a reference to the original state, but that doesn't seem possible
-            ctx.state = input.InternalState;  // creates copy of the state
+            // ideally we would use a reference to the original state, but that doesn't seem possible
+            // so we just copy the struct that holds the state. We will need to later store the state back
+            // into CodedInputStream if we want to keep it usable.
+            ctx.state = input.InternalState;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -228,7 +230,6 @@ namespace Google.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReadMessage(IMessage message)
         {
-            // TODO: add a fallback if IMessage does not implement IBufferMessage 
             ParsingPrimitivesMessages.ReadMessage(ref this, message);
         }
 

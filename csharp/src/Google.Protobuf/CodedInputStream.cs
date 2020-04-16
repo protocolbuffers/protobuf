@@ -431,6 +431,12 @@ namespace Google.Protobuf
         /// </summary>
         public void ReadMessage(IMessage builder)
         {
+            // TODO(jtattermusch): if the message doesn't implement IBufferMessage (and thus does not provide the InternalMergeFrom method),
+            // what we're doing here works fine, but could be more efficient.
+            // What happends is that we first initialize a ParseContext from the current coded input stream only to parse the length of the message, at which point
+            // we will need to switch back again to CodedInputStream-based parsing (which involves copying and storing the state) to be able to
+            // invoke the legacy MergeFrom(CodedInputStream) method.
+            // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
             var span = new ReadOnlySpan<byte>(buffer);
             ParseContext.Initialize(ref span, ref state, out ParseContext ctx);
             try
