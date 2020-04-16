@@ -82,8 +82,8 @@ namespace Google.Protobuf
         
         internal SegmentedBufferHelper segmentedBufferHelper;
 
-        // TODO: remember if this context is supposed to call MergeFrom(CodedInputStream cis) or MergeFrom(ref ParseContext ....) for submessages.
-        // if non-null, the top level parse method was started with given cis as an argument
+        // If non-null, the top level parse method was started with given coded input stream as an argument
+        // which also means we can potentially fallback to calling MergeFrom(CodedInputStream cis) if needed.
         internal CodedInputStream codedInputStream;
         
         
@@ -99,7 +99,7 @@ namespace Google.Protobuf
         internal uint nextTag;
         internal bool hasNextTag;
 
-        // TODO: these fields are configuration, they should be readonly
+        // these fields are configuration, they should be readonly
         internal int sizeLimit;
         internal int recursionLimit;
         

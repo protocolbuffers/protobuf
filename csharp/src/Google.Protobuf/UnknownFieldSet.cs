@@ -186,7 +186,6 @@ namespace Google.Protobuf
         /// <returns>false if the tag is an "end group" tag, true otherwise</returns>
         private bool MergeFieldFrom(ref ParseContext ctx)
         {
-            // TODO: deduplicate MergeFieldFrom implementations
             uint tag = ctx.LastTag;
             int number = WireFormat.GetTagFieldNumber(tag);
             switch (WireFormat.GetTagWireType(tag))

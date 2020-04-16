@@ -446,7 +446,6 @@ namespace Google.Protobuf.Collections
         [SecuritySafeCritical]
         public void AddEntriesFrom(ref ParseContext ctx, Codec codec)
         {
-            // TODO: deduplicate code?
             var adapter = new Codec.MessageAdapter(codec);
             do
             {
