@@ -82,6 +82,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Prolog: http://www.swi-prolog.org/pldoc/package/protobufs.html
 * Python: https://github.com/google/protobuf (Google-official implementation)
 * Python: https://github.com/eigenein/protobuf
+* Python: https://github.com/danielgtaylor/python-betterproto
 * R: http://cran.r-project.org/package=RProtoBuf
 * Ruby: http://code.google.com/p/ruby-protobuf/
 * Ruby: http://github.com/mozy/ruby-protocol-buffers
