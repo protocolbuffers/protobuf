@@ -919,6 +919,7 @@ Usage: $0 { cpp |
             ruby24 |
             ruby25 |
             ruby26 |
+            ruby27 |
             jruby |
             ruby_all |
             php5.5   |
