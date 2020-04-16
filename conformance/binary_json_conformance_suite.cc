@@ -2156,12 +2156,12 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
   {
     TestAllTypesProto3 message;
     message.set_optional_double(
-        WireFormatLite::DecodeDouble(0x7FFA123456789ABCLL));
+        WireFormatLite::DecodeDouble(int64{0x7FFA123456789ABC}));
     RunValidJsonTestWithProtobufInput(
         "DoubleFieldNormalizeQuietNan", REQUIRED, message,
         "optional_double: nan");
     message.set_optional_double(
-        WireFormatLite::DecodeDouble(0xFFFBCBA987654321LL));
+        WireFormatLite::DecodeDouble(uint64{0xFFFBCBA987654321}));
     RunValidJsonTestWithProtobufInput(
         "DoubleFieldNormalizeSignalingNan", REQUIRED, message,
         "optional_double: nan");

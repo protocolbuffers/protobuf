@@ -33,11 +33,14 @@
 
 #include <google/protobuf/pyext/message.h>
 
+#include <structmember.h>  // A Python header file.
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <structmember.h>  // A Python header file.
+
+#include <google/protobuf/stubs/strutil.h>
 
 #ifndef PyVarObject_HEAD_INIT
 #define PyVarObject_HEAD_INIT(type, size) PyObject_HEAD_INIT(type) size,
@@ -456,7 +459,7 @@ static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
   Py_ssize_t attr_size;
   static const char kSuffix[] = "_FIELD_NUMBER";
   if (PyString_AsStringAndSize(name, &attr, &attr_size) >= 0 &&
-      strings::EndsWith(StringPiece(attr, attr_size), kSuffix)) {
+      HasSuffixString(StringPiece(attr, attr_size), kSuffix)) {
     std::string field_name(attr, attr_size - sizeof(kSuffix) + 1);
     LowerString(&field_name);
 
@@ -1424,28 +1427,13 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
     return false;
   }
 
-  if (field_descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
-    // HasField() for a oneof *itself* isn't supported.
-    if (in_oneof) {
-      PyErr_Format(PyExc_ValueError,
-                   "Can't test oneof field \"%s.%s\" for presence in proto3, "
-                   "use WhichOneof instead.", message_name.c_str(),
-                   field_descriptor->containing_oneof()->name().c_str());
-      return false;
-    }
-
-    // ...but HasField() for fields *in* a oneof is supported.
-    if (field_descriptor->containing_oneof() != NULL) {
-      return true;
-    }
-
-    if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-      PyErr_Format(
-          PyExc_ValueError,
-          "Can't test non-submessage field \"%s.%s\" for presence in proto3.",
-          message_name.c_str(), field_descriptor->name().c_str());
-      return false;
-    }
+  if (field_descriptor->containing_oneof() == NULL &&
+      !field_descriptor->is_singular_with_presence()) {
+    PyErr_Format(PyExc_ValueError,
+                 "Can't test non-optional, non-submessage field \"%s.%s\" for "
+                 "presence in proto3.",
+                 message_name.c_str(), field_descriptor->name().c_str());
+    return false;
   }
 
   return true;

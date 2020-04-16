@@ -26,7 +26,7 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/metadata.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
@@ -138,10 +138,10 @@ public:
 
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Struct :
+class PROTOBUF_EXPORT Struct PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
  public:
-  Struct();
+  inline Struct() : Struct(nullptr) {};
   virtual ~Struct();
 
   Struct(const Struct& from);
@@ -155,7 +155,7 @@ class PROTOBUF_EXPORT Struct :
     return *this;
   }
   inline Struct& operator=(Struct&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+    if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -163,12 +163,6 @@ class PROTOBUF_EXPORT Struct :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -193,7 +187,7 @@ class PROTOBUF_EXPORT Struct :
   }
   inline void Swap(Struct* other) {
     if (other == this) return;
-    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+    if (GetArena() == other->GetArena()) {
       InternalSwap(other);
     } else {
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
@@ -201,7 +195,7 @@ class PROTOBUF_EXPORT Struct :
   }
   void UnsafeArenaSwap(Struct* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -241,13 +235,6 @@ class PROTOBUF_EXPORT Struct :
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return _internal_metadata_.arena();
-  }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -288,7 +275,6 @@ class PROTOBUF_EXPORT Struct :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -303,10 +289,10 @@ class PROTOBUF_EXPORT Struct :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT Value :
+class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
  public:
-  Value();
+  inline Value() : Value(nullptr) {};
   virtual ~Value();
 
   Value(const Value& from);
@@ -320,7 +306,7 @@ class PROTOBUF_EXPORT Value :
     return *this;
   }
   inline Value& operator=(Value&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+    if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -328,12 +314,6 @@ class PROTOBUF_EXPORT Value :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -368,7 +348,7 @@ class PROTOBUF_EXPORT Value :
   }
   inline void Swap(Value* other) {
     if (other == this) return;
-    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+    if (GetArena() == other->GetArena()) {
       InternalSwap(other);
     } else {
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
@@ -376,7 +356,7 @@ class PROTOBUF_EXPORT Value :
   }
   void UnsafeArenaSwap(Value* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -416,13 +396,6 @@ class PROTOBUF_EXPORT Value :
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return _internal_metadata_.arena();
-  }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -561,7 +534,6 @@ class PROTOBUF_EXPORT Value :
   inline bool has_kind() const;
   inline void clear_has_kind();
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -581,10 +553,10 @@ class PROTOBUF_EXPORT Value :
 };
 // -------------------------------------------------------------------
 
-class PROTOBUF_EXPORT ListValue :
+class PROTOBUF_EXPORT ListValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
  public:
-  ListValue();
+  inline ListValue() : ListValue(nullptr) {};
   virtual ~ListValue();
 
   ListValue(const ListValue& from);
@@ -598,7 +570,7 @@ class PROTOBUF_EXPORT ListValue :
     return *this;
   }
   inline ListValue& operator=(ListValue&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+    if (GetArena() == from.GetArena()) {
       if (this != &from) InternalSwap(&from);
     } else {
       CopyFrom(from);
@@ -606,12 +578,6 @@ class PROTOBUF_EXPORT ListValue :
     return *this;
   }
 
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArena() const final {
-    return GetArenaNoVirtual();
-  }
-  inline void* GetMaybeArenaPointer() const final {
-    return MaybeArenaPtr();
-  }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
     return GetDescriptor();
   }
@@ -636,7 +602,7 @@ class PROTOBUF_EXPORT ListValue :
   }
   inline void Swap(ListValue* other) {
     if (other == this) return;
-    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+    if (GetArena() == other->GetArena()) {
       InternalSwap(other);
     } else {
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
@@ -644,7 +610,7 @@ class PROTOBUF_EXPORT ListValue :
   }
   void UnsafeArenaSwap(ListValue* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+    GOOGLE_DCHECK(GetArena() == other->GetArena());
     InternalSwap(other);
   }
 
@@ -684,13 +650,6 @@ class PROTOBUF_EXPORT ListValue :
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return _internal_metadata_.arena();
-  }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
@@ -731,7 +690,6 @@ class PROTOBUF_EXPORT ListValue :
  private:
   class _Internal;
 
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -864,8 +822,7 @@ inline void Value::set_has_string_value() {
 }
 inline void Value::clear_string_value() {
   if (_internal_has_string_value()) {
-    kind_.string_value_.Destroy(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-        GetArenaNoVirtual());
+    kind_.string_value_.Destroy(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
     clear_has_kind();
   }
 }
@@ -893,8 +850,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
     set_has_string_value();
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
-  kind_.string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value,
-      GetArenaNoVirtual());
+  kind_.string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
 }
 inline void Value::set_string_value(std::string&& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
@@ -904,7 +860,7 @@ inline void Value::set_string_value(std::string&& value) {
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
   kind_.string_value_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Value.string_value)
 }
 inline void Value::set_string_value(const char* value) {
@@ -915,7 +871,7 @@ inline void Value::set_string_value(const char* value) {
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
   kind_.string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(value), GetArenaNoVirtual());
+      ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.Value.string_value)
 }
 inline void Value::set_string_value(const char* value,
@@ -928,7 +884,7 @@ inline void Value::set_string_value(const char* value,
   kind_.string_value_.Set(
       &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
       reinterpret_cast<const char*>(value), size),
-      GetArenaNoVirtual());
+      GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Value.string_value)
 }
 inline std::string* Value::_internal_mutable_string_value() {
@@ -937,15 +893,13 @@ inline std::string* Value::_internal_mutable_string_value() {
     set_has_string_value();
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
-  return kind_.string_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      GetArenaNoVirtual());
+  return kind_.string_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
 inline std::string* Value::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (_internal_has_string_value()) {
     clear_has_kind();
-    return kind_.string_value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-        GetArenaNoVirtual());
+    return kind_.string_value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   } else {
     return nullptr;
   }
@@ -962,24 +916,24 @@ inline void Value::set_allocated_string_value(std::string* string_value) {
 }
 inline std::string* Value::unsafe_arena_release_string_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.string_value)
-  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  GOOGLE_DCHECK(GetArena() != nullptr);
   if (_internal_has_string_value()) {
     clear_has_kind();
     return kind_.string_value_.UnsafeArenaRelease(
-        &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
+        &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   } else {
     return nullptr;
   }
 }
 inline void Value::unsafe_arena_set_allocated_string_value(std::string* string_value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() != nullptr);
+  GOOGLE_DCHECK(GetArena() != nullptr);
   if (!_internal_has_string_value()) {
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
   clear_kind();
   if (string_value) {
     set_has_string_value();
-    kind_.string_value_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), string_value, GetArenaNoVirtual());
+    kind_.string_value_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), string_value, GetArena());
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.string_value)
 }
@@ -1031,7 +985,7 @@ inline void Value::set_has_struct_value() {
 }
 inline void Value::clear_struct_value() {
   if (_internal_has_struct_value()) {
-    if (GetArenaNoVirtual() == nullptr) {
+    if (GetArena() == nullptr) {
       delete kind_.struct_value_;
     }
     clear_has_kind();
@@ -1042,7 +996,7 @@ inline PROTOBUF_NAMESPACE_ID::Struct* Value::release_struct_value() {
   if (_internal_has_struct_value()) {
     clear_has_kind();
       PROTOBUF_NAMESPACE_ID::Struct* temp = kind_.struct_value_;
-    if (GetArenaNoVirtual() != nullptr) {
+    if (GetArena() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
     kind_.struct_value_ = nullptr;
@@ -1083,8 +1037,7 @@ inline PROTOBUF_NAMESPACE_ID::Struct* Value::_internal_mutable_struct_value() {
   if (!_internal_has_struct_value()) {
     clear_kind();
     set_has_struct_value();
-    kind_.struct_value_ = CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::Struct >(
-        GetArenaNoVirtual());
+    kind_.struct_value_ = CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::Struct >(GetArena());
   }
   return kind_.struct_value_;
 }
@@ -1105,7 +1058,7 @@ inline void Value::set_has_list_value() {
 }
 inline void Value::clear_list_value() {
   if (_internal_has_list_value()) {
-    if (GetArenaNoVirtual() == nullptr) {
+    if (GetArena() == nullptr) {
       delete kind_.list_value_;
     }
     clear_has_kind();
@@ -1116,7 +1069,7 @@ inline PROTOBUF_NAMESPACE_ID::ListValue* Value::release_list_value() {
   if (_internal_has_list_value()) {
     clear_has_kind();
       PROTOBUF_NAMESPACE_ID::ListValue* temp = kind_.list_value_;
-    if (GetArenaNoVirtual() != nullptr) {
+    if (GetArena() != nullptr) {
       temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
     }
     kind_.list_value_ = nullptr;
@@ -1157,8 +1110,7 @@ inline PROTOBUF_NAMESPACE_ID::ListValue* Value::_internal_mutable_list_value() {
   if (!_internal_has_list_value()) {
     clear_kind();
     set_has_list_value();
-    kind_.list_value_ = CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::ListValue >(
-        GetArenaNoVirtual());
+    kind_.list_value_ = CreateMaybeMessage< PROTOBUF_NAMESPACE_ID::ListValue >(GetArena());
   }
   return kind_.list_value_;
 }

@@ -127,7 +127,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * Enables the use of arenas for the proto messages in this file. This applies
      * only to generated classes for C++.
      *
-     * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = false];</code>
+     * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = true];</code>
      */
     protected $cc_enable_arenas = false;
     private $has_cc_enable_arenas = false;
@@ -732,7 +732,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * Enables the use of arenas for the proto messages in this file. This applies
      * only to generated classes for C++.
      *
-     * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = false];</code>
+     * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = true];</code>
      * @return bool
      */
     public function getCcEnableArenas()
@@ -744,7 +744,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * Enables the use of arenas for the proto messages in this file. This applies
      * only to generated classes for C++.
      *
-     * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = false];</code>
+     * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = true];</code>
      * @param bool $var
      * @return $this
      */

@@ -219,14 +219,15 @@ struct ArenaOptions {
 // any special requirements on the type T, and will invoke the object's
 // destructor when the arena is destroyed.
 //
-// The arena message allocation protocol, required by CreateMessage<T>, is as
-// follows:
+// The arena message allocation protocol, required by
+// CreateMessage<T>(Arena* arena, Args&&... args), is as follows:
 //
-// - The type T must have (at least) two constructors: a constructor with no
-//   arguments, called when a T is allocated on the heap; and a constructor with
-//   a Arena* argument, called when a T is allocated on an arena. If the
-//   second constructor is called with a NULL arena pointer, it must be
-//   equivalent to invoking the first (no-argument) constructor.
+// - The type T must have (at least) two constructors: a constructor callable
+//   with `args` (without `arena`), called when a T is allocated on the heap;
+//   and a constructor callable with `Arena* arena, Args&&... args`, called when
+//   a T is allocated on an arena. If the second constructor is called with a
+//   NULL arena pointer, it must be equivalent to invoking the first
+//   (`args`-only) constructor.
 //
 // - The type T must have a particular type trait: a nested type
 //   |InternalArenaConstructable_|. This is usually a typedef to |void|. If no
@@ -238,11 +239,6 @@ struct ArenaOptions {
 //   only if it was passed a non-NULL arena pointer. If this type trait is not
 //   present on the type, then its destructor is always called when the
 //   containing arena is destroyed.
-//
-// - One- and two-user-argument forms of CreateMessage<T>() also exist that
-//   forward these constructor arguments to T's constructor: for example,
-//   CreateMessage<T>(Arena*, arg1, arg2) forwards to a constructor T(Arena*,
-//   arg1, arg2).
 //
 // This protocol is implemented by all arena-enabled proto2 message classes as
 // well as protobuf container types like RepeatedPtrField and Map. The protocol
@@ -338,10 +334,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CreateArray(Arena* arena,
                                                size_t num_elements) {
-#ifndef __INTEL_COMPILER // icc mis-evaluates some types as non-pod
     static_assert(std::is_pod<T>::value,
                   "CreateArray requires a trivially constructible type");
-#endif
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
     GOOGLE_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
@@ -455,7 +449,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       return new (ptr) T(std::forward<Args>(args)...);
     }
 
-    static Arena* GetArena(const T* p) { return p->GetArenaNoVirtual(); }
+    static Arena* GetArena(const T* p) { return p->GetArena(); }
 
     friend class Arena;
   };
@@ -534,6 +528,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // the cookie is not null.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void* AllocateInternal(bool skip_explicit_ownership) {
+    static_assert(alignof(T) <= 8, "T is overaligned, see b/151247138");
     const size_t n = internal::AlignUpTo8(sizeof(T));
     AllocHook(RTTI_TYPE_ID(T), n);
     // Monitor allocation if needed.
@@ -618,24 +613,25 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // CreateInArenaStorage is used to implement map field. Without it,
   // Map need to call generated message's protected arena constructor,
   // which needs to declare Map as friend of generated message.
-  template <typename T>
-  static void CreateInArenaStorage(T* ptr, Arena* arena) {
+  template <typename T, typename... Args>
+  static void CreateInArenaStorage(T* ptr, Arena* arena, Args&&... args) {
     CreateInArenaStorageInternal(ptr, arena,
-                                 typename is_arena_constructable<T>::type());
+                                 typename is_arena_constructable<T>::type(),
+                                 std::forward<Args>(args)...);
     RegisterDestructorInternal(
         ptr, arena,
         typename InternalHelper<T>::is_destructor_skippable::type());
   }
 
-  template <typename T>
+  template <typename T, typename... Args>
   static void CreateInArenaStorageInternal(T* ptr, Arena* arena,
-                                           std::true_type) {
-    InternalHelper<T>::Construct(ptr, arena);
+                                           std::true_type, Args&&... args) {
+    InternalHelper<T>::Construct(ptr, arena, std::forward<Args>(args)...);
   }
-  template <typename T>
+  template <typename T, typename... Args>
   static void CreateInArenaStorageInternal(T* ptr, Arena* /* arena */,
-                                           std::false_type) {
-    new (ptr) T();
+                                           std::false_type, Args&&... args) {
+    new (ptr) T(std::forward<Args>(args)...);
   }
 
   template <typename T>
@@ -667,7 +663,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   // Implementation for GetArena(). Only message objects with
   // InternalArenaConstructable_ tags can be associated with an arena, and such
-  // objects must implement a GetArenaNoVirtual() method.
+  // objects must implement a GetArena() method.
   template <typename T, typename std::enable_if<
                             is_arena_constructable<T>::value, int>::type = 0>
   PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
@@ -693,6 +689,17 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   void* AllocateAligned(size_t n) {
     AllocHook(NULL, n);
     return AllocateAlignedNoHook(internal::AlignUpTo8(n));
+  }
+  template<size_t Align>
+  void* AllocateAlignedTo(size_t n) {
+    static_assert(Align > 0, "Alignment must be greater than 0");
+    static_assert((Align & (Align - 1)) == 0, "Alignment must be power of two");
+    if (Align <= 8) return AllocateAligned(n);
+    // TODO(b/151247138): if the pointer would have been aligned already,
+    // this is wasting space. We should pass the alignment down.
+    uintptr_t ptr = reinterpret_cast<uintptr_t>(AllocateAligned(n + Align - 8));
+    ptr = (ptr + Align - 1) & -Align;
+    return reinterpret_cast<void*>(ptr);
   }
 
   void* AllocateAlignedNoHook(size_t n);

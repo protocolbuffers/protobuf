@@ -37,6 +37,8 @@ option optimize_for = LITE_RUNTIME;
 // In test_util.h we do "using namespace unittest = protobuf_unittest".
 package protobuf_unittest_no_arena;
 
+option cc_enable_arenas = false;
+
 message ForeignMessageLite {
   optional int32 c = 1;
 }

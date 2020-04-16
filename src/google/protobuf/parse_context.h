@@ -239,6 +239,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* InitFrom(io::ZeroCopyInputStream* zcis);
 
   const char* InitFrom(io::ZeroCopyInputStream* zcis, int limit) {
+    if (limit == -1) return InitFrom(zcis);
     overall_limit_ = limit;
     auto res = InitFrom(zcis);
     limit_ = limit - static_cast<int>(buffer_end_ - res);
@@ -741,13 +742,39 @@ PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedSInt64Parser(
     void* object, const char* ptr, ParseContext* ctx);
 PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParser(
     void* object, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParser(
-    void* object, const char* ptr, ParseContext* ctx, bool (*is_valid)(int),
-    InternalMetadataWithArenaLite* metadata, int field_num);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParserArg(
-    void* object, const char* ptr, ParseContext* ctx,
-    bool (*is_valid)(const void*, int), const void* data,
-    InternalMetadataWithArenaLite* metadata, int field_num);
+
+template <typename T>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+PROTOBUF_MUST_USE_RESULT const
+    char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
+                           bool (*is_valid)(int), InternalMetadata* metadata,
+                           int field_num) {
+  return ctx->ReadPackedVarint(
+      ptr, [object, is_valid, metadata, field_num](uint64 val) {
+        if (is_valid(val)) {
+          static_cast<RepeatedField<int>*>(object)->Add(val);
+        } else {
+          WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
+        }
+      });
+}
+
+template <typename T>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+PROTOBUF_MUST_USE_RESULT const
+    char* PackedEnumParserArg(void* object, const char* ptr, ParseContext* ctx,
+                              bool (*is_valid)(const void*, int),
+                              const void* data, InternalMetadata* metadata,
+                              int field_num) {
+  return ctx->ReadPackedVarint(
+      ptr, [object, is_valid, data, metadata, field_num](uint64 val) {
+        if (is_valid(data, val)) {
+          static_cast<RepeatedField<int>*>(object)->Add(val);
+        } else {
+          WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
+        }
+      });
+}
 
 PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedBoolParser(
     void* object, const char* ptr, ParseContext* ctx);
@@ -772,9 +799,6 @@ PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownGroupLiteParse(
 // UnknownFieldSet* to make the generated code isomorphic between full and lite.
 PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownFieldParse(
     uint32 tag, std::string* unknown, const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownFieldParse(
-    uint32 tag, InternalMetadataWithArenaLite* metadata, const char* ptr,
-    ParseContext* ctx);
 
 }  // namespace internal
 }  // namespace protobuf

@@ -205,6 +205,17 @@ class CommandLineInterfaceTest : public testing::Test {
   void ExpectFileContent(const std::string& filename,
                          const std::string& content);
 
+  // The default code generators support all features. Use this to create a
+  // code generator that omits the given feature(s).
+  void CreateGeneratorWithMissingFeatures(const std::string& name,
+                                          const std::string& description,
+                                          uint64 features) {
+    MockCodeGenerator* generator = new MockCodeGenerator(name);
+    generator->SuppressFeatures(features);
+    mock_generators_to_delete_.push_back(generator);
+    cli_.RegisterGenerator(name, generator, description);
+  }
+
  private:
   // The object we are testing.
   CommandLineInterface cli_;
@@ -914,6 +925,58 @@ TEST_F(CommandLineInterfaceTest,
 }
 
 TEST_F(CommandLineInterfaceTest,
+       InputsOnlyFromDescriptorSetIn_UnusedImportIsNotReported) {
+  FileDescriptorSet file_descriptor_set;
+
+  FileDescriptorProto* file_descriptor_proto = file_descriptor_set.add_file();
+  file_descriptor_proto->set_name("unused.proto");
+  file_descriptor_proto->add_message_type()->set_name("Unused");
+
+  file_descriptor_proto = file_descriptor_set.add_file();
+  file_descriptor_proto->set_name("bar.proto");
+  file_descriptor_proto->add_dependency("unused.proto");
+  file_descriptor_proto->add_message_type()->set_name("Bar");
+
+  WriteDescriptorSet("unused_and_bar.bin", &file_descriptor_set);
+
+  Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/unused_and_bar.bin unused.proto bar.proto");
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest,
+       InputsFromDescriptorSetInAndFileSystem_UnusedImportIsReported) {
+  FileDescriptorSet file_descriptor_set;
+
+  FileDescriptorProto* file_descriptor_proto = file_descriptor_set.add_file();
+  file_descriptor_proto->set_name("unused.proto");
+  file_descriptor_proto->add_message_type()->set_name("Unused");
+
+  file_descriptor_proto = file_descriptor_set.add_file();
+  file_descriptor_proto->set_name("bar.proto");
+  file_descriptor_proto->add_dependency("unused.proto");
+  file_descriptor_proto->add_message_type()->set_name("Bar");
+
+  WriteDescriptorSet("unused_and_bar.bin", &file_descriptor_set);
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"bar.proto\";\n"
+                 "message Foo {\n"
+                 "  optional Bar bar = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir --plug_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/unused_and_bar.bin "
+      "--proto_path=$tmpdir unused.proto bar.proto foo.proto");
+  // Reporting unused imports here is unfair, since it's unactionable. Notice
+  // the lack of a line number.
+  // TODO(b/144853061): If the file with unused import is from the descriptor
+  // set and not from the file system, suppress the warning.
+  ExpectWarningSubstring("bar.proto: warning: Import unused.proto is unused.");
+}
+
+TEST_F(CommandLineInterfaceTest,
        OnlyReportsUnusedImportsForFilesBeingGenerated) {
   CreateTempFile("unused.proto",
                  "syntax = \"proto2\";\n"
@@ -975,7 +1038,6 @@ TEST_F(CommandLineInterfaceTest, ReportsTransitiveMisingImports_LeafLast) {
   ExpectWarningSubstring(
       "bar.proto:2:1: warning: Import unused.proto is unused.");
 }
-
 TEST_F(CommandLineInterfaceTest, CreateDirectory) {
   // Test that when we output to a sub-directory, it is created.
 
@@ -2308,6 +2370,78 @@ TEST_F(CommandLineInterfaceTest, MissingValueAtEndError) {
   Run("protocol_compiler --test_out");
 
   ExpectErrorText("Missing value for flag: --test_out\n");
+}
+
+TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowed) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Foo {\n"
+                 "  optional int32 i = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --proto_path=$tmpdir foo.proto -odescriptor.pb");
+
+  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
+}
+
+TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedDescriptor) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Foo {\n"
+                 "  optional int32 i = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --experimental_allow_proto3_optional "
+      "--proto_path=$tmpdir foo.proto "
+      " -o$tmpdir/descriptor.pb");
+  ExpectNoErrors();
+
+  Run("protocol_compiler --descriptor_set_in=$tmpdir/descriptor.pb foo.proto "
+      "--test_out=$tmpdir");
+  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
+}
+
+TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedGenCode) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Foo {\n"
+                 "  optional int32 i = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --proto_path=$tmpdir foo.proto --test_out=$tmpdir");
+
+  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
+}
+
+TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedNoCodegenSupport) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Foo {\n"
+                 "  optional int32 i = 1;\n"
+                 "}\n");
+
+  CreateGeneratorWithMissingFeatures("--no_proto3_optional_out",
+                                     "Doesn't support proto3 optional",
+                                     CodeGenerator::FEATURE_PROTO3_OPTIONAL);
+
+  Run("protocol_compiler --experimental_allow_proto3_optional "
+      "--proto_path=$tmpdir foo.proto --no_proto3_optional_out=$tmpdir");
+
+  ExpectErrorSubstring(
+      "code generator --no_proto3_optional_out hasn't been updated to support "
+      "optional fields in proto3");
+}
+
+TEST_F(CommandLineInterfaceTest, Proto3OptionalAllowWithFlag) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto3\";\n"
+                 "message Foo {\n"
+                 "  optional int32 i = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --experimental_allow_proto3_optional "
+      "--proto_path=$tmpdir foo.proto --test_out=$tmpdir");
+  ExpectNoErrors();
 }
 
 TEST_F(CommandLineInterfaceTest, PrintFreeFieldNumbers) {

@@ -1080,7 +1080,7 @@ describe('Message test suite', function() {
 
   it('testMessageWithLargeFieldNumbers', function() {
     var message = new proto.jspb.test.MessageWithLargeFieldNumbers;
-    
+
     message.setAString('string');
     assertEquals('string', message.getAString());
 

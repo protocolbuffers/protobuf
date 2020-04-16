@@ -34,7 +34,6 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/map_entry_lite.h>
 #include <google/protobuf/map_type_handler.h>
-#include <google/protobuf/metadata.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/unknown_field_set.h>
@@ -101,6 +100,10 @@ class MapEntry
       : MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
                      kValueFieldType, default_enum_value>(arena),
         _internal_metadata_(arena) {}
+  ~MapEntry() {
+    Message::_internal_metadata_.Delete<UnknownFieldSet>();
+    _internal_metadata_.Delete<UnknownFieldSet>();
+  }
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
 
@@ -118,7 +121,7 @@ class MapEntry
     return size;
   }
 
-  InternalMetadataWithArena _internal_metadata_;
+  InternalMetadata _internal_metadata_;
 
  private:
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;

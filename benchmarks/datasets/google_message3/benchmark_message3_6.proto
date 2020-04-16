@@ -28,17 +28,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// LINT: ALLOW_GROUPS
+
 syntax = "proto2";
+
+package benchmarks.google_message3;
 
 import "datasets/google_message3/benchmark_message3_7.proto";
 import "datasets/google_message3/benchmark_message3_8.proto";
-package benchmarks.google_message3;
 
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf.benchmarks";
 
-message Message10576 {
-}
+message Message10576 {}
 
 message Message10154 {
   optional bytes field10192 = 1;
@@ -373,8 +375,7 @@ message Message8939 {
   optional string field9012 = 3;
   repeated string field9013 = 4;
   optional string field9014 = 5;
-  repeated group Message8940 = 11 {
-  }
+  repeated group Message8940 = 11 {}
   optional int64 field9016 = 21;
   optional int64 field9017 = 22;
   optional int64 field9018 = 23;
@@ -453,8 +454,7 @@ message Message9627 {
   optional float field9672 = 5;
 }
 
-message Message11020 {
-}
+message Message11020 {}
 
 message Message11013 {
   optional bytes field11757 = 19;

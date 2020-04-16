@@ -1536,4 +1536,42 @@ public class TextFormatTest extends TestCase {
               index, line, column));
     }
   }
+
+  public void testSortMapFields() throws Exception {
+    TestMap message =
+        TestMap.newBuilder()
+            .putStringToInt32Field("cherry", 30)
+            .putStringToInt32Field("banana", 20)
+            .putStringToInt32Field("apple", 10)
+            .putInt32ToStringField(30, "cherry")
+            .putInt32ToStringField(20, "banana")
+            .putInt32ToStringField(10, "apple")
+            .build();
+    String text =
+        "int32_to_string_field {\n"
+            + "  key: 10\n"
+            + "  value: \"apple\"\n"
+            + "}\n"
+            + "int32_to_string_field {\n"
+            + "  key: 20\n"
+            + "  value: \"banana\"\n"
+            + "}\n"
+            + "int32_to_string_field {\n"
+            + "  key: 30\n"
+            + "  value: \"cherry\"\n"
+            + "}\n"
+            + "string_to_int32_field {\n"
+            + "  key: \"apple\"\n"
+            + "  value: 10\n"
+            + "}\n"
+            + "string_to_int32_field {\n"
+            + "  key: \"banana\"\n"
+            + "  value: 20\n"
+            + "}\n"
+            + "string_to_int32_field {\n"
+            + "  key: \"cherry\"\n"
+            + "  value: 30\n"
+            + "}\n";
+    assertEquals(text, TextFormat.printer().printToString(message));
+  }
 }

@@ -85,15 +85,15 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/AddressBook/ListPeople.cs                                       \
   csharp/src/AddressBook/Program.cs                                          \
   csharp/src/AddressBook/SampleUsage.cs                                      \
+  csharp/src/Google.Protobuf.Benchmarks/BenchmarkDatasetConfig.cs            \
   csharp/src/Google.Protobuf.Benchmarks/BenchmarkMessage1Proto3.cs           \
   csharp/src/Google.Protobuf.Benchmarks/Benchmarks.cs                        \
   csharp/src/Google.Protobuf.Benchmarks/Google.Protobuf.Benchmarks.csproj    \
+  csharp/src/Google.Protobuf.Benchmarks/GoogleMessageBenchmark.cs            \
   csharp/src/Google.Protobuf.Benchmarks/ParseRawPrimitivesBenchmark.cs       \
+  csharp/src/Google.Protobuf.Benchmarks/ParseMessagesBenchmark.cs            \
   csharp/src/Google.Protobuf.Benchmarks/Program.cs                           \
-  csharp/src/Google.Protobuf.Benchmarks/SerializationBenchmark.cs            \
-  csharp/src/Google.Protobuf.Benchmarks/SerializationConfig.cs               \
   csharp/src/Google.Protobuf.Benchmarks/wrapper_benchmark_messages.proto     \
-  csharp/src/Google.Protobuf.Benchmarks/WrapperBenchmark.cs                  \
   csharp/src/Google.Protobuf.Benchmarks/WrapperBenchmarkMessages.cs          \
   csharp/src/Google.Protobuf.Conformance/Conformance.cs                      \
   csharp/src/Google.Protobuf.Conformance/Google.Protobuf.Conformance.csproj  \
@@ -978,6 +978,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/service_reflection_test.py                 \
   python/google/protobuf/internal/symbol_database_test.py                    \
   python/google/protobuf/internal/test_bad_identifiers.proto                 \
+  python/google/protobuf/internal/test_proto3_optional.proto                 \
   python/google/protobuf/internal/test_util.py                               \
   python/google/protobuf/internal/testing_refleaks.py                        \
   python/google/protobuf/internal/text_encoding_test.py                      \
@@ -1232,7 +1233,6 @@ js_EXTRA_DIST=                                                         \
   js/experimental/runtime/kernel/typed_arrays.js                       \
   js/experimental/runtime/kernel/textencoding_test.js                  \
   js/experimental/runtime/kernel/textencoding.js                       \
-  js/experimental/runtime/kernel/storage_test.js                       \
   js/experimental/runtime/kernel/storage.js                            \
   js/experimental/runtime/kernel/sint64_test_pairs.js                  \
   js/experimental/runtime/kernel/sint32_test_pairs.js                  \
@@ -1251,10 +1251,10 @@ js_EXTRA_DIST=                                                         \
   js/experimental/runtime/kernel/packed_fixed32_test_pairs.js          \
   js/experimental/runtime/kernel/packed_double_test_pairs.js           \
   js/experimental/runtime/kernel/packed_bool_test_pairs.js             \
-  js/experimental/runtime/kernel/lazy_accessor_test.js                 \
-  js/experimental/runtime/kernel/lazy_accessor_repeated_test.js        \
-  js/experimental/runtime/kernel/lazy_accessor_compatibility_test.js   \
-  js/experimental/runtime/kernel/lazy_accessor.js                      \
+  js/experimental/runtime/kernel/kernel_test.js                        \
+  js/experimental/runtime/kernel/kernel_repeated_test.js               \
+  js/experimental/runtime/kernel/kernel_compatibility_test.js          \
+  js/experimental/runtime/kernel/kernel.js                             \
   js/experimental/runtime/kernel/internal_message.js                   \
   js/experimental/runtime/kernel/int64_test_pairs.js                   \
   js/experimental/runtime/kernel/int32_test_pairs.js                   \
@@ -1275,6 +1275,8 @@ js_EXTRA_DIST=                                                         \
   js/experimental/runtime/kernel/buffer_decoder_helper.js              \
   js/experimental/runtime/kernel/buffer_decoder.js                     \
   js/experimental/runtime/kernel/bool_test_pairs.js                    \
+  js/experimental/runtime/kernel/binary_storage_test.js                \
+  js/experimental/runtime/kernel/binary_storage.js                     \
   js/experimental/runtime/internal/checks_test.js                      \
   js/experimental/runtime/internal/checks.js                           \
   js/experimental/runtime/int64_test.js                                \

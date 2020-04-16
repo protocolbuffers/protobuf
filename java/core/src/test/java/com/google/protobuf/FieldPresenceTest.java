@@ -34,6 +34,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
 import com.google.protobuf.FieldPresenceTestProto.TestOptionalFieldsOnly;
 import com.google.protobuf.FieldPresenceTestProto.TestRepeatedFieldsOnly;
@@ -99,6 +100,7 @@ public class FieldPresenceTest extends TestCase {
     assertHasMethodRemoved(
         UnittestProto.TestAllTypes.Builder.class, TestAllTypes.Builder.class, "OneofBytes");
   }
+
 
   public void testOneofEquals() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();

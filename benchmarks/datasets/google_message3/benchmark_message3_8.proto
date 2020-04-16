@@ -639,9 +639,7 @@ enum Enum10325 {
   ENUM_VALUE10334 = 8;
 }
 
-enum Enum10335 {
-  ENUM_VALUE10336 = 0;
-}
+enum Enum10335 { ENUM_VALUE10336 = 0; }
 
 enum Enum10337 {
   ENUM_VALUE10338 = 0;
@@ -1887,9 +1885,7 @@ enum Enum33960 {
   ENUM_VALUE33967 = 6;
 }
 
-enum Enum34388 {
-  ENUM_VALUE34389 = 1;
-}
+enum Enum34388 { ENUM_VALUE34389 = 1; }
 
 enum Enum35477 {
   ENUM_VALUE35478 = 4;

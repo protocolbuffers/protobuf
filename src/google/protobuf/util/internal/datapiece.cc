@@ -173,7 +173,7 @@ StatusOr<double> DataPiece::ToDouble() const {
     if (str_ == "-Infinity") return -std::numeric_limits<double>::infinity();
     if (str_ == "NaN") return std::numeric_limits<double>::quiet_NaN();
     StatusOr<double> value = StringToNumber<double>(safe_strtod);
-    if (value.ok() && !std::isfinite(value.ValueOrDie())) {
+    if (value.ok() && !std::isfinite(value.value())) {
       // safe_strtod converts out-of-range values to +inf/-inf, but we want
       // to report them as errors.
       return InvalidArgument(StrCat("\"", str_, "\""));
@@ -289,7 +289,7 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     StatusOr<int32> int_value = ToInt32();
     if (int_value.ok()) {
       if (const google::protobuf::EnumValue* enum_value =
-              FindEnumValueByNumberOrNull(enum_type, int_value.ValueOrDie())) {
+              FindEnumValueByNumberOrNull(enum_type, int_value.value())) {
         return enum_value->number();
       }
     }
@@ -317,7 +317,9 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     // If ignore_unknown_enum_values is true an unknown enum value is ignored.
     if (ignore_unknown_enum_values) {
       *is_unknown_enum_value = true;
-      return enum_type->enumvalue(0).number();
+      if (enum_type->enumvalue_size() > 0) {
+        return enum_type->enumvalue(0).number();
+      }
     }
   } else {
     // We don't need to check whether the value is actually declared in the

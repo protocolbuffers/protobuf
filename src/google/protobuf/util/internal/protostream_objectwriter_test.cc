@@ -34,6 +34,7 @@
 
 #include <google/protobuf/field_mask.pb.h>
 #include <google/protobuf/timestamp.pb.h>
+#include <google/protobuf/type.pb.h>
 #include <google/protobuf/wrappers.pb.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -53,6 +54,7 @@
 #include <google/protobuf/util/internal/type_info_test_helper.h>
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/message_differencer.h>
+#include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <gtest/gtest.h>
@@ -62,6 +64,7 @@ namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
+
 
 using proto_util_converter::testing::AnyM;
 using proto_util_converter::testing::AnyOut;
@@ -277,6 +280,7 @@ TEST_P(ProtoStreamObjectWriterTest, ConflictingJsonName) {
   ow_->StartObject("")->RenderInt32("value", 12345)->EndObject();
   CheckOutput(message2);
 }
+
 
 TEST_P(ProtoStreamObjectWriterTest, IntEnumValuesAreAccepted) {
   Book book;
@@ -2537,7 +2541,7 @@ TEST_P(ProtoStreamObjectWriterFieldMaskTest, SimpleFieldMaskTest) {
   CheckOutput(expected);
 }
 
-TEST_P(ProtoStreamObjectWriterFieldMaskTest, MutipleMasksInCompactForm) {
+TEST_P(ProtoStreamObjectWriterFieldMaskTest, MultipleMasksInCompactForm) {
   FieldMaskTest expected;
   expected.set_id("1");
   expected.mutable_single_mask()->add_paths("camel_case1");

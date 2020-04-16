@@ -50,6 +50,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {

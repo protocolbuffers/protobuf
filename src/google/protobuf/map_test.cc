@@ -39,9 +39,11 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <random>
 #include <set>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <google/protobuf/stubs/logging.h>
@@ -93,6 +95,8 @@ namespace internal {
 void MapTestForceDeterministic() {
   io::CodedOutputStream::SetDefaultSerializationDeterministic();
 }
+
+namespace {
 
 // Map API Test =====================================================
 
@@ -980,11 +984,7 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
 
 static int Func(int i, int j) { return i * j; }
 
-static std::string StrFunc(int i, int j) {
-  std::string str;
-  SStringPrintf(&str, "%d", Func(i, j));
-  return str;
-}
+static std::string StrFunc(int i, int j) { return StrCat(Func(i, j)); }
 
 static int Int(const std::string& value) {
   int result = 0;
@@ -992,6 +992,9 @@ static int Int(const std::string& value) {
   return result;
 }
 
+}  // namespace
+
+// This class is a friend, so no anonymous namespace.
 class MapFieldReflectionTest : public testing::Test {
  protected:
   typedef FieldDescriptor FD;
@@ -1001,6 +1004,8 @@ class MapFieldReflectionTest : public testing::Test {
     return reflection->MapSize(message, field);
   }
 };
+
+namespace {
 
 TEST_F(MapFieldReflectionTest, RegularFields) {
   TestMap message;
@@ -3051,9 +3056,9 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   EXPECT_EQ(expected_size, size);
 
   // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
-  // repeated field to calculate ByteSize but use map to serialize the real data,
-  // thus the ByteSize may bigger than real serialized size. A crash might be
-  // happen at SerializeToString(). Or an "unexpect end group" warning was
+  // repeated field to calculate ByteSize but use map to serialize the real
+  // data, thus the ByteSize may bigger than real serialized size. A crash might
+  // be happen at SerializeToString(). Or an "unexpect end group" warning was
   // raised at parse back if user use SerializeWithCachedSizes() which avoids
   // size check at serialize.
   std::string serialized_data;
@@ -3505,6 +3510,8 @@ TEST(MoveTest, MoveAssignmentWorks) {
   EXPECT_EQ(nested_msg43_ptr, &moved_to_map[43].optional_nested_message());
 }
 
+
+}  // namespace
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

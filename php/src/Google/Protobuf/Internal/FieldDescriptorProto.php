@@ -93,6 +93,30 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     protected $options = null;
     private $has_options = false;
+    /**
+     * If true, this is a proto3 "optional". When a proto3 field is optional, it
+     * tracks presence regardless of field type.
+     * When proto3_optional is true, this field must be belong to a oneof to
+     * signal to old proto3 clients that presence is tracked for this field. This
+     * oneof is known as a "synthetic" oneof, and this field must be its sole
+     * member (each proto3 optional field gets its own synthetic oneof). Synthetic
+     * oneofs exist in the descriptor only, and do not generate any API. Synthetic
+     * oneofs must be ordered after all "real" oneofs.
+     * For message fields, proto3_optional doesn't create any semantic change,
+     * since non-repeated message fields always track presence. However it still
+     * indicates the semantic detail of whether the user wrote "optional" or not.
+     * This can be useful for round-tripping the .proto file. For consistency we
+     * give message fields a synthetic oneof also, even though it is not required
+     * to track presence. This is especially important because the parser can't
+     * tell if a field is a message or an enum, so it must always create a
+     * synthetic oneof.
+     * Proto2 optional fields do not set this flag, because they already indicate
+     * optional with `LABEL_OPTIONAL`.
+     *
+     * Generated from protobuf field <code>optional bool proto3_optional = 17;</code>
+     */
+    protected $proto3_optional = false;
+    private $has_proto3_optional = false;
 
     /**
      * Constructor.
@@ -130,6 +154,25 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *           will be used. Otherwise, it's deduced from the field's name by converting
      *           it to camelCase.
      *     @type \Google\Protobuf\Internal\FieldOptions $options
+     *     @type bool $proto3_optional
+     *           If true, this is a proto3 "optional". When a proto3 field is optional, it
+     *           tracks presence regardless of field type.
+     *           When proto3_optional is true, this field must be belong to a oneof to
+     *           signal to old proto3 clients that presence is tracked for this field. This
+     *           oneof is known as a "synthetic" oneof, and this field must be its sole
+     *           member (each proto3 optional field gets its own synthetic oneof). Synthetic
+     *           oneofs exist in the descriptor only, and do not generate any API. Synthetic
+     *           oneofs must be ordered after all "real" oneofs.
+     *           For message fields, proto3_optional doesn't create any semantic change,
+     *           since non-repeated message fields always track presence. However it still
+     *           indicates the semantic detail of whether the user wrote "optional" or not.
+     *           This can be useful for round-tripping the .proto file. For consistency we
+     *           give message fields a synthetic oneof also, even though it is not required
+     *           to track presence. This is especially important because the parser can't
+     *           tell if a field is a message or an enum, so it must always create a
+     *           synthetic oneof.
+     *           Proto2 optional fields do not set this flag, because they already indicate
+     *           optional with `LABEL_OPTIONAL`.
      * }
      */
     public function __construct($data = NULL) {
@@ -467,6 +510,72 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     public function hasOptions()
     {
         return $this->has_options;
+    }
+
+    /**
+     * If true, this is a proto3 "optional". When a proto3 field is optional, it
+     * tracks presence regardless of field type.
+     * When proto3_optional is true, this field must be belong to a oneof to
+     * signal to old proto3 clients that presence is tracked for this field. This
+     * oneof is known as a "synthetic" oneof, and this field must be its sole
+     * member (each proto3 optional field gets its own synthetic oneof). Synthetic
+     * oneofs exist in the descriptor only, and do not generate any API. Synthetic
+     * oneofs must be ordered after all "real" oneofs.
+     * For message fields, proto3_optional doesn't create any semantic change,
+     * since non-repeated message fields always track presence. However it still
+     * indicates the semantic detail of whether the user wrote "optional" or not.
+     * This can be useful for round-tripping the .proto file. For consistency we
+     * give message fields a synthetic oneof also, even though it is not required
+     * to track presence. This is especially important because the parser can't
+     * tell if a field is a message or an enum, so it must always create a
+     * synthetic oneof.
+     * Proto2 optional fields do not set this flag, because they already indicate
+     * optional with `LABEL_OPTIONAL`.
+     *
+     * Generated from protobuf field <code>optional bool proto3_optional = 17;</code>
+     * @return bool
+     */
+    public function getProto3Optional()
+    {
+        return $this->proto3_optional;
+    }
+
+    /**
+     * If true, this is a proto3 "optional". When a proto3 field is optional, it
+     * tracks presence regardless of field type.
+     * When proto3_optional is true, this field must be belong to a oneof to
+     * signal to old proto3 clients that presence is tracked for this field. This
+     * oneof is known as a "synthetic" oneof, and this field must be its sole
+     * member (each proto3 optional field gets its own synthetic oneof). Synthetic
+     * oneofs exist in the descriptor only, and do not generate any API. Synthetic
+     * oneofs must be ordered after all "real" oneofs.
+     * For message fields, proto3_optional doesn't create any semantic change,
+     * since non-repeated message fields always track presence. However it still
+     * indicates the semantic detail of whether the user wrote "optional" or not.
+     * This can be useful for round-tripping the .proto file. For consistency we
+     * give message fields a synthetic oneof also, even though it is not required
+     * to track presence. This is especially important because the parser can't
+     * tell if a field is a message or an enum, so it must always create a
+     * synthetic oneof.
+     * Proto2 optional fields do not set this flag, because they already indicate
+     * optional with `LABEL_OPTIONAL`.
+     *
+     * Generated from protobuf field <code>optional bool proto3_optional = 17;</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setProto3Optional($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->proto3_optional = $var;
+        $this->has_proto3_optional = true;
+
+        return $this;
+    }
+
+    public function hasProto3Optional()
+    {
+        return $this->has_proto3_optional;
     }
 
 }

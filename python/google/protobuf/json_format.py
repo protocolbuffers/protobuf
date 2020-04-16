@@ -60,6 +60,7 @@ import sys
 
 import six
 
+from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import symbol_database
 
@@ -282,6 +283,25 @@ class _Printer(object):
 
   def _FieldToJsonObject(self, field, value):
     """Converts field value according to Proto3 JSON Specification."""
+
+    def _ToShortestFloat(original):
+      """Returns the shortest float that has same value in wire."""
+      # Return the original value if it is not truncated. This may happen
+      # if someone mixes this code with an old protobuf runtime.
+      if type_checkers.TruncateToFourByteFloat(original) != original:
+        return original
+      # All 4 byte floats have between 6 and 9 significant digits, so we
+      # start with 6 as the lower bound.
+      # It has to be iterative because use '.9g' directly can not get rid
+      # of the noises for most values. For example if set a float_field=0.9
+      # use '.9g' will print 0.899999976.
+      precision = 6
+      rounded = float('{0:.{1}g}'.format(original, precision))
+      while type_checkers.TruncateToFourByteFloat(rounded) != original:
+        precision += 1
+        rounded = float('{0:.{1}g}'.format(original, precision))
+      return rounded
+
     if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
       return self._MessageToJsonObject(value)
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
@@ -313,9 +333,12 @@ class _Printer(object):
           return _INFINITY
       if math.isnan(value):
         return _NAN
-      if (self.float_format and
-          field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT):
-        return float(format(value, self.float_format))
+      if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
+        if self.float_format:
+          return float(format(value, self.float_format))
+        else:
+          return _ToShortestFloat(value)
+
     return value
 
   def _AnyMessageToJsonObject(self, message):

@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/generated_message_reflection.h>
+
 #include <algorithm>
 #include <set>
 
@@ -40,13 +42,13 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 
 
@@ -60,7 +62,7 @@ using google::protobuf::internal::ExtensionSet;
 using google::protobuf::internal::GenericTypeHandler;
 using google::protobuf::internal::GetEmptyString;
 using google::protobuf::internal::InlinedStringField;
-using google::protobuf::internal::InternalMetadataWithArena;
+using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::LazyField;
 using google::protobuf::internal::MapFieldBase;
 using google::protobuf::internal::MigrationSchema;
@@ -100,21 +102,9 @@ const std::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
 
 namespace {
 
-template <class To>
-To* GetPointerAtOffset(Message* message, uint32 offset) {
-  return reinterpret_cast<To*>(reinterpret_cast<char*>(message) + offset);
-}
-
-template <class To>
-const To* GetConstPointerAtOffset(const Message* message, uint32 offset) {
-  return reinterpret_cast<const To*>(reinterpret_cast<const char*>(message) +
-                                     offset);
-}
-
-template <class To>
-const To& GetConstRefAtOffset(const Message& message, uint32 offset) {
-  return *GetConstPointerAtOffset<To>(&message, offset);
-}
+using internal::GetConstPointerAtOffset;
+using internal::GetConstRefAtOffset;
+using internal::GetPointerAtOffset;
 
 void ReportReflectionUsageError(const Descriptor* descriptor,
                                 const FieldDescriptor* field,
@@ -231,11 +221,13 @@ Reflection::Reflection(const Descriptor* descriptor,
 
 const UnknownFieldSet& Reflection::GetUnknownFields(
     const Message& message) const {
-  return GetInternalMetadataWithArena(message).unknown_fields();
+  return GetInternalMetadata(message).unknown_fields<UnknownFieldSet>(
+      UnknownFieldSet::default_instance);
 }
 
 UnknownFieldSet* Reflection::MutableUnknownFields(Message* message) const {
-  return MutableInternalMetadataWithArena(message)->mutable_unknown_fields();
+  return MutableInternalMetadata(message)
+      ->mutable_unknown_fields<UnknownFieldSet>();
 }
 
 size_t Reflection::SpaceUsedLong(const Message& message) const {
@@ -295,7 +287,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
           break;
       }
     } else {
-      if (field->containing_oneof() && !HasOneofField(message, field)) {
+      if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
         continue;
       }
       switch (field->cpp_type()) {
@@ -484,6 +476,7 @@ void Reflection::SwapField(Message* message1, Message* message2,
 
 void Reflection::SwapOneofField(Message* message1, Message* message2,
                                 const OneofDescriptor* oneof_descriptor) const {
+  GOOGLE_DCHECK(!oneof_descriptor->is_synthetic());
   uint32 oneof_case1 = GetOneofCase(*message1, oneof_descriptor);
   uint32 oneof_case2 = GetOneofCase(*message2, oneof_descriptor);
 
@@ -640,7 +633,7 @@ void Reflection::Swap(Message* message1, Message* message2) const {
     int fields_with_has_bits = 0;
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = descriptor_->field(i);
-      if (field->is_repeated() || field->containing_oneof()) {
+      if (field->is_repeated() || schema_.InRealOneof(field)) {
         continue;
       }
       fields_with_has_bits++;
@@ -655,12 +648,15 @@ void Reflection::Swap(Message* message1, Message* message2) const {
 
   for (int i = 0; i <= last_non_weak_field_index_; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->containing_oneof()) continue;
+    if (schema_.InRealOneof(field)) continue;
     SwapField(message1, message2, field);
   }
   const int oneof_decl_count = descriptor_->oneof_decl_count();
   for (int i = 0; i < oneof_decl_count; i++) {
-    SwapOneofField(message1, message2, descriptor_->oneof_decl(i));
+    const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
+    if (!oneof->is_synthetic()) {
+      SwapOneofField(message1, message2, oneof);
+    }
   }
 
   if (schema_.HasExtensionSet()) {
@@ -702,7 +698,7 @@ void Reflection::SwapFields(
       MutableExtensionSet(message1)->SwapExtension(
           MutableExtensionSet(message2), field->number());
     } else {
-      if (field->containing_oneof()) {
+      if (schema_.InRealOneof(field)) {
         int oneof_index = field->containing_oneof()->index();
         // Only swap the oneof field once.
         if (swapped_oneof.find(oneof_index) != swapped_oneof.end()) {
@@ -733,7 +729,7 @@ bool Reflection::HasField(const Message& message,
   if (field->is_extension()) {
     return GetExtensionSet(message).Has(field->number());
   } else {
-    if (field->containing_oneof()) {
+    if (schema_.InRealOneof(field)) {
       return HasOneofField(message, field);
     } else {
       return HasBit(message, field);
@@ -793,7 +789,7 @@ void Reflection::ClearField(Message* message,
   if (field->is_extension()) {
     MutableExtensionSet(message)->ClearExtension(field->number());
   } else if (!field->is_repeated()) {
-    if (field->containing_oneof()) {
+    if (schema_.InRealOneof(field)) {
       ClearOneofField(message, field);
       return;
     }
@@ -1026,6 +1022,14 @@ bool CreateUnknownEnumValues(const FileDescriptor* file) {
 }
 }  // namespace
 
+namespace internal {
+bool CreateUnknownEnumValues(const FieldDescriptor* field) {
+  bool open_enum = false;
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 || open_enum;
+}
+}  // namespace internal
+using internal::CreateUnknownEnumValues;
+
 void Reflection::ListFields(const Message& message,
                             std::vector<const FieldDescriptor*>* output) const {
   output->clear();
@@ -1050,7 +1054,7 @@ void Reflection::ListFields(const Message& message,
       }
     } else {
       const OneofDescriptor* containing_oneof = field->containing_oneof();
-      if (containing_oneof) {
+      if (schema_.InRealOneof(field)) {
         const uint32* const oneof_case_array = GetConstPointerAtOffset<uint32>(
             &message, schema_.oneof_case_offset_);
         // Equivalent to: HasOneofField(message, field)
@@ -1208,7 +1212,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
 
         const std::string* default_ptr =
             &DefaultRaw<ArenaStringPtr>(field).Get();
-        if (field->containing_oneof() && !HasOneofField(*message, field)) {
+        if (schema_.InRealOneof(field) && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
           MutableField<ArenaStringPtr>(message, field)
               ->UnsafeSetDefault(default_ptr);
@@ -1323,7 +1327,7 @@ void Reflection::SetEnum(Message* message, const FieldDescriptor* field,
 void Reflection::SetEnumValue(Message* message, const FieldDescriptor* field,
                               int value) const {
   USAGE_CHECK_ALL(SetEnumValue, SINGULAR, ENUM);
-  if (!CreateUnknownEnumValues(descriptor_->file())) {
+  if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
@@ -1380,7 +1384,7 @@ void Reflection::SetRepeatedEnumValue(Message* message,
                                       const FieldDescriptor* field, int index,
                                       int value) const {
   USAGE_CHECK_ALL(SetRepeatedEnum, REPEATED, ENUM);
-  if (!CreateUnknownEnumValues(descriptor_->file())) {
+  if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
@@ -1414,7 +1418,7 @@ void Reflection::AddEnum(Message* message, const FieldDescriptor* field,
 void Reflection::AddEnumValue(Message* message, const FieldDescriptor* field,
                               int value) const {
   USAGE_CHECK_ALL(AddEnum, REPEATED, ENUM);
-  if (!CreateUnknownEnumValues(descriptor_->file())) {
+  if (!CreateUnknownEnumValues(field)) {
     // Check that the value is valid if we don't support direct storage of
     // unknown enum values.
     const EnumValueDescriptor* value_desc =
@@ -1475,7 +1479,7 @@ Message* Reflection::MutableMessage(Message* message,
 
     Message** result_holder = MutableRaw<Message*>(message, field);
 
-    if (field->containing_oneof()) {
+    if (schema_.InRealOneof(field)) {
       if (!HasOneofField(*message, field)) {
         ClearOneof(message, field->containing_oneof());
         result_holder = MutableField<Message*>(message, field);
@@ -1504,7 +1508,7 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
         field->number(), field->type(), field, sub_message);
   } else {
-    if (field->containing_oneof()) {
+    if (schema_.InRealOneof(field)) {
       if (sub_message == nullptr) {
         ClearOneof(message, field->containing_oneof());
         return;
@@ -1566,10 +1570,10 @@ Message* Reflection::UnsafeArenaReleaseMessage(Message* message,
         MutableExtensionSet(message)->UnsafeArenaReleaseMessage(field,
                                                                 factory));
   } else {
-    if (!(field->is_repeated() || field->containing_oneof())) {
+    if (!(field->is_repeated() || schema_.InRealOneof(field))) {
       ClearBit(message, field);
     }
-    if (field->containing_oneof()) {
+    if (schema_.InRealOneof(field)) {
       if (HasOneofField(*message, field)) {
         *MutableOneofCase(message, field->containing_oneof()) = 0;
       } else {
@@ -1754,6 +1758,10 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
 
 const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
+  if (oneof_descriptor->is_synthetic()) {
+    const FieldDescriptor* field = oneof_descriptor->field(0);
+    return HasField(message, field) ? field : nullptr;
+  }
   uint32 field_number = GetOneofCase(message, oneof_descriptor);
   if (field_number == 0) {
     return nullptr;
@@ -1850,7 +1858,7 @@ Type* Reflection::MutableRawNonOneof(Message* message,
 template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
-  if (field->containing_oneof() && !HasOneofField(message, field)) {
+  if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
     return DefaultRaw<Type>(field);
   }
   return GetConstRefAtOffset<Type>(message, schema_.GetFieldOffset(field));
@@ -1878,12 +1886,14 @@ uint32* Reflection::MutableHasBits(Message* message) const {
 
 uint32 Reflection::GetOneofCase(const Message& message,
                                 const OneofDescriptor* oneof_descriptor) const {
+  GOOGLE_DCHECK(!oneof_descriptor->is_synthetic());
   return GetConstRefAtOffset<uint32>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
 uint32* Reflection::MutableOneofCase(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
+  GOOGLE_DCHECK(!oneof_descriptor->is_synthetic());
   return GetPointerAtOffset<uint32>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
@@ -1899,31 +1909,25 @@ ExtensionSet* Reflection::MutableExtensionSet(Message* message) const {
 }
 
 Arena* Reflection::GetArena(Message* message) const {
-  return GetInternalMetadataWithArena(*message).arena();
+  return GetInternalMetadata(*message).arena();
 }
 
-const InternalMetadataWithArena& Reflection::GetInternalMetadataWithArena(
+const InternalMetadata& Reflection::GetInternalMetadata(
     const Message& message) const {
-  return GetConstRefAtOffset<InternalMetadataWithArena>(
-      message, schema_.GetMetadataOffset());
+  return GetConstRefAtOffset<InternalMetadata>(message,
+                                               schema_.GetMetadataOffset());
 }
 
-InternalMetadataWithArena* Reflection::MutableInternalMetadataWithArena(
-    Message* message) const {
-  return GetPointerAtOffset<InternalMetadataWithArena>(
-      message, schema_.GetMetadataOffset());
-}
-
-template <typename Type>
-const Type& Reflection::DefaultRaw(const FieldDescriptor* field) const {
-  return *reinterpret_cast<const Type*>(schema_.GetFieldDefault(field));
+InternalMetadata* Reflection::MutableInternalMetadata(Message* message) const {
+  return GetPointerAtOffset<InternalMetadata>(message,
+                                              schema_.GetMetadataOffset());
 }
 
 // Simple accessors for manipulating has_bits_.
 bool Reflection::HasBit(const Message& message,
                         const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
-  if (schema_.HasHasbits()) {
+  if (schema_.HasBitIndex(field) != -1) {
     return IsIndexInHasBitSet(GetHasBits(message), schema_.HasBitIndex(field));
   }
 
@@ -1983,10 +1987,8 @@ bool Reflection::HasBit(const Message& message,
 
 void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
-  if (!schema_.HasHasbits()) {
-    return;
-  }
   const uint32 index = schema_.HasBitIndex(field);
+  if (index == -1) return;
   MutableHasBits(message)[index / 32] |=
       (static_cast<uint32>(1) << (index % 32));
 }
@@ -2023,6 +2025,9 @@ void Reflection::SwapBit(Message* message1, Message* message2,
 
 bool Reflection::HasOneof(const Message& message,
                           const OneofDescriptor* oneof_descriptor) const {
+  if (oneof_descriptor->is_synthetic()) {
+    return HasField(message, oneof_descriptor->field(0));
+  }
   return (GetOneofCase(message, oneof_descriptor) > 0);
 }
 
@@ -2045,6 +2050,10 @@ void Reflection::ClearOneofField(Message* message,
 
 void Reflection::ClearOneof(Message* message,
                             const OneofDescriptor* oneof_descriptor) const {
+  if (oneof_descriptor->is_synthetic()) {
+    ClearField(message, oneof_descriptor->field(0));
+    return;
+  }
   // TODO(jieluo): Consider to cache the unused object instead of deleting
   // it. It will be much faster if an application switches a lot from
   // a few oneof fields.  Time/space tradeoff
@@ -2125,19 +2134,19 @@ const Type& Reflection::GetField(const Message& message,
 template <typename Type>
 void Reflection::SetField(Message* message, const FieldDescriptor* field,
                           const Type& value) const {
-  if (field->containing_oneof() && !HasOneofField(*message, field)) {
+  bool real_oneof = schema_.InRealOneof(field);
+  if (real_oneof && !HasOneofField(*message, field)) {
     ClearOneof(message, field->containing_oneof());
   }
   *MutableRaw<Type>(message, field) = value;
-  field->containing_oneof() ? SetOneofCase(message, field)
-                            : SetBit(message, field);
+  real_oneof ? SetOneofCase(message, field) : SetBit(message, field);
 }
 
 template <typename Type>
 Type* Reflection::MutableField(Message* message,
                                const FieldDescriptor* field) const {
-  field->containing_oneof() ? SetOneofCase(message, field)
-                            : SetBit(message, field);
+  schema_.InRealOneof(field) ? SetOneofCase(message, field)
+                             : SetBit(message, field);
   return MutableRaw<Type>(message, field);
 }
 
@@ -2331,7 +2340,7 @@ struct MetadataOwner {
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
-void AssignDescriptorsImpl(const DescriptorTable* table) {
+void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   // Ensure the file descriptor is added to the pool.
   {
     // This only happens once per proto file. So a global mutex to serialize
@@ -2341,6 +2350,25 @@ void AssignDescriptorsImpl(const DescriptorTable* table) {
     AddDescriptors(table);
     mu.Unlock();
   }
+  if (eager) {
+    // Normally we do not want to eagerly build descriptors of our deps.
+    // However if this proto is optimized for code size (ie using reflection)
+    // and it has a message extending a custom option of a descriptor with that
+    // message being optimized for code size as well. Building the descriptors
+    // in this file requires parsing the serialized file descriptor, which now
+    // requires parsing the message extension, which potentially requires
+    // building the descriptor of the message extending one of the options.
+    // However we are already updating descriptor pool under a lock. To prevent
+    // this the compiler statically looks for this case and we just make sure we
+    // first build the descriptors of all our dependencies, preventing the
+    // deadlock.
+    int num_deps = table->num_deps;
+    for (int i = 0; i < num_deps; i++) {
+      // In case of weak fields deps[i] could be null.
+      if (table->deps[i]) AssignDescriptors(table->deps[i], true);
+    }
+  }
+
   // Fill the arrays with pointers to descriptors and reflection classes.
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
@@ -2378,7 +2406,8 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
 
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.
-  for (int i = 0; i < table->num_deps; i++) {
+  int num_deps = table->num_deps;
+  for (int i = 0; i < num_deps; i++) {
     // In case of weak fields deps[i] could be null.
     if (table->deps[i]) AddDescriptors(table->deps[i]);
   }
@@ -2403,8 +2432,9 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
 
 namespace internal {
 
-void AssignDescriptors(const DescriptorTable* table) {
-  call_once(*table->once, AssignDescriptorsImpl, table);
+void AssignDescriptors(const DescriptorTable* table, bool eager) {
+  if (!eager) eager = table->is_eager;
+  call_once(*table->once, AssignDescriptorsImpl, table, eager);
 }
 
 void AddDescriptors(const DescriptorTable* table) {
@@ -2412,8 +2442,8 @@ void AddDescriptors(const DescriptorTable* table) {
   // properly serialized. This function is only called pre-main by global
   // descriptors and we can assume single threaded access or it's called
   // by AssignDescriptorImpl which uses a mutex to sequence calls.
-  if (*table->is_initialized) return;
-  *table->is_initialized = true;
+  if (table->is_initialized) return;
+  table->is_initialized = true;
   AddDescriptorsImpl(table);
 }
 
@@ -2426,11 +2456,12 @@ void UnknownFieldSetSerializer(const uint8* base, uint32 offset, uint32 tag,
                                uint32 has_offset,
                                io::CodedOutputStream* output) {
   const void* ptr = base + offset;
-  const InternalMetadataWithArena* metadata =
-      static_cast<const InternalMetadataWithArena*>(ptr);
+  const InternalMetadata* metadata = static_cast<const InternalMetadata*>(ptr);
   if (metadata->have_unknown_fields()) {
-    internal::WireFormat::SerializeUnknownFields(metadata->unknown_fields(),
-                                                 output);
+    internal::WireFormat::SerializeUnknownFields(
+        metadata->unknown_fields<UnknownFieldSet>(
+            UnknownFieldSet::default_instance),
+        output);
   }
 }
 

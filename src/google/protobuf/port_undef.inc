@@ -69,6 +69,20 @@
 #undef PROTOBUF_EXPORT_TEMPLATE_DECLARE
 #undef PROTOBUF_EXPORT_TEMPLATE_DEFINE
 #undef PROTOBUF_ALIGNAS
+#undef PROTOBUF_EXPORT_TEMPLATE_INVOKE_2
+#undef PROTOBUF_EXPORT_TEMPLATE_DECLARE_DEFAULT
+#undef PROTOBUF_EXPORT_TEMPLATE_DEFINE_DEFAULT
+#undef PROTOBUF_EXPORT_TEMPLATE_DECLARE_MSVC_HACK
+#undef PROTOBUF_EXPORT_TEMPLATE_DEFINE_MSVC_HACK
+#undef PROTOBUF_EXPORT_TEMPLATE_STYLE
+#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_2
+#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_3
+#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_foj3FJo5StF0OvIzl7oMxA
+#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_foj3FJo5StF0OvIzl7oMxA__attribute__
+#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_foj3FJo5StF0OvIzl7oMxA__declspec
+#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllexport
+#undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllimport
+#undef PROTOBUF_FINAL
 
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER
@@ -82,6 +96,13 @@
 #pragma pop_macro("max")
 #endif
 
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+#pragma pop_macro("YES")
+#pragma pop_macro("NO")
+#endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
 #endif

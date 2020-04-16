@@ -121,7 +121,11 @@ public abstract class GeneratedMessageLite<
       return true;
     }
 
-    if (!getDefaultInstanceForType().getClass().isInstance(other)) {
+    if (other == null) {
+      return false;
+    }
+
+    if (this.getClass() != other.getClass()) {
       return false;
     }
 

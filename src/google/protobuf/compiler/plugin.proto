@@ -107,6 +107,16 @@ message CodeGeneratorResponse {
   // exiting with a non-zero status code.
   optional string error = 1;
 
+  // A bitmask of supported features that the code generator supports.
+  // This is a bitwise "or" of values from the Feature enum.
+  optional uint64 supported_features = 2;
+
+  // Sync with code_generator.h.
+  enum Feature {
+    FEATURE_NONE = 0;
+    FEATURE_PROTO3_OPTIONAL = 1;
+  }
+
   // Represents a single generated file.
   message File {
     // The file name, relative to the output directory.  The name must not

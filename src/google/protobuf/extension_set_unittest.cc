@@ -1319,6 +1319,13 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   }
 }
 
+TEST(ExtensionSetTest, BoolExtension) {
+  unittest::TestAllExtensions msg;
+  uint8 wire_bytes[2] = {13 * 8, 42 /* out of bounds payload for bool */};
+  EXPECT_TRUE(msg.ParseFromArray(wire_bytes, 2));
+  EXPECT_TRUE(msg.GetExtension(protobuf_unittest::optional_bool_extension));
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf
