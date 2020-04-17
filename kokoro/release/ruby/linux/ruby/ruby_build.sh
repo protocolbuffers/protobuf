@@ -11,6 +11,7 @@ fi
 
 umask 0022
 pushd ruby
+gem install bundler -v 2.1.4
 bundle install && bundle exec rake gem:native
 ls pkg
 mv pkg/* $ARTIFACT_DIR
