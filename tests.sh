@@ -436,6 +436,10 @@ build_ruby26() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.6.0 && cd ..
 }
+build_ruby27() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh ruby-2.7.0 && cd ..
+}
 
 build_javascript() {
   internal_build_cpp

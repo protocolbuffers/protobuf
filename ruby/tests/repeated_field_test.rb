@@ -20,6 +20,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
       :iter_for_each_with_index, :dimensions, :copy_data, :copy_data_simple,
       :nitems, :iter_for_reverse_each, :indexes, :append, :prepend]
     arr_methods -= [:union, :difference, :filter!]
+    arr_methods -= [:intersection, :deconstruct] # ruby 2.7 methods we can ignore
     arr_methods.each do |method_name|
       assert m.repeated_string.respond_to?(method_name) == true, "does not respond to #{method_name}"
     end
