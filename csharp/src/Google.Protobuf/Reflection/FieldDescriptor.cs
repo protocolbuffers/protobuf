@@ -59,6 +59,12 @@ namespace Google.Protobuf.Reflection
         public OneofDescriptor ContainingOneof { get; }
 
         /// <summary>
+        /// Returns the oneof containing this field if it's a "real" oneof, or <c>null</c> if either this
+        /// field is not part of a oneof, or the oneof is synthetic.
+        /// </summary>
+        public OneofDescriptor RealContainingOneof => ContainingOneof?.IsSynthetic == false ? ContainingOneof : null;
+
+        /// <summary>
         /// The effective JSON name for this field. This is usually the lower-camel-cased form of the field name,
         /// but can be overridden using the <c>json_name</c> option in the .proto file.
         /// </summary>
