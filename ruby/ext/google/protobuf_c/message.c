@@ -608,6 +608,12 @@ VALUE Message_to_h(VALUE _self) {
   VALUE hash;
   upb_msg_field_iter it;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  // We currently have a few behaviors that are specific to proto2.
+  // This is unfortunate, we should key behaviors off field attributes (like
+  // whether a field has presence), not proto2 vs. proto3. We should see if we
+  // can change this without breaking users.
+  bool is_proto2 =
+      upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2;
 
   hash = rb_hash_new();
 
@@ -618,10 +624,9 @@ VALUE Message_to_h(VALUE _self) {
     VALUE msg_value;
     VALUE msg_key;
 
-    // For proto2, do not include fields which are not set.
-    if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
-       field_contains_hasbit(self->descriptor->layout, field) &&
-       !layout_has(self->descriptor->layout, Message_data(self), field)) {
+    // Do not include fields that are not present (oneof or optional fields).
+    if (is_proto2 && upb_fielddef_haspresence(field) &&
+        !layout_has(self->descriptor->layout, Message_data(self), field)) {
       continue;
     }
 
@@ -631,8 +636,7 @@ VALUE Message_to_h(VALUE _self) {
       msg_value = Map_to_h(msg_value);
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       msg_value = RepeatedField_to_ary(msg_value);
-      if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
-          RARRAY_LEN(msg_value) == 0) {
+      if (is_proto2 && RARRAY_LEN(msg_value) == 0) {
         continue;
       }
 
