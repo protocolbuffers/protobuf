@@ -178,7 +178,6 @@ js/testproto_libs2.js
 /bazel-*
 
 # ruby test output
-ruby/lib/
 ruby/tests/basic_test_pb.rb
 ruby/tests/basic_test_proto2_pb.rb
 ruby/tests/generated_code_pb.rb

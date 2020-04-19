@@ -440,6 +440,29 @@ VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self) {
 
 /*
  * call-seq:
+ *     DescriptorPool.build_file(serialized_file_proto)
+ *
+ * Adds the given serialized FileDescriptorProto to the pool.
+ */
+VALUE DescriptorPool_build(value _self, VALUE serialized_file_proto) {
+  DEFINE_SELF(DescriptorPool, self, _self);
+  Check_Type(serialized_file_proto, T_STRING);
+  upb_arena *arena = upb_arena_new();
+  google_protobuf_FileDescriptorProto* file_proto =
+      google_protobuf_FileDescriptorProto_parse(
+          RSTRING_PTR(serialized_file_proto),
+          RSTRING_LEN(serialized_file_proto), arena);
+  upb_status status;
+  upb_status_clear(&status);
+  if (!upb_symtab_addfile(self->symtab, file_proto, &status)) {
+    rb_raise(cTypeError, "Unable to build file to DescriptorPool: %s",
+             upb_status_errmsg(&status));
+  }
+  return Qnil;
+}
+
+/*
+ * call-seq:
  *     DescriptorPool.lookup(name) => descriptor
  *
  * Finds a Descriptor or EnumDescriptor by name and returns it, or nil if none
@@ -1522,7 +1545,7 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
 }
 
 static VALUE make_mapentry(VALUE _message_builder, VALUE types, int argc,
-                           VALUE* argv) {
+                           const VALUE* argv) {
   DEFINE_SELF(MessageBuilderContext, message_builder, _message_builder);
   VALUE type_class = rb_ary_entry(types, 2);
   FileBuilderContext* file_context =
