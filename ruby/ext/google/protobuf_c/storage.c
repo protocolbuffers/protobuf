@@ -541,7 +541,7 @@ void create_layout(Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_containingoneof(field) || !upb_fielddef_isseq(field) ||
+    if (upb_fielddef_realcontainingoneof(field) || !upb_fielddef_isseq(field) ||
         upb_fielddef_ismap(field)) {
       continue;
     }
@@ -556,7 +556,7 @@ void create_layout(Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_containingoneof(field) || !upb_fielddef_isseq(field) ||
+    if (upb_fielddef_realcontainingoneof(field) || !upb_fielddef_isseq(field) ||
         !upb_fielddef_ismap(field)) {
       continue;
     }
@@ -573,7 +573,7 @@ void create_layout(Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_containingoneof(field) || !is_value_field(field) ||
+    if (upb_fielddef_realcontainingoneof(field) || !is_value_field(field) ||
         upb_fielddef_isseq(field)) {
       continue;
     }
@@ -590,7 +590,7 @@ void create_layout(Descriptor* desc) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     size_t field_size;
 
-    if (upb_fielddef_containingoneof(field) || is_value_field(field)) {
+    if (upb_fielddef_realcontainingoneof(field) || is_value_field(field)) {
       continue;
     }
 
@@ -748,7 +748,7 @@ void layout_clear(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field) {
   void* memory = slot_memory(layout, storage, field);
-  const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+  const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
   if (field_contains_hasbit(layout, field)) {
     slot_clear_hasbit(layout, storage, field);
@@ -841,7 +841,7 @@ VALUE layout_get(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field) {
   void* memory = slot_memory(layout, storage, field);
-  const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+  const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
   bool field_set;
   if (field_contains_hasbit(layout, field)) {
     field_set = slot_is_hasbit_set(layout, storage, field);
@@ -914,7 +914,7 @@ void layout_set(MessageLayout* layout,
                 const upb_fielddef* field,
                 VALUE val) {
   void* memory = slot_memory(layout, storage, field);
-  const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+  const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
   if (oneof) {
     uint32_t* oneof_case = slot_oneof_case(layout, storage, oneof);
@@ -1007,7 +1007,7 @@ void layout_dup(MessageLayout* layout, void* to, void* from) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
     void* to_memory = slot_memory(layout, to, field);
     void* from_memory = slot_memory(layout, from, field);
@@ -1041,7 +1041,7 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
     void* to_memory = slot_memory(layout, to, field);
     void* from_memory = slot_memory(layout, from, field);
@@ -1081,7 +1081,7 @@ VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
     void* msg1_memory = slot_memory(layout, msg1, field);
     void* msg2_memory = slot_memory(layout, msg2, field);
