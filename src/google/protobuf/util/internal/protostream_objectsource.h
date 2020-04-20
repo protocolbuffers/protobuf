@@ -160,6 +160,9 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
       const google::protobuf::Field& field) const;
 
 
+  // Returns the input stream.
+  io::CodedInputStream* stream() const { return stream_; }
+
  private:
   ProtoStreamObjectSource(io::CodedInputStream* stream,
                           const TypeInfo* typeinfo,
@@ -281,7 +284,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
                                          StringPiece field_name) const;
 
   // Input stream to read from. Ownership rests with the caller.
-  io::CodedInputStream* stream_;
+  mutable io::CodedInputStream* stream_;
 
   // Type information for all the types used in the descriptor. Used to find
   // google::protobuf::Type of nested messages/enums.
