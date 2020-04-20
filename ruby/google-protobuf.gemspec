@@ -17,13 +17,13 @@ Gem::Specification.new do |s|
   else
     s.files     += Dir.glob('ext/**/*')
     s.extensions= ["ext/google/protobuf_c/extconf.rb"]
-    s.add_development_dependency "rake-compiler-dock", "~> 0.6.0"
+    s.add_development_dependency "rake-compiler-dock", ">= 1.0.1", "< 2.0"
   end
   s.test_files  = ["tests/basic.rb",
                   "tests/stress.rb",
                   "tests/generated_code_test.rb"]
   s.required_ruby_version = '>= 2.3'
-  s.add_development_dependency "rake-compiler", "~> 0.9.5"
+  s.add_development_dependency "rake-compiler", "~> 1.1.0"
   s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
   s.add_development_dependency "rubygems-tasks", "~> 0.2.4"
 end

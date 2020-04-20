@@ -218,7 +218,7 @@ TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     EXPECT_TRUE(f->has_optional_keyword()) << f->full_name();
-    EXPECT_TRUE(f->is_singular_with_presence()) << f->full_name();
+    EXPECT_TRUE(f->has_presence()) << f->full_name();
     EXPECT_TRUE(f->containing_oneof()) << f->full_name();
   }
 }
@@ -470,16 +470,8 @@ TEST(Proto3OptionalTest, ReflectiveSwapRoundTrip) {
 TEST(Proto3OptionalTest, PlainFields) {
   const Descriptor* d = TestAllTypes::descriptor();
 
-  for (int i = 0; i < d->field_count(); i++) {
-    const FieldDescriptor* f = d->field(i);
-    EXPECT_FALSE(f->has_optional_keyword()) << f->full_name();
-    if (f->is_optional() && f->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-      EXPECT_FALSE(f->is_singular_with_presence()) << f->full_name();
-    }
-  }
-
-  EXPECT_FALSE(
-      d->FindFieldByName("oneof_nested_message")->is_singular_with_presence());
+  EXPECT_FALSE(d->FindFieldByName("optional_int32")->has_presence());
+  EXPECT_TRUE(d->FindFieldByName("oneof_nested_message")->has_presence());
 }
 
 }  // namespace

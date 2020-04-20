@@ -693,13 +693,14 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // .proto file. Excludes singular proto3 fields that do not have a label.
   bool has_optional_keyword() const;
 
-  // Returns true if this is a non-oneof field that tracks presence.
-  // This includes all "required" and "optional" fields in the .proto file,
-  // but excludes oneof fields and singular proto3 fields without "optional".
+  // Returns true if this field tracks presence, ie. does the message
+  // distinguish between "unset" and "present with default value."
+  // This includes required, optional, and oneof fields. It excludes maps,
+  // repeated fields, and singular proto3 fields without "optional".
   //
-  // In implementations that use hasbits, this method will probably indicate
-  // whether this field uses a hasbit.
-  bool is_singular_with_presence() const;
+  // For fields where has_presence() == true, the return value of
+  // Reflection::HasField() is semantically meaningful.
+  bool has_presence() const;
 
   // Index of this field within the message's field array, or the file or
   // extension scope's extensions array.
@@ -2182,10 +2183,9 @@ inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
              : nullptr;
 }
 
-inline bool FieldDescriptor::is_singular_with_presence() const {
+inline bool FieldDescriptor::has_presence() const {
   if (is_repeated()) return false;
-  if (real_containing_oneof()) return false;
-  return cpp_type() == CPPTYPE_MESSAGE || proto3_optional_ ||
+  return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
          file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
