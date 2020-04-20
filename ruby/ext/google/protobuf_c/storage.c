@@ -496,7 +496,7 @@ void create_layout(Descriptor* desc) {
   const upb_msgdef *msgdef = desc->msgdef;
   MessageLayout* layout = ALLOC(MessageLayout);
   int nfields = upb_msgdef_numfields(msgdef);
-  int noneofs = upb_msgdef_numoneofs(msgdef);
+  int noneofs = upb_msgdef_numrealoneofs(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   size_t off = 0;
@@ -518,7 +518,7 @@ void create_layout(Descriptor* desc) {
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     if (upb_fielddef_haspresence(field) &&
-        !upb_fielddef_containingoneof(field)) {
+        !upb_fielddef_realcontainingoneof(field)) {
       layout->fields[upb_fielddef_index(field)].hasbit = hasbit++;
     } else {
       layout->fields[upb_fielddef_index(field)].hasbit =
@@ -625,6 +625,9 @@ void create_layout(Descriptor* desc) {
     // Always allocate NATIVE_SLOT_MAX_SIZE bytes, but share the slot between
     // all fields.
     size_t field_size = NATIVE_SLOT_MAX_SIZE;
+
+    if (upb_oneofdef_issynthetic(oneof)) continue;
+
     // Align the offset.
     off = align_up_to(off, field_size);
     // Assign all fields in the oneof this same offset.
@@ -644,6 +647,7 @@ void create_layout(Descriptor* desc) {
        upb_msg_oneof_next(&oit)) {
     const upb_oneofdef* oneof = upb_msg_iter_oneof(&oit);
     size_t field_size = sizeof(uint32_t);
+    if (upb_oneofdef_issynthetic(oneof)) continue;
     // Align the offset.
     off = (off + field_size - 1) & ~(field_size - 1);
     layout->oneofs[upb_oneofdef_index(oneof)].case_offset = off;
@@ -725,8 +729,8 @@ static void slot_clear_hasbit(MessageLayout* layout,
 static bool slot_is_hasbit_set(MessageLayout* layout,
                             const void* storage,
                             const upb_fielddef* field) {
-  assert(field_contains_hasbit(layout, field));
   size_t hasbit = layout->fields[upb_fielddef_index(field)].hasbit;
+  assert(field_contains_hasbit(layout, field));
   return DEREF_OFFSET(
       (uint8_t*)storage, hasbit / 8, char) & (1 << (hasbit % 8));
 }
@@ -734,8 +738,8 @@ static bool slot_is_hasbit_set(MessageLayout* layout,
 VALUE layout_has(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field) {
+  const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
   assert(upb_fielddef_haspresence(field));
-  const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
   if (oneof) {
     uint32_t oneof_case = slot_read_oneof_case(layout, storage, oneof);
     return oneof_case == upb_fielddef_number(field);
@@ -985,7 +989,7 @@ void layout_init(MessageLayout* layout, void* storage) {
 
 void layout_mark(MessageLayout* layout, void* storage) {
   VALUE* values = (VALUE*)CHARPTR_AT(storage, layout->value_offset);
-  int noneofs = upb_msgdef_numoneofs(layout->msgdef);
+  int noneofs = upb_msgdef_numrealoneofs(layout->msgdef);
   int i;
 
   for (i = 0; i < layout->value_count; i++) {

@@ -3032,6 +3032,7 @@ struct upb_msgdef {
   const upb_oneofdef *oneofs;
   int field_count;
   int oneof_count;
+  int real_oneof_count;
 
   /* Is this a map-entry message? */
   bool map_entry;
@@ -3211,10 +3212,11 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   /* Sort fields.  upb internally relies on UPB_TYPE_MESSAGE fields having the
    * lowest indexes, but we do not publicly guarantee this. */
   upb_msg_field_iter j;
-  upb_msg_oneof_iter k;
   int i;
+  int first_synthetic = -1;
   uint32_t selector;
   int n = upb_msgdef_numfields(m);
+  upb_oneofdef *mutable_oneofs = (upb_oneofdef*)m->oneofs;
   upb_fielddef **fields;
 
   if (n == 0) {
@@ -3252,11 +3254,27 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   }
   m->selector_count = selector;
 
-  for(upb_msg_oneof_begin(&k, m), i = 0;
-      !upb_msg_oneof_done(&k);
-      upb_msg_oneof_next(&k), i++) {
-    upb_oneofdef *o = (upb_oneofdef*)upb_msg_iter_oneof(&k);
-    o->index = i;
+  for (i = 0; i < m->oneof_count; i++) {
+    mutable_oneofs[i].index = i;
+
+    if (upb_oneofdef_issynthetic(&mutable_oneofs[i])) {
+      if (first_synthetic == -1) {
+        first_synthetic = i;
+      }
+    } else {
+      if (first_synthetic != -1) {
+        upb_status_seterrf(
+            s, "Synthetic oneofs must be after all other oneofs: %s",
+            upb_oneofdef_name(&mutable_oneofs[i]));
+        return false;
+      }
+    }
+  }
+
+  if (first_synthetic == -1) {
+    m->real_oneof_count = m->oneof_count;
+  } else {
+    m->real_oneof_count = first_synthetic;
   }
 
   upb_gfree(fields);
@@ -3657,6 +3675,10 @@ int upb_msgdef_numfields(const upb_msgdef *m) {
 
 int upb_msgdef_numoneofs(const upb_msgdef *m) {
   return m->oneof_count;
+}
+
+int upb_msgdef_numrealoneofs(const upb_msgdef *m) {
+  return m->real_oneof_count;
 }
 
 const upb_msglayout *upb_msgdef_layout(const upb_msgdef *m) {
