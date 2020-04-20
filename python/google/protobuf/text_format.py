@@ -120,20 +120,21 @@ class TextWriter(object):
     return self._writer.getvalue()
 
 
-def MessageToString(message,
-                    as_utf8=False,
-                    as_one_line=False,
-                    use_short_repeated_primitives=False,
-                    pointy_brackets=False,
-                    use_index_order=False,
-                    float_format=None,
-                    double_format=None,
-                    use_field_number=False,
-                    descriptor_pool=None,
-                    indent=0,
-                    message_formatter=None,
-                    print_unknown_fields=False,
-                    force_colon=False):
+def MessageToString(
+    message,
+    as_utf8=False,
+    as_one_line=False,
+    use_short_repeated_primitives=False,
+    pointy_brackets=False,
+    use_index_order=False,
+    float_format=None,
+    double_format=None,
+    use_field_number=False,
+    descriptor_pool=None,
+    indent=0,
+    message_formatter=None,
+    print_unknown_fields=False,
+    force_colon=False):
   # type: (...) -> str
   """Convert protobuf message to text format.
 
@@ -329,21 +330,22 @@ WIRETYPE_START_GROUP = 3
 class _Printer(object):
   """Text format printer for protocol message."""
 
-  def __init__(self,
-               out,
-               indent=0,
-               as_utf8=False,
-               as_one_line=False,
-               use_short_repeated_primitives=False,
-               pointy_brackets=False,
-               use_index_order=False,
-               float_format=None,
-               double_format=None,
-               use_field_number=False,
-               descriptor_pool=None,
-               message_formatter=None,
-               print_unknown_fields=False,
-               force_colon=False):
+  def __init__(
+      self,
+      out,
+      indent=0,
+      as_utf8=False,
+      as_one_line=False,
+      use_short_repeated_primitives=False,
+      pointy_brackets=False,
+      use_index_order=False,
+      float_format=None,
+      double_format=None,
+      use_field_number=False,
+      descriptor_pool=None,
+      message_formatter=None,
+      print_unknown_fields=False,
+      force_colon=False):
     """Initialize the Printer.
 
     Double values can be formatted compactly with 15 digits of precision
