@@ -197,6 +197,17 @@ module BasicTestProto2
       assert !m.has_my_oneof?
     end
 
+    def test_assign_nil
+      m = TestMessageDefaults.new
+      m.optional_msg = TestMessage2.new(:foo => 42)
+
+      assert_equal TestMessage2.new(:foo => 42), m.optional_msg
+      assert m.has_optional_msg?
+      m.optional_msg = nil
+      assert_equal nil, m.optional_msg
+      assert !m.has_optional_msg?
+    end
+
     def test_initialization_map_errors
       e = assert_raise ArgumentError do
         TestMessage.new(:hello => "world")

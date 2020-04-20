@@ -517,7 +517,8 @@ void create_layout(Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_haspresence(field)) {
+    if (upb_fielddef_haspresence(field) &&
+        !upb_fielddef_containingoneof(field)) {
       layout->fields[upb_fielddef_index(field)].hasbit = hasbit++;
     } else {
       layout->fields[upb_fielddef_index(field)].hasbit =
@@ -724,11 +725,8 @@ static void slot_clear_hasbit(MessageLayout* layout,
 static bool slot_is_hasbit_set(MessageLayout* layout,
                             const void* storage,
                             const upb_fielddef* field) {
+  assert(field_contains_hasbit(layout, field));
   size_t hasbit = layout->fields[upb_fielddef_index(field)].hasbit;
-  if (hasbit == MESSAGE_FIELD_NO_HASBIT) {
-    return false;
-  }
-
   return DEREF_OFFSET(
       (uint8_t*)storage, hasbit / 8, char) & (1 << (hasbit % 8));
 }
@@ -736,8 +734,14 @@ static bool slot_is_hasbit_set(MessageLayout* layout,
 VALUE layout_has(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field) {
-  assert(field_contains_hasbit(layout, field));
-  return slot_is_hasbit_set(layout, storage, field) ? Qtrue : Qfalse;
+  assert(upb_fielddef_haspresence(field));
+  const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+  if (oneof) {
+    uint32_t oneof_case = slot_read_oneof_case(layout, storage, oneof);
+    return oneof_case == upb_fielddef_number(field);
+  } else {
+    return slot_is_hasbit_set(layout, storage, field) ? Qtrue : Qfalse;
+  }
 }
 
 void layout_clear(MessageLayout* layout,
@@ -953,7 +957,16 @@ void layout_set(MessageLayout* layout,
 
   if (layout->fields[upb_fielddef_index(field)].hasbit !=
       MESSAGE_FIELD_NO_HASBIT) {
-    slot_set_hasbit(layout, storage, field);
+    if (val == Qnil) {
+      // No other field type has a hasbit and allows nil assignment.
+      if (upb_fielddef_type(field) != UPB_TYPE_MESSAGE) {
+        fprintf(stderr, "field: %s\n", upb_fielddef_fullname(field));
+      }
+      assert(upb_fielddef_type(field) == UPB_TYPE_MESSAGE);
+      slot_clear_hasbit(layout, storage, field);
+    } else {
+      slot_set_hasbit(layout, storage, field);
+    }
   }
 }
 
@@ -1095,9 +1108,16 @@ VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2) {
         return Qfalse;
       }
     } else {
-      if (slot_is_hasbit_set(layout, msg1, field) !=
-              slot_is_hasbit_set(layout, msg2, field) ||
-          !native_slot_eq(upb_fielddef_type(field),
+      if (field_contains_hasbit(layout, field) &&
+          slot_is_hasbit_set(layout, msg1, field) !=
+              slot_is_hasbit_set(layout, msg2, field)) {
+        // TODO(haberman): I don't think we should actually care about hasbits
+        // here: an unset default should be able to equal a set default. But we
+        // can address this later (will also have to make sure defaults are
+        // being properly set when hasbit is clear).
+        return Qfalse;
+      }
+      if (!native_slot_eq(upb_fielddef_type(field),
                           field_type_class(layout, field), msg1_memory,
                           msg2_memory)) {
         return Qfalse;
