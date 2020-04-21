@@ -590,31 +590,6 @@ namespace Google.Protobuf
                 return (ValueReader<T?>)value;
             }
 
-            internal static T Read<T>(CodedInputStream input, FieldCodec<T> codec)
-            {
-                int length = input.ReadLength();
-                int oldLimit = input.PushLimit(length);
-
-                uint tag;
-                T value = codec.DefaultValue;
-                while ((tag = input.ReadTag()) != 0)
-                {
-                    if (tag == codec.Tag)
-                    {
-                        value = codec.Read(input);
-                    }
-                    else
-                    {
-                        input.SkipLastField();
-                    }
-
-                }
-                input.CheckReadEndOfStreamTag();
-                input.PopLimit(oldLimit);
-
-                return value;
-            }
-
             [SecuritySafeCritical]
             internal static T Read<T>(ref ParseContext ctx, FieldCodec<T> codec)
             {
