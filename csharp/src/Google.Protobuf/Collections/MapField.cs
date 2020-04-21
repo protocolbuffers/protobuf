@@ -424,13 +424,15 @@ namespace Google.Protobuf.Collections
         /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
         public void AddEntriesFrom(CodedInputStream input, Codec codec)
         {
-            var adapter = new Codec.MessageAdapter(codec);
-            do
+            ParseContext.Initialize(input, out ParseContext ctx);
+            try
             {
-                adapter.Reset();
-                input.ReadMessage(adapter);
-                this[adapter.Key] = adapter.Value;
-            } while (input.MaybeConsumeTag(codec.MapTag));
+                AddEntriesFrom(ref ctx, codec);
+            }
+            finally
+            {
+                ctx.CopyStateTo(input);
+            }
         }
 
         /// <summary>
@@ -665,35 +667,13 @@ namespace Google.Protobuf.Collections
 
                 public void MergeFrom(CodedInputStream input)
                 {
-                    uint tag;
-                    while ((tag = input.ReadTag()) != 0)
-                    {
-                        if (tag == codec.keyCodec.Tag)
-                        {
-                            Key = codec.keyCodec.Read(input);
-                        }
-                        else if (tag == codec.valueCodec.Tag)
-                        {
-                            Value = codec.valueCodec.Read(input);
-                        }
-                        else 
-                        {
-                            input.SkipLastField();
-                        }
-                    }
-
-                    // Corner case: a map entry with a key but no value, where the value type is a message.
-                    // Read it as if we'd seen an input stream with no data (i.e. create a "default" message).
-                    if (Value == null)
-                    {
-                        Value = codec.valueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
-                    }
+                    // Message adapter is an internal class and we know that all the parsing will happen via InternalMergeFrom.
+                    throw new NotImplementedException();
                 }
 
                 [SecuritySafeCritical]
                 public void InternalMergeFrom(ref ParseContext ctx)
                 {
-                    // TODO(jtattermusch): deduplicate code
                     uint tag;
                     while ((tag = ctx.ReadTag()) != 0)
                     {
