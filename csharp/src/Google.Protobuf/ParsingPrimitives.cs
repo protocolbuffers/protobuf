@@ -577,6 +577,10 @@ namespace Google.Protobuf
             }
         }
 
+        /// <summary>
+        /// Reads a string field value from the input.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string ReadString(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             int length = ParsingPrimitives.ParseLength(ref buffer, ref state);

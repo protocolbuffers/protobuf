@@ -220,8 +220,7 @@ namespace Google.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string ReadString()
         {
-            int length = ParsingPrimitives.ParseLength(ref buffer, ref state);
-            return ParsingPrimitives.ReadRawString(ref buffer, ref state, length);
+            return ParsingPrimitives.ReadString(ref buffer, ref state);
         }
 
         /// <summary>
@@ -248,8 +247,7 @@ namespace Google.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ByteString ReadBytes()
         {
-            int length = ParsingPrimitives.ParseLength(ref buffer, ref state);
-            return ByteString.AttachBytes(ParsingPrimitives.ReadRawBytes(ref buffer, ref state, length));
+            return ParsingPrimitives.ReadBytes(ref buffer, ref state);
         }
         /// <summary>
         /// Reads a uint32 field value from the input.

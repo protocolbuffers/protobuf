@@ -421,9 +421,8 @@ namespace Google.Protobuf
         /// </summary>
         public string ReadString()
         {
-            int length = ReadLength();
             var span = new ReadOnlySpan<byte>(buffer);
-            return ParsingPrimitives.ReadRawString(ref span, ref state, length);
+            return ParsingPrimitives.ReadString(ref span, ref state);
         }
 
         /// <summary>
@@ -470,20 +469,8 @@ namespace Google.Protobuf
         /// </summary>   
         public ByteString ReadBytes()
         {
-            int length = ReadLength();
-            if (length <= state.bufferSize - state.bufferPos && length > 0)
-            {
-                // Fast path:  We already have the bytes in a contiguous buffer, so
-                //   just copy directly from it.
-                ByteString result = ByteString.CopyFrom(buffer, state.bufferPos, length);
-                state.bufferPos += length;
-                return result;
-            }
-            else
-            {
-                // Slow path:  Build a byte array and attach it to a new ByteString.
-                return ByteString.AttachBytes(ReadRawBytes(length));
-            }
+            var span = new ReadOnlySpan<byte>(buffer);
+            return ParsingPrimitives.ReadBytes(ref span, ref state);
         }
 
         /// <summary>
