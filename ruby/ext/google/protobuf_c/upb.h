@@ -3158,6 +3158,7 @@ const char *upb_fielddef_jsonname(const upb_fielddef *f);
 bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_lazy(const upb_fielddef *f);
 bool upb_fielddef_packed(const upb_fielddef *f);
+const upb_filedef *upb_fielddef_file(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f);

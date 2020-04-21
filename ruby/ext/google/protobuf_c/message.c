@@ -242,9 +242,14 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
   // Method calls like 'has_foo?' are not allowed if field "foo" does not have
   // a hasbit (e.g. repeated fields or non-message type fields for proto3
   // syntax).
-  if (accessor_type == METHOD_PRESENCE && test_f != NULL &&
-      !upb_fielddef_haspresence(test_f)) {
-    return METHOD_UNKNOWN;
+  if (accessor_type == METHOD_PRESENCE && test_f != NULL) {
+    if (!upb_fielddef_haspresence(test_f)) return METHOD_UNKNOWN;
+
+    // TODO(haberman): remove this case, allow for proto3 oneofs.
+    if (upb_fielddef_realcontainingoneof(test_f) &&
+        upb_filedef_syntax(upb_fielddef_file(test_f)) == UPB_SYNTAX_PROTO3) {
+      return METHOD_UNKNOWN;
+    }
   }
 
   *o = test_o;

@@ -742,7 +742,7 @@ VALUE layout_has(MessageLayout* layout,
   assert(upb_fielddef_haspresence(field));
   if (oneof) {
     uint32_t oneof_case = slot_read_oneof_case(layout, storage, oneof);
-    return oneof_case == upb_fielddef_number(field);
+    return oneof_case == upb_fielddef_number(field) ? Qtrue : Qfalse;
   } else {
     return slot_is_hasbit_set(layout, storage, field) ? Qtrue : Qfalse;
   }

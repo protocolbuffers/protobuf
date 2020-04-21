@@ -1100,7 +1100,7 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
  *     FieldDescriptor.has?(message) => boolean
  *
  * Returns whether the value is set on the given message. Raises an
- * exception when calling with proto syntax 3.
+ * exception when calling for fields that do not have presence.
  */
 VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
   DEFINE_SELF(FieldDescriptor, self, _self);

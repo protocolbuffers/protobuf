@@ -46,6 +46,20 @@ message TestMessage {
   repeated TestEnum repeated_enum = 22;
 }
 
+message TestSingularFields {
+  int32 singular_int32 = 1;
+  int64 singular_int64 = 2;
+  uint32 singular_uint32 = 3;
+  uint64 singular_uint64 = 4;
+  bool singular_bool = 5;
+  float singular_float = 6;
+  double singular_double = 7;
+  string singular_string = 8;
+  bytes singular_bytes = 9;
+  TestMessage2 singular_msg = 10;
+  TestEnum singular_enum = 11;
+}
+
 message TestMessage2 {
   int32 foo = 1;
 }

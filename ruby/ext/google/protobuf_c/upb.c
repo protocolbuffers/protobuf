@@ -3462,6 +3462,10 @@ uint32_t upb_fielddef_selectorbase(const upb_fielddef *f) {
   return f->selector_base;
 }
 
+const upb_filedef *upb_fielddef_file(const upb_fielddef *f) {
+  return f->file;
+}
+
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f) {
   return f->msgdef;
 }
