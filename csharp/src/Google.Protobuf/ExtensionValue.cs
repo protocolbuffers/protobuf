@@ -38,8 +38,6 @@ namespace Google.Protobuf
 {
     internal interface IExtensionValue : IEquatable<IExtensionValue>, IDeepCloneable<IExtensionValue>
     {
-        void MergeFrom(CodedInputStream input);
-
         void MergeFrom(ref ParseContext ctx);
 
         void MergeFrom(IExtensionValue value);
@@ -91,19 +89,6 @@ namespace Google.Protobuf
                 hash = hash * 31 + field.GetHashCode();
                 hash = hash * 31 + codec.GetHashCode();
                 return hash;
-            }
-        }
-
-        public void MergeFrom(CodedInputStream input)
-        {
-            ParseContext.Initialize(input, out ParseContext ctx);
-            try
-            {
-                codec.ValueMerger(ref ctx, ref field);
-            }
-            finally
-            {
-                ctx.CopyStateTo(input);
             }
         }
 

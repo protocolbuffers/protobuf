@@ -183,26 +183,14 @@ namespace Google.Protobuf
         /// </summary>
         public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, CodedInputStream stream) where TTarget : IExtendableMessage<TTarget>
         {
-            Extension extension;
-            int lastFieldNumber = WireFormat.GetTagFieldNumber(stream.LastTag);
-            
-            IExtensionValue extensionValue;
-            if (set != null && set.ValuesByNumber.TryGetValue(lastFieldNumber, out extensionValue))
+            ParseContext.Initialize(stream, out ParseContext ctx);
+            try
             {
-                extensionValue.MergeFrom(stream);
-                return true;
+                return TryMergeFieldFrom<TTarget>(ref set, ref ctx);
             }
-            else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream.LastTag, typeof(TTarget), out extension))
+            finally
             {
-                IExtensionValue value = extension.CreateValue();
-                value.MergeFrom(stream);
-                set = (set ?? new ExtensionSet<TTarget>());
-                set.ValuesByNumber.Add(extension.FieldNumber, value);
-                return true;
-            }
-            else
-            {
-                return false;
+                ctx.CopyStateTo(stream);
             }
         }
 
@@ -212,7 +200,6 @@ namespace Google.Protobuf
         /// </summary>
         public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, ref ParseContext ctx) where TTarget : IExtendableMessage<TTarget>
         {
-            // TODO(jtattermusch): deduplicate code
             Extension extension;
             int lastFieldNumber = WireFormat.GetTagFieldNumber(ctx.LastTag);
 

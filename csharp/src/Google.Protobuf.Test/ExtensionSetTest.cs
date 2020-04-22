@@ -62,6 +62,22 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void TryMergeFieldFrom_CodedInputStream()
+        {
+            var message = new TestAllExtensions();
+            message.SetExtension(OptionalStringExtension, "abcd");
+
+            var input = new CodedInputStream(message.ToByteArray());
+            input.ExtensionRegistry = new ExtensionRegistry() { OptionalStringExtension };
+            input.ReadTag(); // TryMergeFieldFrom expects that a tag was just read and will inspect the LastTag value
+
+            ExtensionSet<TestAllExtensions> extensionSet = null;
+            // test the legacy overload of TryMergeFieldFrom that takes a CodedInputStream
+            Assert.IsTrue(ExtensionSet.TryMergeFieldFrom(ref extensionSet, input));
+            Assert.AreEqual("abcd", ExtensionSet.Get(ref extensionSet, OptionalStringExtension));
+        }
+
+        [Test]
         public void TestEquals()
         {
             var message = new TestAllExtensions();
