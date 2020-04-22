@@ -558,12 +558,13 @@ namespace Google.Protobuf
             }
             else
             {
-                // TODO: do we need to support skipping in seekable Streams?
-
                 // Skipping more bytes than are in the buffer.  First skip what we have.
                 int pos = state.bufferSize - state.bufferPos;
                 state.bufferPos = state.bufferSize;
 
+                // TODO: If our segmented buffer is backed by a Stream that is seekable, we could skip the bytes more efficiently
+                // by simply updating stream's Position property. This used to be supported in the past, but the support was dropped
+                // because it would make the segmentedBufferHelper more complex. Support can be reintroduced if needed.
                 state.segmentedBufferHelper.RefillBuffer(ref buffer, ref state, true);
 
                 while (size - pos > state.bufferSize)
@@ -637,18 +638,16 @@ namespace Google.Protobuf
             }
 #endif
 
-            // TODO: what if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING is not supported?
-            // -> can we still try to grab an array from the span?
-            // if (length <= state.bufferSize - state.bufferPos && length > 0)
-            // {
-            //      // Fast path:  We already have the bytes in a contiguous buffer, so
-            //      //   just copy directly from it.
-            //      String result = CodedOutputStream.Utf8Encoding.GetString(buffer, state.bufferPos, length);
-            //      state.bufferPos += length;
-            //      return result;
-            // }
+            var decoder = CodedOutputStream.Utf8Encoding.GetDecoder();
 
-            // TODO: creating a char[] and decoding into it and then creating a string from that array might be more efficient
+            // TODO: even if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING is not supported,
+            // we could still create a string efficiently by using Utf8Encoding.GetString(byte[] bytes, int index, int count)
+            // whenever the buffer is backed by a byte array (and avoid creating a new byte array), but the problem is
+            // there is no way to get the underlying byte array from a span.
+
+            // TODO: in case the string spans multiple buffer segments, creating a char[] and decoding into it and then
+            // creating a string from that array might be more efficient than creating a string from the copied bytes.
+
             // Slow path: Build a byte array first then copy it.
             return CodedOutputStream.Utf8Encoding.GetString(ReadRawBytes(ref buffer, ref state, length), 0, length);
         }
