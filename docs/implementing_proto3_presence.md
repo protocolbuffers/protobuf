@@ -91,7 +91,8 @@ $
 
 ### Signaling That Your Code Generator Supports Proto3 Optional
 
-Now you will find that the test file throws an error with your code generator:
+If you now try to invoke your own code generator with the test proto, you will
+run into a different error:
 
 ```
 $ ./src/protoc test_proto3_optional.proto --my_codegen_out=.
@@ -102,13 +103,14 @@ proto3. Please ask the owner of this code generator to support proto3 optional.
 
 This check exists to make sure that code generators get a chance to update
 before they are used with proto3 `optional` fields. Without this check an old
-code generator might generate obsolete generated APIs (like accessors for a
-synthetic oneof) and users could start depending on these. That would create a
-legacy migration burden once a code generator actually implements the feature.
+code generator might emit obsolete generated APIs (like accessors for a
+synthetic oneof) and users could start depending on these. That would create
+a legacy migration burden once a code generator actually implements the feature.
 
-To signal that your code generator supports `optional` fields in proto3, we need
-to tell `protoc` what features we support. The method for doing this depends on
-whether you are using the C++ `google::protobuf::compiler::CodeGenerator`
+To signal that your code generator supports `optional` fields in proto3, you
+need to tell `protoc` what features you support. The method for doing this
+depends on whether you are using the C++
+`google::protobuf::compiler::CodeGenerator`
 framework or not.
 
 If you are using the CodeGenerator framework:
@@ -161,9 +163,10 @@ Generally this means:
 - make the parser set this bit when a value is parsed from the wire.
 - make the serializer test this bit to decide whether to serialize.
 
-If your code generator already supports proto2, then there is less work to do.
-All you need to do is make sure that proto3 optional fields have exactly the
-same API and behave in exactly the same way as proto2 optional fields.
+If your code generator already supports proto2, then most of your work is
+already done. All you need to do is make sure that proto3 optional fields have
+exactly the same API and behave in exactly the same way as proto2 optional
+fields.
 
 From experience updating several of Google's code generators, most of the
 updates that are required fall into one of several patterns. Here we will show
@@ -189,10 +192,10 @@ New:
 // Presence is no longer a property of a message, it's a property of individual
 // fields.
 bool FieldHasPresence(const google::protobuf::FieldDescriptor* field) {
-  // Note that this will return true for oneofs. If you want to filter out
-  // oneofs, write:
-  //   return field->has_presence && !field->real_containing_oneof()
   return field->has_presence();
+  // Note, the above will return true for fields in a oneof.
+  // If you want to filter out oneof fields, write this instead:
+  //   return field->has_presence && !field->real_containing_oneof()
 }
 ```
 
