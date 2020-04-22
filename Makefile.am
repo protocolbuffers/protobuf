@@ -90,8 +90,8 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Benchmarks/Benchmarks.cs                        \
   csharp/src/Google.Protobuf.Benchmarks/Google.Protobuf.Benchmarks.csproj    \
   csharp/src/Google.Protobuf.Benchmarks/GoogleMessageBenchmark.cs            \
-  csharp/src/Google.Protobuf.Benchmarks/ParseRawPrimitivesBenchmark.cs       \
   csharp/src/Google.Protobuf.Benchmarks/ParseMessagesBenchmark.cs            \
+  csharp/src/Google.Protobuf.Benchmarks/ParseRawPrimitivesBenchmark.cs       \
   csharp/src/Google.Protobuf.Benchmarks/Program.cs                           \
   csharp/src/Google.Protobuf.Benchmarks/wrapper_benchmark_messages.proto     \
   csharp/src/Google.Protobuf.Benchmarks/WrapperBenchmarkMessages.cs          \
@@ -122,6 +122,9 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
   csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
+  csharp/src/Google.Protobuf.Test/LegacyGeneratedCodeTest.cs                 \
+  csharp/src/Google.Protobuf.Test/MessageParsingHelpers.cs                   \
+  csharp/src/Google.Protobuf.Test/ReadOnlySequenceFactory.cs                 \
   csharp/src/Google.Protobuf.Test/Reflection/CustomOptionsTest.cs            \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorDeclarationTest.cs    \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
@@ -180,6 +183,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/FieldMaskTree.cs                                \
   csharp/src/Google.Protobuf/FrameworkPortability.cs                         \
   csharp/src/Google.Protobuf/Google.Protobuf.csproj                          \
+  csharp/src/Google.Protobuf/IBufferMessage.cs                               \
   csharp/src/Google.Protobuf/ICustomDiagnosticMessage.cs                     \
   csharp/src/Google.Protobuf/IDeepCloneable.cs                               \
   csharp/src/Google.Protobuf/IExtendableMessage.cs                           \
@@ -194,7 +198,13 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/MessageExtensions.cs                            \
   csharp/src/Google.Protobuf/MessageParser.cs                                \
   csharp/src/Google.Protobuf/ObjectIntPair.cs                                \
+  csharp/src/Google.Protobuf/ParseContext.cs                                 \
+  csharp/src/Google.Protobuf/ParserInternalState.cs                          \
+  csharp/src/Google.Protobuf/ParsingPrimitives.cs                            \
+  csharp/src/Google.Protobuf/ParsingPrimitivesMessages.cs                    \
+  csharp/src/Google.Protobuf/ParsingPrimitivesWrappers.cs                    \
   csharp/src/Google.Protobuf/ProtoPreconditions.cs                           \
+  csharp/src/Google.Protobuf/SegmentedBufferHelper.cs                        \
   csharp/src/Google.Protobuf/Properties/AssemblyInfo.cs                      \
   csharp/src/Google.Protobuf/Reflection/CustomOptions.cs                     \
   csharp/src/Google.Protobuf/Reflection/Descriptor.cs                        \
