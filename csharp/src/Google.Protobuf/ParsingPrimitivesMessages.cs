@@ -182,7 +182,7 @@ namespace Google.Protobuf
                 // Regenerating the code from .proto files will remove this overhead because it will
                 // generate the InternalMergeFrom method we need.
 
-                if (ctx.state.codedInputStream == null)
+                if (ctx.state.CodedInputStream == null)
                 {
                     // This can only happen when the parsing started without providing a CodedInputStream instance
                     // (e.g. ParseContext was created directly from a ReadOnlySequence).
@@ -192,15 +192,15 @@ namespace Google.Protobuf
                     throw new InvalidProtocolBufferException($"Message {message.GetType().Name} doesn't provide the generated method that enables ParseContext-based parsing. You might need to regenerate the generated protobuf code.");
                 }
 
-                ctx.CopyStateTo(ctx.state.codedInputStream);
+                ctx.CopyStateTo(ctx.state.CodedInputStream);
                 try
                 {
                     // fallback parse using the CodedInputStream that started current parsing tree
-                    message.MergeFrom(ctx.state.codedInputStream);
+                    message.MergeFrom(ctx.state.CodedInputStream);
                 }
                 finally
                 {
-                    ctx.LoadStateFrom(ctx.state.codedInputStream);
+                    ctx.LoadStateFrom(ctx.state.CodedInputStream);
                 }
             }
         }

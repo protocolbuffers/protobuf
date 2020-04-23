@@ -145,7 +145,6 @@ namespace Google.Protobuf
             this.state.sizeLimit = DefaultSizeLimit;
             this.state.recursionLimit = DefaultRecursionLimit;
             SegmentedBufferHelper.Initialize(this, out this.state.segmentedBufferHelper);
-            this.state.codedInputStream = this;
             this.leaveOpen = leaveOpen;
 
             this.state.currentLimit = int.MaxValue;

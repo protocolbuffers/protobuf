@@ -695,7 +695,7 @@ namespace Google.Protobuf.Collections
                     // Read it as if we'd seen input with no data (i.e. create a "default" message).
                     if (Value == null)
                     {
-                        if (ctx.state.codedInputStream != null)
+                        if (ctx.state.CodedInputStream != null)
                         {
                             // the decoded message might not support parsing from ParseContext, so
                             // we need to allow fallback to the legacy MergeFrom(CodedInputStream) parsing.

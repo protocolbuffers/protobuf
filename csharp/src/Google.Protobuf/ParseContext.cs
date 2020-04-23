@@ -99,7 +99,6 @@ namespace Google.Protobuf
             SegmentedBufferHelper.Initialize(input, out ctx.state.segmentedBufferHelper, out ctx.buffer);
             ctx.state.bufferPos = 0;
             ctx.state.bufferSize = ctx.buffer.Length;
-            ctx.state.codedInputStream = null;
 
             ctx.state.DiscardUnknownFields = false;
             ctx.state.ExtensionRegistry = null;

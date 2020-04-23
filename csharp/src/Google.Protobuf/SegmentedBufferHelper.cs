@@ -186,7 +186,6 @@ namespace Google.Protobuf
             state.bufferSize = 0;
             while (readOnlySequenceEnumerator.MoveNext())
             {
-                
                 buffer = readOnlySequenceEnumerator.Current.Span;
                 state.bufferSize = buffer.Length;
                 if (buffer.Length != 0)

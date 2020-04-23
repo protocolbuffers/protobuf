@@ -81,11 +81,6 @@ namespace Google.Protobuf
         internal int recursionDepth;  // current recursion depth
         
         internal SegmentedBufferHelper segmentedBufferHelper;
-
-        // If non-null, the top level parse method was started with given coded input stream as an argument
-        // which also means we can potentially fallback to calling MergeFrom(CodedInputStream cis) if needed.
-        internal CodedInputStream codedInputStream;
-        
         
         /// <summary>
         /// The last tag we read. 0 indicates we've read to the end of the stream
@@ -102,6 +97,10 @@ namespace Google.Protobuf
         // these fields are configuration, they should be readonly
         internal int sizeLimit;
         internal int recursionLimit;
+
+        // If non-null, the top level parse method was started with given coded input stream as an argument
+        // which also means we can potentially fallback to calling MergeFrom(CodedInputStream cis) if needed.
+        internal CodedInputStream CodedInputStream => segmentedBufferHelper.CodedInputStream;
         
         /// <summary>
         /// Internal-only property; when set to true, unknown fields will be discarded while parsing.
