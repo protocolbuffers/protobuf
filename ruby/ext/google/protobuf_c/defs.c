@@ -1100,7 +1100,7 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
  *     FieldDescriptor.has?(message) => boolean
  *
  * Returns whether the value is set on the given message. Raises an
- * exception when calling with proto syntax 3.
+ * exception when calling for fields that do not have presence.
  */
 VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
   DEFINE_SELF(FieldDescriptor, self, _self);
@@ -1434,6 +1434,7 @@ void MessageBuilderContext_register(VALUE module) {
   rb_define_method(klass, "initialize",
                    MessageBuilderContext_initialize, 2);
   rb_define_method(klass, "optional", MessageBuilderContext_optional, -1);
+  rb_define_method(klass, "proto3_optional", MessageBuilderContext_proto3_optional, -1);
   rb_define_method(klass, "required", MessageBuilderContext_required, -1);
   rb_define_method(klass, "repeated", MessageBuilderContext_repeated, -1);
   rb_define_method(klass, "map", MessageBuilderContext_map, -1);
@@ -1469,7 +1470,8 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
 
 static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
                              VALUE type, VALUE number, VALUE type_class,
-                             VALUE options, int oneof_index) {
+                             VALUE options, int oneof_index,
+                             bool proto3_optional) {
   DEFINE_SELF(MessageBuilderContext, self, msgbuilder_rb);
   FileBuilderContext* file_context =
       ruby_to_FileBuilderContext(self->file_builder);
@@ -1488,6 +1490,10 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
   google_protobuf_FieldDescriptorProto_set_label(field_proto, (int)label);
   google_protobuf_FieldDescriptorProto_set_type(
       field_proto, (int)ruby_to_descriptortype(type));
+
+  if (proto3_optional) {
+    google_protobuf_FieldDescriptorProto_set_proto3_optional(field_proto, true);
+  }
 
   if (type_class != Qnil) {
     Check_Type(type_class, T_STRING);
@@ -1574,7 +1580,38 @@ VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
   }
 
   msgdef_add_field(_self, UPB_LABEL_OPTIONAL, name, type, number, type_class,
-                   options, -1);
+                   options, -1, false);
+
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     MessageBuilderContext.proto3_optional(name, type, number,
+ *                                           type_class = nil, options = nil)
+ *
+ * Defines a true proto3 optional field (that tracks presence) on this message
+ * type with the given type, tag number, and type class (for message and enum
+ * fields). The type must be a Ruby symbol (as accepted by
+ * FieldDescriptor#type=) and the type_class must be a string, if present (as
+ * accepted by FieldDescriptor#submsg_name=).
+ */
+VALUE MessageBuilderContext_proto3_optional(int argc, VALUE* argv,
+                                            VALUE _self) {
+  VALUE name, type, number;
+  VALUE type_class, options = Qnil;
+
+  rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
+
+  // Allow passing (name, type, number, options) or
+  // (name, type, number, type_class, options)
+  if (argc == 4 && RB_TYPE_P(type_class, T_HASH)) {
+    options = type_class;
+    type_class = Qnil;
+  }
+
+  msgdef_add_field(_self, UPB_LABEL_OPTIONAL, name, type, number, type_class,
+                   options, -1, true);
 
   return Qnil;
 }
@@ -1607,7 +1644,7 @@ VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self) {
   }
 
   msgdef_add_field(_self, UPB_LABEL_REQUIRED, name, type, number, type_class,
-                   options, -1);
+                   options, -1, false);
 
   return Qnil;
 }
@@ -1633,7 +1670,7 @@ VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self) {
   type_class = (argc > 3) ? argv[3] : Qnil;
 
   msgdef_add_field(_self, UPB_LABEL_REPEATED, name, type, number, type_class,
-                   Qnil, -1);
+                   Qnil, -1, false);
 
   return Qnil;
 }
@@ -1758,6 +1795,56 @@ VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name) {
   return Qnil;
 }
 
+void MessageBuilderContext_add_synthetic_oneofs(VALUE _self) {
+  DEFINE_SELF(MessageBuilderContext, self, _self);
+  FileBuilderContext* file_context =
+      ruby_to_FileBuilderContext(self->file_builder);
+  size_t field_count, oneof_count;
+  google_protobuf_FieldDescriptorProto** fields =
+      google_protobuf_DescriptorProto_mutable_field(self->msg_proto, &field_count);
+  const google_protobuf_OneofDescriptorProto*const* oneofs =
+      google_protobuf_DescriptorProto_oneof_decl(self->msg_proto, &oneof_count);
+  VALUE names = rb_hash_new();
+  VALUE underscore = rb_str_new2("_");
+  size_t i;
+
+  // We have to build a set of all names, to ensure that synthetic oneofs are
+  // not creating conflicts.
+  for (i = 0; i < field_count; i++) {
+    upb_strview name = google_protobuf_FieldDescriptorProto_name(fields[i]);
+    rb_hash_aset(names, rb_str_new(name.data, name.size), Qtrue);
+  }
+  for (i = 0; i < oneof_count; i++) {
+    upb_strview name = google_protobuf_OneofDescriptorProto_name(oneofs[i]);
+    rb_hash_aset(names, rb_str_new(name.data, name.size), Qtrue);
+  }
+
+  for (i = 0; i < field_count; i++) {
+    google_protobuf_OneofDescriptorProto* oneof_proto;
+    VALUE oneof_name;
+    upb_strview field_name;
+
+    if (!google_protobuf_FieldDescriptorProto_proto3_optional(fields[i])) {
+      continue;
+    }
+
+    // Prepend '_' until we are no longer conflicting.
+    field_name = google_protobuf_FieldDescriptorProto_name(fields[i]);
+    oneof_name = rb_str_new(field_name.data, field_name.size);
+    while (rb_hash_lookup(names, oneof_name) != Qnil) {
+      oneof_name = rb_str_plus(underscore, oneof_name);
+    }
+
+    rb_hash_aset(names, oneof_name, Qtrue);
+    google_protobuf_FieldDescriptorProto_set_oneof_index(fields[i],
+                                                         oneof_count++);
+    oneof_proto = google_protobuf_DescriptorProto_add_oneof_decl(
+        self->msg_proto, file_context->arena);
+    google_protobuf_OneofDescriptorProto_set_name(
+        oneof_proto, FileBuilderContext_strdup(self->file_builder, oneof_name));
+  }
+}
+
 // -----------------------------------------------------------------------------
 // OneofBuilderContext.
 // -----------------------------------------------------------------------------
@@ -1829,7 +1916,7 @@ VALUE OneofBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
   rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
 
   msgdef_add_field(self->message_builder, UPB_LABEL_OPTIONAL, name, type,
-                   number, type_class, options, self->oneof_index);
+                   number, type_class, options, self->oneof_index, false);
 
   return Qnil;
 }
@@ -2033,6 +2120,7 @@ VALUE FileBuilderContext_add_message(VALUE _self, VALUE name) {
   VALUE ctx = rb_class_new_instance(2, args, cMessageBuilderContext);
   VALUE block = rb_block_proc();
   rb_funcall_with_block(ctx, rb_intern("instance_eval"), 0, NULL, block);
+  MessageBuilderContext_add_synthetic_oneofs(ctx);
   return Qnil;
 }
 

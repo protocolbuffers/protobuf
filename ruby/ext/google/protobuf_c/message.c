@@ -242,9 +242,14 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
   // Method calls like 'has_foo?' are not allowed if field "foo" does not have
   // a hasbit (e.g. repeated fields or non-message type fields for proto3
   // syntax).
-  if (accessor_type == METHOD_PRESENCE && test_f != NULL &&
-      !upb_fielddef_haspresence(test_f)) {
-    return METHOD_UNKNOWN;
+  if (accessor_type == METHOD_PRESENCE && test_f != NULL) {
+    if (!upb_fielddef_haspresence(test_f)) return METHOD_UNKNOWN;
+
+    // TODO(haberman): remove this case, allow for proto3 oneofs.
+    if (upb_fielddef_realcontainingoneof(test_f) &&
+        upb_filedef_syntax(upb_fielddef_file(test_f)) == UPB_SYNTAX_PROTO3) {
+      return METHOD_UNKNOWN;
+    }
   }
 
   *o = test_o;
@@ -605,17 +610,17 @@ VALUE Message_inspect(VALUE _self) {
  */
 VALUE Message_to_h(VALUE _self) {
   MessageHeader* self;
-  VALUE hash;
+  VALUE hash = rb_hash_new();
   upb_msg_field_iter it;
+  bool is_proto2;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+
   // We currently have a few behaviors that are specific to proto2.
   // This is unfortunate, we should key behaviors off field attributes (like
   // whether a field has presence), not proto2 vs. proto3. We should see if we
   // can change this without breaking users.
-  bool is_proto2 =
+  is_proto2 =
       upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2;
-
-  hash = rb_hash_new();
 
   for (upb_msg_field_begin(&it, self->descriptor->msgdef);
        !upb_msg_field_done(&it);
