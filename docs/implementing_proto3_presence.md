@@ -89,6 +89,13 @@ $ ./src/protoc test_proto3_optional.proto --cpp_out=.
 $
 ```
 
+The experimental check will be removed  in a future release, once we are ready
+to make this feature generally available. Ideally this will happen for the 3.13
+release of protobuf, sometime in mid-2020, but there is not a specific date set
+for this yet. Some of the timing will depend on feedback we get from the
+community, so if you have questions or concerns please get in touch via a
+GitHub issue.
+
 ### Signaling That Your Code Generator Supports Proto3 Optional
 
 If you now try to invoke your own code generator with the test proto, you will
@@ -246,8 +253,44 @@ bool IterateOverOneofs(const google::protobuf::Descriptor* message) {
 
 ## Updating Reflection
 
-If your implementation supports protobuf reflection, there are a few changes
-that you need to make:
+If your implementation offers reflection, there are a few other changes to make:
+
+### API Changes
+
+The API for reflecting over fields and oneofs should make the following changes.
+These match the changes implemented in C++ reflection.
+
+1. Add a `FieldDescriptor::has_presence()` method returning `bool`
+   (adjusted to your language's naming convention).  This should return true
+   for all fields that have explicit presence, as documented in
+   [docs/field_presence](field_presence.md).  In particular, this includes
+   fields in a oneof, proto2 scalar fields, and proto3 `optional` fields.
+   This accessor will allow users to query what fields have presence without
+   thinking about the difference between proto2 and proto3.
+2. As a corollary of (1), please do *not* expose an accessor for the
+   `FieldDescriptorProto.proto3_optional` field. We want to avoid having
+   users implement any proto2/proto3-specific logic. Users should use the
+   `has_presence()` function instead.
+3. You may also wish to add a `FieldDescriptor::has_optional_keyword()` method
+   returning `bool`, which indicates whether the `optional` keyword is present.
+   Message fields will always return `true` for `has_presence()`, so this method
+   can allow a user to know whether the user wrote `optional` or not. It can
+   occasionally be useful to have this information, even though it does not
+   change the presence semantics of the field.
+4. If your reflection API may be used for a code generator, you may wish to
+   implement methods to help users tell the difference between real and
+   synthetic oneofs.  In particular:
+   - `OneofDescriptor::is_synthetic()`: returns true if this is a synthetic
+     oneof.
+   - `FieldDescriptor::real_containing_oneof()`: like `containing_oneof()`,
+     but returns `nullptr` if the oneof is synthetic.
+   - `Descriptor::real_oneof_decl_count()`: like `oneof_decl_count()`, but
+     returns the number of real oneofs only.
+
+### Implementation Changes
+
+Proto3 `optional` fields and synthetic oneofs must work correctly when
+reflected on. Specifically:
 
 1. Reflection for synthetic oneofs should work properly. Even though synthetic
    oneofs do not really exist in the message, you can still make reflection work
@@ -272,3 +315,36 @@ fields in a oneof.
 So the best way to test your reflection changes is to try round-tripping a
 message through text format, JSON, or some other reflection-based parser and
 serializer, if you have one.
+
+### Validating Descriptors
+
+If your reflection implementation supports loading descriptors at runtime,
+you must verify that all synthetic oneofs are ordered after all "real" oneofs.
+
+Here is the code that implements this validation step in C++, for inspiration:
+
+```c++
+  // Validation that runs for each message.
+  // Synthetic oneofs must be last.
+  int first_synthetic = -1;
+  for (int i = 0; i < message->oneof_decl_count(); i++) {
+    const OneofDescriptor* oneof = message->oneof_decl(i);
+    if (oneof->is_synthetic()) {
+      if (first_synthetic == -1) {
+        first_synthetic = i;
+      }
+    } else {
+      if (first_synthetic != -1) {
+        AddError(message->full_name(), proto.oneof_decl(i),
+                 DescriptorPool::ErrorCollector::OTHER,
+                 "Synthetic oneofs must be after all other oneofs");
+      }
+    }
+  }
+
+  if (first_synthetic == -1) {
+    message->real_oneof_decl_count_ = message->oneof_decl_count_;
+  } else {
+    message->real_oneof_decl_count_ = first_synthetic;
+  }
+```
