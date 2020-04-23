@@ -258,25 +258,31 @@ If your implementation offers reflection, there are a few other changes to make:
 ### API Changes
 
 The API for reflecting over fields and oneofs should make the following changes.
-These match the changes implemented in C++ reflection:
+These match the changes implemented in C++ reflection.
 
-1. The `FieldDescriptor` class should add a `bool has_presence()` function
+1. Add a `FieldDescriptor::has_presence()` method returning `bool`
    (adjusted to your language's naming convention).  This should return true
    for all fields that have explicit presence, as documented in
    [docs/field_presence](field_presence.md).  In particular, this includes
-   fields in a oneof, proto2 scalar fields, and proto3 fields in a oneof.
+   fields in a oneof, proto2 scalar fields, and proto3 `optional` fields.
    This accessor will allow users to query what fields have presence without
    thinking about the difference between proto2 and proto3.
 2. As a corollary of (1), please do *not* expose an accessor for the
    `FieldDescriptorProto.proto3_optional` field. We want to avoid having
    users implement any proto2/proto3-specific logic. Users should use the
    `has_presence()` function instead.
-3. If your reflection API may be used for a code generator, you may wish to
+3. You may also wish to add a `FieldDescriptor::has_optional_keyword()` method
+   returning `bool`, which indicates whether the `optional` keyword is present.
+   Message fields will always return `true` for `has_presence()`, so this method
+   can allow a user to know whether the user wrote `optional` or not. It can
+   occasionally be useful to have this information, even though it does not
+   change the presence semantics of the field.
+4. If your reflection API may be used for a code generator, you may wish to
    implement methods to help users tell the difference between real and
    synthetic oneofs.  In particular:
    - `OneofDescriptor::is_synthetic()`: returns true if this is a synthetic
      oneof.
-   - `FieldDescriptor::real_containing_oneof()`: works like `containing_oneof()`,
+   - `FieldDescriptor::real_containing_oneof()`: like `containing_oneof()`,
      but returns `nullptr` if the oneof is synthetic.
    - `Descriptor::real_oneof_decl_count()`: like `oneof_decl_count()`, but
      returns the number of real oneofs only.
