@@ -6,7 +6,7 @@ This application note explains the various presence tracking disciplies for prot
 
 _Field presence_ is the notion of whether a protobuf field has a value. There are two different manifestations of presence for protobufs: _no presence_, where the generated message API stores field values (only), and _explicit presence_, where the API also stores whether or not a field has been set.
 
-Historically, proto2 has mostly followed _explicit presence_, while proto3 exposes only _no presence_ semantics. As of the protobuf 3.12 release, singular proto3 fields of basic types (numeric, string, bytes, and enums) which are defined with the `optional` label have _explicit presence_, like proto2.
+Historically, proto2 has mostly followed _explicit presence_, while proto3 exposes only _no presence_ semantics. Singular proto3 fields of basic types (numeric, string, bytes, and enums) which are defined with the `optional` label have _explicit presence_, like proto2 (this is an experimental feature added as of release 3.12, and must be enabled by passing a flag to `protoc`).
 
 ### Presence disciplines
 
@@ -40,9 +40,11 @@ JSON is a much stricter format, however, and cannot validly represent some seman
 
 -   Notably, JSON _elements_ are semantically unordered, and each member must have a unique name. This is different from TextFormat rules for repeated fields.
 -   JSON may include fields that are "not present," unlike the _no presence_ discipline for other formats:
-	-   JSON defines a `null` value, which is often used to represent a _defined but not-present field_. This is only valid for message fields, and is interpreted the same way as "not present."
+	-   JSON defines a `null` value, which may be used to represent a _defined but not-present field_.
 	-   Repeated field values may be included in the formatted output, even if they are equal to the default (an empty list).
--   Because JSON elements are unordered, there is no way to unambiguously interpret the "last one wins" rule. Notably, this means that it may not be possible to interpret `oneof` fields unambiguously.
+-   Because JSON elements are unordered, there is no way to unambiguously interpret the "last one wins" rule.
+    -   In most cases, this is fine: JSON elements must have unique names: repeated field values are not valid JSON, so they do not need to be resolved as they are for TextFormat.
+	-   However, this means that it may not be possible to interpret `oneof` fields unambiguously: if multiple cases are present, they are unordered.
 
 In theory, JSON _can_ represent presence in a semantic-preserving fashion. In practice, however, presence correctness can vary depending upon implementation choices, especially if JSON was chosen as a means to interoperate with clients not using protobufs.
 
@@ -92,12 +94,13 @@ Singular string or bytes                     | No         |
 Singular numeric (integer or floating point) | Yes        | ✔️
 Singular enum                                | Yes        | ✔️
 Singular string or bytes                     | Yes        | ✔️
-Singular message                             | N/A        | ✔️
+Singular message                             | Yes        | ✔️
+Singular message                             | No         | ✔️
 Repeated                                     | N/A        |
 Oneofs                                       | N/A        | ✔️
 Maps                                         | N/A        |
 
-Similar to proto2 APIs, proto3 does not track presence explicitly for repeated fields. Without the `optional` label, proto3 APIs do not track presence for basic types (numeric, string, bytes, and enums), either. (Note that `optional` for proto3 fields is only available as of release 3.12.) Oneof fields affirmatively expose presence, although the same set of hazzer methods may not generated as in proto2 APIs.
+Similar to proto2 APIs, proto3 does not track presence explicitly for repeated fields. Without the `optional` label, proto3 APIs do not track presence for basic types (numeric, string, bytes, and enums), either. (Note that `optional` for proto3 fields is only experimentally available as of release 3.12.) Oneof fields affirmatively expose presence, although the same set of hazzer methods may not generated as in proto2 APIs.
 
 Under the _no presence_ discipline, the default value is synonymous with "not present" for purposes of serialization. To notionally "clear" a field (so it won't be serialized), an API user would set it to the default value.
 
@@ -107,7 +110,7 @@ The default value for enum-typed fields under _no presence_ is the corresponding
 
 The _no presence_ serialization discipline results in visible differences from the _explicit presence_ tracking discipline, when the default value is set. For a singular field with numeric, enum, or string type:
 
--   _Implicit presence_ discipline:
+-   _No presence_ discipline:
 	-   Default values are not serialized.
 	-   Default values are _not_ merged-from.
 	-   To "clear" a field, it is set to its default value.
@@ -137,21 +140,23 @@ Changing a field between _explicit presence_ and _no presence_ is a binary-compa
 -   The serialized value following _no presence_ discipline does not contain the default value, even though it was explicitly set.
 -   The serialized value following _explicit presence_ discipline contains every "present" field, even if it contains the default value.
 
-This change may or may not be safe, depending on the application's semantics. For example, consider two clients with different versions of a message definition. Client A uses this definition of the message, which follows the _no presence_ serialization discipline for field `foo`:
+This change may or may not be safe, depending on the application's semantics. For example, consider two clients with different versions of a message definition.
 
-```
-syntax = "proto3";
-message Msg {
-  int32 foo = 1;
-}
-```
-
-Client B uses a definition of the same message, except that it uses the _explicit presence_ discipline:
+Client A uses this definition of the message, which follows the _explicit presence_ serialization discipline for field `foo`:
 
 ```
 syntax = "proto3";
 message Msg {
   optional int32 foo = 1;
+}
+```
+
+Client B uses a definition of the same message, except that it follows the _no presence_ discipline:
+
+```
+syntax = "proto3";
+message Msg {
+  int32 foo = 1;
 }
 ```
 
@@ -172,23 +177,24 @@ Send(m_b.SerializeAsString());   // to client A
 
 // Client A:
 m_a.ParseFromString(Receive());  // from client B
-assert(m_a.has_foo());           // OK
 assert(m_a.foo() == 1);          // OK
+assert(m_a.has_foo());           // OK
 m_a.set_foo(0);                  // default value
 Send(m_a.SerializeAsString());   // to client B
 
 // Client B:
 Msg m_b;
 m_b.ParseFromString(Receive());  // from client A
-assert(m_b.foo() == 1);          // OK
+assert(m_b.foo() == 0);          // OK
 Send(m_b.SerializeAsString());   // to client A
 
 // Client A:
 m_a.ParseFromString(Receive());  // from client B
+assert(m_a.foo() == 0);          // OK
 assert(m_a.has_foo());           // FAIL
 ```
 
-If client A depends on _explicit presence_ for `foo`, then a "round trip" through client B will be lossy from the perspective of client A. In the example, this is not a safe change: client A requires by `assert` that the field is present; even without any modifications through the API, that requirement fails in a value- and peer-dependent case.
+If client A depends on _explicit presence_ for `foo`, then a "round trip" through client B will be lossy from the perspective of client A. In the example, this is not a safe change: client A requires (by `assert`) that the field is present; even without any modifications through the API, that requirement fails in a value- and peer-dependent case.
 
 ## How to enable _explicit presence_ in proto3
 
