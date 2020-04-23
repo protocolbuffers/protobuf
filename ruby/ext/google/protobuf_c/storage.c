@@ -501,6 +501,9 @@ void create_layout(Descriptor* desc) {
   upb_msg_oneof_iter oit;
   size_t off = 0;
   size_t hasbit = 0;
+  int i;
+
+  (void)i;
 
   layout->empty_template = NULL;
   layout->desc = desc;
@@ -512,6 +515,16 @@ void create_layout(Descriptor* desc) {
   if (noneofs > 0) {
     layout->oneofs = ALLOC_N(MessageOneof, noneofs);
   }
+
+#ifndef NDEBUG
+  for (i = 0; i < nfields; i++) {
+    layout->fields[i].offset = -1;
+  }
+
+  for (i = 0; i < noneofs; i++) {
+    layout->oneofs[i].offset = -1;
+  }
+#endif
 
   for (upb_msg_field_begin(&it, msgdef);
        !upb_msg_field_done(&it);
@@ -627,6 +640,7 @@ void create_layout(Descriptor* desc) {
     size_t field_size = NATIVE_SLOT_MAX_SIZE;
 
     if (upb_oneofdef_issynthetic(oneof)) continue;
+    assert(upb_oneofdef_index(oneof) < noneofs);
 
     // Align the offset.
     off = align_up_to(off, field_size);
@@ -648,6 +662,7 @@ void create_layout(Descriptor* desc) {
     const upb_oneofdef* oneof = upb_msg_iter_oneof(&oit);
     size_t field_size = sizeof(uint32_t);
     if (upb_oneofdef_issynthetic(oneof)) continue;
+    assert(upb_oneofdef_index(oneof) < noneofs);
     // Align the offset.
     off = (off + field_size - 1) & ~(field_size - 1);
     layout->oneofs[upb_oneofdef_index(oneof)].case_offset = off;
@@ -656,6 +671,16 @@ void create_layout(Descriptor* desc) {
 
   layout->size = off;
   layout->msgdef = msgdef;
+
+#ifndef NDEBUG
+  for (i = 0; i < nfields; i++) {
+    assert(layout->fields[i].offset != -1);
+  }
+
+  for (i = 0; i < noneofs; i++) {
+    assert(layout->oneofs[i].offset != -1);
+  }
+#endif
 
   // Create the empty message template.
   layout->empty_template = ALLOC_N(char, layout->size);
