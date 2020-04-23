@@ -255,7 +255,7 @@ bool IterateOverOneofs(const google::protobuf::Descriptor* message) {
 
 If your implementation offers reflection, there are a few other changes to make:
 
-## API Changes
+### API Changes
 
 The API for reflecting over fields and oneofs should make the following changes.
 These match the changes implemented in C++ reflection:
@@ -281,7 +281,7 @@ These match the changes implemented in C++ reflection:
    - `Descriptor::real_oneof_decl_count()`: like `oneof_decl_count()`, but
      returns the number of real oneofs only.
 
-## Implementation Changes
+### Implementation Changes
 
 Proto3 `optional` fields and synthetic oneofs must work correctly when
 reflected on. Specifically:
