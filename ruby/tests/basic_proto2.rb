@@ -73,10 +73,11 @@ module BasicTestProto2
       m = OneofMessage.new
       assert !m.has_my_oneof?
       m.a = "foo"
+      assert m.has_my_oneof?
+      assert_equal :a, m.my_oneof
       assert m.has_a?
       assert OneofMessage.descriptor.lookup('a').has?(m)
       assert_equal "foo", m.a
-      assert m.has_my_oneof?
       assert !m.has_b?
       assert !OneofMessage.descriptor.lookup('b').has?(m)
       assert !m.has_c?

@@ -128,6 +128,7 @@ module BasicTest
       m.a = "foo"
       assert_equal "foo", m.a
       assert m.has_my_oneof?
+      assert_equal :a, m.my_oneof
       m.clear_a
       assert !m.has_my_oneof?
 
