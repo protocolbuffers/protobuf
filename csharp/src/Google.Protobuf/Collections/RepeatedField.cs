@@ -35,6 +35,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Security;
+using System.Threading;
 
 namespace Google.Protobuf.Collections
 {
@@ -126,9 +127,31 @@ namespace Google.Protobuf.Collections
                 if (length > 0)
                 {
                     int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
-                    while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+
+                    // If the content is fixed size then we can calculate the length
+                    // of the repeated field and pre-initialize the underlying collection.
+                    //
+                    // Check that the supplied length doesn't exceed the underlying buffer.
+                    // That prevents a malicious length from initializing a very large collection.
+                    if (codec.FixedSize > 0 && length % codec.FixedSize == 0 && IsDataAvailable(ref ctx, length))
                     {
-                        Add(reader(ref ctx));
+                        EnsureSize(count + (length / codec.FixedSize));
+
+                        while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                        {
+                            // Only FieldCodecs with a fixed size can reach here, and they are all known
+                            // types that don't allow the user to specify a custom reader action.
+                            // reader action will never return null.
+                            array[count++] = reader(ref ctx);
+                        }
+                    }
+                    else
+                    {
+                        // Content is variable size so add until we reach the limit.
+                        while (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+                        {
+                            Add(reader(ref ctx));
+                        }
                     }
                     SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
                 }
@@ -142,6 +165,24 @@ namespace Google.Protobuf.Collections
                     Add(reader(ref ctx));
                 } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
             }
+        }
+
+        private bool IsDataAvailable(ref ParseContext ctx, int size)
+        {
+            // Data fits in remaining buffer
+            if (size <= ctx.state.bufferSize - ctx.state.bufferPos)
+            {
+                return true;
+            }
+
+            // Data fits in remaining source data.
+            // Note that this will never be true when reading from a stream as the total length is unknown.
+            if (size < ctx.state.segmentedBufferHelper.TotalLength - ctx.state.totalBytesRetired - ctx.state.bufferPos)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
