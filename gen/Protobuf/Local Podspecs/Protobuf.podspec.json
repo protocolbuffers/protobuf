@@ -1,0 +1,42 @@
+{
+  "name": "Protobuf",
+  "version": "3.11.4",
+  "summary": "Protocol Buffers v.3 runtime library for Objective-C.",
+  "homepage": "https://github.com/protocolbuffers/protobuf",
+  "license": "3-Clause BSD License",
+  "authors": {
+    "The Protocol Buffers contributors": "protobuf@googlegroups.com"
+  },
+  "cocoapods_version": ">= 1.0",
+  "source": {
+    "git": "https://github.com/protocolbuffers/protobuf.git",
+    "tag": "v3.11.4"
+  },
+  "source_files": [
+    "objectivec/*.{h,m}",
+    "objectivec/google/protobuf/Any.pbobjc.h",
+    "objectivec/google/protobuf/Api.pbobjc.h",
+    "objectivec/google/protobuf/Duration.pbobjc.h",
+    "objectivec/google/protobuf/Empty.pbobjc.h",
+    "objectivec/google/protobuf/FieldMask.pbobjc.h",
+    "objectivec/google/protobuf/SourceContext.pbobjc.h",
+    "objectivec/google/protobuf/Struct.pbobjc.h",
+    "objectivec/google/protobuf/Timestamp.pbobjc.h",
+    "objectivec/google/protobuf/Type.pbobjc.h",
+    "objectivec/google/protobuf/Wrappers.pbobjc.h"
+  ],
+  "exclude_files": "objectivec/GPBProtocolBuffers.m",
+  "user_target_xcconfig": {
+    "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1"
+  },
+  "pod_target_xcconfig": {
+    "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS=1"
+  },
+  "platforms": {
+    "ios": "7.0",
+    "osx": "10.9",
+    "tvos": "9.0",
+    "watchos": "2.0"
+  },
+  "requires_arc": false
+}

@@ -1,0 +1,16 @@
+PODS:
+  - Protobuf (3.11.4)
+
+DEPENDENCIES:
+  - Protobuf (from `../../Protobuf.podspec`)
+
+EXTERNAL SOURCES:
+  Protobuf:
+    :path: "../../Protobuf.podspec"
+
+SPEC CHECKSUMS:
+  Protobuf: e0566ae89c7af888fcc25fec3d1d9ba7591c343c
+
+PODFILE CHECKSUM: 75dfee4364ba32eb2cc4c9900f8c8b02f97f38fc
+
+COCOAPODS: 1.8.4
