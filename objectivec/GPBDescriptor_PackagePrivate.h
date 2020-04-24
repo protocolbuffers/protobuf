@@ -155,9 +155,9 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   // breaking change in the runtime.
   GPBDescriptorInitializationFlag_UsesClassRefs     = 1 << 2,
 
-  // This flag is used to indicate that the generated sources already containg
+  // This flag is used to indicate that the generated sources already contain
   // the `GPBFieldClearHasIvarOnZero` flag and it doesn't have to be computed
-  // at startup, this allows older generated code to still work with the
+  // at startup. This allows older generated code to still work with the
   // current runtime library.
   GPBDescriptorInitializationFlag_Proto3OptionalKnown = 1 << 3,
 };
