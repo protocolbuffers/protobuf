@@ -1,4 +1,4 @@
-
+load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@upb//bazel:upb_proto_library.bzl", "upb_proto_library")
 
 proto_library(

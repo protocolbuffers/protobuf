@@ -5,6 +5,7 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 
 # Generic support code #########################################################
 
