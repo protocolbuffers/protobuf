@@ -1,6 +1,6 @@
 # Application note: Field presence
 
-This application note explains the various presence tracking disciplies for protobuf fields. It also explains how to enable experimental support for explicit presence tracking for singular proto3 fields with basic types.
+This application note explains the various presence tracking disciplines for protobuf fields. It also explains how to enable experimental support for explicit presence tracking for singular proto3 fields with basic types.
 
 ## Background
 
