@@ -122,6 +122,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
   csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
+  csharp/src/Google.Protobuf.Test/Proto3OptionalTest.cs                      \
   csharp/src/Google.Protobuf.Test/Reflection/CustomOptionsTest.cs            \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorDeclarationTest.cs    \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
@@ -148,6 +149,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test.TestProtos/UnittestImport.cs                  \
   csharp/src/Google.Protobuf.Test.TestProtos/UnittestIssues.cs                  \
   csharp/src/Google.Protobuf.Test.TestProtos/UnittestProto3.cs                  \
+  csharp/src/Google.Protobuf.Test.TestProtos/UnittestProto3Optional.cs          \
   csharp/src/Google.Protobuf.Test.TestProtos/UnittestWellKnownTypes.cs          \
   csharp/src/Google.Protobuf.Test.TestProtos/Unittest.cs                        \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/AnyTest.cs                  \
