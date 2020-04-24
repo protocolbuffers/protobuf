@@ -95,7 +95,7 @@ BOOL GPBMessageHasFieldSet(GPBMessage *self, GPBFieldDescriptor *field);
 void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field);
 
 /**
- * Clears the given onoof field for the given message.
+ * Clears the given oneof field for the given message.
  *
  * @param self  The message for which to clear the field.
  * @param oneof The oneof to clear.

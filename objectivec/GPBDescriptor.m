@@ -508,7 +508,8 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     BOOL isMessage = GPBDataTypeIsMessage(dataType);
     BOOL isMapOrArray = GPBFieldIsMapOrArray(self);
 
-    // If proto3 optionals weren't know, compute the flag for the rest of the runtime.
+    // If proto3 optionals weren't known (i.e. generated code from an
+    // older version), compute the flag for the rest of the runtime.
     if (!proto3OptionalKnown) {
       // If it was...
       //  - proto3 syntax
@@ -530,7 +531,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       // autocreation.
       hasOrCountSel_ = SelFromStrings(NULL, coreDesc->name, "_Count", NO);
     } else {
-      // Know it is a single field; it gets has/setHas selectors if...
+      // It is a single field; it gets has/setHas selectors if...
       //  - not in a oneof (negative has index)
       //  - not clearing on zero
       if ((coreDesc->hasIndex >= 0) &&
