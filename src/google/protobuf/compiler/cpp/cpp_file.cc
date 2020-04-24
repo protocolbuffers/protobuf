@@ -1425,6 +1425,14 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
 
 void FileGenerator::GenerateMessageDefinitions(io::Printer* printer) {
   Formatter format(printer, variables_);
+
+  // gcc -Wsuggest-override demands override even with final
+  format(
+    "#ifdef __GNUC__\n"
+    "  #pragma GCC diagnostic push\n"
+    "  #pragma GCC diagnostic ignored \"-Wsuggest-override\"\n"
+    "#endif  // __GNUC__\n");
+
   // Generate class definitions.
   for (int i = 0; i < message_generators_.size(); i++) {
     if (i > 0) {
@@ -1434,6 +1442,12 @@ void FileGenerator::GenerateMessageDefinitions(io::Printer* printer) {
     }
     message_generators_[i]->GenerateClassDefinition(printer);
   }
+
+  format(
+    "\n"
+    "#ifdef __GNUC__\n"
+    "  #pragma GCC diagnostic pop\n"
+    "#endif  // __GNUC__\n");
 }
 
 void FileGenerator::GenerateEnumDefinitions(io::Printer* printer) {
