@@ -167,62 +167,6 @@ namespace Google.Protobuf
             }
         }
 
-        internal static bool TryGetLastVarint(UnknownFieldSet set, int field, out ulong value)
-        {
-            UnknownField unknown;
-            if (TryGetField(set, field, out unknown) && unknown.TryGetLastVarint(out value))
-            {
-                return true;
-            }
-            else
-            {
-                value = default(ulong);
-                return false;
-            }
-        }
-
-        internal static bool TryGetLastFixed32(UnknownFieldSet set, int field, out uint value)
-        {
-            UnknownField unknown;
-            if (TryGetField(set, field, out unknown) && unknown.TryGetLastFixed32(out value))
-            {
-                return true;
-            }
-            else
-            {
-                value = default(uint);
-                return false;
-            }
-        }
-
-        internal static bool TryGetLastFixed64(UnknownFieldSet set, int field, out ulong value)
-        {
-            UnknownField unknown;
-            if (TryGetField(set, field, out unknown) && unknown.TryGetLastFixed64(out value))
-            {
-                return true;
-            }
-            else
-            {
-                value = default(ulong);
-                return false;
-            }
-        }
-
-        internal static bool TryGetLastLengthDelimited(UnknownFieldSet set, int field, out ByteString value)
-        {
-            UnknownField unknown;
-            if (TryGetField(set, field, out unknown) && unknown.TryGetLastLengthDelimited(out value))
-            {
-                return true;
-            }
-            else
-            {
-                value = default(ByteString);
-                return false;
-            }
-        }
-
         // Optimization:  We keep around the last field that was
         // modified so that we can efficiently add to it multiple times in a
         // row (important when parsing an unknown repeated field).

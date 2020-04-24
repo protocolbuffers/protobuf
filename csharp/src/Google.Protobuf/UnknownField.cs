@@ -274,13 +274,13 @@ namespace Google.Protobuf
             return this;
         }
 
-        internal bool TryGetLastVarint(out ulong value) => TryGetLastOf(varintList, out value);
+        internal static bool TryGetLastVarint(UnknownField f, out ulong value) => TryGetLastOf(f.varintList, out value);
 
-        internal bool TryGetLastFixed32(out uint value) => TryGetLastOf(fixed32List, out value);
+        internal static bool TryGetLastFixed32(UnknownField f, out uint value) => TryGetLastOf(f.fixed32List, out value);
 
-        internal bool TryGetLastFixed64(out ulong value) => TryGetLastOf(fixed64List, out value);
+        internal static bool TryGetLastFixed64(UnknownField f, out ulong value) => TryGetLastOf(f.fixed64List, out value);
 
-        internal bool TryGetLastLengthDelimited(out ByteString value) => TryGetLastOf(lengthDelimitedList, out value);
+        internal static bool TryGetLastLengthDelimited(UnknownField f, out ByteString value) => TryGetLastOf(f.lengthDelimitedList, out value);
 
         private static bool TryGetLastOf<T>(List<T> list, out T value)
         {

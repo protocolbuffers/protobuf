@@ -74,7 +74,7 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this enum value.
         /// </summary>
         [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+        public CustomOptions CustomOptions => Proto.Options?.CreateCustomOptions() ?? CustomOptions.Empty;
 
         /// <summary>
         /// The <c>EnumValueOptions</c>, defined in <c>descriptor.proto</c>.

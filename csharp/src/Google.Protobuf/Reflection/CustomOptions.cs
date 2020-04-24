@@ -70,6 +70,8 @@ namespace Google.Protobuf.Reflection
         // so instead we pull the unknown values out of the unknown field set to make sure everything acts the same
         private readonly UnknownFieldSet unknownFields;
 
+        internal static readonly CustomOptions Empty = new CustomOptions(null, null);
+
         internal CustomOptions(IDictionary<int, IExtensionValue> values, UnknownFieldSet unknownFields)
         {
             this.values = values;
@@ -83,7 +85,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetBool(int field, out bool value)
-            => TryGetPrimitiveValue<bool, ulong>(field, UnknownFieldSet.TryGetLastVarint, (b) => b != 0, out value);
+            => TryGetPrimitiveValue<bool, ulong>(field, UnknownField.TryGetLastVarint, (b) => b != 0, out value);
 
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field.
@@ -92,7 +94,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetInt32(int field, out int value)
-            => TryGetPrimitiveValue<int, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => (int)v, out value);
+            => TryGetPrimitiveValue<int, ulong>(field, UnknownField.TryGetLastVarint, (v) => (int)v, out value);
 
         /// <summary>
         /// Retrieves a signed 64-bit integer value for the specified option field.
@@ -101,7 +103,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetInt64(int field, out long value)
-            => TryGetPrimitiveValue<long, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => (long)v, out value);
+            => TryGetPrimitiveValue<long, ulong>(field, UnknownField.TryGetLastVarint, (v) => (long)v, out value);
 
         /// <summary>
         /// Retrieves an unsigned 32-bit integer value for the specified option field,
@@ -111,7 +113,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetFixed32(int field, out uint value)
-            => TryGetPrimitiveValue<uint, uint>(field, UnknownFieldSet.TryGetLastFixed32, (v) => v, out value);
+            => TryGetPrimitiveValue<uint, uint>(field, UnknownField.TryGetLastFixed32, (v) => v, out value);
 
         /// <summary>
         /// Retrieves an unsigned 64-bit integer value for the specified option field,
@@ -121,7 +123,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetFixed64(int field, out ulong value)
-            => TryGetPrimitiveValue<ulong, ulong>(field, UnknownFieldSet.TryGetLastFixed64, (v) => v, out value);
+            => TryGetPrimitiveValue<ulong, ulong>(field, UnknownField.TryGetLastFixed64, (v) => v, out value);
 
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field,
@@ -131,7 +133,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetSFixed32(int field, out int value)
-            => TryGetPrimitiveValue<int, uint>(field, UnknownFieldSet.TryGetLastFixed32, (v) => (int)v, out value);
+            => TryGetPrimitiveValue<int, uint>(field, UnknownField.TryGetLastFixed32, (v) => (int)v, out value);
 
         /// <summary>
         /// Retrieves a signed 64-bit integer value for the specified option field,
@@ -141,7 +143,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetSFixed64(int field, out long value)
-            => TryGetPrimitiveValue<long, ulong>(field, UnknownFieldSet.TryGetLastFixed64, (v) => (long)v, out value);
+            => TryGetPrimitiveValue<long, ulong>(field, UnknownField.TryGetLastFixed64, (v) => (long)v, out value);
 
         /// <summary>
         /// Retrieves a signed 32-bit integer value for the specified option field,
@@ -151,7 +153,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetSInt32(int field, out int value)
-            => TryGetPrimitiveValue<int, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => CodedInputStream.DecodeZigZag32((uint)v), out value);
+            => TryGetPrimitiveValue<int, ulong>(field, UnknownField.TryGetLastVarint, (v) => CodedInputStream.DecodeZigZag32((uint)v), out value);
 
         /// <summary>
         /// Retrieves a signed 64-bit integer value for the specified option field,
@@ -161,7 +163,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetSInt64(int field, out long value)
-            => TryGetPrimitiveValue<long, ulong>(field, UnknownFieldSet.TryGetLastVarint, CodedInputStream.DecodeZigZag64, out value);
+            => TryGetPrimitiveValue<long, ulong>(field, UnknownField.TryGetLastVarint, CodedInputStream.DecodeZigZag64, out value);
 
         /// <summary>
         /// Retrieves an unsigned 32-bit integer value for the specified option field.
@@ -170,7 +172,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetUInt32(int field, out uint value)
-            => TryGetPrimitiveValue<uint, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => (uint)v, out value);
+            => TryGetPrimitiveValue<uint, ulong>(field, UnknownField.TryGetLastVarint, (v) => (uint)v, out value);
 
         /// <summary>
         /// Retrieves an unsigned 64-bit integer value for the specified option field.
@@ -179,7 +181,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetUInt64(int field, out ulong value)
-            => TryGetPrimitiveValue<ulong, ulong>(field, UnknownFieldSet.TryGetLastVarint, (v) => v, out value);
+            => TryGetPrimitiveValue<ulong, ulong>(field, UnknownField.TryGetLastVarint, (v) => v, out value);
 
         /// <summary>
         /// Retrieves a 32-bit floating point value for the specified option field.
@@ -188,7 +190,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetFloat(int field, out float value)
-            => TryGetPrimitiveValue<float, uint>(field, UnknownFieldSet.TryGetLastFixed32, (v) => {
+            => TryGetPrimitiveValue<float, uint>(field, UnknownField.TryGetLastFixed32, (v) => {
                 var bytes = BitConverter.GetBytes(v);
                 return BitConverter.ToSingle(bytes, 0);
             }, out value);
@@ -200,7 +202,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetDouble(int field, out double value)
-            => TryGetPrimitiveValue<double, ulong>(field, UnknownFieldSet.TryGetLastFixed64, (v) => {
+            => TryGetPrimitiveValue<double, ulong>(field, UnknownField.TryGetLastFixed64, (v) => {
                 return BitConverter.Int64BitsToDouble((long)v);
             }, out value);
 
@@ -211,7 +213,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetString(int field, out string value)
-            => TryGetPrimitiveValue<string, ByteString>(field, UnknownFieldSet.TryGetLastLengthDelimited, (v) => v.ToStringUtf8(), out value);
+            => TryGetPrimitiveValue<string, ByteString>(field, UnknownField.TryGetLastLengthDelimited, (v) => v.ToStringUtf8(), out value);
 
         /// <summary>
         /// Retrieves a bytes value for the specified option field.
@@ -220,7 +222,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetBytes(int field, out ByteString value)
-            => TryGetPrimitiveValue<ByteString, ByteString>(field, UnknownFieldSet.TryGetLastLengthDelimited, (v) => v, out value);
+            => TryGetPrimitiveValue<ByteString, ByteString>(field, UnknownField.TryGetLastLengthDelimited, (v) => v, out value);
 
         /// <summary>
         /// Retrieves a message value for the specified option field.
@@ -273,9 +275,9 @@ namespace Google.Protobuf.Reflection
             return false;
         }
 
-        private delegate bool TryGetUnknown<T>(UnknownFieldSet set, int field, out T value);
+        private delegate bool TryGetLastValue<T>(UnknownField field, out T value);
 
-        private bool TryGetPrimitiveValue<T, U>(int field, TryGetUnknown<U> getUnknown, Func<U, T> conv, out T value)
+        private bool TryGetPrimitiveValue<T, U>(int field, TryGetLastValue<U> getValue, Func<U, T> conv, out T value)
         {
             if (values != null)
             {
@@ -329,10 +331,11 @@ namespace Google.Protobuf.Reflection
                 }
             }
 
-            if (unknownFields != null)
+            UnknownField f;
+            if (UnknownFieldSet.TryGetField(unknownFields, field, out f))
             {
                 U temp;
-                if (getUnknown(unknownFields, field, out temp))
+                if (getValue(f, out temp))
                 {
                     value = conv(temp);
                     return true;

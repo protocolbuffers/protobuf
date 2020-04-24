@@ -548,15 +548,7 @@ namespace Google.Protobuf.Reflection
         /// The (possibly empty) set of custom options for this file.
         /// </summary>
         [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
-        public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
-
-        /// <summary>
-        /// The <c>FileOptions</c>, defined in <c>descriptor.proto</c>.
-        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
-        /// Custom options can be retrieved as extensions of the returned message.
-        /// NOTE: A defensive copy is created each time this property is retrieved.
-        /// </summary>
-        public FileOptions GetOptions() => Proto.Options?.Clone();
+        public CustomOptions CustomOptions => Proto.Options?.CreateCustomOptions() ?? CustomOptions.Empty;
 
         /// <summary>
         /// Gets a single value file option for this descriptor
