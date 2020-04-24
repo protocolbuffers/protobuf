@@ -558,7 +558,7 @@ namespace Google.Protobuf.Reflection
             var options = Proto.Options;
             if (options == null)
             {
-                return default(T);
+                return extension.DefaultValue;
             }
 
             var value = options.GetExtension(extension);
