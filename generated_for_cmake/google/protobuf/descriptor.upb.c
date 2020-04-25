@@ -130,23 +130,24 @@ static const upb_msglayout *const google_protobuf_FieldDescriptorProto_submsgs[1
   &google_protobuf_FieldOptions_msginit,
 };
 
-static const upb_msglayout_field google_protobuf_FieldDescriptorProto__fields[10] = {
-  {1, UPB_SIZE(32, 32), 5, 0, 9, 1},
-  {2, UPB_SIZE(40, 48), 6, 0, 9, 1},
+static const upb_msglayout_field google_protobuf_FieldDescriptorProto__fields[11] = {
+  {1, UPB_SIZE(36, 40), 6, 0, 9, 1},
+  {2, UPB_SIZE(44, 56), 7, 0, 9, 1},
   {3, UPB_SIZE(24, 24), 3, 0, 5, 1},
   {4, UPB_SIZE(8, 8), 1, 0, 14, 1},
   {5, UPB_SIZE(16, 16), 2, 0, 14, 1},
-  {6, UPB_SIZE(48, 64), 7, 0, 9, 1},
-  {7, UPB_SIZE(56, 80), 8, 0, 9, 1},
-  {8, UPB_SIZE(72, 112), 10, 0, 11, 1},
+  {6, UPB_SIZE(52, 72), 8, 0, 9, 1},
+  {7, UPB_SIZE(60, 88), 9, 0, 9, 1},
+  {8, UPB_SIZE(76, 120), 11, 0, 11, 1},
   {9, UPB_SIZE(28, 28), 4, 0, 5, 1},
-  {10, UPB_SIZE(64, 96), 9, 0, 9, 1},
+  {10, UPB_SIZE(68, 104), 10, 0, 9, 1},
+  {17, UPB_SIZE(32, 32), 5, 0, 8, 1},
 };
 
 const upb_msglayout google_protobuf_FieldDescriptorProto_msginit = {
   &google_protobuf_FieldDescriptorProto_submsgs[0],
   &google_protobuf_FieldDescriptorProto__fields[0],
-  UPB_SIZE(80, 128), 10, false,
+  UPB_SIZE(80, 128), 11, false,
 };
 
 static const upb_msglayout *const google_protobuf_OneofDescriptorProto_submsgs[1] = {

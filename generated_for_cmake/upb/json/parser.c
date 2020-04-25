@@ -735,7 +735,7 @@ static bool multipart_text(upb_json_parser *p, const char *buf, size_t len,
 /* Note: this invalidates the accumulate buffer!  Call only after reading its
  * contents. */
 static void multipart_end(upb_json_parser *p) {
-  UPB_ASSERT(p->multipart_state != MULTIPART_INACTIVE);
+  /* UPB_ASSERT(p->multipart_state != MULTIPART_INACTIVE); */
   p->multipart_state = MULTIPART_INACTIVE;
   accumulate_clear(p);
 }

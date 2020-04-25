@@ -84,8 +84,10 @@ const char *upb_fielddef_jsonname(const upb_fielddef *f);
 bool upb_fielddef_isextension(const upb_fielddef *f);
 bool upb_fielddef_lazy(const upb_fielddef *f);
 bool upb_fielddef_packed(const upb_fielddef *f);
+const upb_filedef *upb_fielddef_file(const upb_fielddef *f);
 const upb_msgdef *upb_fielddef_containingtype(const upb_fielddef *f);
 const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f);
+const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f);
 uint32_t upb_fielddef_index(const upb_fielddef *f);
 bool upb_fielddef_issubmsg(const upb_fielddef *f);
 bool upb_fielddef_isstring(const upb_fielddef *f);
@@ -117,6 +119,7 @@ const char *upb_oneofdef_name(const upb_oneofdef *o);
 const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o);
 int upb_oneofdef_numfields(const upb_oneofdef *o);
 uint32_t upb_oneofdef_index(const upb_oneofdef *o);
+bool upb_oneofdef_issynthetic(const upb_oneofdef *o);
 
 /* Oneof lookups:
  * - ntof:  look up a field by name.
@@ -167,19 +170,18 @@ typedef upb_strtable_iter upb_msg_oneof_iter;
 const char *upb_msgdef_fullname(const upb_msgdef *m);
 const upb_filedef *upb_msgdef_file(const upb_msgdef *m);
 const char *upb_msgdef_name(const upb_msgdef *m);
+int upb_msgdef_numfields(const upb_msgdef *m);
 int upb_msgdef_numoneofs(const upb_msgdef *m);
+int upb_msgdef_numrealoneofs(const upb_msgdef *m);
 upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m);
 bool upb_msgdef_mapentry(const upb_msgdef *m);
 upb_wellknowntype_t upb_msgdef_wellknowntype(const upb_msgdef *m);
 bool upb_msgdef_isnumberwrapper(const upb_msgdef *m);
-bool upb_msgdef_setsyntax(upb_msgdef *m, upb_syntax_t syntax);
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i);
 const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name,
                                     size_t len);
 const upb_oneofdef *upb_msgdef_ntoo(const upb_msgdef *m, const char *name,
                                     size_t len);
-int upb_msgdef_numfields(const upb_msgdef *m);
-int upb_msgdef_numoneofs(const upb_msgdef *m);
 const upb_msglayout *upb_msgdef_layout(const upb_msgdef *m);
 const upb_fielddef *_upb_msgdef_field(const upb_msgdef *m, int i);
 

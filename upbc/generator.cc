@@ -87,7 +87,9 @@ class Generator : public protoc::CodeGenerator {
   bool Generate(const protobuf::FileDescriptor* file,
                 const std::string& parameter, protoc::GeneratorContext* context,
                 std::string* error) const override;
-
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL;
+  }
 };
 
 void AddMessages(const protobuf::Descriptor* message,
@@ -350,7 +352,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
         MessageName(message), MessageInit(message));
   }
 
-  for (int i = 0; i < message->oneof_decl_count(); i++) {
+  for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const protobuf::OneofDescriptor* oneof = message->oneof_decl(i);
     std::string fullname = ToCIdent(oneof->full_name());
     output("typedef enum {\n");
@@ -379,12 +381,13 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           "UPB_INLINE bool $0_has_$1(const $0 *msg) { "
           "return _upb_has_field(msg, $2); }\n",
           msgname, field->name(), layout.GetHasbitIndex(field));
-    } else if (field->containing_oneof()) {
+    } else if (field->real_containing_oneof()) {
       output(
           "UPB_INLINE bool $0_has_$1(const $0 *msg) { "
           "return _upb_has_oneof_field(msg, $2, $3); }\n",
           msgname, field->name(),
-          GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
+          GetSizeInit(
+              layout.GetOneofCaseOffset(field->real_containing_oneof())),
           field->number());
     } else if (field->message_type()) {
       output(
@@ -435,13 +438,13 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           "return ($0 const*)_upb_array_accessor(msg, $3, len); }\n",
           CTypeConst(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)));
-    } else if (field->containing_oneof()) {
+    } else if (field->real_containing_oneof()) {
       output(
           "UPB_INLINE $0 $1_$2(const $1 *msg) { "
           "return UPB_READ_ONEOF(msg, $0, $3, $4, $5, $6); }\n",
           CTypeConst(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)),
-          GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
+          GetSizeInit(layout.GetOneofCaseOffset(field->real_containing_oneof())),
           field->number(), FieldDefault(field));
     } else {
       output(
@@ -549,12 +552,13 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
             field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
                 ? "0"
                 : "sizeof(" + CType(field) + ")");
-      } else if (field->containing_oneof()) {
+      } else if (field->real_containing_oneof()) {
         output(
             "  UPB_WRITE_ONEOF(msg, $0, $1, value, $2, $3);\n"
             "}\n",
             CType(field), GetSizeInit(layout.GetFieldOffset(field)),
-            GetSizeInit(layout.GetOneofCaseOffset(field->containing_oneof())),
+            GetSizeInit(
+                layout.GetOneofCaseOffset(field->real_containing_oneof())),
             field->number());
       } else {
         if (MessageLayout::HasHasbit(field)) {
@@ -749,9 +753,9 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
           int index = layout.GetHasbitIndex(field);
           assert(index != 0);
           presence = absl::StrCat(index);
-        } else if (field->containing_oneof()) {
+        } else if (field->real_containing_oneof()) {
           MessageLayout::Size case_offset =
-              layout.GetOneofCaseOffset(field->containing_oneof());
+              layout.GetOneofCaseOffset(field->real_containing_oneof());
 
           // We encode as negative to distinguish from hasbits.
           case_offset.size32 = -case_offset.size32;
