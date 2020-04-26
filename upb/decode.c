@@ -331,7 +331,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
       decode_reserve(d, arr, count);
       mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
       arr->len += count;
-      memcpy(mem, val.str_val.data, count << op);
+      memcpy(mem, val.str_val.data, val.str_val.size);
       return ptr;
     }
     case OP_VARPCK_LG2(0):
