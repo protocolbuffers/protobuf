@@ -969,9 +969,6 @@ void upb_pbdecoder_reset(upb_pbdecoder *d) {
 upb_pbdecoder *upb_pbdecoder_create(upb_arena *a, const upb_pbdecodermethod *m,
                                     upb_sink sink, upb_status *status) {
   const size_t default_max_nesting = 64;
-#ifndef NDEBUG
-  size_t size_before = upb_arena_bytesallocated(a);
-#endif
 
   upb_pbdecoder *d = upb_arena_malloc(a, sizeof(upb_pbdecoder));
   if (!d) return NULL;
@@ -997,9 +994,6 @@ upb_pbdecoder *upb_pbdecoder_create(upb_arena *a, const upb_pbdecodermethod *m,
   }
   d->top->sink = sink;
 
-  /* If this fails, increase the value in decoder.h. */
-  UPB_ASSERT_DEBUGVAR(upb_arena_bytesallocated(a) - size_before <=
-                      UPB_PB_DECODER_SIZE);
   return d;
 }
 

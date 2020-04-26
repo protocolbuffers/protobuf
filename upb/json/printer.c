@@ -1367,10 +1367,6 @@ static void json_printer_reset(upb_json_printer *p) {
 
 upb_json_printer *upb_json_printer_create(upb_arena *a, const upb_handlers *h,
                                           upb_bytessink output) {
-#ifndef NDEBUG
-  size_t size_before = upb_arena_bytesallocated(a);
-#endif
-
   upb_json_printer *p = upb_arena_malloc(a, sizeof(upb_json_printer));
   if (!p) return NULL;
 
@@ -1380,9 +1376,6 @@ upb_json_printer *upb_json_printer_create(upb_arena *a, const upb_handlers *h,
   p->seconds = 0;
   p->nanos = 0;
 
-  /* If this fails, increase the value in printer.h. */
-  UPB_ASSERT_DEBUGVAR(upb_arena_bytesallocated(a) - size_before <=
-                      UPB_JSON_PRINTER_SIZE);
   return p;
 }
 

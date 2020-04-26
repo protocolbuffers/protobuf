@@ -72,7 +72,6 @@ struct upb_arena {
    * when we are destroyed. */
   upb_alloc *block_alloc;
 
-  size_t bytes_allocated;
   size_t next_block_size;
   size_t max_block_size;
 
@@ -98,10 +97,6 @@ typedef struct cleanup_ent {
 static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size,
                                bool owned) {
   mem_block *block = ptr;
-
-  if (a->block_head) {
-    a->bytes_allocated += a->head.ptr - a->start;
-  }
 
   block->next = a->block_head;
   block->owned = owned;
@@ -186,7 +181,6 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   a->head.end = NULL;
   a->start = NULL;
   a->block_alloc = &upb_alloc_global;
-  a->bytes_allocated = 0;
   a->next_block_size = 256;
   a->max_block_size = 16384;
   a->cleanup_head = NULL;
@@ -235,8 +229,4 @@ bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func) {
   a->cleanup_head = ent;
 
   return true;
-}
-
-size_t upb_arena_bytesallocated(const upb_arena *a) {
-  return a->bytes_allocated + (a->head.ptr - a->start);
 }

@@ -57,10 +57,6 @@ class Arena {
     return upb_arena_addcleanup(ptr_.get(), ud, func);
   }
 
-  // Total number of bytes that have been allocated.  It is undefined what
-  // Realloc() does to &arena_ counter.
-  size_t BytesAllocated() const { return upb_arena_bytesallocated(ptr_.get()); }
-
  private:
   std::unique_ptr<upb_arena, decltype(&upb_arena_free)> ptr_;
 };

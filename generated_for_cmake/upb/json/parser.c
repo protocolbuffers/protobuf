@@ -3339,9 +3339,6 @@ upb_json_parser *upb_json_parser_create(upb_arena *arena,
                                         upb_sink output,
                                         upb_status *status,
                                         bool ignore_json_unknown) {
-#ifndef NDEBUG
-  const size_t size_before = upb_arena_bytesallocated(arena);
-#endif
   upb_json_parser *p = upb_arena_malloc(arena, sizeof(upb_json_parser));
   if (!p) return false;
 
@@ -3368,10 +3365,6 @@ upb_json_parser *upb_json_parser_create(upb_arena *arena,
 
   p->ignore_json_unknown = ignore_json_unknown;
 
-  /* If this fails, uncomment and increase the value in parser.h. */
-  /* fprintf(stderr, "%zd\n", upb_arena_bytesallocated(arena) - size_before); */
-  UPB_ASSERT_DEBUGVAR(upb_arena_bytesallocated(arena) - size_before <=
-                      UPB_JSON_PARSER_SIZE);
   return p;
 }
 

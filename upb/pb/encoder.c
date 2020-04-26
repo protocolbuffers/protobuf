@@ -534,9 +534,6 @@ upb_pb_encoder *upb_pb_encoder_create(upb_arena *arena, const upb_handlers *h,
   const size_t initial_segbufsize = 16;
   /* TODO(haberman): make this configurable. */
   const size_t stack_size = 64;
-#ifndef NDEBUG
-  const size_t size_before = upb_arena_bytesallocated(arena);
-#endif
 
   upb_pb_encoder *e = upb_arena_malloc(arena, sizeof(upb_pb_encoder));
   if (!e) return NULL;
@@ -561,9 +558,6 @@ upb_pb_encoder *upb_pb_encoder_create(upb_arena *arena, const upb_handlers *h,
   e->subc = output.closure;
   e->ptr = e->buf;
 
-  /* If this fails, increase the value in encoder.h. */
-  UPB_ASSERT_DEBUGVAR(upb_arena_bytesallocated(arena) - size_before <=
-                      UPB_PB_ENCODER_SIZE);
   return e;
 }
 
