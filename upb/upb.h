@@ -142,16 +142,12 @@ typedef struct upb_arena upb_arena;
 
 typedef struct {
   /* We implement the allocator interface.
-   * This must be the first member of upb_arena! */
+   * This must be the first member of upb_arena!
+   * TODO(haberman): remove once handlers are gone. */
   upb_alloc alloc;
 
   char *ptr, *end;
 } _upb_arena_head;
-
-UPB_INLINE size_t _upb_arena_alignup(size_t size) {
-  const size_t maxalign = 16;
-  return ((size + maxalign - 1) / maxalign) * maxalign;
-}
 
 /* Creates an arena from the given initial block (if any -- n may be 0).
  * Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
@@ -165,23 +161,27 @@ UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
 
 UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
   _upb_arena_head *h = (_upb_arena_head*)a;
-  size = _upb_arena_alignup(size);
-  if (UPB_LIKELY((size_t)(h->end - h->ptr) >= size)) {
-    void* ret = h->ptr;
-    h->ptr += size;
-    return ret;
-  } else {
+  void* ret;
+  size = UPB_ALIGN_MALLOC(size);
+
+  if (UPB_UNLIKELY((size_t)(h->end - h->ptr) < size)) {
     return _upb_arena_slowmalloc(a, size);
   }
+
+  ret = h->ptr;
+  h->ptr += size;
+  return ret;
 }
 
 UPB_INLINE void *upb_arena_realloc(upb_arena *a, void *ptr, size_t oldsize,
                                    size_t size) {
-  if (oldsize == 0) {
-    return upb_arena_malloc(a, size);
-  } else {
-    return upb_realloc(upb_arena_alloc(a), ptr, oldsize, size);
+  void *ret = upb_arena_malloc(a, size);
+
+  if (ret && oldsize > 0) {
+    memcpy(ret, ptr, oldsize);
   }
+
+  return ret;
 }
 
 UPB_INLINE upb_arena *upb_arena_new(void) {

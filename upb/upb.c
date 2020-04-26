@@ -64,130 +64,120 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 /* Be conservative and choose 16 in case anyone is using SSE. */
 
-struct upb_arena {
-  _upb_arena_head head;
-  char *start;
-
-  /* Allocator to allocate arena blocks.  We are responsible for freeing these
-   * when we are destroyed. */
-  upb_alloc *block_alloc;
-
-  size_t next_block_size;
-  size_t max_block_size;
-
-  /* Linked list of blocks.  Points to an arena_block, defined in env.c */
-  void *block_head;
-
-  /* Cleanup entries.  Pointer to a cleanup_ent, defined in env.c */
-  void *cleanup_head;
-};
-
 typedef struct mem_block {
   struct mem_block *next;
-  bool owned;
+  uint32_t size;
+  uint32_t cleanups;
   /* Data follows. */
 } mem_block;
 
 typedef struct cleanup_ent {
-  struct cleanup_ent *next;
   upb_cleanup_func *cleanup;
   void *ud;
 } cleanup_ent;
 
-static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size,
-                               bool owned) {
+struct upb_arena {
+  _upb_arena_head head;
+  uint32_t *cleanups;
+
+  /* Allocator to allocate arena blocks.  We are responsible for freeing these
+   * when we are destroyed. */
+  upb_alloc *block_alloc;
+  size_t last_size;
+
+  /* Linked list of blocks to free/cleanup. */
+  mem_block *freelist;
+};
+
+static const size_t memblock_reserve = UPB_ALIGN_UP(sizeof(mem_block), 16);
+
+static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
   mem_block *block = ptr;
 
-  block->next = a->block_head;
-  block->owned = owned;
+  block->next = a->freelist;
+  block->size = size;
+  block->cleanups = 0;
+  a->freelist = block;
+  a->last_size = size;
 
-  a->block_head = block;
-  a->start = (char*)block + _upb_arena_alignup(sizeof(mem_block));
-  a->head.ptr = a->start;
-  a->head.end = (char*)block + size;
+  a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
+  a->head.end = UPB_PTR_AT(block, size, char);
+  a->cleanups = &block->cleanups;
 
   /* TODO(haberman): ASAN poison. */
 }
 
-static mem_block *upb_arena_allocblock(upb_arena *a, size_t size) {
-  size_t block_size = UPB_MAX(size, a->next_block_size) + sizeof(mem_block);
+static bool upb_arena_allocblock(upb_arena *a, size_t size) {
+  size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
   mem_block *block = upb_malloc(a->block_alloc, block_size);
 
-  if (!block) {
-    return NULL;
-  }
+  if (!block) return false;
+  upb_arena_addblock(a, block, block_size);
+  return true;
+}
 
-  upb_arena_addblock(a, block, block_size, true);
-  a->next_block_size = UPB_MIN(block_size * 2, a->max_block_size);
-
-  return block;
+static bool arena_has(upb_arena *a, size_t size) {
+  _upb_arena_head *h = (_upb_arena_head*)a;
+  return (size_t)(h->end - h->ptr) >= size;
 }
 
 void *_upb_arena_slowmalloc(upb_arena *a, size_t size) {
-  mem_block *block = upb_arena_allocblock(a, size);
-  if (!block) return NULL;  /* Out of memory. */
+  if (!upb_arena_allocblock(a, size)) return NULL;  /* Out of memory. */
+  UPB_ASSERT(arena_has(a, size));
   return upb_arena_malloc(a, size);
 }
 
 static void *upb_arena_doalloc(upb_alloc *alloc, void *ptr, size_t oldsize,
                                size_t size) {
   upb_arena *a = (upb_arena*)alloc;  /* upb_alloc is initial member. */
-  void *ret;
-
-  if (size == 0) {
-    return NULL;  /* We are an arena, don't need individual frees. */
-  }
-
-  ret = upb_arena_malloc(a, size);
-  if (!ret) return NULL;
-
-  /* TODO(haberman): special-case if this is a realloc of the last alloc? */
-
-  if (oldsize > 0) {
-    memcpy(ret, ptr, oldsize);  /* Preserve existing data. */
-  }
-
-  /* TODO(haberman): ASAN unpoison. */
-  return ret;
+  return upb_arena_realloc(a, ptr, oldsize, size);
 }
 
 /* Public Arena API ***********************************************************/
 
-#define upb_alignof(type) offsetof (struct { char c; type member; }, member)
-
-upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
-  const size_t first_block_overhead = sizeof(upb_arena) + sizeof(mem_block);
+upb_arena *arena_initslow(void *mem, size_t n, upb_alloc *alloc) {
+  const size_t first_block_overhead = sizeof(upb_arena) + memblock_reserve;
   upb_arena *a;
-  bool owned = false;
 
-  /* Round block size down to alignof(*a) since we will allocate the arena
-   * itself at the end. */
-  n &= ~(upb_alignof(upb_arena) - 1);
-
-  if (n < first_block_overhead) {
-    /* We need to malloc the initial block. */
-    n = first_block_overhead + 256;
-    owned = true;
-    if (!alloc || !(mem = upb_malloc(alloc, n))) {
-      return NULL;
-    }
+  /* We need to malloc the initial block. */
+  n = first_block_overhead + 256;
+  if (!alloc || !(mem = upb_malloc(alloc, n))) {
+    return NULL;
   }
 
-  a = (void*)((char*)mem + n - sizeof(*a));
+  a = UPB_PTR_AT(mem, n - sizeof(*a), upb_arena);
   n -= sizeof(*a);
 
   a->head.alloc.func = &upb_arena_doalloc;
-  a->head.ptr = NULL;
-  a->head.end = NULL;
-  a->start = NULL;
-  a->block_alloc = &upb_alloc_global;
-  a->next_block_size = 256;
-  a->max_block_size = 16384;
-  a->cleanup_head = NULL;
-  a->block_head = NULL;
   a->block_alloc = alloc;
+  a->freelist = NULL;
 
-  upb_arena_addblock(a, mem, n, owned);
+  upb_arena_addblock(a, mem, n);
+
+  return a;
+}
+
+upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
+  upb_arena *a;
+
+  /* Round block size down to alignof(*a) since we will allocate the arena
+   * itself at the end. */
+  n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_arena));
+
+  if (UPB_UNLIKELY(n < sizeof(upb_arena))) {
+    return arena_initslow(mem, n, alloc);
+  }
+
+  a = UPB_PTR_AT(mem, n - sizeof(*a), upb_arena);
+  n -= sizeof(*a);
+
+  a->head.alloc.func = &upb_arena_doalloc;
+  a->block_alloc = alloc;
+  a->last_size = 128;
+  a->head.ptr = mem;
+  a->head.end = UPB_PTR_AT(mem, n, char);
+  a->freelist = NULL;
+  a->cleanups = NULL;
 
   return a;
 }
@@ -195,38 +185,40 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
 #undef upb_alignof
 
 void upb_arena_free(upb_arena *a) {
-  cleanup_ent *ent = a->cleanup_head;
-  mem_block *block = a->block_head;
+  mem_block *block = a->freelist;
 
-  while (ent) {
-    ent->cleanup(ent->ud);
-    ent = ent->next;
-  }
-
-  /* Must do this after running cleanup functions, because this will delete
-   * the memory we store our cleanup entries in! */
   while (block) {
     /* Load first since we are deleting block. */
     mem_block *next = block->next;
 
-    if (block->owned) {
-      upb_free(a->block_alloc, block);
+    if (block->cleanups > 0) {
+      cleanup_ent *end = UPB_PTR_AT(block, block->size, void);
+      cleanup_ent *ptr = end - block->cleanups;
+
+      for (; ptr < end; ptr++) {
+        ptr->cleanup(ptr->ud);
+      }
     }
 
+    upb_free(a->block_alloc, block);
     block = next;
   }
 }
 
 bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func) {
-  cleanup_ent *ent = upb_malloc(&a->head.alloc, sizeof(cleanup_ent));
-  if (!ent) {
-    return false;  /* Out of memory. */
+  cleanup_ent *ent;
+
+  if (!a->cleanups || !arena_has(a, sizeof(cleanup_ent))) {
+    if (!upb_arena_allocblock(a, 128)) return false;  /* Out of memory. */
+    UPB_ASSERT(arena_has(a, sizeof(cleanup_ent)));
   }
+
+  a->head.end -= sizeof(cleanup_ent);
+  ent = (cleanup_ent*)a->head.end;
+  (*a->cleanups)++;
 
   ent->cleanup = func;
   ent->ud = ud;
-  ent->next = a->cleanup_head;
-  a->cleanup_head = ent;
 
   return true;
 }

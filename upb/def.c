@@ -871,16 +871,6 @@ void upb_oneof_iter_setdone(upb_oneof_iter *iter) {
 
 /* Dynamic Layout Generation. *************************************************/
 
-static bool is_power_of_two(size_t val) {
-  return (val & (val - 1)) == 0;
-}
-
-/* Align up to the given power of 2. */
-static size_t align_up(size_t val, size_t align) {
-  UPB_ASSERT(is_power_of_two(align));
-  return (val + align - 1) & ~(align - 1);
-}
-
 static size_t div_round_up(size_t n, size_t d) {
   return (n + d - 1) / d;
 }
@@ -922,7 +912,7 @@ static uint8_t upb_msg_fielddefsize(const upb_fielddef *f) {
 static uint32_t upb_msglayout_place(upb_msglayout *l, size_t size) {
   uint32_t ret;
 
-  l->size = align_up(l->size, size);
+  l->size = UPB_ALIGN_UP(l->size, size);
   ret = l->size;
   l->size += size;
   return ret;
@@ -977,7 +967,8 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
     }
 
     l->field_count = 2;
-    l->size = 2 * sizeof(upb_strview);align_up(l->size, 8);
+    l->size = 2 * sizeof(upb_strview);
+    l->size = UPB_ALIGN_UP(l->size, 8);
     return true;
   }
 
@@ -1082,7 +1073,7 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
 
   /* Size of the entire structure should be a multiple of its greatest
    * alignment.  TODO: track overall alignment for real? */
-  l->size = align_up(l->size, 8);
+  l->size = UPB_ALIGN_UP(l->size, 8);
 
   return true;
 }

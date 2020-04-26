@@ -21,6 +21,7 @@
 * This file is private and must not be included by users!
 */
 #include <stdint.h>
+#include <stddef.h>
 
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32
@@ -52,6 +53,11 @@
 #else
 #define UPB_INLINE static
 #endif
+
+#define UPB_ALIGN_UP(size, align) (((size) + (align) - 1) / (align) * (align))
+#define UPB_ALIGN_DOWN(size, align) ((size) / (align) * (align))
+#define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, 16)
+#define UPB_ALIGN_OF(type) offsetof (struct { char c; type member; }, member)
 
 /* Hints to the compiler about likely/unlikely branches. */
 #if defined (__GNUC__) || defined(__clang__)
