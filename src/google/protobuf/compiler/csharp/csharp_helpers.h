@@ -159,24 +159,23 @@ inline bool IsProto2(const FileDescriptor* descriptor) {
 }
 
 inline bool SupportsPresenceApi(const FieldDescriptor* descriptor) {
-  // We don't use descriptor->is_singular_with_presence() as C# has slightly
-  // different behavior to other languages.
- 
-  if (IsProto2(descriptor->file())) {
-    // We generate Has/Clear for oneof fields in C#, as well as for messages.
-    // It's possible that we shouldn't, but stopping doing so would be a
-    // breaking change for proto2. Fortunately the decision is moot for
-    // onoeof in proto3: you can't use "optional" inside a oneof.
-    // Proto2: every singular field has presence. (Even fields in oneofs.)
-    return !descriptor->is_repeated();
-  } else {
-    // Proto3: only for explictly-optional fields that aren't messages.
-    // (Repeated fields can never be explicitly optional, so we don't need
-    // to check for that.) Currently we can't get at proto3_optional directly,
-    // but we can use has_optional_keyword() as a surrogate check.    
-    return descriptor->has_optional_keyword() &&
-      descriptor->type() != FieldDescriptor::TYPE_MESSAGE;
+  // Unlike most languages, we don't generate Has/Clear members for message
+  // types, because they can always be set to null in C#. They're not really
+  // needed for oneof fields in proto2 either, as everything can be done via
+  // oneof case, but we follow the convention from other languages. Proto3
+  // oneof fields never have Has/Clear members - but will also never have
+  // the explicit optional keyword either.
+  //
+  // None of the built-in helpers (descriptor->has_presence() etc) describe
+  // quite the behavior we want, so the rules are explicit below.
+
+  if (descriptor->is_repeated() ||
+      descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
+    return false;
   }
+  // has_optional_keyword() has more complex rules for proto2, but that
+  // doesn't matter given the first part of this condition.
+  return IsProto2(descriptor->file()) || descriptor->has_optional_keyword();
 }
 
 inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
