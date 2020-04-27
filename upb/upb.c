@@ -83,10 +83,16 @@ struct upb_arena {
   /* Allocator to allocate arena blocks.  We are responsible for freeing these
    * when we are destroyed. */
   upb_alloc *block_alloc;
-  size_t last_size;
+  uint32_t last_size;
+
+  /* When multiple arenas are fused together, each arena points to a parent
+   * arena (root points to itself). The root tracks how many live arenas
+   * reference it. */
+  uint32_t refcount;  /* Only used when a->parent == a */
+  struct upb_arena *parent;
 
   /* Linked list of blocks to free/cleanup. */
-  mem_block *freelist;
+  mem_block *freelist, *freelist_tail;
 };
 
 static const size_t memblock_reserve = UPB_ALIGN_UP(sizeof(mem_block), 16);
@@ -99,6 +105,7 @@ static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
   block->cleanups = 0;
   a->freelist = block;
   a->last_size = size;
+  if (!a->freelist_tail) a->freelist_tail = block;
 
   a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
   a->head.end = UPB_PTR_AT(block, size, char);
@@ -133,6 +140,17 @@ static void *upb_arena_doalloc(upb_alloc *alloc, void *ptr, size_t oldsize,
   return upb_arena_realloc(a, ptr, oldsize, size);
 }
 
+static upb_arena *arena_findroot(upb_arena *a) {
+  /* Path splitting keeps time complexity down, see:
+   *   https://en.wikipedia.org/wiki/Disjoint-set_data_structure */
+  while (a->parent != a) {
+    upb_arena *next = a->parent;
+    a->parent = next->parent;
+    a = next;
+  }
+  return a;
+}
+
 /* Public Arena API ***********************************************************/
 
 upb_arena *arena_initslow(void *mem, size_t n, upb_alloc *alloc) {
@@ -150,7 +168,10 @@ upb_arena *arena_initslow(void *mem, size_t n, upb_alloc *alloc) {
 
   a->head.alloc.func = &upb_arena_doalloc;
   a->block_alloc = alloc;
+  a->parent = a;
+  a->refcount = 1;
   a->freelist = NULL;
+  a->freelist_tail = NULL;
 
   upb_arena_addblock(a, mem, n);
 
@@ -173,6 +194,8 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
 
   a->head.alloc.func = &upb_arena_doalloc;
   a->block_alloc = alloc;
+  a->parent = a;
+  a->refcount = 1;
   a->last_size = 128;
   a->head.ptr = mem;
   a->head.end = UPB_PTR_AT(mem, n, char);
@@ -182,10 +205,10 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   return a;
 }
 
-#undef upb_alignof
-
-void upb_arena_free(upb_arena *a) {
+static void arena_dofree(upb_arena *a) {
   mem_block *block = a->freelist;
+  UPB_ASSERT(a->parent == a);
+  UPB_ASSERT(a->refcount == 0);
 
   while (block) {
     /* Load first since we are deleting block. */
@@ -205,6 +228,11 @@ void upb_arena_free(upb_arena *a) {
   }
 }
 
+void upb_arena_free(upb_arena *a) {
+  a = arena_findroot(a);
+  if (--a->refcount == 0) arena_dofree(a);
+}
+
 bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func) {
   cleanup_ent *ent;
 
@@ -221,4 +249,28 @@ bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func) {
   ent->ud = ud;
 
   return true;
+}
+
+void upb_arena_fuse(upb_arena *a1, upb_arena *a2) {
+  upb_arena *r1 = arena_findroot(a1);
+  upb_arena *r2 = arena_findroot(a2);
+
+  if (r1 == r2) return;  /* Already fused. */
+
+  /* We want to join the smaller tree to the larger tree.
+   * So swap first if they are backwards. */
+  if (r1->refcount < r2->refcount) {
+    upb_arena *tmp = r1;
+    r1 = r2;
+    r2 = tmp;
+  }
+
+  /* r1 takes over r2's freelist and refcount. */
+  r1->refcount += r2->refcount;
+  if (r2->freelist_tail) {
+    UPB_ASSERT(r2->freelist_tail->next == NULL);
+    r2->freelist_tail->next = r1->freelist;
+    r1->freelist = r2->freelist;
+  }
+  r2->parent = r1;
 }

@@ -42,34 +42,29 @@
  * the wrappers can be collected if they are no longer needed.  A new wrapper
  * object can always be recreated later.
  *
- *                    arena
- *                 +->group
- *                 |
- *                 V        +-----+
+ *                          +-----+
  *            lupb_arena    |cache|-weak-+
  *                 |  ^     +-----+      |
  *                 |  |                  V
  * Lua level       |  +------------lupb_msg
- * ----------------|-----------------|-------------------------------------------
+ * ----------------|-----------------|------------------------------------------
  * upb level       |                 |
  *                 |            +----V------------------------------+
  *                 +->upb_arena | upb_msg  ...(empty arena storage) |
  *                              +-----------------------------------+
  *
  * If the user creates a reference between two objects that have different
- * arenas, we need to merge the arenas into a single, bigger arena group.  The
- * arena group will reference both arenas, and will inherit the longest lifetime
- * of anything in the arena.
+ * arenas, we need to fuse the two arenas together, so that the blocks will
+ * outlive both arenas.
  *
- *                                              arena
- *                 +--------------------------->group<-----------------+
+ *                 +-------------------------->(fused)<----------------+
  *                 |                                                   |
  *                 V                           +-----+                 V
  *            lupb_arena                +-weak-|cache|-weak-+     lupb_arena
  *                 |  ^                 |      +-----+      |        ^   |
  *                 |  |                 V                   V        |   |
  * Lua level       |  +------------lupb_msg              lupb_msg----+   |
- * ----------------|-----------------|-------------------------|---------|-------
+ * ----------------|-----------------|-------------------------|---------|------
  * upb level       |                 |                         |         |
  *                 |            +----V----+               +----V----+    V
  *                 +->upb_arena | upb_msg |               | upb_msg | upb_arena
@@ -77,7 +72,7 @@
  *                                     +---------------------+
  * Key invariants:
  *   1. every wrapper references the arena that contains it.
- *   2. every arena group references all arenas that own upb objects reachable
+ *   2. every fused arena includes all arenas that own upb objects reachable
  *      from that arena.  In other words, when a wrapper references an arena,
  *      this is sufficient to ensure that any upb object reachable from that
  *      wrapper will stay alive.
@@ -85,12 +80,6 @@
  * Additionally, every message object contains a strong reference to the
  * corresponding Descriptor object.  Likewise, array/map objects reference a
  * Descriptor object if they are typed to store message values.
- *
- * (The object cache could be per-arena-group.  This would keep individual cache
- * tables smaller, and when an arena group is freed the entire cache table(s) could
- * be collected in one fell swoop.  However this makes merging another arena
- * into the group an O(n) operation, since all entries would need to be copied
- * from the existing cache table.)
  */
 
 #define LUPB_ARENA "lupb.arena"
@@ -170,13 +159,7 @@ static void lupb_cacheset(lua_State *L, const void *key) {
 /* lupb_arena only exists to wrap a upb_arena.  It is never exposed to users; it
  * is an internal memory management detail.  Other wrapper objects refer to this
  * object from their userdata to keep the arena-owned data alive.
- *
- * The arena userval is a table representing the arena group.  Every arena in
- * the group points to the same table, and the table references all arenas in
- * the group.
  */
-
-#define LUPB_ARENAGROUP_INDEX 1
 
 typedef struct {
   upb_arena *arena;
@@ -190,63 +173,18 @@ static upb_arena *lupb_arena_check(lua_State *L, int narg) {
 upb_arena *lupb_arena_pushnew(lua_State *L) {
   lupb_arena *a = lupb_newuserdata(L, sizeof(lupb_arena), 1, LUPB_ARENA);
   a->arena = upb_arena_new();
-
-  /* Create arena group table and add this arena to it. */
-  lua_createtable(L, 0, 1);
-  lua_pushvalue(L, -2);
-  lua_rawseti(L, -2, 1);
-
-  /* Set arena group as this object's userval. */
-  lua_setiuservalue(L, -2, LUPB_ARENAGROUP_INDEX);
-
   return a->arena;
 }
 
 /**
- * lupb_arena_merge()
+ * lupb_arena_fuse()
  *
  * Merges |from| into |to| so that there is a single arena group that contains
  * both, and both arenas will point at this new table. */
-static void lupb_arena_merge(lua_State *L, int to, int from) {
-  int i, from_count, to_count;
-  lua_getiuservalue(L, to, LUPB_ARENAGROUP_INDEX);
-  lua_getiuservalue(L, from, LUPB_ARENAGROUP_INDEX);
-
-  if (lua_rawequal(L, -1, -2)) {
-    /* These arenas are already in the same group. */
-    lua_pop(L, 2);
-    return;
-  }
-
-  to_count = lua_rawlen(L, -2);
-  from_count = lua_rawlen(L, -1);
-
-  /* Add everything in |from|'s arena group. */
-  for (i = 1; i <= from_count; i++) {
-    lua_rawgeti(L, -1, i);
-    lua_rawseti(L, -3, i + to_count);
-  }
-
-  /* Make |from| point to |to|'s table. */
-  lua_pop(L, 1);
-  lua_setiuservalue(L, from, LUPB_ARENAGROUP_INDEX);
-}
-
-/**
- * lupb_arena_addobj()
- *
- * Creates a reference from the arena in |narg| to the object at the top of the
- * stack, and pops it.  This will guarantee that the object lives as long as
- * the arena.
- *
- * This is mainly useful for pinning strings we have parsed protobuf data from.
- * It will allow us to point directly to string data in the original string. */
-static void lupb_arena_addobj(lua_State *L, int narg) {
-  lua_getiuservalue(L, narg, LUPB_ARENAGROUP_INDEX);
-  int n = lua_rawlen(L, -1);
-  lua_pushvalue(L, -2);
-  lua_rawseti(L, -2, n + 1);
-  lua_pop(L, 2);  /* obj, arena group. */
+static void lupb_arena_fuse(lua_State *L, int to, int from) {
+  upb_arena *to_arena = lupb_arena_check(L, to);
+  upb_arena *from_arena = lupb_arena_check(L, from);
+  upb_arena_fuse(to_arena, from_arena);
 }
 
 static int lupb_arena_gc(lua_State *L) {
@@ -877,7 +815,7 @@ static int lupb_msg_newindex(lua_State *L) {
   if (merge_arenas) {
     lua_getiuservalue(L, 1, LUPB_ARENA_INDEX);
     lua_getiuservalue(L, 3, LUPB_ARENA_INDEX);
-    lupb_arena_merge(L, lua_absindex(L, -2), lua_absindex(L, -1));
+    lupb_arena_fuse(L, lua_absindex(L, -2), lua_absindex(L, -1));
     lua_pop(L, 2);
   }
 
@@ -940,6 +878,7 @@ static int lupb_decode(lua_State *L) {
   const upb_msgdef *m = lupb_msgdef_check(L, 1);
   const char *pb = lua_tolstring(L, 2, &len);
   const upb_msglayout *layout = upb_msgdef_layout(m);
+  char *buf;
   upb_msg *msg;
   upb_arena *arena;
   bool ok;
@@ -952,13 +891,13 @@ static int lupb_decode(lua_State *L) {
 
   lua_getiuservalue(L, -1, LUPB_ARENA_INDEX);
   arena = lupb_arena_check(L, -1);
-
-  /* Pin string data so we can reference it. */
-  lua_pushvalue(L, 2);
-  lupb_arena_addobj(L, -2);
   lua_pop(L, 1);
 
-  ok = upb_decode(pb, len, msg, layout, arena);
+  /* Copy input data to arena, message will reference it. */
+  buf = upb_arena_malloc(arena, len);
+  memcpy(buf, pb, len);
+
+  ok = upb_decode(buf, len, msg, layout, arena);
 
   if (!ok) {
     lua_pushstring(L, "Error decoding protobuf.");
