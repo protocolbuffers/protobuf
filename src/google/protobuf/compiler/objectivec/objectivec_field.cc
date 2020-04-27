@@ -91,6 +91,14 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
   }
+  // It will clear on a zero value if...
+  //  - not repeated/map
+  //  - doesn't have presence
+  bool clear_on_zero =
+      (!descriptor->is_repeated() && !descriptor->has_presence());
+  if (clear_on_zero) {
+    field_flags.push_back("GPBFieldClearHasIvarOnZero");
+  }
 
   (*variables)["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
 
@@ -238,11 +246,16 @@ void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
 }
 
 void FieldGenerator::SetOneofIndexBase(int index_base) {
-  if (descriptor_->containing_oneof() != NULL) {
-    int index = descriptor_->containing_oneof()->index() + index_base;
+  const OneofDescriptor *oneof = descriptor_->real_containing_oneof();
+  if (oneof != NULL) {
+    int index = oneof->index() + index_base;
     // Flip the sign to mark it as a oneof.
     variables_["has_index"] = StrCat(-index);
   }
+}
+
+bool FieldGenerator::WantsHasProperty(void) const {
+  return descriptor_->has_presence() && !descriptor_->real_containing_oneof();
 }
 
 void FieldGenerator::FinishInitialization(void) {
@@ -289,20 +302,8 @@ void SingleFieldGenerator::GeneratePropertyImplementation(
   }
 }
 
-bool SingleFieldGenerator::WantsHasProperty(void) const {
-  if (descriptor_->containing_oneof() != NULL) {
-    // If in a oneof, it uses the oneofcase instead of a has bit.
-    return false;
-  }
-  if (HasFieldPresence(descriptor_->file())) {
-    // In proto1/proto2, every field has a has_$name$() method.
-    return true;
-  }
-  return false;
-}
-
 bool SingleFieldGenerator::RuntimeUsesHasBit(void) const {
-  if (descriptor_->containing_oneof() != NULL) {
+  if (descriptor_->real_containing_oneof()) {
     // The oneof tracks what is set instead.
     return false;
   }
@@ -402,13 +403,8 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
   printer->Print("\n");
 }
 
-bool RepeatedFieldGenerator::WantsHasProperty(void) const {
-  // Consumer check the array size/existence rather than a has bit.
-  return false;
-}
-
 bool RepeatedFieldGenerator::RuntimeUsesHasBit(void) const {
-  return false;  // The array having anything is what is used.
+  return false;  // The array (or map/dict) having anything is what is used.
 }
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,

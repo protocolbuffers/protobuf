@@ -337,6 +337,10 @@ class PROTOBUF_EXPORT Descriptor {
 
   // The number of oneofs in this message type.
   int oneof_decl_count() const;
+  // The number of oneofs in this message type, excluding synthetic oneofs.
+  // Real oneofs always come first, so iterating up to real_oneof_decl_cout()
+  // will yield all real oneofs.
+  int real_oneof_decl_count() const;
   // Get a oneof by index, where 0 <= index < oneof_decl_count().
   // These are returned in the order they were defined in the .proto file.
   const OneofDescriptor* oneof_decl(int index) const;
@@ -526,6 +530,7 @@ class PROTOBUF_EXPORT Descriptor {
 
   int field_count_;
   int oneof_decl_count_;
+  int real_oneof_decl_count_;
   int nested_type_count_;
   int enum_type_count_;
   int extension_range_count_;
@@ -688,13 +693,14 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // .proto file. Excludes singular proto3 fields that do not have a label.
   bool has_optional_keyword() const;
 
-  // Returns true if this is a non-oneof field that tracks presence.
-  // This includes all "required" and "optional" fields in the .proto file,
-  // but excludes oneof fields and singular proto3 fields without "optional".
+  // Returns true if this field tracks presence, ie. does the message
+  // distinguish between "unset" and "present with default value."
+  // This includes required, optional, and oneof fields. It excludes maps,
+  // repeated fields, and singular proto3 fields without "optional".
   //
-  // In implementations that use hasbits, this method will probably indicate
-  // whether this field uses a hasbit.
-  bool is_singular_with_presence() const;
+  // For fields where has_presence() == true, the return value of
+  // Reflection::HasField() is semantically meaningful.
+  bool has_presence() const;
 
   // Index of this field within the message's field array, or the file or
   // extension scope's extensions array.
@@ -744,6 +750,10 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // If the field is a member of a oneof, this is the one, otherwise this is
   // nullptr.
   const OneofDescriptor* containing_oneof() const;
+
+  // If the field is a member of a non-synthetic oneof, returns the descriptor
+  // for the oneof, otherwise returns nullptr.
+  const OneofDescriptor* real_containing_oneof() const;
 
   // If the field is a member of a oneof, returns the index in that oneof.
   int index_in_oneof() const;
@@ -1972,6 +1982,7 @@ PROTOBUF_DEFINE_ACCESSOR(Descriptor, containing_type, const Descriptor*)
 
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, field_count, int)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, oneof_decl_count, int)
+PROTOBUF_DEFINE_ACCESSOR(Descriptor, real_oneof_decl_count, int)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, nested_type_count, int)
 PROTOBUF_DEFINE_ACCESSOR(Descriptor, enum_type_count, int)
 
@@ -2166,10 +2177,15 @@ inline bool FieldDescriptor::has_optional_keyword() const {
           !containing_oneof());
 }
 
-inline bool FieldDescriptor::is_singular_with_presence() const {
+inline const OneofDescriptor* FieldDescriptor::real_containing_oneof() const {
+  return containing_oneof_ && !containing_oneof_->is_synthetic()
+             ? containing_oneof_
+             : nullptr;
+}
+
+inline bool FieldDescriptor::has_presence() const {
   if (is_repeated()) return false;
-  if (containing_oneof() && !containing_oneof()->is_synthetic()) return false;
-  return cpp_type() == CPPTYPE_MESSAGE || proto3_optional_ ||
+  return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
          file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 

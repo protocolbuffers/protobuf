@@ -169,7 +169,7 @@ struct ReflectionSchema {
 
   // Bit index within the bit array of hasbits.  Bit order is low-to-high.
   uint32 HasBitIndex(const FieldDescriptor* field) const {
-    if (has_bits_offset_ == -1) return -1;
+    if (has_bits_offset_ == -1) return static_cast<uint32>(-1);
     GOOGLE_DCHECK(HasHasbits());
     return has_bit_indices_[field->index()];
   }

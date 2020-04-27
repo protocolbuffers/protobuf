@@ -135,6 +135,8 @@ class PROTOBUF_EXPORT ArenaImpl {
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
  private:
+  friend class ArenaBenchmark;
+
   void* AllocateAlignedFallback(size_t n);
   void* AllocateAlignedAndAddCleanupFallback(size_t n, void (*cleanup)(void*));
   void AddCleanupFallback(void* elem, void (*cleanup)(void*));

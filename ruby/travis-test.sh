@@ -16,7 +16,7 @@ test_version() {
        git clean -f && \
        gem install bundler && bundle && \
        rake test"
-  elif [ "$version" == "ruby-2.6.0" ] ; then
+  elif [ "$version" == "ruby-2.6.0" -o "$version" == "ruby-2.7.0" ] ; then
     bash --login -c \
       "rvm install $version && rvm use $version && \
        which ruby && \

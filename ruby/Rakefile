@@ -70,13 +70,18 @@ else
 
   task 'gem:windows' do
     require 'rake_compiler_dock'
-    RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.0:2.4.0:2.3.0"
+    ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux'].each do |plat|
+      RakeCompilerDock.sh <<-"EOT", platform: plat
+        bundle && \
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=2.7.0:2.6.0:2.5.0:2.4.0:2.3.0
+      EOT
+    end
   end
 
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=2.6.0:2.5.1:2.4.0:2.3.0"
+      system "rake cross native gem RUBY_CC_VERSION=2.7.0:2.6.0:2.5.1:2.4.0:2.3.0"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows']
@@ -119,7 +124,7 @@ file "tests/test_ruby_package_proto2.rb" => "tests/test_ruby_package_proto2.prot
 end
 
 file "tests/basic_test.rb" => "tests/basic_test.proto" do |file_task|
-  sh "../src/protoc -I../src -I. --ruby_out=. tests/basic_test.proto"
+  sh "../src/protoc --experimental_allow_proto3_optional -I../src -I. --ruby_out=. tests/basic_test.proto"
 end
 
 file "tests/basic_test_proto2.rb" => "tests/basic_test_proto2.proto" do |file_task|

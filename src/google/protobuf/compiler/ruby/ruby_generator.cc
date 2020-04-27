@@ -77,6 +77,10 @@ std::string GetOutputFilename(const std::string& proto_file) {
 }
 
 std::string LabelForField(const FieldDescriptor* field) {
+  if (field->has_optional_keyword() &&
+      field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    return "proto3_optional";
+  }
   switch (field->label()) {
     case FieldDescriptor::LABEL_OPTIONAL: return "optional";
     case FieldDescriptor::LABEL_REQUIRED: return "required";
@@ -255,12 +259,12 @@ bool GenerateMessage(const Descriptor* message, io::Printer* printer,
 
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
-    if (!field->containing_oneof()) {
+    if (!field->real_containing_oneof()) {
       GenerateField(field, printer);
     }
   }
 
-  for (int i = 0; i < message->oneof_decl_count(); i++) {
+  for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
     GenerateOneof(oneof, printer);
   }

@@ -1301,14 +1301,14 @@ class DecodeDataBuilder {
   }
 
  private:
-  static const uint8 kAddUnderscore = 0x80;
+  static constexpr uint8 kAddUnderscore = 0x80;
 
-  static const uint8 kOpAsIs        = 0x00;
-  static const uint8 kOpFirstUpper  = 0x40;
-  static const uint8 kOpFirstLower  = 0x20;
-  static const uint8 kOpAllUpper    = 0x60;
+  static constexpr uint8 kOpAsIs = 0x00;
+  static constexpr uint8 kOpFirstUpper = 0x40;
+  static constexpr uint8 kOpFirstLower = 0x20;
+  static constexpr uint8 kOpAllUpper = 0x60;
 
-  static const int kMaxSegmentLen     = 0x1f;
+  static constexpr int kMaxSegmentLen = 0x1f;
 
   void AddChar(const char desired) {
     ++segment_len_;

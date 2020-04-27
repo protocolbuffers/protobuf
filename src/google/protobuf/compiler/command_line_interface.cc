@@ -1105,14 +1105,18 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
 bool CommandLineInterface::AllowProto3Optional(
     const FileDescriptor& file) const {
   if (allow_proto3_optional_) return true;
+
   // Whitelist all ads protos. Ads is an early adopter of this feature.
   if (file.name().find("google/ads/googleads") != std::string::npos) {
     return true;
   }
-  if (file.name() == "google/protobuf/unittest_proto3_optional.proto" ||
-      file.name() == "google/protobuf/internal/test_proto3_optional.proto") {
+
+  // Whitelist all protos testing proto3 optional.
+  if (file.name().find("test_proto3_optional") != std::string::npos) {
     return true;
   }
+
+
   return false;
 }
 

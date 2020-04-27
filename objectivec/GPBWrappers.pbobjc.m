@@ -70,7 +70,7 @@ typedef struct GPBDoubleValue__storage_ {
         .number = GPBDoubleValue_FieldNumber_Value,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBDoubleValue__storage_, value),
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeDouble,
       },
     };
@@ -81,7 +81,7 @@ typedef struct GPBDoubleValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBDoubleValue__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -115,7 +115,7 @@ typedef struct GPBFloatValue__storage_ {
         .number = GPBFloatValue_FieldNumber_Value,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBFloatValue__storage_, value),
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeFloat,
       },
     };
@@ -126,7 +126,7 @@ typedef struct GPBFloatValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBFloatValue__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -160,7 +160,7 @@ typedef struct GPBInt64Value__storage_ {
         .number = GPBInt64Value_FieldNumber_Value,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBInt64Value__storage_, value),
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeInt64,
       },
     };
@@ -171,7 +171,7 @@ typedef struct GPBInt64Value__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBInt64Value__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -205,7 +205,7 @@ typedef struct GPBUInt64Value__storage_ {
         .number = GPBUInt64Value_FieldNumber_Value,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBUInt64Value__storage_, value),
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeUInt64,
       },
     };
@@ -216,7 +216,7 @@ typedef struct GPBUInt64Value__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBUInt64Value__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -250,7 +250,7 @@ typedef struct GPBInt32Value__storage_ {
         .number = GPBInt32Value_FieldNumber_Value,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBInt32Value__storage_, value),
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeInt32,
       },
     };
@@ -261,7 +261,7 @@ typedef struct GPBInt32Value__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBInt32Value__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -295,7 +295,7 @@ typedef struct GPBUInt32Value__storage_ {
         .number = GPBUInt32Value_FieldNumber_Value,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBUInt32Value__storage_, value),
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeUInt32,
       },
     };
@@ -306,7 +306,7 @@ typedef struct GPBUInt32Value__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBUInt32Value__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -339,7 +339,7 @@ typedef struct GPBBoolValue__storage_ {
         .number = GPBBoolValue_FieldNumber_Value,
         .hasIndex = 0,
         .offset = 1,  // Stored in _has_storage_ to save space.
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeBool,
       },
     };
@@ -350,7 +350,7 @@ typedef struct GPBBoolValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBBoolValue__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -384,7 +384,7 @@ typedef struct GPBStringValue__storage_ {
         .number = GPBStringValue_FieldNumber_Value,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBStringValue__storage_, value),
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeString,
       },
     };
@@ -395,7 +395,7 @@ typedef struct GPBStringValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBStringValue__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG
@@ -429,7 +429,7 @@ typedef struct GPBBytesValue__storage_ {
         .number = GPBBytesValue_FieldNumber_Value,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBBytesValue__storage_, value),
-        .flags = GPBFieldOptional,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldClearHasIvarOnZero),
         .dataType = GPBDataTypeBytes,
       },
     };
@@ -440,7 +440,7 @@ typedef struct GPBBytesValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBBytesValue__storage_)
-                                         flags:GPBDescriptorInitializationFlag_UsesClassRefs];
+                                         flags:(GPBDescriptorInitializationFlags)(GPBDescriptorInitializationFlag_UsesClassRefs | GPBDescriptorInitializationFlag_Proto3OptionalKnown)];
     #if defined(DEBUG) && DEBUG
       NSAssert(descriptor == nil, @"Startup recursed!");
     #endif  // DEBUG

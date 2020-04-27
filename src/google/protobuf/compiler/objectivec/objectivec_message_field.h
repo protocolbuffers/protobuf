@@ -52,7 +52,6 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
   MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
 
   virtual ~MessageFieldGenerator();
-  virtual bool WantsHasProperty(void) const;
 
  public:
   virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;

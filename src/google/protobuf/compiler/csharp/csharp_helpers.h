@@ -158,6 +158,34 @@ inline bool IsProto2(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
+inline bool SupportsPresenceApi(const FieldDescriptor* descriptor) {
+  // We don't use descriptor->is_singular_with_presence() as C# has slightly
+  // different behavior to other languages.
+ 
+  if (IsProto2(descriptor->file())) {
+    // We generate Has/Clear for oneof fields in C#, as well as for messages.
+    // It's possible that we shouldn't, but stopping doing so would be a
+    // breaking change for proto2. Fortunately the decision is moot for
+    // onoeof in proto3: you can't use "optional" inside a oneof.
+    // Proto2: every singular field has presence. (Even fields in oneofs.)
+    return !descriptor->is_repeated();
+  } else {
+    // Proto3: only for explictly-optional fields that aren't messages.
+    // (Repeated fields can never be explicitly optional, so we don't need
+    // to check for that.) Currently we can't get at proto3_optional directly,
+    // but we can use has_optional_keyword() as a surrogate check.    
+    return descriptor->has_optional_keyword() &&
+      descriptor->type() != FieldDescriptor::TYPE_MESSAGE;
+  }
+}
+
+inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
+  return SupportsPresenceApi(descriptor) &&
+    !IsNullable(descriptor) &&
+    !descriptor->is_extension() &&
+    !descriptor->real_containing_oneof();
+}
+
 }  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf

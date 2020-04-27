@@ -81,7 +81,7 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    $name$_ = value;\n"
     "  }\n"
     "}\n\n");
-  if (IsProto2(descriptor_->file())) {
+  if (SupportsPresenceApi(descriptor_)) {
     printer->Print(
       variables_,
       "/// <summary>Gets whether the $descriptor_name$ field is set</summary>\n");
@@ -219,7 +219,7 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"
     "}\n");
-  if (IsProto2(descriptor_->file())) {
+  if (SupportsPresenceApi(descriptor_)) {
     printer->Print(
       variables_,
       "/// <summary>Gets whether the \"$descriptor_name$\" field is set</summary>\n");

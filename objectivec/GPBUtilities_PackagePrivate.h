@@ -206,110 +206,83 @@ GPBGetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field) {
   GPBMessageFieldDescription *fieldDesc = field->description_;
   return GPBGetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number);
 }
-GPB_INLINE void GPBSetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field,
-                                   BOOL value) {
-  GPBMessageFieldDescription *fieldDesc = field->description_;
-  GPBSetHasIvar(self, fieldDesc->hasIndex, fieldDesc->number, value);
-}
-
-void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
-                        int32_t oneofHasIndex, uint32_t fieldNumberNotToClear);
 
 #pragma clang diagnostic pop
 
 //%PDDM-DEFINE GPB_IVAR_SET_DECL(NAME, TYPE)
-//%void GPBSet##NAME##IvarWithFieldInternal(GPBMessage *self,
-//%            NAME$S                     GPBFieldDescriptor *field,
-//%            NAME$S                     TYPE value,
-//%            NAME$S                     GPBFileSyntax syntax);
+//%void GPBSet##NAME##IvarWithFieldPrivate(GPBMessage *self,
+//%            NAME$S                    GPBFieldDescriptor *field,
+//%            NAME$S                    TYPE value);
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Bool, BOOL)
 // This block of code is generated, do not edit it directly.
 // clang-format off
 
-void GPBSetBoolIvarWithFieldInternal(GPBMessage *self,
-                                     GPBFieldDescriptor *field,
-                                     BOOL value,
-                                     GPBFileSyntax syntax);
+void GPBSetBoolIvarWithFieldPrivate(GPBMessage *self,
+                                    GPBFieldDescriptor *field,
+                                    BOOL value);
 // clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Int32, int32_t)
 // This block of code is generated, do not edit it directly.
 // clang-format off
 
-void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      int32_t value,
-                                      GPBFileSyntax syntax);
+void GPBSetInt32IvarWithFieldPrivate(GPBMessage *self,
+                                     GPBFieldDescriptor *field,
+                                     int32_t value);
 // clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(UInt32, uint32_t)
 // This block of code is generated, do not edit it directly.
 // clang-format off
 
-void GPBSetUInt32IvarWithFieldInternal(GPBMessage *self,
-                                       GPBFieldDescriptor *field,
-                                       uint32_t value,
-                                       GPBFileSyntax syntax);
+void GPBSetUInt32IvarWithFieldPrivate(GPBMessage *self,
+                                      GPBFieldDescriptor *field,
+                                      uint32_t value);
 // clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Int64, int64_t)
 // This block of code is generated, do not edit it directly.
 // clang-format off
 
-void GPBSetInt64IvarWithFieldInternal(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      int64_t value,
-                                      GPBFileSyntax syntax);
+void GPBSetInt64IvarWithFieldPrivate(GPBMessage *self,
+                                     GPBFieldDescriptor *field,
+                                     int64_t value);
 // clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(UInt64, uint64_t)
 // This block of code is generated, do not edit it directly.
 // clang-format off
 
-void GPBSetUInt64IvarWithFieldInternal(GPBMessage *self,
-                                       GPBFieldDescriptor *field,
-                                       uint64_t value,
-                                       GPBFileSyntax syntax);
+void GPBSetUInt64IvarWithFieldPrivate(GPBMessage *self,
+                                      GPBFieldDescriptor *field,
+                                      uint64_t value);
 // clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Float, float)
 // This block of code is generated, do not edit it directly.
 // clang-format off
 
-void GPBSetFloatIvarWithFieldInternal(GPBMessage *self,
-                                      GPBFieldDescriptor *field,
-                                      float value,
-                                      GPBFileSyntax syntax);
+void GPBSetFloatIvarWithFieldPrivate(GPBMessage *self,
+                                     GPBFieldDescriptor *field,
+                                     float value);
 // clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Double, double)
 // This block of code is generated, do not edit it directly.
 // clang-format off
 
-void GPBSetDoubleIvarWithFieldInternal(GPBMessage *self,
-                                       GPBFieldDescriptor *field,
-                                       double value,
-                                       GPBFileSyntax syntax);
+void GPBSetDoubleIvarWithFieldPrivate(GPBMessage *self,
+                                      GPBFieldDescriptor *field,
+                                      double value);
 // clang-format on
-//%PDDM-EXPAND GPB_IVAR_SET_DECL(Enum, int32_t)
-// This block of code is generated, do not edit it directly.
-// clang-format off
+//%PDDM-EXPAND-END (7 expansions)
 
-void GPBSetEnumIvarWithFieldInternal(GPBMessage *self,
-                                     GPBFieldDescriptor *field,
-                                     int32_t value,
-                                     GPBFileSyntax syntax);
-// clang-format on
-//%PDDM-EXPAND-END (8 expansions)
-
-int32_t GPBGetEnumIvarWithFieldInternal(GPBMessage *self,
-                                        GPBFieldDescriptor *field,
-                                        GPBFileSyntax syntax);
+void GPBSetEnumIvarWithFieldPrivate(GPBMessage *self,
+                                    GPBFieldDescriptor *field,
+                                    int32_t value);
 
 id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
 
-void GPBSetObjectIvarWithFieldInternal(GPBMessage *self,
-                                       GPBFieldDescriptor *field, id value,
-                                       GPBFileSyntax syntax);
-void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
-                                               GPBFieldDescriptor *field,
-                                               id __attribute__((ns_consumed))
-                                               value,
-                                               GPBFileSyntax syntax);
+void GPBSetObjectIvarWithFieldPrivate(GPBMessage *self,
+                                      GPBFieldDescriptor *field, id value);
+void GPBSetRetainedObjectIvarWithFieldPrivate(GPBMessage *self,
+                                              GPBFieldDescriptor *field,
+                                              id __attribute__((ns_consumed))
+                                              value);
 
 // GPBGetObjectIvarWithField will automatically create the field (message) if
 // it doesn't exist. GPBGetObjectIvarWithFieldNoAutocreate will return nil.
@@ -335,6 +308,15 @@ const char *GPBMessageEncodingForSelector(SEL selector, BOOL instanceSel);
 // key and inputString are the input that needs decoding.
 NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
                                   NSString *inputString);
+
+
+// Shims from the older generated code into the runtime.
+void GPBSetInt32IvarWithFieldInternal(GPBMessage *self,
+                                      GPBFieldDescriptor *field,
+                                      int32_t value,
+                                      GPBFileSyntax syntax);
+void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
+                        int32_t oneofHasIndex, uint32_t fieldNumberNotToClear);
 
 // A series of selectors that are used solely to get @encoding values
 // for them by the dynamic protobuf runtime code. See

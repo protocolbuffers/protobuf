@@ -1872,21 +1872,21 @@ namespace ProtobufTestMessages.Proto2 {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Fieldname1 {
-      get { if ((_hasBits0 & 2097152) != 0) { return fieldname1_; } else { return Fieldname1DefaultValue; } }
+      get { if ((_hasBits0 & 32768) != 0) { return fieldname1_; } else { return Fieldname1DefaultValue; } }
       set {
-        _hasBits0 |= 2097152;
+        _hasBits0 |= 32768;
         fieldname1_ = value;
       }
     }
     /// <summary>Gets whether the "fieldname1" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldname1 {
-      get { return (_hasBits0 & 2097152) != 0; }
+      get { return (_hasBits0 & 32768) != 0; }
     }
     /// <summary>Clears the value of the "fieldname1" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldname1() {
-      _hasBits0 &= ~2097152;
+      _hasBits0 &= ~32768;
     }
 
     /// <summary>Field number for the "field_name2" field.</summary>
@@ -1896,21 +1896,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName2_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName2 {
-      get { if ((_hasBits0 & 4194304) != 0) { return fieldName2_; } else { return FieldName2DefaultValue; } }
+      get { if ((_hasBits0 & 65536) != 0) { return fieldName2_; } else { return FieldName2DefaultValue; } }
       set {
-        _hasBits0 |= 4194304;
+        _hasBits0 |= 65536;
         fieldName2_ = value;
       }
     }
     /// <summary>Gets whether the "field_name2" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName2 {
-      get { return (_hasBits0 & 4194304) != 0; }
+      get { return (_hasBits0 & 65536) != 0; }
     }
     /// <summary>Clears the value of the "field_name2" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName2() {
-      _hasBits0 &= ~4194304;
+      _hasBits0 &= ~65536;
     }
 
     /// <summary>Field number for the "_field_name3" field.</summary>
@@ -1920,21 +1920,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int FieldName3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName3 {
-      get { if ((_hasBits0 & 8388608) != 0) { return FieldName3_; } else { return FieldName3DefaultValue; } }
+      get { if ((_hasBits0 & 131072) != 0) { return FieldName3_; } else { return FieldName3DefaultValue; } }
       set {
-        _hasBits0 |= 8388608;
+        _hasBits0 |= 131072;
         FieldName3_ = value;
       }
     }
     /// <summary>Gets whether the "_field_name3" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName3 {
-      get { return (_hasBits0 & 8388608) != 0; }
+      get { return (_hasBits0 & 131072) != 0; }
     }
     /// <summary>Clears the value of the "_field_name3" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName3() {
-      _hasBits0 &= ~8388608;
+      _hasBits0 &= ~131072;
     }
 
     /// <summary>Field number for the "field__name4_" field.</summary>
@@ -1944,21 +1944,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName4_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName4 {
-      get { if ((_hasBits0 & 16777216) != 0) { return fieldName4_; } else { return FieldName4DefaultValue; } }
+      get { if ((_hasBits0 & 262144) != 0) { return fieldName4_; } else { return FieldName4DefaultValue; } }
       set {
-        _hasBits0 |= 16777216;
+        _hasBits0 |= 262144;
         fieldName4_ = value;
       }
     }
     /// <summary>Gets whether the "field__name4_" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName4 {
-      get { return (_hasBits0 & 16777216) != 0; }
+      get { return (_hasBits0 & 262144) != 0; }
     }
     /// <summary>Clears the value of the "field__name4_" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName4() {
-      _hasBits0 &= ~16777216;
+      _hasBits0 &= ~262144;
     }
 
     /// <summary>Field number for the "field0name5" field.</summary>
@@ -1968,21 +1968,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int field0Name5_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Field0Name5 {
-      get { if ((_hasBits0 & 33554432) != 0) { return field0Name5_; } else { return Field0Name5DefaultValue; } }
+      get { if ((_hasBits0 & 524288) != 0) { return field0Name5_; } else { return Field0Name5DefaultValue; } }
       set {
-        _hasBits0 |= 33554432;
+        _hasBits0 |= 524288;
         field0Name5_ = value;
       }
     }
     /// <summary>Gets whether the "field0name5" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasField0Name5 {
-      get { return (_hasBits0 & 33554432) != 0; }
+      get { return (_hasBits0 & 524288) != 0; }
     }
     /// <summary>Clears the value of the "field0name5" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearField0Name5() {
-      _hasBits0 &= ~33554432;
+      _hasBits0 &= ~524288;
     }
 
     /// <summary>Field number for the "field_0_name6" field.</summary>
@@ -1992,21 +1992,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int field0Name6_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Field0Name6 {
-      get { if ((_hasBits0 & 67108864) != 0) { return field0Name6_; } else { return Field0Name6DefaultValue; } }
+      get { if ((_hasBits0 & 1048576) != 0) { return field0Name6_; } else { return Field0Name6DefaultValue; } }
       set {
-        _hasBits0 |= 67108864;
+        _hasBits0 |= 1048576;
         field0Name6_ = value;
       }
     }
     /// <summary>Gets whether the "field_0_name6" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasField0Name6 {
-      get { return (_hasBits0 & 67108864) != 0; }
+      get { return (_hasBits0 & 1048576) != 0; }
     }
     /// <summary>Clears the value of the "field_0_name6" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearField0Name6() {
-      _hasBits0 &= ~67108864;
+      _hasBits0 &= ~1048576;
     }
 
     /// <summary>Field number for the "fieldName7" field.</summary>
@@ -2016,21 +2016,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName7_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName7 {
-      get { if ((_hasBits0 & 134217728) != 0) { return fieldName7_; } else { return FieldName7DefaultValue; } }
+      get { if ((_hasBits0 & 2097152) != 0) { return fieldName7_; } else { return FieldName7DefaultValue; } }
       set {
-        _hasBits0 |= 134217728;
+        _hasBits0 |= 2097152;
         fieldName7_ = value;
       }
     }
     /// <summary>Gets whether the "fieldName7" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName7 {
-      get { return (_hasBits0 & 134217728) != 0; }
+      get { return (_hasBits0 & 2097152) != 0; }
     }
     /// <summary>Clears the value of the "fieldName7" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName7() {
-      _hasBits0 &= ~134217728;
+      _hasBits0 &= ~2097152;
     }
 
     /// <summary>Field number for the "FieldName8" field.</summary>
@@ -2040,21 +2040,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName8_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName8 {
-      get { if ((_hasBits0 & 268435456) != 0) { return fieldName8_; } else { return FieldName8DefaultValue; } }
+      get { if ((_hasBits0 & 4194304) != 0) { return fieldName8_; } else { return FieldName8DefaultValue; } }
       set {
-        _hasBits0 |= 268435456;
+        _hasBits0 |= 4194304;
         fieldName8_ = value;
       }
     }
     /// <summary>Gets whether the "FieldName8" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName8 {
-      get { return (_hasBits0 & 268435456) != 0; }
+      get { return (_hasBits0 & 4194304) != 0; }
     }
     /// <summary>Clears the value of the "FieldName8" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName8() {
-      _hasBits0 &= ~268435456;
+      _hasBits0 &= ~4194304;
     }
 
     /// <summary>Field number for the "field_Name9" field.</summary>
@@ -2064,21 +2064,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName9_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName9 {
-      get { if ((_hasBits0 & 536870912) != 0) { return fieldName9_; } else { return FieldName9DefaultValue; } }
+      get { if ((_hasBits0 & 8388608) != 0) { return fieldName9_; } else { return FieldName9DefaultValue; } }
       set {
-        _hasBits0 |= 536870912;
+        _hasBits0 |= 8388608;
         fieldName9_ = value;
       }
     }
     /// <summary>Gets whether the "field_Name9" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName9 {
-      get { return (_hasBits0 & 536870912) != 0; }
+      get { return (_hasBits0 & 8388608) != 0; }
     }
     /// <summary>Clears the value of the "field_Name9" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName9() {
-      _hasBits0 &= ~536870912;
+      _hasBits0 &= ~8388608;
     }
 
     /// <summary>Field number for the "Field_Name10" field.</summary>
@@ -2088,21 +2088,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName10_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName10 {
-      get { if ((_hasBits0 & 1073741824) != 0) { return fieldName10_; } else { return FieldName10DefaultValue; } }
+      get { if ((_hasBits0 & 16777216) != 0) { return fieldName10_; } else { return FieldName10DefaultValue; } }
       set {
-        _hasBits0 |= 1073741824;
+        _hasBits0 |= 16777216;
         fieldName10_ = value;
       }
     }
     /// <summary>Gets whether the "Field_Name10" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName10 {
-      get { return (_hasBits0 & 1073741824) != 0; }
+      get { return (_hasBits0 & 16777216) != 0; }
     }
     /// <summary>Clears the value of the "Field_Name10" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName10() {
-      _hasBits0 &= ~1073741824;
+      _hasBits0 &= ~16777216;
     }
 
     /// <summary>Field number for the "FIELD_NAME11" field.</summary>
@@ -2112,21 +2112,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fIELDNAME11_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FIELDNAME11 {
-      get { if ((_hasBits0 & -2147483648) != 0) { return fIELDNAME11_; } else { return FIELDNAME11DefaultValue; } }
+      get { if ((_hasBits0 & 33554432) != 0) { return fIELDNAME11_; } else { return FIELDNAME11DefaultValue; } }
       set {
-        _hasBits0 |= -2147483648;
+        _hasBits0 |= 33554432;
         fIELDNAME11_ = value;
       }
     }
     /// <summary>Gets whether the "FIELD_NAME11" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFIELDNAME11 {
-      get { return (_hasBits0 & -2147483648) != 0; }
+      get { return (_hasBits0 & 33554432) != 0; }
     }
     /// <summary>Clears the value of the "FIELD_NAME11" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFIELDNAME11() {
-      _hasBits0 &= ~-2147483648;
+      _hasBits0 &= ~33554432;
     }
 
     /// <summary>Field number for the "FIELD_name12" field.</summary>
@@ -2136,21 +2136,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fIELDName12_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FIELDName12 {
-      get { if ((_hasBits1 & 1) != 0) { return fIELDName12_; } else { return FIELDName12DefaultValue; } }
+      get { if ((_hasBits0 & 67108864) != 0) { return fIELDName12_; } else { return FIELDName12DefaultValue; } }
       set {
-        _hasBits1 |= 1;
+        _hasBits0 |= 67108864;
         fIELDName12_ = value;
       }
     }
     /// <summary>Gets whether the "FIELD_name12" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFIELDName12 {
-      get { return (_hasBits1 & 1) != 0; }
+      get { return (_hasBits0 & 67108864) != 0; }
     }
     /// <summary>Clears the value of the "FIELD_name12" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFIELDName12() {
-      _hasBits1 &= ~1;
+      _hasBits0 &= ~67108864;
     }
 
     /// <summary>Field number for the "__field_name13" field.</summary>
@@ -2160,21 +2160,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int FieldName13_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName13 {
-      get { if ((_hasBits1 & 2) != 0) { return FieldName13_; } else { return FieldName13DefaultValue; } }
+      get { if ((_hasBits0 & 134217728) != 0) { return FieldName13_; } else { return FieldName13DefaultValue; } }
       set {
-        _hasBits1 |= 2;
+        _hasBits0 |= 134217728;
         FieldName13_ = value;
       }
     }
     /// <summary>Gets whether the "__field_name13" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName13 {
-      get { return (_hasBits1 & 2) != 0; }
+      get { return (_hasBits0 & 134217728) != 0; }
     }
     /// <summary>Clears the value of the "__field_name13" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName13() {
-      _hasBits1 &= ~2;
+      _hasBits0 &= ~134217728;
     }
 
     /// <summary>Field number for the "__Field_name14" field.</summary>
@@ -2184,21 +2184,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int FieldName14_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName14 {
-      get { if ((_hasBits1 & 4) != 0) { return FieldName14_; } else { return FieldName14DefaultValue; } }
+      get { if ((_hasBits0 & 268435456) != 0) { return FieldName14_; } else { return FieldName14DefaultValue; } }
       set {
-        _hasBits1 |= 4;
+        _hasBits0 |= 268435456;
         FieldName14_ = value;
       }
     }
     /// <summary>Gets whether the "__Field_name14" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName14 {
-      get { return (_hasBits1 & 4) != 0; }
+      get { return (_hasBits0 & 268435456) != 0; }
     }
     /// <summary>Clears the value of the "__Field_name14" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName14() {
-      _hasBits1 &= ~4;
+      _hasBits0 &= ~268435456;
     }
 
     /// <summary>Field number for the "field__name15" field.</summary>
@@ -2208,21 +2208,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName15_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName15 {
-      get { if ((_hasBits1 & 8) != 0) { return fieldName15_; } else { return FieldName15DefaultValue; } }
+      get { if ((_hasBits0 & 536870912) != 0) { return fieldName15_; } else { return FieldName15DefaultValue; } }
       set {
-        _hasBits1 |= 8;
+        _hasBits0 |= 536870912;
         fieldName15_ = value;
       }
     }
     /// <summary>Gets whether the "field__name15" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName15 {
-      get { return (_hasBits1 & 8) != 0; }
+      get { return (_hasBits0 & 536870912) != 0; }
     }
     /// <summary>Clears the value of the "field__name15" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName15() {
-      _hasBits1 &= ~8;
+      _hasBits0 &= ~536870912;
     }
 
     /// <summary>Field number for the "field__Name16" field.</summary>
@@ -2232,21 +2232,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName16_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName16 {
-      get { if ((_hasBits1 & 16) != 0) { return fieldName16_; } else { return FieldName16DefaultValue; } }
+      get { if ((_hasBits0 & 1073741824) != 0) { return fieldName16_; } else { return FieldName16DefaultValue; } }
       set {
-        _hasBits1 |= 16;
+        _hasBits0 |= 1073741824;
         fieldName16_ = value;
       }
     }
     /// <summary>Gets whether the "field__Name16" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName16 {
-      get { return (_hasBits1 & 16) != 0; }
+      get { return (_hasBits0 & 1073741824) != 0; }
     }
     /// <summary>Clears the value of the "field__Name16" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName16() {
-      _hasBits1 &= ~16;
+      _hasBits0 &= ~1073741824;
     }
 
     /// <summary>Field number for the "field_name17__" field.</summary>
@@ -2256,21 +2256,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName17_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName17 {
-      get { if ((_hasBits1 & 32) != 0) { return fieldName17_; } else { return FieldName17DefaultValue; } }
+      get { if ((_hasBits0 & -2147483648) != 0) { return fieldName17_; } else { return FieldName17DefaultValue; } }
       set {
-        _hasBits1 |= 32;
+        _hasBits0 |= -2147483648;
         fieldName17_ = value;
       }
     }
     /// <summary>Gets whether the "field_name17__" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName17 {
-      get { return (_hasBits1 & 32) != 0; }
+      get { return (_hasBits0 & -2147483648) != 0; }
     }
     /// <summary>Clears the value of the "field_name17__" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName17() {
-      _hasBits1 &= ~32;
+      _hasBits0 &= ~-2147483648;
     }
 
     /// <summary>Field number for the "Field_name18__" field.</summary>
@@ -2280,21 +2280,21 @@ namespace ProtobufTestMessages.Proto2 {
     private int fieldName18_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName18 {
-      get { if ((_hasBits1 & 64) != 0) { return fieldName18_; } else { return FieldName18DefaultValue; } }
+      get { if ((_hasBits1 & 1) != 0) { return fieldName18_; } else { return FieldName18DefaultValue; } }
       set {
-        _hasBits1 |= 64;
+        _hasBits1 |= 1;
         fieldName18_ = value;
       }
     }
     /// <summary>Gets whether the "Field_name18__" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasFieldName18 {
-      get { return (_hasBits1 & 64) != 0; }
+      get { return (_hasBits1 & 1) != 0; }
     }
     /// <summary>Clears the value of the "Field_name18__" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearFieldName18() {
-      _hasBits1 &= ~64;
+      _hasBits1 &= ~1;
     }
 
     private object oneofField_;

@@ -15806,7 +15806,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   public sealed partial class TestOneof : pb::IMessage<TestOneof>, pb::IBufferMessage {
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
     private pb::UnknownFieldSet _unknownFields;
-    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestOneof> Parser { get { return _parser; } }
 
@@ -15829,7 +15828,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestOneof(TestOneof other) : this() {
-      _hasBits0 = other._hasBits0;
       switch (other.FooCase) {
         case FooOneofCase.FooInt:
           FooInt = other.FooInt;
@@ -17239,21 +17237,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private int bazInt_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int BazInt {
-      get { if ((_hasBits0 & 16) != 0) { return bazInt_; } else { return BazIntDefaultValue; } }
+      get { if ((_hasBits0 & 1) != 0) { return bazInt_; } else { return BazIntDefaultValue; } }
       set {
-        _hasBits0 |= 16;
+        _hasBits0 |= 1;
         bazInt_ = value;
       }
     }
     /// <summary>Gets whether the "baz_int" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasBazInt {
-      get { return (_hasBits0 & 16) != 0; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "baz_int" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearBazInt() {
-      _hasBits0 &= ~16;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "baz_string" field.</summary>
@@ -18087,7 +18085,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   public sealed partial class TestRequiredOneof : pb::IMessage<TestRequiredOneof>, pb::IBufferMessage {
     private static readonly pb::MessageParser<TestRequiredOneof> _parser = new pb::MessageParser<TestRequiredOneof>(() => new TestRequiredOneof());
     private pb::UnknownFieldSet _unknownFields;
-    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestRequiredOneof> Parser { get { return _parser; } }
 
@@ -18110,7 +18107,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestRequiredOneof(TestRequiredOneof other) : this() {
-      _hasBits0 = other._hasBits0;
       switch (other.FooCase) {
         case FooOneofCase.FooInt:
           FooInt = other.FooInt;
