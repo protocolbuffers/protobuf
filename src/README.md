@@ -40,22 +40,21 @@ You can also get the source by "git clone" our git repository. Make sure you
 have also cloned the submodules and generated the configure script (skip this
 if you are using a release .tar.gz or .zip package):
 
-```shell
     git clone https://github.com/protocolbuffers/protobuf.git
     cd protobuf
     git submodule update --init --recursive
     ./autogen.sh
-```
+
 To build and install the C++ Protocol Buffer runtime and the Protocol
 Buffer compiler (protoc) execute the following:
 
-```shell
+
      ./configure
      make
      make check
      sudo make install
      sudo ldconfig # refresh shared library cache.
-```
+
 If "make check" fails, you can still install, but it is likely that
 some features of this library will not work correctly on your system.
 Proceed at your own risk.
@@ -123,15 +122,15 @@ of "protobuf" in these examples.
 For a Mac system, Unix tools are not available by default. You will first need
 to install Xcode from the Mac AppStore and then run the following command from
 a terminal:
-```shell
+
     sudo xcode-select --install
-```shell
+
 To install Unix tools, you can install "port" following the instructions at
 https://www.macports.org . This will reside in /opt/local/bin/port for most
 Mac installations.
-```shell
+
     sudo /opt/local/bin/port install autoconf automake libtool
-```
+
 Then follow the Unix instructions above.
 
 **Note for cross-compiling**
