@@ -75,21 +75,21 @@ namespace Google.Protobuf.Test.Reflection
         public void ScalarOptions()
         {
             var d = CustomOptionOtherValues.Descriptor;
-            var options = d.CustomOptions;
-            AssertOption(-100, options.TryGetInt32, Int32Opt, d.GetOption);
-            AssertOption(12.3456789f, options.TryGetFloat, FloatOpt, d.GetOption);
-            AssertOption(1.234567890123456789d, options.TryGetDouble, DoubleOpt, d.GetOption);
-            AssertOption("Hello, \"World\"", options.TryGetString, StringOpt, d.GetOption);
-            AssertOption(ByteString.CopyFromUtf8("Hello\0World"), options.TryGetBytes, BytesOpt, d.GetOption);
-            AssertOption(TestEnumType.TestOptionEnumType2, EnumFetcher<TestEnumType>(options), EnumOpt, d.GetOption);
+            var customOptions = d.CustomOptions;
+            AssertOption(-100, customOptions.TryGetInt32, Int32Opt, d.Options.GetExtension);
+            AssertOption(12.3456789f, customOptions.TryGetFloat, FloatOpt, d.Options.GetExtension);
+            AssertOption(1.234567890123456789d, customOptions.TryGetDouble, DoubleOpt, d.Options.GetExtension);
+            AssertOption("Hello, \"World\"", customOptions.TryGetString, StringOpt, d.Options.GetExtension);
+            AssertOption(ByteString.CopyFromUtf8("Hello\0World"), customOptions.TryGetBytes, BytesOpt, d.Options.GetExtension);
+            AssertOption(TestEnumType.TestOptionEnumType2, EnumFetcher<TestEnumType>(customOptions), EnumOpt, d.Options.GetExtension);
         }
 
         [Test]
         public void MessageOptions()
         {
             var d = VariousComplexOptions.Descriptor;
-            var options = d.CustomOptions;
-            AssertOption(new ComplexOptionType1 { Foo = 42, Foo4 = { 99, 88 } }, options.TryGetMessage, ComplexOpt1, d.GetOption);
+            var customOptions = d.CustomOptions;
+            AssertOption(new ComplexOptionType1 { Foo = 42, Foo4 = { 99, 88 } }, customOptions.TryGetMessage, ComplexOpt1, d.Options.GetExtension);
             AssertOption(new ComplexOptionType2
             {
                 Baz = 987,
@@ -97,85 +97,84 @@ namespace Google.Protobuf.Test.Reflection
                 Fred = new ComplexOptionType4 { Waldo = 321 },
                 Barney = { new ComplexOptionType4 { Waldo = 101 }, new ComplexOptionType4 { Waldo = 212 } }
             },
-                options.TryGetMessage, ComplexOpt2, d.GetOption);
-            AssertOption(new ComplexOptionType3 { Qux = 9 }, options.TryGetMessage, ComplexOpt3, d.GetOption);
+                customOptions.TryGetMessage, ComplexOpt2, d.Options.GetExtension);
+            AssertOption(new ComplexOptionType3 { Qux = 9 }, customOptions.TryGetMessage, ComplexOpt3, d.Options.GetExtension);
         }
 
         [Test]
         public void OptionLocations()
         {
-            var fileOptions = UnittestCustomOptionsProto3Reflection.Descriptor.CustomOptions;
-            AssertOption(9876543210UL, fileOptions.TryGetUInt64, FileOpt1, UnittestCustomOptionsProto3Reflection.Descriptor.GetOption);
+            var fileDescriptor = UnittestCustomOptionsProto3Reflection.Descriptor;
+            AssertOption(9876543210UL, fileDescriptor.CustomOptions.TryGetUInt64, FileOpt1, fileDescriptor.Options.GetExtension);
 
-            var messageOptions = TestMessageWithCustomOptions.Descriptor.CustomOptions;
-            AssertOption(-56, messageOptions.TryGetInt32, MessageOpt1, TestMessageWithCustomOptions.Descriptor.GetOption);
+            var messageDescriptor = TestMessageWithCustomOptions.Descriptor;
+            AssertOption(-56, messageDescriptor.CustomOptions.TryGetInt32, MessageOpt1, messageDescriptor.Options.GetExtension);
 
-            var fieldOptions = TestMessageWithCustomOptions.Descriptor.Fields["field1"].CustomOptions;
-            AssertOption(8765432109UL, fieldOptions.TryGetFixed64, FieldOpt1, TestMessageWithCustomOptions.Descriptor.Fields["field1"].GetOption);
+            var fieldDescriptor = TestMessageWithCustomOptions.Descriptor.Fields["field1"];
+            AssertOption(8765432109UL, fieldDescriptor.CustomOptions.TryGetFixed64, FieldOpt1, fieldDescriptor.Options.GetExtension);
 
-            var oneofOptions = TestMessageWithCustomOptions.Descriptor.Oneofs[0].CustomOptions;
-            AssertOption(-99, oneofOptions.TryGetInt32, OneofOpt1, TestMessageWithCustomOptions.Descriptor.Oneofs[0].GetOption);
+            var oneofDescriptor = TestMessageWithCustomOptions.Descriptor.Oneofs[0];
+            AssertOption(-99, oneofDescriptor.CustomOptions.TryGetInt32, OneofOpt1, oneofDescriptor.Options.GetExtension);
 
-            var enumOptions = TestMessageWithCustomOptions.Descriptor.EnumTypes[0].CustomOptions;
-            AssertOption(-789, enumOptions.TryGetSFixed32, EnumOpt1, TestMessageWithCustomOptions.Descriptor.EnumTypes[0].GetOption);
+            var enumDescriptor = TestMessageWithCustomOptions.Descriptor.EnumTypes[0];
+            AssertOption(-789, enumDescriptor.CustomOptions.TryGetSFixed32, EnumOpt1, enumDescriptor.Options.GetExtension);
 
-            var enumValueOptions = TestMessageWithCustomOptions.Descriptor.EnumTypes[0].FindValueByNumber(2).CustomOptions;
-            AssertOption(123, enumValueOptions.TryGetInt32, EnumValueOpt1, TestMessageWithCustomOptions.Descriptor.EnumTypes[0].FindValueByNumber(2).GetOption);
+            var enumValueDescriptor = TestMessageWithCustomOptions.Descriptor.EnumTypes[0].FindValueByNumber(2);
+            AssertOption(123, enumValueDescriptor.CustomOptions.TryGetInt32, EnumValueOpt1, enumValueDescriptor.Options.GetExtension);
 
-            var service = UnittestCustomOptionsProto3Reflection.Descriptor.Services
+            var serviceDescriptor = UnittestCustomOptionsProto3Reflection.Descriptor.Services
                 .Single(s => s.Name == "TestServiceWithCustomOptions");
-            var serviceOptions = service.CustomOptions;
-            AssertOption(-9876543210, serviceOptions.TryGetSInt64, ServiceOpt1, service.GetOption);
+            AssertOption(-9876543210, serviceDescriptor.CustomOptions.TryGetSInt64, ServiceOpt1, serviceDescriptor.Options.GetExtension);
 
-            var methodOptions = service.Methods[0].CustomOptions;
-            AssertOption(UnitTest.Issues.TestProtos.MethodOpt1.Val2, EnumFetcher<UnitTest.Issues.TestProtos.MethodOpt1>(methodOptions), UnittestCustomOptionsProto3Extensions.MethodOpt1, service.Methods[0].GetOption);
+            var methodDescriptor = serviceDescriptor.Methods[0];
+            AssertOption(UnitTest.Issues.TestProtos.MethodOpt1.Val2, EnumFetcher<UnitTest.Issues.TestProtos.MethodOpt1>(methodDescriptor.CustomOptions), UnittestCustomOptionsProto3Extensions.MethodOpt1, methodDescriptor.Options.GetExtension);
         }
 
         [Test]
         public void MinValues()
         {
             var d = CustomOptionMinIntegerValues.Descriptor;
-            var options = d.CustomOptions;
-            AssertOption(false, options.TryGetBool, BoolOpt, d.GetOption);
-            AssertOption(int.MinValue, options.TryGetInt32, Int32Opt, d.GetOption);
-            AssertOption(long.MinValue, options.TryGetInt64, Int64Opt, d.GetOption);
-            AssertOption(uint.MinValue, options.TryGetUInt32, Uint32Opt, d.GetOption);
-            AssertOption(ulong.MinValue, options.TryGetUInt64, Uint64Opt, d.GetOption);
-            AssertOption(int.MinValue, options.TryGetSInt32, Sint32Opt, d.GetOption);
-            AssertOption(long.MinValue, options.TryGetSInt64, Sint64Opt, d.GetOption);
-            AssertOption(uint.MinValue, options.TryGetUInt32, Fixed32Opt, d.GetOption);
-            AssertOption(ulong.MinValue, options.TryGetUInt64, Fixed64Opt, d.GetOption);
-            AssertOption(int.MinValue, options.TryGetInt32, Sfixed32Opt, d.GetOption);
-            AssertOption(long.MinValue, options.TryGetInt64, Sfixed64Opt, d.GetOption);
+            var customOptions = d.CustomOptions;
+            AssertOption(false, customOptions.TryGetBool, BoolOpt, d.Options.GetExtension);
+            AssertOption(int.MinValue, customOptions.TryGetInt32, Int32Opt, d.Options.GetExtension);
+            AssertOption(long.MinValue, customOptions.TryGetInt64, Int64Opt, d.Options.GetExtension);
+            AssertOption(uint.MinValue, customOptions.TryGetUInt32, Uint32Opt, d.Options.GetExtension);
+            AssertOption(ulong.MinValue, customOptions.TryGetUInt64, Uint64Opt, d.Options.GetExtension);
+            AssertOption(int.MinValue, customOptions.TryGetSInt32, Sint32Opt, d.Options.GetExtension);
+            AssertOption(long.MinValue, customOptions.TryGetSInt64, Sint64Opt, d.Options.GetExtension);
+            AssertOption(uint.MinValue, customOptions.TryGetUInt32, Fixed32Opt, d.Options.GetExtension);
+            AssertOption(ulong.MinValue, customOptions.TryGetUInt64, Fixed64Opt, d.Options.GetExtension);
+            AssertOption(int.MinValue, customOptions.TryGetInt32, Sfixed32Opt, d.Options.GetExtension);
+            AssertOption(long.MinValue, customOptions.TryGetInt64, Sfixed64Opt, d.Options.GetExtension);
         }
 
         [Test]
         public void MaxValues()
         {
             var d = CustomOptionMaxIntegerValues.Descriptor;
-            var options = d.CustomOptions;
-            AssertOption(true, options.TryGetBool, BoolOpt, d.GetOption);
-            AssertOption(int.MaxValue, options.TryGetInt32, Int32Opt, d.GetOption);
-            AssertOption(long.MaxValue, options.TryGetInt64, Int64Opt, d.GetOption);
-            AssertOption(uint.MaxValue, options.TryGetUInt32, Uint32Opt, d.GetOption);
-            AssertOption(ulong.MaxValue, options.TryGetUInt64, Uint64Opt, d.GetOption);
-            AssertOption(int.MaxValue, options.TryGetSInt32, Sint32Opt, d.GetOption);
-            AssertOption(long.MaxValue, options.TryGetSInt64, Sint64Opt, d.GetOption);
-            AssertOption(uint.MaxValue, options.TryGetFixed32, Fixed32Opt, d.GetOption);
-            AssertOption(ulong.MaxValue, options.TryGetFixed64, Fixed64Opt, d.GetOption);
-            AssertOption(int.MaxValue, options.TryGetSFixed32, Sfixed32Opt, d.GetOption);
-            AssertOption(long.MaxValue, options.TryGetSFixed64, Sfixed64Opt, d.GetOption);
+            var customOptions = d.CustomOptions;
+            AssertOption(true, customOptions.TryGetBool, BoolOpt, d.Options.GetExtension);
+            AssertOption(int.MaxValue, customOptions.TryGetInt32, Int32Opt, d.Options.GetExtension);
+            AssertOption(long.MaxValue, customOptions.TryGetInt64, Int64Opt, d.Options.GetExtension);
+            AssertOption(uint.MaxValue, customOptions.TryGetUInt32, Uint32Opt, d.Options.GetExtension);
+            AssertOption(ulong.MaxValue, customOptions.TryGetUInt64, Uint64Opt, d.Options.GetExtension);
+            AssertOption(int.MaxValue, customOptions.TryGetSInt32, Sint32Opt, d.Options.GetExtension);
+            AssertOption(long.MaxValue, customOptions.TryGetSInt64, Sint64Opt, d.Options.GetExtension);
+            AssertOption(uint.MaxValue, customOptions.TryGetFixed32, Fixed32Opt, d.Options.GetExtension);
+            AssertOption(ulong.MaxValue, customOptions.TryGetFixed64, Fixed64Opt, d.Options.GetExtension);
+            AssertOption(int.MaxValue, customOptions.TryGetSFixed32, Sfixed32Opt, d.Options.GetExtension);
+            AssertOption(long.MaxValue, customOptions.TryGetSFixed64, Sfixed64Opt, d.Options.GetExtension);
         }
 
         [Test]
         public void AggregateOptions()
         {
             // Just two examples
-            var messageOptions = AggregateMessage.Descriptor.CustomOptions;
-            AssertOption(new Aggregate { I = 101, S = "MessageAnnotation" }, messageOptions.TryGetMessage, Msgopt, AggregateMessage.Descriptor.GetOption);
+            var messageDescriptor = AggregateMessage.Descriptor;
+            AssertOption(new Aggregate { I = 101, S = "MessageAnnotation" }, messageDescriptor.CustomOptions.TryGetMessage, Msgopt, messageDescriptor.Options.GetExtension);
 
-            var fieldOptions = AggregateMessage.Descriptor.Fields["fieldname"].CustomOptions;
-            AssertOption(new Aggregate { S = "FieldAnnotation" }, fieldOptions.TryGetMessage, Fieldopt, AggregateMessage.Descriptor.Fields["fieldname"].GetOption);
+            var fieldDescriptor = messageDescriptor.Fields["fieldname"];
+            AssertOption(new Aggregate { S = "FieldAnnotation" }, fieldDescriptor.CustomOptions.TryGetMessage, Fieldopt, fieldDescriptor.Options.GetExtension);
         }
 
         [Test]
@@ -199,16 +198,16 @@ namespace Google.Protobuf.Test.Reflection
             var descriptor = UnittestIssue6936CReflection.Descriptor;
             var foo = Foo.Descriptor;
             var bar = Bar.Descriptor;
-            AssertOption("foo", foo.CustomOptions.TryGetString, UnittestIssue6936AExtensions.Opt, foo.GetOption);
-            AssertOption("bar", bar.CustomOptions.TryGetString, UnittestIssue6936AExtensions.Opt, bar.GetOption);
+            AssertOption("foo", foo.CustomOptions.TryGetString, UnittestIssue6936AExtensions.Opt, foo.Options.GetExtension);
+            AssertOption("bar", bar.CustomOptions.TryGetString, UnittestIssue6936AExtensions.Opt, bar.Options.GetExtension);
         }
 
-        private void AssertOption<T, D>(T expected, OptionFetcher<T> fetcher, Extension<D, T> extension, Func<Extension<D, T>, T> descriptorOptionFetcher) where D : IExtendableMessage<D>
+        private void AssertOption<T, D>(T expected, OptionFetcher<T> customOptionFetcher, Extension<D, T> extension, Func<Extension<D, T>, T> extensionFetcher) where D : IExtendableMessage<D>
         {
-            T customOptionsValue;
-            T extensionValue = descriptorOptionFetcher(extension);
-            Assert.IsTrue(fetcher(extension.FieldNumber, out customOptionsValue));
+            Assert.IsTrue(customOptionFetcher(extension.FieldNumber, out T customOptionsValue));
             Assert.AreEqual(expected, customOptionsValue);
+
+            T extensionValue = extensionFetcher(extension);
             Assert.AreEqual(expected, extensionValue);
         }
     }
