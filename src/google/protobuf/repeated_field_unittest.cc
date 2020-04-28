@@ -38,6 +38,8 @@
 #include <google/protobuf/repeated_field.h>
 
 #include <algorithm>
+#include <cstdlib>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <sstream>
@@ -52,6 +54,9 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
+
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -266,6 +271,68 @@ TEST(RepeatedField, Resize) {
   EXPECT_EQ(2, field.Get(3));
   field.Resize(0, 4);
   EXPECT_TRUE(field.empty());
+}
+
+TEST(RepeatedField, ReserveNothing) {
+  RepeatedField<int> field;
+  EXPECT_EQ(0, field.Capacity());
+
+  field.Reserve(-1);
+  EXPECT_EQ(0, field.Capacity());
+}
+
+TEST(RepeatedField, ReserveLowerClamp) {
+  const int clamped_value = internal::CalculateReserveSize(0, 1);
+  EXPECT_EQ(internal::kRepeatedFieldLowerClampLimit, clamped_value);
+  EXPECT_EQ(clamped_value, internal::CalculateReserveSize(clamped_value, 2));
+}
+
+TEST(RepeatedField, ReserveGrowth) {
+  // Make sure the field capacity doubles in size on repeated reservation.
+  for (int size = internal::kRepeatedFieldLowerClampLimit, i = 0; i < 4;
+       ++i, size *= 2) {
+    EXPECT_EQ(size * 2, internal::CalculateReserveSize(size, size + 1));
+  }
+}
+
+TEST(RepeatedField, ReserveLarge) {
+  const int old_size = 10;
+  // This is a size we won't get by doubling:
+  const int new_size = old_size * 3 + 1;
+
+  // Reserving more than 2x current capacity should grow directly to that size.
+  EXPECT_EQ(new_size, internal::CalculateReserveSize(old_size, new_size));
+}
+
+TEST(RepeatedField, ReserveHuge) {
+  // Largest value that does not clamp to the large limit:
+  constexpr int non_clamping_limit = std::numeric_limits<int>::max() / 2;
+  ASSERT_LT(2 * non_clamping_limit, std::numeric_limits<int>::max());
+  EXPECT_LT(internal::CalculateReserveSize(non_clamping_limit,
+                                           non_clamping_limit + 1),
+            std::numeric_limits<int>::max());
+
+  // Smallest size that *will* clamp to the upper limit:
+  constexpr int min_clamping_size = std::numeric_limits<int>::max() / 2 + 1;
+  EXPECT_EQ(
+      internal::CalculateReserveSize(min_clamping_size, min_clamping_size + 1),
+      std::numeric_limits<int>::max());
+
+#ifdef PROTOBUF_TEST_ALLOW_LARGE_ALLOC
+  // The rest of this test may allocate several GB of memory, so it is only
+  // built if explicitly requested.
+  RepeatedField<int> huge_field;
+
+  // Reserve a size for huge_field that will clamp.
+  huge_field.Reserve(min_clamping_size);
+  EXPECT_GE(huge_field.Capacity(), min_clamping_size);
+  ASSERT_LT(huge_field.Capacity(), std::numeric_limits<int>::max() - 1);
+
+  // Allocation may return more memory than we requested. However, the updated
+  // size must still be clamped to a valid range.
+  huge_field.Reserve(huge_field.Capacity() + 1);
+  EXPECT_EQ(huge_field.Capacity(), std::numeric_limits<int>::max());
+#endif  // PROTOBUF_TEST_ALLOW_LARGE_ALLOC
 }
 
 TEST(RepeatedField, MergeFrom) {

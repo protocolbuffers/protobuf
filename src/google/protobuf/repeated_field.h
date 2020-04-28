@@ -66,6 +66,7 @@
 #include <type_traits>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -85,7 +86,16 @@ namespace internal {
 
 class MergePartialFromCodedStreamHelper;
 
-static const int kMinRepeatedFieldAllocationSize = 4;
+// kRepeatedFieldLowerClampLimit is the smallest size that will be allocated
+// when growing a repeated field.
+constexpr int kRepeatedFieldLowerClampLimit = 4;
+
+// kRepeatedFieldUpperClampLimit is the lowest signed integer value that
+// overflows when multiplied by 2 (which is undefined behavior). Sizes above
+// this will clamp to the maximum int value instead of following exponential
+// growth when growing a repeated field.
+constexpr int kRepeatedFieldUpperClampLimit =
+    (std::numeric_limits<int>::max() / 2) + 1;
 
 // A utility function for logging that doesn't need any template types.
 void LogIndexOutOfBounds(int index, int size);
@@ -309,7 +319,7 @@ class RepeatedField final {
   inline void InternalSwap(RepeatedField* other);
 
  private:
-  static const int kInitialSize = 0;
+  static constexpr int kInitialSize = 0;
   // A note on the representation here (see also comment below for
   // RepeatedPtrFieldBase's struct Rep):
   //
@@ -390,6 +400,84 @@ class RepeatedField final {
       }
     }
   }
+
+  // This class is a performance wrapper around RepeatedField::Add(const T&)
+  // function. In general unless a RepeatedField is a local stack variable LLVM
+  // has a hard time optimizing Add. The machine code tends to be
+  // loop:
+  // mov %size, dword ptr [%repeated_field]       // load
+  // cmp %size, dword ptr [%repeated_field + 4]
+  // jae fallback
+  // mov %buffer, qword ptr [%repeated_field + 8]
+  // mov dword [%buffer + %size * 4], %value
+  // inc %size                                    // increment
+  // mov dword ptr [%repeated_field], %size       // store
+  // jmp loop
+  //
+  // This puts a load/store in each iteration of the important loop variable
+  // size. It's a pretty bad compile that happens even in simple cases, but
+  // largely the presence of the fallback path disturbs the compilers mem-to-reg
+  // analysis.
+  //
+  // This class takes ownership of a repeated field for the duration of it's
+  // lifetime. The repeated field should not be accessed during this time, ie.
+  // only access through this class is allowed. This class should always be a
+  // function local stack variable. Intended use
+  //
+  // void AddSequence(const int* begin, const int* end, RepeatedField<int>* out)
+  // {
+  //   RepeatedFieldAdder<int> adder(out);  // Take ownership of out
+  //   for (auto it = begin; it != end; ++it) {
+  //     adder.Add(*it);
+  //   }
+  // }
+  //
+  // Typically due to the fact adder is a local stack variable. The compiler
+  // will be successful in mem-to-reg transformation and the machine code will
+  // be loop: cmp %size, %capacity jae fallback mov dword ptr [%buffer + %size *
+  // 4], %val inc %size jmp loop
+  //
+  // The first version executes at 7 cycles per iteration while the second
+  // version near 1 or 2 cycles.
+  class FastAdder {
+   public:
+    explicit FastAdder(RepeatedField* rf) : repeated_field_(rf) {
+      if (kIsPod) {
+        index_ = repeated_field_->current_size_;
+        capacity_ = repeated_field_->total_size_;
+        buffer_ = repeated_field_->unsafe_elements();
+      }
+    }
+    ~FastAdder() {
+      if (kIsPod) repeated_field_->current_size_ = index_;
+    }
+
+    void Add(const Element& val) {
+      if (kIsPod) {
+        if (index_ == capacity_) {
+          repeated_field_->current_size_ = index_;
+          repeated_field_->Reserve(index_ + 1);
+          capacity_ = repeated_field_->total_size_;
+          buffer_ = repeated_field_->unsafe_elements();
+        }
+        buffer_[index_++] = val;
+      } else {
+        repeated_field_->Add(val);
+      }
+    }
+
+   private:
+    constexpr static bool kIsPod = std::is_pod<Element>::value;
+    RepeatedField* repeated_field_;
+    int index_;
+    int capacity_;
+    Element* buffer_;
+
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastAdder);
+  };
+
+  friend class TestRepeatedFieldHelper;
+  friend class ::google::protobuf::internal::ParseContext;
 };
 
 template <typename Element>
@@ -629,7 +717,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   inline Arena* GetArena() const { return arena_; }
 
  private:
-  static const int kInitialSize = 0;
+  static constexpr int kInitialSize = 0;
   // A few notes on internal representation:
   //
   // We use an indirected approach, with struct Rep, to keep
@@ -648,7 +736,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     int allocated_size;
     void* elements[1];
   };
-  static const size_t kRepHeaderSize = sizeof(Rep) - sizeof(void*);
+  static constexpr size_t kRepHeaderSize = sizeof(Rep) - sizeof(void*);
   Rep* rep_;
 
   template <typename TypeHandler>
@@ -1240,14 +1328,19 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Add(const Element& value) {
-  if (current_size_ == total_size_) Reserve(total_size_ + 1);
-  elements()[current_size_++] = value;
+  uint32 size = current_size_;
+  if (static_cast<int>(size) == total_size_) Reserve(total_size_ + 1);
+  elements()[size] = value;
+  current_size_ = size + 1;
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() {
-  if (current_size_ == total_size_) Reserve(total_size_ + 1);
-  return &elements()[current_size_++];
+  uint32 size = current_size_;
+  if (static_cast<int>(size) == total_size_) Reserve(total_size_ + 1);
+  auto ptr = &elements()[size];
+  current_size_ = size + 1;
+  return ptr;
 }
 
 template <typename Element>
@@ -1269,9 +1362,8 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
     std::copy(begin, end, elements() + size());
     current_size_ = reserve + size();
   } else {
-    for (; begin != end; ++begin) {
-      Add(*begin);
-    }
+    FastAdder fast_adder(this);
+    for (; begin != end; ++begin) fast_adder.Add(*begin);
   }
 }
 
@@ -1425,6 +1517,30 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
   return total_size_ > 0 ? (total_size_ * sizeof(Element) + kRepHeaderSize) : 0;
 }
 
+namespace internal {
+// Returns the new size for a reserved field based on its 'total_size' and the
+// requested 'new_size'. The result is clamped to the closed interval:
+//   [internal::kMinRepeatedFieldAllocationSize,
+//    std::numeric_limits<int>::max()]
+// Requires:
+//     new_size > total_size &&
+//     (total_size == 0 ||
+//      total_size >= kRepeatedFieldLowerClampLimit)
+inline int CalculateReserveSize(int total_size, int new_size) {
+  if (new_size < kRepeatedFieldLowerClampLimit) {
+    // Clamp to smallest allowed size.
+    return kRepeatedFieldLowerClampLimit;
+  }
+  if (total_size < kRepeatedFieldUpperClampLimit) {
+    return std::max(total_size * 2, new_size);
+  } else {
+    // Clamp to largest allowed size.
+    GOOGLE_DCHECK_GT(new_size, kRepeatedFieldUpperClampLimit);
+    return std::numeric_limits<int>::max();
+  }
+}
+}  // namespace internal
+
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
@@ -1433,8 +1549,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
   Rep* old_rep = total_size_ > 0 ? rep() : NULL;
   Rep* new_rep;
   Arena* arena = GetArena();
-  new_size = std::max(internal::kMinRepeatedFieldAllocationSize,
-                      std::max(total_size_ * 2, new_size));
+  new_size = internal::CalculateReserveSize(total_size_, new_size);
   GOOGLE_DCHECK_LE(
       static_cast<size_t>(new_size),
       (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
@@ -1448,6 +1563,10 @@ void RepeatedField<Element>::Reserve(int new_size) {
   }
   new_rep->arena = arena;
   int old_total_size = total_size_;
+  // Already known: new_size >= internal::kMinRepeatedFieldAllocationSize
+  // Maintain invariant:
+  //     total_size_ == 0 ||
+  //     total_size_ >= internal::kMinRepeatedFieldAllocationSize
   total_size_ = new_size;
   arena_or_elements_ = new_rep->elements;
   // Invoke placement-new on newly allocated elements. We shouldn't have to do

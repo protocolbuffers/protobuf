@@ -384,9 +384,8 @@ bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {
   if (Base64Unescape(src, dest)) {
     if (use_strict_base64_decoding_) {
       std::string encoded;
-      Base64Escape(
-          reinterpret_cast<const unsigned char*>(dest->data()), dest->length(),
-          &encoded, false);
+      Base64Escape(reinterpret_cast<const unsigned char*>(dest->data()),
+                         dest->length(), &encoded, false);
       StringPiece src_no_padding = StringPiece(src).substr(
           0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());

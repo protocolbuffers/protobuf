@@ -182,6 +182,9 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // is best when you only have a small number of message types linked
 // into your binary, in which case the size of the protocol buffers
 // runtime itself is the biggest problem.
+//
+// Users must not derive from this class. Only the protocol compiler and
+// the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
   inline MessageLite() {}

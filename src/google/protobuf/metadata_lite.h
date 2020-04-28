@@ -139,8 +139,8 @@ class InternalMetadata {
     // ptr_ is a Container*.
     kTagContainer = 1,
   };
-  static const intptr_t kPtrTagMask = 1;
-  static const intptr_t kPtrValueMask = ~kPtrTagMask;
+  static constexpr intptr_t kPtrTagMask = 1;
+  static constexpr intptr_t kPtrValueMask = ~kPtrTagMask;
 
   // Accessors for pointer tag and pointer value.
   PROTOBUF_ALWAYS_INLINE int PtrTag() const {

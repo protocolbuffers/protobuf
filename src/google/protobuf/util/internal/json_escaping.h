@@ -44,34 +44,34 @@ class JsonEscaping {
   // The minimum value of a unicode high-surrogate code unit in the utf-16
   // encoding. A high-surrogate is also known as a leading-surrogate.
   // See http://www.unicode.org/glossary/#high_surrogate_code_unit
-  static const uint16 kMinHighSurrogate = 0xd800;
+  static constexpr uint16 kMinHighSurrogate = 0xd800;
 
   // The maximum value of a unicide high-surrogate code unit in the utf-16
   // encoding. A high-surrogate is also known as a leading-surrogate.
   // See http://www.unicode.org/glossary/#high_surrogate_code_unit
-  static const uint16 kMaxHighSurrogate = 0xdbff;
+  static constexpr uint16 kMaxHighSurrogate = 0xdbff;
 
   // The minimum value of a unicode low-surrogate code unit in the utf-16
   // encoding. A low-surrogate is also known as a trailing-surrogate.
   // See http://www.unicode.org/glossary/#low_surrogate_code_unit
-  static const uint16 kMinLowSurrogate = 0xdc00;
+  static constexpr uint16 kMinLowSurrogate = 0xdc00;
 
   // The maximum value of a unicode low-surrogate code unit in the utf-16
   // encoding. A low-surrogate is also known as a trailing surrogate.
   // See http://www.unicode.org/glossary/#low_surrogate_code_unit
-  static const uint16 kMaxLowSurrogate = 0xdfff;
+  static constexpr uint16 kMaxLowSurrogate = 0xdfff;
 
   // The minimum value of a unicode supplementary code point.
   // See http://www.unicode.org/glossary/#supplementary_code_point
-  static const uint32 kMinSupplementaryCodePoint = 0x010000;
+  static constexpr uint32 kMinSupplementaryCodePoint = 0x010000;
 
   // The minimum value of a unicode code point.
   // See http://www.unicode.org/glossary/#code_point
-  static const uint32 kMinCodePoint = 0x000000;
+  static constexpr uint32 kMinCodePoint = 0x000000;
 
   // The maximum value of a unicode code point.
   // See http://www.unicode.org/glossary/#code_point
-  static const uint32 kMaxCodePoint = 0x10ffff;
+  static constexpr uint32 kMaxCodePoint = 0x10ffff;
 
   JsonEscaping() {}
   virtual ~JsonEscaping() {}

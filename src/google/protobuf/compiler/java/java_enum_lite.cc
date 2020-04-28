@@ -124,9 +124,13 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
     vars["number"] = StrCat(descriptor_->value(i)->number());
     vars["{"] = "";
     vars["}"] = "";
+    vars["deprecation"] = descriptor_->value(i)->options().deprecated()
+                              ? "@java.lang.Deprecated "
+                              : "";
     WriteEnumValueDocComment(printer, descriptor_->value(i));
     printer->Print(vars,
-                   "public static final int ${$$name$_VALUE$}$ = $number$;\n");
+                   "$deprecation$public static final int ${$$name$_VALUE$}$ = "
+                   "$number$;\n");
     printer->Annotate("{", "}", descriptor_->value(i));
   }
   printer->Print("\n");

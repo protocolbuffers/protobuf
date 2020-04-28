@@ -100,7 +100,7 @@ template <typename ImplicitWeakType>
 class ImplicitWeakTypeHandler {
  public:
   typedef MessageLite Type;
-  static const bool Moveable = false;
+  static constexpr bool Moveable = false;
 
   static inline MessageLite* NewFromPrototype(const MessageLite* prototype,
                                               Arena* arena = NULL) {

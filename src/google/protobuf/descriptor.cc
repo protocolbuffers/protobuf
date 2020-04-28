@@ -1720,6 +1720,18 @@ const EnumValueDescriptor* Descriptor::FindEnumValueByName(
   }
 }
 
+const FieldDescriptor* Descriptor::map_key() const {
+  if (!options().map_entry()) return nullptr;
+  GOOGLE_DCHECK_EQ(field_count(), 2);
+  return field(0);
+}
+
+const FieldDescriptor* Descriptor::map_value() const {
+  if (!options().map_entry()) return nullptr;
+  GOOGLE_DCHECK_EQ(field_count(), 2);
+  return field(1);
+}
+
 const EnumValueDescriptor* EnumDescriptor::FindValueByName(
     const std::string& key) const {
   Symbol result =
@@ -6222,8 +6234,8 @@ bool DescriptorBuilder::ValidateMapEntry(FieldDescriptor* field,
     return false;
   }
 
-  const FieldDescriptor* key = message->field(0);
-  const FieldDescriptor* value = message->field(1);
+  const FieldDescriptor* key = message->map_key();
+  const FieldDescriptor* value = message->map_value();
   if (key->label() != FieldDescriptor::LABEL_OPTIONAL || key->number() != 1 ||
       key->name() != "key") {
     return false;

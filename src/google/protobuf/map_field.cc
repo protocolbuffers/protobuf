@@ -196,8 +196,7 @@ bool DynamicMapField::ContainsMapKey(const MapKey& map_key) const {
 }
 
 void DynamicMapField::AllocateMapValue(MapValueRef* map_val) {
-  const FieldDescriptor* val_des =
-      default_entry_->GetDescriptor()->FindFieldByName("value");
+  const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
   map_val->SetType(val_des->cpp_type());
   // Allocate memory for the MapValueRef, and initialize to
   // default value.
@@ -300,7 +299,7 @@ void DynamicMapField::MergeFrom(const MapFieldBase& other) {
 
     // Copy map value
     const FieldDescriptor* field_descriptor =
-        default_entry_->GetDescriptor()->FindFieldByName("value");
+        default_entry_->GetDescriptor()->map_value();
     switch (field_descriptor->cpp_type()) {
       case FieldDescriptor::CPPTYPE_INT32: {
         map_val->SetInt32Value(other_it->second.GetInt32Value());
@@ -360,10 +359,8 @@ void DynamicMapField::Swap(MapFieldBase* other) {
 
 void DynamicMapField::SyncRepeatedFieldWithMapNoLock() const {
   const Reflection* reflection = default_entry_->GetReflection();
-  const FieldDescriptor* key_des =
-      default_entry_->GetDescriptor()->FindFieldByName("key");
-  const FieldDescriptor* val_des =
-      default_entry_->GetDescriptor()->FindFieldByName("value");
+  const FieldDescriptor* key_des = default_entry_->GetDescriptor()->map_key();
+  const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
   if (MapFieldBase::repeated_field_ == NULL) {
     if (MapFieldBase::arena_ == NULL) {
       MapFieldBase::repeated_field_ = new RepeatedPtrField<Message>();
@@ -448,10 +445,8 @@ void DynamicMapField::SyncRepeatedFieldWithMapNoLock() const {
 void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
   Map<MapKey, MapValueRef>* map = &const_cast<DynamicMapField*>(this)->map_;
   const Reflection* reflection = default_entry_->GetReflection();
-  const FieldDescriptor* key_des =
-      default_entry_->GetDescriptor()->FindFieldByName("key");
-  const FieldDescriptor* val_des =
-      default_entry_->GetDescriptor()->FindFieldByName("value");
+  const FieldDescriptor* key_des = default_entry_->GetDescriptor()->map_key();
+  const FieldDescriptor* val_des = default_entry_->GetDescriptor()->map_value();
   // DynamicMapField owns map values. Need to delete them before clearing
   // the map.
   if (MapFieldBase::arena_ == nullptr) {
