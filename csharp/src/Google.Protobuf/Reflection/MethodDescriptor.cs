@@ -73,25 +73,15 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this method.
         /// </summary>
-        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use the Options property.")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
 
         /// <summary>
-        /// Gets a single value method option for this descriptor
+        /// The <c>MethodOptions</c>, defined in <c>descriptor.proto</c>.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public T GetOption<T>(Extension<MethodOptions, T> extension)
-        {
-            var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
-        }
-
-        /// <summary>
-        /// Gets a repeated value method option for this descriptor
-        /// </summary>
-        public RepeatedField<T> GetOption<T>(RepeatedExtension<MethodOptions, T> extension)
-        {
-            return Proto.Options.GetExtension(extension).Clone();
-        }
+        public MethodOptions Options => (Proto.Options as IDeepCloneable<MethodOptions>)?.Clone();
 
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)

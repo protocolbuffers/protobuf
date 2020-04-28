@@ -547,25 +547,15 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this file.
         /// </summary>
-        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use the Options property.")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
 
         /// <summary>
-        /// Gets a single value file option for this descriptor
+        /// The <c>FileOptions</c>, defined in <c>descriptor.proto</c>.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public T GetOption<T>(Extension<FileOptions, T> extension)
-        {
-            var value = Proto.Options.GetExtension(extension);
-            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
-        }
-
-        /// <summary>
-        /// Gets a repeated value file option for this descriptor
-        /// </summary>
-        public RepeatedField<T> GetOption<T>(RepeatedExtension<FileOptions, T> extension)
-        {
-            return Proto.Options.GetExtension(extension).Clone();
-        }
+        public FileOptions Options => (Proto.Options as IDeepCloneable<FileOptions>)?.Clone();
 
         /// <summary>
         /// Performs initialization for the given generic type argument.
