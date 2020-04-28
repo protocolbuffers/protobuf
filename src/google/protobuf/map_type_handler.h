@@ -155,13 +155,13 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   typedef typename MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE,
                                           Type>::TypeOnMemory TypeOnMemory;
   // Corresponding wire type for field type.
-  static const WireFormatLite::WireType kWireType =
+  static constexpr WireFormatLite::WireType kWireType =
       MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE, Type>::kWireType;
   // Whether wire type is for message.
-  static const bool kIsMessage =
+  static constexpr bool kIsMessage =
       MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE, Type>::kIsMessage;
   // Whether wire type is for enum.
-  static const bool kIsEnum =
+  static constexpr bool kIsEnum =
       MapWireFieldTypeTraits<WireFormatLite::TYPE_MESSAGE, Type>::kIsEnum;
 
   // Functions used in parsing and serialization. ===================

@@ -933,7 +933,7 @@ void add_handlers_for_message(const void *closure, upb_handlers *h) {
        !upb_msg_field_done(&i);
        upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    const upb_oneofdef *oneof = upb_fielddef_containingoneof(f);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(f);
     size_t offset = get_field_offset(desc->layout, f);
 
     if (oneof) {
@@ -1506,7 +1506,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
        !upb_msg_field_done(&i);
        upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
-    const upb_oneofdef *oneof = upb_fielddef_containingoneof(f);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(f);
     bool is_matching_oneof = false;
     uint32_t offset =
         desc->layout->fields[upb_fielddef_index(f)].offset +
@@ -1714,7 +1714,7 @@ static void discard_unknown(VALUE msg_rb, const Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     upb_fielddef *f = upb_msg_iter_field(&it);
-    const upb_oneofdef *oneof = upb_fielddef_containingoneof(f);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(f);
     uint32_t offset =
         desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);

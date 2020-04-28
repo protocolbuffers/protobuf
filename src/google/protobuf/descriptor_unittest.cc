@@ -999,6 +999,22 @@ TEST_F(DescriptorTest, IsMap) {
   EXPECT_TRUE(map_->message_type()->options().map_entry());
 }
 
+TEST_F(DescriptorTest, GetMap) {
+  const Descriptor* map_desc = map_->message_type();
+  const FieldDescriptor* map_key = map_desc->map_key();
+  ASSERT_TRUE(map_key != nullptr);
+  EXPECT_EQ(map_key->name(), "key");
+  EXPECT_EQ(map_key->number(), 1);
+
+  const FieldDescriptor* map_value = map_desc->map_value();
+  ASSERT_TRUE(map_value != nullptr);
+  EXPECT_EQ(map_value->name(), "value");
+  EXPECT_EQ(map_value->number(), 2);
+
+  EXPECT_EQ(message_->map_key(), nullptr);
+  EXPECT_EQ(message_->map_value(), nullptr);
+}
+
 TEST_F(DescriptorTest, FieldHasDefault) {
   EXPECT_FALSE(foo_->has_default_value());
   EXPECT_FALSE(bar_->has_default_value());
@@ -7184,9 +7200,9 @@ class SourceLocationTest : public testing::Test {
   DescriptorPool pool_;
 
   // tag number of all custom options in above test file
-  static const int kCustomOptionFieldNumber = 10101;
+  static constexpr int kCustomOptionFieldNumber = 10101;
   // tag number of field "a" in message type "A" in above test file
-  static const int kAFieldNumber = 1;
+  static constexpr int kAFieldNumber = 1;
 };
 
 // TODO(adonovan): implement support for option fields and for

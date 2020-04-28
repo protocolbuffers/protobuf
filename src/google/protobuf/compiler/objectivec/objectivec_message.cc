@@ -185,7 +185,7 @@ MessageGenerator::MessageGenerator(const string& root_classname,
         new ExtensionGenerator(class_name_, descriptor_->extension(i)));
   }
 
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     OneofGenerator* generator = new OneofGenerator(descriptor_->oneof_decl(i));
     oneof_generators_.emplace_back(generator);
   }
@@ -339,11 +339,12 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
       "deprecated_attribute", deprecated_attribute_,
       "comments", message_comments);
 
-  std::vector<char> seen_oneofs(descriptor_->oneof_decl_count(), 0);
+  std::vector<char> seen_oneofs(oneof_generators_.size(), 0);
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->containing_oneof() != NULL) {
-      const int oneof_index = field->containing_oneof()->index();
+    const OneofDescriptor *oneof = field->real_containing_oneof();
+    if (oneof) {
+      const int oneof_index = oneof->index();
       if (!seen_oneofs[oneof_index]) {
         seen_oneofs[oneof_index] = 1;
         oneof_generators_[oneof_index]->GeneratePublicCasePropertyDeclaration(
@@ -443,7 +444,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     field_generators_.SetOneofIndexBase(sizeof_has_storage);
     // sizeof_has_storage needs enough bits for the single fields that aren't in
     // any oneof, and then one int32 for each oneof (to store the field number).
-    sizeof_has_storage += descriptor_->oneof_decl_count();
+    sizeof_has_storage += oneof_generators_.size();
 
     printer->Print(
         "\n"
@@ -515,6 +516,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
 
     std::vector<string> init_flags;
     init_flags.push_back("GPBDescriptorInitializationFlag_UsesClassRefs");
+    init_flags.push_back("GPBDescriptorInitializationFlag_Proto3OptionalKnown");
     if (need_defaults) {
       init_flags.push_back("GPBDescriptorInitializationFlag_FieldsWithDefault");
     }

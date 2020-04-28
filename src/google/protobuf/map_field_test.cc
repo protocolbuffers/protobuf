@@ -107,8 +107,8 @@ class MapFieldBasePrimitiveTest : public ::testing::Test {
     map_descriptor_ = unittest::TestMap::descriptor()
                           ->FindFieldByName("map_int32_int32")
                           ->message_type();
-    key_descriptor_ = map_descriptor_->FindFieldByName("key");
-    value_descriptor_ = map_descriptor_->FindFieldByName("value");
+    key_descriptor_ = map_descriptor_->map_key();
+    value_descriptor_ = map_descriptor_->map_value();
 
     // Build map field
     map_field_.reset(new MapFieldType);

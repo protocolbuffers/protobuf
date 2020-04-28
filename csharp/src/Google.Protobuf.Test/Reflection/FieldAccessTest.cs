@@ -38,6 +38,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using static Google.Protobuf.TestProtos.Proto2.UnittestExtensions;
+using ProtobufUnittest;
 
 namespace Google.Protobuf.Reflection
 {
@@ -102,6 +103,21 @@ namespace Google.Protobuf.Reflection
             IMessage message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Descriptor.Fields;
             Assert.Throws<InvalidOperationException>(() => fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].Accessor.HasValue(message));
+        }
+
+        [Test]
+        public void HasValue_Proto3Optional()
+        {
+            IMessage message = new TestProto3Optional
+            {
+                OptionalInt32 = 0,
+                LazyNestedMessage = new TestProto3Optional.Types.NestedMessage()
+            };
+            var fields = message.Descriptor.Fields;
+            Assert.IsFalse(fields[TestProto3Optional.OptionalInt64FieldNumber].Accessor.HasValue(message));
+            Assert.IsFalse(fields[TestProto3Optional.OptionalNestedMessageFieldNumber].Accessor.HasValue(message));
+            Assert.IsTrue(fields[TestProto3Optional.LazyNestedMessageFieldNumber].Accessor.HasValue(message));
+            Assert.IsTrue(fields[TestProto3Optional.OptionalInt32FieldNumber].Accessor.HasValue(message));
         }
 
         [Test]
@@ -223,6 +239,27 @@ namespace Google.Protobuf.Reflection
             fields = TestMap.Descriptor.Fields;
             fields[TestMap.MapStringStringFieldNumber].Accessor.Clear(mapMessage);
             Assert.AreEqual(0, mapMessage.MapStringString.Count);
+        }
+
+        [Test]
+        public void Clear_Proto3Optional()
+        {
+            TestProto3Optional message = new TestProto3Optional
+            {
+                OptionalInt32 = 0,
+                OptionalNestedMessage = new TestProto3Optional.Types.NestedMessage()
+            };
+            var primitiveField = TestProto3Optional.Descriptor.Fields[TestProto3Optional.OptionalInt32FieldNumber];
+            var messageField = TestProto3Optional.Descriptor.Fields[TestProto3Optional.OptionalNestedMessageFieldNumber];
+
+            Assert.True(message.HasOptionalInt32);
+            Assert.NotNull(message.OptionalNestedMessage);
+
+            primitiveField.Accessor.Clear(message);
+            messageField.Accessor.Clear(message);
+
+            Assert.False(message.HasOptionalInt32);
+            Assert.Null(message.OptionalNestedMessage);
         }
 
         [Test]

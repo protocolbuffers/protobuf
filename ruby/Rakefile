@@ -124,7 +124,7 @@ file "tests/test_ruby_package_proto2.rb" => "tests/test_ruby_package_proto2.prot
 end
 
 file "tests/basic_test.rb" => "tests/basic_test.proto" do |file_task|
-  sh "../src/protoc -I../src -I. --ruby_out=. tests/basic_test.proto"
+  sh "../src/protoc --experimental_allow_proto3_optional -I../src -I. --ruby_out=. tests/basic_test.proto"
 end
 
 file "tests/basic_test_proto2.rb" => "tests/basic_test_proto2.proto" do |file_task|

@@ -515,13 +515,13 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
         }
       } else {
         if (IsWrapperType(descriptor)) {
-          if (descriptor->containing_oneof()) {
+          if (descriptor->real_containing_oneof()) {
             return new WrapperOneofFieldGenerator(descriptor, presenceIndex, options);
           } else {
             return new WrapperFieldGenerator(descriptor, presenceIndex, options);
           }
         } else {
-          if (descriptor->containing_oneof()) {
+          if (descriptor->real_containing_oneof()) {
             return new MessageOneofFieldGenerator(descriptor, presenceIndex, options);
           } else {
             return new MessageFieldGenerator(descriptor, presenceIndex, options);
@@ -532,7 +532,7 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
       if (descriptor->is_repeated()) {
         return new RepeatedEnumFieldGenerator(descriptor, presenceIndex, options);
       } else {
-        if (descriptor->containing_oneof()) {
+        if (descriptor->real_containing_oneof()) {
           return new EnumOneofFieldGenerator(descriptor, presenceIndex, options);
         } else {
           return new EnumFieldGenerator(descriptor, presenceIndex, options);
@@ -542,7 +542,7 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
       if (descriptor->is_repeated()) {
         return new RepeatedPrimitiveFieldGenerator(descriptor, presenceIndex, options);
       } else {
-        if (descriptor->containing_oneof()) {
+        if (descriptor->real_containing_oneof()) {
           return new PrimitiveOneofFieldGenerator(descriptor, presenceIndex, options);
         } else {
           return new PrimitiveFieldGenerator(descriptor, presenceIndex, options);

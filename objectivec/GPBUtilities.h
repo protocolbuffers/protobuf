@@ -34,6 +34,8 @@
 #import "GPBMessage.h"
 #import "GPBRuntimeTypes.h"
 
+@class GPBOneofDescriptor;
+
 CF_EXTERN_C_BEGIN
 
 NS_ASSUME_NONNULL_BEGIN
@@ -91,6 +93,14 @@ BOOL GPBMessageHasFieldSet(GPBMessage *self, GPBFieldDescriptor *field);
  * @param field The field to clear.
  **/
 void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field);
+
+/**
+ * Clears the given oneof field for the given message.
+ *
+ * @param self  The message for which to clear the field.
+ * @param oneof The oneof to clear.
+ **/
+void GPBClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof);
 
 //%PDDM-EXPAND GPB_ACCESSORS()
 // This block of code is generated, do not edit it directly.

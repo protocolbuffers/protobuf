@@ -33,6 +33,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Google.Protobuf.Collections;
 using Google.Protobuf.Compatibility;
 
@@ -54,8 +55,13 @@ namespace Google.Protobuf.Reflection
         {
             this.proto = proto;
             containingType = parent;
-
             file.DescriptorPool.AddSymbol(this);
+
+            // It's useful to determine whether or not this is a synthetic oneof before cross-linking. That means
+            // diving into the proto directly rather than using FieldDescriptor, but that's okay.
+            var firstFieldInOneof = parent.Proto.Field.FirstOrDefault(fieldProto => fieldProto.OneofIndex == index);
+            IsSynthetic = firstFieldInOneof?.Proto3Optional ?? false;
+
             accessor = CreateAccessor(clrName);
         }
 
@@ -82,6 +88,12 @@ namespace Google.Protobuf.Reflection
         /// The fields within this oneof, in declaration order.
         /// </value>
         public IList<FieldDescriptor> Fields { get { return fields; } }
+
+        /// <summary>
+        /// Returns <c>true</c> if this oneof is a synthetic oneof containing a proto3 optional field;
+        /// <c>false</c> otherwise.
+        /// </summary>
+        public bool IsSynthetic { get; }
 
         /// <summary>
         /// Gets an accessor for reflective access to the values associated with the oneof
@@ -146,18 +158,28 @@ namespace Google.Protobuf.Reflection
             {
                 return null;
             }
-            var caseProperty = containingType.ClrType.GetProperty(clrName + "Case");
-            if (caseProperty == null)
+            if (IsSynthetic)
             {
-                throw new DescriptorValidationException(this, $"Property {clrName}Case not found in {containingType.ClrType}");
+                return OneofAccessor.ForSyntheticOneof(this);
             }
-            var clearMethod = containingType.ClrType.GetMethod("Clear" + clrName);
-            if (clearMethod == null)
+            else
             {
-                throw new DescriptorValidationException(this, $"Method Clear{clrName} not found in {containingType.ClrType}");
+                var caseProperty = containingType.ClrType.GetProperty(clrName + "Case");
+                if (caseProperty == null)
+                {
+                    throw new DescriptorValidationException(this, $"Property {clrName}Case not found in {containingType.ClrType}");
+                }
+                if (!caseProperty.CanRead)
+                {
+                    throw new ArgumentException($"Cannot read from property {clrName}Case in {containingType.ClrType}");
+                }
+                var clearMethod = containingType.ClrType.GetMethod("Clear" + clrName);
+                if (clearMethod == null)
+                {
+                    throw new DescriptorValidationException(this, $"Method Clear{clrName} not found in {containingType.ClrType}");
+                }
+                return OneofAccessor.ForRegularOneof(this, caseProperty, clearMethod);
             }
-
-            return new OneofAccessor(caseProperty, clearMethod, this);
         }
     }
 }

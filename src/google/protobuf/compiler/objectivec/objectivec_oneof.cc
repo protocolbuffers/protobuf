@@ -120,9 +120,9 @@ void OneofGenerator::GenerateClearFunctionImplementation(io::Printer* printer) {
   printer->Print(
       variables_,
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message) {\n"
-      "  GPBDescriptor *descriptor = [message descriptor];\n"
+      "  GPBDescriptor *descriptor = [$owning_message_class$ descriptor];\n"
       "  GPBOneofDescriptor *oneof = [descriptor.oneofs objectAtIndex:$raw_index$];\n"
-      "  GPBMaybeClearOneof(message, oneof, $index$, 0);\n"
+      "  GPBClearOneof(message, oneof);\n"
       "}\n");
 }
 

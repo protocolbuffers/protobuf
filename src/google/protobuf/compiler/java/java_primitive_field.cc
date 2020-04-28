@@ -296,6 +296,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "}\n");
 }
 
+
 void ImmutablePrimitiveFieldGenerator::GenerateFieldBuilderInitializationCode(
     io::Printer* printer) const {
   // noop for primitives

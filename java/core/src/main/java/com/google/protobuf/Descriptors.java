@@ -702,6 +702,11 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(oneofs));
     }
 
+    /** Get a list of this message type's real oneofs. */
+    public List<OneofDescriptor> getRealOneofs() {
+      return Collections.unmodifiableList(Arrays.asList(oneofs).subList(0, realOneofCount));
+    }
+
     /** Get a list of this message type's extensions. */
     public List<FieldDescriptor> getExtensions() {
       return Collections.unmodifiableList(Arrays.asList(extensions));
@@ -821,6 +826,7 @@ public final class Descriptors {
     private final FieldDescriptor[] fields;
     private final FieldDescriptor[] extensions;
     private final OneofDescriptor[] oneofs;
+    private final int realOneofCount;
 
     // Used to create a placeholder when the type cannot be found.
     Descriptor(final String fullname) throws DescriptorValidationException {
@@ -846,6 +852,7 @@ public final class Descriptors {
       this.fields = new FieldDescriptor[0];
       this.extensions = new FieldDescriptor[0];
       this.oneofs = new OneofDescriptor[0];
+      this.realOneofCount = 0;
 
       // Create a placeholder FileDescriptor to hold this message.
       this.file = new FileDescriptor(packageName, this);
@@ -898,6 +905,18 @@ public final class Descriptors {
           oneofDescriptor.fields[oneofDescriptor.fieldCount++] = fields[i];
         }
       }
+
+      int syntheticOneofCount = 0;
+      for (OneofDescriptor oneof : this.oneofs) {
+        if (oneof.isSynthetic()) {
+          syntheticOneofCount++;
+        } else {
+          if (syntheticOneofCount > 0) {
+            throw new DescriptorValidationException(this, "Synthetic oneofs must come last.");
+          }
+        }
+      }
+      this.realOneofCount = this.oneofs.length - syntheticOneofCount;
 
       file.pool.addSymbol(this);
     }
@@ -1125,6 +1144,11 @@ public final class Descriptors {
       return containingOneof;
     }
 
+    /** Get the field's containing oneof, only if non-synthetic. */
+    public OneofDescriptor getRealContainingOneof() {
+      return containingOneof != null && !containingOneof.isSynthetic() ? containingOneof : null;
+    }
+
     /**
      * Returns true if this field was syntactically written with "optional" in the .proto file.
      * Excludes singular proto3 fields that do not have a label.
@@ -1135,22 +1159,23 @@ public final class Descriptors {
     }
 
     /**
-     * Returns true if this is a non-oneof field that tracks presence.
+     * Returns true if this field tracks presence, ie. does the field distinguish between "unset"
+     * and "present with default value."
      *
-     * <p>This includes all "required" and "optional" fields in the .proto file, but excludes oneof
-     * fields and singular proto3 fields without "optional".
+     * <p>This includes required, optional, and oneof fields. It excludes maps, repeated fields, and
+     * singular proto3 fields without "optional".
      *
-     * <p>In implementations that use hasbits, this method will probably indicate whether this field
-     * uses a hasbit.
+     * <p>For fields where hasPresence() == true, the return value of msg.hasField() is semantically
+     * meaningful.
      */
-    boolean isSingularWithPresence() {
+    boolean hasPresence() {
       if (isRepeated()) {
         return false;
       }
-      if (getContainingOneof() != null && !getContainingOneof().isSynthetic()) {
-        return false;
-      }
-      return getType() == Type.MESSAGE || isProto3Optional || file.getSyntax() == Syntax.PROTO2;
+      return getType() == Type.MESSAGE
+          || getType() == Type.GROUP
+          || getContainingOneof() != null
+          || file.getSyntax() == Syntax.PROTO2;
     }
 
     /**

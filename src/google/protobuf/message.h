@@ -222,6 +222,9 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field);
 // optimized for speed will want to override these with faster implementations,
 // but classes optimized for code size may be happy with keeping them.  See
 // the optimize_for option in descriptor.proto.
+//
+// Users must not derive from this class. Only the protocol compiler and
+// the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
   inline Message() {}
