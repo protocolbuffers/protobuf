@@ -72,6 +72,30 @@ namespace Google.Protobuf.Test.Reflection
         }
 
         [Test]
+        public void BuiltinOptionsCanBeRetrieved()
+        {
+            // non-custom options (that are not extensions but regular fields) can only be accessed via descriptor.Options
+            var fileOptions = UnittestProto3Reflection.Descriptor.Options;
+            Assert.AreEqual("Google.Protobuf.TestProtos", fileOptions.CsharpNamespace);
+        }
+
+        [Test]
+        public void OptionPresenceCanBeDetected()
+        {
+            // case 1: the descriptor has no options at all so the options message is not present
+            Assert.IsNull(TestAllTypes.Descriptor.Options);
+
+            // case 2: the descriptor has some options, but not the one we're looking for
+            // HasExtension will be false and GetExtension returns extension's default value
+            Assert.IsFalse(UnittestProto3Reflection.Descriptor.Options.HasExtension(FileOpt1));
+            Assert.AreEqual(0, UnittestProto3Reflection.Descriptor.Options.GetExtension(FileOpt1));
+
+            // case 3: option is present
+            Assert.IsTrue(UnittestCustomOptionsProto3Reflection.Descriptor.Options.HasExtension(FileOpt1));
+            Assert.AreEqual(9876543210UL, UnittestCustomOptionsProto3Reflection.Descriptor.Options.GetExtension(FileOpt1));
+        }
+
+        [Test]
         public void ScalarOptions()
         {
             var d = CustomOptionOtherValues.Descriptor;
