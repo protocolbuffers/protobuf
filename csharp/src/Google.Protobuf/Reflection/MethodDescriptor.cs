@@ -83,6 +83,25 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public MethodOptions Options => (Proto.Options as IDeepCloneable<MethodOptions>)?.Clone();
 
+        /// <summary>
+        /// Gets a single value method option for this descriptor
+        /// </summary>
+        [Obsolete("GetOption is obsolete. Use the Options property.")]
+        public T GetOption<T>(Extension<MethodOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value method option for this descriptor
+        /// </summary>
+        [Obsolete("GetOption is obsolete. Use the Options property.")]
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<MethodOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
+
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)
             : base(file, parent.FullName + "." + proto.Name, index)

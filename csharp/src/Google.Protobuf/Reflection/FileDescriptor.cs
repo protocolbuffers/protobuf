@@ -558,6 +558,25 @@ namespace Google.Protobuf.Reflection
         public FileOptions Options => (Proto.Options as IDeepCloneable<FileOptions>)?.Clone();
 
         /// <summary>
+        /// Gets a single value file option for this descriptor
+        /// </summary>
+        [Obsolete("GetOption is obsolete. Use the Options property.")]
+        public T GetOption<T>(Extension<FileOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value file option for this descriptor
+        /// </summary>
+        [Obsolete("GetOption is obsolete. Use the Options property.")]
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<FileOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
+
+        /// <summary>
         /// Performs initialization for the given generic type argument.
         /// </summary>
         /// <remarks>

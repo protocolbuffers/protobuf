@@ -137,5 +137,24 @@ namespace Google.Protobuf.Reflection
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
         public EnumOptions Options => (Proto.Options as IDeepCloneable<EnumOptions>)?.Clone();
+
+        /// <summary>
+        /// Gets a single value enum option for this descriptor
+        /// </summary>
+        [Obsolete("GetOption is obsolete. Use the Options property.")]
+        public T GetOption<T>(Extension<EnumOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value enum option for this descriptor
+        /// </summary>
+        [Obsolete("GetOption is obsolete. Use the Options property.")]
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
     }
 }

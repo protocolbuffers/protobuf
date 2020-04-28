@@ -315,6 +315,25 @@ namespace Google.Protobuf.Reflection
         public FieldOptions Options => (Proto.Options as IDeepCloneable<FieldOptions>)?.Clone();
 
         /// <summary>
+        /// Gets a single value field option for this descriptor
+        /// </summary>
+         [Obsolete("GetOption is obsolete. Use the Options property.")]
+        public T GetOption<T>(Extension<FieldOptions, T> extension)
+        {
+            var value = Proto.Options.GetExtension(extension);
+            return value is IDeepCloneable<T> ? (value as IDeepCloneable<T>).Clone() : value;
+        }
+
+        /// <summary>
+        /// Gets a repeated value field option for this descriptor
+        /// </summary>
+         [Obsolete("GetOption is obsolete. Use the Options property.")]
+        public RepeatedField<T> GetOption<T>(RepeatedExtension<FieldOptions, T> extension)
+        {
+            return Proto.Options.GetExtension(extension).Clone();
+        }
+
+        /// <summary>
         /// Look up and cross-link all field types etc.
         /// </summary>
         internal void CrossLink()
