@@ -443,7 +443,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // different exposed type in Map's api and repeated field's api. For
   // details see the comment in the implementation of
   // SyncMapWithRepeatedFieldNoLock.
-  static const bool kIsValueEnum = ValueTypeHandler::kIsEnum;
+  static constexpr bool kIsValueEnum = ValueTypeHandler::kIsEnum;
   typedef typename MapIf<kIsValueEnum, T, const T&>::type CastValueType;
 
  public:

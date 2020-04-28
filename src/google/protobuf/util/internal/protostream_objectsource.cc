@@ -537,6 +537,11 @@ Status ProtoStreamObjectSource::RenderStruct(const ProtoStreamObjectSource* os,
   ow->StartObject(field_name);
   while (tag != 0) {
     field = os->FindAndVerifyField(type, tag);
+    if (field == nullptr) {
+      WireFormat::SkipField(os->stream_, tag, nullptr);
+      tag = os->stream_->ReadTag();
+      continue;
+    }
     // google.protobuf.Struct has only one field that is a map. Hence we use
     // RenderMap to render that field.
     if (os->IsMap(*field)) {

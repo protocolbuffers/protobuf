@@ -153,9 +153,9 @@ template <typename Derived, typename K, typename V,
 struct DeconstructMapEntry<MapEntry<Derived, K, V, key, value, default_enum> > {
   typedef K Key;
   typedef V Value;
-  static const WireFormatLite::FieldType kKeyFieldType = key;
-  static const WireFormatLite::FieldType kValueFieldType = value;
-  static const int default_enum_value = default_enum;
+  static constexpr WireFormatLite::FieldType kKeyFieldType = key;
+  static constexpr WireFormatLite::FieldType kValueFieldType = value;
+  static constexpr int default_enum_value = default_enum;
 };
 
 }  // namespace internal

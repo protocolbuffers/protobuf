@@ -238,6 +238,51 @@ inline MapReflectionTester::MapReflectionTester(
   EXPECT_FALSE(map_int32_enum_val_ == nullptr);
   EXPECT_FALSE(map_int32_foreign_message_key_ == nullptr);
   EXPECT_FALSE(map_int32_foreign_message_val_ == nullptr);
+
+  std::vector<const FieldDescriptor*> all_map_descriptors = {
+      map_int32_int32_key_,
+      map_int32_int32_val_,
+      map_int64_int64_key_,
+      map_int64_int64_val_,
+      map_uint32_uint32_key_,
+      map_uint32_uint32_val_,
+      map_uint64_uint64_key_,
+      map_uint64_uint64_val_,
+      map_sint32_sint32_key_,
+      map_sint32_sint32_val_,
+      map_sint64_sint64_key_,
+      map_sint64_sint64_val_,
+      map_fixed32_fixed32_key_,
+      map_fixed32_fixed32_val_,
+      map_fixed64_fixed64_key_,
+      map_fixed64_fixed64_val_,
+      map_sfixed32_sfixed32_key_,
+      map_sfixed32_sfixed32_val_,
+      map_sfixed64_sfixed64_key_,
+      map_sfixed64_sfixed64_val_,
+      map_int32_float_key_,
+      map_int32_float_val_,
+      map_int32_double_key_,
+      map_int32_double_val_,
+      map_bool_bool_key_,
+      map_bool_bool_val_,
+      map_string_string_key_,
+      map_string_string_val_,
+      map_int32_bytes_key_,
+      map_int32_bytes_val_,
+      map_int32_enum_key_,
+      map_int32_enum_val_,
+      map_int32_foreign_message_key_,
+      map_int32_foreign_message_val_};
+  for (const FieldDescriptor* fdesc : all_map_descriptors) {
+    GOOGLE_CHECK(fdesc->containing_type() != nullptr) << fdesc->name();
+    if (fdesc->name() == "key") {
+      EXPECT_EQ(fdesc->containing_type()->map_key(), fdesc);
+    } else {
+      EXPECT_EQ(fdesc->name(), "value");
+      EXPECT_EQ(fdesc->containing_type()->map_value(), fdesc);
+    }
+  }
 }
 
 // Shorthand to get a FieldDescriptor for a field of unittest::TestMap.

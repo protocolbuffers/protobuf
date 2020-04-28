@@ -428,6 +428,7 @@ const char* BoxedPrimitiveTypeName(const FieldDescriptor* descriptor) {
   return BoxedPrimitiveTypeName(GetJavaType(descriptor));
 }
 
+
 std::string GetOneofStoredType(const FieldDescriptor* field) {
   const JavaType javaType = GetJavaType(field);
   switch (javaType) {

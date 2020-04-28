@@ -226,6 +226,7 @@ const char* PrimitiveTypeName(JavaType type);
 // types.
 const char* BoxedPrimitiveTypeName(JavaType type);
 
+
 // Get the name of the java enum constant representing this type. E.g.,
 // "INT32" for FieldDescriptor::TYPE_INT32. The enum constant's full
 // name is "com.google.protobuf.WireFormat.FieldType.INT32".
