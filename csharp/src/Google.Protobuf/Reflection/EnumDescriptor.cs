@@ -133,6 +133,7 @@ namespace Google.Protobuf.Reflection
 
         /// <summary>
         /// The <c>EnumOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (=there are no options), <c>null</c> is returned.
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
