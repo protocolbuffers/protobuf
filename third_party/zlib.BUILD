@@ -46,10 +46,7 @@ cc_library(
         "trees.c",
         "uncompr.c",
         "zutil.c",
-        # Include the un-prefixed headers in srcs to work
-        # around the fact that zlib isn't consistent in its
-        # choice of <> or "" delimiter when including itself.
-    ] + _ZLIB_HEADERS,
+    ],
     hdrs = _ZLIB_PREFIXED_HEADERS,
     copts = select({
         "@bazel_tools//src/conditions:windows": [],
