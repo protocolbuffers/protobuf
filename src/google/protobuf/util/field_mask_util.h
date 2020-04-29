@@ -46,12 +46,6 @@ namespace google {
 namespace protobuf {
 namespace util {
 
-#if GTEST_HAS_RTTI
-#define TYPENAME(T) typeid(T).name()
-#else
-#define TYPENAME(T) #T
-#endif
-
 class PROTOBUF_EXPORT FieldMaskUtil {
   typedef google::protobuf::FieldMask FieldMask;
 
@@ -66,13 +60,19 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   template <typename T>
   static void FromFieldNumbers(const std::vector<int64>& field_numbers,
                                FieldMask* out) {
+    #if PROTOBUF_RTTI
+    #define PROTOBUF_RTTI_TYPENAME(T) typeid(T).name()
+    #else
+    #define PROTOBUF_RTTI_TYPENAME(T) #T
+    #endif
     for (const auto field_number : field_numbers) {
       const FieldDescriptor* field_desc =
           T::descriptor()->FindFieldByNumber(field_number);
       GOOGLE_CHECK(field_desc != nullptr) << "Invalid field number for "
-                                   << TYPENAME(T) << ": " << field_number;
+                                   << PROTOBUF_RTTI_TYPENAME(T) << ": " << field_number;
       AddPathToFieldMask<T>(field_desc->lowercase_name(), out);
     }
+    #undef PROTOBUF_RTTI_TYPENAME
   }
 
   // Converts FieldMask to/from string, formatted according to proto3 JSON
