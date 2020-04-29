@@ -827,7 +827,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
     Args:
       name (str): Name of the method.
     Returns:
-      MethodDescriptor or None: the desctiptor for the requested method, if
+      MethodDescriptor or None: the descriptor for the requested method, if
       found.
     """
     return self.methods_by_name.get(name, None)
