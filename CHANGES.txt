@@ -1,11 +1,11 @@
 2020-04-28 version 3.12.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler
-  * [experimental] Support for proto3 presence. During this experimental phase,
-    code generators should add support for proto3 presence according to the
-    instructions in
-    https://github.com/protocolbuffers/protobuf/blob/master/docs/implementing_proto3_presence.md
-  * Warn about large enums that may hit limits in some languages (ex. Java)
+  * [experimental] Singular, non-message typed fields in proto3 now support
+    presence tracking. This is enabled by adding the "optional" field label and
+    passing the --experimental_allow_proto3_optional flag to protoc. (See
+    docs/field_presence.md for usage, and docs/implementing_proto3_presence.md
+    for code generators.)
   * Allow duplicate symbol names when multiple descriptor sets are passed on
     the command-line, to match the behavior when multiple .proto files are passed.
   * Deterministic `protoc --descriptor_set_out` (#7175)
