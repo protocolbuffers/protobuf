@@ -3,9 +3,10 @@
   Protocol Compiler
   * [experimental] Singular, non-message typed fields in proto3 now support
     presence tracking. This is enabled by adding the "optional" field label and
-    passing the --experimental_allow_proto3_optional flag to protoc. (See
-    docs/field_presence.md for usage, and docs/implementing_proto3_presence.md
-    for code generators.)
+    passing the --experimental_allow_proto3_optional flag to protoc.
+    * For usage info, see docs/field_presence.md.
+    * During this experimental phase, code generators should update to support
+      proto3 presence, see docs/implementing_proto3_presence.md for instructions.
   * Allow duplicate symbol names when multiple descriptor sets are passed on
     the command-line, to match the behavior when multiple .proto files are passed.
   * Deterministic `protoc --descriptor_set_out` (#7175)
