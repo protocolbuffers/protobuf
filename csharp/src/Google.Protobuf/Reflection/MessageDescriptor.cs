@@ -295,7 +295,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public MessageOptions Options => (Proto.Options as IDeepCloneable<MessageOptions>)?.Clone();
+        public MessageOptions Options => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value message option for this descriptor

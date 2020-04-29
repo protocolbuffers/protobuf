@@ -81,7 +81,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public EnumValueOptions Options => (Proto.Options as IDeepCloneable<EnumValueOptions>)?.Clone();
+        public EnumValueOptions Options => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value enum value option for this descriptor

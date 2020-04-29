@@ -98,6 +98,13 @@ namespace Google.Protobuf.Reflection
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
 
         /// <summary>
+        /// The <c>ServiceOptions</c>, defined in <c>descriptor.proto</c>.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
+        /// </summary>
+        public ServiceOptions Options => Proto.Options?.Clone();
+
+        /// <summary>
         /// Gets a single value service option for this descriptor
         /// </summary>
         [Obsolete("GetOption is obsolete. Use the Options property.")]
@@ -115,13 +122,6 @@ namespace Google.Protobuf.Reflection
         {
             return Proto.Options.GetExtension(extension).Clone();
         }
-
-        /// <summary>
-        /// The <c>ServiceOptions</c>, defined in <c>descriptor.proto</c>.
-        /// Custom options can be retrieved as extensions of the returned message.
-        /// NOTE: A defensive copy is created each time this property is retrieved.
-        /// </summary>
-        public ServiceOptions Options => (Proto.Options as IDeepCloneable<ServiceOptions>)?.Clone();
 
         internal void CrossLink()
         {

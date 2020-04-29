@@ -125,7 +125,7 @@ namespace Google.Protobuf.Reflection
         /// Custom options can be retrieved as extensions of the returned message.
         /// NOTE: A defensive copy is created each time this property is retrieved.
         /// </summary>
-        public OneofOptions Options => (proto.Options as IDeepCloneable<OneofOptions>)?.Clone();
+        public OneofOptions Options => proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value oneof option for this descriptor
