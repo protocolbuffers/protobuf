@@ -52,8 +52,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace cpp {
 
@@ -167,7 +166,7 @@ std::string DescriptorTableName(const FileDescriptor* file,
 // dllexport needed for the target file, if any.
 std::string FileDllExport(const FileDescriptor* file, const Options& options);
 
-// Name of the base class: google::protobuf::Message or google::protobuf::MessageLite.
+// Name of the base class: PROTOBUF_NAMESPACE_ID::Message or PROTOBUF_NAMESPACE_ID::MessageLite.
 std::string SuperClassName(const Descriptor* descriptor,
                            const Options& options);
 
@@ -208,7 +207,7 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
 // Strips ".proto" or ".protodevel" from the end of a filename.
 PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
-// Get the C++ type name for a primitive type (e.g. "double", "::google::protobuf::int32", etc.).
+// Get the C++ type name for a primitive type (e.g. "double", "::PROTOBUF_NAMESPACE_ID::int32", etc.).
 const char* PrimitiveTypeName(FieldDescriptor::CppType type);
 std::string PrimitiveTypeName(const Options& options,
                               FieldDescriptor::CppType type);
@@ -492,7 +491,7 @@ inline std::string IncludeGuard(const FileDescriptor* file, bool pb_h,
     // For well-known messages we need third_party/protobuf and net/proto2 to
     // have distinct include guards, because some source files include both and
     // both need to be defined (the third_party copies will be in the
-    // google::protobuf_opensource namespace).
+    // PROTOBUF_NAMESPACE_ID_opensource namespace).
     return MacroPrefix(options) + "_INCLUDED_" + filename_identifier;
   } else {
     // Ideally this case would use distinct include guards for opensource and
@@ -904,8 +903,7 @@ void GenerateParserLoop(const Descriptor* descriptor, int num_hasbits,
 
 }  // namespace cpp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

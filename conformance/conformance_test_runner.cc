@@ -66,8 +66,10 @@
 #include "conformance.pb.h"
 #include "conformance_test.h"
 
+#include <google/protobuf/port_def.inc>
+
 using conformance::ConformanceResponse;
-using google::protobuf::ConformanceTestSuite;
+using PROTOBUF_NAMESPACE_ID::ConformanceTestSuite;
 using std::string;
 using std::vector;
 
@@ -79,8 +81,7 @@ using std::vector;
     exit(1); \
   }
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 void ParseFailureList(const char *filename,
                       conformance::FailureSet *failure_list) {
@@ -341,5 +342,4 @@ void ForkPipeRunner::CheckedRead(int fd, void *buf, size_t len) {
   }
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

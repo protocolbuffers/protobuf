@@ -48,8 +48,9 @@
 #include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/stubs/logging.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 #ifdef _WIN32
 // Windows doesn't have symbolic links.
@@ -59,11 +60,11 @@ namespace protobuf {
 #endif
 
 #ifdef _WIN32
-using google::protobuf::io::win32::access;
-using google::protobuf::io::win32::chdir;
-using google::protobuf::io::win32::fopen;
-using google::protobuf::io::win32::mkdir;
-using google::protobuf::io::win32::stat;
+using PROTOBUF_NAMESPACE_ID::io::win32::access;
+using PROTOBUF_NAMESPACE_ID::io::win32::chdir;
+using PROTOBUF_NAMESPACE_ID::io::win32::fopen;
+using PROTOBUF_NAMESPACE_ID::io::win32::mkdir;
+using PROTOBUF_NAMESPACE_ID::io::win32::stat;
 #endif
 
 bool File::Exists(const string& name) {
@@ -208,5 +209,4 @@ bool File::ChangeWorkingDirectory(const string& new_working_directory) {
   return chdir(new_working_directory.c_str()) == 0;
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

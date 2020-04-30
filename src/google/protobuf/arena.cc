@@ -45,8 +45,7 @@
 static const size_t kMinCleanupListElements = 8;
 static const size_t kMaxCleanupListElements = 64;  // 1kB on 64-bit.
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 
@@ -385,5 +384,4 @@ void Arena::OnArenaAllocation(const std::type_info* allocated_type,
   }
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

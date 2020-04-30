@@ -45,13 +45,14 @@
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/stubs/map_util.h>
 
+#include <google/protobuf/port_def.inc>
+
 #if PY_MAJOR_VERSION >= 3
   #define PyInt_FromLong PyLong_FromLong
   #define PyInt_FromSize_t PyLong_FromSize_t
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 // Functions that need access to map reflection functionality.
@@ -77,7 +78,7 @@ class MapReflectionFriend {
 struct MapIterator {
   PyObject_HEAD;
 
-  std::unique_ptr<::google::protobuf::MapIterator> iter;
+  std::unique_ptr<::PROTOBUF_NAMESPACE_ID::MapIterator> iter;
 
   // A pointer back to the container, so we can notice changes to the version.
   // We own a ref on this.
@@ -313,7 +314,7 @@ static MapContainer* GetMap(PyObject* obj) {
 
 Py_ssize_t MapReflectionFriend::Length(PyObject* _self) {
   MapContainer* self = GetMap(_self);
-  const google::protobuf::Message* message = self->parent->message;
+  const PROTOBUF_NAMESPACE_ID::Message* message = self->parent->message;
   return message->GetReflection()->MapSize(*message,
                                            self->parent_field_descriptor);
 }
@@ -375,7 +376,7 @@ PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
 // ScalarMap ///////////////////////////////////////////////////////////////////
 
 MapContainer* NewScalarMapContainer(
-    CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor) {
+    CMessage* parent, const PROTOBUF_NAMESPACE_ID::FieldDescriptor* parent_field_descriptor) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
   }
@@ -493,7 +494,7 @@ PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
   MapContainer* self = GetMap(_self);
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
-  for (google::protobuf::MapIterator it = reflection->MapBegin(
+  for (PROTOBUF_NAMESPACE_ID::MapIterator it = reflection->MapBegin(
            message, self->parent_field_descriptor);
        it != reflection->MapEnd(message, self->parent_field_descriptor);
        ++it) {
@@ -626,7 +627,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, Message* message) {
 }
 
 MessageMapContainer* NewMessageMapContainer(
-    CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor,
+    CMessage* parent, const PROTOBUF_NAMESPACE_ID::FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
@@ -732,7 +733,7 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   MessageMapContainer* self = GetMessageMap(_self);
   Message* message = self->GetMutableMessage();
   const Reflection* reflection = message->GetReflection();
-  for (google::protobuf::MapIterator it = reflection->MapBegin(
+  for (PROTOBUF_NAMESPACE_ID::MapIterator it = reflection->MapBegin(
            message, self->parent_field_descriptor);
        it != reflection->MapEnd(message, self->parent_field_descriptor);
        ++it) {
@@ -904,7 +905,7 @@ PyObject* MapReflectionFriend::GetIterator(PyObject *_self) {
     Message* message = self->GetMutableMessage();
     const Reflection* reflection = message->GetReflection();
 
-    iter->iter.reset(new ::google::protobuf::MapIterator(
+    iter->iter.reset(new ::PROTOBUF_NAMESPACE_ID::MapIterator(
         reflection->MapBegin(message, self->parent_field_descriptor)));
   }
 
@@ -1047,5 +1048,4 @@ bool InitMapContainers() {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

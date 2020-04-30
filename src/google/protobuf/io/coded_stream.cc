@@ -56,8 +56,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 namespace {
@@ -952,5 +951,4 @@ uint8* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
 }
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

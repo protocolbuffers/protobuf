@@ -40,8 +40,9 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // Used for compile time type selection. MapIf::type will be TrueType if Flag is
@@ -801,7 +802,8 @@ PRIMITIVE_HANDLER_FUNCTIONS(BOOL)
 #undef PRIMITIVE_HANDLER_FUNCTIONS
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_TYPE_HANDLER_H__

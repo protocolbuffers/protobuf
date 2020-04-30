@@ -40,19 +40,19 @@
 namespace {
 
 // C++ API.  Clients get at this via proto_api.h
-struct ApiImplementation : google::protobuf::python::PyProto_API {
-  const google::protobuf::Message* GetMessagePointer(PyObject* msg) const override {
-    return google::protobuf::python::PyMessage_GetMessagePointer(msg);
+struct ApiImplementation : PROTOBUF_NAMESPACE_ID::python::PyProto_API {
+  const PROTOBUF_NAMESPACE_ID::Message* GetMessagePointer(PyObject* msg) const override {
+    return PROTOBUF_NAMESPACE_ID::python::PyMessage_GetMessagePointer(msg);
   }
-  google::protobuf::Message* GetMutableMessagePointer(PyObject* msg) const override {
-    return google::protobuf::python::PyMessage_GetMutableMessagePointer(msg);
+  PROTOBUF_NAMESPACE_ID::Message* GetMutableMessagePointer(PyObject* msg) const override {
+    return PROTOBUF_NAMESPACE_ID::python::PyMessage_GetMutableMessagePointer(msg);
   }
-  const google::protobuf::DescriptorPool* GetDefaultDescriptorPool() const override {
-    return google::protobuf::python::GetDefaultDescriptorPool()->pool;
+  const PROTOBUF_NAMESPACE_ID::DescriptorPool* GetDefaultDescriptorPool() const override {
+    return PROTOBUF_NAMESPACE_ID::python::GetDefaultDescriptorPool()->pool;
   }
 
-  google::protobuf::MessageFactory* GetDefaultMessageFactory() const override {
-    return google::protobuf::python::GetDefaultDescriptorPool()
+  PROTOBUF_NAMESPACE_ID::MessageFactory* GetDefaultMessageFactory() const override {
+    return PROTOBUF_NAMESPACE_ID::python::GetDefaultDescriptorPool()
         ->py_message_factory->message_factory;
   }
 };
@@ -68,7 +68,7 @@ static const char module_docstring[] =
 
 static PyMethodDef ModuleMethods[] = {
     {"SetAllowOversizeProtos",
-     (PyCFunction)google::protobuf::python::cmessage::SetAllowOversizeProtos, METH_O,
+     (PyCFunction)PROTOBUF_NAMESPACE_ID::python::cmessage::SetAllowOversizeProtos, METH_O,
      "Enable/disable oversize proto parsing."},
     // DO NOT USE: For migration and testing only.
     {NULL, NULL}};
@@ -101,17 +101,17 @@ PyMODINIT_FUNC INITFUNC() {
     return INITFUNC_ERRORVAL;
   }
 
-  if (!google::protobuf::python::InitProto2MessageModule(m)) {
+  if (!PROTOBUF_NAMESPACE_ID::python::InitProto2MessageModule(m)) {
     Py_DECREF(m);
     return INITFUNC_ERRORVAL;
   }
 
   // Adds the C++ API
   if (PyObject* api = PyCapsule_New(
-          new ApiImplementation(), google::protobuf::python::PyProtoAPICapsuleName(),
+          new ApiImplementation(), PROTOBUF_NAMESPACE_ID::python::PyProtoAPICapsuleName(),
           [](PyObject* o) {
             delete (ApiImplementation*)PyCapsule_GetPointer(
-                o, google::protobuf::python::PyProtoAPICapsuleName());
+                o, PROTOBUF_NAMESPACE_ID::python::PyProtoAPICapsuleName());
           })) {
     PyModule_AddObject(m, "proto_API", api);
   } else {

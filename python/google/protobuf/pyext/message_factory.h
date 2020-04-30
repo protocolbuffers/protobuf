@@ -37,8 +37,9 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 class MessageFactory;
 
 namespace python {
@@ -97,7 +98,8 @@ CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
 bool InitMessageFactory();
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_MESSAGE_FACTORY_H__

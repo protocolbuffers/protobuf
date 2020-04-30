@@ -40,8 +40,9 @@
 #include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
 class SnakeCaseCamelCaseTest : public ::testing::Test {
@@ -114,7 +115,7 @@ TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
   } while (std::next_permutation(name.begin(), name.end()));
 }
 
-using google::protobuf::FieldMask;
+using PROTOBUF_NAMESPACE_ID::FieldMask;
 using protobuf_unittest::NestedTestAllTypes;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestRequired;
@@ -831,5 +832,4 @@ TEST(FieldMaskUtilTest, TrimMessageReturnValue) {
 
 }  // namespace
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

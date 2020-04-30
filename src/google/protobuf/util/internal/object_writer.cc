@@ -32,8 +32,9 @@
 
 #include <google/protobuf/util/internal/datapiece.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -89,5 +90,4 @@ void ObjectWriter::RenderDataPieceTo(const DataPiece& data,
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

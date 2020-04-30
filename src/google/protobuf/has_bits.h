@@ -40,8 +40,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 template <size_t doublewords>
@@ -108,8 +107,7 @@ inline bool HasBits<doublewords>::empty() const {
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

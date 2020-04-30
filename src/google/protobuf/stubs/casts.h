@@ -33,11 +33,11 @@
 
 #include <google/protobuf/stubs/common.h>
 
-#include <google/protobuf/port_def.inc>
 #include <type_traits>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // Use implicit_cast as a safe version of static_cast or const_cast
@@ -131,8 +131,7 @@ using internal::implicit_cast;
 using internal::down_cast;
 using internal::bit_cast;
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

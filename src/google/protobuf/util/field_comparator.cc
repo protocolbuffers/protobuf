@@ -41,8 +41,9 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/mathutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
 FieldComparator::FieldComparator() {}
@@ -207,5 +208,4 @@ FieldComparator::ComparisonResult DefaultFieldComparator::ResultFromBoolean(
 }
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

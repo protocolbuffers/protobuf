@@ -46,8 +46,9 @@
 #include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_reflection_class.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace csharp {
 
@@ -326,5 +327,4 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
 
 }  // namespace csharp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

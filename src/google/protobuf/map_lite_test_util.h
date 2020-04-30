@@ -33,8 +33,9 @@
 
 #include <google/protobuf/map_lite_unittest.pb.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 class MapLiteTestUtil {
  public:
@@ -74,7 +75,8 @@ class MapLiteTestUtil {
   static void ExpectClear(const protobuf_unittest::TestMapLite& message);
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_MAP_LITE_TEST_UTIL_H__

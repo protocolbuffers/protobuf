@@ -43,8 +43,9 @@
 #include <google/protobuf/message.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace TestUtil {
 
 // Set every field in the message to a unique value.
@@ -2402,5 +2403,6 @@ inline void TestUtil::ExpectAtMostOneFieldSetInOneof(
 
 // ===================================================================
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>

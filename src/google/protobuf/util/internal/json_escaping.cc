@@ -33,8 +33,9 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -365,5 +366,4 @@ void JsonEscaping::Escape(StringPiece input, strings::ByteSink* output) {
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

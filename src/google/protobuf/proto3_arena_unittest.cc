@@ -42,10 +42,11 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/port_def.inc>
+
 using proto3_arena_unittest::TestAllTypes;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 // We selectively set/check a few representative fields rather than all fields
 // as this test is only expected to cover the basics of arena support.
@@ -252,10 +253,10 @@ TEST(Proto3OptionalTest, OptionalFieldReflection) {
   // We test this more deeply elsewhere by parsing/serializing TextFormat (which
   // doesn't treat synthetic oneofs specially, so reflects over them normally).
   protobuf_unittest::TestProto3Optional msg;
-  const google::protobuf::Descriptor* d = msg.GetDescriptor();
-  const google::protobuf::Reflection* r = msg.GetReflection();
-  const google::protobuf::FieldDescriptor* f = d->FindFieldByName("optional_int32");
-  const google::protobuf::OneofDescriptor* o = d->FindOneofByName("_optional_int32");
+  const PROTOBUF_NAMESPACE_ID::Descriptor* d = msg.GetDescriptor();
+  const PROTOBUF_NAMESPACE_ID::Reflection* r = msg.GetReflection();
+  const PROTOBUF_NAMESPACE_ID::FieldDescriptor* f = d->FindFieldByName("optional_int32");
+  const PROTOBUF_NAMESPACE_ID::OneofDescriptor* o = d->FindOneofByName("_optional_int32");
   GOOGLE_CHECK(f);
   GOOGLE_CHECK(o);
   EXPECT_TRUE(o->is_synthetic());
@@ -482,5 +483,4 @@ TEST(Proto3OptionalTest, PlainFields) {
 }
 
 }  // namespace
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

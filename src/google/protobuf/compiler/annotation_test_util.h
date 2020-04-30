@@ -35,10 +35,11 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+#include <google/protobuf/port_def.inc>
+
 // Utilities that assist in writing tests for generator annotations.
 // See java/internal/annotation_unittest.cc for an example.
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace annotation_test_util {
 
@@ -109,7 +110,8 @@ bool AnnotationMatchesSubstring(const std::string& file_content,
 
 }  // namespace annotation_test_util
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_ANNOTATION_TEST_UTIL_H__

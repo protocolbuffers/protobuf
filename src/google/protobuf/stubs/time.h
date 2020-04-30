@@ -34,8 +34,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 struct DateTime {
@@ -72,8 +71,7 @@ bool PROTOBUF_EXPORT ParseTime(const string& value, int64* seconds,
                                int32* nanos);
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

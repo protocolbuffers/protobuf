@@ -39,8 +39,9 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace csharp {
 
@@ -101,8 +102,8 @@ class FieldGeneratorBase : public SourceGeneratorBase {
 
 }  // namespace csharp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_FIELD_BASE_H__
-

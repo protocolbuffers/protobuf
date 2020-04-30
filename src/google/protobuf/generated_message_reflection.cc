@@ -56,24 +56,23 @@
 
 #define GOOGLE_PROTOBUF_HAS_ONEOF
 
-using google::protobuf::internal::ArenaStringPtr;
-using google::protobuf::internal::DescriptorTable;
-using google::protobuf::internal::ExtensionSet;
-using google::protobuf::internal::GenericTypeHandler;
-using google::protobuf::internal::GetEmptyString;
-using google::protobuf::internal::InlinedStringField;
-using google::protobuf::internal::InternalMetadata;
-using google::protobuf::internal::LazyField;
-using google::protobuf::internal::MapFieldBase;
-using google::protobuf::internal::MigrationSchema;
-using google::protobuf::internal::OnShutdownDelete;
-using google::protobuf::internal::ReflectionSchema;
-using google::protobuf::internal::RepeatedPtrFieldBase;
-using google::protobuf::internal::StringSpaceUsedExcludingSelfLong;
-using google::protobuf::internal::WrappedMutex;
+using PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr;
+using PROTOBUF_NAMESPACE_ID::internal::DescriptorTable;
+using PROTOBUF_NAMESPACE_ID::internal::ExtensionSet;
+using PROTOBUF_NAMESPACE_ID::internal::GenericTypeHandler;
+using PROTOBUF_NAMESPACE_ID::internal::GetEmptyString;
+using PROTOBUF_NAMESPACE_ID::internal::InlinedStringField;
+using PROTOBUF_NAMESPACE_ID::internal::InternalMetadata;
+using PROTOBUF_NAMESPACE_ID::internal::LazyField;
+using PROTOBUF_NAMESPACE_ID::internal::MapFieldBase;
+using PROTOBUF_NAMESPACE_ID::internal::MigrationSchema;
+using PROTOBUF_NAMESPACE_ID::internal::OnShutdownDelete;
+using PROTOBUF_NAMESPACE_ID::internal::ReflectionSchema;
+using PROTOBUF_NAMESPACE_ID::internal::RepeatedPtrFieldBase;
+using PROTOBUF_NAMESPACE_ID::internal::StringSpaceUsedExcludingSelfLong;
+using PROTOBUF_NAMESPACE_ID::internal::WrappedMutex;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 namespace {
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
@@ -110,7 +109,7 @@ void ReportReflectionUsageError(const Descriptor* descriptor,
                                 const FieldDescriptor* field,
                                 const char* method, const char* description) {
   GOOGLE_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
-                "  Method      : google::protobuf::Reflection::"
+                "  Method      : PROTOBUF_NAMESPACE_ID::Reflection::"
              << method
              << "\n"
                 "  Message type: "
@@ -133,7 +132,7 @@ static void ReportReflectionUsageTypeError(
     const char* method, FieldDescriptor::CppType expected_type) {
   GOOGLE_LOG(FATAL)
       << "Protocol Buffer reflection usage error:\n"
-         "  Method      : google::protobuf::Reflection::"
+         "  Method      : PROTOBUF_NAMESPACE_ID::Reflection::"
       << method
       << "\n"
          "  Message type: "
@@ -154,7 +153,7 @@ static void ReportReflectionUsageEnumTypeError(
     const Descriptor* descriptor, const FieldDescriptor* field,
     const char* method, const EnumValueDescriptor* value) {
   GOOGLE_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
-                "  Method      : google::protobuf::Reflection::"
+                "  Method      : PROTOBUF_NAMESPACE_ID::Reflection::"
              << method
              << "\n"
                 "  Message type: "
@@ -2513,5 +2512,4 @@ void UnknownFieldSetSerializer(const uint8* base, uint32 offset, uint32 tag,
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

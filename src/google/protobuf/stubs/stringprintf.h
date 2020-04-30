@@ -48,8 +48,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // Return a C++ string
 PROTOBUF_EXPORT extern string StringPrintf(const char* format, ...);
@@ -75,8 +74,7 @@ PROTOBUF_EXPORT extern const int kStringPrintfVectorMaxArgs;
 PROTOBUF_EXPORT extern string StringPrintfVector(const char* format,
                                                  const std::vector<string>& v);
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

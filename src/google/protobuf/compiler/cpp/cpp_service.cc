@@ -37,8 +37,9 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace cpp {
 
@@ -104,7 +105,7 @@ void ServiceGenerator::GenerateInterface(io::Printer* printer) {
       "                ::$proto_ns$::RpcController* controller,\n"
       "                const ::$proto_ns$::Message* request,\n"
       "                ::$proto_ns$::Message* response,\n"
-      "                ::google::protobuf::Closure* done);\n"
+      "                ::PROTOBUF_NAMESPACE_ID::Closure* done);\n"
       "const ::$proto_ns$::Message& GetRequestPrototype(\n"
       "  const ::$proto_ns$::MethodDescriptor* method) const;\n"
       "const ::$proto_ns$::Message& GetResponsePrototype(\n"
@@ -161,7 +162,7 @@ void ServiceGenerator::GenerateMethodSignatures(VirtualOrNon virtual_or_non,
         "$virtual$void $name$(::$proto_ns$::RpcController* controller,\n"
         "                     const $input_type$* request,\n"
         "                     $output_type$* response,\n"
-        "                     ::google::protobuf::Closure* done);\n");
+        "                     ::PROTOBUF_NAMESPACE_ID::Closure* done);\n");
   }
 }
 
@@ -218,7 +219,7 @@ void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
         "void $classname$::$name$(::$proto_ns$::RpcController* controller,\n"
         "                         const $input_type$*,\n"
         "                         $output_type$*,\n"
-        "                         ::google::protobuf::Closure* done) {\n"
+        "                         ::PROTOBUF_NAMESPACE_ID::Closure* done) {\n"
         "  controller->SetFailed(\"Method $name$() not implemented.\");\n"
         "  done->Run();\n"
         "}\n"
@@ -234,7 +235,7 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
       "                             ::$proto_ns$::RpcController* controller,\n"
       "                             const ::$proto_ns$::Message* request,\n"
       "                             ::$proto_ns$::Message* response,\n"
-      "                             ::google::protobuf::Closure* done) {\n"
+      "                             ::PROTOBUF_NAMESPACE_ID::Closure* done) {\n"
       "  GOOGLE_DCHECK_EQ(method->service(), $file_level_service_descriptors$[$1$]);\n"
       "  switch(method->index()) {\n",
       index_in_metadata_);
@@ -313,7 +314,7 @@ void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
         "controller,\n"
         "                              const $input_type$* request,\n"
         "                              $output_type$* response,\n"
-        "                              ::google::protobuf::Closure* done) {\n"
+        "                              ::PROTOBUF_NAMESPACE_ID::Closure* done) {\n"
         "  channel_->CallMethod(descriptor()->method($1$),\n"
         "                       controller, request, response, done);\n"
         "}\n",
@@ -323,5 +324,4 @@ void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
 
 }  // namespace cpp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

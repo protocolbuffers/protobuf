@@ -35,8 +35,9 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/metadata_lite.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 template <typename T>
@@ -270,7 +271,8 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_EXTENSION_SET_INL_H__

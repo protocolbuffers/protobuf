@@ -36,8 +36,9 @@
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/stubs/substitute.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace java {
 
@@ -282,5 +283,4 @@ std::string ClassNameResolver::GetJavaImmutableClassName(
 
 }  // namespace java
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

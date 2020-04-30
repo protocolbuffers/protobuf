@@ -58,8 +58,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 template <typename T>
 class RepeatedPtrField;
@@ -314,7 +313,7 @@ class PROTOBUF_EXPORT MessageLite {
   // This function takes a string in the (non-human-readable) binary wire
   // format, matching the encoding output by MessageLite::SerializeToString().
   // If you'd like to convert a human-readable string into a protocol buffer
-  // object, see google::protobuf::TextFormat::ParseFromString().
+  // object, see PROTOBUF_NAMESPACE_ID::TextFormat::ParseFromString().
   PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromString(
       const std::string& data);
   // Like ParseFromString(), but accepts messages that are missing
@@ -595,8 +594,7 @@ T* OnShutdownDelete(T* p) {
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

@@ -75,8 +75,9 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 namespace {
 
@@ -84,10 +85,10 @@ namespace {
 #define pipe(fds) _pipe(fds, 4096, O_BINARY)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::io::win32::access;
-using google::protobuf::io::win32::close;
-using google::protobuf::io::win32::mkdir;
-using google::protobuf::io::win32::open;
+using PROTOBUF_NAMESPACE_ID::io::win32::access;
+using PROTOBUF_NAMESPACE_ID::io::win32::close;
+using PROTOBUF_NAMESPACE_ID::io::win32::mkdir;
+using PROTOBUF_NAMESPACE_ID::io::win32::open;
 #endif
 
 #ifndef O_BINARY
@@ -998,5 +999,4 @@ TEST(ZeroSizeArray, Output) {
 
 }  // namespace
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

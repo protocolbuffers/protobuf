@@ -36,8 +36,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 struct uint128_pod;
 
@@ -379,8 +378,7 @@ inline uint128& uint128::operator--() {
   return *this;
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

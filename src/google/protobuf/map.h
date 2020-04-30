@@ -57,8 +57,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 template <typename Key, typename T>
 class Map;
@@ -1147,8 +1146,7 @@ class Map {
   friend class internal::MapFieldLite;
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

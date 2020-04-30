@@ -39,8 +39,9 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 namespace {
@@ -99,5 +100,4 @@ bool MergePartialFromCodedStream(MessageLite* msg, const ParseTable& table,
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

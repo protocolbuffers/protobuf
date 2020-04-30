@@ -34,8 +34,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 namespace {
 
@@ -66,5 +67,4 @@ TEST(StructurallyValidTest, InvalidUTF8String) {
 
 }  // namespace
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

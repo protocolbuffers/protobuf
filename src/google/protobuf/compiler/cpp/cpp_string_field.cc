@@ -38,9 +38,10 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace cpp {
 
@@ -1185,5 +1186,4 @@ void RepeatedStringFieldGenerator::GenerateByteSize(
 
 }  // namespace cpp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

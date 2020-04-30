@@ -48,9 +48,9 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 
 static void AddToDatabase(SimpleDescriptorDatabase* database,
@@ -801,5 +801,4 @@ TEST_F(MergedDescriptorDatabaseTest, FindAllExtensionNumbers) {
 
 
 }  // anonymous namespace
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

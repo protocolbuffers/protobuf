@@ -53,8 +53,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // Return true if the n bytes at a equal the n bytes at b.
@@ -149,8 +148,7 @@ inline void memcpy_inlined(char *dst, const char *src, size_t size) {
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

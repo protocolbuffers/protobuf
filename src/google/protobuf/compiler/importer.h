@@ -47,8 +47,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 namespace io {
 class ZeroCopyInputStream;
@@ -328,8 +327,7 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
 };
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

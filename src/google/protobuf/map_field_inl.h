@@ -42,8 +42,9 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 // UnwrapMapKey template
 template <typename T>
@@ -351,7 +352,8 @@ size_t MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
   return size;
 }
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_INL_H__

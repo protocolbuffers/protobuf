@@ -47,8 +47,9 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/hash.h>  // for hash<T *>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace java {
 
@@ -1026,5 +1027,4 @@ void EscapeUtf16ToString(uint16 code, std::string* output) {
 
 }  // namespace java
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

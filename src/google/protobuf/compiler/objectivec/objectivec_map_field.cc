@@ -35,8 +35,9 @@
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace objectivec {
 
@@ -185,5 +186,4 @@ void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
 
 }  // namespace objectivec
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

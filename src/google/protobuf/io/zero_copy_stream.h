@@ -114,8 +114,7 @@
 #include <google/protobuf/port_def.inc>
 
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 // Defined in this file.
@@ -245,8 +244,7 @@ class PROTOBUF_EXPORT ZeroCopyOutputStream {
 };
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

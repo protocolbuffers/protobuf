@@ -49,9 +49,9 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 #ifdef _WIN32
@@ -60,11 +60,11 @@ namespace io {
 #define lseek(fd, offset, origin) ((off_t)-1)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::io::win32::access;
-using google::protobuf::io::win32::close;
-using google::protobuf::io::win32::open;
-using google::protobuf::io::win32::read;
-using google::protobuf::io::win32::write;
+using PROTOBUF_NAMESPACE_ID::io::win32::access;
+using PROTOBUF_NAMESPACE_ID::io::win32::close;
+using PROTOBUF_NAMESPACE_ID::io::win32::open;
+using PROTOBUF_NAMESPACE_ID::io::win32::read;
+using PROTOBUF_NAMESPACE_ID::io::win32::write;
 #endif
 
 namespace {
@@ -371,5 +371,4 @@ int64_t ConcatenatingInputStream::ByteCount() const {
 // ===================================================================
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -32,8 +32,9 @@
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace cpp {
 
@@ -223,5 +224,4 @@ void PaddingOptimizer::OptimizeLayout(
 
 }  // namespace cpp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

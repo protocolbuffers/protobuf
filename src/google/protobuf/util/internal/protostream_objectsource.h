@@ -49,8 +49,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -66,14 +65,14 @@ class TypeInfo;
 //   ArrayInputStream arr_stream(proto.data(), proto.size());
 //   CodedInputStream in_stream(&arr_stream);
 //   ProtoStreamObjectSource os(&in_stream, /*ServiceTypeInfo*/ typeinfo,
-//                              <your message google::protobuf::Type>);
+//                              <your message PROTOBUF_NAMESPACE_ID::Type>);
 //
 //   Status status = os.WriteTo(<some ObjectWriter>);
 class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
  public:
   ProtoStreamObjectSource(io::CodedInputStream* stream,
                           TypeResolver* type_resolver,
-                          const google::protobuf::Type& type);
+                          const PROTOBUF_NAMESPACE_ID::Type& type);
 
   ~ProtoStreamObjectSource() override;
 
@@ -131,7 +130,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // nested messages (end with 0) and nested groups (end with group end tag).
   // The include_start_and_end parameter allows this method to be called when
   // already inside of an object, and skip calling StartObject and EndObject.
-  virtual util::Status WriteMessage(const google::protobuf::Type& type,
+  virtual util::Status WriteMessage(const PROTOBUF_NAMESPACE_ID::Type& type,
                                       StringPiece name,
                                       const uint32 end_tag,
                                       bool include_start_and_end,
@@ -141,15 +140,15 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // reading all sequential repeating elements. The caller should use this tag
   // before reading more tags from the stream.
   virtual util::StatusOr<uint32> RenderList(
-      const google::protobuf::Field* field, StringPiece name,
+      const PROTOBUF_NAMESPACE_ID::Field* field, StringPiece name,
       uint32 list_tag, ObjectWriter* ow) const;
 
   // Looks up a field and verify its consistency with wire type in tag.
-  const google::protobuf::Field* FindAndVerifyField(
-      const google::protobuf::Type& type, uint32 tag) const;
+  const PROTOBUF_NAMESPACE_ID::Field* FindAndVerifyField(
+      const PROTOBUF_NAMESPACE_ID::Type& type, uint32 tag) const;
 
   // Renders a field value to the ObjectWriter.
-  virtual util::Status RenderField(const google::protobuf::Field* field,
+  virtual util::Status RenderField(const PROTOBUF_NAMESPACE_ID::Field* field,
                                      StringPiece field_name,
                                      ObjectWriter* ow) const;
 
@@ -157,7 +156,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // value as string. This only works for primitive datatypes (no message
   // types).
   const std::string ReadFieldValueAsString(
-      const google::protobuf::Field& field) const;
+      const PROTOBUF_NAMESPACE_ID::Field& field) const;
 
 
   // Returns the input stream.
@@ -166,10 +165,10 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
  private:
   ProtoStreamObjectSource(io::CodedInputStream* stream,
                           const TypeInfo* typeinfo,
-                          const google::protobuf::Type& type);
+                          const PROTOBUF_NAMESPACE_ID::Type& type);
   // Function that renders a well known type with a modified behavior.
   typedef util::Status (*TypeRenderer)(const ProtoStreamObjectSource*,
-                                         const google::protobuf::Type&,
+                                         const PROTOBUF_NAMESPACE_ID::Type&,
                                          StringPiece, ObjectWriter*);
 
   // TODO(skarvaje): Mark these methods as non-const as they modify internal
@@ -178,82 +177,82 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Renders a NWP map.
   // Returns the next tag after reading all map entries. The caller should use
   // this tag before reading more tags from the stream.
-  util::StatusOr<uint32> RenderMap(const google::protobuf::Field* field,
+  util::StatusOr<uint32> RenderMap(const PROTOBUF_NAMESPACE_ID::Field* field,
                                      StringPiece name, uint32 list_tag,
                                      ObjectWriter* ow) const;
 
   // Renders a packed repeating field. A packed field is stored as:
   // {tag length item1 item2 item3} instead of the less efficient
   // {tag item1 tag item2 tag item3}.
-  util::Status RenderPacked(const google::protobuf::Field* field,
+  util::Status RenderPacked(const PROTOBUF_NAMESPACE_ID::Field* field,
                               ObjectWriter* ow) const;
 
   // Renders a google.protobuf.Timestamp value to ObjectWriter
   static util::Status RenderTimestamp(const ProtoStreamObjectSource* os,
-                                        const google::protobuf::Type& type,
+                                        const PROTOBUF_NAMESPACE_ID::Type& type,
                                         StringPiece name,
                                         ObjectWriter* ow);
 
   // Renders a google.protobuf.Duration value to ObjectWriter
   static util::Status RenderDuration(const ProtoStreamObjectSource* os,
-                                       const google::protobuf::Type& type,
+                                       const PROTOBUF_NAMESPACE_ID::Type& type,
                                        StringPiece name,
                                        ObjectWriter* ow);
 
   // Following RenderTYPE functions render well known types in
   // google/protobuf/wrappers.proto corresponding to TYPE.
   static util::Status RenderDouble(const ProtoStreamObjectSource* os,
-                                     const google::protobuf::Type& type,
+                                     const PROTOBUF_NAMESPACE_ID::Type& type,
                                      StringPiece name, ObjectWriter* ow);
   static util::Status RenderFloat(const ProtoStreamObjectSource* os,
-                                    const google::protobuf::Type& type,
+                                    const PROTOBUF_NAMESPACE_ID::Type& type,
                                     StringPiece name, ObjectWriter* ow);
   static util::Status RenderInt64(const ProtoStreamObjectSource* os,
-                                    const google::protobuf::Type& type,
+                                    const PROTOBUF_NAMESPACE_ID::Type& type,
                                     StringPiece name, ObjectWriter* ow);
   static util::Status RenderUInt64(const ProtoStreamObjectSource* os,
-                                     const google::protobuf::Type& type,
+                                     const PROTOBUF_NAMESPACE_ID::Type& type,
                                      StringPiece name, ObjectWriter* ow);
   static util::Status RenderInt32(const ProtoStreamObjectSource* os,
-                                    const google::protobuf::Type& type,
+                                    const PROTOBUF_NAMESPACE_ID::Type& type,
                                     StringPiece name, ObjectWriter* ow);
   static util::Status RenderUInt32(const ProtoStreamObjectSource* os,
-                                     const google::protobuf::Type& type,
+                                     const PROTOBUF_NAMESPACE_ID::Type& type,
                                      StringPiece name, ObjectWriter* ow);
   static util::Status RenderBool(const ProtoStreamObjectSource* os,
-                                   const google::protobuf::Type& type,
+                                   const PROTOBUF_NAMESPACE_ID::Type& type,
                                    StringPiece name, ObjectWriter* ow);
   static util::Status RenderString(const ProtoStreamObjectSource* os,
-                                     const google::protobuf::Type& type,
+                                     const PROTOBUF_NAMESPACE_ID::Type& type,
                                      StringPiece name, ObjectWriter* ow);
   static util::Status RenderBytes(const ProtoStreamObjectSource* os,
-                                    const google::protobuf::Type& type,
+                                    const PROTOBUF_NAMESPACE_ID::Type& type,
                                     StringPiece name, ObjectWriter* ow);
 
   // Renders a google.protobuf.Struct to ObjectWriter.
   static util::Status RenderStruct(const ProtoStreamObjectSource* os,
-                                     const google::protobuf::Type& type,
+                                     const PROTOBUF_NAMESPACE_ID::Type& type,
                                      StringPiece name, ObjectWriter* ow);
 
   // Helper to render google.protobuf.Struct's Value fields to ObjectWriter.
   static util::Status RenderStructValue(const ProtoStreamObjectSource* os,
-                                          const google::protobuf::Type& type,
+                                          const PROTOBUF_NAMESPACE_ID::Type& type,
                                           StringPiece name,
                                           ObjectWriter* ow);
 
   // Helper to render google.protobuf.Struct's ListValue fields to ObjectWriter.
   static util::Status RenderStructListValue(
-      const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
+      const ProtoStreamObjectSource* os, const PROTOBUF_NAMESPACE_ID::Type& type,
       StringPiece name, ObjectWriter* ow);
 
   // Render the "Any" type.
   static util::Status RenderAny(const ProtoStreamObjectSource* os,
-                                  const google::protobuf::Type& type,
+                                  const PROTOBUF_NAMESPACE_ID::Type& type,
                                   StringPiece name, ObjectWriter* ow);
 
   // Render the "FieldMask" type.
   static util::Status RenderFieldMask(const ProtoStreamObjectSource* os,
-                                        const google::protobuf::Type& type,
+                                        const PROTOBUF_NAMESPACE_ID::Type& type,
                                         StringPiece name,
                                         ObjectWriter* ow);
 
@@ -264,18 +263,18 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // Same as above but renders all non-message field types. Callers don't call
   // this function directly. They just use RenderField.
-  util::Status RenderNonMessageField(const google::protobuf::Field* field,
+  util::Status RenderNonMessageField(const PROTOBUF_NAMESPACE_ID::Field* field,
                                        StringPiece field_name,
                                        ObjectWriter* ow) const;
 
 
   // Utility function to detect proto maps. The 'field' MUST be repeated.
-  bool IsMap(const google::protobuf::Field& field) const;
+  bool IsMap(const PROTOBUF_NAMESPACE_ID::Field& field) const;
 
   // Utility to read int64 and int32 values from a message type in stream_.
   // Used for reading google.protobuf.Timestamp and Duration messages.
   std::pair<int64, int32> ReadSecondsAndNanos(
-      const google::protobuf::Type& type) const;
+      const PROTOBUF_NAMESPACE_ID::Type& type) const;
 
   // Helper function to check recursion depth and increment it. It will return
   // Status::OK if the current depth is allowed. Otherwise an error is returned.
@@ -287,15 +286,15 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   mutable io::CodedInputStream* stream_;
 
   // Type information for all the types used in the descriptor. Used to find
-  // google::protobuf::Type of nested messages/enums.
+  // PROTOBUF_NAMESPACE_ID::Type of nested messages/enums.
   const TypeInfo* typeinfo_;
 
   // Whether this class owns the typeinfo_ object. If true the typeinfo_ object
   // should be deleted in the destructor.
   bool own_typeinfo_;
 
-  // google::protobuf::Type of the message source.
-  const google::protobuf::Type& type_;
+  // PROTOBUF_NAMESPACE_ID::Type of the message source.
+  const PROTOBUF_NAMESPACE_ID::Type& type_;
 
 
   // Whether to render enums using lowerCamelCase. Defaults to false.
@@ -334,8 +333,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

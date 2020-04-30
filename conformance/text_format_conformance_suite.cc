@@ -36,20 +36,21 @@
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace proto2_messages = protobuf_test_messages::proto2;
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
-using google::protobuf::Message;
-using google::protobuf::TextFormat;
+using PROTOBUF_NAMESPACE_ID::Message;
+using PROTOBUF_NAMESPACE_ID::TextFormat;
 using proto2_messages::TestAllTypesProto2;
 using proto2_messages::UnknownToTestAllTypes;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 TextFormatConformanceTestSuite::TextFormatConformanceTestSuite() {
   SetFailureListFlagName("--text_format_failure_list");
@@ -375,5 +376,4 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
                                     prototype);
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

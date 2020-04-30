@@ -66,12 +66,10 @@
 // #pragma pop_macro("TYPE_BOOL")
 #undef TYPE_BOOL
 
-
-namespace google {
-namespace protobuf {
-namespace internal {
-
 #include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
+namespace internal {
 
 // This class is for internal use by the protocol buffer library and by
 // protocol-compiler-generated message classes.  It must not be called
@@ -1858,8 +1856,7 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

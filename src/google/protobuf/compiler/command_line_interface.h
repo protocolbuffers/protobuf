@@ -50,8 +50,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 class Descriptor;           // descriptor.h
 class DescriptorDatabase;   // descriptor_database.h
@@ -78,10 +77,10 @@ class DiskSourceTree;    // importer.h
 // then write a main() procedure like this:
 //
 //   int main(int argc, char* argv[]) {
-//     google::protobuf::compiler::CommandLineInterface cli;
+//     PROTOBUF_NAMESPACE_ID::compiler::CommandLineInterface cli;
 //
 //     // Support generation of C++ source and headers.
-//     google::protobuf::compiler::cpp::CppGenerator cpp_generator;
+//     PROTOBUF_NAMESPACE_ID::compiler::cpp::CppGenerator cpp_generator;
 //     cli.RegisterGenerator("--cpp_out", &cpp_generator,
 //       "Generate C++ source and header.");
 //
@@ -455,8 +454,7 @@ class PROTOC_EXPORT CommandLineInterface {
 };
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

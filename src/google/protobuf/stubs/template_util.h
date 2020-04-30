@@ -50,8 +50,7 @@
 #ifndef GOOGLE_PROTOBUF_TEMPLATE_UTIL_H_
 #define GOOGLE_PROTOBUF_TEMPLATE_UTIL_H_
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // Types small_ and big_ are guaranteed such that sizeof(small_) <
@@ -132,7 +131,8 @@ struct or_ : public integral_constant<bool, (A::value || B::value)> {
 
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_TEMPLATE_UTIL_H_

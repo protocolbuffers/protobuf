@@ -37,14 +37,13 @@
 
 #include <google/protobuf/compiler/code_generator.h>
 
-namespace google {
-namespace protobuf {
-class FileDescriptor;
-}  // namespace protobuf
-}  // namespace google
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
+class FileDescriptor;
+PROTOBUF_NAMESPACE_CLOSE
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 // A mock CodeGenerator, used by command_line_interface_unittest.  This is in
@@ -127,7 +126,8 @@ class MockCodeGenerator : public CodeGenerator {
 };
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_MOCK_CODE_GENERATOR_H__

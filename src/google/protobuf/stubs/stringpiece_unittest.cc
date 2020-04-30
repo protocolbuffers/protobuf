@@ -39,8 +39,9 @@
 #include <google/protobuf/stubs/hash.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 TEST(StringPiece, Ctor) {
   {
@@ -792,5 +793,4 @@ TEST(NonNegativeLenTest, NonNegativeLen) {
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 }  // namespace
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

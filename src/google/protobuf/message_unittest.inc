@@ -61,15 +61,16 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/io/io_win32.h>
 
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+
+PROTOBUF_NAMESPACE_OPEN
 
 #if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::io::win32::close;
-using google::protobuf::io::win32::open;
+using PROTOBUF_NAMESPACE_ID::io::win32::close;
+using PROTOBUF_NAMESPACE_ID::io::win32::open;
 #endif
 
 #ifndef O_BINARY
@@ -629,5 +630,4 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
 }
 
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

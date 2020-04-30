@@ -45,8 +45,9 @@
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/descriptor.pb.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace objectivec {
 
@@ -631,5 +632,4 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
 
 }  // namespace objectivec
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

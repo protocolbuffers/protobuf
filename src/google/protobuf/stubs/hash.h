@@ -39,13 +39,12 @@
 #include <unordered_map>
 #include <unordered_set>
 
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START \
-  namespace google {                                      \
-  namespace protobuf {
-# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END }}
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START PROTOBUF_NAMESPACE_OPEN
+# define GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END PROTOBUF_NAMESPACE_CLOSE
+
+PROTOBUF_NAMESPACE_OPEN
 
 template <typename Key>
 struct hash : public std::hash<Key> {};
@@ -117,7 +116,8 @@ struct streq {
   }
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_HASH_H__

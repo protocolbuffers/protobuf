@@ -40,8 +40,9 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/testing/file.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace ruby {
 namespace {
@@ -60,7 +61,7 @@ string FindRubyTestDir() {
 void RubyTest(string proto_file) {
   string ruby_tests = FindRubyTestDir();
 
-  google::protobuf::compiler::CommandLineInterface cli;
+  PROTOBUF_NAMESPACE_ID::compiler::CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);
 
   ruby::Generator ruby_generator;
@@ -127,5 +128,4 @@ TEST(RubyGeneratorTest, Proto3ExplictLegacyPackageTest) {
 }  // namespace
 }  // namespace ruby
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

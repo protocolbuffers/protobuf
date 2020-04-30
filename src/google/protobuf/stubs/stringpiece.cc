@@ -37,8 +37,9 @@
 
 #include <google/protobuf/stubs/logging.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 std::ostream& operator<<(std::ostream& o, StringPiece piece) {
   o.write(piece.data(), piece.size());
   return o;
@@ -266,5 +267,4 @@ StringPiece StringPiece::substr(size_type pos, size_type n) const {
 
 const StringPiece::size_type StringPiece::npos = size_type(-1);
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

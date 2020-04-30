@@ -39,8 +39,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 // Description of each strongly connected component. Note that the order
@@ -156,8 +155,7 @@ class PROTOC_EXPORT SCCAnalyzer {
 };
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

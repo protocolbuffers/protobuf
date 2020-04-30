@@ -30,13 +30,13 @@
 
 #include <google/protobuf/util/internal/error_listener.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -32,12 +32,11 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
-// This file exists solely to document the google::protobuf::io namespace.
+// This file exists solely to document the PROTOBUF_NAMESPACE_ID::io namespace.
 // It is not compiled into anything, but it may be read by an automated
 // documentation generator.
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // Auxiliary classes used for I/O.
 //
@@ -49,5 +48,4 @@ namespace protobuf {
 // temporary buffer -- should take a closer look.
 namespace io {}
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

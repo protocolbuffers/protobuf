@@ -33,8 +33,9 @@
 
 #include <google/protobuf/stubs/port.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 #undef GOOGLE_DISALLOW_EVIL_CONSTRUCTORS
 #define GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TypeName)    \
@@ -114,7 +115,8 @@ struct CompileAssert {
 
 #define GOOGLE_COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_MACROS_H__

@@ -48,14 +48,15 @@
 #include <google/protobuf/reflection.h>
 #include <google/protobuf/stubs/map_util.h>
 
+#include <google/protobuf/port_def.inc>
+
 #if PY_MAJOR_VERSION >= 3
   #define PyInt_Check PyLong_Check
   #define PyInt_AsLong PyLong_AsLong
   #define PyInt_FromLong PyLong_FromLong
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 namespace repeated_composite_container {
@@ -576,5 +577,4 @@ PyTypeObject RepeatedCompositeContainer_Type = {
 };
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

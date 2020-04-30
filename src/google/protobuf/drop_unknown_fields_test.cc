@@ -35,11 +35,12 @@
 #include <google/protobuf/message_lite.h>
 #include <gtest/gtest.h>
 
+#include <google/protobuf/port_def.inc>
+
 using unittest_drop_unknown_fields::Foo;
 using unittest_drop_unknown_fields::FooWithExtraFields;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 TEST(DropUnknownFieldsTest, GeneratedMessage) {
   FooWithExtraFields foo_with_extra_fields;
@@ -79,5 +80,4 @@ TEST(DropUnknownFieldsTest, DynamicMessage) {
   EXPECT_EQ(2, foo_with_extra_fields.extra_int32_value());
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

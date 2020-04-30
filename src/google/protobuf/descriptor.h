@@ -75,8 +75,7 @@
 #endif
 
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // Defined in this file.
 class Descriptor;
@@ -2312,8 +2311,7 @@ inline const FieldDescriptor* OneofDescriptor::field(int index) const {
   return fields_[index];
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

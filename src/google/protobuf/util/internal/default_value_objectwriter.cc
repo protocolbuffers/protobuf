@@ -36,8 +36,9 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/map_util.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 using util::Status;
 using util::StatusOr;
@@ -57,7 +58,7 @@ T ConvertTo(StringPiece value,
 }  // namespace
 
 DefaultValueObjectWriter::DefaultValueObjectWriter(
-    TypeResolver* type_resolver, const google::protobuf::Type& type,
+    TypeResolver* type_resolver, const PROTOBUF_NAMESPACE_ID::Type& type,
     ObjectWriter* ow)
     : typeinfo_(TypeInfo::NewTypeInfo(type_resolver)),
       own_typeinfo_(true),
@@ -187,7 +188,7 @@ void DefaultValueObjectWriter::RegisterFieldScrubCallBack(
 }
 
 DefaultValueObjectWriter::Node* DefaultValueObjectWriter::CreateNewNode(
-    const std::string& name, const google::protobuf::Type* type, NodeKind kind,
+    const std::string& name, const PROTOBUF_NAMESPACE_ID::Type* type, NodeKind kind,
     const DataPiece& data, bool is_placeholder,
     const std::vector<std::string>& path, bool suppress_empty_list,
     bool preserve_proto_field_names, bool use_ints_for_enums,
@@ -198,7 +199,7 @@ DefaultValueObjectWriter::Node* DefaultValueObjectWriter::CreateNewNode(
 }
 
 DefaultValueObjectWriter::Node::Node(
-    const std::string& name, const google::protobuf::Type* type, NodeKind kind,
+    const std::string& name, const PROTOBUF_NAMESPACE_ID::Type* type, NodeKind kind,
     const DataPiece& data, bool is_placeholder,
     const std::vector<std::string>& path, bool suppress_empty_list,
     bool preserve_proto_field_names, bool use_ints_for_enums,
@@ -271,21 +272,21 @@ void DefaultValueObjectWriter::Node::WriteChildren(ObjectWriter* ow) {
   }
 }
 
-const google::protobuf::Type* DefaultValueObjectWriter::Node::GetMapValueType(
-    const google::protobuf::Type& found_type, const TypeInfo* typeinfo) {
+const PROTOBUF_NAMESPACE_ID::Type* DefaultValueObjectWriter::Node::GetMapValueType(
+    const PROTOBUF_NAMESPACE_ID::Type& found_type, const TypeInfo* typeinfo) {
   // If this field is a map, we should use the type of its "Value" as
   // the type of the child node.
   for (int i = 0; i < found_type.fields_size(); ++i) {
-    const google::protobuf::Field& sub_field = found_type.fields(i);
+    const PROTOBUF_NAMESPACE_ID::Field& sub_field = found_type.fields(i);
     if (sub_field.number() != 2) {
       continue;
     }
-    if (sub_field.kind() != google::protobuf::Field::TYPE_MESSAGE) {
+    if (sub_field.kind() != PROTOBUF_NAMESPACE_ID::Field::TYPE_MESSAGE) {
       // This map's value type is not a message type. We don't need to
       // get the field_type in this case.
       break;
     }
-    util::StatusOr<const google::protobuf::Type*> sub_type =
+    util::StatusOr<const PROTOBUF_NAMESPACE_ID::Type*> sub_type =
         typeinfo->ResolveTypeUrl(sub_field.type_url());
     if (!sub_type.ok()) {
       GOOGLE_LOG(WARNING) << "Cannot resolve type '" << sub_field.type_url() << "'.";
@@ -319,7 +320,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
   }
 
   for (int i = 0; i < type_->fields_size(); ++i) {
-    const google::protobuf::Field& field = type_->fields(i);
+    const PROTOBUF_NAMESPACE_ID::Field& field = type_->fields(i);
 
     // This code is checking if the field to be added to the tree should be
     // scrubbed or not by calling the field_scrub_callback_ callback function.
@@ -342,19 +343,19 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
       continue;
     }
 
-    const google::protobuf::Type* field_type = nullptr;
+    const PROTOBUF_NAMESPACE_ID::Type* field_type = nullptr;
     bool is_map = false;
     NodeKind kind = PRIMITIVE;
 
-    if (field.kind() == google::protobuf::Field::TYPE_MESSAGE) {
+    if (field.kind() == PROTOBUF_NAMESPACE_ID::Field::TYPE_MESSAGE) {
       kind = OBJECT;
-      util::StatusOr<const google::protobuf::Type*> found_result =
+      util::StatusOr<const PROTOBUF_NAMESPACE_ID::Type*> found_result =
           typeinfo->ResolveTypeUrl(field.type_url());
       if (!found_result.ok()) {
         // "field" is of an unknown type.
         GOOGLE_LOG(WARNING) << "Cannot resolve type '" << field.type_url() << "'.";
       } else {
-        const google::protobuf::Type* found_type = found_result.value();
+        const PROTOBUF_NAMESPACE_ID::Type* found_type = found_result.value();
         is_map = IsMap(field, *found_type);
 
         if (!is_map) {
@@ -369,7 +370,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
     }
 
     if (!is_map &&
-        field.cardinality() == google::protobuf::Field::CARDINALITY_REPEATED) {
+        field.cardinality() == PROTOBUF_NAMESPACE_ID::Field::CARDINALITY_REPEATED) {
       kind = LIST;
     }
 
@@ -411,12 +412,12 @@ void DefaultValueObjectWriter::MaybePopulateChildrenOfAny(Node* node) {
 }
 
 DataPiece DefaultValueObjectWriter::FindEnumDefault(
-    const google::protobuf::Field& field, const TypeInfo* typeinfo,
+    const PROTOBUF_NAMESPACE_ID::Field& field, const TypeInfo* typeinfo,
     bool use_ints_for_enums) {
   if (!field.default_value().empty())
     return DataPiece(field.default_value(), true);
 
-  const google::protobuf::Enum* enum_type =
+  const PROTOBUF_NAMESPACE_ID::Enum* enum_type =
       typeinfo->GetEnumByTypeUrl(field.type_url());
   if (!enum_type) {
     GOOGLE_LOG(WARNING) << "Could not find enum with type '" << field.type_url()
@@ -432,50 +433,50 @@ DataPiece DefaultValueObjectWriter::FindEnumDefault(
 }
 
 DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
-    const google::protobuf::Field& field, const TypeInfo* typeinfo,
+    const PROTOBUF_NAMESPACE_ID::Field& field, const TypeInfo* typeinfo,
     bool use_ints_for_enums) {
   switch (field.kind()) {
-    case google::protobuf::Field::TYPE_DOUBLE: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_DOUBLE: {
       return DataPiece(ConvertTo<double>(
           field.default_value(), &DataPiece::ToDouble, static_cast<double>(0)));
     }
-    case google::protobuf::Field::TYPE_FLOAT: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_FLOAT: {
       return DataPiece(ConvertTo<float>(
           field.default_value(), &DataPiece::ToFloat, static_cast<float>(0)));
     }
-    case google::protobuf::Field::TYPE_INT64:
-    case google::protobuf::Field::TYPE_SINT64:
-    case google::protobuf::Field::TYPE_SFIXED64: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_INT64:
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_SINT64:
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_SFIXED64: {
       return DataPiece(ConvertTo<int64>(
           field.default_value(), &DataPiece::ToInt64, static_cast<int64>(0)));
     }
-    case google::protobuf::Field::TYPE_UINT64:
-    case google::protobuf::Field::TYPE_FIXED64: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_UINT64:
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_FIXED64: {
       return DataPiece(ConvertTo<uint64>(
           field.default_value(), &DataPiece::ToUint64, static_cast<uint64>(0)));
     }
-    case google::protobuf::Field::TYPE_INT32:
-    case google::protobuf::Field::TYPE_SINT32:
-    case google::protobuf::Field::TYPE_SFIXED32: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_INT32:
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_SINT32:
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_SFIXED32: {
       return DataPiece(ConvertTo<int32>(
           field.default_value(), &DataPiece::ToInt32, static_cast<int32>(0)));
     }
-    case google::protobuf::Field::TYPE_BOOL: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_BOOL: {
       return DataPiece(
           ConvertTo<bool>(field.default_value(), &DataPiece::ToBool, false));
     }
-    case google::protobuf::Field::TYPE_STRING: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_STRING: {
       return DataPiece(field.default_value(), true);
     }
-    case google::protobuf::Field::TYPE_BYTES: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_BYTES: {
       return DataPiece(field.default_value(), false, true);
     }
-    case google::protobuf::Field::TYPE_UINT32:
-    case google::protobuf::Field::TYPE_FIXED32: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_UINT32:
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_FIXED32: {
       return DataPiece(ConvertTo<uint32>(
           field.default_value(), &DataPiece::ToUint32, static_cast<uint32>(0)));
     }
-    case google::protobuf::Field::TYPE_ENUM: {
+    case PROTOBUF_NAMESPACE_ID::Field::TYPE_ENUM: {
       return FindEnumDefault(field, typeinfo, use_ints_for_enums);
     }
     default: {
@@ -591,7 +592,7 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
       // If the type of current_ is "Any" and its "@type" field is being set
       // here, sets the type of current_ to be the type specified by the
       // "@type".
-      util::StatusOr<const google::protobuf::Type*> found_type =
+      util::StatusOr<const PROTOBUF_NAMESPACE_ID::Type*> found_type =
           typeinfo_->ResolveTypeUrl(string_value);
       if (!found_type.ok()) {
         GOOGLE_LOG(WARNING) << "Failed to resolve type '" << string_value << "'.";
@@ -625,5 +626,4 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

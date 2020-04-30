@@ -64,19 +64,20 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 #if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::io::win32::access;
-using google::protobuf::io::win32::close;
-using google::protobuf::io::win32::dup;
-using google::protobuf::io::win32::dup2;
-using google::protobuf::io::win32::open;
-using google::protobuf::io::win32::write;
+using PROTOBUF_NAMESPACE_ID::io::win32::access;
+using PROTOBUF_NAMESPACE_ID::io::win32::close;
+using PROTOBUF_NAMESPACE_ID::io::win32::dup;
+using PROTOBUF_NAMESPACE_ID::io::win32::dup2;
+using PROTOBUF_NAMESPACE_ID::io::win32::open;
+using PROTOBUF_NAMESPACE_ID::io::win32::write;
 #endif
 
 // Disable the whole test when we use tcmalloc for "draconian" heap checks, in
@@ -2726,5 +2727,4 @@ INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,
 #endif  // !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

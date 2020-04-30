@@ -55,8 +55,9 @@
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace csharp {
 
@@ -587,5 +588,4 @@ bool IsNullable(const FieldDescriptor* descriptor) {
 
 }  // namespace csharp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

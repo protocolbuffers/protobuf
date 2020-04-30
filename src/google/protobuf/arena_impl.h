@@ -46,8 +46,7 @@
 #include <google/protobuf/port_def.inc>
 
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 inline size_t AlignUpTo8(size_t n) {
@@ -381,8 +380,7 @@ class PROTOBUF_EXPORT ArenaImpl {
 };
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

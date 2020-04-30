@@ -43,8 +43,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
 // Write a single size-delimited message from the given stream. Delimited
@@ -100,8 +99,7 @@ bool PROTOBUF_EXPORT SerializeDelimitedToCodedStream(
     const MessageLite& message, io::CodedOutputStream* output);
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

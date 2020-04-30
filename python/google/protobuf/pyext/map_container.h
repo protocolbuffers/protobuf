@@ -39,8 +39,9 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/pyext/message.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 class Message;
 
@@ -82,7 +83,8 @@ extern MessageMapContainer* NewMessageMapContainer(
     CMessageClass* message_class);
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__

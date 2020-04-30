@@ -67,8 +67,9 @@
 // Must include after the above macros.
 #include <google/protobuf/compiler/cpp/cpp_unittest.inc>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace cpp {
 
@@ -130,5 +131,4 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestConflictingExtension) {
 }  // namespace cpp_unittest
 }  // namespace cpp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

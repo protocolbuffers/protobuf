@@ -41,8 +41,9 @@
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_map_field.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace csharp {
 
@@ -136,5 +137,4 @@ void MapFieldGenerator::GenerateFreezingCode(io::Printer* printer) {
 
 }  // namespace csharp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

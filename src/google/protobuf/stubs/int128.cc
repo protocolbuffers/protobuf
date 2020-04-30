@@ -38,8 +38,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 const uint128_pod kuint128max = {
     static_cast<uint64>(PROTOBUF_LONGLONG(0xFFFFFFFFFFFFFFFF)),
@@ -188,5 +187,4 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
   return o << rep;
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

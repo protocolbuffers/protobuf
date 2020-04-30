@@ -66,8 +66,7 @@ using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
 using protobuf_unittest::TestOneof2;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 class Notifier {
  public:
@@ -1436,5 +1435,4 @@ TEST(ArenaTest, ArenaHooksSanity) {
 }
 
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

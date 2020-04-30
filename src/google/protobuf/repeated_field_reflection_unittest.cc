@@ -41,8 +41,9 @@
 #include <google/protobuf/reflection.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 using unittest::ForeignMessage;
 using unittest::TestAllExtensions;
@@ -704,5 +705,4 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefDynamicMessage) {
 }
 
 }  // namespace
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

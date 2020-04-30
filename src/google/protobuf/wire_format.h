@@ -57,14 +57,11 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 class UnknownFieldSet;  // unknown_field_set.h
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // This class is for internal use by the protocol buffer library and by
@@ -399,8 +396,7 @@ size_t ComputeUnknownFieldsSize(const InternalMetadata& metadata, size_t size,
                                 CachedSize* cached_size);
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

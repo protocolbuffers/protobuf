@@ -45,8 +45,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 class ZeroCopyInputStream;  // zero_copy_stream.h
@@ -405,8 +404,7 @@ inline void Tokenizer::ParseString(const std::string& text,
 }
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

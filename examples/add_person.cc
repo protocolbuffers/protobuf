@@ -10,7 +10,7 @@
 
 using namespace std;
 
-using google::protobuf::util::TimeUtil;
+using PROTOBUF_NAMESPACE_ID::util::TimeUtil;
 
 // This function fills in a Person message based on user input.
 void PromptForAddress(tutorial::Person* person) {
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Optional:  Delete all global objects allocated by libprotobuf.
-  google::protobuf::ShutdownProtobufLibrary();
+  PROTOBUF_NAMESPACE_ID::ShutdownProtobufLibrary();
 
   return 0;
 }

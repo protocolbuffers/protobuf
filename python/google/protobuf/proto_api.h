@@ -50,8 +50,9 @@
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/message.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 // Note on the implementation:
@@ -91,7 +92,8 @@ inline const char* PyProtoAPICapsuleName() {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__

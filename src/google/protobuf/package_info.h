@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
-// This file exists solely to document the google::protobuf namespace.
+// This file exists solely to document the PROTOBUF_NAMESPACE_ID namespace.
 // It is not compiled into anything, but it may be read by an automated
 // documentation generator.
 
@@ -58,9 +58,7 @@
 // The implementation does contain some "const" methods which actually modify
 // the object behind the scenes -- e.g., to cache results -- but in these cases
 // mutex locking is used to make the access thread-safe.
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 // TODO(gerbens) remove this comment, we need it to prevent clang-format
 // from combining the brackets. Which would mess with extract script
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

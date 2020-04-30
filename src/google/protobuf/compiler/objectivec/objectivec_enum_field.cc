@@ -36,8 +36,9 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace objectivec {
 
@@ -145,5 +146,4 @@ void RepeatedEnumFieldGenerator::FinishInitialization(void) {
 
 }  // namespace objectivec
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

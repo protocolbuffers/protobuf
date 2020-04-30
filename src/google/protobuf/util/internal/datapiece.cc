@@ -40,8 +40,9 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -271,24 +272,24 @@ StatusOr<std::string> DataPiece::ToBytes() const {
   }
 }
 
-StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
+StatusOr<int> DataPiece::ToEnum(const PROTOBUF_NAMESPACE_ID::Enum* enum_type,
                                 bool use_lower_camel_for_enums,
                                 bool case_insensitive_enum_parsing,
                                 bool ignore_unknown_enum_values,
                                 bool* is_unknown_enum_value) const {
-  if (type_ == TYPE_NULL) return google::protobuf::NULL_VALUE;
+  if (type_ == TYPE_NULL) return PROTOBUF_NAMESPACE_ID::NULL_VALUE;
 
   if (type_ == TYPE_STRING) {
     // First try the given value as a name.
     std::string enum_name = std::string(str_);
-    const google::protobuf::EnumValue* value =
+    const PROTOBUF_NAMESPACE_ID::EnumValue* value =
         FindEnumValueByNameOrNull(enum_type, enum_name);
     if (value != nullptr) return value->number();
 
     // Check if int version of enum is sent as string.
     StatusOr<int32> int_value = ToInt32();
     if (int_value.ok()) {
-      if (const google::protobuf::EnumValue* enum_value =
+      if (const PROTOBUF_NAMESPACE_ID::EnumValue* enum_value =
               FindEnumValueByNumberOrNull(enum_type, int_value.value())) {
         return enum_value->number();
       }
@@ -420,5 +421,4 @@ void DataPiece::InternalCopy(const DataPiece& other) {
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

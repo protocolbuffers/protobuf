@@ -55,8 +55,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 namespace {
 
@@ -494,14 +493,14 @@ TEST(WireFormatTest, SerializeMessageSetVariousWaysAreEqual) {
 
   // Serialize to flat array
   {
-    uint8* target = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&flat_data));
+    uint8* target = reinterpret_cast<uint8*>(::PROTOBUF_NAMESPACE_ID::string_as_array(&flat_data));
     uint8* end = message_set.SerializeWithCachedSizesToArray(target);
     EXPECT_EQ(size, end - target);
   }
 
   // Serialize to buffer
   {
-    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&stream_data), size,
+    io::ArrayOutputStream array_stream(::PROTOBUF_NAMESPACE_ID::string_as_array(&stream_data), size,
                                        1);
     io::CodedOutputStream output_stream(&array_stream);
     message_set.SerializeWithCachedSizes(&output_stream);
@@ -1520,5 +1519,4 @@ TEST(RepeatedVarint, Enum) {
 
 }  // namespace
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

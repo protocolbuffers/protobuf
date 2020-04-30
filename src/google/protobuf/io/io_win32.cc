@@ -71,8 +71,9 @@
 #include <string>
 #include <vector>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 namespace win32 {
 namespace {
@@ -464,7 +465,6 @@ bool wcs_to_utf8(const wchar_t* input, string* out) {
 }  // namespace strings
 }  // namespace win32
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #endif  // defined(_WIN32)

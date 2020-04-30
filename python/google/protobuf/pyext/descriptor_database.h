@@ -35,8 +35,9 @@
 
 #include <google/protobuf/descriptor_database.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 class PyDescriptorDatabase : public DescriptorDatabase {
@@ -75,7 +76,8 @@ class PyDescriptorDatabase : public DescriptorDatabase {
 };
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_DATABASE_H__

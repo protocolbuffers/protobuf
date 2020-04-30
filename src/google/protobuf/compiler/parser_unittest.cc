@@ -52,8 +52,9 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map_util.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 namespace {
@@ -3634,5 +3635,4 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
 }  // anonymous namespace
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

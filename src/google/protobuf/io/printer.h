@@ -45,8 +45,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 class ZeroCopyOutputStream;  // zero_copy_stream.h
@@ -377,8 +376,7 @@ class PROTOBUF_EXPORT Printer {
 };
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

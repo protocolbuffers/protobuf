@@ -35,8 +35,9 @@
 #include <google/protobuf/dynamic_message.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 
 void FillMessage(
@@ -286,5 +287,4 @@ TEST(PreserveUnknownEnumTest, SupportsUnknownEnumValuesAPI) {
   EXPECT_FALSE(proto2_reflection->SupportsUnknownEnumValues());
   EXPECT_TRUE(new_reflection->SupportsUnknownEnumValues());
 }
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

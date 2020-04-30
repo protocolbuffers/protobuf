@@ -46,8 +46,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 // This file doesn't use these declarations, but some .cc files do.
 namespace unittest = ::protobuf_unittest;
 namespace unittest_import = ::protobuf_unittest_import;
@@ -1255,8 +1254,7 @@ inline void ExpectAllFieldsAndExtensionsInOrder(const std::string& serialized) {
 }
 
 }  // namespace TestUtil
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

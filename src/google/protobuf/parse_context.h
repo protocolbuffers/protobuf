@@ -49,8 +49,7 @@
 #include <google/protobuf/port_def.inc>
 
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 class UnknownFieldSet;
 class DescriptorPool;
@@ -801,8 +800,7 @@ PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* UnknownFieldParse(
     uint32 tag, std::string* unknown, const char* ptr, ParseContext* ctx);
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

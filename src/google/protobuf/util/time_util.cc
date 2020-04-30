@@ -40,12 +40,11 @@
 // Must go after other includes.
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
-using google::protobuf::Duration;
-using google::protobuf::Timestamp;
+using PROTOBUF_NAMESPACE_ID::Duration;
+using PROTOBUF_NAMESPACE_ID::Timestamp;
 
 namespace {
 static const int kNanosPerSecond = 1000000000;
@@ -115,15 +114,15 @@ std::string FormatNanos(int32 nanos) {
 }
 
 std::string FormatTime(int64 seconds, int32 nanos) {
-  return ::google::protobuf::internal::FormatTime(seconds, nanos);
+  return ::PROTOBUF_NAMESPACE_ID::internal::FormatTime(seconds, nanos);
 }
 
 bool ParseTime(const std::string& value, int64* seconds, int32* nanos) {
-  return ::google::protobuf::internal::ParseTime(value, seconds, nanos);
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseTime(value, seconds, nanos);
 }
 
 void CurrentTime(int64* seconds, int32* nanos) {
-  return ::google::protobuf::internal::GetCurrentTime(seconds, nanos);
+  return ::PROTOBUF_NAMESPACE_ID::internal::GetCurrentTime(seconds, nanos);
 }
 
 // Truncates the remainder part after division.
@@ -369,11 +368,9 @@ timeval TimeUtil::DurationToTimeval(const Duration& value) {
 }
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 using ::PROTOBUF_NAMESPACE_ID::util::CreateNormalized;
 using ::PROTOBUF_NAMESPACE_ID::util::kNanosPerSecond;
@@ -504,5 +501,4 @@ Duration operator-(const Timestamp& t1, const Timestamp& t2) {
   return CreateNormalized<Duration>(t1.seconds() - t2.seconds(),
                                     t1.nanos() - t2.nanos());
 }
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

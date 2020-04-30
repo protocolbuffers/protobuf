@@ -35,8 +35,9 @@
 
 #include <google/protobuf/stubs/logging.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace strings {
 
 void ByteSource::CopyTo(ByteSink* sink, size_t n) {
@@ -194,5 +195,4 @@ void LimitByteSource::CopyTo(ByteSink *sink, size_t n) {
 }
 
 }  // namespace strings
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

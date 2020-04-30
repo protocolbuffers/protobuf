@@ -40,8 +40,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace strings {
 
 // ----------------------------------------------------------------------
@@ -166,8 +165,7 @@ PROTOBUF_EXPORT void SubstituteAndAppend(
     const internal::SubstituteArg& arg9 = internal::SubstituteArg());
 
 }  // namespace strings
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

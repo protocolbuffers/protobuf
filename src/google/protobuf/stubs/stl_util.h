@@ -35,8 +35,9 @@
 
 #include <google/protobuf/stubs/common.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 // Inside Google, this function implements a horrible, disgusting hack in which
 // we reach into the string's private implementation and resize it without
@@ -65,7 +66,8 @@ inline char* string_as_array(string* str) {
   return str->empty() ? nullptr : &*str->begin();
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__

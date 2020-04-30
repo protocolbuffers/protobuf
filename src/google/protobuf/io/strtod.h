@@ -35,8 +35,9 @@
 #ifndef GOOGLE_PROTOBUF_IO_STRTOD_H__
 #define GOOGLE_PROTOBUF_IO_STRTOD_H__
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 // A locale-independent version of the standard strtod(), which always
@@ -49,7 +50,8 @@ double NoLocaleStrtod(const char* str, char** endptr);
 float SafeDoubleToFloat(double value);
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_IO_STRTOD_H__

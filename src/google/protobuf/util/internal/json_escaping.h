@@ -34,8 +34,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/bytestream.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -90,7 +91,8 @@ class JsonEscaping {
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL__JSON_ESCAPING_H__

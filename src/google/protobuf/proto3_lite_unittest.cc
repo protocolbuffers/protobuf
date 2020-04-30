@@ -36,8 +36,8 @@
 // Must include after the above macros.
 #include <google/protobuf/proto3_lite_unittest.inc>
 
+#include <google/protobuf/port_def.inc>
+
 // Make extract script happy.
-namespace google {
-namespace protobuf {
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_OPEN
+PROTOBUF_NAMESPACE_CLOSE

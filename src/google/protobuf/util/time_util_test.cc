@@ -37,12 +37,13 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
-using google::protobuf::Duration;
-using google::protobuf::Timestamp;
+using PROTOBUF_NAMESPACE_ID::Duration;
+using PROTOBUF_NAMESPACE_ID::Timestamp;
 
 namespace {
 
@@ -378,5 +379,4 @@ TEST(TimeUtilTest, TimestampOperators) {
 
 }  // namespace
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

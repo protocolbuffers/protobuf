@@ -55,8 +55,9 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace java {
 
@@ -725,5 +726,4 @@ void ImmutableMessageLiteGenerator::GenerateInitializers(io::Printer* printer) {
 
 }  // namespace java
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

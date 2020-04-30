@@ -32,8 +32,9 @@
 
 #include <google/protobuf/stubs/logging.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace internal {
 
@@ -44,5 +45,4 @@ void StatusOrHelper::Crash(const Status& status) {
 
 }  // namespace internal
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -85,8 +85,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 #ifndef O_BINARY
@@ -101,12 +100,12 @@ namespace {
 #if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::io::win32::access;
-using google::protobuf::io::win32::close;
-using google::protobuf::io::win32::mkdir;
-using google::protobuf::io::win32::open;
-using google::protobuf::io::win32::setmode;
-using google::protobuf::io::win32::write;
+using PROTOBUF_NAMESPACE_ID::io::win32::access;
+using PROTOBUF_NAMESPACE_ID::io::win32::close;
+using PROTOBUF_NAMESPACE_ID::io::win32::mkdir;
+using PROTOBUF_NAMESPACE_ID::io::win32::open;
+using PROTOBUF_NAMESPACE_ID::io::win32::setmode;
+using PROTOBUF_NAMESPACE_ID::io::win32::write;
 #endif
 
 static const char* kDefaultDirectDependenciesViolationMsg =
@@ -742,7 +741,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
       // Now copy in the data.
       std::string::size_type data_pos = 0;
-      char* target_ptr = ::google::protobuf::string_as_array(target) + pos;
+      char* target_ptr = ::PROTOBUF_NAMESPACE_ID::string_as_array(target) + pos;
       while (data_pos < data_.size()) {
         // Copy indent.
         memcpy(target_ptr, indent_.data(), indent_.size());
@@ -759,7 +758,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
       }
 
       GOOGLE_CHECK_EQ(target_ptr,
-               ::google::protobuf::string_as_array(target) + pos + data_.size() + indent_size);
+               ::PROTOBUF_NAMESPACE_ID::string_as_array(target) + pos + data_.size() + indent_size);
     }
   }
 }
@@ -1541,12 +1540,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #if defined(_WIN32)
     // On Windows, the shell (typically cmd.exe) does not expand wildcards in
     // file names (e.g. foo\*.proto), so we do it ourselves.
-    switch (google::protobuf::io::win32::ExpandWildcards(
+    switch (PROTOBUF_NAMESPACE_ID::io::win32::ExpandWildcards(
         value,
         [this](const string& path) { this->input_files_.push_back(path); })) {
-      case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
+      case PROTOBUF_NAMESPACE_ID::io::win32::ExpandWildcardsResult::kSuccess:
         break;
-      case google::protobuf::io::win32::ExpandWildcardsResult::
+      case PROTOBUF_NAMESPACE_ID::io::win32::ExpandWildcardsResult::
           kErrorNoMatchingFile:
         // Path does not exist, is not a file, or it's longer than MAX_PATH and
         // long path handling is disabled.
@@ -2185,7 +2184,7 @@ bool CommandLineInterface::GeneratePluginOutput(
                               &already_seen, request.mutable_proto_file());
   }
 
-  google::protobuf::compiler::Version* version =
+  PROTOBUF_NAMESPACE_ID::compiler::Version* version =
       request.mutable_compiler_version();
   version->set_major(PROTOBUF_VERSION / 1000000);
   version->set_minor(PROTOBUF_VERSION / 1000 % 1000);
@@ -2520,5 +2519,4 @@ void CommandLineInterface::PrintFreeFieldNumbers(const Descriptor* descriptor) {
 
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

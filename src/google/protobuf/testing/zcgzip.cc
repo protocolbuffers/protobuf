@@ -55,8 +55,8 @@
 #include <google/protobuf/io/gzip_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
-using google::protobuf::io::FileOutputStream;
-using google::protobuf::io::GzipOutputStream;
+using PROTOBUF_NAMESPACE_ID::io::FileOutputStream;
+using PROTOBUF_NAMESPACE_ID::io::GzipOutputStream;
 
 int main(int argc, const char** argv) {
   FileOutputStream fout(STDOUT_FILENO);

@@ -28,24 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// This header declares the namespace google::protobuf::protobuf_unittest in order to expose
+// This header declares the namespace PROTOBUF_NAMESPACE_ID::protobuf_unittest in order to expose
 // any problems with the generated class names. We use this header to ensure
 // unittest.cc will declare the namespace prior to other includes, while obeying
 // normal include ordering.
 //
 // When generating a class name of "foo.Bar" we must ensure we prefix the class
-// name with "::", in case the namespace google::protobuf::foo exists. We intentionally
-// trigger that case here by declaring google::protobuf::protobuf_unittest.
+// name with "::", in case the namespace PROTOBUF_NAMESPACE_ID::foo exists. We intentionally
+// trigger that case here by declaring PROTOBUF_NAMESPACE_ID::protobuf_unittest.
 //
 // See ClassName in helpers.h for more details.
 
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_UNITTEST_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_UNITTEST_H__
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace protobuf_unittest {}
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_UNITTEST_H__

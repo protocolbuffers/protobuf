@@ -91,8 +91,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
 template<typename T>
@@ -264,8 +263,7 @@ inline const T& StatusOr<T>::value() const {
   return value_;
 }
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

@@ -45,8 +45,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // This class provides access to map field using generated api. It is used for
@@ -182,8 +181,7 @@ struct MapEntryToMapField<MapEntryLite<T, Key, Value, kKeyFieldType,
 };
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

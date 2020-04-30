@@ -45,8 +45,9 @@
 #include <google/protobuf/repeated_field.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 namespace internal {
 
@@ -476,5 +477,4 @@ TEST_P(MapFieldStateTest, MutableMapField) {
 
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

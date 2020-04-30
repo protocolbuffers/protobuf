@@ -35,10 +35,11 @@
 
 #if LANG_CXX11
 #include <type_traits>
+
+#include <google/protobuf/port_def.inc>
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace cpp {
 
@@ -165,5 +166,4 @@ TEST(MovableMessageTest, Noexcept) {
 
 }  // namespace cpp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -33,8 +33,9 @@
 
 #include "conformance_test.h"
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 class TextFormatConformanceTestSuite : public ConformanceTestSuite {
  public:
@@ -63,7 +64,8 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
                      Message* test_message) override;
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // TEXT_FORMAT_CONFORMANCE_SUITE_H_

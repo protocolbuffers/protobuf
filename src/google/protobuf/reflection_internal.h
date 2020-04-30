@@ -35,8 +35,9 @@
 #include <google/protobuf/reflection.h>
 #include <google/protobuf/repeated_field.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 // A base class for RepeatedFieldAccessor implementations that can support
 // random-access efficiently. All iterator methods delegates the work to
@@ -179,7 +180,7 @@ class RepeatedPtrFieldWrapper : public RandomAccessRepeatedFieldAccessor {
   }
 
   // Create a new T instance. For repeated message fields, T can be specified
-  // as google::protobuf::Message so we can't use "new T()" directly. In that case, value
+  // as PROTOBUF_NAMESPACE_ID::Message so we can't use "new T()" directly. In that case, value
   // should be a message of the same type (it's ensured by the caller) and a
   // new message object will be created using it.
   virtual T* New(const Value* value) const = 0;
@@ -357,7 +358,8 @@ class RepeatedPtrFieldMessageAccessor final
   }
 };
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__

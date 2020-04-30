@@ -45,9 +45,10 @@
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/util/internal/json_escaping.h>
 
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
 // Allow these symbols to be referenced as util::Status, util::error::* in
@@ -946,5 +947,4 @@ JsonStreamParser::TokenType JsonStreamParser::GetNextTokenType() {
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

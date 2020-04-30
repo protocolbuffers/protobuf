@@ -114,8 +114,7 @@
 #error "Protobuf requires at least C++11."
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 typedef unsigned int uint;
 
@@ -395,8 +394,7 @@ class BigEndian {
   }
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

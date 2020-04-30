@@ -40,6 +40,8 @@
 
 #include <sstream>
 
+#include <google/protobuf/port_def.inc>
+
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
 const std::string kEmptyFile = "google/protobuf/empty.proto";
 const std::string kEmptyMetadataFile = "GPBMetadata/Google/Protobuf/GPBEmpty.php";
@@ -73,8 +75,7 @@ const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace php {
 
@@ -1873,5 +1874,4 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
 }  // namespace php
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

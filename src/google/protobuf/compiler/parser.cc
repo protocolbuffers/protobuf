@@ -53,8 +53,9 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/hash.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 using internal::WireFormat;
@@ -2430,5 +2431,4 @@ void SourceLocationTable::AddImport(const Message* descriptor,
 void SourceLocationTable::Clear() { location_map_.clear(); }
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

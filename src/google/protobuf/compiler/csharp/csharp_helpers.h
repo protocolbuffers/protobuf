@@ -45,8 +45,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace csharp {
 
@@ -187,8 +186,7 @@ inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
 
 }  // namespace csharp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

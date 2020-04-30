@@ -50,8 +50,9 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/strutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 namespace {
@@ -543,5 +544,4 @@ TEST_F(DiskSourceTreeTest, VirtualFileToDiskFile) {
 }  // namespace
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

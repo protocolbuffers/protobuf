@@ -39,8 +39,9 @@
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 PyDescriptorDatabase::PyDescriptorDatabase(PyObject* py_database)
@@ -181,5 +182,4 @@ bool PyDescriptorDatabase::FindAllExtensionNumbers(
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

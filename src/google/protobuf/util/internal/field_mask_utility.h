@@ -41,8 +41,9 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -67,7 +68,8 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_FIELD_MASK_UTILITY_H__

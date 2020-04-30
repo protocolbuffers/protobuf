@@ -46,6 +46,8 @@
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/stubs/hash.h>
 
+#include <google/protobuf/port_def.inc>
+
 #if PY_MAJOR_VERSION >= 3
   #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
   #define PyString_Check PyUnicode_Check
@@ -63,8 +65,7 @@
                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 // Store interned descriptors, so that the same C++ descriptor yields the same
@@ -1965,5 +1966,4 @@ bool InitDescriptor() {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

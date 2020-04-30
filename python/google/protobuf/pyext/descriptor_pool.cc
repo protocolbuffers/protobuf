@@ -43,6 +43,8 @@
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/stubs/hash.h>
 
+#include <google/protobuf/port_def.inc>
+
 #if PY_MAJOR_VERSION >= 3
   #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
   #if PY_VERSION_HEX < 0x03030000
@@ -56,8 +58,7 @@
                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 // A map to cache Python Pools per C++ pointer.
@@ -768,5 +769,4 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

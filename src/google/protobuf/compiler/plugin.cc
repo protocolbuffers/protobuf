@@ -49,15 +49,16 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/io_win32.h>
 
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 #if defined(_WIN32)
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
-using google::protobuf::io::win32::setmode;
+using PROTOBUF_NAMESPACE_ID::io::win32::setmode;
 #endif
 
 class GeneratorResponseContext : public GeneratorContext {
@@ -184,5 +185,4 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
 }
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

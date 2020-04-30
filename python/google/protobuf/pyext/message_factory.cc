@@ -38,6 +38,8 @@
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
+#include <google/protobuf/port_def.inc>
+
 #if PY_MAJOR_VERSION >= 3
   #if PY_VERSION_HEX < 0x03030000
     #error "Python 3.0 - 3.2 are not supported."
@@ -50,8 +52,7 @@
                         : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 namespace message_factory {
@@ -299,5 +300,4 @@ bool InitMessageFactory() {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -54,8 +54,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 class DynamicMessage;
 class MapIterator;
 
@@ -794,8 +793,7 @@ class PROTOBUF_EXPORT MapIterator {
   MapValueRef value_;
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 namespace std {
 template <>

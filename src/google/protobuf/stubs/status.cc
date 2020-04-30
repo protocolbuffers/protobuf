@@ -34,8 +34,9 @@
 #include <string>
 #include <utility>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace error {
 inline string CodeEnumToString(error::Code code) {
@@ -130,5 +131,4 @@ std::ostream& operator<<(std::ostream& os, const Status& x) {
 }
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

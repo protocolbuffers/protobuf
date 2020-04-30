@@ -39,8 +39,9 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 void TestUtilLite::SetAllFields(unittest::TestAllTypesLite* message) {
   message->set_optional_int32(101);
@@ -1966,5 +1967,4 @@ void TestUtilLite::ExpectPackedExtensionsModified(
             message.GetExtension(unittest::packed_enum_extension_lite, 1));
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

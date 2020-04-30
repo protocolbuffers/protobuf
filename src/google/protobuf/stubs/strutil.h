@@ -38,11 +38,11 @@
 #include <stdlib.h>
 
 #include <cstring>
-#include <google/protobuf/port_def.inc>
 #include <vector>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 #if defined(_MSC_VER) && _MSC_VER < 1800
 #define strtoll  _strtoi64
@@ -946,8 +946,7 @@ double NoLocaleStrtod(const char* str, char** endptr);
 
 }  // namespace internal
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

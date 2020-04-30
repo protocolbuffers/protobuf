@@ -42,8 +42,9 @@
 
 #include <google/protobuf/stubs/common.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 // Local implementation of RemoveConst to avoid including base/type_traits.h.
 template <class T> struct RemoveConst { typedef T type; };
@@ -763,7 +764,8 @@ void AppendValuesFromMap(const MapContainer& map_container,
   }
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_MAP_UTIL_H__

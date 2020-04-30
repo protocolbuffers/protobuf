@@ -45,8 +45,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 class Arena;
 namespace internal {
 template <typename Derived, typename Key, typename Value,
@@ -54,15 +53,13 @@ template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
 class MapField;
 }
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
-// MapEntry is the returned google::protobuf::Message when calling AddMessage of
-// google::protobuf::Reflection. In order to let it work with generated message
+// MapEntry is the returned PROTOBUF_NAMESPACE_ID::Message when calling AddMessage of
+// PROTOBUF_NAMESPACE_ID::Reflection. In order to let it work with generated message
 // reflection, its in-memory type is the same as generated message with the same
 // fields. However, in order to decide the in-memory type of key/value, we need
 // to know both their cpp type in generated api and proto type. In
@@ -159,8 +156,7 @@ struct DeconstructMapEntry<MapEntry<Derived, K, V, key, value, default_enum> > {
 };
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

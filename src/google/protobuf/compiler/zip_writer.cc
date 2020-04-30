@@ -36,8 +36,9 @@
 #include <google/protobuf/compiler/zip_writer.h>
 #include <google/protobuf/io/coded_stream.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 // January 1, 1980 as a DOS date.
@@ -188,5 +189,4 @@ bool ZipWriter::WriteDirectory() {
 }
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

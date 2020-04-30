@@ -34,8 +34,9 @@
 #include <google/protobuf/util/delimited_message_util.h>
 #include <google/protobuf/io/coded_stream.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
 bool SerializeDelimitedToFileDescriptor(const MessageLite& message,
@@ -117,5 +118,4 @@ bool SerializeDelimitedToCodedStream(const MessageLite& message,
 }
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

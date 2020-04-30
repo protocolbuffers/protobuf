@@ -42,8 +42,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 class Descriptor;
 class EnumDescriptor;
@@ -174,8 +173,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
 }  // namespace python
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

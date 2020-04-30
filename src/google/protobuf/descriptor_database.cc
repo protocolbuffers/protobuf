@@ -41,8 +41,9 @@
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 namespace {
 void RecordMessageNames(const DescriptorProto& desc_proto,
@@ -465,8 +466,8 @@ class EncodedDescriptorDatabase::DescriptorIndex {
 
 bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
                                     int size) {
-  google::protobuf::Arena arena;
-  auto* file = google::protobuf::Arena::CreateMessage<FileDescriptorProto>(&arena);
+  PROTOBUF_NAMESPACE_ID::Arena arena;
+  auto* file = PROTOBUF_NAMESPACE_ID::Arena::CreateMessage<FileDescriptorProto>(&arena);
   if (file->ParseFromArray(encoded_file_descriptor, size)) {
     return index_->AddFile(*file,
                            std::make_pair(encoded_file_descriptor, size));
@@ -926,5 +927,4 @@ bool MergedDescriptorDatabase::FindAllExtensionNumbers(
 }
 
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

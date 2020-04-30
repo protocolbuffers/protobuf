@@ -38,8 +38,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace error {
 // These values must match error codes defined in google/rpc/code.proto.
@@ -117,8 +116,7 @@ class PROTOBUF_EXPORT Status {
 PROTOBUF_EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

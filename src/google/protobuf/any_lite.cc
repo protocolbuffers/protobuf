@@ -35,8 +35,9 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/stubs/strutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 std::string GetTypeUrl(StringPiece message_name,
@@ -59,10 +60,10 @@ AnyMetadata::AnyMetadata(UrlType* type_url, ValueType* value)
 void AnyMetadata::InternalPackFrom(const MessageLite& message,
                                    StringPiece type_url_prefix,
                                    StringPiece type_name) {
-  type_url_->SetNoArena(&::google::protobuf::internal::GetEmptyString(),
+  type_url_->SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
                         GetTypeUrl(type_name, type_url_prefix));
   message.SerializeToString(value_->MutableNoArena(
-      &::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited()));
 }
 
 bool AnyMetadata::InternalUnpackTo(StringPiece type_name,
@@ -118,5 +119,4 @@ bool ParseAnyTypeUrl(const std::string& type_url, std::string* full_type_name) {
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

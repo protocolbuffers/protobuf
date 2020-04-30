@@ -34,8 +34,9 @@
 
 #include <google/protobuf/stubs/stringpiece.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // These four-byte entries compactly encode how many bytes 0..255 to delete
@@ -612,5 +613,4 @@ char* UTF8CoerceToStructurallyValid(const StringPiece& src_str,
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

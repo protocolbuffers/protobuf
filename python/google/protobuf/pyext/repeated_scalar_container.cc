@@ -45,6 +45,8 @@
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
+#include <google/protobuf/port_def.inc>
+
 #if PY_MAJOR_VERSION >= 3
   #define PyInt_FromLong PyLong_FromLong
   #if PY_VERSION_HEX < 0x03030000
@@ -55,8 +57,7 @@
   #endif
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 namespace repeated_scalar_container {
@@ -774,5 +775,4 @@ PyTypeObject RepeatedScalarContainer_Type = {
 };
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

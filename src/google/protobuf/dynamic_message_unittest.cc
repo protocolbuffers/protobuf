@@ -54,8 +54,9 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 class DynamicMessageTest : public ::testing::TestWithParam<bool> {
  protected:
@@ -322,5 +323,4 @@ TEST_F(DynamicMessageTest, Proto3) {
 
 INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest, ::testing::Bool());
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -39,14 +39,15 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <gmock/gmock.h>
+
+#include <google/protobuf/port_def.inc>
 // Disable death tests if we use exceptions in CHECK().
 #if !PROTOBUF_USE_EXCEPTIONS && defined(GTEST_HAS_DEATH_TEST) && \
     !GTEST_OS_WINDOWS
 #define PROTOBUF_HAS_DEATH_TEST
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // When running unittests, get the directory containing the source code.
 string TestSourceDir();
@@ -98,7 +99,8 @@ class ScopedMemoryLog {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ScopedMemoryLog);
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_GOOGLETEST_H__

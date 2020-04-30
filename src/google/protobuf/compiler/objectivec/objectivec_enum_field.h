@@ -35,8 +35,9 @@
 #include <string>
 #include <google/protobuf/compiler/objectivec/objectivec_field.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace objectivec {
 
@@ -72,6 +73,7 @@ class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
 
 }  // namespace objectivec
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__

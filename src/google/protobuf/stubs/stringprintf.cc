@@ -40,8 +40,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 #ifdef _MSC_VER
 enum { IS_COMPILER_MSVC = 1 };
@@ -172,5 +173,4 @@ string StringPrintfVector(const char* format, const std::vector<string>& v) {
                       cstr[25], cstr[26], cstr[27], cstr[28], cstr[29],
                       cstr[30], cstr[31]);
 }
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

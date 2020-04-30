@@ -32,8 +32,9 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 class MapTestUtil {
  public:
@@ -267,5 +268,4 @@ inline std::vector<const Message*> MapTestUtil::GetMapEntriesFromRelease(
   return result;
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

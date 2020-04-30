@@ -32,11 +32,12 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 
+#include <google/protobuf/port_def.inc>
+
 
 #define EXPECT_EQ GOOGLE_CHECK_EQ
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 NoHeapChecker::~NoHeapChecker() {
@@ -46,5 +47,4 @@ NoHeapChecker::~NoHeapChecker() {
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

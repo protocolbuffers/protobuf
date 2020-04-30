@@ -61,7 +61,7 @@
 //
 //     // implements MyService ---------------------------------------
 //
-//     void Foo(google::protobuf::RpcController* controller,
+//     void Foo(PROTOBUF_NAMESPACE_ID::RpcController* controller,
 //              const MyRequest* request,
 //              MyResponse* response,
 //              Closure* done) {
@@ -110,8 +110,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // Defined in this file.
 class Service;
@@ -285,8 +284,7 @@ class PROTOBUF_EXPORT RpcChannel {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RpcChannel);
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

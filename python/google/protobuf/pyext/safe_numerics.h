@@ -37,8 +37,9 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 template <bool SameSize, bool DestLarger,
@@ -158,7 +159,8 @@ inline Dest checked_numeric_cast(Source source) {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_SAFE_NUMERICS_H__

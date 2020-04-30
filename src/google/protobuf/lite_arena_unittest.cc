@@ -32,8 +32,9 @@
 #include <google/protobuf/map_lite_test_util.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 
 class LiteArenaTest : public testing::Test {
@@ -86,5 +87,4 @@ TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
 }
 
 }  // namespace
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

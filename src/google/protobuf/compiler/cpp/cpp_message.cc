@@ -58,9 +58,10 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/hash.h>
 
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace cpp {
 
@@ -4076,5 +4077,4 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 
 }  // namespace cpp
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

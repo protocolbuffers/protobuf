@@ -40,8 +40,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 static const int kDefaultBufferSize = 65536;
@@ -327,7 +328,6 @@ bool GzipOutputStream::Close() {
 }
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #endif  // HAVE_ZLIB

@@ -37,10 +37,11 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+#include <google/protobuf/port_def.inc>
+
 using proto3_arena_unittest::TestAllTypes;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 // We selectively set/check a few representative fields rather than all fields
 // as this test is only expected to cover the basics of arena support.
@@ -148,5 +149,4 @@ TEST(Proto3ArenaLiteTest, ReleaseMessage) {
 }
 
 }  // namespace
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

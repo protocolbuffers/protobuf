@@ -30,8 +30,9 @@
 
 #include <Python.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 // Version constant.
@@ -123,5 +124,4 @@ PyMODINIT_FUNC INITFUNC() {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

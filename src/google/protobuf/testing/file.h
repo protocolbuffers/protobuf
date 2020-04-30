@@ -36,8 +36,9 @@
 
 #include <google/protobuf/stubs/common.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 const int DEFAULT_FILE_MODE = 0777;
 
@@ -99,7 +100,8 @@ class File {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(File);
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_TESTING_FILE_H__

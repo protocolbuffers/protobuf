@@ -39,8 +39,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 TEST(Int128, AllTests) {
   uint128 zero(0);
@@ -513,5 +512,4 @@ TEST(Int128, OStream) {
     EXPECT_EQ(cases[i].rep, os.str());
   }
 }
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

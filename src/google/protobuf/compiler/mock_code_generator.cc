@@ -54,6 +54,8 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/substitute.h>
 
+#include <google/protobuf/port_def.inc>
+
 #ifdef major
 #undef major
 #endif
@@ -61,8 +63,7 @@
 #undef minor
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 // Returns the list of the names of files in all_files in the form of a
@@ -333,5 +334,4 @@ std::string MockCodeGenerator::GetOutputFileContent(
 }
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

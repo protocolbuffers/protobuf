@@ -37,7 +37,7 @@
 // as macro definitions for flags of these functions.
 //
 // By including this file you'll redefine open/access/etc. to
-// ::google::protobuf::io::win32::{open/access/etc.}.
+// ::PROTOBUF_NAMESPACE_ID::io::win32::{open/access/etc.}.
 // Make sure you don't include a header that attempts to redeclare or
 // redefine these functions, that'll lead to confusing compilation
 // errors. It's best to #include this file as the last one to ensure that.
@@ -57,8 +57,7 @@
 
 // Compilers on Windows other than MSVC (e.g. Cygwin, MinGW32) define the
 // following functions already, except for mkdir.
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 namespace win32 {
 
@@ -113,8 +112,7 @@ PROTOBUF_EXPORT bool wcs_to_utf8(const wchar_t* input, std::string* out);
 
 }  // namespace win32
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #ifndef W_OK
 #define W_OK 02  // not defined by MSVC for whatever reason

@@ -32,8 +32,9 @@
 #include <google/protobuf/map_lite_unittest.pb.h>
 #include <google/protobuf/map_test_util_impl.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 void MapLiteTestUtil::SetMapFields(unittest::TestMapLite* message) {
   MapTestUtilImpl::SetMapFields<unittest::MapEnumLite,
@@ -89,5 +90,4 @@ void MapLiteTestUtil::ExpectMapFieldsModified(
       message);
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -40,8 +40,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 class ZeroCopyInputStream;
 class ZeroCopyOutputStream;
@@ -195,8 +194,7 @@ class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
 }  // namespace internal
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

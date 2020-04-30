@@ -7,17 +7,18 @@
 
 #include "google/protobuf/compiler/plugin.h"
 
-using google::protobuf::FileDescriptorProto;
-using google::protobuf::FileDescriptor;
-using google::protobuf::DescriptorPool;
-using google::protobuf::io::Printer;
-using google::protobuf::util::SchemaGroupStripper;
-using google::protobuf::util::EnumScrubber;
-using google::protobuf::util::ExtensionStripper;
-using google::protobuf::util::FieldScrubber;
+#include "google/protobuf/port_def.inc"
 
-namespace google {
-namespace protobuf {
+using PROTOBUF_NAMESPACE_ID::FileDescriptorProto;
+using PROTOBUF_NAMESPACE_ID::FileDescriptor;
+using PROTOBUF_NAMESPACE_ID::DescriptorPool;
+using PROTOBUF_NAMESPACE_ID::io::Printer;
+using PROTOBUF_NAMESPACE_ID::util::SchemaGroupStripper;
+using PROTOBUF_NAMESPACE_ID::util::EnumScrubber;
+using PROTOBUF_NAMESPACE_ID::util::ExtensionStripper;
+using PROTOBUF_NAMESPACE_ID::util::FieldScrubber;
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 
 namespace {
@@ -71,7 +72,7 @@ class Proto2ToProto3Generator final : public CodeGenerator {
     std::vector<std::pair<string,string>> option_pairs;
     ParseGeneratorParameter(parameter, &option_pairs);
 
-    std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> output(
+    std::unique_ptr<PROTOBUF_NAMESPACE_ID::io::ZeroCopyOutputStream> output(
         context->Open(basename + ".proto"));
     string content = GetPool()->BuildFile(new_file)->DebugString();
     Printer printer(output.get(), '$');
@@ -106,10 +107,9 @@ class Proto2ToProto3Generator final : public CodeGenerator {
 };
 
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 int main(int argc, char* argv[]) {
-  google::protobuf::compiler::Proto2ToProto3Generator generator;
-  return google::protobuf::compiler::PluginMain(argc, argv, &generator);
+  PROTOBUF_NAMESPACE_ID::compiler::Proto2ToProto3Generator generator;
+  return PROTOBUF_NAMESPACE_ID::compiler::PluginMain(argc, argv, &generator);
 }

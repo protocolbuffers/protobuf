@@ -36,8 +36,9 @@
 // See descriptor_containers.cc for more description.
 #include <Python.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 class Descriptor;
 class FileDescriptor;
@@ -103,7 +104,8 @@ PyObject* NewServiceMethodsByName(const ServiceDescriptor* descriptor);
 
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_CONTAINERS_H__

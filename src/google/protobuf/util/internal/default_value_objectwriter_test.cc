@@ -36,8 +36,9 @@
 #include <google/protobuf/util/internal/constants.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 namespace testing {
@@ -187,5 +188,4 @@ TEST_P(DefaultValueObjectWriterSuppressListTest, Empty) {
 }  // namespace testing
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

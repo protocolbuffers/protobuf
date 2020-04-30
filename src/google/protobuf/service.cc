@@ -34,12 +34,12 @@
 
 #include <google/protobuf/service.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 Service::~Service() {}
 RpcChannel::~RpcChannel() {}
 RpcController::~RpcController() {}
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -57,6 +57,8 @@
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
+#include <google/protobuf/port_def.inc>
+
 #if PY_MAJOR_VERSION >= 3
   #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
   #define PyString_FromFormat PyUnicode_FromFormat
@@ -72,8 +74,7 @@
                        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 struct PyContainer;
@@ -1789,5 +1790,4 @@ bool InitDescriptorMappingTypes() {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

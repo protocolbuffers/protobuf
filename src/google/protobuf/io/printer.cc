@@ -40,8 +40,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter)
@@ -396,5 +397,4 @@ const char* Printer::WriteVariable(
 }
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

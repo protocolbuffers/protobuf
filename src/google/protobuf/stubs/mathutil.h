@@ -37,8 +37,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // Like std::make_unsigned_t except floating point types map to themselves.
@@ -156,7 +157,8 @@ bool MathUtil::WithinFractionOrMargin(const T x, const T y,
   }
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_MATHUTIL_H_

@@ -47,6 +47,8 @@
 #include <google/protobuf/util/type_resolver.h>
 #include "conformance.pb.h"
 
+#include <google/protobuf/port_def.inc>
+
 namespace conformance {
 class ConformanceRequest;
 class ConformanceResponse;
@@ -58,8 +60,7 @@ class TestAllTypesProto3;
 }  // namespace proto3
 }  // namespace protobuf_test_messages
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 class ConformanceTestSuite;
 
@@ -317,7 +318,8 @@ class ConformanceTestSuite {
   std::set<std::string> skipped_;
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // CONFORMANCE_CONFORMANCE_TEST_H

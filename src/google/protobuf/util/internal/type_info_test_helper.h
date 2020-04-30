@@ -42,8 +42,9 @@
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 namespace testing {
@@ -89,7 +90,8 @@ class TypeInfoTestHelper {
 }  // namespace testing
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_TYPE_INFO_TEST_HELPER_H__

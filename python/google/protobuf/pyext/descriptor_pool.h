@@ -36,8 +36,9 @@
 #include <unordered_map>
 #include <google/protobuf/descriptor.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 struct PyMessageFactory;
@@ -130,7 +131,8 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool);
 bool InitDescriptorPool();
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__

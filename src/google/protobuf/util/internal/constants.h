@@ -33,10 +33,11 @@
 
 #include <google/protobuf/stubs/common.h>
 
+#include <google/protobuf/port_def.inc>
+
 // This file contains constants used by //net/proto2/util/converter.
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 // Prefix for type URLs.
@@ -94,6 +95,7 @@ const char kOptionJspbMessageId[] = "jspb.message_id";
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+#include <google/protobuf/port_undef.inc>
+
 #endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_CONSTANTS_H__

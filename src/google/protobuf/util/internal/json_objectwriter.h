@@ -42,8 +42,7 @@
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -267,8 +266,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

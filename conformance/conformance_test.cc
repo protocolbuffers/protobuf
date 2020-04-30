@@ -44,12 +44,14 @@
 #include <google/protobuf/util/message_differencer.h>
 #include "conformance.pb.h"
 
+#include <google/protobuf/port_def.inc>
+
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
-using google::protobuf::TextFormat;
-using google::protobuf::util::DefaultFieldComparator;
-using google::protobuf::util::MessageDifferencer;
+using PROTOBUF_NAMESPACE_ID::TextFormat;
+using PROTOBUF_NAMESPACE_ID::util::DefaultFieldComparator;
+using PROTOBUF_NAMESPACE_ID::util::MessageDifferencer;
 using std::string;
 
 namespace {
@@ -71,8 +73,7 @@ static string ToOctString(const string& binary_string) {
 
 }  // namespace
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     ConformanceLevel level,
@@ -454,5 +455,4 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   return ok;
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

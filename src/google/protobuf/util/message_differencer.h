@@ -56,8 +56,7 @@
 // Always include as last one, otherwise it can break compilation
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 class DynamicMessageFactory;
 class FieldDescriptor;
@@ -928,8 +927,7 @@ class PROTOBUF_EXPORT FieldContext {
 };
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

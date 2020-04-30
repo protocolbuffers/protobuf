@@ -59,8 +59,7 @@
 
 const size_t kMapEntryTagByteSize = 2;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // Forward declare static functions
@@ -1746,5 +1745,4 @@ size_t ComputeUnknownFieldsSize(const InternalMetadata& metadata,
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

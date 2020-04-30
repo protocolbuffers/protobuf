@@ -47,8 +47,7 @@
 // This file is logically internal-only and should only be used by protobuf
 // generated code.
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 // An implementation of MessageLite that treats all data as unknown. This type
@@ -182,8 +181,7 @@ struct WeakRepeatedPtrField {
   };
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

@@ -40,8 +40,9 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 // This approximately 0x1.ffffffp127, but we don't use 0x1.ffffffp127 because
@@ -74,9 +75,8 @@ float SafeDoubleToFloat(double value) {
 }
 
 double NoLocaleStrtod(const char* str, char** endptr) {
-  return google::protobuf::internal::NoLocaleStrtod(str, endptr);
+  return PROTOBUF_NAMESPACE_ID::internal::NoLocaleStrtod(str, endptr);
 }
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

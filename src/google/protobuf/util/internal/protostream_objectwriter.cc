@@ -49,8 +49,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -62,7 +61,7 @@ using util::error::INVALID_ARGUMENT;
 
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
-    TypeResolver* type_resolver, const google::protobuf::Type& type,
+    TypeResolver* type_resolver, const PROTOBUF_NAMESPACE_ID::Type& type,
     strings::ByteSink* output, ErrorListener* listener,
     const ProtoStreamObjectWriter::Options& options)
     : ProtoWriter(type_resolver, type, output, listener),
@@ -76,7 +75,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
-    const TypeInfo* typeinfo, const google::protobuf::Type& type,
+    const TypeInfo* typeinfo, const PROTOBUF_NAMESPACE_ID::Type& type,
     strings::ByteSink* output, ErrorListener* listener,
     const ProtoStreamObjectWriter::Options& options)
     : ProtoWriter(typeinfo, type, output, listener),
@@ -89,7 +88,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
-    const TypeInfo* typeinfo, const google::protobuf::Type& type,
+    const TypeInfo* typeinfo, const PROTOBUF_NAMESPACE_ID::Type& type,
     strings::ByteSink* output, ErrorListener* listener)
     : ProtoWriter(typeinfo, type, output, listener),
       master_type_(type),
@@ -337,7 +336,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
     type_url_ = s.value();
   }
   // Resolve the type url, and report an error if we failed to resolve it.
-  StatusOr<const google::protobuf::Type*> resolved_type =
+  StatusOr<const PROTOBUF_NAMESPACE_ID::Type*> resolved_type =
       parent_->typeinfo()->ResolveTypeUrl(type_url_);
   if (!resolved_type.ok()) {
     parent_->InvalidValue("Any", resolved_type.status().message());
@@ -345,7 +344,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
     return;
   }
   // At this point, type is never null.
-  const google::protobuf::Type* type = resolved_type.value();
+  const PROTOBUF_NAMESPACE_ID::Type* type = resolved_type.value();
 
   well_known_type_render_ = FindTypeRenderer(type_url_);
   if (well_known_type_render_ != nullptr ||
@@ -583,7 +582,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     return this;
   }
 
-  const google::protobuf::Field* field = BeginNamed(name, false);
+  const PROTOBUF_NAMESPACE_ID::Field* field = BeginNamed(name, false);
 
   if (field == nullptr) return this;
 
@@ -798,7 +797,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
   }
 
   // name is not empty
-  const google::protobuf::Field* field = Lookup(name);
+  const PROTOBUF_NAMESPACE_ID::Field* field = Lookup(name);
 
   if (field == nullptr) {
     IncrementInvalidDepth();
@@ -1006,7 +1005,7 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
 
   int64 seconds;
   int32 nanos;
-  if (!::google::protobuf::internal::ParseTime(value.ToString(), &seconds,
+  if (!::PROTOBUF_NAMESPACE_ID::internal::ParseTime(value.ToString(), &seconds,
                                                &nanos)) {
     return Status(INVALID_ARGUMENT, StrCat("Invalid time format: ", value));
   }
@@ -1129,7 +1128,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     return this;
   }
 
-  const google::protobuf::Field* field = nullptr;
+  const PROTOBUF_NAMESPACE_ID::Field* field = nullptr;
   if (current_->IsMap()) {
     if (!ValidMapKey(name)) return this;
 
@@ -1269,7 +1268,7 @@ void ProtoStreamObjectWriter::InitRendererMap() {
       &ProtoStreamObjectWriter::RenderWrapperType;
   (*renderers_)["type.googleapis.com/google.protobuf.Value"] =
       &ProtoStreamObjectWriter::RenderStructValue;
-  ::google::protobuf::internal::OnShutdown(&DeleteRendererMap);
+  ::PROTOBUF_NAMESPACE_ID::internal::OnShutdown(&DeleteRendererMap);
 }
 
 void ProtoStreamObjectWriter::DeleteRendererMap() {
@@ -1325,37 +1324,36 @@ void ProtoStreamObjectWriter::PopOneElement() {
   current_.reset(current_->pop<Item>());
 }
 
-bool ProtoStreamObjectWriter::IsMap(const google::protobuf::Field& field) {
+bool ProtoStreamObjectWriter::IsMap(const PROTOBUF_NAMESPACE_ID::Field& field) {
   if (field.type_url().empty() ||
-      field.kind() != google::protobuf::Field::TYPE_MESSAGE ||
-      field.cardinality() != google::protobuf::Field::CARDINALITY_REPEATED) {
+      field.kind() != PROTOBUF_NAMESPACE_ID::Field::TYPE_MESSAGE ||
+      field.cardinality() != PROTOBUF_NAMESPACE_ID::Field::CARDINALITY_REPEATED) {
     return false;
   }
-  const google::protobuf::Type* field_type =
+  const PROTOBUF_NAMESPACE_ID::Type* field_type =
       typeinfo()->GetTypeByTypeUrl(field.type_url());
 
   return converter::IsMap(field, *field_type);
 }
 
-bool ProtoStreamObjectWriter::IsAny(const google::protobuf::Field& field) {
+bool ProtoStreamObjectWriter::IsAny(const PROTOBUF_NAMESPACE_ID::Field& field) {
   return GetTypeWithoutUrl(field.type_url()) == kAnyType;
 }
 
-bool ProtoStreamObjectWriter::IsStruct(const google::protobuf::Field& field) {
+bool ProtoStreamObjectWriter::IsStruct(const PROTOBUF_NAMESPACE_ID::Field& field) {
   return GetTypeWithoutUrl(field.type_url()) == kStructType;
 }
 
 bool ProtoStreamObjectWriter::IsStructValue(
-    const google::protobuf::Field& field) {
+    const PROTOBUF_NAMESPACE_ID::Field& field) {
   return GetTypeWithoutUrl(field.type_url()) == kStructValueType;
 }
 
 bool ProtoStreamObjectWriter::IsStructListValue(
-    const google::protobuf::Field& field) {
+    const PROTOBUF_NAMESPACE_ID::Field& field) {
   return GetTypeWithoutUrl(field.type_url()) == kStructListValueType;
 }
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

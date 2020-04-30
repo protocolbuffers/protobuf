@@ -56,8 +56,7 @@
 // implementation that knew more about ::std::string's internals could integrate
 // more closely with the arena allocator.
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 template <typename T>
@@ -396,8 +395,7 @@ inline void ArenaStringPtr::AssignWithDefault(
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 
 #include <google/protobuf/port_undef.inc>

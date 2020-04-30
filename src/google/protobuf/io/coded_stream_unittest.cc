@@ -57,8 +57,7 @@
 #define ULL(x) PROTOBUF_ULONGLONG(x)
 
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 namespace {
 
@@ -1342,5 +1341,4 @@ TEST_F(CodedStreamTest, InputOver2G) {
 
 }  // namespace
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

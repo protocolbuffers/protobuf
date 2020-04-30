@@ -42,8 +42,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // This type trait can be used to cause templates to only match proto2 enum
 // types.
@@ -75,8 +74,7 @@ PROTOBUF_EXPORT bool InitializeEnumStrings(
     internal::ExplicitlyConstructed<std::string>* enum_strings);
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

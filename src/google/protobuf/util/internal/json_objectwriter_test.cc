@@ -34,8 +34,9 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace converter {
 
@@ -309,5 +310,4 @@ TEST_F(JsonObjectWriterTest, TestWebsafeByteEncoding) {
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

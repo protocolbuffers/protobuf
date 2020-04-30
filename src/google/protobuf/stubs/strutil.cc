@@ -43,6 +43,8 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+#include <google/protobuf/port_def.inc>
+
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.
 //
@@ -57,8 +59,7 @@
 #define snprintf _snprintf
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // These are defined as macros on some platforms.  #undef them so that we can
 // redefine them.
@@ -2482,5 +2483,4 @@ double NoLocaleStrtod(const char *str, char **endptr) {
 
 }  // namespace internal
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

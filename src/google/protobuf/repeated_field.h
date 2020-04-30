@@ -73,8 +73,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 class Message;
 class Reflection;
@@ -477,7 +476,7 @@ class RepeatedField final {
   };
 
   friend class TestRepeatedFieldHelper;
-  friend class ::google::protobuf::internal::ParseContext;
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::ParseContext;
 };
 
 template <typename Element>
@@ -787,7 +786,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   friend class MergePartialFromCodedStreamHelper;
   friend class AccessorHelper;
   template <typename T>
-  friend struct google::protobuf::WeakRepeatedPtrField;
+  friend struct PROTOBUF_NAMESPACE_ID::WeakRepeatedPtrField;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPtrFieldBase);
 };
@@ -2833,8 +2832,7 @@ extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE(PROTOBUF_EXPORT)
     RepeatedPtrField<std::string>;
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

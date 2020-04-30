@@ -43,8 +43,9 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 
 // Each test repeats over several block sizes in order to test both cases
@@ -731,5 +732,4 @@ TEST(Printer, FormatInternal) {
 }
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

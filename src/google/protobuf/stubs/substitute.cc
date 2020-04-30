@@ -36,8 +36,9 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace strings {
 
 using internal::SubstituteArg;
@@ -134,5 +135,4 @@ void SubstituteAndAppend(
 }
 
 }  // namespace strings
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

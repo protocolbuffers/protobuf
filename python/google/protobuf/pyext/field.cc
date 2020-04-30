@@ -34,12 +34,13 @@
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/message.h>
 
+#include <google/protobuf/port_def.inc>
+
 #if PY_MAJOR_VERSION >= 3
   #define PyString_FromFormat PyUnicode_FromFormat
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 namespace field {
@@ -138,5 +139,4 @@ PyObject* NewFieldProperty(const FieldDescriptor* field_descriptor) {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

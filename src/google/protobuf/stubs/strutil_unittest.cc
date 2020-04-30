@@ -38,12 +38,13 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+#include <google/protobuf/port_def.inc>
+
 #ifdef _WIN32
 #define snprintf _snprintf
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 
 // TODO(kenton):  Copy strutil tests from google3?
@@ -891,5 +892,4 @@ INSTANTIATE_TEST_CASE_P(
                         " no whitespace  ")));  // more trailing than leading
 
 }  // anonymous namespace
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

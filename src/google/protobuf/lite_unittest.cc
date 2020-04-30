@@ -46,8 +46,9 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 // Helper methods to test parsing merge behavior.
 void ExpectMessageMerged(const unittest::TestAllTypesLite& message) {
@@ -615,8 +616,8 @@ TEST(Lite, AllLite28) {
     MapLiteTestUtil::SetMapFields(&message1);
     int size = message1.ByteSize();
     data.resize(size);
-    ::google::protobuf::uint8* start = reinterpret_cast<::google::protobuf::uint8*>(::google::protobuf::string_as_array(&data));
-    ::google::protobuf::uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    ::PROTOBUF_NAMESPACE_ID::uint8* start = reinterpret_cast<::PROTOBUF_NAMESPACE_ID::uint8*>(::PROTOBUF_NAMESPACE_ID::string_as_array(&data));
+    ::PROTOBUF_NAMESPACE_ID::uint8* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
     MapLiteTestUtil::ExpectMapFieldsSet(message2);
@@ -635,7 +636,7 @@ TEST(Lite, AllLite29) {
     data.resize(size);
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(::PROTOBUF_NAMESPACE_ID::string_as_array(&data), size, 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -875,7 +876,7 @@ TEST(Lite, AllLite43) {
     protobuf_unittest::TestOneofParsingLite message2;
     message2.mutable_oneof_submessage();
     io::CodedInputStream input_stream(
-        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+        reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(serialized.data()), serialized.size());
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -885,7 +886,7 @@ TEST(Lite, AllLite43) {
     protobuf_unittest::TestOneofParsingLite message2;
     message2.set_oneof_string("string");
     io::CodedInputStream input_stream(
-        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+        reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(serialized.data()), serialized.size());
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -895,7 +896,7 @@ TEST(Lite, AllLite43) {
     protobuf_unittest::TestOneofParsingLite message2;
     message2.set_oneof_bytes("bytes");
     io::CodedInputStream input_stream(
-        reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()), serialized.size());
+        reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(serialized.data()), serialized.size());
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -914,7 +915,7 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(17, parsed.oneof_int32());
@@ -930,7 +931,7 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(5, parsed.oneof_submessage().optional_int32());
@@ -946,7 +947,7 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ("string", parsed.oneof_string());
@@ -962,7 +963,7 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ("bytes", parsed.oneof_bytes());
@@ -978,7 +979,7 @@ TEST(Lite, AllLite44) {
     protobuf_unittest::TestOneofParsingLite parsed;
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
-          reinterpret_cast<const ::google::protobuf::uint8*>(serialized.data()),
+          reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(serialized.data()),
           serialized.size());
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(protobuf_unittest::V2_SECOND, parsed.oneof_enum());
@@ -995,7 +996,7 @@ TEST(Lite, AllLite45) {
   protobuf_unittest::ForeignMessageLite a;
   EXPECT_TRUE(a.ParseFromString(data));
   io::CodedInputStream input_stream(
-      reinterpret_cast<const ::google::protobuf::uint8*>(data.data()), data.size());
+      reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::uint8*>(data.data()), data.size());
   EXPECT_TRUE(a.MergePartialFromCodedStream(&input_stream));
 
   std::string serialized = a.SerializeAsString();
@@ -1187,5 +1188,4 @@ TEST(Lite, AliasedEnum) {
   EXPECT_EQ(protobuf_unittest::DupEnum::FOO2, value);
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

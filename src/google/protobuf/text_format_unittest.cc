@@ -62,8 +62,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace text_format_unittest {
@@ -2134,5 +2133,4 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
 
 
 }  // namespace text_format_unittest
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

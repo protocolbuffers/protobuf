@@ -8,15 +8,16 @@
 #include <sstream>
 #include <algorithm>
 
-using google::protobuf::Descriptor;
-using google::protobuf::DescriptorProto;
-using google::protobuf::FileDescriptorProto;
-using google::protobuf::FieldDescriptorProto;
-using google::protobuf::Message;
-using google::protobuf::EnumValueDescriptorProto;
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+using PROTOBUF_NAMESPACE_ID::Descriptor;
+using PROTOBUF_NAMESPACE_ID::DescriptorProto;
+using PROTOBUF_NAMESPACE_ID::FileDescriptorProto;
+using PROTOBUF_NAMESPACE_ID::FieldDescriptorProto;
+using PROTOBUF_NAMESPACE_ID::Message;
+using PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto;
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
 class SchemaGroupStripper {
@@ -188,7 +189,8 @@ class FieldScrubber {
 };
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // PROTOBUF_BENCHMARKS_UTIL_SCHEMA_PROTO2_TO_PROTO3_UTIL_H_

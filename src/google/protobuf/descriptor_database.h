@@ -50,8 +50,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 // Defined in this file.
 class DescriptorDatabase;
@@ -386,8 +385,7 @@ class PROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MergedDescriptorDatabase);
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

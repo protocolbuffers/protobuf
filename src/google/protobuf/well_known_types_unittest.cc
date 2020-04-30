@@ -34,8 +34,9 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 
 // This test only checks whether well-known types are included in protobuf
@@ -56,5 +57,4 @@ TEST(WellKnownTypesTest, AllKnownTypesAreIncluded) {
 
 }  // namespace
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -40,8 +40,9 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
 TEST(DelimitedMessageUtilTest, DelimitedMessages) {
@@ -83,5 +84,4 @@ TEST(DelimitedMessageUtilTest, DelimitedMessages) {
 }
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

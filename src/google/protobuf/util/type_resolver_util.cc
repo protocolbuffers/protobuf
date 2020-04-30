@@ -43,25 +43,24 @@
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 namespace {
-using google::protobuf::Any;
-using google::protobuf::BoolValue;
-using google::protobuf::BytesValue;
-using google::protobuf::DoubleValue;
-using google::protobuf::Enum;
-using google::protobuf::EnumValue;
-using google::protobuf::Field;
-using google::protobuf::FloatValue;
-using google::protobuf::Int32Value;
-using google::protobuf::Int64Value;
-using google::protobuf::Option;
-using google::protobuf::StringValue;
-using google::protobuf::Type;
-using google::protobuf::UInt32Value;
-using google::protobuf::UInt64Value;
+using PROTOBUF_NAMESPACE_ID::Any;
+using PROTOBUF_NAMESPACE_ID::BoolValue;
+using PROTOBUF_NAMESPACE_ID::BytesValue;
+using PROTOBUF_NAMESPACE_ID::DoubleValue;
+using PROTOBUF_NAMESPACE_ID::Enum;
+using PROTOBUF_NAMESPACE_ID::EnumValue;
+using PROTOBUF_NAMESPACE_ID::Field;
+using PROTOBUF_NAMESPACE_ID::FloatValue;
+using PROTOBUF_NAMESPACE_ID::Int32Value;
+using PROTOBUF_NAMESPACE_ID::Int64Value;
+using PROTOBUF_NAMESPACE_ID::Option;
+using PROTOBUF_NAMESPACE_ID::StringValue;
+using PROTOBUF_NAMESPACE_ID::Type;
+using PROTOBUF_NAMESPACE_ID::UInt32Value;
+using PROTOBUF_NAMESPACE_ID::UInt64Value;
 
 using util::Status;
 using util::error::INVALID_ARGUMENT;
@@ -368,5 +367,4 @@ TypeResolver* NewTypeResolverForDescriptorPool(const std::string& url_prefix,
 }
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

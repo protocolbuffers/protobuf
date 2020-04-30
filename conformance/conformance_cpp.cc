@@ -41,18 +41,20 @@
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/stubs/status.h>
 
+#include <google/protobuf/port_def.inc>
+
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
-using google::protobuf::Descriptor;
-using google::protobuf::DescriptorPool;
-using google::protobuf::Message;
-using google::protobuf::MessageFactory;
-using google::protobuf::TextFormat;
-using google::protobuf::util::BinaryToJsonString;
-using google::protobuf::util::JsonParseOptions;
-using google::protobuf::util::JsonToBinaryString;
-using google::protobuf::util::NewTypeResolverForDescriptorPool;
-using google::protobuf::util::TypeResolver;
+using PROTOBUF_NAMESPACE_ID::Descriptor;
+using PROTOBUF_NAMESPACE_ID::DescriptorPool;
+using PROTOBUF_NAMESPACE_ID::Message;
+using PROTOBUF_NAMESPACE_ID::MessageFactory;
+using PROTOBUF_NAMESPACE_ID::TextFormat;
+using PROTOBUF_NAMESPACE_ID::util::BinaryToJsonString;
+using PROTOBUF_NAMESPACE_ID::util::JsonParseOptions;
+using PROTOBUF_NAMESPACE_ID::util::JsonToBinaryString;
+using PROTOBUF_NAMESPACE_ID::util::NewTypeResolverForDescriptorPool;
+using PROTOBUF_NAMESPACE_ID::util::TypeResolver;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
 
@@ -70,8 +72,7 @@ bool verbose = false;
 TypeResolver* type_resolver;
 string* type_url;
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 using util::Status;
 
@@ -246,15 +247,14 @@ bool DoTestIo() {
   return true;
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 int main() {
   type_resolver = NewTypeResolverForDescriptorPool(
       kTypeUrlPrefix, DescriptorPool::generated_pool());
   type_url = new string(GetTypeUrl(TestAllTypesProto3::descriptor()));
   while (1) {
-    if (!google::protobuf::DoTestIo()) {
+    if (!PROTOBUF_NAMESPACE_ID::DoTestIo()) {
       fprintf(stderr, "conformance-cpp: received EOF from test runner "
                       "after %d tests, exiting\n", test_count);
       return 0;

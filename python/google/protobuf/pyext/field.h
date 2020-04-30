@@ -33,8 +33,9 @@
 
 #include <Python.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 class FieldDescriptor;
 
@@ -53,7 +54,8 @@ extern PyTypeObject* CFieldProperty_Type;
 PyObject* NewFieldProperty(const FieldDescriptor* field_descriptor);
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_FIELD_H__

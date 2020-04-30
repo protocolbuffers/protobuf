@@ -38,8 +38,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_options.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 class FileDescriptor;
 class FieldDescriptor;
 class OneofDescriptor;
@@ -50,11 +51,9 @@ namespace java {
 class ClassNameResolver;  // name_resolver.h
 }
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace java {
 
@@ -107,7 +106,8 @@ class Context {
 
 }  // namespace java
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_CONTEXT_H__

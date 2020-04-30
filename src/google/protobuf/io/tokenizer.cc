@@ -98,8 +98,9 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/stl_util.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 namespace {
 
@@ -1128,5 +1129,4 @@ bool Tokenizer::IsIdentifier(const std::string& text) {
 }
 
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

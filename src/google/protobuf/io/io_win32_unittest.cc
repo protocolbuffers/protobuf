@@ -58,8 +58,9 @@
 
 #include <gtest/gtest.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace io {
 namespace win32 {
 namespace {
@@ -624,8 +625,7 @@ TEST_F(IoWin32Test, Utf8Utf16ConversionTest) {
 }  // namespace
 }  // namespace win32
 }  // namespace io
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #endif  // defined(_WIN32)
 

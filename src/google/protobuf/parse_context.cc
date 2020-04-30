@@ -41,8 +41,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 
 namespace {
@@ -575,5 +574,4 @@ const char* UnknownFieldParse(uint32 tag, std::string* unknown, const char* ptr,
 }
 
 }  // namespace internal
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

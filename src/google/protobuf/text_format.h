@@ -55,8 +55,7 @@
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 namespace io {
 class ErrorCollector;  // tokenizer.h
@@ -445,13 +444,13 @@ class PROTOBUF_EXPORT TextFormat {
   // Example input: "user {\n id: 123 extra { gender: MALE language: 'en' }\n}"
   //
   // One use for this function is parsing handwritten strings in test code.
-  // Another use is to parse the output from google::protobuf::Message::DebugString()
+  // Another use is to parse the output from PROTOBUF_NAMESPACE_ID::Message::DebugString()
   // (or ShortDebugString()), because these functions output using
-  // google::protobuf::TextFormat::Print().
+  // PROTOBUF_NAMESPACE_ID::TextFormat::Print().
   //
   // If you would like to read a protocol buffer serialized in the
   // (non-human-readable) binary wire format, see
-  // google::protobuf::MessageLite::ParseFromString().
+  // PROTOBUF_NAMESPACE_ID::MessageLite::ParseFromString().
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
   static bool ParseFromString(const std::string& input, Message* output);
@@ -638,8 +637,7 @@ inline TextFormat::ParseInfoTree* TextFormat::CreateNested(
   return info_tree->CreateNested(field);
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

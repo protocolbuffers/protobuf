@@ -40,8 +40,8 @@
 
 #include <google/protobuf/test_util.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_OPEN
+
+PROTOBUF_NAMESPACE_CLOSE

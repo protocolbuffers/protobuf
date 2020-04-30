@@ -33,8 +33,9 @@
 
 #include <google/protobuf/compiler/java/java_field.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 namespace java {
 
@@ -74,7 +75,8 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
 
 }  // namespace java
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_H__

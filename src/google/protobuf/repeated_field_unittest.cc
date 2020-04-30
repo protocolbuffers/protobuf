@@ -58,8 +58,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace {
 
 using ::protobuf_unittest::TestAllTypes;
@@ -1843,8 +1842,8 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, Sort) {
 
 // -----------------------------------------------------------------------------
 // Unit-tests for the insert iterators
-// google::protobuf::RepeatedFieldBackInserter,
-// google::protobuf::AllocatedRepeatedPtrFieldBackInserter
+// PROTOBUF_NAMESPACE_ID::RepeatedFieldBackInserter,
+// PROTOBUF_NAMESPACE_ID::AllocatedRepeatedPtrFieldBackInserter
 // Ported from util/gtl/proto-array-iterators_unittest.
 
 class RepeatedFieldInsertionIteratorsTest : public testing::Test {
@@ -2062,5 +2061,4 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
 
 }  // namespace
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

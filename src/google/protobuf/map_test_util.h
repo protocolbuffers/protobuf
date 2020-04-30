@@ -40,8 +40,7 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 namespace unittest = ::protobuf_unittest;
 
@@ -1558,8 +1557,7 @@ inline void MapReflectionTester::ExpectClearViaReflectionIterator(
               reflection->MapEnd(message, F("map_int32_foreign_message")));
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 

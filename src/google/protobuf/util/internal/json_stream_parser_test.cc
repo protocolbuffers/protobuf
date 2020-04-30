@@ -38,9 +38,10 @@
 #include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/status.h>
 
+#include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 using util::Status;
 namespace error {
@@ -913,5 +914,4 @@ TEST_F(JsonStreamParserTest, DeepNestJsonExceedLimit) {
 
 }  // namespace converter
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

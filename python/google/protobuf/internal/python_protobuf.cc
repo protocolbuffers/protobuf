@@ -32,8 +32,9 @@
 
 #include <google/protobuf/python/python_protobuf.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 namespace python {
 
 static const Message* GetCProtoInsidePyProtoStub(PyObject* msg) { return NULL; }
@@ -55,5 +56,4 @@ Message* MutableCProtoInsidePyProto(PyObject* msg) {
 }
 
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

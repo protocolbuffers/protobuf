@@ -40,17 +40,19 @@
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/stubs/status.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace proto2_messages = protobuf_test_messages::proto2;
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using conformance::WireFormat;
-using google::protobuf::Descriptor;
-using google::protobuf::FieldDescriptor;
-using google::protobuf::Message;
-using google::protobuf::TextFormat;
-using google::protobuf::internal::WireFormatLite;
-using google::protobuf::util::NewTypeResolverForDescriptorPool;
+using PROTOBUF_NAMESPACE_ID::Descriptor;
+using PROTOBUF_NAMESPACE_ID::FieldDescriptor;
+using PROTOBUF_NAMESPACE_ID::Message;
+using PROTOBUF_NAMESPACE_ID::TextFormat;
+using PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
+using PROTOBUF_NAMESPACE_ID::util::NewTypeResolverForDescriptorPool;
 using proto2_messages::TestAllTypesProto2;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
@@ -347,8 +349,7 @@ bool IsProto3Default(FieldDescriptor::Type type, const string& binary_data) {
 
 }  // anonymous namespace
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
     const ConformanceResponse& response,
@@ -3231,5 +3232,4 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForAny() {
       )");
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

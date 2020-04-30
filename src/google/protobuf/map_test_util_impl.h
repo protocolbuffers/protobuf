@@ -35,11 +35,12 @@
 #include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
 
+#include <google/protobuf/port_def.inc>
+
 
 namespace protobuf_unittest {}  // namespace protobuf_unittest
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 namespace unittest = ::protobuf_unittest;
 
@@ -470,7 +471,8 @@ void MapTestUtilImpl::ExpectMapFieldsModified(const MapMessage& message) {
   EXPECT_EQ(2, message.map_int32_foreign_message().at(1).c());
 }
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__

@@ -36,11 +36,10 @@
 
 #include <google/protobuf/port_def.inc>
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 namespace util {
 
-using google::protobuf::FieldMask;
+using PROTOBUF_NAMESPACE_ID::FieldMask;
 
 std::string FieldMaskUtil::ToString(const FieldMask& mask) {
   return Join(mask.paths(), ",");
@@ -716,5 +715,4 @@ bool FieldMaskUtil::TrimMessage(const FieldMask& mask, Message* message,
 }
 
 }  // namespace util
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE

@@ -8,7 +8,7 @@
 
 #include <fstream>
 
-using google::protobuf::util::Proto3DataStripper;
+using PROTOBUF_NAMESPACE_ID::util::Proto3DataStripper;
 
 std::string ReadFile(const std::string& name) {
   std::ifstream file(name.c_str());

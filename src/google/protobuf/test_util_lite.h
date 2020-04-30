@@ -37,8 +37,9 @@
 
 #include <google/protobuf/unittest_lite.pb.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 namespace unittest = protobuf_unittest;
 namespace unittest_import = protobuf_unittest_import;
@@ -95,7 +96,8 @@ class TestUtilLite {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TestUtilLite);
 };
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_TEST_UTIL_LITE_H__

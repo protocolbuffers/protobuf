@@ -42,8 +42,9 @@
 
 #include <google/protobuf/pyext/message.h>
 
-namespace google {
-namespace protobuf {
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_NAMESPACE_OPEN
 
 class FieldDescriptor;
 class Message;
@@ -106,7 +107,8 @@ int AssignSubscript(RepeatedCompositeContainer* self,
                     PyObject* value);
 }  // namespace repeated_composite_container
 }  // namespace python
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_REPEATED_COMPOSITE_CONTAINER_H__

@@ -61,16 +61,13 @@ using type_info = ::type_info;
 #error "You cannot SWIG proto headers"
 #endif
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 struct ArenaOptions;  // defined below
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
-namespace google {
-namespace protobuf {
+PROTOBUF_NAMESPACE_OPEN
 
 class Arena;    // defined below
 class Message;  // defined in message.h
@@ -728,8 +725,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 // Defined above for supporting environments without RTTI.
 #undef RTTI_TYPE_ID
 
-}  // namespace protobuf
-}  // namespace google
+PROTOBUF_NAMESPACE_CLOSE
 
 #include <google/protobuf/port_undef.inc>
 
