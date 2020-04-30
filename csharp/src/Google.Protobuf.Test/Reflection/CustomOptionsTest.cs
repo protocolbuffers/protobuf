@@ -226,6 +226,28 @@ namespace Google.Protobuf.Test.Reflection
             AssertOption("bar", bar.CustomOptions.TryGetString, UnittestIssue6936AExtensions.Opt, bar.GetOption, bar.GetOptions().GetExtension);
         }
 
+        [Test]
+        public void SelfReferentialOptions()
+        {
+            // Custom field option used in definition of the custom option's message.
+            var fooField = UnitTest.Issues.TestProtos.SelfreferentialOptions.FooOptions.Descriptor.FindFieldByName("foo");
+            var fooFieldFooExtensionValue = fooField.GetOptions().GetExtension(UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsExtensions.FooOptions);
+            Assert.AreEqual(1234, fooFieldFooExtensionValue.Foo);
+
+            // Custom field option used on the definition of that field option.
+            var fileDescriptor = UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsReflection.Descriptor;
+            var barOptionsField = fileDescriptor.Extensions.UnorderedExtensions.Single(field => field.Name == "bar_options");
+            var barExtensionValue = barOptionsField.GetOptions().GetExtension(UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsExtensions.BarOptions);
+            Assert.AreEqual(1234, barExtensionValue);
+
+            // Custom field option used in definition of the extension message.
+            var intOptField = UnitTest.Issues.TestProtos.SelfreferentialOptions.FooOptions.Descriptor.FindFieldByName("int_opt");
+            var intOptFieldFooExtensionValue = intOptField.GetOptions().GetExtension(UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsExtensions.FooOptions);
+            Assert.AreEqual(1, intOptFieldFooExtensionValue.IntOpt);
+            Assert.AreEqual(2, intOptFieldFooExtensionValue.GetExtension(UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsExtensions.FooIntOpt));
+            Assert.AreEqual(3, intOptFieldFooExtensionValue.GetExtension(UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsExtensions.FooFooOpt).IntOpt);
+        }
+
         private void AssertOption<T, D>(T expected, OptionFetcher<T> customOptionFetcher, Extension<D, T> extension, Func<Extension<D, T>, T> getOptionFetcher, Func<Extension<D, T>, T> extensionFetcher) where D : IExtendableMessage<D>
         {
             Assert.IsTrue(customOptionFetcher(extension.FieldNumber, out T customOptionsValue));

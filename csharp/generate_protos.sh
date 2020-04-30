@@ -61,6 +61,7 @@ $PROTOC -Isrc -Icsharp/protos \
     csharp/protos/unittest_issue6936_a.proto \
     csharp/protos/unittest_issue6936_b.proto \
     csharp/protos/unittest_issue6936_c.proto \
+    csharp/protos/unittest_selfreferential_options.proto \
     src/google/protobuf/unittest_well_known_types.proto \
     src/google/protobuf/test_messages_proto3.proto \
     src/google/protobuf/test_messages_proto2.proto \
