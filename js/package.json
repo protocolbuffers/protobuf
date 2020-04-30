@@ -1,6 +1,6 @@
 {
   "name": "google-protobuf",
-  "version": "3.11.4",
+  "version": "3.12.0-rc.1",
   "description": "Protocol Buffers for JavaScript",
   "main": "google-protobuf.js",
   "files": [
