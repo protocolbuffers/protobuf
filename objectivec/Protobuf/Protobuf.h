@@ -33,10 +33,10 @@
 
 #import <Foundation/Foundation.h>
 
-//! Project version number for ProtocolBuffers_dynamic.
-FOUNDATION_EXPORT double ProtocolBuffers_dynamicVersionNumber;
+//! Project version number for Protobuf.
+FOUNDATION_EXPORT double ProtobufVersionNumber;
 
-//! Project version string for ProtocolBuffers_dynamic.
-FOUNDATION_EXPORT const unsigned char ProtocolBuffers_dynamicVersionString[];
+//! Project version string for Protobuf.
+FOUNDATION_EXPORT const unsigned char ProtobufVersionString[];
 
 #import <Protobuf/GPBProtocolBuffers.h>
