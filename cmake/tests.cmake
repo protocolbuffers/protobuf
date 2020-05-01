@@ -90,8 +90,8 @@ macro(compile_proto_file filename)
   get_filename_component(basename ${filename} NAME_WE)
   add_custom_command(
     OUTPUT ${protobuf_source_dir}/src/${dirname}/${basename}.pb.cc
-    DEPENDS protoc ${protobuf_source_dir}/src/${dirname}/${basename}.proto
-    COMMAND protoc ${protobuf_source_dir}/src/${dirname}/${basename}.proto
+    DEPENDS ${protobuf_PROTOC_EXE} ${protobuf_source_dir}/src/${dirname}/${basename}.proto
+    COMMAND ${protobuf_PROTOC_EXE} ${protobuf_source_dir}/src/${dirname}/${basename}.proto
         --proto_path=${protobuf_source_dir}/src
         --cpp_out=${protobuf_source_dir}/src
         --experimental_allow_proto3_optional
