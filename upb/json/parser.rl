@@ -1370,7 +1370,12 @@ static bool end_stringval_nontop(upb_json_parser *p) {
         upb_selector_t sel = parser_getsel(p);
         upb_sink_putint32(p->top->sink, sel, int_val);
       } else {
-        upb_status_seterrf(p->status, "Enum value unknown: '%.*s'", len, buf);
+        if (p->ignore_json_unknown) {
+          ok = true;
+          /* TODO(teboring): Should also clean this field. */
+        } else {
+          upb_status_seterrf(p->status, "Enum value unknown: '%.*s'", len, buf);
+        }
       }
 
       break;
