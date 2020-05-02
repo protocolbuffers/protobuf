@@ -49,6 +49,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -306,6 +307,258 @@ uint64_t Generator::GetSupportedFeatures() const {
   return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
 }
 
+namespace parser {
+
+static const char kConnector = '|';
+static const char kDelimiter = ';';
+
+enum Signal {
+  kSignalCharacter,
+  kSignalDot,
+  kSignalConnector,
+  kSignalDelimiter,
+  kSignalEnd,
+  kSignalInvalid
+};
+
+enum State {
+  kStateDelimited,
+  kStateGenerated,
+  kStateConnected,
+  kStatePreferred,
+  kStateFinished,
+  kStateError
+};
+
+class MappingParser {
+  // A simple FSM: characters in the mappings string supplied at
+  // construction are sequentially classified by signal type and
+  // those signals are used to crank the machine.  State transition
+  // actions store string:string mappings extracted from the input
+  // into the map supplied to ExtractMappings().
+  public:
+  explicit MappingParser(const std::string& mappings) : mappings_(mappings) {}
+
+  // Parse the string given at construction into the supplied map.
+  // Returns true on success, false on failure (in which case the
+  // parse_error string contains an error message).
+  bool ExtractMappings(
+      std::map<std::string, std::string>& replacement_map,
+      std::string& parse_error);
+
+  private:
+  enum Signal DeriveSignal(const char input);
+  enum State TransitionState(const enum Signal signal,
+      std::map<std::string, std::string>& replacement_map);
+  void DescribeError(const char* input_type, const char* package_type);
+
+  const std::string& mappings_;
+  int position_ = 0;
+  char input_ = '\0';
+  enum Signal signal_ = kSignalInvalid;
+  enum State state_ = kStateDelimited;
+  std::string generated_package_;
+  std::string preferred_package_;
+  std::string parse_error_;
+};
+
+bool MappingParser::ExtractMappings(
+    std::map<std::string, std::string>& replacement_map,
+    std::string& parse_error) {
+  position_ = 0;
+  for (std::string::const_iterator it = mappings_.begin();
+       it != mappings_.end() && state_ != kStateError;
+       ++it, ++position_) {
+    TransitionState(DeriveSignal(*it), replacement_map);
+  }
+  // Handle implicit EOI signal
+  TransitionState(kSignalEnd, replacement_map);
+  parse_error.assign(std::move(parse_error_));
+  return (state_ == kStateFinished);
+}
+
+enum Signal MappingParser::DeriveSignal(const char input) {
+  input_ = input;
+  if (isalnum(input) || input == '_') {
+    signal_ = kSignalCharacter;
+  } else if (input == '.') {
+    signal_ = kSignalDot;
+  } else if (input == kConnector) {
+    signal_ = kSignalConnector;
+  } else if (input == kDelimiter) {
+    signal_ = kSignalDelimiter;
+  } else {
+    signal_ = kSignalInvalid;
+  }
+  return signal_;
+}
+
+enum State MappingParser::TransitionState(
+    const enum Signal signal,
+    std::map<std::string, std::string>& replacement_map) {
+  switch (state_) {
+    case kStateDelimited: {
+      switch (signal) {
+        case kSignalCharacter: {
+          state_ = kStateGenerated;
+          // Start generated package name
+          generated_package_.push_back(input_);
+          break;
+        }
+        case kSignalDot: {
+          state_ = kStateError;
+          parse_error_.assign(
+              "invalid relative generated package name found at position " +
+              std::to_string(position_));
+          break;
+        }
+        case kSignalConnector: {
+          // Empty generated package name is valid
+          state_ = kStateConnected;
+          break;
+        }
+        case kSignalDelimiter: {
+          state_ = kStateError;
+          parse_error_.assign(
+              "invalid empty mapping found near position " +
+              std::to_string(position_));
+          break;
+        }
+        case kSignalEnd:
+        case kSignalInvalid:
+        default: {
+          state_ = kStateError;
+          DescribeError("character", "generated");
+          break;
+        }
+      }
+      break;
+    }
+    case kStateGenerated: {
+      switch (signal) {
+        case kSignalCharacter:
+        case kSignalDot: {
+          // Accumulate generated package name
+          generated_package_.push_back(input_);
+          break;
+        }
+        case kSignalConnector: {
+          state_ = kStateConnected;
+          break;
+        }
+        case kSignalDelimiter:
+        case kSignalEnd:
+        case kSignalInvalid:
+        default: {
+          state_ = kStateError;
+          DescribeError((signal == kSignalDelimiter ? "delimiter" : "character"),
+                        "generated");
+          break;
+        }
+      }
+      break;
+    }
+    case kStateConnected: {
+      switch (signal) {
+        case kSignalCharacter:
+        case kSignalDot: {
+          state_ = kStatePreferred;
+          // Start preferred package name
+          preferred_package_.push_back(input_);
+          break;
+        }
+        case kSignalDelimiter:
+        case kSignalEnd: {
+          state_ = kStateError;
+          parse_error_.assign(
+              "invalid empty preferred package name found near position " +
+              std::to_string(position_));
+          break;
+        }
+        case kSignalConnector:
+        case kSignalInvalid:
+        default: {
+          state_ = kStateError;
+          DescribeError((signal == kSignalConnector ? "connector" : "character"),
+                        "preferred");
+          break;
+        }
+      }
+      break;
+    }
+    case kStatePreferred: {
+      switch (signal) {
+        case kSignalCharacter:
+        case kSignalDot: {
+          // Accumulate preferred package name
+          preferred_package_.push_back(input_);
+          break;
+        }
+        case kSignalDelimiter: {
+          state_ = kStateDelimited;
+          // Store completed mapping
+          replacement_map[generated_package_] = preferred_package_;
+          // Reset accumulators
+          generated_package_.clear();
+          preferred_package_.clear();
+          break;
+        }
+        case kSignalEnd: {
+          state_ = kStateFinished;
+          // Store final mapping
+          replacement_map[generated_package_] = preferred_package_;
+          break;
+        }
+        case kSignalConnector:
+        case kSignalInvalid:
+        default: {
+          state_ = kStateError;
+          DescribeError((signal == kSignalConnector ? "connector" : "character"),
+                        "preferred");
+          break;
+        }
+      }
+      break;
+    }
+    case kStateFinished: {
+      state_ = kStateError;
+      parse_error_.assign("unexpected input found after completion of parsing");
+      break;
+    }
+    case kStateError:
+    default: {
+      state_ = kStateError;
+      break;
+    }
+    break;
+  }
+  return state_;
+}
+
+void MappingParser::DescribeError(const char* input_type,
+                                  const char* package_type) {
+  std::stringstream ss;
+  if (position_ < mappings_.length()) {
+    ss << "unexpected "
+       << input_type
+       << " '"
+       << input_
+       << "' found while reading "
+       << package_type
+       << " package name at position "
+       << position_;
+  } else {
+    ss << "unexpected end of input found while reading "
+       << package_type
+       << " package name near position "
+       << position_;
+  }
+  parse_error_.assign(ss.str());
+  return;
+}
+
+} // namespace parser
+
 bool Generator::Generate(const FileDescriptor* file,
                          const std::string& parameter,
                          GeneratorContext* context, std::string* error) const {
@@ -319,6 +572,19 @@ bool Generator::Generate(const FileDescriptor* file,
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "cpp_generated_lib_linked") {
       cpp_generated_lib_linked = true;
+    } else if (options[i].first == "replace_import_package") {
+      std::string mappings(options[i].second.empty() ? "|." : options[i].second);
+      parser::MappingParser parser(mappings);
+      std::string parse_error;
+      if (!parser.ExtractMappings(replace_import_package_map_, parse_error)) {
+        std::stringstream ss;
+        ss << "Unable to parse mapping string \""
+           << mappings
+           << "\" for replace_import_package option: "
+           << parse_error;
+        *error = ss.str();
+        return false;
+      }
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
@@ -409,12 +675,24 @@ void Generator::PrintImports() const {
     } else {
       int last_dot_pos = module_name.rfind('.');
       std::string import_statement;
+      std::map<std::string, std::string>::iterator mapping;
       if (last_dot_pos == std::string::npos) {
-        // NOTE(petya): this is not tested as it would require a protocol buffer
-        // outside of any package, and I don't think that is easily achievable.
-        import_statement = "import " + module_name;
+        mapping = replace_import_package_map_.find("");
+        if (mapping == replace_import_package_map_.end()) {
+          // NOTE(petya): this is not tested as it would require a protocol buffer
+          // outside of any package, and I don't think that is easily achievable.
+          import_statement = "import " + module_name;
+        } else {
+          import_statement = "from " + mapping->second +
+                             " import " + module_name;
+        }
       } else {
-        import_statement = "from " + module_name.substr(0, last_dot_pos) +
+        std::string import_package = module_name.substr(0, last_dot_pos);
+        mapping = replace_import_package_map_.find(import_package);
+        if (mapping != replace_import_package_map_.end()) {
+          import_package = mapping->second;
+        }
+        import_statement = "from " + import_package +
                            " import " + module_name.substr(last_dot_pos + 1);
       }
       printer_->Print("$statement$ as $alias$\n", "statement", import_statement,
