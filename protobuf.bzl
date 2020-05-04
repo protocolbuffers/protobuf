@@ -432,7 +432,7 @@ def py_proto_library(
       protoc: the label of the protocol compiler to generate the sources.
       use_grpc_plugin: a flag to indicate whether to call the Python C++ plugin
           when processing the proto files.
-      **kargs: other keyword arguments that are passed to cc_library.
+      **kargs: other keyword arguments that are passed to py_library.
 
     """
     outs = _PyOuts(srcs, use_grpc_plugin)
