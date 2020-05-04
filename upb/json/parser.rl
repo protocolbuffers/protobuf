@@ -1694,24 +1694,15 @@ static void start_timestamp_zone(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
-static int div_round_up2(int n, int d) {
-  return (n + d - 1) / d;
-}
-
 /* epoch_days(1970, 1, 1) == 1970-01-01 == 0. */
 static int epoch_days(int year, int month, int day) {
   static const uint16_t month_yday[12] = {0,   31,  59,  90,  120, 151,
                                           181, 212, 243, 273, 304, 334};
-  int febs_since_0 = month > 2 ? year + 1 : year;
-  int leap_days_since_0 = div_round_up2(febs_since_0, 4) -
-                          div_round_up2(febs_since_0, 100) +
-                          div_round_up2(febs_since_0, 400);
-  int days_since_0 =
-      365 * year + month_yday[month - 1] + (day - 1) + leap_days_since_0;
-
-  /* Convert from 0-epoch (0001-01-01 BC) to Unix Epoch (1970-01-01 AD).
-   * Since the "BC" system does not have a year zero, 1 BC == year zero. */
-  return days_since_0 - 719528;
+  uint32_t year_adj = year + 4800;  /* Ensure positive year, multiple of 400. */
+  uint32_t febs = year_adj - (month <= 2 ? 1 : 0);  /* Februaries since base. */
+  uint32_t leap_days = 1 + (febs / 4) - (febs / 100) + (febs / 400);
+  uint32_t days = 365 * year_adj + leap_days + month_yday[month - 1] + day - 1;
+  return days - 2472692;  /* Adjust to Unix epoch. */
 }
 
 static int64_t upb_timegm(const struct tm *tp) {
