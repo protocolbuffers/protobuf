@@ -46,7 +46,7 @@ namespace Google.Protobuf.Reflection
         private MessageDescriptor messageType;
         private FieldType fieldType;
         private readonly string propertyName; // Annoyingly, needed in Crosslink.
-        private IFieldAccessor accessor;
+        private IFieldAccessorEx accessor;
 
         /// <summary>
         /// Get the field's containing message type, or <c>null</c> if it is a field defined at the top level of a file as an extension.
@@ -69,6 +69,18 @@ namespace Google.Protobuf.Reflection
         /// but can be overridden using the <c>json_name</c> option in the .proto file.
         /// </summary>
         public string JsonName { get; }
+
+        // Note: in an ideal world this would be on IFieldAccessor, but as that's an interface, we can't change it
+        // without a major version bump. Given that the accessor points back to the field descriptor, it's easy enough
+        // to write accessor.Descriptor.HasPresence when necessary.
+
+        /// <summary>
+        /// Indicates whether this field supports presence, either implicitly (e.g. due to it being a message
+        /// type field) or explicitly via Has/Clear members. If this returns true, it is safe to call
+        /// <see cref="IFieldAccessor.Clear(IMessage)"/> and <see cref="IFieldAccessor.HasValue(IMessage)"/>
+        /// on this field's accessor with a suitable message.
+        /// </summary>
+        public bool HasPresence => accessor.HasPresence;
 
         internal FieldDescriptorProto Proto { get; }
 
@@ -401,7 +413,7 @@ namespace Google.Protobuf.Reflection
             accessor = CreateAccessor();
         }
 
-        private IFieldAccessor CreateAccessor()
+        private IFieldAccessorEx CreateAccessor()
         {
             if (Extension != null)
             {
@@ -423,7 +435,7 @@ namespace Google.Protobuf.Reflection
             }
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)
-                : (IFieldAccessor) new SingleFieldAccessor(property, this);
+                : (IFieldAccessorEx) new SingleFieldAccessor(property, this);
         }
     }
 }

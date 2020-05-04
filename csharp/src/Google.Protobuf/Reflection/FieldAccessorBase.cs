@@ -39,7 +39,7 @@ namespace Google.Protobuf.Reflection
     /// <summary>
     /// Base class for field accessors.
     /// </summary>
-    internal abstract class FieldAccessorBase : IFieldAccessor
+    internal abstract class FieldAccessorBase : IFieldAccessorEx
     {
         private readonly Func<IMessage, object> getValueDelegate;
         private readonly FieldDescriptor descriptor;
@@ -60,5 +60,6 @@ namespace Google.Protobuf.Reflection
         public abstract bool HasValue(IMessage message);
         public abstract void Clear(IMessage message);
         public abstract void SetValue(IMessage message, object value);
+        public abstract bool HasPresence { get; }
     }
 }

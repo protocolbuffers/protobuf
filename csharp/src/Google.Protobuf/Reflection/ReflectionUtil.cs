@@ -151,6 +151,7 @@ namespace Google.Protobuf.Reflection
             void SetExtension(IMessage message, object value);
             bool HasExtension(IMessage message);
             void ClearExtension(IMessage message);
+            bool HasPresence { get; }
         }
 
         private interface IExtensionSetReflector
@@ -306,6 +307,8 @@ namespace Google.Protobuf.Reflection
                     throw new InvalidCastException("The provided extension is not a valid extension identifier type");
                 }
             }
+
+            public bool HasPresence => extension is Extension<T1, T3>;
         }
 
         private class ExtensionSetReflector<T1> : IExtensionSetReflector where T1 : IExtendableMessage<T1>

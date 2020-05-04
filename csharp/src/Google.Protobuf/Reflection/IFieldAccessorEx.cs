@@ -1,6 +1,6 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,41 +30,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
-using System.Collections;
-using System.Reflection;
 
 namespace Google.Protobuf.Reflection
 {
     /// <summary>
-    /// Accessor for map fields.
+    /// Internal interface with anything we'd really *like* to add to IFieldAccessor, but
+    /// can't now because it's an interface. Note that this interface should be kept internal
+    /// unless significant thought is put into compatibility.
     /// </summary>
-    internal sealed class MapFieldAccessor : FieldAccessorBase
+    internal interface IFieldAccessorEx : IFieldAccessor
     {
-        internal MapFieldAccessor(PropertyInfo property, FieldDescriptor descriptor) : base(property, descriptor)
-        {
-        }
-
-        public override void Clear(IMessage message)
-        {
-            IDictionary list = (IDictionary) GetValue(message);
-            list.Clear();
-        }
-
-        public override bool HasValue(IMessage message)
-        {
-            throw new InvalidOperationException("HasValue is not implemented for map fields");
-        }
-
-        public override void SetValue(IMessage message, object value)
-        {
-            throw new InvalidOperationException("SetValue is not implemented for map fields");
-        }
-
-        /// <summary>
-        /// Although a map field can be cleared, it doesn't support HasValue,
-        /// so doesn't really support presence.
-        /// </summary>
-        public override bool HasPresence => false;
+        bool HasPresence { get; }
     }
 }

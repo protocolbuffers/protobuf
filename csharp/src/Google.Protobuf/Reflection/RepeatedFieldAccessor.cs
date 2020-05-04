@@ -61,5 +61,10 @@ namespace Google.Protobuf.Reflection
             throw new InvalidOperationException("SetValue is not implemented for repeated fields");
         }
 
+        /// <summary>
+        /// Although a repeated field can be cleared, it doesn't support HasValue,
+        /// so doesn't really support presence.
+        /// </summary>
+        public override bool HasPresence => false;
     }
 }

@@ -32,7 +32,7 @@
 
 namespace Google.Protobuf.Reflection
 {
-    internal sealed class ExtensionAccessor : IFieldAccessor
+    internal sealed class ExtensionAccessor : IFieldAccessorEx
     {
         private readonly Extension extension;
         private readonly ReflectionUtil.IExtensionReflectionHelper helper;
@@ -65,5 +65,7 @@ namespace Google.Protobuf.Reflection
         {
             helper.SetExtension(message, value);
         }
+
+        public bool HasPresence => helper.HasPresence;
     }
 }
