@@ -884,6 +884,11 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromJsonString("{\"unknown\":{\"a\":1, \"b\":1},
                                 \"optionalInt32\":1}", true);
         $this->assertSame(1, $m->getOptionalInt32());
+
+        // Test unknown enum value
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"optionalEnum\":\"UNKNOWN\"}", true);
+        $this->assertSame(0, $m->getOptionalEnum());
     }
 
     public function testJsonEncode()
