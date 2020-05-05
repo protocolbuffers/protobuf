@@ -66,15 +66,33 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
+        public IMessage ManyWrapperFieldsMessage_ParseFromReadOnlySequence()
+        {
+            return manyWrapperFieldsTest.ParseFromReadOnlySequence();
+        }
+
+        [Benchmark]
         public IMessage ManyPrimitiveFieldsMessage_ParseFromByteArray()
         {
             return manyPrimitiveFieldsTest.ParseFromByteArray();
         }
 
         [Benchmark]
+        public IMessage ManyPrimitiveFieldsMessage_ParseFromReadOnlySequence()
+        {
+            return manyPrimitiveFieldsTest.ParseFromReadOnlySequence();
+        }
+
+        [Benchmark]
         public IMessage EmptyMessage_ParseFromByteArray()
         {
             return emptyMessageTest.ParseFromByteArray();
+        }
+
+        [Benchmark]
+        public IMessage EmptyMessage_ParseFromReadOnlySequence()
+        {
+            return emptyMessageTest.ParseFromReadOnlySequence();
         }
 
         [Benchmark]
@@ -86,9 +104,23 @@ namespace Google.Protobuf.Benchmarks
 
         [Benchmark]
         [ArgumentsSource(nameof(MessageCountValues))]
+        public void ManyWrapperFieldsMessage_ParseDelimitedMessagesFromReadOnlySequence(int messageCount)
+        {
+            manyWrapperFieldsTest.ParseDelimitedMessagesFromReadOnlySequence(messageCount);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(MessageCountValues))]
         public void ManyPrimitiveFieldsMessage_ParseDelimitedMessagesFromByteArray(int messageCount)
         {
             manyPrimitiveFieldsTest.ParseDelimitedMessagesFromByteArray(messageCount);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(MessageCountValues))]
+        public void ManyPrimitiveFieldsMessage_ParseDelimitedMessagesFromReadOnlySequence(int messageCount)
+        {
+            manyPrimitiveFieldsTest.ParseDelimitedMessagesFromReadOnlySequence(messageCount);
         }
 
         private static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()
@@ -133,6 +165,9 @@ namespace Google.Protobuf.Benchmarks
             private readonly byte[] data;
             private readonly byte[] multipleMessagesData;
 
+            private ReadOnlySequence<byte> dataSequence;
+            private ReadOnlySequence<byte> multipleMessagesDataSequence;
+
             public SubTest(IMessage message, MessageParser parser, Func<IMessage> factory, int maxMessageCount)
             {
                 this.message = message;
@@ -140,9 +175,13 @@ namespace Google.Protobuf.Benchmarks
                 this.factory = factory;
                 this.data = message.ToByteArray();
                 this.multipleMessagesData = CreateBufferWithMultipleMessages(message, maxMessageCount);
+                this.dataSequence = new ReadOnlySequence<byte>(this.data);
+                this.multipleMessagesDataSequence = new ReadOnlySequence<byte>(this.multipleMessagesData);
             }
 
             public IMessage ParseFromByteArray() => parser.ParseFrom(data);
+
+            public IMessage ParseFromReadOnlySequence() => parser.ParseFrom(dataSequence);
 
             public void ParseDelimitedMessagesFromByteArray(int messageCount)
             {
@@ -151,6 +190,16 @@ namespace Google.Protobuf.Benchmarks
                 {
                     var msg = factory();
                     input.ReadMessage(msg);
+                }
+            }
+
+            public void ParseDelimitedMessagesFromReadOnlySequence(int messageCount)
+            {
+                ParseContext.Initialize(multipleMessagesDataSequence, out ParseContext ctx);
+                for (int i = 0; i < messageCount; i++)
+                {
+                    var msg = factory();
+                    ctx.ReadMessage(msg);
                 }
             }
 

@@ -2139,7 +2139,7 @@ TEST(GeneratedMapFieldTest, SerializationToArray) {
   unittest::TestMap message1, message2;
   std::string data;
   MapTestUtil::SetMapFields(&message1);
-  int size = message1.ByteSize();
+  size_t size = message1.ByteSizeLong();
   data.resize(size);
   uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
   uint8* end = message1.SerializeWithCachedSizesToArray(start);
@@ -2152,7 +2152,7 @@ TEST(GeneratedMapFieldTest, SerializationToArray) {
 TEST(GeneratedMapFieldTest, SerializationToStream) {
   unittest::TestMap message1, message2;
   MapTestUtil::SetMapFields(&message1);
-  int size = message1.ByteSize();
+  size_t size = message1.ByteSizeLong();
   std::string data;
   data.resize(size);
   {
@@ -2369,7 +2369,7 @@ TEST(GeneratedMapFieldTest, MissedValueTextFormat) {
 
   EXPECT_TRUE(TextFormat::ParseFromString(text, &message));
   EXPECT_EQ(1, message.map_int32_foreign_message().size());
-  EXPECT_EQ(11, message.ByteSize());
+  EXPECT_EQ(11, message.ByteSizeLong());
 }
 
 TEST(GeneratedMapFieldTest, UnknownFieldWireFormat) {
@@ -2481,7 +2481,7 @@ TEST(GeneratedMapFieldReflectionTest, SpaceUsed) {
   MapReflectionTester reflection_tester(unittest::TestMap::descriptor());
   reflection_tester.SetMapFieldsViaReflection(&message);
 
-  EXPECT_LT(0, message.GetReflection()->SpaceUsed(message));
+  EXPECT_LT(0, message.GetReflection()->SpaceUsedLong(message));
 }
 
 TEST(GeneratedMapFieldReflectionTest, Accessors) {
@@ -2767,7 +2767,7 @@ TEST_F(MapFieldInDynamicMessageTest, DynamicMapReflection) {
 }
 
 TEST_F(MapFieldInDynamicMessageTest, MapSpaceUsed) {
-  // Test that SpaceUsed() works properly
+  // Test that SpaceUsedLong() works properly
 
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
@@ -2775,10 +2775,10 @@ TEST_F(MapFieldInDynamicMessageTest, MapSpaceUsed) {
   std::unique_ptr<Message> message(map_prototype_->New());
   MapReflectionTester reflection_tester(map_descriptor_);
 
-  int initial_space_used = message->SpaceUsed();
+  int initial_space_used = message->SpaceUsedLong();
 
   reflection_tester.SetMapFieldsViaReflection(message.get());
-  EXPECT_LT(initial_space_used, message->SpaceUsed());
+  EXPECT_LT(initial_space_used, message->SpaceUsedLong());
 }
 
 TEST_F(MapFieldInDynamicMessageTest, RecursiveMap) {
@@ -2952,9 +2952,9 @@ TEST(WireFormatForMapFieldTest, MapByteSize) {
   unittest::TestMap message;
   MapTestUtil::SetMapFields(&message);
 
-  EXPECT_EQ(message.ByteSize(), WireFormat::ByteSize(message));
+  EXPECT_EQ(message.ByteSizeLong(), WireFormat::ByteSize(message));
   message.Clear();
-  EXPECT_EQ(0, message.ByteSize());
+  EXPECT_EQ(0, message.ByteSizeLong());
   EXPECT_EQ(0, WireFormat::ByteSize(message));
 }
 
@@ -2967,7 +2967,7 @@ TEST(WireFormatForMapFieldTest, SerializeMap) {
 
   // Serialize using the generated code.
   {
-    message.ByteSize();
+    message.ByteSizeLong();
     io::StringOutputStream raw_output(&generated_data);
     io::CodedOutputStream output(&raw_output);
     message.SerializeWithCachedSizes(&output);
@@ -2978,7 +2978,7 @@ TEST(WireFormatForMapFieldTest, SerializeMap) {
   {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
-    int size = WireFormat::ByteSize(message);
+    size_t size = WireFormat::ByteSize(message);
     WireFormat::SerializeWithCachedSizes(message, size, &output);
     ASSERT_FALSE(output.HadError());
   }
@@ -3026,7 +3026,7 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   std::string expected_serialized_data;
   dynamic_message->SerializeToString(&expected_serialized_data);
   int expected_size = expected_serialized_data.size();
-  EXPECT_EQ(dynamic_message->ByteSize(), expected_size);
+  EXPECT_EQ(dynamic_message->ByteSizeLong(), expected_size);
 
   std::unique_ptr<Message> message2;
   message2.reset(factory.GetPrototype(unittest::TestMap::descriptor())->New());
@@ -3040,27 +3040,27 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   reflection->RemoveLast(dynamic_message.get(), field);
   dynamic_message->MergeFrom(*message2);
   dynamic_message->MergeFrom(*message2);
-  // The map field is marked as STATE_MODIFIED_REPEATED, ByteSize() will use
+  // The map field is marked as STATE_MODIFIED_REPEATED, ByteSizeLong() will use
   // repeated field which have duplicate keys to calculate.
-  int duplicate_size = dynamic_message->ByteSize();
+  size_t duplicate_size = dynamic_message->ByteSizeLong();
   EXPECT_TRUE(duplicate_size > expected_size);
   std::string duplicate_serialized_data;
   dynamic_message->SerializeToString(&duplicate_serialized_data);
-  EXPECT_EQ(dynamic_message->ByteSize(), duplicate_serialized_data.size());
+  EXPECT_EQ(dynamic_message->ByteSizeLong(), duplicate_serialized_data.size());
 
   // Force the map field to mark with map CLEAN
   EXPECT_EQ(reflection_tester.MapSize(*dynamic_message, "map_int32_int32"), 2);
-  // The map field is marked as CLEAN, ByteSize() will use map which do not
+  // The map field is marked as CLEAN, ByteSizeLong() will use map which do not
   // have duplicate keys to calculate.
-  int size = dynamic_message->ByteSize();
+  int size = dynamic_message->ByteSizeLong();
   EXPECT_EQ(expected_size, size);
 
   // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
-  // repeated field to calculate ByteSize but use map to serialize the real
-  // data, thus the ByteSize may bigger than real serialized size. A crash might
-  // be happen at SerializeToString(). Or an "unexpect end group" warning was
-  // raised at parse back if user use SerializeWithCachedSizes() which avoids
-  // size check at serialize.
+  // repeated field to calculate ByteSizeLong but use map to serialize the real
+  // data, thus the ByteSizeLong may bigger than real serialized size. A crash
+  // might be happen at SerializeToString(). Or an "unexpect end group" warning
+  // was raised at parse back if user use SerializeWithCachedSizes() which
+  // avoids size check at serialize.
   std::string serialized_data;
   dynamic_message->SerializeToString(&serialized_data);
   EXPECT_EQ(serialized_data, expected_serialized_data);
@@ -3118,7 +3118,7 @@ TEST(WireFormatForMapFieldTest, MapParseHelpers) {
 template <typename T>
 static std::string DeterministicSerializationWithSerializePartialToCodedStream(
     const T& t) {
-  const int size = t.ByteSize();
+  const size_t size = t.ByteSizeLong();
   std::string result(size, '\0');
   io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), size);
   io::CodedOutputStream output_stream(&array_stream);
@@ -3132,7 +3132,7 @@ static std::string DeterministicSerializationWithSerializePartialToCodedStream(
 template <typename T>
 static std::string DeterministicSerializationWithSerializeToCodedStream(
     const T& t) {
-  const int size = t.ByteSize();
+  const size_t size = t.ByteSizeLong();
   std::string result(size, '\0');
   io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), size);
   io::CodedOutputStream output_stream(&array_stream);
@@ -3145,7 +3145,7 @@ static std::string DeterministicSerializationWithSerializeToCodedStream(
 
 template <typename T>
 static std::string DeterministicSerialization(const T& t) {
-  const int size = t.ByteSize();
+  const size_t size = t.ByteSizeLong();
   std::string result(size, '\0');
   io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), size);
   {

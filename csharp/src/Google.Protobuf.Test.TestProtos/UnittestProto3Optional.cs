@@ -66,7 +66,7 @@ namespace ProtobufUnittest {
 
   }
   #region Messages
-  public sealed partial class TestProto3Optional : pb::IMessage<TestProto3Optional> {
+  public sealed partial class TestProto3Optional : pb::IMessage<TestProto3Optional>, pb::IBufferMessage {
     private static readonly pb::MessageParser<TestProto3Optional> _parser = new pb::MessageParser<TestProto3Optional>(() => new TestProto3Optional());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -806,11 +806,16 @@ namespace ProtobufUnittest {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
             OptionalInt32 = input.ReadInt32();
@@ -913,7 +918,7 @@ namespace ProtobufUnittest {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, pb::IBufferMessage {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -1044,11 +1049,16 @@ namespace ProtobufUnittest {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+          input.ReadRawMessage(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
               default:
-                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
                 break;
               case 8: {
                 Bb = input.ReadInt32();

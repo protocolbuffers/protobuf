@@ -35,6 +35,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
+using System.Buffers;
 
 namespace Google.Protobuf.Benchmarks
 {
@@ -51,7 +52,12 @@ namespace Google.Protobuf.Benchmarks
         byte[] floatInputBuffer;
         byte[] fixedIntInputBuffer;
 
+        // key is the encodedSize of string values
+        Dictionary<int, byte[]> stringInputBuffers;
+
         Random random = new Random(417384220);  // random but deterministic seed
+
+        public IEnumerable<int> StringEncodedSizes => new[] { 1, 4, 10, 105, 10080 };
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -70,6 +76,13 @@ namespace Google.Protobuf.Benchmarks
             doubleInputBuffer = CreateBufferWithRandomDoubles(random, BytesToParse / sizeof(double), paddingValueCount);
             floatInputBuffer = CreateBufferWithRandomFloats(random, BytesToParse / sizeof(float), paddingValueCount);
             fixedIntInputBuffer = CreateBufferWithRandomData(random, BytesToParse / sizeof(long), sizeof(long), paddingValueCount);
+
+            stringInputBuffers = new Dictionary<int, byte[]>();
+            foreach(var encodedSize in StringEncodedSizes)
+            {
+                byte[] buffer = CreateBufferWithStrings(BytesToParse / encodedSize, encodedSize, encodedSize < 10 ? 10 : 1 );
+                stringInputBuffers.Add(encodedSize, buffer);
+            }
         }
 
         // Total number of bytes that each benchmark will parse.
@@ -85,7 +98,7 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(3)]
         [Arguments(4)]
         [Arguments(5)]
-        public int ParseRawVarint32(int encodedSize)
+        public int ParseRawVarint32_CodedInputStream(int encodedSize)
         {
             CodedInputStream cis = new CodedInputStream(varintInputBuffers[encodedSize]);
             int sum = 0;
@@ -102,12 +115,29 @@ namespace Google.Protobuf.Benchmarks
         [Arguments(3)]
         [Arguments(4)]
         [Arguments(5)]
+        public int ParseRawVarint32_ParseContext(int encodedSize)
+        {
+            InitializeParseContext(varintInputBuffers[encodedSize], out ParseContext ctx);
+            int sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadInt32();
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        [Arguments(1)]
+        [Arguments(2)]
+        [Arguments(3)]
+        [Arguments(4)]
+        [Arguments(5)]
         [Arguments(6)]
         [Arguments(7)]
         [Arguments(8)]
         [Arguments(9)]
         [Arguments(10)]
-        public long ParseRawVarint64(int encodedSize)
+        public long ParseRawVarint64_CodedInputStream(int encodedSize)
         {
             CodedInputStream cis = new CodedInputStream(varintInputBuffers[encodedSize]);
             long sum = 0;
@@ -119,7 +149,29 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
-        public uint ParseFixed32()
+        [Arguments(1)]
+        [Arguments(2)]
+        [Arguments(3)]
+        [Arguments(4)]
+        [Arguments(5)]
+        [Arguments(6)]
+        [Arguments(7)]
+        [Arguments(8)]
+        [Arguments(9)]
+        [Arguments(10)]
+        public long ParseRawVarint64_ParseContext(int encodedSize)
+        {
+            InitializeParseContext(varintInputBuffers[encodedSize], out ParseContext ctx);
+            long sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadInt64();
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        public uint ParseFixed32_CodedInputStream()
         {
             const int encodedSize = sizeof(uint);
             CodedInputStream cis = new CodedInputStream(fixedIntInputBuffer);
@@ -132,7 +184,20 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
-        public ulong ParseFixed64()
+        public uint ParseFixed32_ParseContext()
+        {
+            const int encodedSize = sizeof(uint);
+            InitializeParseContext(fixedIntInputBuffer, out ParseContext ctx);
+            uint sum = 0;
+            for (uint i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadFixed32();
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        public ulong ParseFixed64_CodedInputStream()
         {
             const int encodedSize = sizeof(ulong);
             CodedInputStream cis = new CodedInputStream(fixedIntInputBuffer);
@@ -145,7 +210,20 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
-        public float ParseRawFloat()
+        public ulong ParseFixed64_ParseContext()
+        {
+            const int encodedSize = sizeof(ulong);
+            InitializeParseContext(fixedIntInputBuffer, out ParseContext ctx);
+            ulong sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadFixed64();
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        public float ParseRawFloat_CodedInputStream()
         {
             const int encodedSize = sizeof(float);
             CodedInputStream cis = new CodedInputStream(floatInputBuffer);
@@ -158,7 +236,20 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
-        public double ParseRawDouble()
+        public float ParseRawFloat_ParseContext()
+        {
+            const int encodedSize = sizeof(float);
+            InitializeParseContext(floatInputBuffer, out ParseContext ctx);
+            float sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+               sum += ctx.ReadFloat();
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        public double ParseRawDouble_CodedInputStream()
         {
             const int encodedSize = sizeof(double);
             CodedInputStream cis = new CodedInputStream(doubleInputBuffer);
@@ -168,6 +259,76 @@ namespace Google.Protobuf.Benchmarks
                 sum += cis.ReadDouble();
             }
             return sum;
+        }
+
+        [Benchmark]
+        public double ParseRawDouble_ParseContext()
+        {
+            const int encodedSize = sizeof(double);
+            InitializeParseContext(doubleInputBuffer, out ParseContext ctx);
+            double sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadDouble();
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(StringEncodedSizes))]
+        public int ParseString_CodedInputStream(int encodedSize)
+        {
+            CodedInputStream cis = new CodedInputStream(stringInputBuffers[encodedSize]);
+            int sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += cis.ReadString().Length;
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(StringEncodedSizes))]
+        public int ParseString_ParseContext(int encodedSize)
+        {
+            InitializeParseContext(stringInputBuffers[encodedSize], out ParseContext ctx);
+            int sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadString().Length;
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(StringEncodedSizes))]
+        public int ParseBytes_CodedInputStream(int encodedSize)
+        {
+            CodedInputStream cis = new CodedInputStream(stringInputBuffers[encodedSize]);
+            int sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += cis.ReadBytes().Length;
+            }
+            return sum;
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(StringEncodedSizes))]
+        public int ParseBytes_ParseContext(int encodedSize)
+        {
+            InitializeParseContext(stringInputBuffers[encodedSize], out ParseContext ctx);
+            int sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadBytes().Length;
+            }
+            return sum;
+        }
+
+        private static void InitializeParseContext(byte[] buffer, out ParseContext ctx)
+        {
+            ParseContext.Initialize(new ReadOnlySequence<byte>(buffer), out ctx);
         }
 
         private static byte[] CreateBufferWithRandomVarints(Random random, int valueCount, int encodedSize, int paddingValueCount)
@@ -260,6 +421,41 @@ namespace Google.Protobuf.Benchmarks
                 }
             }
             return result;
+        }
+
+        private static byte[] CreateBufferWithStrings(int valueCount, int encodedSize, int paddingValueCount)
+        {
+            var str = CreateStringWithEncodedSize(encodedSize);
+
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream cos = new CodedOutputStream(ms);
+            for (int i = 0; i < valueCount + paddingValueCount; i++)
+            {
+                cos.WriteString(str);
+            }
+            cos.Flush();
+            var buffer = ms.ToArray();
+
+            if (buffer.Length != encodedSize * (valueCount + paddingValueCount))
+            {
+                throw new InvalidOperationException($"Unexpected output buffer length {buffer.Length}");
+            }
+            return buffer;
+        }
+
+        private static string CreateStringWithEncodedSize(int encodedSize)
+        {
+            var str = new string('a', encodedSize);
+            while (CodedOutputStream.ComputeStringSize(str) > encodedSize)
+            {
+                str = str.Substring(1);
+            }
+
+            if (CodedOutputStream.ComputeStringSize(str) != encodedSize)
+            {
+                throw new InvalidOperationException($"Generated string with wrong encodedSize");
+            }
+            return str;
         }
     }
 }

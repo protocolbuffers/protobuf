@@ -34,12 +34,14 @@ namespace Google.Protobuf
             message.SetExtension(OptionalBoolExtension, true);
             var serialized = message.ToByteArray();
 
-            var other = TestAllExtensions.Parser
-                .WithExtensionRegistry(new ExtensionRegistry() { OptionalBoolExtension })
-                .ParseFrom(serialized);
-
-            Assert.AreEqual(message, other);
-            Assert.AreEqual(message.CalculateSize(), other.CalculateSize());
+            MessageParsingHelpers.AssertReadingMessage(
+                TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { OptionalBoolExtension }),
+                serialized,
+                other =>
+                {
+                    Assert.AreEqual(message, other);
+                    Assert.AreEqual(message.CalculateSize(), other.CalculateSize());
+                });
         }
 
         [Test]
@@ -57,6 +59,22 @@ namespace Google.Protobuf
 
             Assert.AreEqual(message, other);
             Assert.AreEqual(message.CalculateSize(), other.CalculateSize());
+        }
+
+        [Test]
+        public void TryMergeFieldFrom_CodedInputStream()
+        {
+            var message = new TestAllExtensions();
+            message.SetExtension(OptionalStringExtension, "abcd");
+
+            var input = new CodedInputStream(message.ToByteArray());
+            input.ExtensionRegistry = new ExtensionRegistry() { OptionalStringExtension };
+            input.ReadTag(); // TryMergeFieldFrom expects that a tag was just read and will inspect the LastTag value
+
+            ExtensionSet<TestAllExtensions> extensionSet = null;
+            // test the legacy overload of TryMergeFieldFrom that takes a CodedInputStream
+            Assert.IsTrue(ExtensionSet.TryMergeFieldFrom(ref extensionSet, input));
+            Assert.AreEqual("abcd", ExtensionSet.Get(ref extensionSet, OptionalStringExtension));
         }
 
         [Test]

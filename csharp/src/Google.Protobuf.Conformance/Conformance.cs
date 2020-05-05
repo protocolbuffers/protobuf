@@ -107,7 +107,7 @@ namespace Conformance {
   /// This will be known by message_type == "conformance.FailureSet", a conformance
   /// test should return a serialized FailureSet in protobuf_payload.
   /// </summary>
-  public sealed partial class FailureSet : pb::IMessage<FailureSet> {
+  public sealed partial class FailureSet : pb::IMessage<FailureSet>, pb::IBufferMessage {
     private static readonly pb::MessageParser<FailureSet> _parser = new pb::MessageParser<FailureSet>(() => new FailureSet());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -212,14 +212,19 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            failure_.AddEntriesFrom(input, _repeated_failure_codec);
+            failure_.AddEntriesFrom(ref input, _repeated_failure_codec);
             break;
           }
         }
@@ -235,7 +240,7 @@ namespace Conformance {
   ///   2. parse the protobuf or JSON payload in "payload" (which may fail)
   ///   3. if the parse succeeded, serialize the message in the requested format.
   /// </summary>
-  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
+  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest>, pb::IBufferMessage {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -603,11 +608,16 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
             ProtobufPayload = input.ReadBytes();
@@ -657,7 +667,7 @@ namespace Conformance {
   /// <summary>
   /// Represents a single test case's output.
   /// </summary>
-  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
+  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse>, pb::IBufferMessage {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1025,11 +1035,16 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
             ParseError = input.ReadString();
@@ -1072,7 +1087,7 @@ namespace Conformance {
   /// <summary>
   /// Encoding options for jspb format.
   /// </summary>
-  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig> {
+  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig>, pb::IBufferMessage {
     private static readonly pb::MessageParser<JspbEncodingConfig> _parser = new pb::MessageParser<JspbEncodingConfig>(() => new JspbEncodingConfig());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1188,11 +1203,16 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 8: {
             UseJspbArrayAnyFormat = input.ReadBool();

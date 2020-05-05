@@ -63,8 +63,9 @@ class PROTOBUF_EXPORT FieldMaskUtil {
     for (const auto field_number : field_numbers) {
       const FieldDescriptor* field_desc =
           T::descriptor()->FindFieldByNumber(field_number);
-      GOOGLE_CHECK(field_desc != nullptr) << "Invalid field number for "
-                                   << typeid(T).name() << ": " << field_number;
+      GOOGLE_CHECK(field_desc != nullptr)
+          << "Invalid field number for " << T::descriptor()->full_name() << ": "
+          << field_number;
       AddPathToFieldMask<T>(field_desc->lowercase_name(), out);
     }
   }

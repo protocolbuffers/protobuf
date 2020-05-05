@@ -172,7 +172,7 @@ class BaseProtoStreamObjectWriterTest
 MATCHER_P(HasObjectLocation, expected,
           "Verifies the expected object location") {
   std::string actual = get<0>(arg).ToString();
-  if (actual.compare(expected) == 0) return true;
+  if (actual == expected) return true;
   *result_listener << "actual location is: " << actual;
   return false;
 }
