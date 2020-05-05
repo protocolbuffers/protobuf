@@ -235,7 +235,7 @@ TEST_F(JsonStreamParserTest, SimpleInt) {
 TEST_F(JsonStreamParserTest, SimpleNegativeInt) {
   StringPiece str = "-79497823553162765";
   for (int i = 0; i <= str.length(); ++i) {
-    ow_.RenderInt64("", -79497823553162765LL);
+    ow_.RenderInt64("", int64{-79497823553162765});
     DoTest(str, i);
   }
 }
@@ -243,7 +243,7 @@ TEST_F(JsonStreamParserTest, SimpleNegativeInt) {
 TEST_F(JsonStreamParserTest, SimpleUnsignedInt) {
   StringPiece str = "11779497823553162765";
   for (int i = 0; i <= str.length(); ++i) {
-    ow_.RenderUint64("", 11779497823553162765ULL);
+    ow_.RenderUint64("", uint64{11779497823553162765u});
     DoTest(str, i);
   }
 }
@@ -378,7 +378,7 @@ TEST_F(JsonStreamParserTest, ArrayComplexValues) {
         ->RenderInt64("", -127)
         ->RenderDouble("", 45.3)
         ->RenderDouble("", -1056.4)
-        ->RenderUint64("", 11779497823553162765ULL)
+        ->RenderUint64("", uint64{11779497823553162765u})
         ->EndList()
         ->StartObject("")
         ->RenderBool("key", true)
@@ -406,7 +406,7 @@ TEST_F(JsonStreamParserTest, ObjectValues) {
         ->RenderInt64("ni", -127)
         ->RenderDouble("pd", 45.3)
         ->RenderDouble("nd", -1056.4)
-        ->RenderUint64("pl", 11779497823553162765ULL)
+        ->RenderUint64("pl", uint64{11779497823553162765u})
         ->StartList("l")
         ->StartList("")
         ->EndList()

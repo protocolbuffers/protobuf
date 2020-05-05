@@ -55,9 +55,9 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/substitute.h>
 
 
 #include <google/protobuf/port_def.inc>
@@ -1911,7 +1911,33 @@ TEST_F(TextFormatParserTest, SetRecursionLimit) {
 
   input = strings::Substitute(format, input);
   parser_.SetRecursionLimit(100);
-  ExpectMessage(input, "Message is too deep", 1, 908, &message, false);
+  ExpectMessage(input,
+                "Message is too deep, the parser exceeded the configured "
+                "recursion limit of 100.",
+                1, 908, &message, false);
+
+  parser_.SetRecursionLimit(101);
+  ExpectSuccessAndTree(input, &message, nullptr);
+}
+
+TEST_F(TextFormatParserTest, SetRecursionLimitUnknownField) {
+  const char* format = "unknown_child: { $0 }";
+  std::string input;
+  for (int i = 0; i < 100; ++i) input = strings::Substitute(format, input);
+
+  parser_.AllowUnknownField(true);
+
+  unittest::NestedTestAllTypes message;
+  ExpectSuccessAndTree(input, &message, nullptr);
+
+  input = strings::Substitute(format, input);
+  parser_.SetRecursionLimit(100);
+  ExpectMessage(
+      input,
+      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "field named \"unknown_child\".\n1:1716: Message is too deep, the parser "
+      "exceeded the configured recursion limit of 100.",
+      1, 14, &message, false);
 
   parser_.SetRecursionLimit(101);
   ExpectSuccessAndTree(input, &message, nullptr);

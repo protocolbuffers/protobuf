@@ -911,6 +911,10 @@ inline void Value::set_allocated_string_value(std::string* string_value) {
   if (string_value != nullptr) {
     set_has_string_value();
     kind_.string_value_.UnsafeSetDefault(string_value);
+    ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena();
+    if (arena != nullptr) {
+      arena->Own(string_value);
+    }
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.string_value)
 }

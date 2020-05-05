@@ -32,6 +32,7 @@
 #define GOOGLE_PROTOBUF_MAP_FIELD_H__
 
 #include <atomic>
+#include <functional>
 
 #include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
@@ -796,7 +797,7 @@ class PROTOBUF_EXPORT MapIterator {
 }  // namespace protobuf
 }  // namespace google
 
-GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
+namespace std {
 template <>
 struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
   size_t operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key) const {
@@ -809,16 +810,25 @@ struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
         break;
       case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
         return hash<std::string>()(map_key.GetStringValue());
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64:
-        return hash<int64>()(map_key.GetInt64Value());
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32:
-        return hash<int32>()(map_key.GetInt32Value());
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64:
-        return hash<uint64>()(map_key.GetUInt64Value());
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32:
-        return hash<uint32>()(map_key.GetUInt32Value());
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64: {
+        auto value = map_key.GetInt64Value();
+        return hash<decltype(value)>()(value);
+      }
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32: {
+        auto value = map_key.GetInt32Value();
+        return hash<decltype(value)>()(map_key.GetInt32Value());
+      }
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64: {
+        auto value = map_key.GetUInt64Value();
+        return hash<decltype(value)>()(map_key.GetUInt64Value());
+      }
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32: {
+        auto value = map_key.GetUInt32Value();
+        return hash<decltype(value)>()(map_key.GetUInt32Value());
+      }
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL: {
         return hash<bool>()(map_key.GetBoolValue());
+      }
     }
     GOOGLE_LOG(FATAL) << "Can't get here.";
     return 0;
@@ -828,8 +838,7 @@ struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
     return map_key1 < map_key2;
   }
 };
-GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
-
+}  // namespace std
 #include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_H__

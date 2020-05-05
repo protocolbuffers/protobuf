@@ -37,6 +37,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
 
+#include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <limits>  // To support Visual Studio 2008
@@ -268,7 +269,7 @@ class Map {
   using const_reference = const value_type&;
 
   using size_type = size_t;
-  using hasher = hash<Key>;
+  using hasher = std::hash<Key>;
 
   Map() : arena_(nullptr), default_enum_value_(0) { Init(); }
   explicit Map(Arena* arena) : arena_(arena), default_enum_value_(0) { Init(); }

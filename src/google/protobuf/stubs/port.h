@@ -225,12 +225,6 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 # define GOOGLE_PROTOBUF_USE_PORTABLE_LOG2
 #endif
 
-#if defined(_MSC_VER)
-#define GOOGLE_THREAD_LOCAL __declspec(thread)
-#else
-#define GOOGLE_THREAD_LOCAL __thread
-#endif
-
 // The following guarantees declaration of the byte swap functions.
 #ifdef _MSC_VER
 #define bswap_16(x) _byteswap_ushort(x)

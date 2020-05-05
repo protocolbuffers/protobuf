@@ -246,8 +246,7 @@ class _Printer(object):
           js[name] = [self._FieldToJsonObject(field, k)
                       for k in value]
         elif field.is_extension:
-          full_qualifier = field.full_name[:-len(field.name)]
-          name = '[%s%s]' % (full_qualifier, name)
+          name = '[%s]' % field.full_name
           js[name] = self._FieldToJsonObject(field, value)
         else:
           js[name] = self._FieldToJsonObject(field, value)

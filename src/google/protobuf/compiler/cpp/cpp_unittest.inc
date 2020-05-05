@@ -1683,6 +1683,26 @@ TEST_F(OneofTest, SetAllocatedString) {
   EXPECT_EQ(kHello, message.foo_string());
 }
 
+TEST_F(OneofTest, ArenaSetAllocatedString) {
+  // Check that set_allocated_foo() works for strings.
+  Arena arena;
+  UNITTEST::TestOneof2* message =
+      Arena::CreateMessage<UNITTEST::TestOneof2>(&arena);
+
+  EXPECT_FALSE(message->has_foo_string());
+  const std::string kHello("hello");
+  message->set_foo_string(kHello);
+  EXPECT_TRUE(message->has_foo_string());
+
+  message->set_allocated_foo_string(NULL);
+  EXPECT_FALSE(message->has_foo_string());
+  EXPECT_EQ("", message->foo_string());
+
+  message->set_allocated_foo_string(new std::string(kHello));
+  EXPECT_TRUE(message->has_foo_string());
+  EXPECT_EQ(kHello, message->foo_string());
+}
+
 
 TEST_F(OneofTest, SetMessage) {
   // Check that setting a message field works
