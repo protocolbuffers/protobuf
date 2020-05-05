@@ -60,19 +60,14 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   template <typename T>
   static void FromFieldNumbers(const std::vector<int64>& field_numbers,
                                FieldMask* out) {
-    #if PROTOBUF_RTTI
-    #define PROTOBUF_RTTI_TYPENAME(T) typeid(T).name()
-    #else
-    #define PROTOBUF_RTTI_TYPENAME(T) #T
-    #endif
     for (const auto field_number : field_numbers) {
       const FieldDescriptor* field_desc =
           T::descriptor()->FindFieldByNumber(field_number);
-      GOOGLE_CHECK(field_desc != nullptr) << "Invalid field number for "
-                                   << PROTOBUF_RTTI_TYPENAME(T) << ": " << field_number;
+      GOOGLE_CHECK(field_desc != nullptr)
+          << "Invalid field number for " << T::descriptor()->full_name() << ": "
+          << field_number;
       AddPathToFieldMask<T>(field_desc->lowercase_name(), out);
     }
-    #undef PROTOBUF_RTTI_TYPENAME
   }
 
   // Converts FieldMask to/from string, formatted according to proto3 JSON
