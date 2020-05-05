@@ -130,6 +130,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   else {
     printer->Print(vars, "pb::IMessage<$class_name$>");
   }
+  printer->Print(", pb::IBufferMessage");
   printer->Print(" {\n");
   printer->Indent();
 
@@ -636,6 +637,13 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   WriteGeneratedCodeAttributes(printer);
   printer->Print("public void MergeFrom(pb::CodedInputStream input) {\n");
   printer->Indent();
+  printer->Print("input.ReadRawMessage(this);\n");
+  printer->Outdent();
+  printer->Print("}\n\n");
+
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print("void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {\n");
+  printer->Indent();
   printer->Print(
     "uint tag;\n"
     "while ((tag = input.ReadTag()) != 0) {\n"
@@ -651,14 +659,14 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   if (has_extension_ranges_) {
     printer->Print(
       "default:\n"
-      "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {\n"
-      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
+      "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {\n"
+      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);\n"
       "  }\n"
       "  break;\n");
   } else {
     printer->Print(
       "default:\n"
-      "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);\n"
+      "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);\n"
       "  break;\n");
   }
   for (int i = 0; i < fields_by_number().size(); i++) {

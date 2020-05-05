@@ -80,9 +80,9 @@ namespace Google.Protobuf
         /// </summary>
         bool ICollection<Extension>.IsReadOnly => false;
 
-        internal bool ContainsInputField(CodedInputStream stream, Type target, out Extension extension)
+        internal bool ContainsInputField(uint lastTag, Type target, out Extension extension)
         {
-            return extensions.TryGetValue(new ObjectIntPair<Type>(target, WireFormat.GetTagFieldNumber(stream.LastTag)), out extension);
+            return extensions.TryGetValue(new ObjectIntPair<Type>(target, WireFormat.GetTagFieldNumber(lastTag)), out extension);
         }
 
         /// <summary>

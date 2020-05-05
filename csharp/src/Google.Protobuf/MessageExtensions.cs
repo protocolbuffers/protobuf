@@ -31,9 +31,11 @@
 #endregion
 
 using Google.Protobuf.Reflection;
+using System.Buffers;
 using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf
 {
@@ -246,6 +248,16 @@ namespace Google.Protobuf
             codedInput.ExtensionRegistry = registry;
             message.MergeFrom(codedInput);
             codedInput.CheckReadEndOfStreamTag();
+        }
+
+        [SecuritySafeCritical]
+        internal static void MergeFrom(this IMessage message, ReadOnlySequence<byte> data, bool discardUnknownFields, ExtensionRegistry registry)
+        {
+            ParseContext.Initialize(data, out ParseContext ctx);
+            ctx.DiscardUnknownFields = discardUnknownFields;
+            ctx.ExtensionRegistry = registry;
+            ParsingPrimitivesMessages.ReadRawMessage(ref ctx, message);
+            ParsingPrimitivesMessages.CheckReadEndOfStreamTag(ref ctx.state);
         }
 
         internal static void MergeDelimitedFrom(this IMessage message, Stream input, bool discardUnknownFields, ExtensionRegistry registry)

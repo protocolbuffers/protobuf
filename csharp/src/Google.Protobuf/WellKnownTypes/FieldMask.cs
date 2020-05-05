@@ -240,7 +240,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// request should verify the included field paths, and return an
   /// `INVALID_ARGUMENT` error if any path is unmappable.
   /// </summary>
-  public sealed partial class FieldMask : pb::IMessage<FieldMask> {
+  public sealed partial class FieldMask : pb::IMessage<FieldMask>, pb::IBufferMessage {
     private static readonly pb::MessageParser<FieldMask> _parser = new pb::MessageParser<FieldMask>(() => new FieldMask());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -348,14 +348,19 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+      input.ReadRawMessage(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
           default:
-            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            paths_.AddEntriesFrom(input, _repeated_paths_codec);
+            paths_.AddEntriesFrom(ref input, _repeated_paths_codec);
             break;
           }
         }
