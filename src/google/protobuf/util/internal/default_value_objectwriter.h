@@ -201,7 +201,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // Returns the Value Type of a map given the Type of the map entry and a
     // TypeInfo instance.
     const google::protobuf::Type* GetMapValueType(
-        const google::protobuf::Type& entry_type, const TypeInfo* typeinfo);
+        const google::protobuf::Type& found_type, const TypeInfo* typeinfo);
 
     // Calls WriteTo() on every child in children_.
     void WriteChildren(ObjectWriter* ow);

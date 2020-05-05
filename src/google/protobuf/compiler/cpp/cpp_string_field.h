@@ -95,7 +95,6 @@ class StringOneofFieldGenerator : public StringFieldGenerator {
   void GenerateMessageClearingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
-  void GenerateDestructorCode(io::Printer* printer) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOneofFieldGenerator);

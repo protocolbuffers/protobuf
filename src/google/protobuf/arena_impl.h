@@ -288,16 +288,16 @@ class PROTOBUF_EXPORT ArenaImpl {
   };
   static std::atomic<LifecycleId> lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
-  // Android ndk does not support GOOGLE_THREAD_LOCAL keyword so we use a custom thread
+  // Android ndk does not support __thread keyword so we use a custom thread
   // local storage class we implemented.
-  // iOS also does not support the GOOGLE_THREAD_LOCAL keyword.
+  // iOS also does not support the __thread keyword.
   static ThreadCache& thread_cache();
 #elif defined(PROTOBUF_USE_DLLS)
   // Thread local variables cannot be exposed through DLL interface but we can
   // wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
-  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_;
+  static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }
 #endif
 

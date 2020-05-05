@@ -3522,7 +3522,7 @@ class DescriptorBuilder {
     return pool->enforce_weak_;
   }
   static inline bool get_is_placeholder(const Descriptor* descriptor) {
-    return descriptor->is_placeholder_;
+    return descriptor != nullptr && descriptor->is_placeholder_;
   }
   static inline void assert_mutex_held(const DescriptorPool* pool) {
     if (pool->mutex_ != nullptr) {

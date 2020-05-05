@@ -131,7 +131,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // nested messages (end with 0) and nested groups (end with group end tag).
   // The include_start_and_end parameter allows this method to be called when
   // already inside of an object, and skip calling StartObject and EndObject.
-  virtual util::Status WriteMessage(const google::protobuf::Type& descriptor,
+  virtual util::Status WriteMessage(const google::protobuf::Type& type,
                                       StringPiece name,
                                       const uint32 end_tag,
                                       bool include_start_and_end,

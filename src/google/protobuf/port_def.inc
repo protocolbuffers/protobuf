@@ -634,3 +634,9 @@ PROTOBUF_EXPORT_TEMPLATE_TEST(DEFAULT, __declspec(dllimport));
 #endif
 
 #define PROTOBUF_FINAL final
+
+#if defined(_MSC_VER)
+#define PROTOBUF_THREAD_LOCAL __declspec(thread)
+#else
+#define PROTOBUF_THREAD_LOCAL __thread
+#endif
