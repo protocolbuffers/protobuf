@@ -70,6 +70,21 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public string JsonName { get; }
 
+        /// <summary>
+        /// Indicates whether this field supports presence, either implicitly (e.g. due to it being a message
+        /// type field) or explicitly via Has/Clear members. If this returns true, it is safe to call
+        /// <see cref="IFieldAccessor.Clear(IMessage)"/> and <see cref="IFieldAccessor.HasValue(IMessage)"/>
+        /// on this field's accessor with a suitable message.
+        /// </summary>
+        public bool HasPresence =>
+            Extension != null ? !Extension.IsRepeated
+            : IsRepeated ? false
+            : IsMap ? false
+            : FieldType == FieldType.Message ? true
+            // This covers "real oneof members" and "proto3 optional fields"
+            : ContainingOneof != null ? true
+            : File.Syntax == Syntax.Proto2;
+
         internal FieldDescriptorProto Proto { get; }
 
         /// <summary>
