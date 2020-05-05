@@ -188,6 +188,68 @@ void ReflectionOps::Clear(Message* message) {
   reflection->MutableUnknownFields(message)->Clear();
 }
 
+bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
+                                  bool check_descendants) {
+  const Descriptor* descriptor = message.GetDescriptor();
+  const Reflection* reflection = GetReflectionOrDie(message);
+  if (const int field_count = descriptor->field_count()) {
+    const FieldDescriptor* begin = descriptor->field(0);
+    const FieldDescriptor* end = begin + field_count;
+    GOOGLE_DCHECK_EQ(descriptor->field(field_count - 1), end - 1);
+
+    if (check_fields) {
+      // Check required fields of this message.
+      for (const FieldDescriptor* field = begin; field != end; ++field) {
+        if (field->is_required() && !reflection->HasField(message, field)) {
+          return false;
+        }
+      }
+    }
+
+    if (check_descendants) {
+      for (const FieldDescriptor* field = begin; field != end; ++field) {
+        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          const Descriptor* message_type = field->message_type();
+          if (PROTOBUF_PREDICT_FALSE(message_type->options().map_entry())) {
+            if (message_type->field(1)->cpp_type() ==
+                FieldDescriptor::CPPTYPE_MESSAGE) {
+              const MapFieldBase* map_field =
+                  reflection->GetMapData(message, field);
+              if (map_field->IsMapValid()) {
+                MapIterator it(const_cast<Message*>(&message), field);
+                MapIterator end(const_cast<Message*>(&message), field);
+                for (map_field->MapBegin(&it), map_field->MapEnd(&end);
+                     it != end; ++it) {
+                  if (!it.GetValueRef().GetMessageValue().IsInitialized()) {
+                    return false;
+                  }
+                }
+              }
+            }
+          } else if (field->is_repeated()) {
+            const int size = reflection->FieldSize(message, field);
+            for (int j = 0; j < size; j++) {
+              if (!reflection->GetRepeatedMessage(message, field, j)
+                       .IsInitialized()) {
+                return false;
+              }
+            }
+          } else if (reflection->HasField(message, field)) {
+            if (!reflection->GetMessage(message, field).IsInitialized()) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+  }
+  if (check_descendants && reflection->HasExtensionSet(message) &&
+      !reflection->GetExtensionSet(message).IsInitialized()) {
+    return false;
+  }
+  return true;
+}
+
 bool ReflectionOps::IsInitialized(const Message& message) {
   const Descriptor* descriptor = message.GetDescriptor();
   const Reflection* reflection = GetReflectionOrDie(message);
