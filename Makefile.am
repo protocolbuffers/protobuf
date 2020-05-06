@@ -615,23 +615,28 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/GPBWireFormat.m                                                 \
   objectivec/GPBWrappers.pbobjc.h                                            \
   objectivec/GPBWrappers.pbobjc.m                                            \
+  objectivec/Protobuf/Info.plist                                             \
+  objectivec/Protobuf/Protobuf.h                                             \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.pbxproj                   \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings \
   objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
+  objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcschemes/Protobuf.xcscheme \
   objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.pbxproj                   \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
+  objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/Protobuf.xcscheme       \
   objectivec/ProtocolBuffers_OSX.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/ProtocolBuffers_tvOS.xcodeproj/project.pbxproj                  \
   objectivec/ProtocolBuffers_tvOS.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
   objectivec/ProtocolBuffers_tvOS.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist \
   objectivec/ProtocolBuffers_tvOS.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings \
   objectivec/ProtocolBuffers_tvOS.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
+  objectivec/ProtocolBuffers_tvOS.xcodeproj/xcshareddata/xcschemes/Protobuf.xcscheme \
   objectivec/ProtocolBuffers_tvOS.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/README.md                                                       \
   objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester.xcodeproj/project.pbxproj \
@@ -739,7 +744,9 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/unittest_runtime_proto3.proto                              \
   objectivec/Tests/UnitTests-Bridging-Header.h                                \
   objectivec/Tests/UnitTests-Info.plist                                       \
-  Protobuf.podspec
+  Protobuf.podspec                                                            \
+  Protobuf.xcworkspace/contents.xcworkspacedata                               \
+  Protobuf.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
 
 php_EXTRA_DIST=                                                       \
   composer.json                                                       \
