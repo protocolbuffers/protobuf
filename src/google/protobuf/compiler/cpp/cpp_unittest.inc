@@ -44,11 +44,10 @@
 // correctly and produces the interfaces we expect, which is why this test
 // is written this way.
 
-#include <google/protobuf/compiler/cpp/cpp_unittest.h>
-
 #include <memory>
 #include <vector>
 
+#include <google/protobuf/compiler/cpp/cpp_unittest.h>
 #include <google/protobuf/unittest_no_arena.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)

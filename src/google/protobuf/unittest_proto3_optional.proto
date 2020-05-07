@@ -72,4 +72,8 @@ message TestProto3Optional {
   optional NestedMessage optional_nested_message = 18;
   optional NestedMessage lazy_nested_message = 19 [lazy = true];
   optional NestedEnum optional_nested_enum = 21;
+
+  // Add some non-optional fields to verify we can mix them.
+  int32 singular_int32 = 22;
+  int64 singular_int64 = 23;
 }

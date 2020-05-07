@@ -40,6 +40,7 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/strutil.h>
 
 using proto3_arena_unittest::TestAllTypes;
 
@@ -217,9 +218,15 @@ TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
 
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
-    EXPECT_TRUE(f->has_optional_keyword()) << f->full_name();
-    EXPECT_TRUE(f->has_presence()) << f->full_name();
-    EXPECT_TRUE(f->containing_oneof()) << f->full_name();
+    if (HasPrefixString(f->name(), "singular")) {
+      EXPECT_FALSE(f->has_optional_keyword()) << f->full_name();
+      EXPECT_FALSE(f->has_presence()) << f->full_name();
+      EXPECT_FALSE(f->containing_oneof()) << f->full_name();
+    } else {
+      EXPECT_TRUE(f->has_optional_keyword()) << f->full_name();
+      EXPECT_TRUE(f->has_presence()) << f->full_name();
+      EXPECT_TRUE(f->containing_oneof()) << f->full_name();
+    }
   }
 }
 

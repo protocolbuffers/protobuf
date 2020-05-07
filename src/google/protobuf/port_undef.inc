@@ -87,14 +87,24 @@
 
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER
+#pragma pop_macro("CREATE_NEW")
+#pragma pop_macro("DOUBLE_CLICK")
 #pragma pop_macro("ERROR")
+#pragma pop_macro("ERROR_BUSY")
+#pragma pop_macro("ERROR_NOT_FOUND")
 #pragma pop_macro("GetMessage")
 #pragma pop_macro("IGNORE")
 #pragma pop_macro("IN")
+#pragma pop_macro("INPUT_KEYBOARD")
 #pragma pop_macro("OUT")
 #pragma pop_macro("OPTIONAL")
 #pragma pop_macro("min")
 #pragma pop_macro("max")
+#pragma pop_macro("NO_ERROR")
+#pragma pop_macro("REASON_UNKNOWN")
+#pragma pop_macro("SERVICE_DISABLED")
+#pragma pop_macro("SEVERITY_ERROR")
+#pragma pop_macro("STRICT")
 #endif
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)

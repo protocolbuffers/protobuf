@@ -125,9 +125,9 @@ static bool PyStringToSTL(PyObject* py_string, std::string* stl_string) {
   }
 }
 
-static bool PythonToMapKey(PyObject* obj,
-                           const FieldDescriptor* field_descriptor,
-                           MapKey* key) {
+static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key) {
+  const FieldDescriptor* field_descriptor =
+      self->parent_field_descriptor->message_type()->map_key();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       GOOGLE_CHECK_GET_INT32(obj, value, false);
@@ -171,8 +171,9 @@ static bool PythonToMapKey(PyObject* obj,
   return true;
 }
 
-static PyObject* MapKeyToPython(const FieldDescriptor* field_descriptor,
-                                const MapKey& key) {
+static PyObject* MapKeyToPython(MapContainer* self, const MapKey& key) {
+  const FieldDescriptor* field_descriptor =
+      self->parent_field_descriptor->message_type()->map_key();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
       return PyInt_FromLong(key.GetInt32Value());
@@ -196,8 +197,9 @@ static PyObject* MapKeyToPython(const FieldDescriptor* field_descriptor,
 
 // This is only used for ScalarMap, so we don't need to handle the
 // CPPTYPE_MESSAGE case.
-PyObject* MapValueRefToPython(const FieldDescriptor* field_descriptor,
-                              const MapValueRef& value) {
+PyObject* MapValueRefToPython(MapContainer* self, const MapValueRef& value) {
+  const FieldDescriptor* field_descriptor =
+      self->parent_field_descriptor->message_type()->map_value();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
       return PyInt_FromLong(value.GetInt32Value());
@@ -227,10 +229,11 @@ PyObject* MapValueRefToPython(const FieldDescriptor* field_descriptor,
 
 // This is only used for ScalarMap, so we don't need to handle the
 // CPPTYPE_MESSAGE case.
-static bool PythonToMapValueRef(PyObject* obj,
-                                const FieldDescriptor* field_descriptor,
+static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
                                 bool allow_unknown_enum_values,
                                 MapValueRef* value_ref) {
+  const FieldDescriptor* field_descriptor =
+      self->parent_field_descriptor->message_type()->map_value();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
       GOOGLE_CHECK_GET_INT32(obj, value, false);
@@ -357,7 +360,7 @@ PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
   const Reflection* reflection = message->GetReflection();
   MapKey map_key;
 
-  if (!PythonToMapKey(key, self->key_field_descriptor, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key)) {
     return NULL;
   }
 
@@ -391,18 +394,6 @@ MapContainer* NewScalarMapContainer(
   self->parent_field_descriptor = parent_field_descriptor;
   self->version = 0;
 
-  self->key_field_descriptor =
-      parent_field_descriptor->message_type()->FindFieldByName("key");
-  self->value_field_descriptor =
-      parent_field_descriptor->message_type()->FindFieldByName("value");
-
-  if (self->key_field_descriptor == NULL ||
-      self->value_field_descriptor == NULL) {
-    PyErr_Format(PyExc_KeyError,
-                 "Map entry descriptor did not have key/value fields");
-    return NULL;
-  }
-
   return self;
 }
 
@@ -415,7 +406,7 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
   MapKey map_key;
   MapValueRef value;
 
-  if (!PythonToMapKey(key, self->key_field_descriptor, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key)) {
     return NULL;
   }
 
@@ -424,7 +415,7 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
     self->version++;
   }
 
-  return MapValueRefToPython(self->value_field_descriptor, value);
+  return MapValueRefToPython(self, value);
 }
 
 int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
@@ -436,7 +427,7 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
   MapKey map_key;
   MapValueRef value;
 
-  if (!PythonToMapKey(key, self->key_field_descriptor, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key)) {
     return -1;
   }
 
@@ -447,10 +438,11 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
     reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
                                        map_key, &value);
 
-    return PythonToMapValueRef(v, self->value_field_descriptor,
-                               reflection->SupportsUnknownEnumValues(), &value)
-               ? 0
-               : -1;
+    if (!PythonToMapValueRef(self, v, reflection->SupportsUnknownEnumValues(),
+                             &value)) {
+      return -1;
+    }
+    return 0;
   } else {
     // Delete key from map.
     if (reflection->DeleteMapValue(message, self->parent_field_descriptor,
@@ -505,13 +497,11 @@ PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
            message, self->parent_field_descriptor);
        it != reflection->MapEnd(message, self->parent_field_descriptor);
        ++it) {
-    key.reset(MapKeyToPython(self->key_field_descriptor,
-                             it.GetKey()));
+    key.reset(MapKeyToPython(self, it.GetKey()));
     if (key == NULL) {
       return NULL;
     }
-    value.reset(MapValueRefToPython(self->value_field_descriptor,
-                                    it.GetValueRef()));
+    value.reset(MapValueRefToPython(self, it.GetValueRef()));
     if (value == NULL) {
       return NULL;
     }
@@ -655,21 +645,8 @@ MessageMapContainer* NewMessageMapContainer(
   self->parent_field_descriptor = parent_field_descriptor;
   self->version = 0;
 
-  self->key_field_descriptor =
-      parent_field_descriptor->message_type()->FindFieldByName("key");
-  self->value_field_descriptor =
-      parent_field_descriptor->message_type()->FindFieldByName("value");
-
   Py_INCREF(message_class);
   self->message_class = message_class;
-
-  if (self->key_field_descriptor == NULL ||
-      self->value_field_descriptor == NULL) {
-    Py_DECREF(self);
-    PyErr_SetString(PyExc_KeyError,
-                    "Map entry descriptor did not have key/value fields");
-    return NULL;
-  }
 
   return self;
 }
@@ -692,7 +669,7 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
 
   self->version++;
 
-  if (!PythonToMapKey(key, self->key_field_descriptor, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key)) {
     return -1;
   }
 
@@ -732,7 +709,7 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
   MapKey map_key;
   MapValueRef value;
 
-  if (!PythonToMapKey(key, self->key_field_descriptor, &map_key)) {
+  if (!PythonToMapKey(self, key, &map_key)) {
     return NULL;
   }
 
@@ -759,8 +736,7 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
            message, self->parent_field_descriptor);
        it != reflection->MapEnd(message, self->parent_field_descriptor);
        ++it) {
-    key.reset(MapKeyToPython(self->key_field_descriptor,
-                             it.GetKey()));
+    key.reset(MapKeyToPython(self, it.GetKey()));
     if (key == NULL) {
       return NULL;
     }
@@ -961,8 +937,7 @@ PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
     return NULL;
   }
 
-  PyObject* ret = MapKeyToPython(self->container->key_field_descriptor,
-                                 self->iter->GetKey());
+  PyObject* ret = MapKeyToPython(self->container, self->iter->GetKey());
 
   ++(*self->iter);
 

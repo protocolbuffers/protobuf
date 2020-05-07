@@ -556,24 +556,24 @@ void BinaryAndJsonConformanceSuite::RunValidProtobufTestWithMessage(
                        equivalent_text_format, is_proto3);
 }
 
-// According to proto3 JSON specification, JSON serializers follow more strict
+// According to proto JSON specification, JSON serializers follow more strict
 // rules than parsers (e.g., a serializer must serialize int32 values as JSON
 // numbers while the parser is allowed to accept them as JSON strings). This
-// method allows strict checking on a proto3 JSON serializer by inspecting
+// method allows strict checking on a proto JSON serializer by inspecting
 // the JSON output directly.
 void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
     const string& test_name, ConformanceLevel level, const string& input_json,
-    const Validator& validator) {
-  TestAllTypesProto3 prototype;
-  ConformanceRequestSetting setting(
-      level, conformance::JSON, conformance::JSON,
-      conformance::JSON_TEST,
-      prototype, test_name, input_json);
+    const Validator& validator, bool is_proto3) {
+  std::unique_ptr<Message> prototype = NewTestMessage(is_proto3);
+  ConformanceRequestSetting setting(level, conformance::JSON, conformance::JSON,
+                                    conformance::JSON_TEST, *prototype,
+                                    test_name, input_json);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
   string effective_test_name =
       StrCat(setting.ConformanceLevelToString(level),
-                   ".Proto3.JsonInput.", test_name, ".Validator");
+                   is_proto3 ? ".Proto3.JsonInput." : ".Proto2.JsonInput.",
+                   test_name, ".Validator");
 
   RunTest(effective_test_name, request, &response);
 
@@ -1800,7 +1800,8 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldNameConvention() {
             value.isMember("fieldName2") &&
             value.isMember("FieldName3") &&
             value.isMember("fieldName4");
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "FieldNameWithNumbers", REQUIRED,
       R"({
@@ -1810,7 +1811,8 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldNameConvention() {
       [](const Json::Value& value) {
         return value.isMember("field0name5") &&
             value.isMember("field0Name6");
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "FieldNameWithMixedCases", REQUIRED,
       R"({
@@ -1828,7 +1830,8 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldNameConvention() {
             value.isMember("FieldName10") &&
             value.isMember("FIELDNAME11") &&
             value.isMember("FIELDName12");
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "FieldNameWithDoubleUnderscores", RECOMMENDED,
       R"({
@@ -1846,7 +1849,22 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldNameConvention() {
             value.isMember("fieldName16") &&
             value.isMember("fieldName17") &&
             value.isMember("FieldName18");
-      });
+      },
+      true);
+  RunValidJsonTestWithValidator(
+      "StoresDefaultPrimitive", REQUIRED,
+      R"({
+        "FieldName13": 0
+      })",
+      [](const Json::Value& value) { return value.isMember("FieldName13"); },
+      false);
+  RunValidJsonTestWithValidator(
+      "SkipsDefaultPrimitive", REQUIRED,
+      R"({
+        "FieldName13": 0
+      })",
+      [](const Json::Value& value) { return !value.isMember("FieldName13"); },
+      true);
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
@@ -1995,19 +2013,19 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
 
   // 64-bit values are serialized as strings.
   RunValidJsonTestWithValidator(
-      "Int64FieldBeString", RECOMMENDED,
-      R"({"optionalInt64": 1})",
+      "Int64FieldBeString", RECOMMENDED, R"({"optionalInt64": 1})",
       [](const Json::Value& value) {
         return value["optionalInt64"].type() == Json::stringValue &&
             value["optionalInt64"].asString() == "1";
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
-      "Uint64FieldBeString", RECOMMENDED,
-      R"({"optionalUint64": 1})",
+      "Uint64FieldBeString", RECOMMENDED, R"({"optionalUint64": 1})",
       [](const Json::Value& value) {
         return value["optionalUint64"].type() == Json::stringValue &&
             value["optionalUint64"].asString() == "1";
-      });
+      },
+      true);
 
   // Bool fields.
   RunValidJsonTest(
@@ -2223,12 +2241,12 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
       "optional_nested_enum: BAR");
   // Unknown enum values are represented as numeric values.
   RunValidJsonTestWithValidator(
-      "EnumFieldUnknownValue", REQUIRED,
-      R"({"optionalNestedEnum": 123})",
+      "EnumFieldUnknownValue", REQUIRED, R"({"optionalNestedEnum": 123})",
       [](const Json::Value& value) {
         return value["optionalNestedEnum"].type() == Json::intValue &&
             value["optionalNestedEnum"].asInt() == 123;
-      });
+      },
+      true);
 
   // String fields.
   RunValidJsonTest(
@@ -2712,25 +2730,29 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForWrapperTypes() {
       R"({"optionalDuration": "1.000000000s"})",
       [](const Json::Value& value) {
         return value["optionalDuration"].asString() == "1s";
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "DurationHas3FractionalDigits", RECOMMENDED,
       R"({"optionalDuration": "1.010000000s"})",
       [](const Json::Value& value) {
         return value["optionalDuration"].asString() == "1.010s";
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "DurationHas6FractionalDigits", RECOMMENDED,
       R"({"optionalDuration": "1.000010000s"})",
       [](const Json::Value& value) {
         return value["optionalDuration"].asString() == "1.000010s";
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "DurationHas9FractionalDigits", RECOMMENDED,
       R"({"optionalDuration": "1.000000010s"})",
       [](const Json::Value& value) {
         return value["optionalDuration"].asString() == "1.000000010s";
-      });
+      },
+      true);
 
   // Timestamp
   RunValidJsonTest(
@@ -2794,34 +2816,39 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForWrapperTypes() {
       R"({"optionalTimestamp": "1969-12-31T16:00:00-08:00"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() == "1970-01-01T00:00:00Z";
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "TimestampHasZeroFractionalDigit", RECOMMENDED,
       R"({"optionalTimestamp": "1970-01-01T00:00:00.000000000Z"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() == "1970-01-01T00:00:00Z";
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "TimestampHas3FractionalDigits", RECOMMENDED,
       R"({"optionalTimestamp": "1970-01-01T00:00:00.010000000Z"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() ==
                "1970-01-01T00:00:00.010Z";
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "TimestampHas6FractionalDigits", RECOMMENDED,
       R"({"optionalTimestamp": "1970-01-01T00:00:00.000010000Z"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() ==
                "1970-01-01T00:00:00.000010Z";
-      });
+      },
+      true);
   RunValidJsonTestWithValidator(
       "TimestampHas9FractionalDigits", RECOMMENDED,
       R"({"optionalTimestamp": "1970-01-01T00:00:00.000000010Z"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() ==
                "1970-01-01T00:00:00.000000010Z";
-      });
+      },
+      true);
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldMask() {

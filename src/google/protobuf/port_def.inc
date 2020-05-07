@@ -547,14 +547,26 @@ PROTOBUF_EXPORT_TEMPLATE_TEST(DEFAULT, __declspec(dllimport));
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _MSC_VER
+#pragma push_macro("CREATE_NEW")
+#undef CREATE_NEW
+#pragma push_macro("DOUBLE_CLICK")
+#undef DOUBLE_CLICK
 #pragma push_macro("ERROR")
 #undef ERROR
+#pragma push_macro("ERROR_BUSY")
+#undef ERROR_BUSY
+#pragma push_macro("ERROR_NOT_FOUND")
+#undef ERROR_NOT_FOUND
 #pragma push_macro("GetMessage")
 #undef GetMessage
 #pragma push_macro("IGNORE")
 #undef IGNORE
 #pragma push_macro("IN")
 #undef IN
+#pragma push_macro("INPUT_KEYBOARD")
+#undef INPUT_KEYBOARD
+#pragma push_macro("NO_ERROR")
+#undef NO_ERROR
 #pragma push_macro("OUT")
 #undef OUT
 #pragma push_macro("OPTIONAL")
@@ -563,6 +575,14 @@ PROTOBUF_EXPORT_TEMPLATE_TEST(DEFAULT, __declspec(dllimport));
 #undef min
 #pragma push_macro("max")
 #undef max
+#pragma push_macro("REASON_UNKNOWN")
+#undef REASON_UNKNOWN
+#pragma push_macro("SERVICE_DISABLED")
+#undef SERVICE_DISABLED
+#pragma push_macro("SEVERITY_ERROR")
+#undef SEVERITY_ERROR
+#pragma push_macro("STRICT")
+#undef STRICT
 #endif  // _MSC_VER
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)

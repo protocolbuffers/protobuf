@@ -194,6 +194,8 @@ inline void UpperString(string * s) {
   }
 }
 
+inline void ToUpper(string* s) { UpperString(s); }
+
 inline string ToUpper(const string& s) {
   string out = s;
   UpperString(&out);
