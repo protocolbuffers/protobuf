@@ -308,7 +308,7 @@ std::string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor) {
 
 std::string FieldConstantName(const FieldDescriptor* field) {
   std::string name = field->name() + "_FIELD_NUMBER";
-  UpperString(&name);
+  ToUpper(&name);
   return name;
 }
 

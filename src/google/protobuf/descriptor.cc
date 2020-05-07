@@ -1341,6 +1341,10 @@ DescriptorPool* NewGeneratedPool() {
 
 }  // anonymous namespace
 
+DescriptorDatabase* DescriptorPool::internal_generated_database() {
+  return GeneratedDatabase();
+}
+
 DescriptorPool* DescriptorPool::internal_generated_pool() {
   static DescriptorPool* generated_pool =
       internal::OnShutdownDelete(NewGeneratedPool());
