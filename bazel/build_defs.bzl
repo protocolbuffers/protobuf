@@ -135,7 +135,7 @@ def _upb_amalgamation(ctx):
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outs,
-        arguments = [ctx.bin_dir.path + "/"] + [f.path for f in srcs] + ["-I" + root for root in _get_real_roots(inputs)],
+        arguments = [ctx.bin_dir.path + "/", ctx.attr.prefix] + [f.path for f in srcs] + ["-I" + root for root in _get_real_roots(inputs)],
         progress_message = "Making amalgamation",
         executable = ctx.executable.amalgamator,
     )
@@ -146,6 +146,9 @@ upb_amalgamation = rule(
         "amalgamator": attr.label(
             executable = True,
             cfg = "host",
+        ),
+        "prefix": attr.string(
+            default = "",
         ),
         "libs": attr.label_list(aspects = [_file_list_aspect]),
         "outs": attr.output_list(),

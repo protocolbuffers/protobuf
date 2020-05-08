@@ -149,19 +149,10 @@ static upb_array *getorcreate_array(upb_array **arr_ptr, upb_fieldtype_t type,
   return arr;
 }
 
-static bool resize_array(upb_array *arr, size_t size, upb_arena *arena) {
-  if (size > arr->size && !_upb_array_realloc(arr, size, arena)) {
-    return false;
-  }
-
-  arr->len = size;
-  return true;
-}
-
 void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size,
                                  upb_fieldtype_t type, upb_arena *arena) {
   upb_array *arr = getorcreate_array(arr_ptr, type, arena);
-  return arr && resize_array(arr, size, arena) ? _upb_array_ptr(arr) : NULL;
+  return arr && _upb_array_resize(arr, size, arena) ? _upb_array_ptr(arr) : NULL;
 }
 
 bool _upb_array_append_fallback(upb_array **arr_ptr, const void *value,
@@ -171,7 +162,7 @@ bool _upb_array_append_fallback(upb_array **arr_ptr, const void *value,
   int lg2 = _upb_fieldtype_to_sizelg2[type];
   char *data;
 
-  if (!arr || !resize_array(arr, elem + 1, arena)) return false;
+  if (!arr || !_upb_array_resize(arr, elem + 1, arena)) return false;
 
   data = _upb_array_ptr(arr);
   memcpy(data + (elem << lg2), value, 1 << lg2);

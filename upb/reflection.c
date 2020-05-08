@@ -254,10 +254,8 @@ bool upb_array_append(upb_array *arr, upb_msgval val, upb_arena *arena) {
   return true;
 }
 
-/* Resizes the array to the given size, reallocating if necessary, and returns a
- * pointer to the new array elements. */
 bool upb_array_resize(upb_array *arr, size_t size, upb_arena *arena) {
-  return _upb_array_realloc(arr, size, arena);
+  return _upb_array_resize(arr, size, arena);
 }
 
 /** upb_map *******************************************************************/
@@ -287,6 +285,14 @@ bool upb_map_delete(upb_map *map, upb_msgval key) {
 
 bool upb_mapiter_next(const upb_map *map, size_t *iter) {
   return _upb_map_next(map, iter);
+}
+
+bool upb_mapiter_done(const upb_map *map, size_t iter) {
+  upb_strtable_iter i;
+  UPB_ASSERT(iter != UPB_MAP_BEGIN);
+  i.t = &map->table;
+  i.index = iter;
+  return upb_strtable_done(&i);
 }
 
 /* Returns the key and value for this entry of the map. */

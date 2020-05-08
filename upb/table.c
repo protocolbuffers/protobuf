@@ -243,7 +243,7 @@ static bool rm(upb_table *t, lookupkey_t key, upb_value *val,
 static size_t next(const upb_table *t, size_t i) {
   do {
     if (++i >= upb_table_size(t))
-      return SIZE_MAX;
+      return SIZE_MAX - 1;  /* Distinct from -1. */
   } while(upb_tabent_isempty(&t->entries[i]));
 
   return i;

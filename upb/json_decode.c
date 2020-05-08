@@ -405,7 +405,9 @@ static upb_strview jsondec_string(jsondec *d) {
 
     switch (ch) {
       case '"': {
-        upb_strview ret = {buf, end - buf};
+        upb_strview ret;
+        ret.data = buf;
+        ret.size = end - buf;
         return ret;
       }
       case '\\':
@@ -413,7 +415,7 @@ static upb_strview jsondec_string(jsondec *d) {
         if (*d->ptr == 'u') {
           d->ptr++;
           if (buf_end - end < 4) {
-            // Allow space for maximum-sized code point (4 bytes).
+            /* Allow space for maximum-sized code point (4 bytes). */
             jsondec_resize(d, &buf, &end, &buf_end);
           }
           end += jsondec_unicode(d, end);
@@ -888,7 +890,8 @@ static void jsondec_field(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
 
   if (jsondec_peek(d) == JD_NULL && !jsondec_isvalue(f)) {
     /* JSON "null" indicates a default value, so no need to set anything. */
-    return jsondec_null(d);
+    jsondec_null(d);
+    return;
   }
 
   preserved = d->debug_field;
@@ -1005,7 +1008,7 @@ static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
   if (str.size < 20) goto malformed;
 
   {
-    // 1972-01-01T01:00:00
+    /* 1972-01-01T01:00:00 */
     int year = jsondec_tsdigits(d, &ptr, 4, "-");
     int mon = jsondec_tsdigits(d, &ptr, 2, "-");
     int day = jsondec_tsdigits(d, &ptr, 2, "T");
@@ -1019,7 +1022,7 @@ static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
   nanos.int32_val = jsondec_nanos(d, &ptr, end);
 
   {
-    // [+-]08:00 or Z
+    /* [+-]08:00 or Z */
     int ofs = 0;
     bool neg = false;
 
@@ -1062,7 +1065,7 @@ static void jsondec_duration(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
   const char *ptr = str.data;
   const char *end = ptr + str.size;
 
-  // "3.000000001s", "3s", etc.
+  /* "3.000000001s", "3s", etc. */
   ptr = jsondec_buftoint64(d, ptr, end, &seconds.int64_val);
   nanos.int32_val = jsondec_nanos(d, &ptr, end);
 
@@ -1311,10 +1314,10 @@ static void jsondec_any(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
   if (pre_type_data) {
     size_t len = pre_type_end - pre_type_data + 1;
     char *tmp = upb_arena_malloc(d->arena, len);
-    memcpy(tmp, pre_type_data, len - 1);
-    tmp[len - 1] = '}';
     const char *saved_ptr = d->ptr;
     const char *saved_end = d->end;
+    memcpy(tmp, pre_type_data, len - 1);
+    tmp[len - 1] = '}';
     d->ptr = tmp;
     d->end = tmp + len;
     d->is_first = true;

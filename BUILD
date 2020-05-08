@@ -681,6 +681,33 @@ cc_library(
     }),
 )
 
+upb_amalgamation(
+    name = "gen_core_amalgamation",
+    prefix = "core-",
+    outs = [
+        "core-upb.c",
+        "core-upb.h",
+    ],
+    amalgamator = ":amalgamate",
+    libs = [
+        ":upb",
+        ":descriptor_upbproto",
+        ":reflection",
+        ":port",
+        ":json",
+    ],
+)
+
+cc_library(
+    name = "core_amalgamation",
+    srcs = ["core-upb.c"],
+    hdrs = ["core-upb.h"],
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS,
+    }),
+)
+
 # Lua ##########################################################################
 
 cc_library(

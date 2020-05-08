@@ -143,6 +143,11 @@ bool upb_map_delete(upb_map *map, upb_msgval key);
 /* Advances to the next entry.  Returns false if no more entries are present. */
 bool upb_mapiter_next(const upb_map *map, size_t *iter);
 
+/* Returns true if the iterator still points to a valid entry, or false if the
+ * iterator is past the last element. It is an error to call this function with
+ * UPB_MAP_BEGIN (you must call next() at least once first). */
+bool upb_mapiter_done(const upb_map *map, size_t iter);
+
 /* Returns the key and value for this entry of the map. */
 upb_msgval upb_mapiter_key(const upb_map *map, size_t iter);
 upb_msgval upb_mapiter_value(const upb_map *map, size_t iter);
