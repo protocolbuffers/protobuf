@@ -1207,6 +1207,10 @@ js_EXTRA_DIST=                                                         \
   js/data.proto                                                        \
   js/debug.js                                                          \
   js/debug_test.js                                                     \
+  js/experimental/runtime/kernel/message_set.js                        \
+  js/experimental/runtime/kernel/message_set_test.js                   \
+  js/experimental/runtime/kernel/tag.js                                \
+  js/experimental/runtime/kernel/tag_test.js                           \
   js/gulpfile.js                                                       \
   js/jasmine.json                                                      \
   js/map.js                                                            \
