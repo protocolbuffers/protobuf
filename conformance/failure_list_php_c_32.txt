@@ -84,6 +84,7 @@ Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.ENUM[3].ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.ENUM[4].ProtobufOutput
 Required.DurationProtoInputTooLarge.JsonOutput
 Required.DurationProtoInputTooSmall.JsonOutput
+Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator
 Required.Proto3.JsonInput.DoubleFieldMaxNegativeValue.JsonOutput
 Required.Proto3.JsonInput.DoubleFieldMaxNegativeValue.ProtobufOutput
 Required.Proto3.JsonInput.DoubleFieldMinPositiveValue.JsonOutput
@@ -99,13 +100,13 @@ Required.Proto3.JsonInput.FloatFieldInfinity.JsonOutput
 Required.Proto3.JsonInput.FloatFieldNan.JsonOutput
 Required.Proto3.JsonInput.FloatFieldNegativeInfinity.JsonOutput
 Required.Proto3.JsonInput.Int64FieldMaxValue.JsonOutput
-Required.Proto3.JsonInput.Int64FieldMaxValue.ProtobufOutput
 Required.Proto3.JsonInput.Int64FieldMaxValueNotQuoted.JsonOutput
 Required.Proto3.JsonInput.Int64FieldMaxValueNotQuoted.ProtobufOutput
+Required.Proto3.JsonInput.Int64FieldMaxValue.ProtobufOutput
 Required.Proto3.JsonInput.Int64FieldMinValue.JsonOutput
-Required.Proto3.JsonInput.Int64FieldMinValue.ProtobufOutput
 Required.Proto3.JsonInput.Int64FieldMinValueNotQuoted.JsonOutput
 Required.Proto3.JsonInput.Int64FieldMinValueNotQuoted.ProtobufOutput
+Required.Proto3.JsonInput.Int64FieldMinValue.ProtobufOutput
 Required.Proto3.JsonInput.OneofFieldDuplicate
 Required.Proto3.JsonInput.RejectTopLevelNull
 Required.Proto3.JsonInput.StringFieldSurrogatePair.JsonOutput
@@ -123,9 +124,9 @@ Required.Proto3.JsonInput.TimestampWithNegativeOffset.ProtobufOutput
 Required.Proto3.JsonInput.TimestampWithPositiveOffset.JsonOutput
 Required.Proto3.JsonInput.TimestampWithPositiveOffset.ProtobufOutput
 Required.Proto3.JsonInput.Uint64FieldMaxValue.JsonOutput
-Required.Proto3.JsonInput.Uint64FieldMaxValue.ProtobufOutput
 Required.Proto3.JsonInput.Uint64FieldMaxValueNotQuoted.JsonOutput
 Required.Proto3.JsonInput.Uint64FieldMaxValueNotQuoted.ProtobufOutput
+Required.Proto3.JsonInput.Uint64FieldMaxValue.ProtobufOutput
 Required.Proto3.ProtobufInput.DoubleFieldNormalizeQuietNan.JsonOutput
 Required.Proto3.ProtobufInput.DoubleFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.FloatFieldNormalizeQuietNan.JsonOutput
