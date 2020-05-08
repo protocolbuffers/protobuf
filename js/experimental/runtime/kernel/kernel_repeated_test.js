@@ -7425,3 +7425,383 @@ describe('Kernel for repeated message does', () => {
     }
   });
 });
+
+describe('Kernel for repeated groups does', () => {
+  it('return empty array for the empty input', () => {
+    const accessor = Kernel.createEmpty();
+    expectEqualToArray(
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator), []);
+  });
+
+  it('ensure not the same instance returned for the empty input', () => {
+    const accessor = Kernel.createEmpty();
+    const list1 =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+    const list2 =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+    expect(list1).not.toBe(list2);
+  });
+
+  it('return size for the empty input', () => {
+    const accessor = Kernel.createEmpty();
+    expect(accessor.getRepeatedGroupSize(1, TestMessage.instanceCreator))
+        .toEqual(0);
+  });
+
+  it('return values from the input', () => {
+    const bytes1 = createArrayBuffer(0x08, 0x01);
+    const bytes2 = createArrayBuffer(0x08, 0x02);
+    const msg1 = new TestMessage(Kernel.fromArrayBuffer(bytes1));
+    const msg2 = new TestMessage(Kernel.fromArrayBuffer(bytes2));
+
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    expectEqualToMessageArray(
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator),
+        [msg1, msg2]);
+  });
+
+  it('ensure not the same array instance returned', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const list1 =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+    const list2 =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+    expect(list1).not.toBe(list2);
+  });
+
+  it('ensure the same array element returned for get iterable', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const list1 =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+    const list2 = accessor.getRepeatedGroupIterable(
+        1, TestMessage.instanceCreator, /* pivot= */ 0);
+    const array1 = Array.from(list1);
+    const array2 = Array.from(list2);
+    for (let i = 0; i < array1.length; i++) {
+      expect(array1[i]).toBe(array2[i]);
+    }
+  });
+
+  it('return accessors from the input', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const [accessor1, accessor2] =
+        [...accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator)];
+    expect(accessor1.getInt32WithDefault(1)).toEqual(1);
+    expect(accessor2.getInt32WithDefault(1)).toEqual(2);
+  });
+
+  it('return accessors from the input when pivot is set', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const [accessor1, accessor2] = [...accessor.getRepeatedGroupIterable(
+        1, TestMessage.instanceCreator, /* pivot= */ 0)];
+    expect(accessor1.getInt32WithDefault(1)).toEqual(1);
+    expect(accessor2.getInt32WithDefault(1)).toEqual(2);
+  });
+
+  it('return the repeated field element from the input', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const msg1 = accessor.getRepeatedGroupElement(
+        /* fieldNumber= */ 1, TestMessage.instanceCreator,
+        /* index= */ 0);
+    const msg2 = accessor.getRepeatedGroupElement(
+        /* fieldNumber= */ 1, TestMessage.instanceCreator,
+        /* index= */ 1, /* pivot= */ 0);
+    expect(msg1.getInt32WithDefault(
+               /* fieldNumber= */ 1, /* default= */ 0))
+        .toEqual(1);
+    expect(msg2.getInt32WithDefault(
+               /* fieldNumber= */ 1, /* default= */ 0))
+        .toEqual(2);
+  });
+
+  it('ensure the same array element returned', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const msg1 = accessor.getRepeatedGroupElement(
+        /* fieldNumber= */ 1, TestMessage.instanceCreator,
+        /* index= */ 0);
+    const msg2 = accessor.getRepeatedGroupElement(
+        /* fieldNumber= */ 1, TestMessage.instanceCreator,
+        /* index= */ 0);
+    expect(msg1).toBe(msg2);
+  });
+
+  it('return the size from the input', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    expect(accessor.getRepeatedGroupSize(1, TestMessage.instanceCreator))
+        .toEqual(2);
+  });
+
+  it('encode repeated message from the input', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    expect(accessor.serialize()).toEqual(bytes);
+  });
+
+  it('add a single value', () => {
+    const accessor = Kernel.createEmpty();
+    const bytes1 = createArrayBuffer(0x08, 0x01);
+    const msg1 = new TestMessage(Kernel.fromArrayBuffer(bytes1));
+    const bytes2 = createArrayBuffer(0x08, 0x02);
+    const msg2 = new TestMessage(Kernel.fromArrayBuffer(bytes2));
+
+    accessor.addRepeatedGroupElement(1, msg1, TestMessage.instanceCreator);
+    accessor.addRepeatedGroupElement(1, msg2, TestMessage.instanceCreator);
+    const result =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+
+    expect(Array.from(result)).toEqual([msg1, msg2]);
+  });
+
+  it('add values', () => {
+    const accessor = Kernel.createEmpty();
+    const bytes1 = createArrayBuffer(0x08, 0x01);
+    const msg1 = new TestMessage(Kernel.fromArrayBuffer(bytes1));
+    const bytes2 = createArrayBuffer(0x08, 0x02);
+    const msg2 = new TestMessage(Kernel.fromArrayBuffer(bytes2));
+
+    accessor.addRepeatedGroupIterable(1, [msg1], TestMessage.instanceCreator);
+    accessor.addRepeatedGroupIterable(1, [msg2], TestMessage.instanceCreator);
+    const result =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+
+    expect(Array.from(result)).toEqual([msg1, msg2]);
+  });
+
+  it('set a single value', () => {
+    const bytes = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const subbytes = createArrayBuffer(0x08, 0x01);
+    const submsg = new TestMessage(Kernel.fromArrayBuffer(subbytes));
+
+    accessor.setRepeatedGroupElement(
+        /* fieldNumber= */ 1, submsg, TestMessage.instanceCreator,
+        /* index= */ 0);
+    const result =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+
+    expect(Array.from(result)).toEqual([submsg]);
+  });
+
+  it('write submessage changes made via getRepeatedGroupElement', () => {
+    const bytes = createArrayBuffer(0x0B, 0x08, 0x05, 0x0C);
+    const expected = createArrayBuffer(0x0B, 0x08, 0x00, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const submsg = accessor.getRepeatedGroupElement(
+        /* fieldNumber= */ 1, TestMessage.instanceCreator,
+        /* index= */ 0);
+    expect(submsg.getInt32WithDefault(1, 0)).toEqual(5);
+    submsg.setInt32(1, 0);
+
+    expect(accessor.serialize()).toEqual(expected);
+  });
+
+  it('set values', () => {
+    const accessor = Kernel.createEmpty();
+    const subbytes = createArrayBuffer(0x08, 0x01);
+    const submsg = new TestMessage(Kernel.fromArrayBuffer(subbytes));
+
+    accessor.setRepeatedGroupIterable(1, [submsg]);
+    const result =
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+
+    expect(Array.from(result)).toEqual([submsg]);
+  });
+
+  it('encode for adding single value', () => {
+    const accessor = Kernel.createEmpty();
+    const bytes1 = createArrayBuffer(0x08, 0x01);
+    const msg1 = new TestMessage(Kernel.fromArrayBuffer(bytes1));
+    const bytes2 = createArrayBuffer(0x08, 0x00);
+    const msg2 = new TestMessage(Kernel.fromArrayBuffer(bytes2));
+    const expected =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x00, 0x0C);
+
+    accessor.addRepeatedGroupElement(1, msg1, TestMessage.instanceCreator);
+    accessor.addRepeatedGroupElement(1, msg2, TestMessage.instanceCreator);
+    const result = accessor.serialize();
+
+    expect(result).toEqual(expected);
+  });
+
+  it('encode for adding values', () => {
+    const accessor = Kernel.createEmpty();
+    const bytes1 = createArrayBuffer(0x08, 0x01);
+    const msg1 = new TestMessage(Kernel.fromArrayBuffer(bytes1));
+    const bytes2 = createArrayBuffer(0x08, 0x00);
+    const msg2 = new TestMessage(Kernel.fromArrayBuffer(bytes2));
+    const expected =
+        createArrayBuffer(0x0B, 0x08, 0x01, 0x0C, 0x0B, 0x08, 0x00, 0x0C);
+
+    accessor.addRepeatedGroupIterable(
+        1, [msg1, msg2], TestMessage.instanceCreator);
+    const result = accessor.serialize();
+
+    expect(result).toEqual(expected);
+  });
+
+  it('encode for setting single value', () => {
+    const bytes = createArrayBuffer(0x0B, 0x08, 0x00, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const subbytes = createArrayBuffer(0x08, 0x01);
+    const submsg = new TestMessage(Kernel.fromArrayBuffer(subbytes));
+    const expected = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+
+    accessor.setRepeatedGroupElement(
+        /* fieldNumber= */ 1, submsg, TestMessage.instanceCreator,
+        /* index= */ 0);
+    const result = accessor.serialize();
+
+    expect(result).toEqual(expected);
+  });
+
+  it('encode for setting values', () => {
+    const accessor = Kernel.createEmpty();
+    const subbytes = createArrayBuffer(0x08, 0x01);
+    const submsg = new TestMessage(Kernel.fromArrayBuffer(subbytes));
+    const expected = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+
+    accessor.setRepeatedGroupIterable(1, [submsg]);
+    const result = accessor.serialize();
+
+    expect(result).toEqual(expected);
+  });
+
+  it('fail when getting groups value with other wire types', () => {
+    const accessor = Kernel.fromArrayBuffer(createArrayBuffer(
+        0x09, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00));
+
+    if (CHECK_CRITICAL_STATE) {
+      expect(() => {
+        accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+      }).toThrow();
+    }
+  });
+
+  it('fail when adding group values with wrong type value', () => {
+    const accessor = Kernel.createEmpty();
+    const fakeValue = /** @type {!TestMessage} */ (/** @type {*} */ (null));
+    if (CHECK_CRITICAL_STATE) {
+      expect(
+          () => accessor.addRepeatedGroupIterable(
+              1, [fakeValue], TestMessage.instanceCreator))
+          .toThrowError('Given value is not a message instance: null');
+    } else {
+      // Note in unchecked mode we produce invalid output for invalid inputs.
+      // This test just documents our behavior in those cases.
+      // These values might change at any point and are not considered
+      // what the implementation should be doing here.
+      accessor.addRepeatedGroupIterable(
+          1, [fakeValue], TestMessage.instanceCreator);
+      const list =
+          accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+      expect(Array.from(list)).toEqual([null]);
+    }
+  });
+
+  it('fail when adding single group value with wrong type value', () => {
+    const accessor = Kernel.createEmpty();
+    const fakeValue = /** @type {!TestMessage} */ (/** @type {*} */ (null));
+    if (CHECK_CRITICAL_STATE) {
+      expect(
+          () => accessor.addRepeatedGroupElement(
+              1, fakeValue, TestMessage.instanceCreator))
+          .toThrowError('Given value is not a message instance: null');
+    } else {
+      // Note in unchecked mode we produce invalid output for invalid inputs.
+      // This test just documents our behavior in those cases.
+      // These values might change at any point and are not considered
+      // what the implementation should be doing here.
+      accessor.addRepeatedGroupElement(
+          1, fakeValue, TestMessage.instanceCreator);
+      const list =
+          accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+      expect(Array.from(list)).toEqual([null]);
+    }
+  });
+
+  it('fail when setting message values with wrong type value', () => {
+    const accessor = Kernel.createEmpty();
+    const fakeValue = /** @type {!TestMessage} */ (/** @type {*} */ (null));
+    if (CHECK_CRITICAL_STATE) {
+      expect(() => accessor.setRepeatedGroupIterable(1, [fakeValue]))
+          .toThrowError('Given value is not a message instance: null');
+    } else {
+      // Note in unchecked mode we produce invalid output for invalid inputs.
+      // This test just documents our behavior in those cases.
+      // These values might change at any point and are not considered
+      // what the implementation should be doing here.
+      accessor.setRepeatedGroupIterable(1, [fakeValue]);
+      const list =
+          accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+      expect(Array.from(list)).toEqual([null]);
+    }
+  });
+
+  it('fail when setting single value with wrong type value', () => {
+    const accessor =
+        Kernel.fromArrayBuffer(createArrayBuffer(0x0B, 0x08, 0x00, 0x0C));
+    const fakeValue = /** @type {!TestMessage} */ (/** @type {*} */ (null));
+    if (CHECK_CRITICAL_STATE) {
+      expect(
+          () => accessor.setRepeatedGroupElement(
+              /* fieldNumber= */ 1, fakeValue, TestMessage.instanceCreator,
+              /* index= */ 0))
+          .toThrowError('Given value is not a message instance: null');
+    } else {
+      // Note in unchecked mode we produce invalid output for invalid inputs.
+      // This test just documents our behavior in those cases.
+      // These values might change at any point and are not considered
+      // what the implementation should be doing here.
+      accessor.setRepeatedGroupElement(
+          /* fieldNumber= */ 1, fakeValue, TestMessage.instanceCreator,
+          /* index= */ 0);
+      const list =
+          accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator);
+      expect(Array.from(list).length).toEqual(1);
+    }
+  });
+
+  it('fail when setting single value with out-of-bound index', () => {
+    const accessor =
+        Kernel.fromArrayBuffer(createArrayBuffer(0x0B, 0x08, 0x00, 0x0C));
+    const msg1 =
+        accessor.getRepeatedGroupElement(1, TestMessage.instanceCreator, 0);
+    const bytes2 = createArrayBuffer(0x08, 0x01);
+    const msg2 = new TestMessage(Kernel.fromArrayBuffer(bytes2));
+    if (CHECK_CRITICAL_STATE) {
+      expect(
+          () => accessor.setRepeatedGroupElement(
+              /* fieldNumber= */ 1, msg2, TestMessage.instanceCreator,
+              /* index= */ 1))
+          .toThrowError('Index out of bounds: index: 1 size: 1');
+    } else {
+      // Note in unchecked mode we produce invalid output for invalid inputs.
+      // This test just documents our behavior in those cases.
+      // These values might change at any point and are not considered
+      // what the implementation should be doing here.
+      accessor.setRepeatedGroupElement(
+          /* fieldNumber= */ 1, msg2, TestMessage.instanceCreator,
+          /* index= */ 1);
+      expectEqualToArray(
+          accessor.getRepeatedGroupIterable(1, TestMessage.instanceCreator),
+          [msg1, msg2]);
+    }
+  });
+});

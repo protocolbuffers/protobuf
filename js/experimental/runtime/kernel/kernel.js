@@ -26,6 +26,7 @@ const reader = goog.require('protobuf.binary.reader');
 const {CHECK_TYPE, checkCriticalElementIndex, checkCriticalState, checkCriticalType, checkCriticalTypeBool, checkCriticalTypeBoolArray, checkCriticalTypeByteString, checkCriticalTypeByteStringArray, checkCriticalTypeDouble, checkCriticalTypeDoubleArray, checkCriticalTypeFloat, checkCriticalTypeFloatIterable, checkCriticalTypeMessageArray, checkCriticalTypeSignedInt32, checkCriticalTypeSignedInt32Array, checkCriticalTypeSignedInt64, checkCriticalTypeSignedInt64Array, checkCriticalTypeString, checkCriticalTypeStringArray, checkCriticalTypeUnsignedInt32, checkCriticalTypeUnsignedInt32Array, checkDefAndNotNull, checkElementIndex, checkFieldNumber, checkFunctionExists, checkState, checkTypeDouble, checkTypeFloat, checkTypeSignedInt32, checkTypeSignedInt64, checkTypeUnsignedInt32} = goog.require('protobuf.internal.checks');
 const {Field, IndexEntry} = goog.require('protobuf.binary.field');
 const {buildIndex} = goog.require('protobuf.binary.indexer');
+const {createTag, get32BitVarintLength, getTagLength} = goog.require('protobuf.binary.tag');
 
 
 /**
@@ -140,6 +141,28 @@ function readRepeatedNonPrimitive(indexArray, bufferDecoder, singularReadFunc) {
 }
 
 /**
+ * Converts all entries of the index array to the template type using the given
+ * read function and return an Array containing those converted values. This is
+ * used to implement parsing repeated non-primitive fields.
+ * @param {!Array<!IndexEntry>} indexArray
+ * @param {!BufferDecoder} bufferDecoder
+ * @param {number} fieldNumber
+ * @param {function(!Kernel):T} instanceCreator
+ * @param {number=} pivot
+ * @return {!Array<T>}
+ * @template T
+ */
+function readRepeatedGroup(
+    indexArray, bufferDecoder, fieldNumber, instanceCreator, pivot) {
+  const result = new Array(indexArray.length);
+  for (let i = 0; i < indexArray.length; i++) {
+    result[i] = doReadGroup(
+        bufferDecoder, indexArray[i], fieldNumber, instanceCreator, pivot);
+  }
+  return result;
+}
+
+/**
  * Creates a new bytes array to contain all data of a submessage.
  * When there are multiple entries, merge them together.
  * @param {!Array<!IndexEntry>} indexArray
@@ -194,6 +217,51 @@ function readMessage(indexArray, bufferDecoder, instanceCreator, pivot) {
 }
 
 /**
+ * Merges all index entries of the index array using the given read function.
+ * This is used to implement parsing singular group fields.
+ * @param {!Array<!IndexEntry>} indexArray
+ * @param {!BufferDecoder} bufferDecoder
+ * @param {number} fieldNumber
+ * @param {function(!Kernel):T} instanceCreator
+ * @param {number=} pivot
+ * @return {T}
+ * @template T
+ */
+function readGroup(
+    indexArray, bufferDecoder, fieldNumber, instanceCreator, pivot) {
+  checkInstanceCreator(instanceCreator);
+  checkState(indexArray.length > 0);
+  return doReadGroup(
+      bufferDecoder, indexArray[indexArray.length - 1], fieldNumber,
+      instanceCreator, pivot);
+}
+
+/**
+ * Merges all index entries of the index array using the given read function.
+ * This is used to implement parsing singular message fields.
+ * @param {!BufferDecoder} bufferDecoder
+ * @param {!IndexEntry} indexEntry
+ * @param {number} fieldNumber
+ * @param {function(!Kernel):T} instanceCreator
+ * @param {number=} pivot
+ * @return {T}
+ * @template T
+ */
+function doReadGroup(
+    bufferDecoder, indexEntry, fieldNumber, instanceCreator, pivot) {
+  validateWireType(indexEntry, WireType.START_GROUP);
+  const fieldStartIndex = Field.getStartIndex(indexEntry);
+  const tag = createTag(WireType.START_GROUP, fieldNumber);
+  const groupTagLength = get32BitVarintLength(tag);
+  const groupLength = getTagLength(
+      bufferDecoder, fieldStartIndex, WireType.START_GROUP, fieldNumber);
+  const accessorBuffer = bufferDecoder.subBufferDecoder(
+      fieldStartIndex, groupLength - groupTagLength);
+  const kernel = Kernel.fromBufferDecoder_(accessorBuffer, pivot);
+  return instanceCreator(kernel);
+}
+
+/**
  * @param {!Writer} writer
  * @param {number} fieldNumber
  * @param {?InternalMessage} value
@@ -201,6 +269,18 @@ function readMessage(indexArray, bufferDecoder, instanceCreator, pivot) {
 function writeMessage(writer, fieldNumber, value) {
   writer.writeDelimited(
       fieldNumber, checkDefAndNotNull(value).internalGetKernel().serialize());
+}
+
+/**
+ * @param {!Writer} writer
+ * @param {number} fieldNumber
+ * @param {?InternalMessage} value
+ */
+function writeGroup(writer, fieldNumber, value) {
+  const kernel = checkDefAndNotNull(value).internalGetKernel();
+  writer.writeStartGroup(fieldNumber);
+  kernel.serializeToWriter(writer);
+  writer.writeEndGroup(fieldNumber);
 }
 
 /**
@@ -212,6 +292,18 @@ function writeMessage(writer, fieldNumber, value) {
 function writeRepeatedMessage(writer, fieldNumber, values) {
   for (const value of values) {
     writeMessage(writer, fieldNumber, value);
+  }
+}
+
+/**
+ * Writes the array of Messages into the writer for the given field number.
+ * @param {!Writer} writer
+ * @param {number} fieldNumber
+ * @param {!Array<!InternalMessage>} values
+ */
+function writeRepeatedGroup(writer, fieldNumber, values) {
+  for (const value of values) {
+    writeGroup(writer, fieldNumber, value);
   }
 }
 
@@ -406,7 +498,8 @@ class Kernel {
           writer.writeTag(fieldNumber, Field.getWireType(indexEntry));
           writer.writeBufferDecoder(
               checkDefAndNotNull(this.bufferDecoder_),
-              Field.getStartIndex(indexEntry), Field.getWireType(indexEntry));
+              Field.getStartIndex(indexEntry), Field.getWireType(indexEntry),
+              fieldNumber);
         }
       }
     });
@@ -692,6 +785,28 @@ class Kernel {
 
   /**
    * Returns data as a mutable proto Message for the given field number.
+   * If no value has been set, return null.
+   * If hasFieldNumber(fieldNumber) == false before calling, it remains false.
+   *
+   * This method should not be used along with getMessage, since calling
+   * getMessageOrNull after getMessage will not register the encoder.
+   *
+   * @param {number} fieldNumber
+   * @param {function(!Kernel):T} instanceCreator
+   * @param {number=} pivot
+   * @return {?T}
+   * @template T
+   */
+  getGroupOrNull(fieldNumber, instanceCreator, pivot = undefined) {
+    return this.getFieldWithDefault_(
+        fieldNumber, null,
+        (indexArray, bytes) =>
+            readGroup(indexArray, bytes, fieldNumber, instanceCreator, pivot),
+        writeGroup);
+  }
+
+  /**
+   * Returns data as a mutable proto Message for the given field number.
    * If no value has been set previously, creates and attaches an instance.
    * Postcondition: hasFieldNumber(fieldNumber) == true.
    *
@@ -710,6 +825,30 @@ class Kernel {
     if (!instance) {
       instance = instanceCreator(Kernel.createEmpty());
       this.setField_(fieldNumber, instance, writeMessage);
+    }
+    return instance;
+  }
+
+  /**
+   * Returns data as a mutable proto Message for the given field number.
+   * If no value has been set previously, creates and attaches an instance.
+   * Postcondition: hasFieldNumber(fieldNumber) == true.
+   *
+   * This method should not be used along with getMessage, since calling
+   * getMessageAttach after getMessage will not register the encoder.
+   *
+   * @param {number} fieldNumber
+   * @param {function(!Kernel):T} instanceCreator
+   * @param {number=} pivot
+   * @return {T}
+   * @template T
+   */
+  getGroupAttach(fieldNumber, instanceCreator, pivot = undefined) {
+    checkInstanceCreator(instanceCreator);
+    let instance = this.getGroupOrNull(fieldNumber, instanceCreator, pivot);
+    if (!instance) {
+      instance = instanceCreator(Kernel.createEmpty());
+      this.setField_(fieldNumber, instance, writeGroup);
     }
     return instance;
   }
@@ -738,6 +877,36 @@ class Kernel {
         fieldNumber, null,
         (indexArray, bytes) =>
             readMessage(indexArray, bytes, instanceCreator, pivot));
+    // Returns an empty message as the default value if the field doesn't exist.
+    // We don't pass the default value to getFieldWithDefault_ to reduce object
+    // allocation.
+    return message === null ? instanceCreator(Kernel.createEmpty()) : message;
+  }
+
+  /**
+   * Returns data as a proto Message for the given field number.
+   * If no value has been set, return a default instance.
+   * This default instance is guaranteed to be the same instance, unless this
+   * field is cleared.
+   * Does not register the encoder, so changes made to the returned
+   * sub-message will not be included when serializing the parent message.
+   * Use getMessageAttach() if the resulting sub-message should be mutable.
+   *
+   * This method should not be used along with getMessageOrNull or
+   * getMessageAttach, since these methods register the encoder.
+   *
+   * @param {number} fieldNumber
+   * @param {function(!Kernel):T} instanceCreator
+   * @param {number=} pivot
+   * @return {T}
+   * @template T
+   */
+  getGroup(fieldNumber, instanceCreator, pivot = undefined) {
+    checkInstanceCreator(instanceCreator);
+    const message = this.getFieldWithDefault_(
+        fieldNumber, null,
+        (indexArray, bytes) =>
+            readGroup(indexArray, bytes, fieldNumber, instanceCreator, pivot));
     // Returns an empty message as the default value if the field doesn't exist.
     // We don't pass the default value to getFieldWithDefault_ to reduce object
     // allocation.
@@ -1614,6 +1783,71 @@ class Kernel {
         .length;
   }
 
+  /**
+   * Returns an Array instance containing boolean values for the given field
+   * number.
+   * @param {number} fieldNumber
+   * @param {function(!Kernel):T} instanceCreator
+   * @param {number|undefined} pivot
+   * @return {!Array<T>}
+   * @template T
+   * @private
+   */
+  getRepeatedGroupArray_(fieldNumber, instanceCreator, pivot) {
+    return this.getFieldWithDefault_(
+        fieldNumber, [],
+        (indexArray, bufferDecoder) => readRepeatedGroup(
+            indexArray, bufferDecoder, fieldNumber, instanceCreator, pivot),
+        writeRepeatedGroup);
+  }
+
+  /**
+   * Returns the element at index for the given field number as a group.
+   * @param {number} fieldNumber
+   * @param {function(!Kernel):T} instanceCreator
+   * @param {number} index
+   * @param {number=} pivot
+   * @return {T}
+   * @template T
+   */
+  getRepeatedGroupElement(
+      fieldNumber, instanceCreator, index, pivot = undefined) {
+    const array =
+        this.getRepeatedGroupArray_(fieldNumber, instanceCreator, pivot);
+    checkCriticalElementIndex(index, array.length);
+    return array[index];
+  }
+
+  /**
+   * Returns an Iterable instance containing group values for the given field
+   * number.
+   * @param {number} fieldNumber
+   * @param {function(!Kernel):T} instanceCreator
+   * @param {number=} pivot
+   * @return {!Iterable<T>}
+   * @template T
+   */
+  getRepeatedGroupIterable(fieldNumber, instanceCreator, pivot = undefined) {
+    // Don't split this statement unless needed. JS compiler thinks
+    // getRepeatedMessageArray_ might have side effects and doesn't inline the
+    // call in the compiled code. See cl/293894484 for details.
+    return new ArrayIterable(
+        this.getRepeatedGroupArray_(fieldNumber, instanceCreator, pivot));
+  }
+
+  /**
+   * Returns the size of the repeated field.
+   * @param {number} fieldNumber
+   * @param {function(!Kernel):T} instanceCreator
+   * @return {number}
+   * @param {number=} pivot
+   * @template T
+   */
+  getRepeatedGroupSize(fieldNumber, instanceCreator, pivot = undefined) {
+    return this.getRepeatedGroupArray_(fieldNumber, instanceCreator, pivot)
+        .length;
+  }
+
   /***************************************************************************
    *                        OPTIONAL SETTER METHODS
    ***************************************************************************/
@@ -1799,6 +2033,20 @@ class Kernel {
    */
   setUint64(fieldNumber, value) {
     this.setInt64(fieldNumber, value);
+  }
+
+  /**
+   * Sets a proto Group to the field with the given field number.
+   * Instead of working with the Kernel inside of the message directly, we
+   * need the message instance to keep its reference equality for subsequent
+   * gettings.
+   * @param {number} fieldNumber
+   * @param {!InternalMessage} value
+   */
+  setGroup(fieldNumber, value) {
+    checkCriticalType(
+        value !== null, 'Given value is not a message instance: null');
+    this.setField_(fieldNumber, value, writeGroup);
   }
 
   /**
@@ -3805,6 +4053,69 @@ class Kernel {
       fieldNumber, value, instanceCreator, pivot = undefined) {
     this.addRepeatedMessageIterable(
         fieldNumber, [value], instanceCreator, pivot);
+  }
+
+  // Groups
+  /**
+   * Sets all message values into the field for the given field number.
+   * @param {number} fieldNumber
+   * @param {!Iterable<!InternalMessage>} values
+   */
+  setRepeatedGroupIterable(fieldNumber, values) {
+    const /** !Array<!InternalMessage> */ array = Array.from(values);
+    checkCriticalTypeMessageArray(array);
+    this.setField_(fieldNumber, array, writeRepeatedGroup);
+  }
+
+  /**
+   * Adds all message values into the field for the given field number.
+   * @param {number} fieldNumber
+   * @param {!Iterable<!InternalMessage>} values
+   * @param {function(!Kernel):!InternalMessage} instanceCreator
+   * @param {number=} pivot
+   */
+  addRepeatedGroupIterable(
+      fieldNumber, values, instanceCreator, pivot = undefined) {
+    const array = [
+      ...this.getRepeatedGroupArray_(fieldNumber, instanceCreator, pivot),
+      ...values,
+    ];
+    checkCriticalTypeMessageArray(array);
+    // Needs to set it back with the new array.
+    this.setField_(fieldNumber, array, writeRepeatedGroup);
+  }
+
+  /**
+   * Sets a single message value into the field for the given field number at
+   * the given index.
+   * @param {number} fieldNumber
+   * @param {!InternalMessage} value
+   * @param {function(!Kernel):!InternalMessage} instanceCreator
+   * @param {number} index
+   * @param {number=} pivot
+   * @throws {!Error} if index is out of range when check mode is critical
+   */
+  setRepeatedGroupElement(
+      fieldNumber, value, instanceCreator, index, pivot = undefined) {
+    checkInstanceCreator(instanceCreator);
+    checkCriticalType(
+        value !== null, 'Given value is not a message instance: null');
+    const array =
+        this.getRepeatedGroupArray_(fieldNumber, instanceCreator, pivot);
+    checkCriticalElementIndex(index, array.length);
+    array[index] = value;
+  }
+
+  /**
+   * Adds a single message value into the field for the given field number.
+   * @param {number} fieldNumber
+   * @param {!InternalMessage} value
+   * @param {function(!Kernel):!InternalMessage} instanceCreator
+   * @param {number=} pivot
+   */
+  addRepeatedGroupElement(
+      fieldNumber, value, instanceCreator, pivot = undefined) {
+    this.addRepeatedGroupIterable(fieldNumber, [value], instanceCreator, pivot);
   }
 }
 

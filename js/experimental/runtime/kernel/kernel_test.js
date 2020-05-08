@@ -2075,3 +2075,255 @@ describe('Double access', () => {
     }
   });
 });
+
+describe('Kernel for singular group does', () => {
+  it('return group from the input', () => {
+    const bytes = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const msg = accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    expect(msg.getBoolWithDefault(1, false)).toBe(true);
+  });
+
+  it('return group from the input when pivot is set', () => {
+    const bytes = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const msg = accessor.getGroupOrNull(1, TestMessage.instanceCreator, 0);
+    expect(msg.getBoolWithDefault(1, false)).toBe(true);
+  });
+
+  it('encode group from the input', () => {
+    const bytes = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    expect(accessor.serialize()).toEqual(bytes);
+  });
+
+  it('encode group from the input after read', () => {
+    const bytes = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    expect(accessor.serialize()).toEqual(bytes);
+  });
+
+  it('return last group from multiple inputs', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x00, 0x0C, 0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const msg = accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    expect(msg.getBoolWithDefault(1, false)).toBe(true);
+  });
+
+  it('removes duplicated group when serializing', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x00, 0x0C, 0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    expect(accessor.serialize())
+        .toEqual(createArrayBuffer(0x0B, 0x08, 0x01, 0x0C));
+  });
+
+  it('encode group from multiple inputs', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x00, 0x0C, 0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    expect(accessor.serialize()).toEqual(bytes);
+  });
+
+  it('encode group after read', () => {
+    const bytes =
+        createArrayBuffer(0x0B, 0x08, 0x00, 0x0C, 0x0B, 0x08, 0x01, 0x0C);
+    const expected = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    expect(accessor.serialize()).toEqual(expected);
+  });
+
+  it('return group from setter', () => {
+    const bytes = createArrayBuffer(0x08, 0x01);
+    const accessor = Kernel.fromArrayBuffer(new ArrayBuffer(0));
+    const subaccessor = Kernel.fromArrayBuffer(bytes);
+    const submsg1 = new TestMessage(subaccessor);
+    accessor.setGroup(1, submsg1);
+    const submsg2 = accessor.getGroup(1, TestMessage.instanceCreator);
+    expect(submsg1).toBe(submsg2);
+  });
+
+  it('encode group from setter', () => {
+    const accessor = Kernel.fromArrayBuffer(new ArrayBuffer(0));
+    const subaccessor = Kernel.fromArrayBuffer(createArrayBuffer(0x08, 0x01));
+    const submsg = new TestMessage(subaccessor);
+    accessor.setGroup(1, submsg);
+    const expected = createArrayBuffer(0x0B, 0x08, 0x01, 0x0C);
+    expect(accessor.serialize()).toEqual(expected);
+  });
+
+  it('leave hasFieldNumber unchanged after getGroupOrNull', () => {
+    const accessor = Kernel.createEmpty();
+    expect(accessor.hasFieldNumber(1)).toBe(false);
+    expect(accessor.getGroupOrNull(1, TestMessage.instanceCreator)).toBe(null);
+    expect(accessor.hasFieldNumber(1)).toBe(false);
+  });
+
+  it('serialize changes to subgroups made with getGroupsOrNull', () => {
+    const intTwoBytes = createArrayBuffer(0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(intTwoBytes);
+    const mutableSubMessage =
+        accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    mutableSubMessage.setInt32(1, 10);
+    const intTenBytes = createArrayBuffer(0x0B, 0x08, 0x0A, 0x0C);
+    expect(accessor.serialize()).toEqual(intTenBytes);
+  });
+
+  it('serialize additions to subgroups made with getGroupOrNull', () => {
+    const intTwoBytes = createArrayBuffer(0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(intTwoBytes);
+    const mutableSubMessage =
+        accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    mutableSubMessage.setInt32(2, 3);
+    // Sub group contains the original field, plus the new one.
+    expect(accessor.serialize())
+        .toEqual(createArrayBuffer(0x0B, 0x08, 0x02, 0x10, 0x03, 0x0C));
+  });
+
+  it('fail with getGroupOrNull if immutable group exist in cache', () => {
+    const intTwoBytes = createArrayBuffer(0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(intTwoBytes);
+
+    const readOnly = accessor.getGroup(1, TestMessage.instanceCreator);
+    if (CHECK_TYPE) {
+      expect(() => accessor.getGroupOrNull(1, TestMessage.instanceCreator))
+          .toThrow();
+    } else {
+      const mutableSubGropu =
+          accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+      // The instance returned by getGroupOrNull is the exact same instance.
+      expect(mutableSubGropu).toBe(readOnly);
+
+      // Serializing the subgroup does not write the changes
+      mutableSubGropu.setInt32(1, 0);
+      expect(accessor.serialize()).toEqual(intTwoBytes);
+    }
+  });
+
+  it('change hasFieldNumber after getGroupAttach', () => {
+    const accessor = Kernel.createEmpty();
+    expect(accessor.hasFieldNumber(1)).toBe(false);
+    expect(accessor.getGroupAttach(1, TestMessage.instanceCreator))
+        .not.toBe(null);
+    expect(accessor.hasFieldNumber(1)).toBe(true);
+  });
+
+  it('change hasFieldNumber after getGroupAttach when pivot is set', () => {
+    const accessor = Kernel.createEmpty();
+    expect(accessor.hasFieldNumber(1)).toBe(false);
+    expect(
+        accessor.getGroupAttach(1, TestMessage.instanceCreator, /* pivot= */ 1))
+        .not.toBe(null);
+    expect(accessor.hasFieldNumber(1)).toBe(true);
+  });
+
+  it('serialize subgroups made with getGroupAttach', () => {
+    const accessor = Kernel.createEmpty();
+    const mutableSubGroup =
+        accessor.getGroupAttach(1, TestMessage.instanceCreator);
+    mutableSubGroup.setInt32(1, 10);
+    const intTenBytes = createArrayBuffer(0x0B, 0x08, 0x0A, 0x0C);
+    expect(accessor.serialize()).toEqual(intTenBytes);
+  });
+
+  it('serialize additions to subgroups using getMessageAttach', () => {
+    const intTwoBytes = createArrayBuffer(0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(intTwoBytes);
+    const mutableSubGroup =
+        accessor.getGroupAttach(1, TestMessage.instanceCreator);
+    mutableSubGroup.setInt32(2, 3);
+    // Sub message contains the original field, plus the new one.
+    expect(accessor.serialize())
+        .toEqual(createArrayBuffer(0x0B, 0x08, 0x02, 0x10, 0x03, 0x0C));
+  });
+
+  it('fail with getGroupAttach if immutable message exist in cache', () => {
+    const intTwoBytes = createArrayBuffer(0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(intTwoBytes);
+
+    const readOnly = accessor.getGroup(1, TestMessage.instanceCreator);
+    if (CHECK_TYPE) {
+      expect(() => accessor.getGroupAttach(1, TestMessage.instanceCreator))
+          .toThrow();
+    } else {
+      const mutableSubGroup =
+          accessor.getGroupAttach(1, TestMessage.instanceCreator);
+      // The instance returned by getMessageOrNull is the exact same instance.
+      expect(mutableSubGroup).toBe(readOnly);
+
+      // Serializing the submessage does not write the changes
+      mutableSubGroup.setInt32(1, 0);
+      expect(accessor.serialize()).toEqual(intTwoBytes);
+    }
+  });
+
+  it('read default group return empty group with getGroup', () => {
+    const bytes = new ArrayBuffer(0);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    expect(accessor.getGroup(1, TestMessage.instanceCreator)).toBeTruthy();
+    expect(accessor.getGroup(1, TestMessage.instanceCreator).serialize())
+        .toEqual(bytes);
+  });
+
+  it('read default group return null with getGroupOrNull', () => {
+    const bytes = new ArrayBuffer(0);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    expect(accessor.getGroupOrNull(1, TestMessage.instanceCreator)).toBe(null);
+  });
+
+  it('read group preserve reference equality', () => {
+    const bytes = createArrayBuffer(0x0B, 0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const msg1 = accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    const msg2 = accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    const msg3 = accessor.getGroupAttach(1, TestMessage.instanceCreator);
+    expect(msg1).toBe(msg2);
+    expect(msg1).toBe(msg3);
+  });
+
+  it('fail when getting group with null instance constructor', () => {
+    const accessor =
+        Kernel.fromArrayBuffer(createArrayBuffer(0x0A, 0x02, 0x08, 0x01));
+    const nullMessage = /** @type {function(!Kernel):!TestMessage} */
+        (/** @type {*} */ (null));
+    expect(() => accessor.getGroupOrNull(1, nullMessage)).toThrow();
+  });
+
+  it('fail when setting group value with null value', () => {
+    const accessor = Kernel.fromArrayBuffer(new ArrayBuffer(0));
+    const fakeMessage = /** @type {!TestMessage} */ (/** @type {*} */ (null));
+    if (CHECK_CRITICAL_TYPE) {
+      expect(() => accessor.setGroup(1, fakeMessage))
+          .toThrowError('Given value is not a message instance: null');
+    } else {
+      // Note in unchecked mode we produce invalid output for invalid inputs.
+      // This test just documents our behavior in those cases.
+      // These values might change at any point and are not considered
+      // what the implementation should be doing here.
+      accessor.setMessage(1, fakeMessage);
+      expect(accessor.getGroupOrNull(
+                 /* fieldNumber= */ 1, TestMessage.instanceCreator))
+          .toBeNull();
+    }
+  });
+
+  it('reads group in a longer buffer', () => {
+    const bytes = createArrayBuffer(
+        0x12, 0x20,  // 32 length delimited
+        0x00,        // random values for padding start
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00,  // random values for padding end
+        0x0B,  // Group tag
+        0x08, 0x02, 0x0C);
+    const accessor = Kernel.fromArrayBuffer(bytes);
+    const msg1 = accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    const msg2 = accessor.getGroupOrNull(1, TestMessage.instanceCreator);
+    expect(msg1).toBe(msg2);
+  });
+});
