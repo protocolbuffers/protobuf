@@ -584,7 +584,7 @@ void Generator::PrintTopLevelExtensions() const {
   for (int i = 0; i < file_->extension_count(); ++i) {
     const FieldDescriptor& extension_field = *file_->extension(i);
     std::string constant_name = extension_field.name() + "_FIELD_NUMBER";
-    UpperString(&constant_name);
+    ToUpper(&constant_name);
     printer_->Print("$constant_name$ = $number$\n", "constant_name",
                     constant_name, "number",
                     StrCat(extension_field.number()));
@@ -1262,7 +1262,7 @@ std::string Generator::ModuleLevelDescriptorName(
   // The C++ implementation doesn't guard against this either.  Leaving
   // it for now...
   std::string name = NamePrefixedWithNestedTypes(descriptor, "_");
-  UpperString(&name);
+  ToUpper(&name);
   // Module-private for now.  Easy to make public later; almost impossible
   // to make private later.
   name = "_" + name;
@@ -1292,7 +1292,7 @@ std::string Generator::ModuleLevelMessageName(
 std::string Generator::ModuleLevelServiceDescriptorName(
     const ServiceDescriptor& descriptor) const {
   std::string name = descriptor.name();
-  UpperString(&name);
+  ToUpper(&name);
   name = "_" + name;
   if (descriptor.file() != file_) {
     name = ModuleAlias(descriptor.file()->name()) + "." + name;

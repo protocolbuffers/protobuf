@@ -1842,6 +1842,11 @@ class PROTOBUF_EXPORT DescriptorPool {
   // the underlay takes precedence.
   static DescriptorPool* internal_generated_pool();
 
+  // For internal use only:  Gets a non-const pointer to the generated
+  // descriptor database.
+  // Only used for testing.
+  static DescriptorDatabase* internal_generated_database();
+
   // For internal use only:  Changes the behavior of BuildFile() such that it
   // allows the file to make reference to message types declared in other files
   // which it did not officially declare as dependencies.
