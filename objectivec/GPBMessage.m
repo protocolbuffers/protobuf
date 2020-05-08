@@ -3253,7 +3253,7 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
 
 + (BOOL)resolveClassMethod:(SEL)sel {
   // Extensions scoped to a Message and looked up via class methods.
-  if (GPBResolveExtensionClassMethod([self descriptor].messageClass, sel)) {
+  if (GPBResolveExtensionClassMethod(self, sel)) {
     return YES;
   }
   return [super resolveClassMethod:sel];
