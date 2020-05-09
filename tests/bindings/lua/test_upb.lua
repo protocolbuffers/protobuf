@@ -468,16 +468,23 @@ function test_foo()
 end
 
 function test_gc()
-  local m = test_messages_proto3.TestAllTypesProto3()
-  local n = 1000
+  local top = test_messages_proto3.TestAllTypesProto3()
+  local n = 100
+  local m
 
   for i=1,n do
-    local tmp = m
-    m = test_messages_proto3.TestAllTypesProto3()
-    -- This will cause the arenas to fuse. But we stop referring to the child,
-    -- so the Lua object is eligible for collection (and therefore its original
-    -- arena can be collected too). Only the fusing will keep the C mem alivd.
-    m.recursive_message = tmp
+    local inner = test_messages_proto3.TestAllTypesProto3()
+    m = inner
+    for j=1,n do
+      local tmp = m
+      m = test_messages_proto3.TestAllTypesProto3()
+      -- This will cause the arenas to fuse. But we stop referring to the child,
+      -- so the Lua object is eligible for collection (and therefore its original
+      -- arena can be collected too). Only the fusing will keep the C mem alivd.
+      m.recursive_message = tmp
+
+    end
+    top.recursive_message = m
   end
 
   collectgarbage()

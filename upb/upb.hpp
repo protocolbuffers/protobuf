@@ -53,8 +53,11 @@ class Arena {
 
   // Add a cleanup function to run when the arena is destroyed.
   // Returns false on out-of-memory.
-  bool AddCleanup(void *ud, upb_cleanup_func* func) {
-    return upb_arena_addcleanup(ptr_.get(), ud, func);
+  template <class T>
+  bool Own(T *obj) {
+    return upb_arena_addcleanup(ptr_.get(), obj, [](void* obj) {
+      delete static_cast<T*>(obj);
+    });
   }
 
  private:

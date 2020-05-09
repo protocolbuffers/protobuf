@@ -914,6 +914,31 @@ void TestIteration() {
   ASSERT(oneof_count == md.oneof_count());
 }
 
+void TestArena() {
+  int n = 100000;
+
+  struct Decrementer {
+    Decrementer(int* _p) : p(_p) {}
+    ~Decrementer() { (*p)--; }
+    int* p;
+  };
+
+  {
+    upb::Arena arena;
+    for (int i = 0; i < n; i++) {
+      arena.Own(new Decrementer(&n));
+
+      // Intersperse allocation and ensure we can write to it.
+      int* val = static_cast<int*>(upb_arena_malloc(arena.ptr(), sizeof(int)));
+      *val = i;
+    }
+
+    // Test a large allocation.
+    upb_arena_malloc(arena.ptr(), 1000000);
+  }
+  ASSERT(n == 0);
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {
@@ -950,6 +975,7 @@ int run_tests(int argc, char *argv[]) {
 
   TestHandlerDataDestruction();
   TestIteration();
+  TestArena();
 
   return 0;
 }
