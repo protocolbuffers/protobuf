@@ -287,12 +287,21 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this message.
         /// </summary>
-        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+
+        /// <summary>
+        /// The <c>MessageOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
+        /// </summary>
+        public MessageOptions GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value message option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<MessageOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
@@ -302,6 +311,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Gets a repeated value message option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public Collections.RepeatedField<T> GetOption<T>(RepeatedExtension<MessageOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();

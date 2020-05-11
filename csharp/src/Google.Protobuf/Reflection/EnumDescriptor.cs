@@ -128,12 +128,21 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this enum.
         /// </summary>
-        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+
+        /// <summary>
+        /// The <c>EnumOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
+        /// </summary>
+        public EnumOptions GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value enum option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<EnumOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
@@ -143,6 +152,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Gets a repeated value enum option for this descriptor
         /// </summary>
+        [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<EnumOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();
