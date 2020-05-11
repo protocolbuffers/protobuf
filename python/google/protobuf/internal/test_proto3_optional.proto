@@ -30,10 +30,7 @@
 
 syntax = "proto3";
 
-package protobuf_unittest;
-
-option java_multiple_files = true;
-option java_package = "com.google.protobuf.testing.proto";
+package google.protobuf.python.internal;
 
 message TestProto3Optional {
   message NestedMessage {

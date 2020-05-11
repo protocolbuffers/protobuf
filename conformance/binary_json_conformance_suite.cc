@@ -1865,6 +1865,16 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldNameConvention() {
       })",
       [](const Json::Value& value) { return !value.isMember("FieldName13"); },
       true);
+  RunValidJsonTestWithValidator(
+      "FieldNameExtension", RECOMMENDED,
+      R"({
+        "[protobuf_test_messages.proto2.extension_int32]": 1
+      })",
+      [](const Json::Value& value) {
+        return value.isMember(
+            "[protobuf_test_messages.proto2.extension_int32]");
+      },
+      false);
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {

@@ -1441,7 +1441,9 @@ inline void CodeGeneratorRequest::unsafe_arena_set_allocated_compiler_version(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
 }
 inline PROTOBUF_NAMESPACE_ID::compiler::Version* CodeGeneratorRequest::release_compiler_version() {
-  auto temp = unsafe_arena_release_compiler_version();
+  _has_bits_[0] &= ~0x00000002u;
+  PROTOBUF_NAMESPACE_ID::compiler::Version* temp = compiler_version_;
+  compiler_version_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }

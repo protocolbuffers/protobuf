@@ -38,7 +38,7 @@ package protobuf_unittest;
 
 import "google/protobuf/unittest_import_lite.proto";
 
-option cc_enable_arenas = false;
+option cc_enable_arenas = true;
 option optimize_for = LITE_RUNTIME;
 option java_package = "com.google.protobuf";
 
