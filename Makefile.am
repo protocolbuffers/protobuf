@@ -78,6 +78,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/protos/unittest_import.proto                                        \
   csharp/protos/unittest_issues.proto                                        \
   csharp/protos/unittest_proto3.proto                                        \
+  csharp/protos/unittest_selfreferential_options.proto                       \
   csharp/protos/unittest.proto                                               \
   csharp/src/AddressBook/AddPerson.cs                                        \
   csharp/src/AddressBook/Addressbook.cs                                      \
@@ -153,6 +154,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test.TestProtos/UnittestIssues.cs                  \
   csharp/src/Google.Protobuf.Test.TestProtos/UnittestProto3.cs                  \
   csharp/src/Google.Protobuf.Test.TestProtos/UnittestProto3Optional.cs          \
+  csharp/src/Google.Protobuf.Test.TestProtos/UnittestSelfreferentialOptions.cs  \
   csharp/src/Google.Protobuf.Test.TestProtos/UnittestWellKnownTypes.cs          \
   csharp/src/Google.Protobuf.Test.TestProtos/Unittest.cs                        \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/AnyTest.cs                  \
@@ -260,7 +262,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs
 
 java_EXTRA_DIST=                                                                   \
-  java/BUILD                                                                       \
   java/README.md                                                                   \
   java/bom/pom.xml                                                                 \
   java/core/BUILD                                                                  \
@@ -1205,6 +1206,10 @@ js_EXTRA_DIST=                                                         \
   js/data.proto                                                        \
   js/debug.js                                                          \
   js/debug_test.js                                                     \
+  js/experimental/runtime/kernel/message_set.js                        \
+  js/experimental/runtime/kernel/message_set_test.js                   \
+  js/experimental/runtime/kernel/tag.js                                \
+  js/experimental/runtime/kernel/tag_test.js                           \
   js/gulpfile.js                                                       \
   js/jasmine.json                                                      \
   js/map.js                                                            \
