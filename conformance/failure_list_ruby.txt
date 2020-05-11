@@ -77,6 +77,7 @@ Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.ENUM[3].ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataScalarBinary.ENUM[4].ProtobufOutput
 Required.DurationProtoInputTooLarge.JsonOutput
 Required.DurationProtoInputTooSmall.JsonOutput
+Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator
 Required.Proto3.JsonInput.DoubleFieldMaxNegativeValue.JsonOutput
 Required.Proto3.JsonInput.DoubleFieldMaxNegativeValue.ProtobufOutput
 Required.Proto3.JsonInput.DoubleFieldMinPositiveValue.JsonOutput
