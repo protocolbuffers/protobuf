@@ -1035,7 +1035,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
         "    $default_enum_value$ > SuperType;\n"
         "  $classname$();\n"
-        "  $classname$(::$proto_ns$::Arena* arena);\n"
+        "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
         "  void MergeFrom(const $classname$& other);\n"
         "  static const $classname$* internal_default_instance() { return "
         "reinterpret_cast<const "
