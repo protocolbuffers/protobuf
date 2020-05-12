@@ -1,4 +1,4 @@
-2020-04-28 version 3.12.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2020-05-12 version 3.12.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler
   * [experimental] Singular, non-message typed fields in proto3 now support
@@ -75,6 +75,7 @@
   * Persistent Descriptor Pool (#6899)
   * Implement lazy loading of php class for proto messages (#6911)
   * Correct @return in Any.unpack docblock (#7089)
+  * Ignore unknown enum value when ignore_unknown specified (#7455)
 
   Ruby
   * [experimental] Implemented proto3 presence for Ruby. (#7406)
@@ -87,11 +88,13 @@
 
   C#
   * [experimental] Add support for proto3 presence fields in C# (#7382)
-  * Cleanup various bits of Google.Protobuf (#6674)
+  * Mark GetOption API as obsolete and expose the "GetOptions()" method on descriptors instead (#7491)
+  * Remove Has/Clear members for C# message fields in proto2 (#7429)
+  * Enforce recursion depth checking for unknown fields (#7132)
   * Fix conformance test failures for Google.Protobuf (#6910)
+  * Cleanup various bits of Google.Protobuf (#6674)
   * Fix latest ArgumentException for C# extensions (#6938)
   * Remove unnecessary branch from ReadTag (#7289)
-  * Enforce recursion depth checking for unknown fields (#7132)
 
   Objective-C
   * [experimental] ObjC Proto3 optional support (#7421)
