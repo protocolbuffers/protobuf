@@ -67,7 +67,11 @@ namespace ProtobufUnittest {
 
   }
   #region Messages
-  public sealed partial class TestProto3Optional : pb::IMessage<TestProto3Optional>, pb::IBufferMessage {
+  public sealed partial class TestProto3Optional : pb::IMessage<TestProto3Optional>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestProto3Optional> _parser = new pb::MessageParser<TestProto3Optional>(() => new TestProto3Optional());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -858,9 +862,111 @@ namespace ProtobufUnittest {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            OptionalInt64 = input.ReadInt64();
+            break;
+          }
+          case 24: {
+            OptionalUint32 = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            OptionalUint64 = input.ReadUInt64();
+            break;
+          }
+          case 40: {
+            OptionalSint32 = input.ReadSInt32();
+            break;
+          }
+          case 48: {
+            OptionalSint64 = input.ReadSInt64();
+            break;
+          }
+          case 61: {
+            OptionalFixed32 = input.ReadFixed32();
+            break;
+          }
+          case 65: {
+            OptionalFixed64 = input.ReadFixed64();
+            break;
+          }
+          case 77: {
+            OptionalSfixed32 = input.ReadSFixed32();
+            break;
+          }
+          case 81: {
+            OptionalSfixed64 = input.ReadSFixed64();
+            break;
+          }
+          case 93: {
+            OptionalFloat = input.ReadFloat();
+            break;
+          }
+          case 97: {
+            OptionalDouble = input.ReadDouble();
+            break;
+          }
+          case 104: {
+            OptionalBool = input.ReadBool();
+            break;
+          }
+          case 114: {
+            OptionalString = input.ReadString();
+            break;
+          }
+          case 122: {
+            OptionalBytes = input.ReadBytes();
+            break;
+          }
+          case 130: {
+            OptionalCord = input.ReadString();
+            break;
+          }
+          case 146: {
+            if (optionalNestedMessage_ == null) {
+              OptionalNestedMessage = new global::ProtobufUnittest.TestProto3Optional.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalNestedMessage);
+            break;
+          }
+          case 154: {
+            if (lazyNestedMessage_ == null) {
+              LazyNestedMessage = new global::ProtobufUnittest.TestProto3Optional.Types.NestedMessage();
+            }
+            input.ReadMessage(LazyNestedMessage);
+            break;
+          }
+          case 168: {
+            OptionalNestedEnum = (global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum) input.ReadEnum();
+            break;
+          }
+          case 176: {
+            SingularInt32 = input.ReadInt32();
+            break;
+          }
+          case 184: {
+            SingularInt64 = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -962,6 +1068,7 @@ namespace ProtobufUnittest {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestProto3Optional message type.</summary>
@@ -978,7 +1085,11 @@ namespace ProtobufUnittest {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, pb::IBufferMessage {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -1109,9 +1220,25 @@ namespace ProtobufUnittest {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                Bb = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        #endif
         }
 
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
@@ -1127,6 +1254,7 @@ namespace ProtobufUnittest {
             }
           }
         }
+        #endif
 
       }
 

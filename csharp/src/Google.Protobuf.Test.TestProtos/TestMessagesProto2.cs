@@ -244,7 +244,11 @@ namespace ProtobufTestMessages.Proto2 {
   /// could trigger bugs that occur in any message type in this file.  We verify
   /// this stays true in a unit test.
   /// </summary>
-  public sealed partial class TestAllTypesProto2 : pb::IExtendableMessage<TestAllTypesProto2>, pb::IBufferMessage {
+  public sealed partial class TestAllTypesProto2 : pb::IExtendableMessage<TestAllTypesProto2>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestAllTypesProto2> _parser = new pb::MessageParser<TestAllTypesProto2>(() => new TestAllTypesProto2());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllTypesProto2> _extensions;
@@ -3311,9 +3315,556 @@ namespace ProtobufTestMessages.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            }
+            break;
+          case 8: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            OptionalInt64 = input.ReadInt64();
+            break;
+          }
+          case 24: {
+            OptionalUint32 = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            OptionalUint64 = input.ReadUInt64();
+            break;
+          }
+          case 40: {
+            OptionalSint32 = input.ReadSInt32();
+            break;
+          }
+          case 48: {
+            OptionalSint64 = input.ReadSInt64();
+            break;
+          }
+          case 61: {
+            OptionalFixed32 = input.ReadFixed32();
+            break;
+          }
+          case 65: {
+            OptionalFixed64 = input.ReadFixed64();
+            break;
+          }
+          case 77: {
+            OptionalSfixed32 = input.ReadSFixed32();
+            break;
+          }
+          case 81: {
+            OptionalSfixed64 = input.ReadSFixed64();
+            break;
+          }
+          case 93: {
+            OptionalFloat = input.ReadFloat();
+            break;
+          }
+          case 97: {
+            OptionalDouble = input.ReadDouble();
+            break;
+          }
+          case 104: {
+            OptionalBool = input.ReadBool();
+            break;
+          }
+          case 114: {
+            OptionalString = input.ReadString();
+            break;
+          }
+          case 122: {
+            OptionalBytes = input.ReadBytes();
+            break;
+          }
+          case 146: {
+            if (optionalNestedMessage_ == null) {
+              OptionalNestedMessage = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalNestedMessage);
+            break;
+          }
+          case 154: {
+            if (optionalForeignMessage_ == null) {
+              OptionalForeignMessage = new global::ProtobufTestMessages.Proto2.ForeignMessageProto2();
+            }
+            input.ReadMessage(OptionalForeignMessage);
+            break;
+          }
+          case 168: {
+            OptionalNestedEnum = (global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedEnum) input.ReadEnum();
+            break;
+          }
+          case 176: {
+            OptionalForeignEnum = (global::ProtobufTestMessages.Proto2.ForeignEnumProto2) input.ReadEnum();
+            break;
+          }
+          case 194: {
+            OptionalStringPiece = input.ReadString();
+            break;
+          }
+          case 202: {
+            OptionalCord = input.ReadString();
+            break;
+          }
+          case 218: {
+            if (recursiveMessage_ == null) {
+              RecursiveMessage = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2();
+            }
+            input.ReadMessage(RecursiveMessage);
+            break;
+          }
+          case 250:
+          case 248: {
+            repeatedInt32_.AddEntriesFrom(input, _repeated_repeatedInt32_codec);
+            break;
+          }
+          case 258:
+          case 256: {
+            repeatedInt64_.AddEntriesFrom(input, _repeated_repeatedInt64_codec);
+            break;
+          }
+          case 266:
+          case 264: {
+            repeatedUint32_.AddEntriesFrom(input, _repeated_repeatedUint32_codec);
+            break;
+          }
+          case 274:
+          case 272: {
+            repeatedUint64_.AddEntriesFrom(input, _repeated_repeatedUint64_codec);
+            break;
+          }
+          case 282:
+          case 280: {
+            repeatedSint32_.AddEntriesFrom(input, _repeated_repeatedSint32_codec);
+            break;
+          }
+          case 290:
+          case 288: {
+            repeatedSint64_.AddEntriesFrom(input, _repeated_repeatedSint64_codec);
+            break;
+          }
+          case 298:
+          case 301: {
+            repeatedFixed32_.AddEntriesFrom(input, _repeated_repeatedFixed32_codec);
+            break;
+          }
+          case 306:
+          case 305: {
+            repeatedFixed64_.AddEntriesFrom(input, _repeated_repeatedFixed64_codec);
+            break;
+          }
+          case 314:
+          case 317: {
+            repeatedSfixed32_.AddEntriesFrom(input, _repeated_repeatedSfixed32_codec);
+            break;
+          }
+          case 322:
+          case 321: {
+            repeatedSfixed64_.AddEntriesFrom(input, _repeated_repeatedSfixed64_codec);
+            break;
+          }
+          case 330:
+          case 333: {
+            repeatedFloat_.AddEntriesFrom(input, _repeated_repeatedFloat_codec);
+            break;
+          }
+          case 338:
+          case 337: {
+            repeatedDouble_.AddEntriesFrom(input, _repeated_repeatedDouble_codec);
+            break;
+          }
+          case 346:
+          case 344: {
+            repeatedBool_.AddEntriesFrom(input, _repeated_repeatedBool_codec);
+            break;
+          }
+          case 354: {
+            repeatedString_.AddEntriesFrom(input, _repeated_repeatedString_codec);
+            break;
+          }
+          case 362: {
+            repeatedBytes_.AddEntriesFrom(input, _repeated_repeatedBytes_codec);
+            break;
+          }
+          case 386: {
+            repeatedNestedMessage_.AddEntriesFrom(input, _repeated_repeatedNestedMessage_codec);
+            break;
+          }
+          case 394: {
+            repeatedForeignMessage_.AddEntriesFrom(input, _repeated_repeatedForeignMessage_codec);
+            break;
+          }
+          case 410:
+          case 408: {
+            repeatedNestedEnum_.AddEntriesFrom(input, _repeated_repeatedNestedEnum_codec);
+            break;
+          }
+          case 418:
+          case 416: {
+            repeatedForeignEnum_.AddEntriesFrom(input, _repeated_repeatedForeignEnum_codec);
+            break;
+          }
+          case 434: {
+            repeatedStringPiece_.AddEntriesFrom(input, _repeated_repeatedStringPiece_codec);
+            break;
+          }
+          case 442: {
+            repeatedCord_.AddEntriesFrom(input, _repeated_repeatedCord_codec);
+            break;
+          }
+          case 450: {
+            mapInt32Int32_.AddEntriesFrom(input, _map_mapInt32Int32_codec);
+            break;
+          }
+          case 458: {
+            mapInt64Int64_.AddEntriesFrom(input, _map_mapInt64Int64_codec);
+            break;
+          }
+          case 466: {
+            mapUint32Uint32_.AddEntriesFrom(input, _map_mapUint32Uint32_codec);
+            break;
+          }
+          case 474: {
+            mapUint64Uint64_.AddEntriesFrom(input, _map_mapUint64Uint64_codec);
+            break;
+          }
+          case 482: {
+            mapSint32Sint32_.AddEntriesFrom(input, _map_mapSint32Sint32_codec);
+            break;
+          }
+          case 490: {
+            mapSint64Sint64_.AddEntriesFrom(input, _map_mapSint64Sint64_codec);
+            break;
+          }
+          case 498: {
+            mapFixed32Fixed32_.AddEntriesFrom(input, _map_mapFixed32Fixed32_codec);
+            break;
+          }
+          case 506: {
+            mapFixed64Fixed64_.AddEntriesFrom(input, _map_mapFixed64Fixed64_codec);
+            break;
+          }
+          case 514: {
+            mapSfixed32Sfixed32_.AddEntriesFrom(input, _map_mapSfixed32Sfixed32_codec);
+            break;
+          }
+          case 522: {
+            mapSfixed64Sfixed64_.AddEntriesFrom(input, _map_mapSfixed64Sfixed64_codec);
+            break;
+          }
+          case 530: {
+            mapInt32Float_.AddEntriesFrom(input, _map_mapInt32Float_codec);
+            break;
+          }
+          case 538: {
+            mapInt32Double_.AddEntriesFrom(input, _map_mapInt32Double_codec);
+            break;
+          }
+          case 546: {
+            mapBoolBool_.AddEntriesFrom(input, _map_mapBoolBool_codec);
+            break;
+          }
+          case 554: {
+            mapStringString_.AddEntriesFrom(input, _map_mapStringString_codec);
+            break;
+          }
+          case 562: {
+            mapStringBytes_.AddEntriesFrom(input, _map_mapStringBytes_codec);
+            break;
+          }
+          case 570: {
+            mapStringNestedMessage_.AddEntriesFrom(input, _map_mapStringNestedMessage_codec);
+            break;
+          }
+          case 578: {
+            mapStringForeignMessage_.AddEntriesFrom(input, _map_mapStringForeignMessage_codec);
+            break;
+          }
+          case 586: {
+            mapStringNestedEnum_.AddEntriesFrom(input, _map_mapStringNestedEnum_codec);
+            break;
+          }
+          case 594: {
+            mapStringForeignEnum_.AddEntriesFrom(input, _map_mapStringForeignEnum_codec);
+            break;
+          }
+          case 602:
+          case 600: {
+            packedInt32_.AddEntriesFrom(input, _repeated_packedInt32_codec);
+            break;
+          }
+          case 610:
+          case 608: {
+            packedInt64_.AddEntriesFrom(input, _repeated_packedInt64_codec);
+            break;
+          }
+          case 618:
+          case 616: {
+            packedUint32_.AddEntriesFrom(input, _repeated_packedUint32_codec);
+            break;
+          }
+          case 626:
+          case 624: {
+            packedUint64_.AddEntriesFrom(input, _repeated_packedUint64_codec);
+            break;
+          }
+          case 634:
+          case 632: {
+            packedSint32_.AddEntriesFrom(input, _repeated_packedSint32_codec);
+            break;
+          }
+          case 642:
+          case 640: {
+            packedSint64_.AddEntriesFrom(input, _repeated_packedSint64_codec);
+            break;
+          }
+          case 650:
+          case 653: {
+            packedFixed32_.AddEntriesFrom(input, _repeated_packedFixed32_codec);
+            break;
+          }
+          case 658:
+          case 657: {
+            packedFixed64_.AddEntriesFrom(input, _repeated_packedFixed64_codec);
+            break;
+          }
+          case 666:
+          case 669: {
+            packedSfixed32_.AddEntriesFrom(input, _repeated_packedSfixed32_codec);
+            break;
+          }
+          case 674:
+          case 673: {
+            packedSfixed64_.AddEntriesFrom(input, _repeated_packedSfixed64_codec);
+            break;
+          }
+          case 682:
+          case 685: {
+            packedFloat_.AddEntriesFrom(input, _repeated_packedFloat_codec);
+            break;
+          }
+          case 690:
+          case 689: {
+            packedDouble_.AddEntriesFrom(input, _repeated_packedDouble_codec);
+            break;
+          }
+          case 698:
+          case 696: {
+            packedBool_.AddEntriesFrom(input, _repeated_packedBool_codec);
+            break;
+          }
+          case 706:
+          case 704: {
+            packedNestedEnum_.AddEntriesFrom(input, _repeated_packedNestedEnum_codec);
+            break;
+          }
+          case 714:
+          case 712: {
+            unpackedInt32_.AddEntriesFrom(input, _repeated_unpackedInt32_codec);
+            break;
+          }
+          case 722:
+          case 720: {
+            unpackedInt64_.AddEntriesFrom(input, _repeated_unpackedInt64_codec);
+            break;
+          }
+          case 730:
+          case 728: {
+            unpackedUint32_.AddEntriesFrom(input, _repeated_unpackedUint32_codec);
+            break;
+          }
+          case 738:
+          case 736: {
+            unpackedUint64_.AddEntriesFrom(input, _repeated_unpackedUint64_codec);
+            break;
+          }
+          case 746:
+          case 744: {
+            unpackedSint32_.AddEntriesFrom(input, _repeated_unpackedSint32_codec);
+            break;
+          }
+          case 754:
+          case 752: {
+            unpackedSint64_.AddEntriesFrom(input, _repeated_unpackedSint64_codec);
+            break;
+          }
+          case 762:
+          case 765: {
+            unpackedFixed32_.AddEntriesFrom(input, _repeated_unpackedFixed32_codec);
+            break;
+          }
+          case 770:
+          case 769: {
+            unpackedFixed64_.AddEntriesFrom(input, _repeated_unpackedFixed64_codec);
+            break;
+          }
+          case 778:
+          case 781: {
+            unpackedSfixed32_.AddEntriesFrom(input, _repeated_unpackedSfixed32_codec);
+            break;
+          }
+          case 786:
+          case 785: {
+            unpackedSfixed64_.AddEntriesFrom(input, _repeated_unpackedSfixed64_codec);
+            break;
+          }
+          case 794:
+          case 797: {
+            unpackedFloat_.AddEntriesFrom(input, _repeated_unpackedFloat_codec);
+            break;
+          }
+          case 802:
+          case 801: {
+            unpackedDouble_.AddEntriesFrom(input, _repeated_unpackedDouble_codec);
+            break;
+          }
+          case 810:
+          case 808: {
+            unpackedBool_.AddEntriesFrom(input, _repeated_unpackedBool_codec);
+            break;
+          }
+          case 818:
+          case 816: {
+            unpackedNestedEnum_.AddEntriesFrom(input, _repeated_unpackedNestedEnum_codec);
+            break;
+          }
+          case 888: {
+            OneofUint32 = input.ReadUInt32();
+            break;
+          }
+          case 898: {
+            global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage subBuilder = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage();
+            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+              subBuilder.MergeFrom(OneofNestedMessage);
+            }
+            input.ReadMessage(subBuilder);
+            OneofNestedMessage = subBuilder;
+            break;
+          }
+          case 906: {
+            OneofString = input.ReadString();
+            break;
+          }
+          case 914: {
+            OneofBytes = input.ReadBytes();
+            break;
+          }
+          case 920: {
+            OneofBool = input.ReadBool();
+            break;
+          }
+          case 928: {
+            OneofUint64 = input.ReadUInt64();
+            break;
+          }
+          case 941: {
+            OneofFloat = input.ReadFloat();
+            break;
+          }
+          case 945: {
+            OneofDouble = input.ReadDouble();
+            break;
+          }
+          case 952: {
+            oneofField_ = input.ReadEnum();
+            oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
+            break;
+          }
+          case 1611: {
+            if (!HasData) {
+              Data = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.Data();
+            }
+            input.ReadGroup(Data);
+            break;
+          }
+          case 3208: {
+            Fieldname1 = input.ReadInt32();
+            break;
+          }
+          case 3216: {
+            FieldName2 = input.ReadInt32();
+            break;
+          }
+          case 3224: {
+            FieldName3 = input.ReadInt32();
+            break;
+          }
+          case 3232: {
+            FieldName4 = input.ReadInt32();
+            break;
+          }
+          case 3240: {
+            Field0Name5 = input.ReadInt32();
+            break;
+          }
+          case 3248: {
+            Field0Name6 = input.ReadInt32();
+            break;
+          }
+          case 3256: {
+            FieldName7 = input.ReadInt32();
+            break;
+          }
+          case 3264: {
+            FieldName8 = input.ReadInt32();
+            break;
+          }
+          case 3272: {
+            FieldName9 = input.ReadInt32();
+            break;
+          }
+          case 3280: {
+            FieldName10 = input.ReadInt32();
+            break;
+          }
+          case 3288: {
+            FIELDNAME11 = input.ReadInt32();
+            break;
+          }
+          case 3296: {
+            FIELDName12 = input.ReadInt32();
+            break;
+          }
+          case 3304: {
+            FieldName13 = input.ReadInt32();
+            break;
+          }
+          case 3312: {
+            FieldName14 = input.ReadInt32();
+            break;
+          }
+          case 3320: {
+            FieldName15 = input.ReadInt32();
+            break;
+          }
+          case 3328: {
+            FieldName16 = input.ReadInt32();
+            break;
+          }
+          case 3336: {
+            FieldName17 = input.ReadInt32();
+            break;
+          }
+          case 3344: {
+            FieldName18 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -3860,6 +4411,7 @@ namespace ProtobufTestMessages.Proto2 {
         }
       }
     }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestAllTypesProto2, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -3897,7 +4449,11 @@ namespace ProtobufTestMessages.Proto2 {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>, pb::IBufferMessage {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -4052,9 +4608,32 @@ namespace ProtobufTestMessages.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                A = input.ReadInt32();
+                break;
+              }
+              case 18: {
+                if (corecursive_ == null) {
+                  Corecursive = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2();
+                }
+                input.ReadMessage(Corecursive);
+                break;
+              }
+            }
+          }
+        #endif
         }
 
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
@@ -4077,13 +4656,18 @@ namespace ProtobufTestMessages.Proto2 {
             }
           }
         }
+        #endif
 
       }
 
       /// <summary>
       /// groups
       /// </summary>
-      public sealed partial class Data : pb::IMessage<Data>, pb::IBufferMessage {
+      public sealed partial class Data : pb::IMessage<Data>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<Data> _parser = new pb::MessageParser<Data>(() => new Data());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -4248,9 +4832,31 @@ namespace ProtobufTestMessages.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 1612:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 1616: {
+                GroupInt32 = input.ReadInt32();
+                break;
+              }
+              case 1624: {
+                GroupUint32 = input.ReadUInt32();
+                break;
+              }
+            }
+          }
+        #endif
         }
 
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
@@ -4272,13 +4878,18 @@ namespace ProtobufTestMessages.Proto2 {
             }
           }
         }
+        #endif
 
       }
 
       /// <summary>
       /// message_set test case.
       /// </summary>
-      public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect>, pb::IBufferMessage {
+      public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<MessageSetCorrect> _parser = new pb::MessageParser<MessageSetCorrect>(() => new MessageSetCorrect());
         private pb::UnknownFieldSet _unknownFields;
         private pb::ExtensionSet<MessageSetCorrect> _extensions;
@@ -4383,9 +4994,23 @@ namespace ProtobufTestMessages.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
+                  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                }
+                break;
+            }
+          }
+        #endif
         }
 
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
@@ -4399,6 +5024,7 @@ namespace ProtobufTestMessages.Proto2 {
             }
           }
         }
+        #endif
 
         public TValue GetExtension<TValue>(pb::Extension<MessageSetCorrect, TValue> extension) {
           return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -4424,7 +5050,11 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
-      public sealed partial class MessageSetCorrectExtension1 : pb::IMessage<MessageSetCorrectExtension1>, pb::IBufferMessage {
+      public sealed partial class MessageSetCorrectExtension1 : pb::IMessage<MessageSetCorrectExtension1>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<MessageSetCorrectExtension1> _parser = new pb::MessageParser<MessageSetCorrectExtension1>(() => new MessageSetCorrectExtension1());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4549,9 +5179,25 @@ namespace ProtobufTestMessages.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 202: {
+                Str = input.ReadString();
+                break;
+              }
+            }
+          }
+        #endif
         }
 
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
@@ -4567,6 +5213,7 @@ namespace ProtobufTestMessages.Proto2 {
             }
           }
         }
+        #endif
 
         #region Extensions
         /// <summary>Container for extensions for other messages declared in the MessageSetCorrectExtension1 message type.</summary>
@@ -4579,7 +5226,11 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
-      public sealed partial class MessageSetCorrectExtension2 : pb::IMessage<MessageSetCorrectExtension2>, pb::IBufferMessage {
+      public sealed partial class MessageSetCorrectExtension2 : pb::IMessage<MessageSetCorrectExtension2>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<MessageSetCorrectExtension2> _parser = new pb::MessageParser<MessageSetCorrectExtension2>(() => new MessageSetCorrectExtension2());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -4707,9 +5358,25 @@ namespace ProtobufTestMessages.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 72: {
+                I = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        #endif
         }
 
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
@@ -4725,6 +5392,7 @@ namespace ProtobufTestMessages.Proto2 {
             }
           }
         }
+        #endif
 
         #region Extensions
         /// <summary>Container for extensions for other messages declared in the MessageSetCorrectExtension2 message type.</summary>
@@ -4742,7 +5410,11 @@ namespace ProtobufTestMessages.Proto2 {
 
   }
 
-  public sealed partial class ForeignMessageProto2 : pb::IMessage<ForeignMessageProto2>, pb::IBufferMessage {
+  public sealed partial class ForeignMessageProto2 : pb::IMessage<ForeignMessageProto2>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ForeignMessageProto2> _parser = new pb::MessageParser<ForeignMessageProto2>(() => new ForeignMessageProto2());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -4870,9 +5542,25 @@ namespace ProtobufTestMessages.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            C = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -4888,10 +5576,15 @@ namespace ProtobufTestMessages.Proto2 {
         }
       }
     }
+    #endif
 
   }
 
-  public sealed partial class UnknownToTestAllTypes : pb::IMessage<UnknownToTestAllTypes>, pb::IBufferMessage {
+  public sealed partial class UnknownToTestAllTypes : pb::IMessage<UnknownToTestAllTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<UnknownToTestAllTypes> _parser = new pb::MessageParser<UnknownToTestAllTypes>(() => new UnknownToTestAllTypes());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -5173,9 +5866,52 @@ namespace ProtobufTestMessages.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8008: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+          case 8018: {
+            OptionalString = input.ReadString();
+            break;
+          }
+          case 8026: {
+            if (nestedMessage_ == null) {
+              NestedMessage = new global::ProtobufTestMessages.Proto2.ForeignMessageProto2();
+            }
+            input.ReadMessage(NestedMessage);
+            break;
+          }
+          case 8035: {
+            if (!HasOptionalGroup) {
+              OptionalGroup = new global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup();
+            }
+            input.ReadGroup(OptionalGroup);
+            break;
+          }
+          case 8048: {
+            OptionalBool = input.ReadBool();
+            break;
+          }
+          case 8090:
+          case 8088: {
+            repeatedInt32_.AddEntriesFrom(input, _repeated_repeatedInt32_codec);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -5218,12 +5954,17 @@ namespace ProtobufTestMessages.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the UnknownToTestAllTypes message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>, pb::IBufferMessage {
+      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -5351,9 +6092,27 @@ namespace ProtobufTestMessages.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 8036:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 8: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        #endif
         }
 
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
@@ -5371,6 +6130,7 @@ namespace ProtobufTestMessages.Proto2 {
             }
           }
         }
+        #endif
 
       }
 

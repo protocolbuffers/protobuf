@@ -77,7 +77,11 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Struct` is JSON object.
   /// </summary>
-  public sealed partial class Struct : pb::IMessage<Struct>, pb::IBufferMessage {
+  public sealed partial class Struct : pb::IMessage<Struct>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Struct> _parser = new pb::MessageParser<Struct>(() => new Struct());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -185,9 +189,25 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            fields_.AddEntriesFrom(input, _map_fields_codec);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -203,6 +223,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
       }
     }
+    #endif
 
   }
 
@@ -214,7 +235,11 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `Value` is JSON value.
   /// </summary>
-  public sealed partial class Value : pb::IMessage<Value>, pb::IBufferMessage {
+  public sealed partial class Value : pb::IMessage<Value>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Value> _parser = new pb::MessageParser<Value>(() => new Value());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -514,9 +539,56 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            kind_ = input.ReadEnum();
+            kindCase_ = KindOneofCase.NullValue;
+            break;
+          }
+          case 17: {
+            NumberValue = input.ReadDouble();
+            break;
+          }
+          case 26: {
+            StringValue = input.ReadString();
+            break;
+          }
+          case 32: {
+            BoolValue = input.ReadBool();
+            break;
+          }
+          case 42: {
+            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = new global::Google.Protobuf.WellKnownTypes.Struct();
+            if (kindCase_ == KindOneofCase.StructValue) {
+              subBuilder.MergeFrom(StructValue);
+            }
+            input.ReadMessage(subBuilder);
+            StructValue = subBuilder;
+            break;
+          }
+          case 50: {
+            global::Google.Protobuf.WellKnownTypes.ListValue subBuilder = new global::Google.Protobuf.WellKnownTypes.ListValue();
+            if (kindCase_ == KindOneofCase.ListValue) {
+              subBuilder.MergeFrom(ListValue);
+            }
+            input.ReadMessage(subBuilder);
+            ListValue = subBuilder;
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -563,6 +635,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
       }
     }
+    #endif
 
   }
 
@@ -571,7 +644,11 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// The JSON representation for `ListValue` is JSON array.
   /// </summary>
-  public sealed partial class ListValue : pb::IMessage<ListValue>, pb::IBufferMessage {
+  public sealed partial class ListValue : pb::IMessage<ListValue>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ListValue> _parser = new pb::MessageParser<ListValue>(() => new ListValue());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -679,9 +756,25 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            values_.AddEntriesFrom(input, _repeated_values_codec);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -697,6 +790,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
       }
     }
+    #endif
 
   }
 

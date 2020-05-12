@@ -39,7 +39,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
   #region Messages
-  public sealed partial class Bar : pb::IMessage<Bar>, pb::IBufferMessage {
+  public sealed partial class Bar : pb::IMessage<Bar>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Bar> _parser = new pb::MessageParser<Bar>(() => new Bar());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -155,9 +159,28 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (foo_ == null) {
+              Foo = new global::UnitTest.Issues.TestProtos.Foo();
+            }
+            input.ReadMessage(Foo);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -176,6 +199,7 @@ namespace UnitTest.Issues.TestProtos {
         }
       }
     }
+    #endif
 
   }
 
