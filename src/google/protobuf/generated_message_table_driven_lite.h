@@ -309,7 +309,7 @@ inline bool HandleEnum(const ParseTable& table, io::CodedInputStream* input,
     return false;
   }
 
-  AuxillaryParseTableField::EnumValidator validator =
+  AuxiliaryParseTableField::EnumValidator validator =
       table.aux[field_number].enums.validator;
   if (validator == nullptr || validator(value)) {
     switch (cardinality) {
@@ -794,7 +794,7 @@ bool MergePartialFromCodedStreamInlined(MessageLite* msg,
             return false;
           }
 
-          AuxillaryParseTableField::EnumValidator validator =
+          AuxiliaryParseTableField::EnumValidator validator =
               table.aux[field_number].enums.validator;
           RepeatedField<int>* values = Raw<RepeatedField<int>>(msg, offset);
 

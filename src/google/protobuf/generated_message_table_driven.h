@@ -120,7 +120,7 @@ struct PROTOBUF_EXPORT FieldMetadata {
 // ParseTableField is kept small to help simplify instructions for computing
 // offsets, as we will always need this information to parse a field.
 // Additional data, needed for some types, is stored in
-// AuxillaryParseTableField.
+// AuxiliaryParseTableField.
 struct ParseTableField {
   uint32 offset;
   // The presence_index ordinarily represents a has_bit index, but for fields
@@ -138,7 +138,7 @@ struct ParseTableField {
 
 struct ParseTable;
 
-union AuxillaryParseTableField {
+union AuxiliaryParseTableField {
   typedef bool (*EnumValidator)(int);
 
   // Enums
@@ -169,20 +169,20 @@ union AuxillaryParseTableField {
   };
   map_aux maps;
 
-  AuxillaryParseTableField() = default;
-  constexpr AuxillaryParseTableField(AuxillaryParseTableField::enum_aux e)
+  AuxiliaryParseTableField() = default;
+  constexpr AuxiliaryParseTableField(AuxiliaryParseTableField::enum_aux e)
       : enums(e) {}
-  constexpr AuxillaryParseTableField(AuxillaryParseTableField::message_aux m)
+  constexpr AuxiliaryParseTableField(AuxiliaryParseTableField::message_aux m)
       : messages(m) {}
-  constexpr AuxillaryParseTableField(AuxillaryParseTableField::string_aux s)
+  constexpr AuxiliaryParseTableField(AuxiliaryParseTableField::string_aux s)
       : strings(s) {}
-  constexpr AuxillaryParseTableField(AuxillaryParseTableField::map_aux m)
+  constexpr AuxiliaryParseTableField(AuxiliaryParseTableField::map_aux m)
       : maps(m) {}
 };
 
 struct ParseTable {
   const ParseTableField* fields;
-  const AuxillaryParseTableField* aux;
+  const AuxiliaryParseTableField* aux;
   int max_field_number;
   // TODO(ckennelly): Do something with this padding.
 
@@ -207,10 +207,10 @@ static_assert(sizeof(ParseTableField) <= 16, "ParseTableField is too large");
 // The tables must be composed of POD components to ensure link-time
 // initialization.
 static_assert(std::is_pod<ParseTableField>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField::enum_aux>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField::message_aux>::value, "");
-static_assert(std::is_pod<AuxillaryParseTableField::string_aux>::value, "");
+static_assert(std::is_pod<AuxiliaryParseTableField>::value, "");
+static_assert(std::is_pod<AuxiliaryParseTableField::enum_aux>::value, "");
+static_assert(std::is_pod<AuxiliaryParseTableField::message_aux>::value, "");
+static_assert(std::is_pod<AuxiliaryParseTableField::string_aux>::value, "");
 static_assert(std::is_pod<ParseTable>::value, "");
 
 // TODO(ckennelly): Consolidate these implementations into a single one, using

@@ -1706,7 +1706,7 @@ bool MessageGenerator::GenerateParseTable(io::Printer* printer, size_t offset,
   }
 
   // TODO(ckennelly): Consolidate this with the calculation for
-  // AuxillaryParseTableField.
+  // AuxiliaryParseTableField.
   format(
       "PROTOBUF_FIELD_OFFSET($classtype$, _internal_metadata_),\n"
       "&$package_ns$::_$classname$_default_instance_,\n");
@@ -2302,14 +2302,14 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
   std::vector<const FieldDescriptor*> ordered_fields =
       SortFieldsByNumber(descriptor_);
 
-  format("::$proto_ns$::internal::AuxillaryParseTableField(),\n");
+  format("::$proto_ns$::internal::AuxiliaryParseTableField(),\n");
   int last_field_number = 1;
   for (auto field : ordered_fields) {
     Formatter::SaveState saver(&format);
 
     GOOGLE_CHECK_GE(field->number(), last_field_number);
     for (; last_field_number < field->number(); last_field_number++) {
-      format("::$proto_ns$::internal::AuxillaryParseTableField(),\n");
+      format("::$proto_ns$::internal::AuxiliaryParseTableField(),\n");
     }
 
     std::map<std::string, std::string> vars;
@@ -2320,11 +2320,11 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
       case FieldDescriptor::CPPTYPE_ENUM:
         if (HasPreservingUnknownEnumSemantics(field)) {
           format(
-              "{::$proto_ns$::internal::AuxillaryParseTableField::enum_aux{"
+              "{::$proto_ns$::internal::AuxiliaryParseTableField::enum_aux{"
               "nullptr}},\n");
         } else {
           format(
-              "{::$proto_ns$::internal::AuxillaryParseTableField::enum_aux{"
+              "{::$proto_ns$::internal::AuxiliaryParseTableField::enum_aux{"
               "$1$_IsValid}},\n",
               ClassName(field->enum_type(), true));
         }
@@ -2333,7 +2333,7 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
       case FieldDescriptor::CPPTYPE_MESSAGE: {
         if (field->is_map()) {
           format(
-              "{::$proto_ns$::internal::AuxillaryParseTableField::map_"
+              "{::$proto_ns$::internal::AuxiliaryParseTableField::map_"
               "aux{&::$proto_ns$::internal::ParseMap<$1$>}},\n",
               QualifiedClassName(field->message_type(), options_));
           last_field_number++;
@@ -2344,7 +2344,7 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
                                            field->message_type(), options_));
 
         format(
-            "{::$proto_ns$::internal::AuxillaryParseTableField::message_aux{\n"
+            "{::$proto_ns$::internal::AuxiliaryParseTableField::message_aux{\n"
             "  &$default_instance$}},\n");
         last_field_number++;
         break;
@@ -2367,7 +2367,7 @@ size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
             break;
         }
         format(
-            "{::$proto_ns$::internal::AuxillaryParseTableField::string_aux{\n"
+            "{::$proto_ns$::internal::AuxiliaryParseTableField::string_aux{\n"
             "  $1$,\n"
             "  \"$2$\"\n"
             "}},\n",

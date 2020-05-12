@@ -1046,7 +1046,7 @@ void FileGenerator::GenerateTables(io::Printer* printer) {
         "};\n"
         "\n"
         "PROTOBUF_CONSTEXPR_VAR "
-        "::$proto_ns$::internal::AuxillaryParseTableField\n"
+        "::$proto_ns$::internal::AuxiliaryParseTableField\n"
         "    const $tablename$::aux[] "
         "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
     format.Indent();
@@ -1060,7 +1060,7 @@ void FileGenerator::GenerateTables(io::Printer* printer) {
     }
 
     if (count == 0) {
-      format("::$proto_ns$::internal::AuxillaryParseTableField(),\n");
+      format("::$proto_ns$::internal::AuxiliaryParseTableField(),\n");
     }
 
     format.Outdent();
@@ -1406,7 +1406,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
       // for table driven code.
       "  static const ::$proto_ns$::internal::ParseTableField entries[]\n"
       "    PROTOBUF_SECTION_VARIABLE(protodesc_cold);\n"
-      "  static const ::$proto_ns$::internal::AuxillaryParseTableField aux[]\n"
+      "  static const ::$proto_ns$::internal::AuxiliaryParseTableField aux[]\n"
       "    PROTOBUF_SECTION_VARIABLE(protodesc_cold);\n"
       "  static const ::$proto_ns$::internal::ParseTable schema[$1$]\n"
       "    PROTOBUF_SECTION_VARIABLE(protodesc_cold);\n"
