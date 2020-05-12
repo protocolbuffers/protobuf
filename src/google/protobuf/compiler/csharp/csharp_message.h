@@ -67,6 +67,7 @@ class MessageGenerator : public SourceGeneratorBase {
 
   void GenerateMessageSerializationMethods(io::Printer* printer);
   void GenerateMergingMethods(io::Printer* printer);
+  void GenerateMainParseLoop(io::Printer* printer, bool use_parse_context);
 
   int GetPresenceIndex(const FieldDescriptor* descriptor);
   FieldGeneratorBase* CreateFieldGeneratorInternal(
