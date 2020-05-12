@@ -15,6 +15,7 @@
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_no_generic_services.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_optimize_for.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3_optional.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_well_known_types.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/any_test.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/cached_field_size_test.proto"/>

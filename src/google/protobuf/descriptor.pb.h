@@ -7484,7 +7484,9 @@ inline void FileDescriptorProto::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.options)
 }
 inline PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000008u;
+  PROTOBUF_NAMESPACE_ID::FileOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -7565,7 +7567,9 @@ inline void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
 }
 inline PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::release_source_code_info() {
-  auto temp = unsafe_arena_release_source_code_info();
+  _has_bits_[0] &= ~0x00000010u;
+  PROTOBUF_NAMESPACE_ID::SourceCodeInfo* temp = source_code_info_;
+  source_code_info_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -7799,7 +7803,9 @@ inline void DescriptorProto_ExtensionRange::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.DescriptorProto.ExtensionRange.options)
 }
 inline PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* DescriptorProto_ExtensionRange::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000001u;
+  PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -8271,7 +8277,9 @@ inline void DescriptorProto::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.DescriptorProto.options)
 }
 inline PROTOBUF_NAMESPACE_ID::MessageOptions* DescriptorProto::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000002u;
+  PROTOBUF_NAMESPACE_ID::MessageOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -9091,7 +9099,9 @@ inline void FieldDescriptorProto::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FieldDescriptorProto.options)
 }
 inline PROTOBUF_NAMESPACE_ID::FieldOptions* FieldDescriptorProto::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000020u;
+  PROTOBUF_NAMESPACE_ID::FieldOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -9297,7 +9307,9 @@ inline void OneofDescriptorProto::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.OneofDescriptorProto.options)
 }
 inline PROTOBUF_NAMESPACE_ID::OneofOptions* OneofDescriptorProto::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000002u;
+  PROTOBUF_NAMESPACE_ID::OneofOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -9574,7 +9586,9 @@ inline void EnumDescriptorProto::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumDescriptorProto.options)
 }
 inline PROTOBUF_NAMESPACE_ID::EnumOptions* EnumDescriptorProto::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000002u;
+  PROTOBUF_NAMESPACE_ID::EnumOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -9893,7 +9907,9 @@ inline void EnumValueDescriptorProto::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.EnumValueDescriptorProto.options)
 }
 inline PROTOBUF_NAMESPACE_ID::EnumValueOptions* EnumValueDescriptorProto::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000002u;
+  PROTOBUF_NAMESPACE_ID::EnumValueOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -10110,7 +10126,9 @@ inline void ServiceDescriptorProto::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.ServiceDescriptorProto.options)
 }
 inline PROTOBUF_NAMESPACE_ID::ServiceOptions* ServiceDescriptorProto::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000002u;
+  PROTOBUF_NAMESPACE_ID::ServiceOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
@@ -10474,7 +10492,9 @@ inline void MethodDescriptorProto::unsafe_arena_set_allocated_options(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.MethodDescriptorProto.options)
 }
 inline PROTOBUF_NAMESPACE_ID::MethodOptions* MethodDescriptorProto::release_options() {
-  auto temp = unsafe_arena_release_options();
+  _has_bits_[0] &= ~0x00000008u;
+  PROTOBUF_NAMESPACE_ID::MethodOptions* temp = options_;
+  options_ = nullptr;
   if (GetArena() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
