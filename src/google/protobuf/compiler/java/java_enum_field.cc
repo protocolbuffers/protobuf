@@ -225,6 +225,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
     printer->Print(variables_,
                    "$deprecation$public Builder "
                    "${$set$capitalized_name$Value$}$(int value) {\n"
+                   "  $set_has_field_bit_builder$\n"
                    "  $name$_ = value;\n"
                    "  $on_changed$\n"
                    "  return this;\n"

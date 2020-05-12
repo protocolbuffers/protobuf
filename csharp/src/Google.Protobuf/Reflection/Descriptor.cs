@@ -352,8 +352,8 @@ namespace Google.Protobuf.Reflection {
       enumType_ = other.enumType_.Clone();
       service_ = other.service_.Clone();
       extension_ = other.extension_.Clone();
-      options_ = other.HasOptions ? other.options_.Clone() : null;
-      sourceCodeInfo_ = other.HasSourceCodeInfo ? other.sourceCodeInfo_.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
+      sourceCodeInfo_ = other.sourceCodeInfo_ != null ? other.sourceCodeInfo_.Clone() : null;
       syntax_ = other.syntax_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -508,16 +508,6 @@ namespace Google.Protobuf.Reflection {
         options_ = value;
       }
     }
-    /// <summary>Gets whether the options field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptions {
-      get { return options_ != null; }
-    }
-    /// <summary>Clears the value of the options field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptions() {
-      options_ = null;
-    }
 
     /// <summary>Field number for the "source_code_info" field.</summary>
     public const int SourceCodeInfoFieldNumber = 9;
@@ -534,16 +524,6 @@ namespace Google.Protobuf.Reflection {
       set {
         sourceCodeInfo_ = value;
       }
-    }
-    /// <summary>Gets whether the source_code_info field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasSourceCodeInfo {
-      get { return sourceCodeInfo_ != null; }
-    }
-    /// <summary>Clears the value of the source_code_info field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearSourceCodeInfo() {
-      sourceCodeInfo_ = null;
     }
 
     /// <summary>Field number for the "syntax" field.</summary>
@@ -613,8 +593,8 @@ namespace Google.Protobuf.Reflection {
       hash ^= enumType_.GetHashCode();
       hash ^= service_.GetHashCode();
       hash ^= extension_.GetHashCode();
-      if (HasOptions) hash ^= Options.GetHashCode();
-      if (HasSourceCodeInfo) hash ^= SourceCodeInfo.GetHashCode();
+      if (options_ != null) hash ^= Options.GetHashCode();
+      if (sourceCodeInfo_ != null) hash ^= SourceCodeInfo.GetHashCode();
       if (HasSyntax) hash ^= Syntax.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -642,11 +622,11 @@ namespace Google.Protobuf.Reflection {
       enumType_.WriteTo(output, _repeated_enumType_codec);
       service_.WriteTo(output, _repeated_service_codec);
       extension_.WriteTo(output, _repeated_extension_codec);
-      if (HasOptions) {
+      if (options_ != null) {
         output.WriteRawTag(66);
         output.WriteMessage(Options);
       }
-      if (HasSourceCodeInfo) {
+      if (sourceCodeInfo_ != null) {
         output.WriteRawTag(74);
         output.WriteMessage(SourceCodeInfo);
       }
@@ -677,10 +657,10 @@ namespace Google.Protobuf.Reflection {
       size += enumType_.CalculateSize(_repeated_enumType_codec);
       size += service_.CalculateSize(_repeated_service_codec);
       size += extension_.CalculateSize(_repeated_extension_codec);
-      if (HasOptions) {
+      if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
-      if (HasSourceCodeInfo) {
+      if (sourceCodeInfo_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SourceCodeInfo);
       }
       if (HasSyntax) {
@@ -710,14 +690,14 @@ namespace Google.Protobuf.Reflection {
       enumType_.Add(other.enumType_);
       service_.Add(other.service_);
       extension_.Add(other.extension_);
-      if (other.HasOptions) {
-        if (!HasOptions) {
+      if (other.options_ != null) {
+        if (options_ == null) {
           Options = new global::Google.Protobuf.Reflection.FileOptions();
         }
         Options.MergeFrom(other.Options);
       }
-      if (other.HasSourceCodeInfo) {
-        if (!HasSourceCodeInfo) {
+      if (other.sourceCodeInfo_ != null) {
+        if (sourceCodeInfo_ == null) {
           SourceCodeInfo = new global::Google.Protobuf.Reflection.SourceCodeInfo();
         }
         SourceCodeInfo.MergeFrom(other.SourceCodeInfo);
@@ -765,14 +745,14 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 66: {
-            if (!HasOptions) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.FileOptions();
             }
             input.ReadMessage(Options);
             break;
           }
           case 74: {
-            if (!HasSourceCodeInfo) {
+            if (sourceCodeInfo_ == null) {
               SourceCodeInfo = new global::Google.Protobuf.Reflection.SourceCodeInfo();
             }
             input.ReadMessage(SourceCodeInfo);
@@ -833,7 +813,7 @@ namespace Google.Protobuf.Reflection {
       enumType_ = other.enumType_.Clone();
       extensionRange_ = other.extensionRange_.Clone();
       oneofDecl_ = other.oneofDecl_.Clone();
-      options_ = other.HasOptions ? other.options_.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       reservedRange_ = other.reservedRange_.Clone();
       reservedName_ = other.reservedName_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -937,16 +917,6 @@ namespace Google.Protobuf.Reflection {
         options_ = value;
       }
     }
-    /// <summary>Gets whether the options field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptions {
-      get { return options_ != null; }
-    }
-    /// <summary>Clears the value of the options field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptions() {
-      options_ = null;
-    }
 
     /// <summary>Field number for the "reserved_range" field.</summary>
     public const int ReservedRangeFieldNumber = 9;
@@ -1008,7 +978,7 @@ namespace Google.Protobuf.Reflection {
       hash ^= enumType_.GetHashCode();
       hash ^= extensionRange_.GetHashCode();
       hash ^= oneofDecl_.GetHashCode();
-      if (HasOptions) hash ^= Options.GetHashCode();
+      if (options_ != null) hash ^= Options.GetHashCode();
       hash ^= reservedRange_.GetHashCode();
       hash ^= reservedName_.GetHashCode();
       if (_unknownFields != null) {
@@ -1033,7 +1003,7 @@ namespace Google.Protobuf.Reflection {
       enumType_.WriteTo(output, _repeated_enumType_codec);
       extensionRange_.WriteTo(output, _repeated_extensionRange_codec);
       extension_.WriteTo(output, _repeated_extension_codec);
-      if (HasOptions) {
+      if (options_ != null) {
         output.WriteRawTag(58);
         output.WriteMessage(Options);
       }
@@ -1057,7 +1027,7 @@ namespace Google.Protobuf.Reflection {
       size += enumType_.CalculateSize(_repeated_enumType_codec);
       size += extensionRange_.CalculateSize(_repeated_extensionRange_codec);
       size += oneofDecl_.CalculateSize(_repeated_oneofDecl_codec);
-      if (HasOptions) {
+      if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       size += reservedRange_.CalculateSize(_repeated_reservedRange_codec);
@@ -1082,8 +1052,8 @@ namespace Google.Protobuf.Reflection {
       enumType_.Add(other.enumType_);
       extensionRange_.Add(other.extensionRange_);
       oneofDecl_.Add(other.oneofDecl_);
-      if (other.HasOptions) {
-        if (!HasOptions) {
+      if (other.options_ != null) {
+        if (options_ == null) {
           Options = new global::Google.Protobuf.Reflection.MessageOptions();
         }
         Options.MergeFrom(other.Options);
@@ -1126,7 +1096,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 58: {
-            if (!HasOptions) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.MessageOptions();
             }
             input.ReadMessage(Options);
@@ -1181,7 +1151,7 @@ namespace Google.Protobuf.Reflection {
           _hasBits0 = other._hasBits0;
           start_ = other.start_;
           end_ = other.end_;
-          options_ = other.HasOptions ? other.options_.Clone() : null;
+          options_ = other.options_ != null ? other.options_.Clone() : null;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -1254,16 +1224,6 @@ namespace Google.Protobuf.Reflection {
             options_ = value;
           }
         }
-        /// <summary>Gets whether the options field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool HasOptions {
-          get { return options_ != null; }
-        }
-        /// <summary>Clears the value of the options field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearOptions() {
-          options_ = null;
-        }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
@@ -1289,7 +1249,7 @@ namespace Google.Protobuf.Reflection {
           int hash = 1;
           if (HasStart) hash ^= Start.GetHashCode();
           if (HasEnd) hash ^= End.GetHashCode();
-          if (HasOptions) hash ^= Options.GetHashCode();
+          if (options_ != null) hash ^= Options.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -1311,7 +1271,7 @@ namespace Google.Protobuf.Reflection {
             output.WriteRawTag(16);
             output.WriteInt32(End);
           }
-          if (HasOptions) {
+          if (options_ != null) {
             output.WriteRawTag(26);
             output.WriteMessage(Options);
           }
@@ -1329,7 +1289,7 @@ namespace Google.Protobuf.Reflection {
           if (HasEnd) {
             size += 1 + pb::CodedOutputStream.ComputeInt32Size(End);
           }
-          if (HasOptions) {
+          if (options_ != null) {
             size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
           }
           if (_unknownFields != null) {
@@ -1349,8 +1309,8 @@ namespace Google.Protobuf.Reflection {
           if (other.HasEnd) {
             End = other.End;
           }
-          if (other.HasOptions) {
-            if (!HasOptions) {
+          if (other.options_ != null) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.ExtensionRangeOptions();
             }
             Options.MergeFrom(other.Options);
@@ -1375,7 +1335,7 @@ namespace Google.Protobuf.Reflection {
                 break;
               }
               case 26: {
-                if (!HasOptions) {
+                if (options_ == null) {
                   Options = new global::Google.Protobuf.Reflection.ExtensionRangeOptions();
                 }
                 input.ReadMessage(Options);
@@ -1791,7 +1751,7 @@ namespace Google.Protobuf.Reflection {
       defaultValue_ = other.defaultValue_;
       oneofIndex_ = other.oneofIndex_;
       jsonName_ = other.jsonName_;
-      options_ = other.HasOptions ? other.options_.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       proto3Optional_ = other.proto3Optional_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -2054,16 +2014,6 @@ namespace Google.Protobuf.Reflection {
         options_ = value;
       }
     }
-    /// <summary>Gets whether the options field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptions {
-      get { return options_ != null; }
-    }
-    /// <summary>Clears the value of the options field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptions() {
-      options_ = null;
-    }
 
     /// <summary>Field number for the "proto3_optional" field.</summary>
     public const int Proto3OptionalFieldNumber = 17;
@@ -2151,7 +2101,7 @@ namespace Google.Protobuf.Reflection {
       if (HasDefaultValue) hash ^= DefaultValue.GetHashCode();
       if (HasOneofIndex) hash ^= OneofIndex.GetHashCode();
       if (HasJsonName) hash ^= JsonName.GetHashCode();
-      if (HasOptions) hash ^= Options.GetHashCode();
+      if (options_ != null) hash ^= Options.GetHashCode();
       if (HasProto3Optional) hash ^= Proto3Optional.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -2194,7 +2144,7 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(58);
         output.WriteString(DefaultValue);
       }
-      if (HasOptions) {
+      if (options_ != null) {
         output.WriteRawTag(66);
         output.WriteMessage(Options);
       }
@@ -2245,7 +2195,7 @@ namespace Google.Protobuf.Reflection {
       if (HasJsonName) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(JsonName);
       }
-      if (HasOptions) {
+      if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       if (HasProto3Optional) {
@@ -2289,8 +2239,8 @@ namespace Google.Protobuf.Reflection {
       if (other.HasJsonName) {
         JsonName = other.JsonName;
       }
-      if (other.HasOptions) {
-        if (!HasOptions) {
+      if (other.options_ != null) {
+        if (options_ == null) {
           Options = new global::Google.Protobuf.Reflection.FieldOptions();
         }
         Options.MergeFrom(other.Options);
@@ -2338,7 +2288,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 66: {
-            if (!HasOptions) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.FieldOptions();
             }
             input.ReadMessage(Options);
@@ -2458,7 +2408,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public OneofDescriptorProto(OneofDescriptorProto other) : this() {
       name_ = other.name_;
-      options_ = other.HasOptions ? other.options_.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -2500,16 +2450,6 @@ namespace Google.Protobuf.Reflection {
         options_ = value;
       }
     }
-    /// <summary>Gets whether the options field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptions {
-      get { return options_ != null; }
-    }
-    /// <summary>Clears the value of the options field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptions() {
-      options_ = null;
-    }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
@@ -2533,7 +2473,7 @@ namespace Google.Protobuf.Reflection {
     public override int GetHashCode() {
       int hash = 1;
       if (HasName) hash ^= Name.GetHashCode();
-      if (HasOptions) hash ^= Options.GetHashCode();
+      if (options_ != null) hash ^= Options.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -2551,7 +2491,7 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(10);
         output.WriteString(Name);
       }
-      if (HasOptions) {
+      if (options_ != null) {
         output.WriteRawTag(18);
         output.WriteMessage(Options);
       }
@@ -2566,7 +2506,7 @@ namespace Google.Protobuf.Reflection {
       if (HasName) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
-      if (HasOptions) {
+      if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       if (_unknownFields != null) {
@@ -2583,8 +2523,8 @@ namespace Google.Protobuf.Reflection {
       if (other.HasName) {
         Name = other.Name;
       }
-      if (other.HasOptions) {
-        if (!HasOptions) {
+      if (other.options_ != null) {
+        if (options_ == null) {
           Options = new global::Google.Protobuf.Reflection.OneofOptions();
         }
         Options.MergeFrom(other.Options);
@@ -2605,7 +2545,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 18: {
-            if (!HasOptions) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.OneofOptions();
             }
             input.ReadMessage(Options);
@@ -2647,7 +2587,7 @@ namespace Google.Protobuf.Reflection {
     public EnumDescriptorProto(EnumDescriptorProto other) : this() {
       name_ = other.name_;
       value_ = other.value_.Clone();
-      options_ = other.HasOptions ? other.options_.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       reservedRange_ = other.reservedRange_.Clone();
       reservedName_ = other.reservedName_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -2700,16 +2640,6 @@ namespace Google.Protobuf.Reflection {
       set {
         options_ = value;
       }
-    }
-    /// <summary>Gets whether the options field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptions {
-      get { return options_ != null; }
-    }
-    /// <summary>Clears the value of the options field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptions() {
-      options_ = null;
     }
 
     /// <summary>Field number for the "reserved_range" field.</summary>
@@ -2767,7 +2697,7 @@ namespace Google.Protobuf.Reflection {
       int hash = 1;
       if (HasName) hash ^= Name.GetHashCode();
       hash ^= value_.GetHashCode();
-      if (HasOptions) hash ^= Options.GetHashCode();
+      if (options_ != null) hash ^= Options.GetHashCode();
       hash ^= reservedRange_.GetHashCode();
       hash ^= reservedName_.GetHashCode();
       if (_unknownFields != null) {
@@ -2788,7 +2718,7 @@ namespace Google.Protobuf.Reflection {
         output.WriteString(Name);
       }
       value_.WriteTo(output, _repeated_value_codec);
-      if (HasOptions) {
+      if (options_ != null) {
         output.WriteRawTag(26);
         output.WriteMessage(Options);
       }
@@ -2806,7 +2736,7 @@ namespace Google.Protobuf.Reflection {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       size += value_.CalculateSize(_repeated_value_codec);
-      if (HasOptions) {
+      if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       size += reservedRange_.CalculateSize(_repeated_reservedRange_codec);
@@ -2826,8 +2756,8 @@ namespace Google.Protobuf.Reflection {
         Name = other.Name;
       }
       value_.Add(other.value_);
-      if (other.HasOptions) {
-        if (!HasOptions) {
+      if (other.options_ != null) {
+        if (options_ == null) {
           Options = new global::Google.Protobuf.Reflection.EnumOptions();
         }
         Options.MergeFrom(other.Options);
@@ -2854,7 +2784,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 26: {
-            if (!HasOptions) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.EnumOptions();
             }
             input.ReadMessage(Options);
@@ -3112,7 +3042,7 @@ namespace Google.Protobuf.Reflection {
       _hasBits0 = other._hasBits0;
       name_ = other.name_;
       number_ = other.number_;
-      options_ = other.HasOptions ? other.options_.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3178,16 +3108,6 @@ namespace Google.Protobuf.Reflection {
         options_ = value;
       }
     }
-    /// <summary>Gets whether the options field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptions {
-      get { return options_ != null; }
-    }
-    /// <summary>Clears the value of the options field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptions() {
-      options_ = null;
-    }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
@@ -3213,7 +3133,7 @@ namespace Google.Protobuf.Reflection {
       int hash = 1;
       if (HasName) hash ^= Name.GetHashCode();
       if (HasNumber) hash ^= Number.GetHashCode();
-      if (HasOptions) hash ^= Options.GetHashCode();
+      if (options_ != null) hash ^= Options.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3235,7 +3155,7 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(16);
         output.WriteInt32(Number);
       }
-      if (HasOptions) {
+      if (options_ != null) {
         output.WriteRawTag(26);
         output.WriteMessage(Options);
       }
@@ -3253,7 +3173,7 @@ namespace Google.Protobuf.Reflection {
       if (HasNumber) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Number);
       }
-      if (HasOptions) {
+      if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       if (_unknownFields != null) {
@@ -3273,8 +3193,8 @@ namespace Google.Protobuf.Reflection {
       if (other.HasNumber) {
         Number = other.Number;
       }
-      if (other.HasOptions) {
-        if (!HasOptions) {
+      if (other.options_ != null) {
+        if (options_ == null) {
           Options = new global::Google.Protobuf.Reflection.EnumValueOptions();
         }
         Options.MergeFrom(other.Options);
@@ -3299,7 +3219,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 26: {
-            if (!HasOptions) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.EnumValueOptions();
             }
             input.ReadMessage(Options);
@@ -3341,7 +3261,7 @@ namespace Google.Protobuf.Reflection {
     public ServiceDescriptorProto(ServiceDescriptorProto other) : this() {
       name_ = other.name_;
       method_ = other.method_.Clone();
-      options_ = other.HasOptions ? other.options_.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -3393,16 +3313,6 @@ namespace Google.Protobuf.Reflection {
         options_ = value;
       }
     }
-    /// <summary>Gets whether the options field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptions {
-      get { return options_ != null; }
-    }
-    /// <summary>Clears the value of the options field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptions() {
-      options_ = null;
-    }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
@@ -3428,7 +3338,7 @@ namespace Google.Protobuf.Reflection {
       int hash = 1;
       if (HasName) hash ^= Name.GetHashCode();
       hash ^= method_.GetHashCode();
-      if (HasOptions) hash ^= Options.GetHashCode();
+      if (options_ != null) hash ^= Options.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -3447,7 +3357,7 @@ namespace Google.Protobuf.Reflection {
         output.WriteString(Name);
       }
       method_.WriteTo(output, _repeated_method_codec);
-      if (HasOptions) {
+      if (options_ != null) {
         output.WriteRawTag(26);
         output.WriteMessage(Options);
       }
@@ -3463,7 +3373,7 @@ namespace Google.Protobuf.Reflection {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
       size += method_.CalculateSize(_repeated_method_codec);
-      if (HasOptions) {
+      if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       if (_unknownFields != null) {
@@ -3481,8 +3391,8 @@ namespace Google.Protobuf.Reflection {
         Name = other.Name;
       }
       method_.Add(other.method_);
-      if (other.HasOptions) {
-        if (!HasOptions) {
+      if (other.options_ != null) {
+        if (options_ == null) {
           Options = new global::Google.Protobuf.Reflection.ServiceOptions();
         }
         Options.MergeFrom(other.Options);
@@ -3507,7 +3417,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 26: {
-            if (!HasOptions) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.ServiceOptions();
             }
             input.ReadMessage(Options);
@@ -3552,7 +3462,7 @@ namespace Google.Protobuf.Reflection {
       name_ = other.name_;
       inputType_ = other.inputType_;
       outputType_ = other.outputType_;
-      options_ = other.HasOptions ? other.options_.Clone() : null;
+      options_ = other.options_ != null ? other.options_.Clone() : null;
       clientStreaming_ = other.clientStreaming_;
       serverStreaming_ = other.serverStreaming_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -3646,16 +3556,6 @@ namespace Google.Protobuf.Reflection {
         options_ = value;
       }
     }
-    /// <summary>Gets whether the options field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptions {
-      get { return options_ != null; }
-    }
-    /// <summary>Clears the value of the options field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptions() {
-      options_ = null;
-    }
 
     /// <summary>Field number for the "client_streaming" field.</summary>
     public const int ClientStreamingFieldNumber = 5;
@@ -3739,7 +3639,7 @@ namespace Google.Protobuf.Reflection {
       if (HasName) hash ^= Name.GetHashCode();
       if (HasInputType) hash ^= InputType.GetHashCode();
       if (HasOutputType) hash ^= OutputType.GetHashCode();
-      if (HasOptions) hash ^= Options.GetHashCode();
+      if (options_ != null) hash ^= Options.GetHashCode();
       if (HasClientStreaming) hash ^= ClientStreaming.GetHashCode();
       if (HasServerStreaming) hash ^= ServerStreaming.GetHashCode();
       if (_unknownFields != null) {
@@ -3767,7 +3667,7 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(26);
         output.WriteString(OutputType);
       }
-      if (HasOptions) {
+      if (options_ != null) {
         output.WriteRawTag(34);
         output.WriteMessage(Options);
       }
@@ -3796,7 +3696,7 @@ namespace Google.Protobuf.Reflection {
       if (HasOutputType) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(OutputType);
       }
-      if (HasOptions) {
+      if (options_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Options);
       }
       if (HasClientStreaming) {
@@ -3825,8 +3725,8 @@ namespace Google.Protobuf.Reflection {
       if (other.HasOutputType) {
         OutputType = other.OutputType;
       }
-      if (other.HasOptions) {
-        if (!HasOptions) {
+      if (other.options_ != null) {
+        if (options_ == null) {
           Options = new global::Google.Protobuf.Reflection.MethodOptions();
         }
         Options.MergeFrom(other.Options);
@@ -3861,7 +3761,7 @@ namespace Google.Protobuf.Reflection {
             break;
           }
           case 34: {
-            if (!HasOptions) {
+            if (options_ == null) {
               Options = new global::Google.Protobuf.Reflection.MethodOptions();
             }
             input.ReadMessage(Options);

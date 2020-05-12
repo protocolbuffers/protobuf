@@ -70,6 +70,21 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public string JsonName { get; }
 
+        /// <summary>
+        /// Indicates whether this field supports presence, either implicitly (e.g. due to it being a message
+        /// type field) or explicitly via Has/Clear members. If this returns true, it is safe to call
+        /// <see cref="IFieldAccessor.Clear(IMessage)"/> and <see cref="IFieldAccessor.HasValue(IMessage)"/>
+        /// on this field's accessor with a suitable message.
+        /// </summary>
+        public bool HasPresence =>
+            Extension != null ? !Extension.IsRepeated
+            : IsRepeated ? false
+            : IsMap ? false
+            : FieldType == FieldType.Message ? true
+            // This covers "real oneof members" and "proto3 optional fields"
+            : ContainingOneof != null ? true
+            : File.Syntax == Syntax.Proto2;
+
         internal FieldDescriptorProto Proto { get; }
 
         /// <summary>
@@ -304,12 +319,21 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The (possibly empty) set of custom options for this field.
         /// </summary>
-        [Obsolete("CustomOptions are obsolete. Use GetOption")]
+        [Obsolete("CustomOptions are obsolete. Use the GetOptions() method.")]
         public CustomOptions CustomOptions => new CustomOptions(Proto.Options?._extensions?.ValuesByNumber);
+
+        /// <summary>
+        /// The <c>FieldOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
+        /// </summary>
+        public FieldOptions GetOptions() => Proto.Options?.Clone();
 
         /// <summary>
         /// Gets a single value field option for this descriptor
         /// </summary>
+         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public T GetOption<T>(Extension<FieldOptions, T> extension)
         {
             var value = Proto.Options.GetExtension(extension);
@@ -319,6 +343,7 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Gets a repeated value field option for this descriptor
         /// </summary>
+         [Obsolete("GetOption is obsolete. Use the GetOptions() method.")]
         public RepeatedField<T> GetOption<T>(RepeatedExtension<FieldOptions, T> extension)
         {
             return Proto.Options.GetExtension(extension).Clone();
@@ -394,7 +419,7 @@ namespace Google.Protobuf.Reflection
 
             File.DescriptorPool.AddFieldByNumber(this);
 
-            if (ContainingType != null && ContainingType.Proto.HasOptions && ContainingType.Proto.Options.MessageSetWireFormat)
+            if (ContainingType != null && ContainingType.Proto.Options != null && ContainingType.Proto.Options.MessageSetWireFormat)
             {
                 throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }
