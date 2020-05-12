@@ -40,6 +40,8 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
+import com.google.protobuf.testing.proto.TestProto3Optional;
+import com.google.protobuf.testing.proto.TestProto3Optional.NestedEnum;
 import any_test.AnyTestProto.TestAny;
 import map_test.MapTestProto.TestMap;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
@@ -317,6 +319,24 @@ public class TextFormatTest extends TestCase {
             .build();
 
     assertEquals(canonicalExoticText, message.toString());
+  }
+
+  public void testRoundtripProto3Optional() throws Exception {
+    Message message =
+        TestProto3Optional.newBuilder()
+            .setOptionalInt32(1)
+            .setOptionalInt64(2)
+            .setOptionalNestedEnum(NestedEnum.BAZ)
+            .build();
+    TestProto3Optional.Builder message2 = TestProto3Optional.newBuilder();
+    TextFormat.merge(message.toString(), message2);
+
+    assertTrue(message2.hasOptionalInt32());
+    assertTrue(message2.hasOptionalInt64());
+    assertTrue(message2.hasOptionalNestedEnum());
+    assertEquals(1, message2.getOptionalInt32());
+    assertEquals(2, message2.getOptionalInt64());
+    assertEquals(NestedEnum.BAZ, message2.getOptionalNestedEnum());
   }
 
   public void testPrintMessageSet() throws Exception {
