@@ -1,3 +1,114 @@
+2020-05-12 version 3.12.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Protocol Compiler
+  * [experimental] Singular, non-message typed fields in proto3 now support
+    presence tracking. This is enabled by adding the "optional" field label and
+    passing the --experimental_allow_proto3_optional flag to protoc.
+    * For usage info, see docs/field_presence.md.
+    * During this experimental phase, code generators should update to support
+      proto3 presence, see docs/implementing_proto3_presence.md for instructions.
+  * Allow duplicate symbol names when multiple descriptor sets are passed on
+    the command-line, to match the behavior when multiple .proto files are passed.
+  * Deterministic `protoc --descriptor_set_out` (#7175)
+
+  C++
+  * [experimental] Added proto3 presence support.
+  * New descriptor APIs to support proto3 presence.
+  * Enable Arenas by default on all .proto files.
+  * Documented that users are not allowed to subclass Message or MessageLite.
+  * Mark generated classes as final; inheriting from protos is strongly discouraged.
+  * Add stack overflow protection for text format with unknown fields.
+  * Add accessors for map key and value FieldDescriptors.
+  * Add FieldMaskUtil::FromFieldNumbers().
+  * MessageDifferencer: use ParsePartial() on Any fields so the diff does not
+    fail when there are missing required fields.
+  * ReflectionOps::Merge(): lookup messages in the right factory, if it can.
+  * Added Descriptor::WellKnownTypes enum and Descriptor::well_known_type()
+    accessor as an easier way of determining if a message is a Well-Known Type.
+  * Optimized RepeatedField::Add() when it is used in a loop.
+  * Made proto move/swap more efficient.
+  * De-virtualize the GetArena() method in MessageLite.
+  * Improves performance of json_stream_parser.cc by factor 1000 (#7230)
+  * bug: #7076 undefine Windows OUT and OPTIONAL macros (#7087)
+  * Fixed a bug in FieldDescriptor::DebugString() that would erroneously print
+    an "optional" label for a field in a oneof.
+  * Fix bug in parsing bool extensions that assumed they are always 1 byte.
+  * Fix off-by-one error in FieldOptions::ByteSize() when extensions are present.
+  * Clarified the comments to show an example of the difference between
+    Descriptor::extension and DescriptorPool::FindAllExtensions.
+  * Add a compiler option 'code_size' to force optimize_for=code_size on all
+    protos where this is possible.
+
+  Java
+  * [experimental] Added proto3 presence support.
+  * Mark java enum _VALUE constants as @Deprecated if the enum field is deprecated
+  * reduce <clinit> size for enums with allow_alias set to true.
+  * Sort map fields alphabetically by the field's key when printing textproto.
+  * TextFormat.merge() handles Any as top level type.
+  * Throw a descriptive IllegalArgumentException when calling
+    getValueDescriptor() on enum special value UNRECOGNIZED instead of
+    ArrayIndexOutOfBoundsException.
+  * Fixed an issue with JsonFormat.printer() where setting printingEnumsAsInts()
+    would override the configuration passed into includingDefaultValueFields().
+  * Implement overrides of indexOf() and contains() on primitive lists returned
+    for repeated fields to avoid autoboxing the list contents.
+  * Add overload to FieldMaskUtil.fromStringList that accepts a descriptor.
+  * [bazel] Move Java runtime/toolchains into //java (#7190)
+
+  Python
+  * [experimental] Added proto3 presence support.
+  * [experimental] fast import protobuf module, only works with cpp generated code linked in.
+  * Truncate 'float' fields to 4 bytes of precision in setters for pure-Python
+    implementation (C++ extension was already doing this).
+  * Fixed a memory leak in C++ bindings.
+  * Added a deprecation warning when code tries to create Descriptor objects
+    directly.
+  * Fix unintended comparison between bytes and string in descriptor.py.
+  * Avoid printing excess digits for float fields in TextFormat.
+  * Remove Python 2.5 syntax compatibility from the proto compiler generated _pb2.py module code.
+  * Drop 3.3, 3.4 and use single version docker images for all python tests (#7396)
+
+  JavaScript
+  * Fix js message pivot selection (#6813)
+
+  PHP
+  * Persistent Descriptor Pool (#6899)
+  * Implement lazy loading of php class for proto messages (#6911)
+  * Correct @return in Any.unpack docblock (#7089)
+  * Ignore unknown enum value when ignore_unknown specified (#7455)
+
+  Ruby
+  * [experimental] Implemented proto3 presence for Ruby. (#7406)
+  * Stop building binary gems for ruby <2.5 (#7453)
+  * Fix for wrappers with a zero value (#7195)
+  * Fix for JSON serialization of 0/empty-valued wrapper types (#7198)
+  * Call "Class#new" over rb_class_new_instance in decoding (#7352)
+  * Build extensions for Ruby 2.7 (#7027)
+  * assigning 'nil' to submessage should clear the field. (#7397)
+
+  C#
+  * [experimental] Add support for proto3 presence fields in C# (#7382)
+  * Mark GetOption API as obsolete and expose the "GetOptions()" method on descriptors instead (#7491)
+  * Remove Has/Clear members for C# message fields in proto2 (#7429)
+  * Enforce recursion depth checking for unknown fields (#7132)
+  * Fix conformance test failures for Google.Protobuf (#6910)
+  * Cleanup various bits of Google.Protobuf (#6674)
+  * Fix latest ArgumentException for C# extensions (#6938)
+  * Remove unnecessary branch from ReadTag (#7289)
+
+  Objective-C
+  * [experimental] ObjC Proto3 optional support (#7421)
+  * Block subclassing of generated classes (#7124)
+  * Use references to Obj C classes instead of names in descriptors. (#7026)
+  * Revisit how the WKTs are bundled with ObjC. (#7173)
+
+  Other
+  * Add a proto_lang_toolchain for javalite (#6882)
+  * [bazel] Update gtest and deprecate //external:{gtest,gtest_main} (#7237)
+  * Add application note for explicit presence tracking. (#7390)
+  * Howto doc for implementing proto3 presence in a code generator. (#7407)
+
+
 2020-02-14 version 3.11.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   
   C#

@@ -35,11 +35,11 @@
 // This file needs to be included as .inc as it depends on certain macros being
 // defined prior to its inclusion.
 
-#include <google/protobuf/message.h>
-
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include <google/protobuf/message.h>
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif

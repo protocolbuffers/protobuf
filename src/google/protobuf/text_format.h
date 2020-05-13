@@ -369,6 +369,8 @@ class PROTOBUF_EXPORT TextFormat {
     // output to the OutputStream (see text_format.cc for implementation).
     class TextGenerator;
 
+    static const char* const kDoNotParse;
+
     // Internal Print method, used for writing to the OutputStream via
     // the TextGenerator class.
     void Print(const Message& message, TextGenerator* generator) const;

@@ -165,8 +165,8 @@ bool ValidateSymbolName(StringPiece name) {
 // symbol name.  Since upper_bound() returns the *first* key that sorts
 // *greater* than the input, we want the element immediately before that.
 template <typename Container, typename Key>
-typename Container::const_iterator FindLastLessOrEqual(Container* container,
-                                                       const Key& key) {
+typename Container::const_iterator FindLastLessOrEqual(
+    const Container* container, const Key& key) {
   auto iter = container->upper_bound(key);
   if (iter != container->begin()) --iter;
   return iter;
@@ -174,9 +174,8 @@ typename Container::const_iterator FindLastLessOrEqual(Container* container,
 
 // As above, but using std::upper_bound instead.
 template <typename Container, typename Key, typename Cmp>
-typename Container::const_iterator FindLastLessOrEqual(Container* container,
-                                                       const Key& key,
-                                                       const Cmp& cmp) {
+typename Container::const_iterator FindLastLessOrEqual(
+    const Container* container, const Key& key, const Cmp& cmp) {
   auto iter = std::upper_bound(container->begin(), container->end(), key, cmp);
   if (iter != container->begin()) --iter;
   return iter;

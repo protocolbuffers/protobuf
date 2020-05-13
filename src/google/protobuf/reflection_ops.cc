@@ -85,7 +85,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
                           google::protobuf::MessageFactory::generated_factory());
 
   std::vector<const FieldDescriptor*> fields;
-  from_reflection->ListFields(from, &fields);
+  from_reflection->ListFieldsOmitStripped(from, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
 
@@ -180,7 +180,7 @@ void ReflectionOps::Clear(Message* message) {
   const Reflection* reflection = GetReflectionOrDie(*message);
 
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(*message, &fields);
+  reflection->ListFieldsOmitStripped(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     reflection->ClearField(message, fields[i]);
   }
@@ -268,7 +268,9 @@ bool ReflectionOps::IsInitialized(const Message& message) {
 
   // Check that sub-messages are initialized.
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(message, &fields);
+  // Should be safe to skip stripped fields because required fields are not
+  // stripped.
+  reflection->ListFieldsOmitStripped(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -399,7 +401,7 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 
   // Check sub-messages.
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(message, &fields);
+  reflection->ListFieldsOmitStripped(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
