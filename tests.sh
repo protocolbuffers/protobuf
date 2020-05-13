@@ -446,6 +446,13 @@ build_ruby27() {
 
 build_javascript() {
   internal_build_cpp
+  NODE_VERSION=node-v12.16.3-darwin-x64
+  NODE_TGZ="$NODE_VERSION.tar.gz"
+  pushd /tmp
+  curl -OL https://nodejs.org/dist/v12.16.3/$NODE_TGZ
+  tar zxvf $NODE_TGZ
+  export PATH=$PATH:`pwd`/$NODE_VERSION/bin
+  popd
   cd js && npm install && npm test && cd ..
   cd conformance && make test_nodejs && cd ..
 }
