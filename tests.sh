@@ -453,6 +453,7 @@ build_javascript() {
   tar zxvf $NODE_TGZ
   cd $NODE_VERSION
   PATH=$PATH:`pwd`
+  popd
   cd js && npm install && npm test && cd ..
   cd conformance && make test_nodejs && cd ..
 }
