@@ -44,7 +44,6 @@
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_arena.pb.h>
-#include <google/protobuf/unittest_no_arena.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.h>
@@ -66,7 +65,6 @@ using protobuf_unittest::TestAllExtensions;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
 using protobuf_unittest::TestOneof2;
-using protobuf_unittest_no_arena::TestNoArenaMessage;
 
 namespace google {
 namespace protobuf {
@@ -159,14 +157,12 @@ class MustBeConstructedWithOneThroughEight {
 TEST(ArenaTest, ArenaConstructable) {
   EXPECT_TRUE(Arena::is_arena_constructable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_arena_constructable<const TestAllTypes>::type::value);
-  EXPECT_FALSE(Arena::is_arena_constructable<TestNoArenaMessage>::type::value);
   EXPECT_FALSE(Arena::is_arena_constructable<Arena>::type::value);
 }
 
 TEST(ArenaTest, DestructorSkippable) {
   EXPECT_TRUE(Arena::is_destructor_skippable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_destructor_skippable<const TestAllTypes>::type::value);
-  EXPECT_FALSE(Arena::is_destructor_skippable<TestNoArenaMessage>::type::value);
   EXPECT_FALSE(Arena::is_destructor_skippable<Arena>::type::value);
 }
 
@@ -465,13 +461,6 @@ TEST(ArenaTest, SetAllocatedMessage) {
   nested->set_bb(118);
   arena_message->set_allocated_optional_nested_message(nested);
   EXPECT_EQ(118, arena_message->optional_nested_message().bb());
-
-  TestNoArenaMessage no_arena_message;
-  EXPECT_FALSE(no_arena_message.has_arena_message());
-  no_arena_message.set_allocated_arena_message(NULL);
-  EXPECT_FALSE(no_arena_message.has_arena_message());
-  no_arena_message.set_allocated_arena_message(new ArenaMessage);
-  EXPECT_TRUE(no_arena_message.has_arena_message());
 }
 
 TEST(ArenaTest, ReleaseMessage) {
@@ -676,15 +665,8 @@ TEST(ArenaTest, AddAllocatedWithReflection) {
   ArenaMessage* arena1_message = Arena::CreateMessage<ArenaMessage>(&arena1);
   const Reflection* r = arena1_message->GetReflection();
   const Descriptor* d = arena1_message->GetDescriptor();
-  const FieldDescriptor* fd =
-      d->FindFieldByName("repeated_import_no_arena_message");
-  // Message with cc_enable_arenas = false;
-  r->AddMessage(arena1_message, fd);
-  r->AddMessage(arena1_message, fd);
-  r->AddMessage(arena1_message, fd);
-  EXPECT_EQ(3, r->FieldSize(*arena1_message, fd));
   // Message with cc_enable_arenas = true;
-  fd = d->FindFieldByName("repeated_nested_message");
+  const FieldDescriptor* fd = d->FindFieldByName("repeated_nested_message");
   r->AddMessage(arena1_message, fd);
   r->AddMessage(arena1_message, fd);
   r->AddMessage(arena1_message, fd);
@@ -1334,11 +1316,6 @@ TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaAllocatedMessages) {
 }
 
 TEST(ArenaTest, GetArenaShouldReturnNullForNonArenaCompatibleTypes) {
-  TestNoArenaMessage message;
-  const TestNoArenaMessage* const_pointer_to_message = &message;
-  EXPECT_EQ(nullptr, Arena::GetArena(&message));
-  EXPECT_EQ(nullptr, Arena::GetArena(const_pointer_to_message));
-
   // Test that GetArena returns nullptr for types that have a GetArena method
   // that doesn't return Arena*.
   struct {

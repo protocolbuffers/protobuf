@@ -236,8 +236,10 @@ class ConformanceJava {
 
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
     com.google.protobuf.AbstractMessage testMessage;
-    boolean isProto3 = request.getMessageType().equals("protobuf_test_messages.proto3.TestAllTypesProto3");
-    boolean isProto2 = request.getMessageType().equals("protobuf_test_messages.proto2.TestAllTypesProto2");
+    boolean isProto3 =
+        request.getMessageType().equals("protobuf_test_messages.proto3.TestAllTypesProto3");
+    boolean isProto2 =
+        request.getMessageType().equals("protobuf_test_messages.proto2.TestAllTypesProto2");
 
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD: {
@@ -264,15 +266,24 @@ class ConformanceJava {
       }
       case JSON_PAYLOAD: {
         try {
-          TestMessagesProto3.TestAllTypesProto3.Builder builder =
-              TestMessagesProto3.TestAllTypesProto3.newBuilder();
           JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(typeRegistry);
           if (request.getTestCategory()
               == Conformance.TestCategory.JSON_IGNORE_UNKNOWN_PARSING_TEST) {
             parser = parser.ignoringUnknownFields();
           }
-          parser.merge(request.getJsonPayload(), builder);
-          testMessage = builder.build();
+          if (isProto3) {
+            TestMessagesProto3.TestAllTypesProto3.Builder builder =
+                TestMessagesProto3.TestAllTypesProto3.newBuilder();
+            parser.merge(request.getJsonPayload(), builder);
+            testMessage = builder.build();
+          } else if (isProto2) {
+            TestMessagesProto2.TestAllTypesProto2.Builder builder =
+                TestMessagesProto2.TestAllTypesProto2.newBuilder();
+            parser.merge(request.getJsonPayload(), builder);
+            testMessage = builder.build();
+          } else {
+            throw new RuntimeException("Protobuf request doesn't have specific payload type.");
+          }
         } catch (InvalidProtocolBufferException e) {
           return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();
         }

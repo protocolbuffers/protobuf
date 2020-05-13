@@ -212,6 +212,14 @@ struct ReflectionSchema {
            OffsetValue(offsets_[field->index()], field->type());
   }
 
+  bool IsFieldStripped(const FieldDescriptor* field) const {
+    return false;
+  }
+
+  bool IsMessageStripped(const Descriptor* descriptor) const {
+    return false;
+  }
+
 
   bool HasWeakFields() const { return weak_field_map_offset_ > 0; }
 

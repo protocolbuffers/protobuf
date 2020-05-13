@@ -586,12 +586,14 @@ PROTOBUF_EXPORT_TEMPLATE_TEST(DEFAULT, __declspec(dllimport));
 #endif  // _MSC_VER
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
-// Don't let the YES/NO Objective-C Macros interfere with proto identifiers with
-// the same name.
+// Don't let Objective-C Macros interfere with proto identifiers with the same 
+// name.
 #pragma push_macro("YES")
 #undef YES
 #pragma push_macro("NO")
 #undef NO
+#pragma push_macro("DEBUG")
+#undef DEBUG
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
 #if defined(__clang__)

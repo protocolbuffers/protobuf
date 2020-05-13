@@ -48,7 +48,6 @@
 #include <vector>
 
 #include <google/protobuf/compiler/cpp/cpp_unittest.h>
-#include <google/protobuf/unittest_no_arena.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
 // We exclude this large proto from cmake build because it's too large for
@@ -400,69 +399,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, StringCharStarLength) {
   // Verify that we can use a char*,length to set a repeated string field.
   message.set_repeated_string(0, "wxyz", 2);
   EXPECT_EQ("wx", message.repeated_string(0));
-}
-
-TEST(GENERATED_MESSAGE_TEST_NAME, StringMove) {
-  // Verify that we trigger the move behavior on a scalar setter.
-  protobuf_unittest_no_arena::TestAllTypes message;
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.set_optional_string(std::move(tmp));
-    const char* new_data = message.optional_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.optional_string());
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_optional_string(std::move(tmp2));
-    new_data = message.optional_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.optional_string());
-  }
-
-  // Verify that we trigger the move behavior on a oneof setter.
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.set_oneof_string(std::move(tmp));
-    const char* new_data = message.oneof_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.oneof_string());
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_oneof_string(std::move(tmp2));
-    new_data = message.oneof_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.oneof_string());
-  }
-
-  // Verify that we trigger the move behavior on a repeated setter.
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.add_repeated_string(std::move(tmp));
-    const char* new_data = message.repeated_string(0).data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.repeated_string(0));
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_repeated_string(0, std::move(tmp2));
-    new_data = message.repeated_string(0).data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.repeated_string(0));
-  }
 }
 
 
