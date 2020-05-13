@@ -40,12 +40,13 @@ without any label (known as "singular fields"), will continue to omit presence
 information.  The `optional` keyword was chosen to minimize differences with
 proto2.
 
-Unfortunately, for descriptors it is not possible to use the same representation
-as proto2. Proto3 descriptors already use `LABEL_OPTIONAL` for proto3 singular
-fields, which do not track presence. There is a lot of existing code that
-reflects over proto3 protos and assumes that `LABEL_OPTIONAL` in proto3 means
-"no presence." Changing the semantics now would be risky, since old software
-would likely drop proto3 presence information, which would be a data loss bug.
+Unfortunately, for the current descriptor protos and `Descriptor` API (as of
+3.11.4) it is not possible to use the same representation as proto2. Proto3
+descriptors already use `LABEL_OPTIONAL` for proto3 singular fields, which do
+not track presence. There is a lot of existing code that reflects over proto3
+protos and assumes that `LABEL_OPTIONAL` in proto3 means "no presence." Changing
+the semantics now would be risky, since old software would likely drop proto3
+presence information, which would be a data loss bug.
 
 To minimize this risk we chose a descriptor representation that is semantically
 compatible with existing proto3 reflection. Every proto3 optional field is
@@ -60,11 +61,11 @@ proto3 presence. This is the major benefit of synthetic oneofs.
 
 This design does leave some cruft in descriptors. Synthetic oneofs are a
 compatibility measure that we can hopefully clean up in the future. For now
-though, it is important to preserve them across different descriptor formats
-and APIs. It is never safe to drop synthetic oneofs from a descriptor.  You
-can (and should) skip synthetic oneofs when generating a user-facing API or
-user-facing documentation. But whenever you have a descriptor that is consumed
-programmatically, it is important to keep the synthetic oneofs around.
+though, it is important to preserve them across different descriptor formats and
+APIs. It is never safe to drop synthetic oneofs from a proto schema. Code
+generators can (and should) skip synthetic oneofs when generating a user-facing
+API or user-facing documentation. But for any schema representation that is
+consumed programmatically, it is important to keep the synthetic oneofs around.
 
 In APIs it can be helpful to offer separate accessors that refer to "real"
 oneofs (see [API Changes](#api-changes) below). This is a convenient way to omit
