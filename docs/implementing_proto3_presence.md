@@ -16,6 +16,7 @@ independently by their authors. This includes:
 - implementations of Protocol Buffers for other languges.
 - alternate implementations of Protocol Buffers that target specialized use
   cases.
+- RPC code generators that create generated APIs for service calls.
 - code generators that implement some utility code on top of protobuf generated
   classes.
 
@@ -25,8 +26,8 @@ fly", directly from a descriptor, in languages that support this kind of usage.
 
 ## Background
 
-Presence tracking was added to proto3 by popular request, both inside Google
-and [from open-source
+Presence tracking was added to proto3 in response to user feedback, from both
+inside Google and [open-source
 users](https://github.com/protocolbuffers/protobuf/issues/1606). The [proto3
 wrapper
 types](https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/wrappers.proto)
@@ -34,8 +35,9 @@ were previously the only supported presence mechanism for proto3. Users have
 pointed to both efficiency and usability issues with the wrapper types.
 
 Presence in proto3 uses exactly the same syntax and semantics as in proto2.
-Fields marked `optional` will track presence. This syntax was chosen to minimize
-differences with proto2.
+Fields marked `optional` will track presence like proto2, while fields without
+any label, known as singular fields, will continue to omit presence information.
+The `optional` keyword was chosen to minimize differences with proto2.
 
 Unfortunately, for descriptors it is not possible to use the same representation
 as proto2. Proto3 descriptors already use `LABEL_OPTIONAL` for proto3 singular
@@ -50,7 +52,7 @@ placed into a one-field `oneof`. We call this a "synthetic" oneof, as it was not
 present in the source `.proto` file.
 
 Since oneof fields in proto3 already track presence, existing proto3
-reflection-based algorithms will support proto3 optional with no code changes.
+reflection-based algorithms should support proto3 optional with no code changes.
 For example, the JSON and TextFormat parsers/serializers in C++ and Java did not
 require any changes to support proto3 presence. This is the major benefit of
 synthetic oneofs.
@@ -58,12 +60,14 @@ synthetic oneofs.
 This does leave some cruft in descriptors. Synthetic oneofs are a compatibility
 measure that we can hopefully clean up in the future. For now though, it is
 important to preserve them across different descriptor formats and APIs. It is
-never safe to drop synthetic oneofs unless you are outputting a generated API or
-generating documentation intended for user consumption. Whenever you have a
-descriptor that is consumed programmatically, it is important to keep the
-synthetic oneofs around. In APIs it can be helpful to offer separate accessors
-that refer to "real" oneofs (see [API Changes](#api-changes) below); these can
-safely omit synthetic oneofs.
+never safe to drop synthetic oneofs from a descriptor.  You can (and should)
+skip synthetic oneofs when generating a user-facing API or user-facing
+documentation. But whenever you have a descriptor that is consumed
+programmatically, it is important to keep the synthetic oneofs around.
+
+In APIs it can be helpful to offer separate accessors that refer to "real"
+oneofs (see [API Changes](#api-changes) below). This is a convenient way to omit
+synthetic oneofs in code generators.
 
 ## Updating a Code Generator
 
