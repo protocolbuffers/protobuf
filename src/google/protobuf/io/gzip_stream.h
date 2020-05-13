@@ -47,9 +47,11 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/port.h>
-#include <zlib.h>
-
 #include <google/protobuf/port_def.inc>
+
+#if HAVE_ZLIB
+#include <zlib.h>
+#endif  // HAVE_ZLIB
 
 namespace google {
 namespace protobuf {
@@ -76,9 +78,11 @@ class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
   virtual ~GzipInputStream();
 
   // Return last error message or NULL if no error.
+#if HAVE_ZLIB
   inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
   inline int ZlibErrorCode() const { return zerror_; }
-
+#endif  // HAVE_ZLIB
+ 
   // implements ZeroCopyInputStream ----------------------------------
   bool Next(const void** data, int* size);
   void BackUp(int count);
@@ -90,8 +94,10 @@ class PROTOBUF_EXPORT GzipInputStream : public ZeroCopyInputStream {
 
   ZeroCopyInputStream* sub_stream_;
 
+ #if HAVE_ZLIB
   z_stream zcontext_;
   int zerror_;
+ #endif // HAVE_ZLIB
 
   void* output_buffer_;
   void* output_position_;
@@ -141,10 +147,12 @@ class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
   GzipOutputStream(ZeroCopyOutputStream* sub_stream, const Options& options);
 
   virtual ~GzipOutputStream();
-
+ 
+#if HAVE_ZLIB
   // Return last error message or NULL if no error.
   inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
   inline int ZlibErrorCode() const { return zerror_; }
+#endif  // HAVE_ZLIB
 
   // Flushes data written so far to zipped data in the underlying stream.
   // It is the caller's responsibility to flush the underlying stream if
@@ -176,9 +184,10 @@ class PROTOBUF_EXPORT GzipOutputStream : public ZeroCopyOutputStream {
   // Result from calling Next() on sub_stream_
   void* sub_data_;
   int sub_data_size_;
-
+#if HAVE_ZLIB
   z_stream zcontext_;
   int zerror_;
+#endif  //HAVE_ZLIB
   void* input_buffer_;
   size_t input_buffer_length_;
 
