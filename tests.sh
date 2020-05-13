@@ -452,7 +452,7 @@ build_javascript() {
   curl -OL https://nodejs.org/dist/v12.16.3/$NODE_TGZ
   tar zxvf $NODE_TGZ
   cd $NODE_VERSION
-  PATH=$PATH:`pwd`
+  export PATH=$PATH:`pwd`
   popd
   cd js && npm install && npm test && cd ..
   cd conformance && make test_nodejs && cd ..
