@@ -618,6 +618,7 @@ build_php5.6_mac() {
   # Install PHP
   curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
   PHP_FOLDER=`find /usr/local -type d -name "php5-5.6*"`  # The folder name may change upon time
+  test ! -z "$PHP_FOLDER"
   export PATH="$PHP_FOLDER/bin:$PATH"
 
   # Install phpunit
@@ -714,10 +715,10 @@ build_php7.0_mac() {
   popd
 }
 
-build_php7.4_mac() {
+build_php7.3_mac() {
   generate_php_test_proto
   # Install PHP
-  # We can't actually test PHP 7.4 with these binaries yet:
+  # We can't test PHP 7.4 with these binaries yet:
   #   https://github.com/liip/php-osx/issues/276
   curl -s https://php-osx.liip.ch/install.sh | bash -s 7.3
   PHP_FOLDER=`find /usr/local -type d -name "php5-7.3*"`  # The folder name may change upon time

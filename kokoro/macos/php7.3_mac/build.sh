@@ -8,4 +8,4 @@ cd $(dirname $0)/../../..
 # Prepare worker environment to run tests
 source kokoro/macos/prepare_build_macos_rc
 
-./tests.sh php7.4_mac
+./tests.sh php7.3_mac
