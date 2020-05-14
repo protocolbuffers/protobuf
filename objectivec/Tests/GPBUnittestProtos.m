@@ -56,8 +56,6 @@
 #import "google/protobuf/UnittestLite.pbobjc.m"
 #import "google/protobuf/UnittestMset.pbobjc.m"
 #import "google/protobuf/UnittestMsetWireFormat.pbobjc.m"
-#import "google/protobuf/UnittestNoArena.pbobjc.m"
-#import "google/protobuf/UnittestNoArenaImport.pbobjc.m"
 #import "google/protobuf/UnittestNoGenericServices.pbobjc.m"
 #import "google/protobuf/UnittestObjc.pbobjc.m"
 #import "google/protobuf/UnittestObjcStartup.pbobjc.m"

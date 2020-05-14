@@ -1803,6 +1803,9 @@ class FastFieldValuePrinterUtf8Escaping
 
 }  // namespace
 
+const char* const TextFormat::Printer::kDoNotParse =
+    "DO NOT PARSE: fields may be stripped and missing.\n";
+
 TextFormat::Printer::Printer()
     : initial_indent_level_(0),
       single_line_mode_(false),
@@ -2019,7 +2022,10 @@ void TextFormat::Printer::Print(const Message& message,
     fields.push_back(descriptor->field(0));
     fields.push_back(descriptor->field(1));
   } else {
-    reflection->ListFields(message, &fields);
+    reflection->ListFieldsOmitStripped(message, &fields);
+    if (reflection->IsMessageStripped(message.GetDescriptor())) {
+      generator->Print(kDoNotParse, std::strlen(kDoNotParse));
+    }
   }
 
   if (print_message_fields_in_index_order_) {

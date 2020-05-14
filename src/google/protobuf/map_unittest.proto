@@ -33,7 +33,6 @@ syntax = "proto3";
 option cc_enable_arenas = true;
 
 import "google/protobuf/unittest.proto";
-import "google/protobuf/unittest_no_arena.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -42,25 +41,25 @@ package protobuf_unittest;
 
 // Tests maps.
 message TestMap {
-  map<int32   , int32   > map_int32_int32       = 1;
-  map<int64   , int64   > map_int64_int64       = 2;
-  map<uint32  , uint32  > map_uint32_uint32     = 3;
-  map<uint64  , uint64  > map_uint64_uint64     = 4;
-  map<sint32  , sint32  > map_sint32_sint32     = 5;
-  map<sint64  , sint64  > map_sint64_sint64     = 6;
-  map<fixed32 , fixed32 > map_fixed32_fixed32   = 7;
-  map<fixed64 , fixed64 > map_fixed64_fixed64   = 8;
+  map<int32, int32> map_int32_int32 = 1;
+  map<int64, int64> map_int64_int64 = 2;
+  map<uint32, uint32> map_uint32_uint32 = 3;
+  map<uint64, uint64> map_uint64_uint64 = 4;
+  map<sint32, sint32> map_sint32_sint32 = 5;
+  map<sint64, sint64> map_sint64_sint64 = 6;
+  map<fixed32, fixed32> map_fixed32_fixed32 = 7;
+  map<fixed64, fixed64> map_fixed64_fixed64 = 8;
   map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 9;
   map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 10;
-  map<int32   , float   > map_int32_float       = 11;
-  map<int32   , double  > map_int32_double      = 12;
-  map<bool    , bool    > map_bool_bool         = 13;
-  map<string  , string  > map_string_string     = 14;
-  map<int32   , bytes   > map_int32_bytes       = 15;
-  map<int32   , MapEnum > map_int32_enum        = 16;
-  map<int32   , ForeignMessage> map_int32_foreign_message = 17;
-  map<string  , ForeignMessage> map_string_foreign_message = 18;
-  map<int32   , TestAllTypes> map_int32_all_types = 19;
+  map<int32, float> map_int32_float = 11;
+  map<int32, double> map_int32_double = 12;
+  map<bool, bool> map_bool_bool = 13;
+  map<string, string> map_string_string = 14;
+  map<int32, bytes> map_int32_bytes = 15;
+  map<int32, MapEnum> map_int32_enum = 16;
+  map<int32, ForeignMessage> map_int32_foreign_message = 17;
+  map<string, ForeignMessage> map_string_foreign_message = 18;
+  map<int32, TestAllTypes> map_int32_all_types = 19;
 }
 
 message TestMapSubmessage {
@@ -90,33 +89,29 @@ message TestRequiredMessageMap {
 }
 
 message TestArenaMap {
-  map<int32   , int32   > map_int32_int32       = 1;
-  map<int64   , int64   > map_int64_int64       = 2;
-  map<uint32  , uint32  > map_uint32_uint32     = 3;
-  map<uint64  , uint64  > map_uint64_uint64     = 4;
-  map<sint32  , sint32  > map_sint32_sint32     = 5;
-  map<sint64  , sint64  > map_sint64_sint64     = 6;
-  map<fixed32 , fixed32 > map_fixed32_fixed32   = 7;
-  map<fixed64 , fixed64 > map_fixed64_fixed64   = 8;
+  map<int32, int32> map_int32_int32 = 1;
+  map<int64, int64> map_int64_int64 = 2;
+  map<uint32, uint32> map_uint32_uint32 = 3;
+  map<uint64, uint64> map_uint64_uint64 = 4;
+  map<sint32, sint32> map_sint32_sint32 = 5;
+  map<sint64, sint64> map_sint64_sint64 = 6;
+  map<fixed32, fixed32> map_fixed32_fixed32 = 7;
+  map<fixed64, fixed64> map_fixed64_fixed64 = 8;
   map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 9;
   map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 10;
-  map<int32   , float   > map_int32_float       = 11;
-  map<int32   , double  > map_int32_double      = 12;
-  map<bool    , bool    > map_bool_bool         = 13;
-  map<string  , string  > map_string_string     = 14;
-  map<int32   , bytes   > map_int32_bytes       = 15;
-  map<int32   , MapEnum > map_int32_enum        = 16;
-  map<int32   , ForeignMessage> map_int32_foreign_message = 17;
-  map<int32, .protobuf_unittest_no_arena.ForeignMessage>
-      map_int32_foreign_message_no_arena = 18;
+  map<int32, float> map_int32_float = 11;
+  map<int32, double> map_int32_double = 12;
+  map<bool, bool> map_bool_bool = 13;
+  map<string, string> map_string_string = 14;
+  map<int32, bytes> map_int32_bytes = 15;
+  map<int32, MapEnum> map_int32_enum = 16;
+  map<int32, ForeignMessage> map_int32_foreign_message = 17;
 }
 
 // Previously, message containing enum called Type cannot be used as value of
 // map field.
 message MessageContainingEnumCalledType {
-  enum Type {
-    TYPE_FOO = 0;
-  }
+  enum Type { TYPE_FOO = 0; }
   map<string, MessageContainingEnumCalledType> type = 1;
 }
 

@@ -82,8 +82,6 @@ def GenerateUnittestProtos():
   generate_proto("../src/google/protobuf/test_messages_proto3.proto", False)
   generate_proto("../src/google/protobuf/test_messages_proto2.proto", False)
   generate_proto("../src/google/protobuf/unittest_arena.proto", False)
-  generate_proto("../src/google/protobuf/unittest_no_arena.proto", False)
-  generate_proto("../src/google/protobuf/unittest_no_arena_import.proto", False)
   generate_proto("../src/google/protobuf/unittest.proto", False)
   generate_proto("../src/google/protobuf/unittest_custom_options.proto", False)
   generate_proto("../src/google/protobuf/unittest_import.proto", False)

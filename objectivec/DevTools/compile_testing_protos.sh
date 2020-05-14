@@ -42,8 +42,6 @@ CORE_PROTO_FILES=(
   src/google/protobuf/unittest_lite.proto
   src/google/protobuf/unittest_mset.proto
   src/google/protobuf/unittest_mset_wire_format.proto
-  src/google/protobuf/unittest_no_arena.proto
-  src/google/protobuf/unittest_no_arena_import.proto
   src/google/protobuf/unittest_no_generic_services.proto
   src/google/protobuf/unittest_optimize_for.proto
   src/google/protobuf/unittest.proto

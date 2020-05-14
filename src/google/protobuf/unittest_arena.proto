@@ -30,8 +30,6 @@
 
 syntax = "proto2";
 
-import "google/protobuf/unittest_no_arena_import.proto";
-
 package proto2_arena_unittest;
 
 option cc_enable_arenas = true;
@@ -41,6 +39,5 @@ message NestedMessage {
 }
 
 message ArenaMessage {
-  repeated NestedMessage  repeated_nested_message = 1;
-  repeated ImportNoArenaNestedMessage  repeated_import_no_arena_message = 2;
-};
+  repeated NestedMessage repeated_nested_message = 1;
+}

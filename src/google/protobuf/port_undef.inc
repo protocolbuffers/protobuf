@@ -110,6 +110,7 @@
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #pragma pop_macro("YES")
 #pragma pop_macro("NO")
+#pragma pop_macro("DEBUG")
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
 #if defined(__clang__)

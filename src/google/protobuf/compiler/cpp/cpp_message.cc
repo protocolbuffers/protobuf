@@ -1035,7 +1035,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
         "    $default_enum_value$ > SuperType;\n"
         "  $classname$();\n"
-        "  $classname$(::$proto_ns$::Arena* arena);\n"
+        "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
         "  void MergeFrom(const $classname$& other);\n"
         "  static const $classname$* internal_default_instance() { return "
         "reinterpret_cast<const "
@@ -2408,18 +2408,13 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   } else {
     format("~0u,  // no _weak_field_map_\n");
   }
-  int num_stripped = 0;
-  for (auto field : FieldRange(descriptor_)) {
-    if (!IsFieldUsed(field, options_)) {
-      num_stripped++;
-    }
-  }
   const int kNumGenericOffsets = 5;  // the number of fixed offsets above
   const size_t offsets = kNumGenericOffsets + descriptor_->field_count() +
-                         descriptor_->real_oneof_decl_count() - num_stripped;
+                         descriptor_->real_oneof_decl_count();
   size_t entries = offsets;
   for (auto field : FieldRange(descriptor_)) {
     if (!IsFieldUsed(field, options_)) {
+      format("~0u,  // stripped\n");
       continue;
     }
     if (field->real_containing_oneof() || field->options().weak()) {
@@ -2450,11 +2445,8 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
         "0,\n"
         "1,\n");
   } else if (!has_bit_indices_.empty()) {
-    entries += has_bit_indices_.size() - num_stripped;
+    entries += has_bit_indices_.size();
     for (int i = 0; i < has_bit_indices_.size(); i++) {
-      if (!IsFieldUsed(descriptor_->field(i), options_)) {
-        continue;
-      }
       const std::string index =
           has_bit_indices_[i] >= 0 ? StrCat(has_bit_indices_[i]) : "~0u";
       format("$1$,\n", index);

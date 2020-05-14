@@ -497,9 +497,6 @@ protoc_inputs =                                                   \
   google/protobuf/unittest_lite.proto                             \
   google/protobuf/unittest_mset.proto                             \
   google/protobuf/unittest_mset_wire_format.proto                 \
-  google/protobuf/unittest_no_arena_lite.proto                    \
-  google/protobuf/unittest_no_arena_import.proto                  \
-  google/protobuf/unittest_no_arena.proto                         \
   google/protobuf/unittest_no_field_presence.proto                \
   google/protobuf/unittest_no_generic_services.proto              \
   google/protobuf/unittest_optimize_for.proto                     \
@@ -573,8 +570,6 @@ protoc_lite_outputs =                                          \
   google/protobuf/map_lite_unittest.pb.h                       \
   google/protobuf/unittest_lite.pb.cc                          \
   google/protobuf/unittest_lite.pb.h                           \
-  google/protobuf/unittest_no_arena_lite.pb.cc                 \
-  google/protobuf/unittest_no_arena_lite.pb.h                  \
   google/protobuf/unittest_import_lite.pb.cc                   \
   google/protobuf/unittest_import_lite.pb.h                    \
   google/protobuf/unittest_import_public_lite.pb.cc            \
@@ -620,10 +615,6 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_mset.pb.h                              \
   google/protobuf/unittest_mset_wire_format.pb.cc                 \
   google/protobuf/unittest_mset_wire_format.pb.h                  \
-  google/protobuf/unittest_no_arena_import.pb.cc                  \
-  google/protobuf/unittest_no_arena_import.pb.h                   \
-  google/protobuf/unittest_no_arena.pb.cc                         \
-  google/protobuf/unittest_no_arena.pb.h                          \
   google/protobuf/unittest_no_field_presence.pb.cc                \
   google/protobuf/unittest_no_field_presence.pb.h                 \
   google/protobuf/unittest_no_generic_services.pb.cc              \

@@ -661,6 +661,7 @@ struct WireFormat::MessageSetParser {
     auto metadata = reflection->MutableInternalMetadata(msg);
     std::string payload;
     uint32 type_id = 0;
+    bool payload_read = false;
     while (!ctx->Done(&ptr)) {
       // We use 64 bit tags in order to allow typeid's that span the whole
       // range of 32 bit numbers.
@@ -670,7 +671,7 @@ struct WireFormat::MessageSetParser {
         ptr = ParseBigVarint(ptr, &tmp);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         type_id = tmp;
-        if (!payload.empty()) {
+        if (payload_read) {
           const FieldDescriptor* field;
           if (ctx->data().pool == nullptr) {
             field = reflection->FindKnownExtensionByNumber(type_id);
@@ -706,6 +707,7 @@ struct WireFormat::MessageSetParser {
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           ptr = ctx->ReadString(ptr, size, &payload);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+          payload_read = true;
         } else {
           // We're now parsing the payload
           const FieldDescriptor* field = nullptr;
