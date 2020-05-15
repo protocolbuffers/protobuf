@@ -2,6 +2,7 @@
 #
 # See README for usage instructions.
 from distutils import util
+import fnmatch
 import glob
 import os
 import pkg_resources
@@ -143,6 +144,18 @@ class build_py(_build_py):
 
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
+
+  def find_package_modules(self, package, package_dir):
+    exclude = (
+        "*test*",
+        "google/protobuf/internal/*_pb2.py",
+        "google/protobuf/internal/_parameterized.py",
+        "google/protobuf/pyext/python_pb2.py",
+    )
+    modules = _build_py.find_package_modules(self, package, package_dir)
+    return [(pkg, mod, fil) for (pkg, mod, fil) in modules
+            if not any(fnmatch.fnmatchcase(fil, pat=pat) for pat in exclude)]
+
 
 class test_conformance(_build_py):
   target = 'test_python'
