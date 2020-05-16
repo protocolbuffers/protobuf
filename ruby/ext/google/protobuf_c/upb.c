@@ -134,6 +134,8 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #ifdef NDEBUG
 #ifdef __GNUC__
 #define UPB_ASSUME(expr) if (!(expr)) __builtin_unreachable()
+#elif defined _MSC_VER
+#define UPB_ASSUME(expr) if (!(expr)) __assume(0)
 #else
 #define UPB_ASSUME(expr) do {} if (false && (expr))
 #endif
@@ -4163,7 +4165,7 @@ static bool resolvename(const upb_strtable *t, const upb_fielddef *f,
                         const char *base, upb_strview sym,
                         upb_deftype_t type, upb_status *status,
                         const void **def) {
-  if(sym.size == 0) return NULL;
+  if(sym.size == 0) return false;
   if(sym.data[0] == '.') {
     /* Symbols starting with '.' are absolute, so we do a single lookup.
      * Slice to omit the leading '.' */
