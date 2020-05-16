@@ -1404,6 +1404,27 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+  public void testMapDuplicateKeys() throws Exception {
+    String input =
+        "int32_to_int32_field: {\n"
+            + "  key: 1\n"
+            + "  value: 1\n"
+            + "}\n"
+            + "int32_to_int32_field: {\n"
+            + "  key: -2147483647\n"
+            + "  value: 5\n"
+            + "}\n"
+            + "int32_to_int32_field: {\n"
+            + "  key: 1\n"
+            + "  value: -1\n"
+            + "}\n";
+    TestMap msg = TextFormat.parse(input, TestMap.class);
+    int val1 = msg.getInt32ToInt32Field().get(1);
+    TestMap msg2 = TextFormat.parse(msg.toString(), TestMap.class);
+    int val2 = msg2.getInt32ToInt32Field().get(1);
+    assertEquals(val1, val2);
+  }
+
   public void testMapShortForm() throws Exception {
     String text =
         "string_to_int32_field [{ key: 'x' value: 10 }, { key: 'y' value: 20 }]\n"

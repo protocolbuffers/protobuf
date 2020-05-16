@@ -44,6 +44,7 @@
   * Mark java enum _VALUE constants as @Deprecated if the enum field is deprecated
   * reduce <clinit> size for enums with allow_alias set to true.
   * Sort map fields alphabetically by the field's key when printing textproto.
+  * Fixed a bug in map sorting that appeared in -rc1 and -rc2 (#7508).
   * TextFormat.merge() handles Any as top level type.
   * Throw a descriptive IllegalArgumentException when calling
     getValueDescriptor() on enum special value UNRECOGNIZED instead of
