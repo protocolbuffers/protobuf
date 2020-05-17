@@ -3068,6 +3068,14 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     return (Extension<MessageType, T>) extension;
   }
 
+  protected static boolean isStringEmpty(final Object value) {
+    if (value instanceof String) {
+      return ((String) value).isEmpty();
+    } else {
+      return ((ByteString) value).isEmpty();
+    }
+  }
+
   protected static int computeStringSize(final int fieldNumber, final Object value) {
     if (value instanceof String) {
       return CodedOutputStream.computeStringSize(fieldNumber, (String) value);
