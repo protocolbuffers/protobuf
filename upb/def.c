@@ -1191,7 +1191,7 @@ static bool resolvename(const upb_strtable *t, const upb_fielddef *f,
                         const char *base, upb_strview sym,
                         upb_deftype_t type, upb_status *status,
                         const void **def) {
-  if(sym.size == 0) return NULL;
+  if(sym.size == 0) return false;
   if(sym.data[0] == '.') {
     /* Symbols starting with '.' are absolute, so we do a single lookup.
      * Slice to omit the leading '.' */

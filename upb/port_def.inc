@@ -138,6 +138,8 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #ifdef NDEBUG
 #ifdef __GNUC__
 #define UPB_ASSUME(expr) if (!(expr)) __builtin_unreachable()
+#elif defined _MSC_VER
+#define UPB_ASSUME(expr) if (!(expr)) __assume(0)
 #else
 #define UPB_ASSUME(expr) do {} if (false && (expr))
 #endif
