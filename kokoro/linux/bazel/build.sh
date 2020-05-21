@@ -29,7 +29,6 @@ bazel test --copt=-Werror --host_copt=-Werror \
   //:protoc \
   //:protobuf \
   //:protobuf_python \
-  //:protobuf_objc \
   //:protobuf_test \
   @com_google_protobuf//:cc_proto_blacklist_test
 trap - EXIT
