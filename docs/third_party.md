@@ -21,7 +21,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C/C++: http://spbc.sf.net/
 * C#: http://code.google.com/p/protobuf-csharp-port
 * C#: https://silentorbit.com/protobuf/
-* C#/.NET/WCF/VB: http://code.google.com/p/protobuf-net/
+* C#/.NET/WCF/VB: https://github.com/mgravell/protobuf-net/
 * Clojure: http://github.com/ninjudd/clojure-protobuf
 * Clojure: https://github.com/clojusc/protobuf
 * Clojure: https://protojure.github.io
