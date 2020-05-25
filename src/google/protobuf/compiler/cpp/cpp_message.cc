@@ -253,6 +253,10 @@ void CollectMapInfo(const Options& options, const Descriptor* descriptor,
   std::map<std::string, std::string>& vars = *variables;
   const FieldDescriptor* key = descriptor->FindFieldByName("key");
   const FieldDescriptor* val = descriptor->FindFieldByName("value");
+  // Can`t find the 'key'
+  GOOGLE_CHECK_NE(key, nullptr);
+  // Can`t find the 'val'
+  GOOGLE_CHECK_NE(val, nullptr);
   vars["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
   switch (val->cpp_type()) {
     case FieldDescriptor::CPPTYPE_MESSAGE:
