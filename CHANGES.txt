@@ -1,3 +1,11 @@
+2020-05-26 version 3.12.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Simplified the template export macros to fix the build for mingw32. (#7539)
+
+  Objective-C
+  * Fix for the :protobuf_objc target in the Bazel BUILD file. (#7538)
+
 2020-05-20 version 3.12.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Ruby
