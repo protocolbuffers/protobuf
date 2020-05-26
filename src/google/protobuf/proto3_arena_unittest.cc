@@ -138,7 +138,7 @@ TEST(Proto3ArenaTest, UnknownFields) {
   // We can modify this UnknownFieldSet.
   unknown_fields->AddVarint(1, 2);
   // And the unknown fields should be changed.
-  ASSERT_NE(original.ByteSize(), arena_message->ByteSize());
+  ASSERT_NE(original.ByteSizeLong(), arena_message->ByteSizeLong());
   ASSERT_FALSE(
       arena_message->GetReflection()->GetUnknownFields(*arena_message).empty());
 }
@@ -203,7 +203,7 @@ TEST(Proto3OptionalTest, OptionalFields) {
   msg.set_optional_int32(0);
   EXPECT_TRUE(msg.has_optional_int32());
 
-  string serialized;
+  std::string serialized;
   msg.SerializeToString(&serialized);
   EXPECT_GT(serialized.size(), 0);
 
@@ -236,7 +236,7 @@ TEST(Proto3OptionalTest, OptionalField) {
   msg.set_optional_int32(0);
   EXPECT_TRUE(msg.has_optional_int32());
 
-  string serialized;
+  std::string serialized;
   msg.SerializeToString(&serialized);
   EXPECT_GT(serialized.size(), 0);
 

@@ -55,6 +55,7 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/substitute.h>
@@ -346,14 +347,13 @@ TEST_F(TextFormatTest, PrintUnknownMessage) {
   UnknownFieldSet unknown_fields;
   EXPECT_TRUE(unknown_fields.ParseFromString(data));
   EXPECT_TRUE(TextFormat::PrintUnknownFieldsToString(unknown_fields, &text));
-  EXPECT_EQ(
-      "44: \"abc\"\n"
-      "44: \"def\"\n"
-      "44: \"\"\n"
-      "48 {\n"
-      "  1: 123\n"
-      "}\n",
-      text);
+  // Field 44 and 48 can be printed in any order.
+  EXPECT_THAT(text, testing::HasSubstr("44: \"abc\"\n"
+                                       "44: \"def\"\n"
+                                       "44: \"\"\n"));
+  EXPECT_THAT(text, testing::HasSubstr("48 {\n"
+                                       "  1: 123\n"
+                                       "}\n"));
 }
 
 TEST_F(TextFormatTest, PrintDeeplyNestedUnknownMessage) {

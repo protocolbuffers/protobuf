@@ -100,7 +100,7 @@ inline const std::string& NullValue_Name(T enum_t_value) {
     NullValue_descriptor(), enum_t_value);
 }
 inline bool NullValue_Parse(
-    const std::string& name, NullValue* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, NullValue* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<NullValue>(
     NullValue_descriptor(), name, value);
 }

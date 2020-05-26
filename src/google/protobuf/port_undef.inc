@@ -84,6 +84,7 @@
 #undef PROTOBUF_EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllimport
 #undef PROTOBUF_FINAL
 #undef PROTOBUF_THREAD_LOCAL
+#undef PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
 
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER

@@ -204,7 +204,7 @@ inline const std::string& FieldDescriptorProto_Type_Name(T enum_t_value) {
     FieldDescriptorProto_Type_descriptor(), enum_t_value);
 }
 inline bool FieldDescriptorProto_Type_Parse(
-    const std::string& name, FieldDescriptorProto_Type* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldDescriptorProto_Type* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Type>(
     FieldDescriptorProto_Type_descriptor(), name, value);
 }
@@ -228,7 +228,7 @@ inline const std::string& FieldDescriptorProto_Label_Name(T enum_t_value) {
     FieldDescriptorProto_Label_descriptor(), enum_t_value);
 }
 inline bool FieldDescriptorProto_Label_Parse(
-    const std::string& name, FieldDescriptorProto_Label* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldDescriptorProto_Label* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Label>(
     FieldDescriptorProto_Label_descriptor(), name, value);
 }
@@ -252,7 +252,7 @@ inline const std::string& FileOptions_OptimizeMode_Name(T enum_t_value) {
     FileOptions_OptimizeMode_descriptor(), enum_t_value);
 }
 inline bool FileOptions_OptimizeMode_Parse(
-    const std::string& name, FileOptions_OptimizeMode* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FileOptions_OptimizeMode* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FileOptions_OptimizeMode>(
     FileOptions_OptimizeMode_descriptor(), name, value);
 }
@@ -276,7 +276,7 @@ inline const std::string& FieldOptions_CType_Name(T enum_t_value) {
     FieldOptions_CType_descriptor(), enum_t_value);
 }
 inline bool FieldOptions_CType_Parse(
-    const std::string& name, FieldOptions_CType* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldOptions_CType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_CType>(
     FieldOptions_CType_descriptor(), name, value);
 }
@@ -300,7 +300,7 @@ inline const std::string& FieldOptions_JSType_Name(T enum_t_value) {
     FieldOptions_JSType_descriptor(), enum_t_value);
 }
 inline bool FieldOptions_JSType_Parse(
-    const std::string& name, FieldOptions_JSType* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldOptions_JSType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_JSType>(
     FieldOptions_JSType_descriptor(), name, value);
 }
@@ -324,7 +324,7 @@ inline const std::string& MethodOptions_IdempotencyLevel_Name(T enum_t_value) {
     MethodOptions_IdempotencyLevel_descriptor(), enum_t_value);
 }
 inline bool MethodOptions_IdempotencyLevel_Parse(
-    const std::string& name, MethodOptions_IdempotencyLevel* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, MethodOptions_IdempotencyLevel* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<MethodOptions_IdempotencyLevel>(
     MethodOptions_IdempotencyLevel_descriptor(), name, value);
 }
@@ -1936,7 +1936,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
       "Incorrect type passed to function Type_Name.");
     return FieldDescriptorProto_Type_Name(enum_t_value);
   }
-  static inline bool Type_Parse(const std::string& name,
+  static inline bool Type_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
       Type* value) {
     return FieldDescriptorProto_Type_Parse(name, value);
   }
@@ -1968,7 +1968,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
       "Incorrect type passed to function Label_Name.");
     return FieldDescriptorProto_Label_Name(enum_t_value);
   }
-  static inline bool Label_Parse(const std::string& name,
+  static inline bool Label_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
       Label* value) {
     return FieldDescriptorProto_Label_Parse(name, value);
   }
@@ -3668,7 +3668,7 @@ class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
       "Incorrect type passed to function OptimizeMode_Name.");
     return FileOptions_OptimizeMode_Name(enum_t_value);
   }
-  static inline bool OptimizeMode_Parse(const std::string& name,
+  static inline bool OptimizeMode_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
       OptimizeMode* value) {
     return FileOptions_OptimizeMode_Parse(name, value);
   }
@@ -4534,7 +4534,7 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
       "Incorrect type passed to function CType_Name.");
     return FieldOptions_CType_Name(enum_t_value);
   }
-  static inline bool CType_Parse(const std::string& name,
+  static inline bool CType_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
       CType* value) {
     return FieldOptions_CType_Parse(name, value);
   }
@@ -4566,7 +4566,7 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
       "Incorrect type passed to function JSType_Name.");
     return FieldOptions_JSType_Name(enum_t_value);
   }
-  static inline bool JSType_Parse(const std::string& name,
+  static inline bool JSType_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
       JSType* value) {
     return FieldOptions_JSType_Parse(name, value);
   }
@@ -5532,7 +5532,7 @@ class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
       "Incorrect type passed to function IdempotencyLevel_Name.");
     return MethodOptions_IdempotencyLevel_Name(enum_t_value);
   }
-  static inline bool IdempotencyLevel_Parse(const std::string& name,
+  static inline bool IdempotencyLevel_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
       IdempotencyLevel* value) {
     return MethodOptions_IdempotencyLevel_Parse(name, value);
   }

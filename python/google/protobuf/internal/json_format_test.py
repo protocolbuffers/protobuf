@@ -1157,6 +1157,19 @@ class JsonFormatTest(JsonFormatBase):
         'Failed to parse any_value field: Can not find message descriptor by'
         ' type_url: type.googleapis.com/proto3.MessageType..')
 
+  def testParseDictUnknownValueType(self):
+    class UnknownClass(object):
+
+      def __str__(self):
+        return 'v'
+    message = json_format_proto3_pb2.TestValue()
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r"Value v has unexpected type <class '.*\.UnknownClass'>.",
+        json_format.ParseDict,
+        {'value': UnknownClass()},
+        message)
+
   def testMessageToDict(self):
     message = json_format_proto3_pb2.TestMessage()
     message.int32_value = 12345

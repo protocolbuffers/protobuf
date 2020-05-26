@@ -336,26 +336,24 @@ class DynamicMessage : public Message {
   }
 
   const TypeInfo* type_info_;
-  Arena* const arena_;
   mutable std::atomic<int> cached_byte_size_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessage);
 };
 
 DynamicMessage::DynamicMessage(const TypeInfo* type_info)
-    : type_info_(type_info), arena_(NULL), cached_byte_size_(0) {
+    : type_info_(type_info), cached_byte_size_(0) {
   SharedCtor(true);
 }
 
 DynamicMessage::DynamicMessage(const TypeInfo* type_info, Arena* arena)
     : Message(arena),
       type_info_(type_info),
-      arena_(arena),
       cached_byte_size_(0) {
   SharedCtor(true);
 }
 
 DynamicMessage::DynamicMessage(TypeInfo* type_info, bool lock_factory)
-    : type_info_(type_info), arena_(NULL), cached_byte_size_(0) {
+    : type_info_(type_info), cached_byte_size_(0) {
   // The prototype in type_info has to be set before creating the prototype
   // instance on memory. e.g., message Foo { map<int32, Foo> a = 1; }. When
   // creating prototype for Foo, prototype of the map entry will also be
@@ -386,7 +384,8 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
   }
 
   if (type_info_->extensions_offset != -1) {
-    new (OffsetToPointer(type_info_->extensions_offset)) ExtensionSet(arena_);
+    new (OffsetToPointer(type_info_->extensions_offset))
+        ExtensionSet(GetArena());
   }
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
@@ -400,7 +399,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
     if (!field->is_repeated()) {                           \
       new (field_ptr) TYPE(field->default_value_##TYPE()); \
     } else {                                               \
-      new (field_ptr) RepeatedField<TYPE>(arena_);         \
+      new (field_ptr) RepeatedField<TYPE>(GetArena());     \
     }                                                      \
     break;
 
@@ -417,7 +416,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
         if (!field->is_repeated()) {
           new (field_ptr) int(field->default_value_enum()->number());
         } else {
-          new (field_ptr) RepeatedField<int>(arena_);
+          new (field_ptr) RepeatedField<int>(GetArena());
         }
         break;
 
@@ -438,7 +437,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->UnsafeSetDefault(default_value);
             } else {
-              new (field_ptr) RepeatedPtrField<std::string>(arena_);
+              new (field_ptr) RepeatedPtrField<std::string>(GetArena());
             }
             break;
         }
@@ -453,20 +452,20 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
             // when the constructor is called inside GetPrototype(), in which
             // case we have already locked the factory.
             if (lock_factory) {
-              if (arena_ != NULL) {
+              if (GetArena() != nullptr) {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()),
-                    arena_);
+                    GetArena());
               } else {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()));
               }
             } else {
-              if (arena_ != NULL) {
+              if (GetArena() != nullptr) {
                 new (field_ptr)
                     DynamicMapField(type_info_->factory->GetPrototypeNoLock(
                                         field->message_type()),
-                                    arena_);
+                                    GetArena());
               } else {
                 new (field_ptr)
                     DynamicMapField(type_info_->factory->GetPrototypeNoLock(
@@ -474,7 +473,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               }
             }
           } else {
-            new (field_ptr) RepeatedPtrField<Message>(arena_);
+            new (field_ptr) RepeatedPtrField<Message>(GetArena());
           }
         }
         break;
