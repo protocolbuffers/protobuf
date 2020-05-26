@@ -85,8 +85,14 @@ def _proto_gen_impl(ctx):
         import_flags = depset(direct=["-I."])
 
     for dep in ctx.attr.deps:
-        import_flags = depset(transitive=[import_flags, depset(direct=dep.proto.import_flags)])
-        deps = depset(transitive=[deps, depset(direct=dep.proto.deps)])
+        if type(dep.proto.import_flags) == "list":
+            import_flags = depset(transitive=[import_flags], direct=dep.proto.import_flags)
+        else:
+            import_flags = depset(transitive=[import_flags, dep.proto.import_flags])
+        if type(dep.proto.deps) == "list":
+            deps = depset(transitive=[deps], direct=dep.proto.deps)
+        else:
+            deps = depset(transitive=[deps, dep.proto.deps])
 
     if not ctx.attr.gen_cc and not ctx.attr.gen_py and not ctx.executable.plugin:
         return struct(
