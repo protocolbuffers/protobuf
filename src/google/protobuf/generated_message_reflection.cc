@@ -50,6 +50,7 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
+#include <google/protobuf/stubs/strutil.h>
 
 
 #include <google/protobuf/port_def.inc>
@@ -81,7 +82,7 @@ bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 
 namespace internal {
 
-bool ParseNamedEnum(const EnumDescriptor* descriptor, const std::string& name,
+bool ParseNamedEnum(const EnumDescriptor* descriptor, StringPiece name,
                     int* value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
   if (d == nullptr) return false;

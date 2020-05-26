@@ -106,7 +106,7 @@ inline const std::string& CodeGeneratorResponse_Feature_Name(T enum_t_value) {
     CodeGeneratorResponse_Feature_descriptor(), enum_t_value);
 }
 inline bool CodeGeneratorResponse_Feature_Parse(
-    const std::string& name, CodeGeneratorResponse_Feature* value) {
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, CodeGeneratorResponse_Feature* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<CodeGeneratorResponse_Feature>(
     CodeGeneratorResponse_Feature_descriptor(), name, value);
 }
@@ -924,7 +924,7 @@ class PROTOC_EXPORT CodeGeneratorResponse PROTOBUF_FINAL :
       "Incorrect type passed to function Feature_Name.");
     return CodeGeneratorResponse_Feature_Name(enum_t_value);
   }
-  static inline bool Feature_Parse(const std::string& name,
+  static inline bool Feature_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
       Feature* value) {
     return CodeGeneratorResponse_Feature_Parse(name, value);
   }

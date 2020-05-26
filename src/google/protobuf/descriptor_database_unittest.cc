@@ -547,7 +547,7 @@ TEST(SimpleDescriptorDatabaseExtraTest, FindAllPackageNames) {
   db.Add(f);
   db.Add(b);
 
-  std::vector<string> packages;
+  std::vector<std::string> packages;
   EXPECT_TRUE(db.FindAllPackageNames(&packages));
   EXPECT_THAT(packages, ::testing::UnorderedElementsAre("foo", ""));
 }
@@ -567,7 +567,7 @@ TEST(SimpleDescriptorDatabaseExtraTest, FindAllMessageNames) {
   db.Add(f);
   db.Add(b);
 
-  std::vector<string> messages;
+  std::vector<std::string> messages;
   EXPECT_TRUE(db.FindAllMessageNames(&messages));
   EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
 }

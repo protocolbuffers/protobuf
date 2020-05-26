@@ -42,8 +42,13 @@
 #include <iterator>
 #include <limits>  // To support Visual Studio 2008
 #include <map>
+#include <string>
 #include <type_traits>
 #include <utility>
+
+#if defined(__cpp_lib_string_view)
+#include <string_view>
+#endif  // defined(__cpp_lib_string_view)
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
@@ -186,6 +191,67 @@ using KeyForTree =
     typename std::conditional<std::is_scalar<T>::value, T,
                               std::reference_wrapper<const T>>::type;
 
+// Default case: Not transparent.
+// We use std::hash<key_type>/std::less<key_type> and all the lookup functions
+// only accept `key_type`.
+template <typename key_type>
+struct TransparentSupport {
+  using hash = std::hash<key_type>;
+  using less = std::less<key_type>;
+
+  static bool Equals(const key_type& a, const key_type& b) { return a == b; }
+
+  template <typename K>
+  using key_arg = key_type;
+};
+
+#if defined(__cpp_lib_string_view)
+// If std::string_view is available, we add transparent support for std::string
+// keys. We use std::hash<std::string_view> as it supports the input types we
+// care about. The lookup functions accept arbitrary `K`. This will include any
+// key type that is convertible to std::string_view.
+template <>
+struct TransparentSupport<std::string> {
+  static std::string_view ImplicitConvert(std::string_view str) { return str; }
+  // If the element is not convertible to std::string_view, try to convert to
+  // std::string first.
+  // The template makes this overload lose resolution when both have the same
+  // rank otherwise.
+  template <typename = void>
+  static std::string_view ImplicitConvert(const std::string& str) {
+    return str;
+  }
+
+  struct hash : private std::hash<std::string_view> {
+    using is_transparent = void;
+
+    template <typename T>
+    size_t operator()(const T& str) const {
+      return base()(ImplicitConvert(str));
+    }
+
+   private:
+    const std::hash<std::string_view>& base() const { return *this; }
+  };
+  struct less {
+    using is_transparent = void;
+
+    template <typename T, typename U>
+    bool operator()(const T& t, const U& u) const {
+      return ImplicitConvert(t) < ImplicitConvert(u);
+    }
+  };
+
+  template <typename T, typename U>
+  static bool Equals(const T& t, const U& u) {
+    return ImplicitConvert(t) == ImplicitConvert(u);
+  }
+
+  template <typename K>
+  using key_arg = K;
+};
+#endif  // defined(__cpp_lib_string_view)
+
 }  // namespace internal
 
 // This is the class for Map's internal value_type. Instead of using
@@ -240,7 +306,7 @@ class Map {
   using const_reference = const value_type&;
 
   using size_type = size_t;
-  using hasher = std::hash<Key>;
+  using hasher = typename internal::TransparentSupport<Key>::hash;
 
   Map() : arena_(nullptr), default_enum_value_(0) { Init(); }
   explicit Map(Arena* arena) : arena_(arena), default_enum_value_(0) { Init(); }
@@ -357,7 +423,8 @@ class Map {
     // class per key type.
     using TreeAllocator = typename Allocator::template rebind<
         std::pair<const internal::KeyForTree<Key>, void*>>::other;
-    using Tree = std::map<internal::KeyForTree<Key>, void*, std::less<Key>,
+    using Tree = std::map<internal::KeyForTree<Key>, void*,
+                          typename internal::TransparentSupport<Key>::less,
                           TreeAllocator>;
     using TreeIterator = typename Tree::iterator;
 
@@ -541,9 +608,10 @@ class Map {
     size_type size() const { return num_elements_; }
     bool empty() const { return size() == 0; }
 
-    iterator find(const Key& k) { return iterator(FindHelper(k).first); }
-    const_iterator find(const Key& k) const { return find(k, nullptr); }
-    bool contains(const Key& k) const { return find(k) != end(); }
+    template <typename K>
+    iterator find(const K& k) {
+      return iterator(FindHelper(k).first);
+    }
 
     // Insert the key into the map, if not present. In that case, the value will
     // be value initialized.
@@ -611,16 +679,18 @@ class Map {
     const_iterator find(const Key& k, TreeIterator* it) const {
       return FindHelper(k, it).first;
     }
-    std::pair<const_iterator, size_type> FindHelper(const Key& k) const {
+    template <typename K>
+    std::pair<const_iterator, size_type> FindHelper(const K& k) const {
       return FindHelper(k, nullptr);
     }
-    std::pair<const_iterator, size_type> FindHelper(const Key& k,
+    template <typename K>
+    std::pair<const_iterator, size_type> FindHelper(const K& k,
                                                     TreeIterator* it) const {
       size_type b = BucketNumber(k);
       if (TableEntryIsNonEmptyList(b)) {
         Node* node = static_cast<Node*>(table_[b]);
         do {
-          if (IsMatch(node->kv.first, k)) {
+          if (internal::TransparentSupport<Key>::Equals(node->kv.first, k)) {
             return std::make_pair(const_iterator(node, this, b), b);
           } else {
             node = node->next;
@@ -675,9 +745,29 @@ class Map {
       return result;
     }
 
+    // Returns whether we should insert after the head of the list. For
+    // non-optimized builds, we randomly decide whether to insert right at the
+    // head of the list or just after the head. This helps add a little bit of
+    // non-determinism to the map ordering.
+    bool ShouldInsertAfterHead(void* node) {
+#ifdef NDEBUG
+      return false;
+#else
+      // Doing modulo with a prime mixes the bits more.
+      return (reinterpret_cast<uintptr_t>(node) ^ seed_) % 13 > 6;
+#endif
+    }
+
     // Helper for InsertUnique.  Handles the case where bucket b is a
     // not-too-long linked list.
     iterator InsertUniqueInList(size_type b, Node* node) {
+      if (table_[b] != nullptr && ShouldInsertAfterHead(node)) {
+        Node* first = static_cast<Node*>(table_[b]);
+        node->next = first->next;
+        first->next = node;
+        return iterator(node, this, b);
+      }
+
       node->next = static_cast<Node*>(table_[b]);
       table_[b] = static_cast<void*>(node);
       return iterator(node, this, b);
@@ -767,7 +857,7 @@ class Map {
       Tree* tree = static_cast<Tree*>(table[index]);
       typename Tree::iterator tree_it = tree->begin();
       do {
-        InsertUnique(BucketNumber(tree_it->first),
+        InsertUnique(BucketNumber(std::cref(tree_it->first).get()),
                      NodeFromTreeIterator(tree_it));
       } while (++tree_it != tree->end());
       DestroyTree(tree);
@@ -848,12 +938,18 @@ class Map {
       return count >= kMaxLength;
     }
 
-    size_type BucketNumber(const Key& k) const {
-      size_type h = hash_function()(k);
-      return (h + seed_) & (num_buckets_ - 1);
-    }
+    template <typename K>
+    size_type BucketNumber(const K& k) const {
+      // We xor the hash value against the random seed so that we effectively
+      // have a random hash function.
+      uint64 h = hash_function()(k) ^ seed_;
 
-    bool IsMatch(const Key& k0, const Key& k1) const { return k0 == k1; }
+      // We use the multiplication method to determine the bucket number from
+      // the hash value. The constant kPhi (suggested by Knuth) is roughly
+      // (sqrt(5) - 1) / 2 * 2^64.
+      constexpr uint64 kPhi = uint64{0x9e3779b97f4a7c15};
+      return ((kPhi * h) >> 32) & (num_buckets_ - 1);
+    }
 
     // Return a power of two no less than max(kMinTableSize, n).
     // Assumes either n < kMinTableSize or n is a power of two.
@@ -899,7 +995,10 @@ class Map {
 
     // Return a randomish value.
     size_type Seed() const {
-      size_type s = static_cast<size_type>(reinterpret_cast<uintptr_t>(this));
+      // We get a little bit of randomness from the address of the map. The
+      // lower bits are not very random, due to alignment, so we discard them
+      // and shift the higher bits into their place.
+      size_type s = reinterpret_cast<uintptr_t>(this) >> 12;
 #if defined(__x86_64__) && defined(__GNUC__) && \
     !defined(GOOGLE_PROTOBUF_NO_RDTSC)
       uint32 hi, lo;
@@ -921,6 +1020,10 @@ class Map {
     Allocator alloc_;
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(InnerMap);
   };  // end of class InnerMap
+
+  template <typename LookupKey>
+  using key_arg = typename internal::TransparentSupport<
+      key_type>::template key_arg<LookupKey>;
 
  public:
   // Iterators
@@ -1014,30 +1117,44 @@ class Map {
 
   // Element access
   T& operator[](const key_type& key) { return (*elements_)[key].second; }
-  const T& at(const key_type& key) const {
+
+  template <typename K = key_type>
+  const T& at(const key_arg<K>& key) const {
     const_iterator it = find(key);
-    GOOGLE_CHECK(it != end()) << "key not found: " << key;
+    GOOGLE_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
-  T& at(const key_type& key) {
+
+  template <typename K = key_type>
+  T& at(const key_arg<K>& key) {
     iterator it = find(key);
-    GOOGLE_CHECK(it != end()) << "key not found: " << key;
+    GOOGLE_CHECK(it != end()) << "key not found: " << static_cast<Key>(key);
     return it->second;
   }
 
   // Lookup
-  size_type count(const key_type& key) const {
-    const_iterator it = find(key);
-    GOOGLE_DCHECK(it == end() || key == it->first);
-    return it == end() ? 0 : 1;
+  template <typename K = key_type>
+  size_type count(const key_arg<K>& key) const {
+    return find(key) == end() ? 0 : 1;
   }
-  const_iterator find(const key_type& key) const {
+
+  template <typename K = key_type>
+  const_iterator find(const key_arg<K>& key) const {
     return const_iterator(iterator(elements_->find(key)));
   }
-  iterator find(const key_type& key) { return iterator(elements_->find(key)); }
-  bool contains(const Key& key) const { return elements_->contains(key); }
+  template <typename K = key_type>
+  iterator find(const key_arg<K>& key) {
+    return iterator(elements_->find(key));
+  }
+
+  template <typename K = key_type>
+  bool contains(const key_arg<K>& key) const {
+    return find(key) != end();
+  }
+
+  template <typename K = key_type>
   std::pair<const_iterator, const_iterator> equal_range(
-      const key_type& key) const {
+      const key_arg<K>& key) const {
     const_iterator it = find(key);
     if (it == end()) {
       return std::pair<const_iterator, const_iterator>(it, it);
@@ -1046,7 +1163,9 @@ class Map {
       return std::pair<const_iterator, const_iterator>(begin, it);
     }
   }
-  std::pair<iterator, iterator> equal_range(const key_type& key) {
+
+  template <typename K = key_type>
+  std::pair<iterator, iterator> equal_range(const key_arg<K>& key) {
     iterator it = find(key);
     if (it == end()) {
       return std::pair<iterator, iterator>(it, it);
@@ -1079,7 +1198,8 @@ class Map {
   }
 
   // Erase and clear
-  size_type erase(const key_type& key) {
+  template <typename K = key_type>
+  size_type erase(const key_arg<K>& key) {
     iterator it = find(key);
     if (it == end()) {
       return 0;

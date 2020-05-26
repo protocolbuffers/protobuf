@@ -405,7 +405,7 @@ void MapTestUtilImpl::ExpectMapFieldsSetInitialized(const MapMessage& message) {
   EXPECT_EQ("", message.map_string_string().at("0"));
   EXPECT_EQ("", message.map_int32_bytes().at(0));
   EXPECT_EQ(enum_value, message.map_int32_enum().at(0));
-  EXPECT_EQ(0, message.map_int32_foreign_message().at(0).ByteSize());
+  EXPECT_EQ(0, message.map_int32_foreign_message().at(0).ByteSizeLong());
 }
 
 template <typename EnumType, EnumType enum_value0, EnumType enum_value1,

@@ -63,6 +63,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/port_def.inc>
 
 // TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
@@ -1029,7 +1030,7 @@ class PROTOBUF_EXPORT EnumDescriptor {
   const EnumValueDescriptor* value(int index) const;
 
   // Looks up a value by name.  Returns nullptr if no such value exists.
-  const EnumValueDescriptor* FindValueByName(const std::string& name) const;
+  const EnumValueDescriptor* FindValueByName(ConstStringParam name) const;
   // Looks up a value by number.  Returns nullptr if no such value exists.  If
   // multiple values have this number, the first one defined is returned.
   const EnumValueDescriptor* FindValueByNumber(int number) const;
