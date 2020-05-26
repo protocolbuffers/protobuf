@@ -125,7 +125,7 @@ bool ContainsPythonKeyword(const std::string& module_name) {
   return false;
 }
 
-inline bool IsPythonKeyword(const string& name) {
+inline bool IsPythonKeyword(const std::string& name) {
   return (std::find(kKeywords, kKeywordsEnd, name) != kKeywordsEnd);
 }
 

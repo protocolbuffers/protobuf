@@ -5,6 +5,8 @@ proto3. Proto3 optional fields track presence like in proto2. For background
 information about what presence tracking means, please see
 [docs/field_presence](field_presence.md).
 
+## Document Summary
+
 This document is targeted at developers who own or maintain protobuf code
 generators. All code generators will need to be updated to support proto3
 optional fields. First-party code generators developed by Google are being
@@ -14,12 +16,60 @@ independently by their authors. This includes:
 - implementations of Protocol Buffers for other languges.
 - alternate implementations of Protocol Buffers that target specialized use
   cases.
+- RPC code generators that create generated APIs for service calls.
 - code generators that implement some utility code on top of protobuf generated
   classes.
 
 While this document speaks in terms of "code generators", these same principles
 apply to implementations that dynamically generate a protocol buffer API "on the
 fly", directly from a descriptor, in languages that support this kind of usage.
+
+## Background
+
+Presence tracking was added to proto3 in response to user feedback, both from
+inside Google and [from open-source
+users](https://github.com/protocolbuffers/protobuf/issues/1606). The [proto3
+wrapper
+types](https://github.com/protocolbuffers/protobuf/blob/master/src/google/protobuf/wrappers.proto)
+were previously the only supported presence mechanism for proto3. Users have
+pointed to both efficiency and usability issues with the wrapper types.
+
+Presence in proto3 uses exactly the same syntax and semantics as in proto2.
+Proto3 Fields marked `optional` will track presence like proto2, while fields
+without any label (known as "singular fields"), will continue to omit presence
+information.  The `optional` keyword was chosen to minimize differences with
+proto2.
+
+Unfortunately, for the current descriptor protos and `Descriptor` API (as of
+3.11.4) it is not possible to use the same representation as proto2. Proto3
+descriptors already use `LABEL_OPTIONAL` for proto3 singular fields, which do
+not track presence. There is a lot of existing code that reflects over proto3
+protos and assumes that `LABEL_OPTIONAL` in proto3 means "no presence." Changing
+the semantics now would be risky, since old software would likely drop proto3
+presence information, which would be a data loss bug.
+
+To minimize this risk we chose a descriptor representation that is semantically
+compatible with existing proto3 reflection. Every proto3 optional field is
+placed into a one-field `oneof`. We call this a "synthetic" oneof, as it was not
+present in the source `.proto` file.
+
+Since oneof fields in proto3 already track presence, existing proto3
+reflection-based algorithms should correctly preserve presence for proto3
+optional fields with no code changes. For example, the JSON and TextFormat
+parsers/serializers in C++ and Java did not require any changes to support
+proto3 presence. This is the major benefit of synthetic oneofs.
+
+This design does leave some cruft in descriptors. Synthetic oneofs are a
+compatibility measure that we can hopefully clean up in the future. For now
+though, it is important to preserve them across different descriptor formats and
+APIs. It is never safe to drop synthetic oneofs from a proto schema. Code
+generators can (and should) skip synthetic oneofs when generating a user-facing
+API or user-facing documentation. But for any schema representation that is
+consumed programmatically, it is important to keep the synthetic oneofs around.
+
+In APIs it can be helpful to offer separate accessors that refer to "real"
+oneofs (see [API Changes](#api-changes) below). This is a convenient way to omit
+synthetic oneofs in code generators.
 
 ## Updating a Code Generator
 

@@ -75,8 +75,8 @@ const char* kForbiddenWordList[] = {
     "class",
 };
 
-const std::unordered_set<string>* kReservedNames =
-    new std::unordered_set<string>({
+const std::unordered_set<std::string>* kReservedNames =
+    new std::unordered_set<std::string>({
         "abstract",   "assert",       "boolean",   "break",      "byte",
         "case",       "catch",        "char",      "class",      "const",
         "continue",   "default",      "do",        "double",     "else",

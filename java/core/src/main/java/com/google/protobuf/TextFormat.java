@@ -490,27 +490,11 @@ public final class TextFormat {
         }
         switch (fieldType) {
           case BOOLEAN:
-            boolean aBoolean = (boolean) getKey();
-            boolean bBoolean = (boolean) b.getKey();
-            if (aBoolean == bBoolean) {
-              return 0;
-            } else if (aBoolean) {
-              return 1;
-            } else {
-              return -1;
-            }
+            return Boolean.compare((boolean) getKey(), (boolean) b.getKey());
           case LONG:
-            long aLong = (long) getKey();
-            long bLong = (long) b.getKey();
-            if (aLong < bLong) {
-              return -1;
-            } else if (aLong > bLong) {
-              return 1;
-            } else {
-              return 0;
-            }
+            return Long.compare((long) getKey(), (long) b.getKey());
           case INT:
-            return (int) getKey() - (int) b.getKey();
+            return Integer.compare((int) getKey(), (int) b.getKey());
           case STRING:
             String aString = (String) getKey();
             String bString = (String) b.getKey();

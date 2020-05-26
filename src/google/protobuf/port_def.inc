@@ -662,3 +662,13 @@ PROTOBUF_EXPORT_TEMPLATE_TEST(DEFAULT, __declspec(dllimport));
 #else
 #define PROTOBUF_THREAD_LOCAL __thread
 #endif
+
+// For enabling message owned arena, one major blocker is semantic change from
+// moving to copying when there is ownership transfer (e.g., move ctor, swap,
+// set allocated, release). This change not only causes performance regression
+// but also breaks users code (e.g., dangling reference). For top-level
+// messages, since it owns the arena, we can mitigate the issue by transferring
+// ownership of arena. However, we cannot do that for nested messages. In order
+// to tell how many usages of nested messages affected by message owned arena,
+// we need to simulate the arena ownership.
+#define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT

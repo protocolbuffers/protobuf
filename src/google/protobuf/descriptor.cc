@@ -383,19 +383,8 @@ class PrefixRemover {
 // hash-maps for each object.
 //
 // The keys to these hash-maps are (parent, name) or (parent, number) pairs.
-//
-// TODO(kenton):  Use StringPiece rather than const char* in keys?  It would
-//   be a lot cleaner but we'd just have to convert it back to const char*
-//   for the open source release.
 
-typedef std::pair<const void*, const char*> PointerStringPair;
-
-struct PointerStringPairEqual {
-  inline bool operator()(const PointerStringPair& a,
-                         const PointerStringPair& b) const {
-    return a.first == b.first && strcmp(a.second, b.second) == 0;
-  }
-};
+typedef std::pair<const void*, StringPiece> PointerStringPair;
 
 typedef std::pair<const Descriptor*, int> DescriptorIntPair;
 typedef std::pair<const EnumDescriptor*, int> EnumIntPair;
@@ -419,16 +408,16 @@ struct PointerIntegerPairHash {
   static const size_t min_buckets = 8;
 #endif
   inline bool operator()(const PairType& a, const PairType& b) const {
-    return a.first < b.first || (a.first == b.first && a.second < b.second);
+    return a < b;
   }
 };
 
 struct PointerStringPairHash {
   size_t operator()(const PointerStringPair& p) const {
     static const size_t prime = 16777619;
-    hash<const char*> cstring_hash;
+    hash<StringPiece> string_hash;
     return reinterpret_cast<size_t>(p.first) * prime ^
-           static_cast<size_t>(cstring_hash(p.second));
+           static_cast<size_t>(string_hash(p.second));
   }
 
 #ifdef _MSC_VER
@@ -438,9 +427,7 @@ struct PointerStringPairHash {
 #endif
   inline bool operator()(const PointerStringPair& a,
                          const PointerStringPair& b) const {
-    if (a.first < b.first) return true;
-    if (a.first > b.first) return false;
-    return strcmp(a.second, b.second) < 0;
+    return a < b;
   }
 };
 
@@ -450,8 +437,7 @@ const Symbol kNullSymbol;
 typedef HASH_MAP<const char*, Symbol, HASH_FXN<const char*>, streq>
     SymbolsByNameMap;
 
-typedef HASH_MAP<PointerStringPair, Symbol, PointerStringPairHash,
-                 PointerStringPairEqual>
+typedef HASH_MAP<PointerStringPair, Symbol, PointerStringPairHash>
     SymbolsByParentMap;
 
 typedef HASH_MAP<const char*, const FileDescriptor*, HASH_FXN<const char*>,
@@ -459,7 +445,7 @@ typedef HASH_MAP<const char*, const FileDescriptor*, HASH_FXN<const char*>,
     FilesByNameMap;
 
 typedef HASH_MAP<PointerStringPair, const FieldDescriptor*,
-                 PointerStringPairHash, PointerStringPairEqual>
+                 PointerStringPairHash>
     FieldsByNameMap;
 
 typedef HASH_MAP<DescriptorIntPair, const FieldDescriptor*,
@@ -720,9 +706,9 @@ class FileDescriptorTables {
   // Find symbols.  These return a null Symbol (symbol.IsNull() is true)
   // if not found.
   inline Symbol FindNestedSymbol(const void* parent,
-                                 const std::string& name) const;
+                                 StringPiece name) const;
   inline Symbol FindNestedSymbolOfType(const void* parent,
-                                       const std::string& name,
+                                       StringPiece name,
                                        const Symbol::Type type) const;
 
   // These return nullptr if not found.
@@ -908,9 +894,9 @@ inline Symbol DescriptorPool::Tables::FindSymbol(const std::string& key) const {
 }
 
 inline Symbol FileDescriptorTables::FindNestedSymbol(
-    const void* parent, const std::string& name) const {
-  const Symbol* result = FindOrNull(
-      symbols_by_parent_, PointerStringPair(parent, name.c_str()));
+    const void* parent, StringPiece name) const {
+  const Symbol* result =
+      FindOrNull(symbols_by_parent_, PointerStringPair(parent, name));
   if (result == nullptr) {
     return kNullSymbol;
   } else {
@@ -919,8 +905,7 @@ inline Symbol FileDescriptorTables::FindNestedSymbol(
 }
 
 inline Symbol FileDescriptorTables::FindNestedSymbolOfType(
-    const void* parent, const std::string& name,
-    const Symbol::Type type) const {
+    const void* parent, StringPiece name, const Symbol::Type type) const {
   Symbol result = FindNestedSymbol(parent, name);
   if (result.type != type) return kNullSymbol;
   return result;
@@ -1737,7 +1722,7 @@ const FieldDescriptor* Descriptor::map_value() const {
 }
 
 const EnumValueDescriptor* EnumDescriptor::FindValueByName(
-    const std::string& key) const {
+    ConstStringParam key) const {
   Symbol result =
       file()->tables_->FindNestedSymbolOfType(this, key, Symbol::ENUM_VALUE);
   if (!result.IsNull()) {

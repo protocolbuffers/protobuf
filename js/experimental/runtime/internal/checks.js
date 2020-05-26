@@ -2,7 +2,7 @@
  * @fileoverview Proto internal runtime checks.
  *
  * Checks are grouped into different severity, see:
- * http://g3doc/javascript/protobuf/README.md#configurable-check-support-in-protocol-buffers
+ * http://g3doc/third_party/protobuf/javascript/README.md#configurable-check-support-in-protocol-buffers
  *
  * Checks are also grouped into different sections:
  *   - CHECK_BOUNDS:
@@ -23,7 +23,7 @@ const WireType = goog.require('protobuf.binary.WireType');
 
 //
 // See
-// http://g3doc/javascript/protobuf/README.md#configurable-check-support-in-protocol-buffers
+// http://g3doc/third_party/protobuf/javascript/README.md#configurable-check-support-in-protocol-buffers
 //
 /** @define{string} */
 const CHECK_LEVEL_DEFINE = goog.define('protobuf.defines.CHECK_LEVEL', '');
