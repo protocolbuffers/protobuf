@@ -744,7 +744,7 @@ PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParser(
     void* object, const char* ptr, ParseContext* ctx);
 
 template <typename T>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+PROTOBUF_EXPORT_TEMPLATE_DEFINE
 PROTOBUF_MUST_USE_RESULT const
     char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
                            bool (*is_valid)(int), InternalMetadata* metadata,
@@ -760,7 +760,7 @@ PROTOBUF_MUST_USE_RESULT const
 }
 
 template <typename T>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE(PROTOBUF_EXPORT)
+PROTOBUF_EXPORT_TEMPLATE_DEFINE
 PROTOBUF_MUST_USE_RESULT const
     char* PackedEnumParserArg(void* object, const char* ptr, ParseContext* ctx,
                               bool (*is_valid)(const void*, int),
