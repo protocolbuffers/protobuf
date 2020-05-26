@@ -89,6 +89,7 @@ static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
 static HashTable* message_get_gc(zval* object, zval** table, int* n);
 #endif
 static HashTable* message_get_properties(zval* object TSRMLS_DC);
+static HashTable* message_get_debug_info(zval *object, int *is_temp TSRMLS_DC);
 
 // -----------------------------------------------------------------------------
 // PHP Message Handlers
@@ -125,6 +126,7 @@ PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\Message",
   message_handlers->read_property = message_get_property;
   message_handlers->get_property_ptr_ptr = message_get_property_ptr_ptr;
   message_handlers->get_properties = message_get_properties;
+  message_handlers->get_debug_info = message_get_debug_info;
   message_handlers->get_gc = message_get_gc;
 PHP_PROTO_INIT_CLASS_END
 
@@ -254,6 +256,14 @@ static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
 
 static HashTable* message_get_properties(zval* object TSRMLS_DC) {
   return NULL;
+}
+
+static HashTable* message_get_debug_info(zval* object, int *is_temp TSRMLS_DC) {
+  *is_temp = 1;
+  HashTable *ht;
+  ALLOC_HASHTABLE(ht);
+  zend_hash_init(ht, 0, NULL, ZVAL_PTR_DTOR, 0);
+  return ht;
 }
 
 static HashTable* message_get_gc(zval* object, CACHED_VALUE** table,
