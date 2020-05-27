@@ -98,15 +98,11 @@ void MapFieldGenerator::GenerateParsingCode(io::Printer* printer) {
 }
 
 void MapFieldGenerator::GenerateParsingCode(io::Printer* printer, bool use_parse_context) {
-  if (use_parse_context) {
-    printer->Print(
-      variables_,
-      "$name$_.AddEntriesFrom(ref input, _map_$name$_codec);\n");
-  } else {
-    printer->Print(
-      variables_,
-      "$name$_.AddEntriesFrom(input, _map_$name$_codec);\n");
-  }
+  printer->Print(
+    variables_,
+    use_parse_context
+    ? "$name$_.AddEntriesFrom(ref input, _map_$name$_codec);\n"
+    : "$name$_.AddEntriesFrom(input, _map_$name$_codec);\n");
 }
 
 void MapFieldGenerator::GenerateSerializationCode(io::Printer* printer) {

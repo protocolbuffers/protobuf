@@ -82,15 +82,11 @@ void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
 }
 
 void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer, bool use_parse_context) {
-  if (use_parse_context) {
-    printer->Print(
-      variables_,
-      "$name$_.AddEntriesFrom(ref input, _repeated_$name$_codec);\n");
-  } else {
-    printer->Print(
-      variables_,
-      "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
-  }
+  printer->Print(
+    variables_,
+    use_parse_context
+    ? "$name$_.AddEntriesFrom(ref input, _repeated_$name$_codec);\n"
+    : "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
