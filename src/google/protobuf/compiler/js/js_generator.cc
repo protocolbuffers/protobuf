@@ -477,7 +477,7 @@ bool IgnoreOneof(const OneofDescriptor* oneof) {
 
 std::string JSIdent(const GeneratorOptions& options,
                     const FieldDescriptor* field, bool is_upper_camel,
-                    bool is_map, bool drop_list) {
+                    bool is_map, bool drop_list, bool preserve_fieldnames = false) {
   std::string result;
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     result = is_upper_camel
@@ -487,14 +487,16 @@ std::string JSIdent(const GeneratorOptions& options,
     result = is_upper_camel ? ToUpperCamel(ParseLowerUnderscore(field->name()))
                             : ToLowerCamel(ParseLowerUnderscore(field->name()));
   }
-  if (is_map || field->is_map()) {
-    // JSPB-style or proto3-style map.
-    result += "Map";
-  } else if (!drop_list && field->is_repeated()) {
-    // Repeated field.
-    result += "List";
+  if(!mantain_proto_fieldnames) {
+    if (is_map || field->is_map()) {
+      // JSPB-style or proto3-style map.
+      result += "Map";
+    } else if (!drop_list && field->is_repeated()) {
+      // Repeated field.
+      result += "List";
+    }
+    return result;
   }
-  return result;
 }
 
 std::string JSObjectFieldName(const GeneratorOptions& options,

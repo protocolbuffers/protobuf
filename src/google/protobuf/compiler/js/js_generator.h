@@ -74,6 +74,8 @@ struct GeneratorOptions {
     kImportBrowser,         // no import statements
     kImportEs6,             // import { member } from ''
   } import_style;
+  // Mantain the names in the repeated values
+  bool mantain_proto_fieldnames;
 
   GeneratorOptions()
       : output_dir("."),
@@ -86,6 +88,7 @@ struct GeneratorOptions {
         error_on_name_conflict(false),
         extension(".js"),
         one_output_file_per_input_file(false),
+        mantain_proto_fieldnames(false),
         annotate_code(false) {}
 
   bool ParseFromOptions(
