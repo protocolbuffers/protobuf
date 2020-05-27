@@ -66,6 +66,8 @@ struct GeneratorOptions {
   std::string namespace_prefix;
   // Enable binary-format support?
   bool binary;
+  // Mantain the names in the repeated and map filenames
+  bool mantain_proto_fieldnames;
   // What style of imports should be used.
   enum ImportStyle {
     kImportClosure,         // goog.require()
@@ -79,6 +81,7 @@ struct GeneratorOptions {
       : output_dir("."),
         namespace_prefix(""),
         binary(false),
+        mantain_proto_fieldnames(false),
         import_style(kImportClosure),
         add_require_for_enums(false),
         testonly(false),
