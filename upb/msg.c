@@ -43,16 +43,14 @@ static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
   return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
 }
 
-static upb_msg_internal_withext *upb_msg_getinternalwithext(
-    upb_msg *msg, const upb_msglayout *l) {
-  UPB_ASSERT(l->extendable);
-  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal_withext),
-                    upb_msg_internal_withext);
+void _upb_msg_clear(upb_msg *msg, const upb_msglayout *l) {
+  size_t internal = upb_msg_internalsize(l);
+  void *mem = UPB_PTR_AT(msg, -internal, char);
+  memset(mem, 0, l->size + internal);
 }
 
 upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   void *mem = upb_arena_malloc(a, upb_msg_sizeof(l));
-  upb_msg_internal *in;
   upb_msg *msg;
 
   if (!mem) {
@@ -60,20 +58,7 @@ upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
   }
 
   msg = UPB_PTR_AT(mem, upb_msg_internalsize(l), upb_msg);
-
-  /* Initialize normal members. */
-  memset(msg, 0, l->size);
-
-  /* Initialize internal members. */
-  in = upb_msg_getinternal(msg);
-  in->unknown = NULL;
-  in->unknown_len = 0;
-  in->unknown_size = 0;
-
-  if (l->extendable) {
-    upb_msg_getinternalwithext(msg, l)->extdict = NULL;
-  }
-
+  _upb_msg_clear(msg, l);
   return msg;
 }
 
@@ -92,6 +77,11 @@ bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
   memcpy(in->unknown + in->unknown_len, data, len);
   in->unknown_len += len;
   return true;
+}
+
+void _upb_msg_discardunknown_shallow(upb_msg *msg) {
+  upb_msg_internal *in = upb_msg_getinternal(msg);
+  in->unknown_len = 0;
 }
 
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len) {

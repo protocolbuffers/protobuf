@@ -85,16 +85,22 @@ bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f) {
   }
 }
 
-bool upb_msg_hasoneof(const upb_msg *msg, const upb_oneofdef *o) {
+const upb_fielddef *upb_msg_whichoneof(const upb_msg *msg,
+                                       const upb_oneofdef *o) {
   upb_oneof_iter i;
   const upb_fielddef *f;
   const upb_msglayout_field *field;
+  const upb_msgdef *m = upb_oneofdef_containingtype(o);
+  uint32_t oneof_case;
 
+  /* This is far from optimal. */
   upb_oneof_begin(&i, o);
   if (upb_oneof_done(&i)) return false;
   f = upb_oneof_iter_field(&i);
   field = upb_fielddef_layout(f);
-  return *oneofcase(msg, field) != 0;
+  oneof_case = *oneofcase(msg, field);
+
+  return oneof_case ? upb_msgdef_itof(m, oneof_case) : NULL;
 }
 
 upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
@@ -164,6 +170,9 @@ upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f,
 
     if (wrong_oneof) {
       *oneofcase(msg, field) = field->number;
+    } else if (field->presence > 0) {
+      uint32_t hasbit = field->presence;
+      *UPB_PTR_AT(msg, hasbit / 8, uint8_t) |= (1 << (hasbit % 8));
     }
   }
   return ret;
@@ -176,9 +185,34 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
   int size = upb_fielddef_isseq(f) ? sizeof(void *)
                                    : field_size[field->descriptortype];
   memcpy(mem, &val, size);
-  if (in_oneof(field)) {
+  if (field->presence > 0) {
+    uint32_t hasbit = field->presence;
+    *UPB_PTR_AT(msg, hasbit / 8, uint8_t) |= (1 << (hasbit % 8));
+  } else if (in_oneof(field)) {
     *oneofcase(msg, field) = field->number;
   }
+}
+
+void upb_msg_clearfield(upb_msg *msg, const upb_fielddef *f) {
+  const upb_msglayout_field *field = upb_fielddef_layout(f);
+  char *mem = UPB_PTR_AT(msg, field->offset, char);
+  int size = upb_fielddef_isseq(f) ? sizeof(void *)
+                                   : field_size[field->descriptortype];
+
+  if (field->presence > 0) {
+    uint32_t hasbit = field->presence;
+    *UPB_PTR_AT(msg, hasbit / 8, uint8_t) &= ~(1 << (hasbit % 8));
+  } else if (in_oneof(field)) {
+    uint32_t *oneof_case = oneofcase(msg, field);
+    if (*oneof_case != field->number) return;
+    *oneof_case = 0;
+  }
+
+  memset(mem, 0, size);
+}
+
+void upb_msg_clear(upb_msg *msg, const upb_msgdef *m) {
+  _upb_msg_clear(msg, upb_msgdef_layout(m));
 }
 
 bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
@@ -217,6 +251,56 @@ bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
   }
   *iter = i;
   return false;
+}
+
+bool _upb_msg_discardunknown(upb_msg *msg, const upb_msgdef *m, int depth) {
+  size_t iter = UPB_MSG_BEGIN;
+  const upb_fielddef *f;
+  upb_msgval val;
+  bool ret = true;
+
+  if (--depth == 0) return false;
+
+  _upb_msg_discardunknown_shallow(msg);
+
+  while (upb_msg_next(msg, m, NULL /*ext_pool*/, &f, &val, &iter)) {
+    const upb_msgdef *subm = upb_fielddef_msgsubdef(f);
+    if (!subm) continue;
+    if (upb_fielddef_ismap(f)) {
+      const upb_fielddef *val_f = upb_msgdef_itof(subm, 2);
+      const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
+      upb_map *map = (upb_map*)val.map_val;
+      size_t iter = UPB_MAP_BEGIN;
+
+      if (!val_m) continue;
+
+      while (upb_mapiter_next(map, &iter)) {
+        upb_msgval map_val = upb_mapiter_value(map, iter);
+        if (!_upb_msg_discardunknown((upb_msg*)map_val.msg_val, val_m, depth)) {
+          ret = false;
+        }
+      }
+    } else if (upb_fielddef_isseq(f)) {
+      const upb_array *arr = val.array_val;
+      size_t i, n = upb_array_size(arr);
+      for (i = 0; i < n; i++) {
+        upb_msgval elem = upb_array_get(arr, i);
+        if (!_upb_msg_discardunknown((upb_msg*)elem.msg_val, subm, depth)) {
+          ret = false;
+        }
+      }
+    } else {
+      if (!_upb_msg_discardunknown((upb_msg*)val.msg_val, subm, depth)) {
+        ret = false;
+      }
+    }
+  }
+
+  return ret;
+}
+
+bool upb_msg_discardunknown(upb_msg *msg, const upb_msgdef *m, int maxdepth) {
+  return _upb_msg_discardunknown(msg, m, maxdepth);
 }
 
 /** upb_array *****************************************************************/

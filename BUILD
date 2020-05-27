@@ -120,7 +120,13 @@ cc_library(
 )
 
 upb_proto_library(
-    name = "descriptor_upbproto",
+    name = "descriptor_upb_proto",
+    visibility = ["//visibility:public"],
+    deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "descriptor_upb_proto_reflection",
     visibility = ["//visibility:public"],
     deps = ["@com_google_protobuf//:descriptor_proto"],
 )
@@ -143,7 +149,7 @@ cc_library(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        ":descriptor_upbproto",
+        ":descriptor_upb_proto",
         ":port",
         ":table",
         ":upb",
@@ -239,7 +245,7 @@ cc_library(
         "//conditions:default": COPTS,
     }),
     deps = [
-        ":descriptor_upbproto",
+        ":descriptor_upb_proto",
         ":handlers",
         ":port",
         ":reflection",
@@ -276,7 +282,7 @@ cc_library(
         "upb/bindings/stdc++/string.h",
     ],
     deps = [
-        ":descriptor_upbproto",
+        ":descriptor_upb_proto",
         ":handlers",
         ":port",
         ":upb",
@@ -335,7 +341,7 @@ cc_binary(
     testonly = 1,
     srcs = ["tests/benchmark.cc"],
     deps = [
-        ":descriptor_upbproto",
+        ":descriptor_upb_proto",
         ":descriptor_upbreflection",
         "@com_github_google_benchmark//:benchmark_main",
     ],
@@ -387,7 +393,7 @@ proto_library(
 )
 
 upb_proto_library(
-    name = "test_upbproto",
+    name = "test_upb_proto",
     testonly = 1,
     deps = [":test_proto"],
 )
@@ -398,7 +404,7 @@ cc_test(
     deps = [
         ":test_messages_proto3_proto_upb",
         ":empty_upbdefs_proto",
-        ":test_upbproto",
+        ":test_upb_proto",
         ":upb_test",
     ],
 )
@@ -428,7 +434,7 @@ proto_library(
 )
 
 upb_proto_reflection_library(
-    name = "test_decoder_upbproto",
+    name = "test_decoder_upb_proto",
     deps = [":test_decoder_proto"],
 )
 
@@ -445,7 +451,7 @@ cc_test(
     deps = [
         ":handlers",
         ":port",
-        ":test_decoder_upbproto",
+        ":test_decoder_upb_proto",
         ":upb",
         ":upb_pb",
         ":upb_test",
@@ -460,7 +466,7 @@ proto_library(
 )
 
 upb_proto_reflection_library(
-    name = "test_cpp_upbproto",
+    name = "test_cpp_upb_proto",
     deps = ["test_cpp_proto"],
 )
 
@@ -475,7 +481,7 @@ cc_test(
         ":handlers",
         ":port",
         ":reflection",
-        ":test_cpp_upbproto",
+        ":test_cpp_upb_proto",
         ":upb",
         ":upb_pb",
         ":upb_test",
@@ -514,7 +520,7 @@ cc_binary(
         ":fuzz": ["HAVE_FUZZER"],
     }),
     deps = [
-        ":descriptor_upbproto",
+        ":descriptor_upb_proto",
         ":upb",
     ],
 )
@@ -528,7 +534,7 @@ cc_test(
         "//conditions:default": CPPOPTS,
     }),
     deps = [
-        ":descriptor_upbproto",
+        ":descriptor_upb_proto",
         ":descriptor_upbreflection",
         ":upb",
         ":upb_cc_bindings",
@@ -549,17 +555,17 @@ proto_library(
 )
 
 upb_proto_reflection_library(
-    name = "test_json_upbprotoreflection",
+    name = "test_json_upb_proto_reflection",
     deps = ["test_json_proto"],
 )
 
 upb_proto_library(
-    name = "test_json_enum_from_separate_upbproto",
+    name = "test_json_enum_from_separate_upb_proto",
     deps = [":test_json_enum_from_separate"],
 )
 
 upb_proto_library(
-    name = "test_json_upbproto",
+    name = "test_json_upb_proto",
     deps = [":test_json_proto"],
 )
 
@@ -573,8 +579,8 @@ cc_test(
         "//conditions:default": CPPOPTS,
     }),
     deps = [
-        ":test_json_upbproto",
-        ":test_json_upbprotoreflection",
+        ":test_json_upb_proto",
+        ":test_json_upb_proto_reflection",
         ":upb_json",
         ":upb_test",
     ],
@@ -662,7 +668,7 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
-        ":descriptor_upbproto",
+        ":descriptor_upb_proto",
         ":reflection",
         ":handlers",
         ":port",
@@ -682,16 +688,17 @@ cc_library(
 )
 
 upb_amalgamation(
-    name = "gen_core_amalgamation",
-    prefix = "core-",
+    name = "gen_php_amalgamation",
+    prefix = "php-",
     outs = [
-        "core-upb.c",
-        "core-upb.h",
+        "php-upb.c",
+        "php-upb.h",
     ],
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
-        ":descriptor_upbproto",
+        ":descriptor_upb_proto",
+        ":descriptor_upb_proto_reflection",
         ":reflection",
         ":port",
         ":json",
@@ -699,9 +706,9 @@ upb_amalgamation(
 )
 
 cc_library(
-    name = "core_amalgamation",
-    srcs = ["core-upb.c"],
-    hdrs = ["core-upb.h"],
+    name = "php_amalgamation",
+    srcs = ["php-upb.c"],
+    hdrs = ["php-upb.h"],
     copts = select({
         ":windows": [],
         "//conditions:default": COPTS,
@@ -851,7 +858,7 @@ genrule(
 
 genrule(
     name = "copy_protos",
-    srcs = [":descriptor_upbproto"],
+    srcs = [":descriptor_upb_proto"],
     outs = [
         "generated-in/generated_for_cmake/google/protobuf/descriptor.upb.c",
         "generated-in/generated_for_cmake/google/protobuf/descriptor.upb.h",

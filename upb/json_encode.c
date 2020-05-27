@@ -318,16 +318,16 @@ static void jsonenc_any(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
     jsonenc_err(e, "Error decoding message in Any");
   }
 
-  jsonenc_putstr(e, "{\"@type\": ");
+  jsonenc_putstr(e, "{\"@type\":");
   jsonenc_string(e, type_url);
-  jsonenc_putstr(e, ", ");
+  jsonenc_putstr(e, ",");
 
   if (upb_msgdef_wellknowntype(any_m) == UPB_WELLKNOWN_UNSPECIFIED) {
-    /* Regular messages: {"@type": "...", "foo": 1, "bar": 2} */
+    /* Regular messages: {"@type": "...","foo": 1, "bar": 2} */
     jsonenc_msgfields(e, any, any_m);
   } else {
-    /* Well-known type: {"@type": "...", "value": <well-known encoding>} */
-    jsonenc_putstr(e, "value: ");
+    /* Well-known type: {"@type": "...","value": <well-known encoding>} */
+    jsonenc_putstr(e, "\"value\":");
     jsonenc_msgfield(e, any, any_m);
   }
 
@@ -393,14 +393,16 @@ static void jsonenc_struct(jsonenc *e, const upb_msg *msg,
 
   jsonenc_putstr(e, "{");
 
-  while (upb_mapiter_next(fields, &iter)) {
-    upb_msgval key = upb_mapiter_key(fields, iter);
-    upb_msgval val = upb_mapiter_value(fields, iter);
+  if (fields) {
+    while (upb_mapiter_next(fields, &iter)) {
+      upb_msgval key = upb_mapiter_key(fields, iter);
+      upb_msgval val = upb_mapiter_value(fields, iter);
 
-    jsonenc_putsep(e, ", ", &first);
-    jsonenc_string(e, key.str_val);
-    jsonenc_putstr(e, ": ");
-    jsonenc_value(e, val.msg_val, upb_fielddef_msgsubdef(value_f));
+      jsonenc_putsep(e, ",", &first);
+      jsonenc_string(e, key.str_val);
+      jsonenc_putstr(e, ":");
+      jsonenc_value(e, val.msg_val, upb_fielddef_msgsubdef(value_f));
+    }
   }
 
   jsonenc_putstr(e, "}");
@@ -411,17 +413,19 @@ static void jsonenc_listvalue(jsonenc *e, const upb_msg *msg,
   const upb_fielddef *values_f = upb_msgdef_itof(m, 1);
   const upb_msgdef *values_m = upb_fielddef_msgsubdef(values_f);
   const upb_array *values = upb_msg_get(msg, values_f).array_val;
-  const size_t size = upb_array_size(values);
   size_t i;
   bool first = true;
 
   jsonenc_putstr(e, "[");
 
-  for (i = 0; i < size; i++) {
-    upb_msgval elem = upb_array_get(values, i);
+  if (values) {
+    const size_t size = upb_array_size(values);
+    for (i = 0; i < size; i++) {
+      upb_msgval elem = upb_array_get(values, i);
 
-    jsonenc_putsep(e, ", ", &first);
-    jsonenc_value(e, elem.msg_val, values_m);
+      jsonenc_putsep(e, ",", &first);
+      jsonenc_value(e, elem.msg_val, values_m);
+    }
   }
 
   jsonenc_putstr(e, "]");
@@ -564,7 +568,7 @@ static void jsonenc_mapkey(jsonenc *e, upb_msgval val, const upb_fielddef *f) {
       UPB_UNREACHABLE();
   }
 
-  jsonenc_putstr(e, "\": ");
+  jsonenc_putstr(e, "\":");
 }
 
 static void jsonenc_array(jsonenc *e, const upb_array *arr,
@@ -576,7 +580,7 @@ static void jsonenc_array(jsonenc *e, const upb_array *arr,
   jsonenc_putstr(e, "[");
 
   for (i = 0; i < size; i++) {
-    jsonenc_putsep(e, ", ", &first);
+    jsonenc_putsep(e, ",", &first);
     jsonenc_scalar(e, upb_array_get(arr, i), f);
   }
 
@@ -593,7 +597,7 @@ static void jsonenc_map(jsonenc *e, const upb_map *map, const upb_fielddef *f) {
   jsonenc_putstr(e, "{");
 
   while (upb_mapiter_next(map, &iter)) {
-    jsonenc_putsep(e, ", ", &first);
+    jsonenc_putsep(e, ",", &first);
     jsonenc_mapkey(e, upb_mapiter_key(map, iter), key_f);
     jsonenc_scalar(e, upb_mapiter_value(map, iter), val_f);
   }
@@ -611,8 +615,8 @@ static void jsonenc_fieldval(jsonenc *e, const upb_fielddef *f,
     name = upb_fielddef_jsonname(f);
   }
 
-  jsonenc_putsep(e, ", ", first);
-  jsonenc_printf(e, "\"%s\": ", name);
+  jsonenc_putsep(e, ",", first);
+  jsonenc_printf(e, "\"%s\":", name);
 
   if (upb_fielddef_ismap(f)) {
     jsonenc_map(e, val.map_val, f);
@@ -679,7 +683,7 @@ size_t upb_json_encode(const upb_msg *msg, const upb_msgdef *m,
 
   if (setjmp(e.err)) return -1;
 
-  jsonenc_msg(&e, msg, m);
+  jsonenc_msgfield(&e, msg, m);
   if (e.arena) upb_arena_free(e.arena);
   return jsonenc_nullz(&e, size);
 }

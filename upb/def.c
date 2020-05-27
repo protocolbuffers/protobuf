@@ -577,13 +577,11 @@ const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len) {
 }
 
 const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f) {
-  UPB_ASSERT(upb_fielddef_type(f) == UPB_TYPE_MESSAGE);
-  return f->sub.msgdef;
+  return upb_fielddef_type(f) == UPB_TYPE_MESSAGE ? f->sub.msgdef : NULL;
 }
 
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f) {
-  UPB_ASSERT(upb_fielddef_type(f) == UPB_TYPE_ENUM);
-  return f->sub.enumdef;
+  return upb_fielddef_type(f) == UPB_TYPE_ENUM ? f->sub.enumdef : NULL;
 }
 
 const upb_msglayout_field *upb_fielddef_layout(const upb_fielddef *f) {
@@ -749,6 +747,12 @@ bool upb_msgdef_isnumberwrapper(const upb_msgdef *m) {
   upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
   return type >= UPB_WELLKNOWN_DOUBLEVALUE &&
          type <= UPB_WELLKNOWN_UINT32VALUE;
+}
+
+bool upb_msgdef_iswrapper(const upb_msgdef *m) {
+  upb_wellknowntype_t type = upb_msgdef_wellknowntype(m);
+  return type >= UPB_WELLKNOWN_DOUBLEVALUE &&
+         type <= UPB_WELLKNOWN_BOOLVALUE;
 }
 
 void upb_msg_field_begin(upb_msg_field_iter *iter, const upb_msgdef *m) {

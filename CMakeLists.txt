@@ -88,7 +88,7 @@ add_library(reflection
   upb/def.hpp
   upb/reflection.h)
 target_link_libraries(reflection
-  descriptor_upbproto
+  descriptor_upb_proto
   port
   table
   upb)
@@ -134,7 +134,7 @@ add_library(upb_pb
   upb/pb/encoder.h
   upb/pb/textprinter.h)
 target_link_libraries(upb_pb
-  descriptor_upbproto
+  descriptor_upb_proto
   handlers
   port
   reflection
@@ -150,7 +150,7 @@ target_link_libraries(upb_json
   upb_pb)
 add_library(upb_cc_bindings INTERFACE)
 target_link_libraries(upb_cc_bindings INTERFACE
-  descriptor_upbproto
+  descriptor_upb_proto
   handlers
   port
   upb)

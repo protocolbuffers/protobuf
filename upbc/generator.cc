@@ -858,6 +858,7 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
   EmitFileWarning(file, output);
 
   output("#include \"upb/def.h\"\n");
+  output("#include \"$0\"\n", DefHeaderFilename(file->name()));
   output("\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
@@ -886,35 +887,19 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
   std::string file_data;
   file_proto.SerializeToString(&file_data);
 
-  output("static const char descriptor[$0] =", file_data.size());
+  output("static const char descriptor[$0] = {", file_data.size());
 
-  {
-    if (file_data.size() > 65535) {
-      // Workaround for MSVC: "Error C1091: compiler limit: string exceeds
-      // 65535 bytes in length". Declare a static array of chars rather than
-      // use a string literal. Only write 25 bytes per line.
-      static const size_t kBytesPerLine = 25;
-      output("{ ");
-      for (size_t i = 0; i < file_data.size();) {
-        for (size_t j = 0; j < kBytesPerLine && i < file_data.size(); ++i, ++j) {
-          output("'$0', ", absl::CEscape(file_data.substr(i, 1)));
-        }
-        output("\n");
-      }
-      output("'\\0' }");  // null-terminate
-    } else {
-      // Only write 40 bytes per line.
-      static const size_t kBytesPerLine = 40;
-      for (size_t i = 0; i < file_data.size(); i += kBytesPerLine) {
-        output("\n");
-        output(
-            "  \"$0\"",
-            EscapeTrigraphs(absl::CEscape(file_data.substr(i, kBytesPerLine))));
-      }
+  // C90 only guarantees that strings can be up to 509 characters, and some
+  // implementations have limits here (for example, MSVC only allows 64k:
+  // https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/fatal-error-c1091.
+  // So we always emit an array instead of a string.
+  for (size_t i = 0; i < file_data.size();) {
+    for (size_t j = 0; j < 25 && i < file_data.size(); ++i, ++j) {
+      output("'$0', ", absl::CEscape(file_data.substr(i, 1)));
     }
-    output(";\n");
+    output("\n");
   }
-  output("\n");
+  output("};\n\n");
 
   output("static upb_def_init *deps[$0] = {\n", file->dependency_count() + 1);
   for (int i = 0; i < file->dependency_count(); i++) {

@@ -408,7 +408,11 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   /* Set presence if necessary. */
   if (field->presence < 0) {
     /* Oneof case */
-    *UPB_PTR_AT(msg, -field->presence, int32_t) = field->number;
+    int32_t *oneof_case = UPB_PTR_AT(msg, -field->presence, int32_t);
+    if (op == OP_SUBMSG && *oneof_case != field->number) {
+      memset(mem, 0, sizeof(void*));
+    }
+    *oneof_case = field->number;
   } else if (field->presence > 0) {
     /* Hasbit */
     uint32_t hasbit = field->presence;

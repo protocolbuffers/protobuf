@@ -44,8 +44,9 @@ upb_mutmsgval upb_msg_mutable(upb_msg *msg, const upb_fielddef *f, upb_arena *a)
 /* May only be called for fields where upb_fielddef_haspresence(f) == true. */
 bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f);
 
-/* Returns whether any field is set in the oneof. */
-bool upb_msg_hasoneof(const upb_msg *msg, const upb_oneofdef *o);
+/* Returns the field that is set in the oneof, or NULL if none are set. */
+const upb_fielddef *upb_msg_whichoneof(const upb_msg *msg,
+                                       const upb_oneofdef *o);
 
 /* Sets the given field to the given value.  For a msg/array/map/string, the
  * value must be in the same arena.  */
@@ -54,6 +55,9 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
 
 /* Clears any field presence and sets the value back to its default. */
 void upb_msg_clearfield(upb_msg *msg, const upb_fielddef *f);
+
+/* Clear all data and unknown fields. */
+void upb_msg_clear(upb_msg *msg, const upb_msgdef *m);
 
 /* Iterate over present fields.
  *
@@ -78,6 +82,9 @@ bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
  * is copied into the message instance. */
 void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
                         upb_arena *arena);
+
+/* Clears all unknown field data from this message and all submessages. */
+bool upb_msg_discardunknown(upb_msg *msg, const upb_msgdef *m, int maxdepth);
 
 /* Returns a reference to the message's unknown data. */
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);

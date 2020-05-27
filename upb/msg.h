@@ -81,6 +81,12 @@ extern char _upb_fieldtype_to_size[12];
 /* Creates a new messages with the given layout on the given arena. */
 upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a);
 
+/* Clears the given message. */
+void _upb_msg_clear(upb_msg *msg, const upb_msglayout *l);
+
+/* Discards the unknown fields for this message only. */
+void _upb_msg_discardunknown_shallow(upb_msg *msg);
+
 /* Adds unknown data (serialized protobuf data) to the given message.  The data
  * is copied into the message instance. */
 bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
