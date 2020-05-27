@@ -477,7 +477,7 @@ bool IgnoreOneof(const OneofDescriptor* oneof) {
 
 std::string JSIdent(const GeneratorOptions& options,
                     const FieldDescriptor* field, bool is_upper_camel,
-                    bool is_map, bool drop_list, bool preserve_fieldnames = false) {
+                    bool is_map, bool drop_list, bool mantain_proto_fieldnames = false) {
   std::string result;
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     result = is_upper_camel
