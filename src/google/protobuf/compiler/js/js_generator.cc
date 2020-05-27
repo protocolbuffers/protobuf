@@ -3502,7 +3502,7 @@ bool GeneratorOptions::ParseFromOptions(
     } else if (options[i].first == "library") {
       library = options[i].second;
     } else if (options[i].first == "mantain_proto_fieldnames") {
-      mantain_proto_fieldnames = true;
+      mantain_proto_fieldnames = true; 
     } else if (options[i].first == "import_style") {
       if (options[i].second == "closure") {
         import_style = kImportClosure;
