@@ -66,7 +66,7 @@ struct GeneratorOptions {
   std::string namespace_prefix;
   // Enable binary-format support?
   bool binary;
-  // Mantain the names in the repeated values
+  // Mantain the names in the repeated and map filenames
   bool mantain_proto_fieldnames;
   // What style of imports should be used.
   enum ImportStyle {
