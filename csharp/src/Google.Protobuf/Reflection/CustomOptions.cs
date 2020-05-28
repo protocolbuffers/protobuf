@@ -153,7 +153,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetSInt32(int field, out int value)
-            => TryGetPrimitiveValue<int, ulong>(field, UnknownField.TryGetLastVarint, (v) => CodedInputStream.DecodeZigZag32((uint)v), out value);
+            => TryGetPrimitiveValue<int, ulong>(field, UnknownField.TryGetLastVarint, (v) => ParsingPrimitives.DecodeZigZag32((uint)v), out value);
 
         /// <summary>
         /// Retrieves a signed 64-bit integer value for the specified option field,
@@ -163,7 +163,7 @@ namespace Google.Protobuf.Reflection
         /// <param name="value">The output variable to populate.</param>
         /// <returns><c>true</c> if a suitable value for the field was found; <c>false</c> otherwise.</returns>
         public bool TryGetSInt64(int field, out long value)
-            => TryGetPrimitiveValue<long, ulong>(field, UnknownField.TryGetLastVarint, CodedInputStream.DecodeZigZag64, out value);
+            => TryGetPrimitiveValue<long, ulong>(field, UnknownField.TryGetLastVarint, ParsingPrimitives.DecodeZigZag64, out value);
 
         /// <summary>
         /// Retrieves an unsigned 32-bit integer value for the specified option field.
@@ -260,6 +260,9 @@ namespace Google.Protobuf.Reflection
                 }
             }
 
+            // if we can't find it in the typed extension set, check unknown fields.
+            // code generated before extensions support won't register extensions when parsing descriptors,
+            // so they don't show in the typed set, but they will show up as unknown fields
             UnknownField f;
             if (UnknownFieldSet.TryGetField(unknownFields, field, out f))
             {
@@ -277,21 +280,36 @@ namespace Google.Protobuf.Reflection
 
         private delegate bool TryGetLastValue<T>(UnknownField field, out T value);
 
+        /// <summary>
+        /// Tries to get the primitive value from the extension dictionary, otherwise falls-back to the unknown field set.
+        /// </summary>
+        /// <typeparam name="T">The returned type</typeparam>
+        /// <typeparam name="U">The unknown field representation</typeparam>
+        /// <param name="field">The field number to try and get a value for</param>
+        /// <param name="getValue">A function that tries to get the last value of a field of a specific type in an unknown field.</param>
+        /// <param name="conv">A conversion function that converts from an unknown field value to the output value</param>
+        /// <param name="value">The resulting value</param>
+        /// <returns><c>true</c> if a field value was found, <c>false</c> otherwise</returns>
         private bool TryGetPrimitiveValue<T, U>(int field, TryGetLastValue<U> getValue, Func<U, T> conv, out T value)
         {
+            // check if any typed extension values were read
             if (values != null)
             {
+                // try and get a type-erased extension value from the set
                 IExtensionValue extensionValue;
                 if (values.TryGetValue(field, out extensionValue))
                 {
+                    // check if our output type matches with the value type
                     if (extensionValue is ExtensionValue<T>)
                     {
                         ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
                         value = single.GetValue();
                         return true;
                     }
+                    // check if it matches but is a repeated field
                     else if (extensionValue is RepeatedExtensionValue<T>)
                     {
+                        // match the old custom options behavior by returning the last value in the field
                         RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
                         if (repeated.GetValue().Count != 0)
                         {
@@ -331,6 +349,9 @@ namespace Google.Protobuf.Reflection
                 }
             }
 
+            // if we can't find it in the typed extension set, check unknown fields.
+            // code generated before extensions support won't register extensions when parsing descriptors,
+            // so they don't show in the typed set, but they will show up as unknown fields
             UnknownField f;
             if (UnknownFieldSet.TryGetField(unknownFields, field, out f))
             {

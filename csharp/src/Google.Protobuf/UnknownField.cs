@@ -51,11 +51,11 @@ namespace Google.Protobuf
     /// </summary>
     internal sealed class UnknownField
     {
-        private List<ulong> varintList;
-        private List<uint> fixed32List;
-        private List<ulong> fixed64List;
-        private List<ByteString> lengthDelimitedList;
-        private List<UnknownFieldSet> groupList;
+        internal List<ulong> VarintList { get; private set; }
+        internal List<uint> Fixed32List { get; private set; }
+        internal List<ulong> Fixed64List { get; private set; }
+        internal List<ByteString> LengthDelimitedList { get; private set; }
+        internal List<UnknownFieldSet> GroupList { get; private set; }
 
         /// <summary>
         /// Creates a new UnknownField.
@@ -63,8 +63,6 @@ namespace Google.Protobuf
         public UnknownField()
         {
         }
-
-        internal List<ByteString> LengthDelimitedList => lengthDelimitedList;
 
         /// <summary>
         /// Checks if two unknown field are equal.
@@ -77,11 +75,11 @@ namespace Google.Protobuf
             }
             UnknownField otherField = other as UnknownField;
             return otherField != null
-                   && Lists.Equals(varintList, otherField.varintList)
-                   && Lists.Equals(fixed32List, otherField.fixed32List)
-                   && Lists.Equals(fixed64List, otherField.fixed64List)
-                   && Lists.Equals(lengthDelimitedList, otherField.lengthDelimitedList)
-                   && Lists.Equals(groupList, otherField.groupList);
+                   && Lists.Equals(VarintList, otherField.VarintList)
+                   && Lists.Equals(Fixed32List, otherField.Fixed32List)
+                   && Lists.Equals(Fixed64List, otherField.Fixed64List)
+                   && Lists.Equals(LengthDelimitedList, otherField.LengthDelimitedList)
+                   && Lists.Equals(GroupList, otherField.GroupList);
         }
 
         /// <summary>
@@ -90,11 +88,11 @@ namespace Google.Protobuf
         public override int GetHashCode()
         {
             int hash = 43;
-            hash = hash * 47 + Lists.GetHashCode(varintList);
-            hash = hash * 47 + Lists.GetHashCode(fixed32List);
-            hash = hash * 47 + Lists.GetHashCode(fixed64List);
-            hash = hash * 47 + Lists.GetHashCode(lengthDelimitedList);
-            hash = hash * 47 + Lists.GetHashCode(groupList);
+            hash = hash * 47 + Lists.GetHashCode(VarintList);
+            hash = hash * 47 + Lists.GetHashCode(Fixed32List);
+            hash = hash * 47 + Lists.GetHashCode(Fixed64List);
+            hash = hash * 47 + Lists.GetHashCode(LengthDelimitedList);
+            hash = hash * 47 + Lists.GetHashCode(GroupList);
             return hash;
         }
 
@@ -106,41 +104,41 @@ namespace Google.Protobuf
         /// <param name="output">The write context to write to.</param>
         internal void WriteTo(int fieldNumber, ref WriteContext output)
         {
-            if (varintList != null)
+            if (VarintList != null)
             {
-                foreach (ulong value in varintList)
+                foreach (ulong value in VarintList)
                 {
                     output.WriteTag(fieldNumber, WireFormat.WireType.Varint);
                     output.WriteUInt64(value);
                 }
             }
-            if (fixed32List != null)
+            if (Fixed32List != null)
             {
-                foreach (uint value in fixed32List)
+                foreach (uint value in Fixed32List)
                 {
                     output.WriteTag(fieldNumber, WireFormat.WireType.Fixed32);
                     output.WriteFixed32(value);
                 }
             }
-            if (fixed64List != null)
+            if (Fixed64List != null)
             {
-                foreach (ulong value in fixed64List)
+                foreach (ulong value in Fixed64List)
                 {
                     output.WriteTag(fieldNumber, WireFormat.WireType.Fixed64);
                     output.WriteFixed64(value);
                 }
             }
-            if (lengthDelimitedList != null)
+            if (LengthDelimitedList != null)
             {
-                foreach (ByteString value in lengthDelimitedList)
+                foreach (ByteString value in LengthDelimitedList)
                 {
                     output.WriteTag(fieldNumber, WireFormat.WireType.LengthDelimited);
                     output.WriteBytes(value);
                 }
             }
-            if (groupList != null)
+            if (GroupList != null)
             {
-                foreach (UnknownFieldSet value in groupList)
+                foreach (UnknownFieldSet value in GroupList)
                 {
                     output.WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
                     value.WriteTo(ref output);
@@ -156,36 +154,36 @@ namespace Google.Protobuf
         internal int GetSerializedSize(int fieldNumber)
         {
             int result = 0;
-            if (varintList != null)
+            if (VarintList != null)
             {
-                result += CodedOutputStream.ComputeTagSize(fieldNumber) * varintList.Count;
-                foreach (ulong value in varintList)
+                result += CodedOutputStream.ComputeTagSize(fieldNumber) * VarintList.Count;
+                foreach (ulong value in VarintList)
                 {
                     result += CodedOutputStream.ComputeUInt64Size(value);
                 }
             }
-            if (fixed32List != null)
+            if (Fixed32List != null)
             {
-                result += CodedOutputStream.ComputeTagSize(fieldNumber) * fixed32List.Count;
-                result += CodedOutputStream.ComputeFixed32Size(1) * fixed32List.Count;
+                result += CodedOutputStream.ComputeTagSize(fieldNumber) * Fixed32List.Count;
+                result += CodedOutputStream.ComputeFixed32Size(1) * Fixed32List.Count;
             }
-            if (fixed64List != null)
+            if (Fixed64List != null)
             {
-                result += CodedOutputStream.ComputeTagSize(fieldNumber) * fixed64List.Count;
-                result += CodedOutputStream.ComputeFixed64Size(1) * fixed64List.Count;
+                result += CodedOutputStream.ComputeTagSize(fieldNumber) * Fixed64List.Count;
+                result += CodedOutputStream.ComputeFixed64Size(1) * Fixed64List.Count;
             }
-            if (lengthDelimitedList != null)
+            if (LengthDelimitedList != null)
             {
-                result += CodedOutputStream.ComputeTagSize(fieldNumber) * lengthDelimitedList.Count;
-                foreach (ByteString value in lengthDelimitedList)
+                result += CodedOutputStream.ComputeTagSize(fieldNumber) * LengthDelimitedList.Count;
+                foreach (ByteString value in LengthDelimitedList)
                 {
                     result += CodedOutputStream.ComputeBytesSize(value);
                 }
             }
-            if (groupList != null)
+            if (GroupList != null)
             {
-                result += CodedOutputStream.ComputeTagSize(fieldNumber) * 2 * groupList.Count;
-                foreach (UnknownFieldSet value in groupList)
+                result += CodedOutputStream.ComputeTagSize(fieldNumber) * 2 * GroupList.Count;
+                foreach (UnknownFieldSet value in GroupList)
                 {
                     result += value.CalculateSize();
                 }
@@ -200,11 +198,11 @@ namespace Google.Protobuf
         /// </summary>
         internal UnknownField MergeFrom(UnknownField other)
         {
-            varintList = AddAll(varintList, other.varintList);
-            fixed32List = AddAll(fixed32List, other.fixed32List);
-            fixed64List = AddAll(fixed64List, other.fixed64List);
-            lengthDelimitedList = AddAll(lengthDelimitedList, other.lengthDelimitedList);
-            groupList = AddAll(groupList, other.groupList);
+            VarintList = AddAll(VarintList, other.VarintList);
+            Fixed32List = AddAll(Fixed32List, other.Fixed32List);
+            Fixed64List = AddAll(Fixed64List, other.Fixed64List);
+            LengthDelimitedList = AddAll(LengthDelimitedList, other.LengthDelimitedList);
+            GroupList = AddAll(GroupList, other.GroupList);
             return this;
         }
 
@@ -237,7 +235,7 @@ namespace Google.Protobuf
         /// </summary>
         internal UnknownField AddVarint(ulong value)
         {
-            varintList = Add(varintList, value);
+            VarintList = Add(VarintList, value);
             return this;
         }
 
@@ -246,7 +244,7 @@ namespace Google.Protobuf
         /// </summary>
         internal UnknownField AddFixed32(uint value)
         {
-            fixed32List = Add(fixed32List, value);
+            Fixed32List = Add(Fixed32List, value);
             return this;
         }
 
@@ -255,7 +253,7 @@ namespace Google.Protobuf
         /// </summary>
         internal UnknownField AddFixed64(ulong value)
         {
-            fixed64List = Add(fixed64List, value);
+            Fixed64List = Add(Fixed64List, value);
             return this;
         }
 
@@ -264,25 +262,25 @@ namespace Google.Protobuf
         /// </summary>
         internal UnknownField AddLengthDelimited(ByteString value)
         {
-            lengthDelimitedList = Add(lengthDelimitedList, value);
+            LengthDelimitedList = Add(LengthDelimitedList, value);
             return this;
         }
 
         internal UnknownField AddGroup(UnknownFieldSet value)
         {
-            groupList = Add(groupList, value);
+            GroupList = Add(GroupList, value);
             return this;
         }
 
-        internal static bool TryGetLastVarint(UnknownField f, out ulong value) => TryGetLastOf(f.varintList, out value);
+        internal static bool TryGetLastVarint(UnknownField f, out ulong value) => TryGetLastOf(f.VarintList, out value);
 
-        internal static bool TryGetLastFixed32(UnknownField f, out uint value) => TryGetLastOf(f.fixed32List, out value);
+        internal static bool TryGetLastFixed32(UnknownField f, out uint value) => TryGetLastOf(f.Fixed32List, out value);
 
-        internal static bool TryGetLastFixed64(UnknownField f, out ulong value) => TryGetLastOf(f.fixed64List, out value);
+        internal static bool TryGetLastFixed64(UnknownField f, out ulong value) => TryGetLastOf(f.Fixed64List, out value);
 
-        internal static bool TryGetLastLengthDelimited(UnknownField f, out ByteString value) => TryGetLastOf(f.lengthDelimitedList, out value);
+        internal static bool TryGetLastLengthDelimited(UnknownField f, out ByteString value) => TryGetLastOf(f.LengthDelimitedList, out value);
 
-        private static bool TryGetLastOf<T>(List<T> list, out T value)
+        internal static bool TryGetLastOf<T>(List<T> list, out T value)
         {
             if (list != null && list.Count != 0)
             {
