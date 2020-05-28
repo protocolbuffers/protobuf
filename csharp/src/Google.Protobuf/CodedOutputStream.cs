@@ -263,9 +263,19 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteMessage(IMessage value)
         {
-            // TOOD: implement....
-            WriteLength(value.CalculateSize());
-            value.WriteTo(this);
+            // TODO(jtattermusch): if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
+            // what we're doing here works fine, but could be more efficient.
+            // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
+            var span = new Span<byte>(buffer);
+            WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
+            try
+            {
+                WritingPrimitivesMessages.WriteMessage(ref ctx, value);
+            }
+            finally
+            {
+                ctx.CopyStateTo(this);
+            }
         }
 
         /// <summary>
@@ -274,8 +284,16 @@ namespace Google.Protobuf
         /// <param name="value">The value to write</param>
         public void WriteGroup(IMessage value)
         {
-            // TODO: implement...
-            value.WriteTo(this);
+            var span = new Span<byte>(buffer);
+            WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
+            try
+            {
+                WritingPrimitivesMessages.WriteGroup(ref ctx, value);
+            }
+            finally
+            {
+                ctx.CopyStateTo(this);
+            }
         }
 
         /// <summary>
@@ -448,123 +466,49 @@ namespace Google.Protobuf
         }
         #endregion
 
-        //#region Underlying writing primitives
-        ///// <summary>
-        ///// Writes a 32 bit value as a varint. The fast route is taken when
-        ///// there's enough buffer space left to whizz through without checking
-        ///// for each byte; otherwise, we resort to calling WriteRawByte each time.
-        ///// </summary>
-        //internal void WriteRawVarint32(uint value)
-        //{
-        //    // Optimize for the common case of a single byte value
-        //    if (value < 128 && position < limit)
-        //    {
-        //        buffer[position++] = (byte)value;
-        //        return;
-        //    }
+        #region Underlying writing primitives
+        
+        /// <summary>
+        /// Writes a 32 bit value as a varint. The fast route is taken when
+        /// there's enough buffer space left to whizz through without checking
+        /// for each byte; otherwise, we resort to calling WriteRawByte each time.
+        /// </summary>
+        internal void WriteRawVarint32(uint value)
+        {
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawVarint32(ref span, ref state, value);
+        }
 
-        //    while (value > 127 && position < limit)
-        //    {
-        //        buffer[position++] = (byte) ((value & 0x7F) | 0x80);
-        //        value >>= 7;
-        //    }
-        //    while (value > 127)
-        //    {
-        //        WriteRawByte((byte) ((value & 0x7F) | 0x80));
-        //        value >>= 7;
-        //    }
-        //    if (position < limit)
-        //    {
-        //        buffer[position++] = (byte) value;
-        //    }
-        //    else
-        //    {
-        //        WriteRawByte((byte) value);
-        //    }
-        //}
+        internal void WriteRawVarint64(ulong value)
+        {
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawVarint64(ref span, ref state, value);
+        }
 
-        //internal void WriteRawVarint64(ulong value)
-        //{
-        //    while (value > 127 && position < limit)
-        //    {
-        //        buffer[position++] = (byte) ((value & 0x7F) | 0x80);
-        //        value >>= 7;
-        //    }
-        //    while (value > 127)
-        //    {
-        //        WriteRawByte((byte) ((value & 0x7F) | 0x80));
-        //        value >>= 7;
-        //    }
-        //    if (position < limit)
-        //    {
-        //        buffer[position++] = (byte) value;
-        //    }
-        //    else
-        //    {
-        //        WriteRawByte((byte) value);
-        //    }
-        //}
+        internal void WriteRawLittleEndian32(uint value)
+        {
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawLittleEndian32(ref span, ref state, value);
+        }
 
-        //internal void WriteRawLittleEndian32(uint value)
-        //{
-        //    if (position + 4 > limit)
-        //    {
-        //        WriteRawByte((byte) value);
-        //        WriteRawByte((byte) (value >> 8));
-        //        WriteRawByte((byte) (value >> 16));
-        //        WriteRawByte((byte) (value >> 24));
-        //    }
-        //    else
-        //    {
-        //        buffer[position++] = ((byte) value);
-        //        buffer[position++] = ((byte) (value >> 8));
-        //        buffer[position++] = ((byte) (value >> 16));
-        //        buffer[position++] = ((byte) (value >> 24));
-        //    }
-        //}
+        internal void WriteRawLittleEndian64(ulong value)
+        {
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawLittleEndian64(ref span, ref state, value);
+        }
 
-        //internal void WriteRawLittleEndian64(ulong value)
-        //{
-        //    if (position + 8 > limit)
-        //    {
-        //        WriteRawByte((byte) value);
-        //        WriteRawByte((byte) (value >> 8));
-        //        WriteRawByte((byte) (value >> 16));
-        //        WriteRawByte((byte) (value >> 24));
-        //        WriteRawByte((byte) (value >> 32));
-        //        WriteRawByte((byte) (value >> 40));
-        //        WriteRawByte((byte) (value >> 48));
-        //        WriteRawByte((byte) (value >> 56));
-        //    }
-        //    else
-        //    {
-        //        buffer[position++] = ((byte) value);
-        //        buffer[position++] = ((byte) (value >> 8));
-        //        buffer[position++] = ((byte) (value >> 16));
-        //        buffer[position++] = ((byte) (value >> 24));
-        //        buffer[position++] = ((byte) (value >> 32));
-        //        buffer[position++] = ((byte) (value >> 40));
-        //        buffer[position++] = ((byte) (value >> 48));
-        //        buffer[position++] = ((byte) (value >> 56));
-        //    }
-        //}
+        internal void WriteRawByte(byte value)
+        {
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawByte(ref span, ref state, value);
+        }
 
-        //internal void WriteRawByte(byte value)
-        //{
-        //    if (position == limit)
-        //    {
-        //        RefreshBuffer();
-        //    }
+        internal void WriteRawByte(uint value)
+        {
+            var span = new Span<byte>(buffer);
+            WritingPrimitives.WriteRawByte(ref span, ref state, value);
+        }
 
-        //    buffer[position++] = value;
-        //}
-
-        //internal void WriteRawByte(uint value)
-        //{
-        //    WriteRawByte((byte) value);
-        //}
-
-        // TODO: get rid of this internal method
         /// <summary>
         /// Writes out an array of bytes.
         /// </summary>
@@ -573,7 +517,6 @@ namespace Google.Protobuf
             WriteRawBytes(value, 0, value.Length);
         }
 
-        // TODO: get rid of this internal method
         /// <summary>
         /// Writes out part of an array of bytes.
         /// </summary>
@@ -583,7 +526,7 @@ namespace Google.Protobuf
             WritingPrimitives.WriteRawBytes(ref span, ref state, value, offset, length);
         }
 
-        //#endregion
+        #endregion
 
         ///// <summary>
         ///// Encode a 32-bit value with ZigZag encoding.
