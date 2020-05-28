@@ -766,5 +766,9 @@ namespace Google.Protobuf
                 }
             }
         }
+
+        internal byte[] InternalBuffer => buffer;
+
+        internal Stream InternalOutputStream => output;
     }
 }
