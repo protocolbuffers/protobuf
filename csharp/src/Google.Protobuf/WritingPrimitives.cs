@@ -165,6 +165,7 @@ namespace Google.Protobuf
                     {
                         buffer[state.position + i] = (byte)value[i];
                     }
+                    state.position += length;
                 }
                 else
                 {
@@ -173,8 +174,8 @@ namespace Google.Protobuf
                     WriteRawBytes(ref buffer, ref state, bytes);
                     // TODO: we need to write to a span...
                     //Utf8Encoding.GetBytes(value, 0, value.Length, buffer, state.position);
+                    //state.position += length;
                 }
-                state.position += length;
             }
             else
             {
