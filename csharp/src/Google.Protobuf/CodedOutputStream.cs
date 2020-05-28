@@ -33,6 +33,7 @@
 using Google.Protobuf.Collections;
 using System;
 using System.IO;
+using System.Security;
 using System.Text;
 
 namespace Google.Protobuf
@@ -304,7 +305,6 @@ namespace Google.Protobuf
         public void WriteBytes(ByteString value)
         {
             var span = new Span<byte>(buffer);
-            WritingPrimitives.WriteLength(ref span, ref state, value.Length);
             WritingPrimitives.WriteBytes(ref span, ref state, value);
         }
 

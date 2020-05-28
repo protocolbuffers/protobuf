@@ -67,8 +67,20 @@ namespace Google.Protobuf
         {
             if (message is IBufferMessage bufferMessage)
             {
-                // TODO: actually invoke the method
+                // TODO: actually invoke the InternalWriteTo method!!!!
                 //bufferMessage.InternalWriteTo(ref ctx);
+
+                // TODO: get rid of this code!
+                ctx.CopyStateTo(ctx.state.CodedOutputStream);
+                try
+                {
+                    // fallback parse using the CodedOutputStream that started current serialization tree
+                    message.WriteTo(ctx.state.CodedOutputStream);
+                }
+                finally
+                {
+                    ctx.LoadStateFrom(ctx.state.CodedOutputStream);
+                }
             }
             else
             {

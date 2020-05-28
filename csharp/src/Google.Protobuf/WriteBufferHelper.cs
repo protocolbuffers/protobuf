@@ -47,7 +47,7 @@ namespace Google.Protobuf
         private IBufferWriter<byte> bufferWriter;
         private CodedOutputStream codedOutputStream;
 
-        public CodedOutputStream CodedOutputStream => CodedOutputStream;
+        public CodedOutputStream CodedOutputStream => codedOutputStream;
 
         /// <summary>
         /// Initialize an instance with a coded output stream.
