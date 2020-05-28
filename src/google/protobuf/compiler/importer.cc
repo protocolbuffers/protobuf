@@ -490,6 +490,15 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
 
 io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
     const std::string& filename) {
+  struct stat sb;
+  int ret = 0;
+  do {
+    ret = stat(filename.c_str(), &sb);
+  } while (ret != 0 && errno == EINTR);
+  if (!S_ISREG(sb.st_mode)) {
+    last_error_message_ = "Input file is not a regular file.";
+    return NULL;
+  }
   int file_descriptor;
   do {
     file_descriptor = open(filename.c_str(), O_RDONLY);
