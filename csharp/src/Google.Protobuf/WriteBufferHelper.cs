@@ -72,7 +72,7 @@ namespace Google.Protobuf
             buffer = default;  // TODO: initialize the initial buffer so that the first write is not via slowpath.
         }
 
-        public void RefreshBuffer(ref Span<byte> buffer, ref EncoderInternalState state)
+        public void RefreshBuffer(ref Span<byte> buffer, ref WriterInternalState state)
         {
             if (codedOutputStream?.InternalOutputStream != null)
             {
@@ -94,7 +94,7 @@ namespace Google.Protobuf
             }
         }
 
-        public void Flush(ref Span<byte> buffer, ref EncoderInternalState state)
+        public void Flush(ref Span<byte> buffer, ref WriterInternalState state)
         {
             if (codedOutputStream?.InternalOutputStream != null)
             {

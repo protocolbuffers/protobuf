@@ -45,7 +45,7 @@ namespace Google.Protobuf
 {
     
     // warning: this is a mutable struct, so it needs to be only passed as a ref!
-    internal struct EncoderInternalState
+    internal struct WriterInternalState
     {
         // NOTE: the Span representing the current buffer is kept separate so that this doesn't have to be a ref struct and so it can
         // be included in CodedOutputStream's internal state
