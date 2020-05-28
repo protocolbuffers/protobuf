@@ -47,7 +47,7 @@ namespace Google.Protobuf
     // warning: this is a mutable struct, so it needs to be only passed as a ref!
     internal struct ParserInternalState
     {
-        // NOTE: the Span representing the current buffer is kept separate so that this doesn't have to be a ref struct and so it can live
+        // NOTE: the Span representing the current buffer is kept separate so that this doesn't have to be a ref struct and so it can
         // be included in CodedInputStream's internal state
 
         /// <summary>
