@@ -570,6 +570,14 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
+        /// The <c>FileOptions</c>, defined in <c>descriptor.proto</c>.
+        /// If the options message is not present (i.e. there are no options), <c>null</c> is returned.
+        /// Custom options can be retrieved as extensions of the returned message.
+        /// NOTE: A defensive copy is created each time this property is retrieved.
+        /// </summary>
+        public FileOptions GetOptions() => Proto.Options?.Clone();
+
+        /// <summary>
         /// Performs initialization for the given generic type argument.
         /// </summary>
         /// <remarks>
