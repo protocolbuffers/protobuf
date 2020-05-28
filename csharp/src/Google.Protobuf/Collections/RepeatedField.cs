@@ -216,9 +216,9 @@ namespace Google.Protobuf.Collections
             if (codec.PackedRepeatedField)
             {
                 // Packed primitive type
-                uint size = (uint)CalculatePackedDataSize(codec);
+                int size = CalculatePackedDataSize(codec);
                 output.WriteTag(tag);
-                output.WriteRawVarint32(size);
+                output.WriteLength(size);
                 for (int i = 0; i < count; i++)
                 {
                     writer(output, array[i]);

@@ -208,7 +208,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeSInt32Size(int value)
         {
-            return ComputeRawVarint32Size(EncodeZigZag32(value));
+            return ComputeRawVarint32Size(WritingPrimitives.EncodeZigZag32(value));
         }
 
         /// <summary>
@@ -217,7 +217,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeSInt64Size(long value)
         {
-            return ComputeRawVarint64Size(EncodeZigZag64(value));
+            return ComputeRawVarint64Size(WritingPrimitives.EncodeZigZag64(value));
         }
 
         /// <summary>
