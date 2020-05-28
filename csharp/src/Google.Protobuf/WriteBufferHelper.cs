@@ -47,6 +47,8 @@ namespace Google.Protobuf
         private IBufferWriter<byte> bufferWriter;
         private CodedOutputStream codedOutputStream;
 
+        public CodedOutputStream CodedOutputStream => CodedOutputStream;
+
         /// <summary>
         /// Initialize an instance with a coded output stream.
         /// This approach is faster than using a constructor because the instance to initialize is passed by reference
@@ -65,7 +67,7 @@ namespace Google.Protobuf
         /// and we can write directly into it without copying.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Initialize(IBufferWriter<byte> bufferWriter, out WriteBufferHelper instance, out ReadOnlySpan<byte> buffer)
+        public static void Initialize(IBufferWriter<byte> bufferWriter, out WriteBufferHelper instance, out Span<byte> buffer)
         {
             instance.bufferWriter = bufferWriter;
             instance.codedOutputStream = null;
