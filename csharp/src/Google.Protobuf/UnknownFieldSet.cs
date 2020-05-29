@@ -72,9 +72,31 @@ namespace Google.Protobuf
         /// </summary>
         public void WriteTo(CodedOutputStream output)
         {
+            WriteContext.Initialize(output, out WriteContext ctx);
+            try
+            {
+                WriteTo(ref ctx);
+            }
+            finally
+            {
+                ctx.CopyStateTo(output);
+            }
+
+            //foreach (KeyValuePair<int, UnknownField> entry in fields)
+            //{
+            //    entry.Value.WriteTo(entry.Key, output);
+            //}
+        }
+
+        /// <summary>
+        /// Serializes the set and writes it to <paramref name="ctx"/>.
+        /// </summary>
+        [SecuritySafeCritical]
+        public void WriteTo(ref WriteContext ctx)
+        {
             foreach (KeyValuePair<int, UnknownField> entry in fields)
             {
-                entry.Value.WriteTo(entry.Key, output);
+                entry.Value.WriteTo(entry.Key, ref ctx);
             }
         }
 
