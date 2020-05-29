@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cd `dirname $0`
-
 function generate_proto() {
   PROTOC1=$1
   PROTOC2=$2

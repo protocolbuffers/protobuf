@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd `dirname $0`
+cd $(dirname $0)
 
 if [ "$1" = "--release"]; then
   CFLAGS="-Wall"
@@ -13,5 +13,5 @@ fi
 pushd  ../ext/google/protobuf
 make clean || true
 set -e
-phpize && ./configure --with-php-config=`which php-config` CFLAGS="$CFLAGS" && make
+phpize && ./configure --with-php-config=$(which php-config) CFLAGS="$CFLAGS" && make
 popd
