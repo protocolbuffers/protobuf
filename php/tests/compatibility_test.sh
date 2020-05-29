@@ -1,11 +1,6 @@
 #!/bin/bash
 
-function use_php() {
-  VERSION=$1
-
-  OLD_PATH=$PATH
-  export PATH=/usr/local/php-${VERSION}/bin:$OLD_PATH
-}
+cd `dirname $0`
 
 function generate_proto() {
   PROTOC1=$1
@@ -87,7 +82,6 @@ git checkout v$OLD_VERSION
 popd
 
 # Build and copy the new runtime
-use_php 7.1
 pushd ../ext/google/protobuf
 make clean || true
 phpize && ./configure && make
