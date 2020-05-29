@@ -626,8 +626,8 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
       }
-      values_.WriteTo(ref output, _repeated_values_codec);
-      packedValues_.WriteTo(ref output, _repeated_packedValues_codec);
+      values_.WriteTo(output, _repeated_values_codec);
+      packedValues_.WriteTo(output, _repeated_packedValues_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -1045,7 +1045,7 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteRawTag(40);
         output.WriteEnum((int) EnumValue);
       }
-      enumArray_.WriteTo(ref output, _repeated_enumArray_codec);
+      enumArray_.WriteTo(output, _repeated_enumArray_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }

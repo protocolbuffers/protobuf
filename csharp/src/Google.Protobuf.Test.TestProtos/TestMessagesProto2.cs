@@ -2669,8 +2669,8 @@ namespace ProtobufTestMessages.Proto2 {
       repeatedBytes_.WriteTo(output, _repeated_repeatedBytes_codec);
       repeatedNestedMessage_.WriteTo(output, _repeated_repeatedNestedMessage_codec);
       repeatedForeignMessage_.WriteTo(output, _repeated_repeatedForeignMessage_codec);
-      repeatedNestedEnum_.WriteTo(ref output, _repeated_repeatedNestedEnum_codec);
-      repeatedForeignEnum_.WriteTo(ref output, _repeated_repeatedForeignEnum_codec);
+      repeatedNestedEnum_.WriteTo(output, _repeated_repeatedNestedEnum_codec);
+      repeatedForeignEnum_.WriteTo(output, _repeated_repeatedForeignEnum_codec);
       repeatedStringPiece_.WriteTo(output, _repeated_repeatedStringPiece_codec);
       repeatedCord_.WriteTo(output, _repeated_repeatedCord_codec);
       mapInt32Int32_.WriteTo(output, _map_mapInt32Int32_codec);
@@ -2705,7 +2705,7 @@ namespace ProtobufTestMessages.Proto2 {
       packedFloat_.WriteTo(output, _repeated_packedFloat_codec);
       packedDouble_.WriteTo(output, _repeated_packedDouble_codec);
       packedBool_.WriteTo(output, _repeated_packedBool_codec);
-      packedNestedEnum_.WriteTo(ref output, _repeated_packedNestedEnum_codec);
+      packedNestedEnum_.WriteTo(output, _repeated_packedNestedEnum_codec);
       unpackedInt32_.WriteTo(output, _repeated_unpackedInt32_codec);
       unpackedInt64_.WriteTo(output, _repeated_unpackedInt64_codec);
       unpackedUint32_.WriteTo(output, _repeated_unpackedUint32_codec);
@@ -2719,7 +2719,7 @@ namespace ProtobufTestMessages.Proto2 {
       unpackedFloat_.WriteTo(output, _repeated_unpackedFloat_codec);
       unpackedDouble_.WriteTo(output, _repeated_unpackedDouble_codec);
       unpackedBool_.WriteTo(output, _repeated_unpackedBool_codec);
-      unpackedNestedEnum_.WriteTo(ref output, _repeated_unpackedNestedEnum_codec);
+      unpackedNestedEnum_.WriteTo(output, _repeated_unpackedNestedEnum_codec);
       if (HasOneofUint32) {
         output.WriteRawTag(248, 6);
         output.WriteUInt32(OneofUint32);

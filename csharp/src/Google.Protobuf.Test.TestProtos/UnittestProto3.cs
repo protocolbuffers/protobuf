@@ -1128,9 +1128,9 @@ namespace Google.Protobuf.TestProtos {
       repeatedNestedMessage_.WriteTo(output, _repeated_repeatedNestedMessage_codec);
       repeatedForeignMessage_.WriteTo(output, _repeated_repeatedForeignMessage_codec);
       repeatedImportMessage_.WriteTo(output, _repeated_repeatedImportMessage_codec);
-      repeatedNestedEnum_.WriteTo(ref output, _repeated_repeatedNestedEnum_codec);
-      repeatedForeignEnum_.WriteTo(ref output, _repeated_repeatedForeignEnum_codec);
-      repeatedImportEnum_.WriteTo(ref output, _repeated_repeatedImportEnum_codec);
+      repeatedNestedEnum_.WriteTo(output, _repeated_repeatedNestedEnum_codec);
+      repeatedForeignEnum_.WriteTo(output, _repeated_repeatedForeignEnum_codec);
+      repeatedImportEnum_.WriteTo(output, _repeated_repeatedImportEnum_codec);
       repeatedPublicImportMessage_.WriteTo(output, _repeated_repeatedPublicImportMessage_codec);
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
         output.WriteRawTag(248, 6);
@@ -4331,7 +4331,7 @@ namespace Google.Protobuf.TestProtos {
       }
       repeatedPrimitiveField_.WriteTo(output, _repeated_repeatedPrimitiveField_codec);
       repeatedStringField_.WriteTo(output, _repeated_repeatedStringField_codec);
-      repeatedEnumField_.WriteTo(ref output, _repeated_repeatedEnumField_codec);
+      repeatedEnumField_.WriteTo(output, _repeated_repeatedEnumField_codec);
       repeatedMessageField_.WriteTo(output, _repeated_repeatedMessageField_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -7315,7 +7315,7 @@ namespace Google.Protobuf.TestProtos {
       packedFloat_.WriteTo(output, _repeated_packedFloat_codec);
       packedDouble_.WriteTo(output, _repeated_packedDouble_codec);
       packedBool_.WriteTo(output, _repeated_packedBool_codec);
-      packedEnum_.WriteTo(ref output, _repeated_packedEnum_codec);
+      packedEnum_.WriteTo(output, _repeated_packedEnum_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -7833,7 +7833,7 @@ namespace Google.Protobuf.TestProtos {
       unpackedFloat_.WriteTo(output, _repeated_unpackedFloat_codec);
       unpackedDouble_.WriteTo(output, _repeated_unpackedDouble_codec);
       unpackedBool_.WriteTo(output, _repeated_unpackedBool_codec);
-      unpackedEnum_.WriteTo(ref output, _repeated_unpackedEnum_codec);
+      unpackedEnum_.WriteTo(output, _repeated_unpackedEnum_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
