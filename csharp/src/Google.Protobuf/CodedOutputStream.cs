@@ -56,6 +56,7 @@ namespace Google.Protobuf
     /// and <c>MapField&lt;TKey, TValue&gt;</c> to serialize such fields.
     /// </para>
     /// </remarks>
+    [SecuritySafeCritical]
     public sealed partial class CodedOutputStream : IDisposable
     {
         // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
