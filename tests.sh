@@ -786,15 +786,13 @@ build_php7.4() {
   composer update
   ./vendor/bin/phpunit
   popd
-  pushd conformance
-  make test_php
-  popd
+  (cd conformance && make test_php)
 }
 
 build_php7.4_c() {
   IS_64BIT=$1
   use_php 7.4
-  cd php/tests && ./test.sh && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -803,9 +801,7 @@ build_php7.4_c() {
     make test_php_c_32
   fi
   popd
-  pushd php/ext/google/protobuf
-  phpize --clean
-  popd
+  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php7.4_mixed() {
@@ -816,15 +812,13 @@ build_php7.4_mixed() {
   tests/compile_extension.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
-  pushd php/ext/google/protobuf
-  phpize --clean
-  popd
+  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php7.4_zts_c() {
   IS_64BIT=$1
   use_php_zts 7.4
-  cd php/tests && ./test.sh && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -833,9 +827,7 @@ build_php7.4_zts_c() {
     make test_php_c_32
   fi
   popd
-  pushd php/ext/google/protobuf
-  phpize --clean
-  popd
+  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php_all_32() {
