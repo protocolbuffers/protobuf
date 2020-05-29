@@ -281,6 +281,29 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Writes a message, without a tag, to the stream.
+        /// Only the message data is written, without a length-delimiter.
+        /// </summary>
+        /// <param name="value">The value to write</param>
+        public void WriteRawMessage(IMessage value)
+        {
+            // TODO(jtattermusch): if the message doesn't implement IBufferMessage (and thus does not provide the InternalWriteTo method),
+            // what we're doing here works fine, but could be more efficient.
+            // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
+            var span = new Span<byte>(buffer);
+            WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
+            try
+            {
+                // TODO: fix fix fix
+                WritingPrimitivesMessages.WriteMessage(ref ctx, value);
+            }
+            finally
+            {
+                ctx.CopyStateTo(this);
+            }
+        }
+
+        /// <summary>
         /// Writes a group, without a tag, to the stream.
         /// </summary>
         /// <param name="value">The value to write</param>

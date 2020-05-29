@@ -228,6 +228,10 @@ namespace Google.Protobuf
               }
             }
           }
+
+          void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+            // TODO: implement this, add tests!!!
+          }
         }
     }
 }

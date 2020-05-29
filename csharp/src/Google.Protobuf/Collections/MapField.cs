@@ -740,8 +740,15 @@ namespace Google.Protobuf.Collections
 
                 public void WriteTo(CodedOutputStream output)
                 {
-                    codec.keyCodec.WriteTagAndValue(output, Key);
-                    codec.valueCodec.WriteTagAndValue(output, Value);
+                    // Message adapter is an internal class and we know that all the writing will happen via InternalWriteTo.
+                    throw new NotImplementedException();
+                }
+
+                [SecuritySafeCritical]
+                public void InternalWriteTo(ref WriteContext ctx)
+                {
+                    codec.keyCodec.WriteTagAndValue(ref ctx, Key);
+                    codec.valueCodec.WriteTagAndValue(ref ctx, Value);
                 }
 
                 public int CalculateSize()
