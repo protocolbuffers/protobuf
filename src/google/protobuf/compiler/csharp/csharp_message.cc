@@ -520,34 +520,26 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
       "public void WriteTo(pb::CodedOutputStream output) {\n");
+  printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
   printer->Indent();
-
-  // Serialize all the fields
-  for (int i = 0; i < fields_by_number().size(); i++) {
-    std::unique_ptr<FieldGeneratorBase> generator(
-      CreateFieldGeneratorInternal(fields_by_number()[i]));
-    generator->GenerateSerializationCode(printer);
-  }
-
-  if (has_extension_ranges_) {
-    // Serialize extensions
-    printer->Print(
-      "if (_extensions != null) {\n"
-      "  _extensions.WriteTo(output);\n"
-      "}\n");
-  }
-
-  // Serialize unknown fields
-  printer->Print(
-    "if (_unknownFields != null) {\n"
-    "  _unknownFields.WriteTo(output);\n"
-    "}\n");
-
-  // TODO(jonskeet): Memoize size of frozen messages?
+  printer->Print("output.WriteRawMessage(this);\n");
   printer->Outdent();
-  printer->Print(
-    "}\n"
-    "\n");
+  printer->Print("#else\n");
+  printer->Indent();
+  GenerateWriteToBody(printer, false);
+  printer->Outdent();
+  printer->Print("#endif\n");
+  printer->Print("}\n\n");
+
+  printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print("void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {\n");
+  printer->Indent();
+  GenerateWriteToBody(printer, true);
+  printer->Outdent();
+  printer->Print("}\n");
+  printer->Print("#endif\n\n");
+
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
     "public int CalculateSize() {\n");
@@ -574,6 +566,39 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   printer->Print("return size;\n");
   printer->Outdent();
   printer->Print("}\n\n");
+}
+
+void MessageGenerator::GenerateWriteToBody(io::Printer* printer, bool use_write_context) {
+  // Serialize all the fields
+  for (int i = 0; i < fields_by_number().size(); i++) {
+    std::unique_ptr<FieldGeneratorBase> generator(
+      CreateFieldGeneratorInternal(fields_by_number()[i]));
+    generator->GenerateSerializationCode(printer, use_write_context);
+  }
+
+  if (has_extension_ranges_) {
+    // Serialize extensions
+    printer->Print(
+      use_write_context
+      ? "if (_extensions != null) {\n"
+        "  _extensions.WriteTo(ref output);\n"
+        "}\n"
+      : "if (_extensions != null) {\n"
+        "  _extensions.WriteTo(output);\n"
+        "}\n");
+  }
+
+  // Serialize unknown fields
+  printer->Print(
+    use_write_context
+    ? "if (_unknownFields != null) {\n"
+      "  _unknownFields.WriteTo(ref output);\n"
+      "}\n"
+    : "if (_unknownFields != null) {\n"
+      "  _unknownFields.WriteTo(output);\n"
+      "}\n");
+
+  // TODO(jonskeet): Memoize size of frozen messages?
 }
 
 void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
