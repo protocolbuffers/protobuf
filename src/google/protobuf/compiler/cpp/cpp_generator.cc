@@ -83,6 +83,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "dllexport_decl") {
       file_options.dllexport_decl = options[i].second;
+    } else if (options[i].first == "dllexport_include") {
+      file_options.dllexport_include = options[i].second;
     } else if (options[i].first == "safe_boundary_check") {
       file_options.safe_boundary_check = true;
     } else if (options[i].first == "annotate_headers") {

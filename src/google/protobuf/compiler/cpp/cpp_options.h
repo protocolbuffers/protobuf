@@ -52,6 +52,7 @@ enum class EnforceOptimizeMode {
 // Generator options (see generator.cc for a description of each):
 struct Options {
   std::string dllexport_decl;
+  std::string dllexport_include;
   bool safe_boundary_check = false;
   bool proto_h = false;
   bool transitive_pb_h = true;
