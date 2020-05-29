@@ -44,43 +44,35 @@ namespace Google.Protobuf
     internal static class WritingPrimitivesMessages
     {
         /// <summary>
-        /// Writes a message, without a tag, to the stream.
+        /// Writes a message, without a tag.
         /// The data is length-prefixed.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteMessage(ref WriteContext ctx, IMessage value)
         {
             WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, value.CalculateSize());
-            WriteInternal(ref ctx, value);
+            WriteRawMessage(ref ctx, value);
         }
 
         /// <summary>
-        /// Writes a group, without a tag, to the stream.
+        /// Writes a group, without a tag.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteGroup(ref WriteContext ctx, IMessage value)
         {
-            WriteInternal(ref ctx, value);
+            WriteRawMessage(ref ctx, value);
         }
 
-        private static void WriteInternal(ref WriteContext ctx, IMessage message)
+        /// <summary>
+        /// Writes a message, without a tag.
+        /// Message will be written without a length prefix.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteRawMessage(ref WriteContext ctx, IMessage message)
         {
             if (message is IBufferMessage bufferMessage)
             {
-                // TODO: actually invoke the InternalWriteTo method!!!!
-                //bufferMessage.InternalWriteTo(ref ctx);
-
-                // TODO: get rid of this code!
-                ctx.CopyStateTo(ctx.state.CodedOutputStream);
-                try
-                {
-                    // fallback parse using the CodedOutputStream that started current serialization tree
-                    message.WriteTo(ctx.state.CodedOutputStream);
-                }
-                finally
-                {
-                    ctx.LoadStateFrom(ctx.state.CodedOutputStream);
-                }
+                bufferMessage.InternalWriteTo(ref ctx);
             }
             else
             {

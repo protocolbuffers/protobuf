@@ -294,8 +294,7 @@ namespace Google.Protobuf
             WriteContext.Initialize(ref span, ref state, out WriteContext ctx);
             try
             {
-                // TODO: fix fix fix
-                WritingPrimitivesMessages.WriteMessage(ref ctx, value);
+                WritingPrimitivesMessages.WriteRawMessage(ref ctx, value);
             }
             finally
             {
