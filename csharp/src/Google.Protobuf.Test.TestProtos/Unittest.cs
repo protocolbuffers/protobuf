@@ -2822,6 +2822,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasOptionalInt32) {
         output.WriteRawTag(8);
         output.WriteInt32(OptionalInt32);
@@ -2946,9 +2949,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       repeatedNestedMessage_.WriteTo(output, _repeated_repeatedNestedMessage_codec);
       repeatedForeignMessage_.WriteTo(output, _repeated_repeatedForeignMessage_codec);
       repeatedImportMessage_.WriteTo(output, _repeated_repeatedImportMessage_codec);
-      repeatedNestedEnum_.WriteTo(output, _repeated_repeatedNestedEnum_codec);
-      repeatedForeignEnum_.WriteTo(output, _repeated_repeatedForeignEnum_codec);
-      repeatedImportEnum_.WriteTo(output, _repeated_repeatedImportEnum_codec);
+      repeatedNestedEnum_.WriteTo(ref output, _repeated_repeatedNestedEnum_codec);
+      repeatedForeignEnum_.WriteTo(ref output, _repeated_repeatedForeignEnum_codec);
+      repeatedImportEnum_.WriteTo(ref output, _repeated_repeatedImportEnum_codec);
       repeatedStringPiece_.WriteTo(output, _repeated_repeatedStringPiece_codec);
       repeatedCord_.WriteTo(output, _repeated_repeatedCord_codec);
       repeatedLazyMessage_.WriteTo(output, _repeated_repeatedLazyMessage_codec);
@@ -3051,7 +3054,243 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasOptionalInt32) {
+        output.WriteRawTag(8);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (HasOptionalInt64) {
+        output.WriteRawTag(16);
+        output.WriteInt64(OptionalInt64);
+      }
+      if (HasOptionalUint32) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(OptionalUint32);
+      }
+      if (HasOptionalUint64) {
+        output.WriteRawTag(32);
+        output.WriteUInt64(OptionalUint64);
+      }
+      if (HasOptionalSint32) {
+        output.WriteRawTag(40);
+        output.WriteSInt32(OptionalSint32);
+      }
+      if (HasOptionalSint64) {
+        output.WriteRawTag(48);
+        output.WriteSInt64(OptionalSint64);
+      }
+      if (HasOptionalFixed32) {
+        output.WriteRawTag(61);
+        output.WriteFixed32(OptionalFixed32);
+      }
+      if (HasOptionalFixed64) {
+        output.WriteRawTag(65);
+        output.WriteFixed64(OptionalFixed64);
+      }
+      if (HasOptionalSfixed32) {
+        output.WriteRawTag(77);
+        output.WriteSFixed32(OptionalSfixed32);
+      }
+      if (HasOptionalSfixed64) {
+        output.WriteRawTag(81);
+        output.WriteSFixed64(OptionalSfixed64);
+      }
+      if (HasOptionalFloat) {
+        output.WriteRawTag(93);
+        output.WriteFloat(OptionalFloat);
+      }
+      if (HasOptionalDouble) {
+        output.WriteRawTag(97);
+        output.WriteDouble(OptionalDouble);
+      }
+      if (HasOptionalBool) {
+        output.WriteRawTag(104);
+        output.WriteBool(OptionalBool);
+      }
+      if (HasOptionalString) {
+        output.WriteRawTag(114);
+        output.WriteString(OptionalString);
+      }
+      if (HasOptionalBytes) {
+        output.WriteRawTag(122);
+        output.WriteBytes(OptionalBytes);
+      }
+      if (HasOptionalGroup) {
+        output.WriteRawTag(131, 1);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(132, 1);
+      }
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(146, 1);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (optionalForeignMessage_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(OptionalForeignMessage);
+      }
+      if (optionalImportMessage_ != null) {
+        output.WriteRawTag(162, 1);
+        output.WriteMessage(OptionalImportMessage);
+      }
+      if (HasOptionalNestedEnum) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) OptionalNestedEnum);
+      }
+      if (HasOptionalForeignEnum) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) OptionalForeignEnum);
+      }
+      if (HasOptionalImportEnum) {
+        output.WriteRawTag(184, 1);
+        output.WriteEnum((int) OptionalImportEnum);
+      }
+      if (HasOptionalStringPiece) {
+        output.WriteRawTag(194, 1);
+        output.WriteString(OptionalStringPiece);
+      }
+      if (HasOptionalCord) {
+        output.WriteRawTag(202, 1);
+        output.WriteString(OptionalCord);
+      }
+      if (optionalPublicImportMessage_ != null) {
+        output.WriteRawTag(210, 1);
+        output.WriteMessage(OptionalPublicImportMessage);
+      }
+      if (optionalLazyMessage_ != null) {
+        output.WriteRawTag(218, 1);
+        output.WriteMessage(OptionalLazyMessage);
+      }
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      repeatedInt64_.WriteTo(ref output, _repeated_repeatedInt64_codec);
+      repeatedUint32_.WriteTo(ref output, _repeated_repeatedUint32_codec);
+      repeatedUint64_.WriteTo(ref output, _repeated_repeatedUint64_codec);
+      repeatedSint32_.WriteTo(ref output, _repeated_repeatedSint32_codec);
+      repeatedSint64_.WriteTo(ref output, _repeated_repeatedSint64_codec);
+      repeatedFixed32_.WriteTo(ref output, _repeated_repeatedFixed32_codec);
+      repeatedFixed64_.WriteTo(ref output, _repeated_repeatedFixed64_codec);
+      repeatedSfixed32_.WriteTo(ref output, _repeated_repeatedSfixed32_codec);
+      repeatedSfixed64_.WriteTo(ref output, _repeated_repeatedSfixed64_codec);
+      repeatedFloat_.WriteTo(ref output, _repeated_repeatedFloat_codec);
+      repeatedDouble_.WriteTo(ref output, _repeated_repeatedDouble_codec);
+      repeatedBool_.WriteTo(ref output, _repeated_repeatedBool_codec);
+      repeatedString_.WriteTo(ref output, _repeated_repeatedString_codec);
+      repeatedBytes_.WriteTo(ref output, _repeated_repeatedBytes_codec);
+      repeatedGroup_.WriteTo(ref output, _repeated_repeatedGroup_codec);
+      repeatedNestedMessage_.WriteTo(ref output, _repeated_repeatedNestedMessage_codec);
+      repeatedForeignMessage_.WriteTo(ref output, _repeated_repeatedForeignMessage_codec);
+      repeatedImportMessage_.WriteTo(ref output, _repeated_repeatedImportMessage_codec);
+      repeatedNestedEnum_.WriteTo(ref output, _repeated_repeatedNestedEnum_codec);
+      repeatedForeignEnum_.WriteTo(ref output, _repeated_repeatedForeignEnum_codec);
+      repeatedImportEnum_.WriteTo(ref output, _repeated_repeatedImportEnum_codec);
+      repeatedStringPiece_.WriteTo(ref output, _repeated_repeatedStringPiece_codec);
+      repeatedCord_.WriteTo(ref output, _repeated_repeatedCord_codec);
+      repeatedLazyMessage_.WriteTo(ref output, _repeated_repeatedLazyMessage_codec);
+      if (HasDefaultInt32) {
+        output.WriteRawTag(232, 3);
+        output.WriteInt32(DefaultInt32);
+      }
+      if (HasDefaultInt64) {
+        output.WriteRawTag(240, 3);
+        output.WriteInt64(DefaultInt64);
+      }
+      if (HasDefaultUint32) {
+        output.WriteRawTag(248, 3);
+        output.WriteUInt32(DefaultUint32);
+      }
+      if (HasDefaultUint64) {
+        output.WriteRawTag(128, 4);
+        output.WriteUInt64(DefaultUint64);
+      }
+      if (HasDefaultSint32) {
+        output.WriteRawTag(136, 4);
+        output.WriteSInt32(DefaultSint32);
+      }
+      if (HasDefaultSint64) {
+        output.WriteRawTag(144, 4);
+        output.WriteSInt64(DefaultSint64);
+      }
+      if (HasDefaultFixed32) {
+        output.WriteRawTag(157, 4);
+        output.WriteFixed32(DefaultFixed32);
+      }
+      if (HasDefaultFixed64) {
+        output.WriteRawTag(161, 4);
+        output.WriteFixed64(DefaultFixed64);
+      }
+      if (HasDefaultSfixed32) {
+        output.WriteRawTag(173, 4);
+        output.WriteSFixed32(DefaultSfixed32);
+      }
+      if (HasDefaultSfixed64) {
+        output.WriteRawTag(177, 4);
+        output.WriteSFixed64(DefaultSfixed64);
+      }
+      if (HasDefaultFloat) {
+        output.WriteRawTag(189, 4);
+        output.WriteFloat(DefaultFloat);
+      }
+      if (HasDefaultDouble) {
+        output.WriteRawTag(193, 4);
+        output.WriteDouble(DefaultDouble);
+      }
+      if (HasDefaultBool) {
+        output.WriteRawTag(200, 4);
+        output.WriteBool(DefaultBool);
+      }
+      if (HasDefaultString) {
+        output.WriteRawTag(210, 4);
+        output.WriteString(DefaultString);
+      }
+      if (HasDefaultBytes) {
+        output.WriteRawTag(218, 4);
+        output.WriteBytes(DefaultBytes);
+      }
+      if (HasDefaultNestedEnum) {
+        output.WriteRawTag(136, 5);
+        output.WriteEnum((int) DefaultNestedEnum);
+      }
+      if (HasDefaultForeignEnum) {
+        output.WriteRawTag(144, 5);
+        output.WriteEnum((int) DefaultForeignEnum);
+      }
+      if (HasDefaultImportEnum) {
+        output.WriteRawTag(152, 5);
+        output.WriteEnum((int) DefaultImportEnum);
+      }
+      if (HasDefaultStringPiece) {
+        output.WriteRawTag(162, 5);
+        output.WriteString(DefaultStringPiece);
+      }
+      if (HasDefaultCord) {
+        output.WriteRawTag(170, 5);
+        output.WriteString(DefaultCord);
+      }
+      if (HasOneofUint32) {
+        output.WriteRawTag(248, 6);
+        output.WriteUInt32(OneofUint32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+        output.WriteRawTag(130, 7);
+        output.WriteMessage(OneofNestedMessage);
+      }
+      if (HasOneofString) {
+        output.WriteRawTag(138, 7);
+        output.WriteString(OneofString);
+      }
+      if (HasOneofBytes) {
+        output.WriteRawTag(146, 7);
+        output.WriteBytes(OneofBytes);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -4269,6 +4508,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasBb) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -4276,7 +4518,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasBb) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Bb);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -4439,6 +4695,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(136, 1);
             output.WriteInt32(A);
@@ -4446,7 +4705,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(136, 1);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -4613,6 +4886,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(248, 2);
             output.WriteInt32(A);
@@ -4620,7 +4896,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(248, 2);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -4807,6 +5097,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (child_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Child);
@@ -4819,7 +5112,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (child_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Child);
+      }
+      if (payload_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Payload);
+      }
+      repeatedChild_.WriteTo(ref output, _repeated_repeatedChild_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5081,6 +5393,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasDeprecatedInt32) {
         output.WriteRawTag(8);
         output.WriteInt32(DeprecatedInt32);
@@ -5092,7 +5407,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasDeprecatedInt32) {
+        output.WriteRawTag(8);
+        output.WriteInt32(DeprecatedInt32);
+      }
+      if (HasDeprecatedInt32InOneof) {
+        output.WriteRawTag(16);
+        output.WriteInt32(DeprecatedInt32InOneof);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5244,10 +5577,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5427,6 +5773,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasC) {
         output.WriteRawTag(8);
         output.WriteInt32(C);
@@ -5438,7 +5787,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasC) {
+        output.WriteRawTag(8);
+        output.WriteInt32(C);
+      }
+      if (HasD) {
+        output.WriteRawTag(16);
+        output.WriteInt32(D);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5586,10 +5953,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5718,13 +6098,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5903,6 +6299,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(136, 1);
         output.WriteInt32(A);
@@ -5910,7 +6309,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(136, 1);
+        output.WriteInt32(A);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -6077,6 +6490,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(248, 2);
         output.WriteInt32(A);
@@ -6084,7 +6500,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(248, 2);
+        output.WriteInt32(A);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -6275,6 +6705,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasOptionalGroup) {
         output.WriteRawTag(131, 1);
         output.WriteGroup(OptionalGroup);
@@ -6287,7 +6720,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasOptionalGroup) {
+        output.WriteRawTag(131, 1);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(132, 1);
+      }
+      if (HasOptionalForeignEnum) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) OptionalForeignEnum);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -6475,6 +6927,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(136, 1);
             output.WriteInt32(A);
@@ -6482,7 +6937,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(136, 1);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -6634,13 +7103,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -6790,10 +7275,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -6944,6 +7442,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(136, 1);
             output.WriteInt32(A);
@@ -6951,7 +7452,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(136, 1);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -8023,6 +8538,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -8158,7 +8676,149 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(8);
+        output.WriteInt32(A);
+      }
+      if (HasDummy2) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Dummy2);
+      }
+      if (HasB) {
+        output.WriteRawTag(24);
+        output.WriteInt32(B);
+      }
+      if (HasDummy4) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Dummy4);
+      }
+      if (HasDummy5) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Dummy5);
+      }
+      if (HasDummy6) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Dummy6);
+      }
+      if (HasDummy7) {
+        output.WriteRawTag(56);
+        output.WriteInt32(Dummy7);
+      }
+      if (HasDummy8) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Dummy8);
+      }
+      if (HasDummy9) {
+        output.WriteRawTag(72);
+        output.WriteInt32(Dummy9);
+      }
+      if (HasDummy10) {
+        output.WriteRawTag(80);
+        output.WriteInt32(Dummy10);
+      }
+      if (HasDummy11) {
+        output.WriteRawTag(88);
+        output.WriteInt32(Dummy11);
+      }
+      if (HasDummy12) {
+        output.WriteRawTag(96);
+        output.WriteInt32(Dummy12);
+      }
+      if (HasDummy13) {
+        output.WriteRawTag(104);
+        output.WriteInt32(Dummy13);
+      }
+      if (HasDummy14) {
+        output.WriteRawTag(112);
+        output.WriteInt32(Dummy14);
+      }
+      if (HasDummy15) {
+        output.WriteRawTag(120);
+        output.WriteInt32(Dummy15);
+      }
+      if (HasDummy16) {
+        output.WriteRawTag(128, 1);
+        output.WriteInt32(Dummy16);
+      }
+      if (HasDummy17) {
+        output.WriteRawTag(136, 1);
+        output.WriteInt32(Dummy17);
+      }
+      if (HasDummy18) {
+        output.WriteRawTag(144, 1);
+        output.WriteInt32(Dummy18);
+      }
+      if (HasDummy19) {
+        output.WriteRawTag(152, 1);
+        output.WriteInt32(Dummy19);
+      }
+      if (HasDummy20) {
+        output.WriteRawTag(160, 1);
+        output.WriteInt32(Dummy20);
+      }
+      if (HasDummy21) {
+        output.WriteRawTag(168, 1);
+        output.WriteInt32(Dummy21);
+      }
+      if (HasDummy22) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt32(Dummy22);
+      }
+      if (HasDummy23) {
+        output.WriteRawTag(184, 1);
+        output.WriteInt32(Dummy23);
+      }
+      if (HasDummy24) {
+        output.WriteRawTag(192, 1);
+        output.WriteInt32(Dummy24);
+      }
+      if (HasDummy25) {
+        output.WriteRawTag(200, 1);
+        output.WriteInt32(Dummy25);
+      }
+      if (HasDummy26) {
+        output.WriteRawTag(208, 1);
+        output.WriteInt32(Dummy26);
+      }
+      if (HasDummy27) {
+        output.WriteRawTag(216, 1);
+        output.WriteInt32(Dummy27);
+      }
+      if (HasDummy28) {
+        output.WriteRawTag(224, 1);
+        output.WriteInt32(Dummy28);
+      }
+      if (HasDummy29) {
+        output.WriteRawTag(232, 1);
+        output.WriteInt32(Dummy29);
+      }
+      if (HasDummy30) {
+        output.WriteRawTag(240, 1);
+        output.WriteInt32(Dummy30);
+      }
+      if (HasDummy31) {
+        output.WriteRawTag(248, 1);
+        output.WriteInt32(Dummy31);
+      }
+      if (HasDummy32) {
+        output.WriteRawTag(128, 2);
+        output.WriteInt32(Dummy32);
+      }
+      if (HasC) {
+        output.WriteRawTag(136, 2);
+        output.WriteInt32(C);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -8807,6 +9467,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (optionalMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(OptionalMessage);
@@ -8819,7 +9482,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (optionalMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(OptionalMessage);
+      }
+      repeatedMessage_.WriteTo(ref output, _repeated_repeatedMessage_codec);
+      if (HasDummy) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Dummy);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -9027,6 +9709,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (optionalMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(OptionalMessage);
@@ -9039,7 +9724,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (optionalMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(OptionalMessage);
+      }
+      repeatedMessage_.WriteTo(ref output, _repeated_repeatedMessage_codec);
+      if (requiredMessage_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(RequiredMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -9232,6 +9936,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (foreignNested_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(ForeignNested);
@@ -9239,7 +9946,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (foreignNested_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ForeignNested);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -9385,10 +10106,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -9521,13 +10255,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -9686,13 +10436,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -9905,6 +10671,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -9916,7 +10685,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(8);
+        output.WriteInt32(A);
+      }
+      if (HasBb) {
+        output.WriteRawTag(248, 255, 255, 255, 7);
+        output.WriteInt32(Bb);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -10107,6 +10894,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
@@ -10118,7 +10908,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (a_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(A);
+      }
+      if (HasI) {
+        output.WriteRawTag(16);
+        output.WriteInt32(I);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -10316,6 +11124,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (bb_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Bb);
@@ -10328,7 +11139,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (bb_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Bb);
+      }
+      if (HasSubGroup) {
+        output.WriteRawTag(19);
+        output.WriteGroup(SubGroup);
+        output.WriteRawTag(20);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -10510,6 +11340,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (b_ != null) {
             output.WriteRawTag(10);
             output.WriteMessage(B);
@@ -10517,7 +11350,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (b_ != null) {
+            output.WriteRawTag(10);
+            output.WriteMessage(B);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -10691,6 +11538,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (subMessage_ != null) {
             output.WriteRawTag(26);
             output.WriteMessage(SubMessage);
@@ -10702,7 +11552,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (subMessage_ != null) {
+            output.WriteRawTag(26);
+            output.WriteMessage(SubMessage);
+          }
+          if (notInThisScc_ != null) {
+            output.WriteRawTag(34);
+            output.WriteMessage(NotInThisScc);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -10920,6 +11788,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
@@ -10931,7 +11802,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (a_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(A);
+      }
+      if (HasOptionalInt32) {
+        output.WriteRawTag(16);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -11102,6 +11991,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (subMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(SubMessage);
@@ -11109,7 +12001,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (subMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(SubMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -11278,6 +12184,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasSubGroup) {
             output.WriteRawTag(11);
             output.WriteGroup(SubGroup);
@@ -11286,7 +12195,22 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasSubGroup) {
+            output.WriteRawTag(11);
+            output.WriteGroup(SubGroup);
+            output.WriteRawTag(12);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -11460,6 +12384,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              output.WriteRawMessage(this);
+            #else
               if (HasI) {
                 output.WriteRawTag(16);
                 output.WriteInt32(I);
@@ -11467,7 +12394,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               if (_unknownFields != null) {
                 _unknownFields.WriteTo(output);
               }
+            #endif
             }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+              if (HasI) {
+                output.WriteRawTag(16);
+                output.WriteInt32(I);
+              }
+              if (_unknownFields != null) {
+                _unknownFields.WriteTo(ref output);
+              }
+            }
+            #endif
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public int CalculateSize() {
@@ -11701,6 +12642,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -11718,7 +12662,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(8);
+        output.WriteInt32(A);
+      }
+      if (HasFoo) {
+        output.WriteRawTag(19);
+        output.WriteGroup(Foo);
+        output.WriteRawTag(20);
+      }
+      if (HasBar) {
+        output.WriteRawTag(27);
+        output.WriteGroup(Bar);
+        output.WriteRawTag(28);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -11929,6 +12897,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(8);
             output.WriteInt32(A);
@@ -11936,7 +12907,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(8);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -12103,6 +13088,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(8);
             output.WriteInt32(A);
@@ -12110,7 +13098,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(8);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -12270,6 +13272,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (subMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(SubMessage);
@@ -12277,7 +13282,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (subMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(SubMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -12434,6 +13453,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (subMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(SubMessage);
@@ -12441,7 +13463,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (subMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(SubMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -12601,6 +13637,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (optionalNestedMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(OptionalNestedMessage);
@@ -12608,7 +13647,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -12779,12 +13832,27 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           nestedmessageRepeatedInt32_.WriteTo(output, _repeated_nestedmessageRepeatedInt32_codec);
           nestedmessageRepeatedForeignmessage_.WriteTo(output, _repeated_nestedmessageRepeatedForeignmessage_codec);
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          nestedmessageRepeatedInt32_.WriteTo(ref output, _repeated_nestedmessageRepeatedInt32_codec);
+          nestedmessageRepeatedForeignmessage_.WriteTo(ref output, _repeated_nestedmessageRepeatedForeignmessage_codec);
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -13161,6 +14229,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasPrimitiveField) {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveField);
@@ -13187,14 +14258,54 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       }
       repeatedPrimitiveField_.WriteTo(output, _repeated_repeatedPrimitiveField_codec);
       repeatedStringField_.WriteTo(output, _repeated_repeatedStringField_codec);
-      repeatedEnumField_.WriteTo(output, _repeated_repeatedEnumField_codec);
+      repeatedEnumField_.WriteTo(ref output, _repeated_repeatedEnumField_codec);
       repeatedMessageField_.WriteTo(output, _repeated_repeatedMessageField_codec);
       repeatedStringPieceField_.WriteTo(output, _repeated_repeatedStringPieceField_codec);
       repeatedCordField_.WriteTo(output, _repeated_repeatedCordField_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasPrimitiveField) {
+        output.WriteRawTag(8);
+        output.WriteInt32(PrimitiveField);
+      }
+      if (HasStringField) {
+        output.WriteRawTag(18);
+        output.WriteString(StringField);
+      }
+      if (HasEnumField) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) EnumField);
+      }
+      if (messageField_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(MessageField);
+      }
+      if (HasStringPieceField) {
+        output.WriteRawTag(42);
+        output.WriteString(StringPieceField);
+      }
+      if (HasCordField) {
+        output.WriteRawTag(50);
+        output.WriteString(CordField);
+      }
+      repeatedPrimitiveField_.WriteTo(ref output, _repeated_repeatedPrimitiveField_codec);
+      repeatedStringField_.WriteTo(ref output, _repeated_repeatedStringField_codec);
+      repeatedEnumField_.WriteTo(ref output, _repeated_repeatedEnumField_codec);
+      repeatedMessageField_.WriteTo(ref output, _repeated_repeatedMessageField_codec);
+      repeatedStringPieceField_.WriteTo(ref output, _repeated_repeatedStringPieceField_codec);
+      repeatedCordField_.WriteTo(ref output, _repeated_repeatedCordField_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -13580,6 +14691,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasMyInt) {
         output.WriteRawTag(8);
         output.WriteInt64(MyInt);
@@ -13602,7 +14716,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasMyInt) {
+        output.WriteRawTag(8);
+        output.WriteInt64(MyInt);
+      }
+      if (HasMyString) {
+        output.WriteRawTag(90);
+        output.WriteString(MyString);
+      }
+      if (HasMyFloat) {
+        output.WriteRawTag(173, 6);
+        output.WriteFloat(MyFloat);
+      }
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(194, 12);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -13880,6 +15023,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasBb) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -13891,7 +15037,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasBb) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Bb);
+          }
+          if (HasOo) {
+            output.WriteRawTag(16);
+            output.WriteInt64(Oo);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -14070,6 +15234,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasMyString) {
         output.WriteRawTag(10);
         output.WriteString(MyString);
@@ -14077,7 +15244,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasMyString) {
+        output.WriteRawTag(10);
+        output.WriteString(MyString);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14246,6 +15427,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasMyString) {
         output.WriteRawTag(10);
         output.WriteString(MyString);
@@ -14253,7 +15437,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasMyString) {
+        output.WriteRawTag(10);
+        output.WriteString(MyString);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14415,6 +15613,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasMyString) {
             output.WriteRawTag(10);
             output.WriteString(MyString);
@@ -14422,7 +15623,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasMyString) {
+            output.WriteRawTag(10);
+            output.WriteString(MyString);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -15326,6 +16541,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasEscapedBytes) {
         output.WriteRawTag(10);
         output.WriteBytes(EscapedBytes);
@@ -15437,7 +16655,125 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasEscapedBytes) {
+        output.WriteRawTag(10);
+        output.WriteBytes(EscapedBytes);
+      }
+      if (HasLargeUint32) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(LargeUint32);
+      }
+      if (HasLargeUint64) {
+        output.WriteRawTag(24);
+        output.WriteUInt64(LargeUint64);
+      }
+      if (HasSmallInt32) {
+        output.WriteRawTag(32);
+        output.WriteInt32(SmallInt32);
+      }
+      if (HasSmallInt64) {
+        output.WriteRawTag(40);
+        output.WriteInt64(SmallInt64);
+      }
+      if (HasUtf8String) {
+        output.WriteRawTag(50);
+        output.WriteString(Utf8String);
+      }
+      if (HasZeroFloat) {
+        output.WriteRawTag(61);
+        output.WriteFloat(ZeroFloat);
+      }
+      if (HasOneFloat) {
+        output.WriteRawTag(69);
+        output.WriteFloat(OneFloat);
+      }
+      if (HasSmallFloat) {
+        output.WriteRawTag(77);
+        output.WriteFloat(SmallFloat);
+      }
+      if (HasNegativeOneFloat) {
+        output.WriteRawTag(85);
+        output.WriteFloat(NegativeOneFloat);
+      }
+      if (HasNegativeFloat) {
+        output.WriteRawTag(93);
+        output.WriteFloat(NegativeFloat);
+      }
+      if (HasLargeFloat) {
+        output.WriteRawTag(101);
+        output.WriteFloat(LargeFloat);
+      }
+      if (HasSmallNegativeFloat) {
+        output.WriteRawTag(109);
+        output.WriteFloat(SmallNegativeFloat);
+      }
+      if (HasInfDouble) {
+        output.WriteRawTag(113);
+        output.WriteDouble(InfDouble);
+      }
+      if (HasNegInfDouble) {
+        output.WriteRawTag(121);
+        output.WriteDouble(NegInfDouble);
+      }
+      if (HasNanDouble) {
+        output.WriteRawTag(129, 1);
+        output.WriteDouble(NanDouble);
+      }
+      if (HasInfFloat) {
+        output.WriteRawTag(141, 1);
+        output.WriteFloat(InfFloat);
+      }
+      if (HasNegInfFloat) {
+        output.WriteRawTag(149, 1);
+        output.WriteFloat(NegInfFloat);
+      }
+      if (HasNanFloat) {
+        output.WriteRawTag(157, 1);
+        output.WriteFloat(NanFloat);
+      }
+      if (HasCppTrigraph) {
+        output.WriteRawTag(162, 1);
+        output.WriteString(CppTrigraph);
+      }
+      if (HasReallySmallInt32) {
+        output.WriteRawTag(168, 1);
+        output.WriteInt32(ReallySmallInt32);
+      }
+      if (HasReallySmallInt64) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt64(ReallySmallInt64);
+      }
+      if (HasStringWithZero) {
+        output.WriteRawTag(186, 1);
+        output.WriteString(StringWithZero);
+      }
+      if (HasBytesWithZero) {
+        output.WriteRawTag(194, 1);
+        output.WriteBytes(BytesWithZero);
+      }
+      if (HasStringPieceWithZero) {
+        output.WriteRawTag(202, 1);
+        output.WriteString(StringPieceWithZero);
+      }
+      if (HasCordWithZero) {
+        output.WriteRawTag(210, 1);
+        output.WriteString(CordWithZero);
+      }
+      if (HasReplacementString) {
+        output.WriteRawTag(218, 1);
+        output.WriteString(ReplacementString);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -15964,6 +17300,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasSparseEnum) {
         output.WriteRawTag(8);
         output.WriteEnum((int) SparseEnum);
@@ -15971,7 +17310,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasSparseEnum) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) SparseEnum);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -16134,6 +17487,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(10);
         output.WriteString(Data);
@@ -16141,7 +17497,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(10);
+        output.WriteString(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -16288,11 +17658,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       data_.WriteTo(output, _repeated_data_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      data_.WriteTo(ref output, _repeated_data_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -16448,6 +17832,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(10);
         output.WriteBytes(Data);
@@ -16455,7 +17842,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(10);
+        output.WriteBytes(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -16602,11 +18003,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       data_.WriteTo(output, _repeated_data_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      data_.WriteTo(ref output, _repeated_data_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -16768,6 +18183,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteInt32(Data);
@@ -16775,7 +18193,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -16938,6 +18370,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteUInt32(Data);
@@ -16945,7 +18380,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteUInt32(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -17108,6 +18557,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteInt64(Data);
@@ -17115,7 +18567,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteInt64(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -17278,6 +18744,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteUInt64(Data);
@@ -17285,7 +18754,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteUInt64(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -17448,6 +18931,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteBool(Data);
@@ -17455,7 +18941,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteBool(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -17718,6 +19218,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -17738,7 +19241,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFooInt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
+      }
+      if (HasFooString) {
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
+      }
+      if (fooCase_ == FooOneofCase.FooMessage) {
+        output.WriteRawTag(26);
+        output.WriteMessage(FooMessage);
+      }
+      if (HasFooGroup) {
+        output.WriteRawTag(35);
+        output.WriteGroup(FooGroup);
+        output.WriteRawTag(36);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -18000,6 +19530,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(40);
             output.WriteInt32(A);
@@ -18011,7 +19544,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(40);
+            output.WriteInt32(A);
+          }
+          if (HasB) {
+            output.WriteRawTag(50);
+            output.WriteString(B);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -18261,6 +19812,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -18281,7 +19835,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFooInt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
+      }
+      if (HasFooString) {
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
+      }
+      if (fooMessage_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(FooMessage);
+      }
+      if (HasFooGroup) {
+        output.WriteRawTag(35);
+        output.WriteGroup(FooGroup);
+        output.WriteRawTag(36);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -18532,6 +20113,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(40);
             output.WriteInt32(A);
@@ -18543,7 +20127,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(40);
+            output.WriteInt32(A);
+          }
+          if (HasB) {
+            output.WriteRawTag(50);
+            output.WriteString(B);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -19210,6 +20812,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -19282,7 +20887,86 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFooInt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
+      }
+      if (HasFooString) {
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
+      }
+      if (HasFooCord) {
+        output.WriteRawTag(26);
+        output.WriteString(FooCord);
+      }
+      if (HasFooStringPiece) {
+        output.WriteRawTag(34);
+        output.WriteString(FooStringPiece);
+      }
+      if (HasFooBytes) {
+        output.WriteRawTag(42);
+        output.WriteBytes(FooBytes);
+      }
+      if (HasFooEnum) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) FooEnum);
+      }
+      if (fooCase_ == FooOneofCase.FooMessage) {
+        output.WriteRawTag(58);
+        output.WriteMessage(FooMessage);
+      }
+      if (HasFooGroup) {
+        output.WriteRawTag(67);
+        output.WriteGroup(FooGroup);
+        output.WriteRawTag(68);
+      }
+      if (fooCase_ == FooOneofCase.FooLazyMessage) {
+        output.WriteRawTag(90);
+        output.WriteMessage(FooLazyMessage);
+      }
+      if (HasBarInt) {
+        output.WriteRawTag(96);
+        output.WriteInt32(BarInt);
+      }
+      if (HasBarString) {
+        output.WriteRawTag(106);
+        output.WriteString(BarString);
+      }
+      if (HasBarCord) {
+        output.WriteRawTag(114);
+        output.WriteString(BarCord);
+      }
+      if (HasBarStringPiece) {
+        output.WriteRawTag(122);
+        output.WriteString(BarStringPiece);
+      }
+      if (HasBarBytes) {
+        output.WriteRawTag(130, 1);
+        output.WriteBytes(BarBytes);
+      }
+      if (HasBarEnum) {
+        output.WriteRawTag(136, 1);
+        output.WriteEnum((int) BarEnum);
+      }
+      if (HasBazInt) {
+        output.WriteRawTag(144, 1);
+        output.WriteInt32(BazInt);
+      }
+      if (HasBazString) {
+        output.WriteRawTag(154, 1);
+        output.WriteString(BazString);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -19752,6 +21436,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(72);
             output.WriteInt32(A);
@@ -19763,7 +21450,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(72);
+            output.WriteInt32(A);
+          }
+          if (HasB) {
+            output.WriteRawTag(82);
+            output.WriteString(B);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -19957,6 +21662,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasQuxInt) {
             output.WriteRawTag(8);
             output.WriteInt64(QuxInt);
@@ -19965,7 +21673,22 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasQuxInt) {
+            output.WriteRawTag(8);
+            output.WriteInt64(QuxInt);
+          }
+          corgeInt_.WriteTo(ref output, _repeated_corgeInt_codec);
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -20213,6 +21936,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -20228,7 +21954,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFooInt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
+      }
+      if (HasFooString) {
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
+      }
+      if (fooCase_ == FooOneofCase.FooMessage) {
+        output.WriteRawTag(26);
+        output.WriteMessage(FooMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -20437,6 +22185,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasRequiredDouble) {
             output.WriteRawTag(9);
             output.WriteDouble(RequiredDouble);
@@ -20444,7 +22195,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasRequiredDouble) {
+            output.WriteRawTag(9);
+            output.WriteDouble(RequiredDouble);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -20596,11 +22361,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       foo_.WriteTo(output, _map_foo_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      foo_.WriteTo(ref output, _map_foo_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -20761,6 +22540,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasRequiredInt32) {
             output.WriteRawTag(8);
             output.WriteInt32(RequiredInt32);
@@ -20768,7 +22550,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasRequiredInt32) {
+            output.WriteRawTag(8);
+            output.WriteInt32(RequiredInt32);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -21089,6 +22885,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       packedInt32_.WriteTo(output, _repeated_packedInt32_codec);
       packedInt64_.WriteTo(output, _repeated_packedInt64_codec);
       packedUint32_.WriteTo(output, _repeated_packedUint32_codec);
@@ -21102,11 +22901,35 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       packedFloat_.WriteTo(output, _repeated_packedFloat_codec);
       packedDouble_.WriteTo(output, _repeated_packedDouble_codec);
       packedBool_.WriteTo(output, _repeated_packedBool_codec);
-      packedEnum_.WriteTo(output, _repeated_packedEnum_codec);
+      packedEnum_.WriteTo(ref output, _repeated_packedEnum_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      packedInt32_.WriteTo(ref output, _repeated_packedInt32_codec);
+      packedInt64_.WriteTo(ref output, _repeated_packedInt64_codec);
+      packedUint32_.WriteTo(ref output, _repeated_packedUint32_codec);
+      packedUint64_.WriteTo(ref output, _repeated_packedUint64_codec);
+      packedSint32_.WriteTo(ref output, _repeated_packedSint32_codec);
+      packedSint64_.WriteTo(ref output, _repeated_packedSint64_codec);
+      packedFixed32_.WriteTo(ref output, _repeated_packedFixed32_codec);
+      packedFixed64_.WriteTo(ref output, _repeated_packedFixed64_codec);
+      packedSfixed32_.WriteTo(ref output, _repeated_packedSfixed32_codec);
+      packedSfixed64_.WriteTo(ref output, _repeated_packedSfixed64_codec);
+      packedFloat_.WriteTo(ref output, _repeated_packedFloat_codec);
+      packedDouble_.WriteTo(ref output, _repeated_packedDouble_codec);
+      packedBool_.WriteTo(ref output, _repeated_packedBool_codec);
+      packedEnum_.WriteTo(ref output, _repeated_packedEnum_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -21580,6 +23403,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       unpackedInt32_.WriteTo(output, _repeated_unpackedInt32_codec);
       unpackedInt64_.WriteTo(output, _repeated_unpackedInt64_codec);
       unpackedUint32_.WriteTo(output, _repeated_unpackedUint32_codec);
@@ -21593,11 +23419,35 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       unpackedFloat_.WriteTo(output, _repeated_unpackedFloat_codec);
       unpackedDouble_.WriteTo(output, _repeated_unpackedDouble_codec);
       unpackedBool_.WriteTo(output, _repeated_unpackedBool_codec);
-      unpackedEnum_.WriteTo(output, _repeated_unpackedEnum_codec);
+      unpackedEnum_.WriteTo(ref output, _repeated_unpackedEnum_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      unpackedInt32_.WriteTo(ref output, _repeated_unpackedInt32_codec);
+      unpackedInt64_.WriteTo(ref output, _repeated_unpackedInt64_codec);
+      unpackedUint32_.WriteTo(ref output, _repeated_unpackedUint32_codec);
+      unpackedUint64_.WriteTo(ref output, _repeated_unpackedUint64_codec);
+      unpackedSint32_.WriteTo(ref output, _repeated_unpackedSint32_codec);
+      unpackedSint64_.WriteTo(ref output, _repeated_unpackedSint64_codec);
+      unpackedFixed32_.WriteTo(ref output, _repeated_unpackedFixed32_codec);
+      unpackedFixed64_.WriteTo(ref output, _repeated_unpackedFixed64_codec);
+      unpackedSfixed32_.WriteTo(ref output, _repeated_unpackedSfixed32_codec);
+      unpackedSfixed64_.WriteTo(ref output, _repeated_unpackedSfixed64_codec);
+      unpackedFloat_.WriteTo(ref output, _repeated_unpackedFloat_codec);
+      unpackedDouble_.WriteTo(ref output, _repeated_unpackedDouble_codec);
+      unpackedBool_.WriteTo(ref output, _repeated_unpackedBool_codec);
+      unpackedEnum_.WriteTo(ref output, _repeated_unpackedEnum_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -21894,13 +23744,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -22059,13 +23925,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -22357,6 +24239,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasScalarExtension) {
         output.WriteRawTag(133, 125);
         output.WriteFixed32(ScalarExtension);
@@ -22382,7 +24267,39 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasScalarExtension) {
+        output.WriteRawTag(133, 125);
+        output.WriteFixed32(ScalarExtension);
+      }
+      if (HasEnumExtension) {
+        output.WriteRawTag(136, 125);
+        output.WriteEnum((int) EnumExtension);
+      }
+      if (HasDynamicEnumExtension) {
+        output.WriteRawTag(144, 125);
+        output.WriteEnum((int) DynamicEnumExtension);
+      }
+      if (messageExtension_ != null) {
+        output.WriteRawTag(154, 125);
+        output.WriteMessage(MessageExtension);
+      }
+      if (dynamicMessageExtension_ != null) {
+        output.WriteRawTag(162, 125);
+        output.WriteMessage(DynamicMessageExtension);
+      }
+      repeatedExtension_.WriteTo(ref output, _repeated_repeatedExtension_codec);
+      packedExtension_.WriteTo(ref output, _repeated_packedExtension_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -22649,6 +24566,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasDynamicField) {
             output.WriteRawTag(160, 131, 1);
             output.WriteInt32(DynamicField);
@@ -22656,7 +24576,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasDynamicField) {
+            output.WriteRawTag(160, 131, 1);
+            output.WriteInt32(DynamicField);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -22887,6 +24821,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       repeatedFixed32_.WriteTo(output, _repeated_repeatedFixed32_codec);
       repeatedInt32_.WriteTo(output, _repeated_repeatedInt32_codec);
       repeatedFixed64_.WriteTo(output, _repeated_repeatedFixed64_codec);
@@ -22896,7 +24833,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      repeatedFixed32_.WriteTo(ref output, _repeated_repeatedFixed32_codec);
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      repeatedFixed64_.WriteTo(ref output, _repeated_repeatedFixed64_codec);
+      repeatedInt64_.WriteTo(ref output, _repeated_repeatedInt64_codec);
+      repeatedFloat_.WriteTo(ref output, _repeated_repeatedFloat_codec);
+      repeatedUint64_.WriteTo(ref output, _repeated_repeatedUint64_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -23179,6 +25132,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (requiredAllTypes_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(RequiredAllTypes);
@@ -23200,7 +25156,35 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (requiredAllTypes_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(RequiredAllTypes);
+      }
+      if (optionalAllTypes_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(OptionalAllTypes);
+      }
+      repeatedAllTypes_.WriteTo(ref output, _repeated_repeatedAllTypes_codec);
+      if (HasOptionalGroup) {
+        output.WriteRawTag(83);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(84);
+      }
+      repeatedGroup_.WriteTo(ref output, _repeated_repeatedGroup_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -23539,6 +25523,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           field1_.WriteTo(output, _repeated_field1_codec);
           field2_.WriteTo(output, _repeated_field2_codec);
           field3_.WriteTo(output, _repeated_field3_codec);
@@ -23549,7 +25536,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          field1_.WriteTo(ref output, _repeated_field1_codec);
+          field2_.WriteTo(ref output, _repeated_field2_codec);
+          field3_.WriteTo(ref output, _repeated_field3_codec);
+          group1_.WriteTo(ref output, _repeated_group1_codec);
+          group2_.WriteTo(ref output, _repeated_group2_codec);
+          ext1_.WriteTo(ref output, _repeated_ext1_codec);
+          ext2_.WriteTo(ref output, _repeated_ext2_codec);
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -23755,6 +25759,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              output.WriteRawMessage(this);
+            #else
               if (field1_ != null) {
                 output.WriteRawTag(90);
                 output.WriteMessage(Field1);
@@ -23762,7 +25769,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               if (_unknownFields != null) {
                 _unknownFields.WriteTo(output);
               }
+            #endif
             }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+              if (field1_ != null) {
+                output.WriteRawTag(90);
+                output.WriteMessage(Field1);
+              }
+              if (_unknownFields != null) {
+                _unknownFields.WriteTo(ref output);
+              }
+            }
+            #endif
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public int CalculateSize() {
@@ -23923,6 +25944,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              output.WriteRawMessage(this);
+            #else
               if (field1_ != null) {
                 output.WriteRawTag(170, 1);
                 output.WriteMessage(Field1);
@@ -23930,7 +25954,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               if (_unknownFields != null) {
                 _unknownFields.WriteTo(output);
               }
+            #endif
             }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+              if (field1_ != null) {
+                output.WriteRawTag(170, 1);
+                output.WriteMessage(Field1);
+              }
+              if (_unknownFields != null) {
+                _unknownFields.WriteTo(ref output);
+              }
+            }
+            #endif
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public int CalculateSize() {
@@ -24096,6 +26134,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (optionalGroupAllTypes_ != null) {
             output.WriteRawTag(90);
             output.WriteMessage(OptionalGroupAllTypes);
@@ -24103,7 +26144,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (optionalGroupAllTypes_ != null) {
+            output.WriteRawTag(90);
+            output.WriteMessage(OptionalGroupAllTypes);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -24264,6 +26319,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (repeatedGroupAllTypes_ != null) {
             output.WriteRawTag(170, 1);
             output.WriteMessage(RepeatedGroupAllTypes);
@@ -24271,7 +26329,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (repeatedGroupAllTypes_ != null) {
+            output.WriteRawTag(170, 1);
+            output.WriteMessage(RepeatedGroupAllTypes);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -24463,6 +26535,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(10);
         output.WriteString(A);
@@ -24470,7 +26545,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(10);
+        output.WriteString(A);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -24607,10 +26696,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -24730,10 +26832,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -24853,10 +26968,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -24976,10 +27104,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -25099,10 +27240,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -25222,10 +27376,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -25509,6 +27676,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFieldName1) {
         output.WriteRawTag(8);
         output.WriteInt32(FieldName1);
@@ -25536,7 +27706,41 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFieldName1) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FieldName1);
+      }
+      if (HasFieldName2) {
+        output.WriteRawTag(16);
+        output.WriteInt32(FieldName2);
+      }
+      if (HasFieldName3) {
+        output.WriteRawTag(24);
+        output.WriteInt32(FieldName3);
+      }
+      if (HasFieldName4) {
+        output.WriteRawTag(32);
+        output.WriteInt32(FieldName4);
+      }
+      if (HasFIELDNAME5) {
+        output.WriteRawTag(40);
+        output.WriteInt32(FIELDNAME5);
+      }
+      if (HasFieldName6) {
+        output.WriteRawTag(48);
+        output.WriteInt32(FieldName6);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -26087,6 +28291,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasOptionalInt32) {
         output.WriteRawTag(128, 199, 255, 255, 15);
         output.WriteInt32(OptionalInt32);
@@ -26141,7 +28348,68 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasOptionalInt32) {
+        output.WriteRawTag(128, 199, 255, 255, 15);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (HasFixed32) {
+        output.WriteRawTag(136, 199, 255, 255, 15);
+        output.WriteInt32(Fixed32);
+      }
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      packedInt32_.WriteTo(ref output, _repeated_packedInt32_codec);
+      if (HasOptionalEnum) {
+        output.WriteRawTag(160, 199, 255, 255, 15);
+        output.WriteEnum((int) OptionalEnum);
+      }
+      if (HasOptionalString) {
+        output.WriteRawTag(170, 199, 255, 255, 15);
+        output.WriteString(OptionalString);
+      }
+      if (HasOptionalBytes) {
+        output.WriteRawTag(178, 199, 255, 255, 15);
+        output.WriteBytes(OptionalBytes);
+      }
+      if (optionalMessage_ != null) {
+        output.WriteRawTag(186, 199, 255, 255, 15);
+        output.WriteMessage(OptionalMessage);
+      }
+      if (HasOptionalGroup) {
+        output.WriteRawTag(195, 199, 255, 255, 15);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(196, 199, 255, 255, 15);
+      }
+      stringStringMap_.WriteTo(ref output, _map_stringStringMap_codec);
+      if (HasOneofUint32) {
+        output.WriteRawTag(216, 199, 255, 255, 15);
+        output.WriteUInt32(OneofUint32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) {
+        output.WriteRawTag(226, 199, 255, 255, 15);
+        output.WriteMessage(OneofTestAllTypes);
+      }
+      if (HasOneofString) {
+        output.WriteRawTag(234, 199, 255, 255, 15);
+        output.WriteString(OneofString);
+      }
+      if (HasOneofBytes) {
+        output.WriteRawTag(242, 199, 255, 255, 15);
+        output.WriteBytes(OneofBytes);
+      }
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -26544,6 +28812,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasGroupA) {
             output.WriteRawTag(200, 199, 255, 255, 15);
             output.WriteInt32(GroupA);
@@ -26551,7 +28822,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasGroupA) {
+            output.WriteRawTag(200, 199, 255, 255, 15);
+            output.WriteInt32(GroupA);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -26948,6 +29233,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasField1) {
         output.WriteRawTag(8);
         output.WriteInt32(Field1);
@@ -26990,7 +29278,56 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasField1) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Field1);
+      }
+      if (HasField2) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Field2);
+      }
+      if (HasField3) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Field3);
+      }
+      if (HasField4) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Field4);
+      }
+      if (HasField6) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Field6);
+      }
+      if (HasField7) {
+        output.WriteRawTag(56);
+        output.WriteInt32(Field7);
+      }
+      if (HasField8) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Field8);
+      }
+      if (HasField9) {
+        output.WriteRawTag(72);
+        output.WriteInt32(Field9);
+      }
+      if (HasField10) {
+        output.WriteRawTag(80);
+        output.WriteInt32(Field10);
+      }
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {

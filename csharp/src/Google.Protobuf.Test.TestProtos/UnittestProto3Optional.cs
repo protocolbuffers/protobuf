@@ -622,6 +622,9 @@ namespace ProtobufUnittest {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasOptionalInt32) {
         output.WriteRawTag(8);
         output.WriteInt32(OptionalInt32);
@@ -709,7 +712,101 @@ namespace ProtobufUnittest {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasOptionalInt32) {
+        output.WriteRawTag(8);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (HasOptionalInt64) {
+        output.WriteRawTag(16);
+        output.WriteInt64(OptionalInt64);
+      }
+      if (HasOptionalUint32) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(OptionalUint32);
+      }
+      if (HasOptionalUint64) {
+        output.WriteRawTag(32);
+        output.WriteUInt64(OptionalUint64);
+      }
+      if (HasOptionalSint32) {
+        output.WriteRawTag(40);
+        output.WriteSInt32(OptionalSint32);
+      }
+      if (HasOptionalSint64) {
+        output.WriteRawTag(48);
+        output.WriteSInt64(OptionalSint64);
+      }
+      if (HasOptionalFixed32) {
+        output.WriteRawTag(61);
+        output.WriteFixed32(OptionalFixed32);
+      }
+      if (HasOptionalFixed64) {
+        output.WriteRawTag(65);
+        output.WriteFixed64(OptionalFixed64);
+      }
+      if (HasOptionalSfixed32) {
+        output.WriteRawTag(77);
+        output.WriteSFixed32(OptionalSfixed32);
+      }
+      if (HasOptionalSfixed64) {
+        output.WriteRawTag(81);
+        output.WriteSFixed64(OptionalSfixed64);
+      }
+      if (HasOptionalFloat) {
+        output.WriteRawTag(93);
+        output.WriteFloat(OptionalFloat);
+      }
+      if (HasOptionalDouble) {
+        output.WriteRawTag(97);
+        output.WriteDouble(OptionalDouble);
+      }
+      if (HasOptionalBool) {
+        output.WriteRawTag(104);
+        output.WriteBool(OptionalBool);
+      }
+      if (HasOptionalString) {
+        output.WriteRawTag(114);
+        output.WriteString(OptionalString);
+      }
+      if (HasOptionalBytes) {
+        output.WriteRawTag(122);
+        output.WriteBytes(OptionalBytes);
+      }
+      if (HasOptionalCord) {
+        output.WriteRawTag(130, 1);
+        output.WriteString(OptionalCord);
+      }
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(146, 1);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (lazyNestedMessage_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(LazyNestedMessage);
+      }
+      if (HasOptionalNestedEnum) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) OptionalNestedEnum);
+      }
+      if (SingularInt32 != 0) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt32(SingularInt32);
+      }
+      if (SingularInt64 != 0L) {
+        output.WriteRawTag(184, 1);
+        output.WriteInt64(SingularInt64);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1186,6 +1283,9 @@ namespace ProtobufUnittest {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasBb) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -1193,7 +1293,21 @@ namespace ProtobufUnittest {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasBb) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Bb);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {

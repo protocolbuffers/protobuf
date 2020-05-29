@@ -189,11 +189,25 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       failure_.WriteTo(output, _repeated_failure_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      failure_.WriteTo(ref output, _repeated_failure_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -513,6 +527,9 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
         output.WriteRawTag(10);
         output.WriteBytes(ProtobufPayload);
@@ -552,7 +569,53 @@ namespace Conformance {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
+        output.WriteRawTag(10);
+        output.WriteBytes(ProtobufPayload);
+      }
+      if (payloadCase_ == PayloadOneofCase.JsonPayload) {
+        output.WriteRawTag(18);
+        output.WriteString(JsonPayload);
+      }
+      if (RequestedOutputFormat != global::Conformance.WireFormat.Unspecified) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) RequestedOutputFormat);
+      }
+      if (MessageType.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(MessageType);
+      }
+      if (TestCategory != global::Conformance.TestCategory.UnspecifiedTest) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) TestCategory);
+      }
+      if (jspbEncodingOptions_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(JspbEncodingOptions);
+      }
+      if (payloadCase_ == PayloadOneofCase.JspbPayload) {
+        output.WriteRawTag(58);
+        output.WriteString(JspbPayload);
+      }
+      if (payloadCase_ == PayloadOneofCase.TextPayload) {
+        output.WriteRawTag(66);
+        output.WriteString(TextPayload);
+      }
+      if (PrintUnknownFields != false) {
+        output.WriteRawTag(72);
+        output.WriteBool(PrintUnknownFields);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1009,6 +1072,9 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (resultCase_ == ResultOneofCase.ParseError) {
         output.WriteRawTag(10);
         output.WriteString(ParseError);
@@ -1044,7 +1110,49 @@ namespace Conformance {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (resultCase_ == ResultOneofCase.ParseError) {
+        output.WriteRawTag(10);
+        output.WriteString(ParseError);
+      }
+      if (resultCase_ == ResultOneofCase.RuntimeError) {
+        output.WriteRawTag(18);
+        output.WriteString(RuntimeError);
+      }
+      if (resultCase_ == ResultOneofCase.ProtobufPayload) {
+        output.WriteRawTag(26);
+        output.WriteBytes(ProtobufPayload);
+      }
+      if (resultCase_ == ResultOneofCase.JsonPayload) {
+        output.WriteRawTag(34);
+        output.WriteString(JsonPayload);
+      }
+      if (resultCase_ == ResultOneofCase.Skipped) {
+        output.WriteRawTag(42);
+        output.WriteString(Skipped);
+      }
+      if (resultCase_ == ResultOneofCase.SerializeError) {
+        output.WriteRawTag(50);
+        output.WriteString(SerializeError);
+      }
+      if (resultCase_ == ResultOneofCase.JspbPayload) {
+        output.WriteRawTag(58);
+        output.WriteString(JspbPayload);
+      }
+      if (resultCase_ == ResultOneofCase.TextPayload) {
+        output.WriteRawTag(66);
+        output.WriteString(TextPayload);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1299,6 +1407,9 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (UseJspbArrayAnyFormat != false) {
         output.WriteRawTag(8);
         output.WriteBool(UseJspbArrayAnyFormat);
@@ -1306,7 +1417,21 @@ namespace Conformance {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (UseJspbArrayAnyFormat != false) {
+        output.WriteRawTag(8);
+        output.WriteBool(UseJspbArrayAnyFormat);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
