@@ -98,7 +98,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer,
     variables_,
     use_write_context
     ? "$name$_.WriteTo(ref output, _repeated_$name$_codec);\n"
-    : "$name$_.WriteTo(ref output, _repeated_$name$_codec);\n");
+    : "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
