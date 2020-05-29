@@ -1,9 +1,5 @@
 #!/bin/bash
 
-VERSION=$1
-
-export PATH=/usr/local/php-$VERSION/bin:$PATH
-
 php -i | grep "Configuration"
 
 # gdb --args php -dextension=../ext/google/protobuf/modules/protobuf.so `which

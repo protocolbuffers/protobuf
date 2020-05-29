@@ -1,11 +1,8 @@
 #!/bin/bash
 
-VERSION=$1
+cd $(dirname $0)
 
-export PATH=/usr/local/php-$VERSION/bin:$PATH
-
-# Compile c extension
-/bin/bash ./compile_extension.sh $VERSION
+./compile_extension.sh
 
 tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php wrapper_type_setters_test.php)
 

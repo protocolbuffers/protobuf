@@ -1,12 +1,12 @@
 #!/bin/bash
+
+cd $(dirname $0)
+
 set -e
 
-# Compile c extension
-VERSION=7.4
 PORT=12345
 
-export PATH=/usr/local/php-$VERSION/bin:$PATH
-/bin/bash ./compile_extension.sh $VERSION
+./compile_extension.sh
 
 nohup php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so -S localhost:$PORT multirequest.php 2>&1 &
 
