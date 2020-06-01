@@ -82,7 +82,7 @@ bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 
 namespace internal {
 
-bool ParseNamedEnum(const EnumDescriptor* descriptor, StringPiece name,
+bool ParseNamedEnum(const EnumDescriptor* descriptor, ConstStringParam name,
                     int* value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
   if (d == nullptr) return false;

@@ -72,10 +72,10 @@ namespace internal {
 // an enum name of the given type, returning true and filling in value on
 // success, or returning false and leaving value unchanged on failure.
 PROTOBUF_EXPORT bool ParseNamedEnum(const EnumDescriptor* descriptor,
-                                    StringPiece name, int* value);
+                                    ConstStringParam name, int* value);
 
 template <typename EnumType>
-bool ParseNamedEnum(const EnumDescriptor* descriptor, StringPiece name,
+bool ParseNamedEnum(const EnumDescriptor* descriptor, ConstStringParam name,
                     EnumType* value) {
   int tmp;
   if (!ParseNamedEnum(descriptor, name, &tmp)) return false;

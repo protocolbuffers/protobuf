@@ -492,24 +492,12 @@ generate_php_test_proto() {
 use_php() {
   VERSION=$1
   export PATH=/usr/local/php-${VERSION}/bin:$PATH
-  export CPLUS_INCLUDE_PATH=/usr/local/php-${VERSION}/include/php/main:/usr/local/php-${VERSION}/include/php/:$CPLUS_INCLUDE_PATH
-  export C_INCLUDE_PATH=/usr/local/php-${VERSION}/include/php/main:/usr/local/php-${VERSION}/include/php/:$C_INCLUDE_PATH
   generate_php_test_proto
 }
 
 use_php_zts() {
   VERSION=$1
   export PATH=/usr/local/php-${VERSION}-zts/bin:$PATH
-  export CPLUS_INCLUDE_PATH=/usr/local/php-${VERSION}-zts/include/php/main:/usr/local/php-${VERSION}-zts/include/php/:$CPLUS_INCLUDE_PATH
-  export C_INCLUDE_PATH=/usr/local/php-${VERSION}-zts/include/php/main:/usr/local/php-${VERSION}-zts/include/php/:$C_INCLUDE_PATH
-  generate_php_test_proto
-}
-
-use_php_bc() {
-  VERSION=$1
-  export PATH=/usr/local/php-${VERSION}-bc/bin:$PATH
-  export CPLUS_INCLUDE_PATH=/usr/local/php-${VERSION}-bc/include/php/main:/usr/local/php-${VERSION}-bc/include/php/:$CPLUS_INCLUDE_PATH
-  export C_INCLUDE_PATH=/usr/local/php-${VERSION}-bc/include/php/main:/usr/local/php-${VERSION}-bc/include/php/:$C_INCLUDE_PATH
   generate_php_test_proto
 }
 
@@ -529,9 +517,7 @@ build_php5.5() {
 build_php5.5_c() {
   IS_64BIT=$1
   use_php 5.5
-  pushd php/tests
-  /bin/bash ./test.sh 5.5
-  popd
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -547,9 +533,7 @@ build_php5.5_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  pushd tests
-  /bin/bash ./compile_extension.sh 5.5
-  popd
+  tests/compile_extension.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -557,7 +541,7 @@ build_php5.5_mixed() {
 build_php5.5_zts_c() {
   IS_64BIT=$1
   use_php_zts 5.5
-  cd php/tests && /bin/bash ./test.sh 5.5-zts && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -583,7 +567,7 @@ build_php5.6() {
 build_php5.6_c() {
   IS_64BIT=$1
   use_php 5.6
-  cd php/tests && /bin/bash ./test.sh 5.6 && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -599,9 +583,7 @@ build_php5.6_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  pushd tests
-  /bin/bash ./compile_extension.sh 5.6
-  popd
+  tests/compile_extension.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -609,7 +591,7 @@ build_php5.6_mixed() {
 build_php5.6_zts_c() {
   IS_64BIT=$1
   use_php_zts 5.6
-  cd php/tests && /bin/bash ./test.sh 5.6-zts && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -639,10 +621,8 @@ build_php5.6_mac() {
   sudo mv valgrind /usr/local/bin/valgrind
 
   # Test
-  cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
-  make test_php_c
-  popd
+  php/tests/test.sh
+  (cd conformance && make test_php_c)
 }
 
 build_php7.0() {
@@ -652,15 +632,13 @@ build_php7.0() {
   composer update
   ./vendor/bin/phpunit
   popd
-  pushd conformance
-  make test_php
-  popd
+  (cd conformance && make test_php)
 }
 
 build_php7.0_c() {
   IS_64BIT=$1
   use_php 7.0
-  cd php/tests && /bin/bash ./test.sh 7.0 && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -676,9 +654,7 @@ build_php7.0_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  pushd tests
-  /bin/bash ./compile_extension.sh 7.0
-  popd
+  tests/compile_extension.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -686,7 +662,7 @@ build_php7.0_mixed() {
 build_php7.0_zts_c() {
   IS_64BIT=$1
   use_php_zts 7.0
-  cd php/tests && /bin/bash ./test.sh 7.0-zts && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -716,10 +692,8 @@ build_php7.0_mac() {
   sudo mv valgrind /usr/local/bin/valgrind
 
   # Test
-  cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
-  make test_php_c
-  popd
+  php/tests/test.sh
+  (cd conformance && make test_php_c)
 }
 
 build_php7.3_mac() {
@@ -743,10 +717,8 @@ build_php7.3_mac() {
   sudo mv valgrind /usr/local/bin/valgrind
 
   # Test
-  cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
-  make test_php_c
-  popd
+  php/tests/test.sh
+  (cd conformance && make test_php_c)
 }
 
 build_php_compatibility() {
@@ -756,9 +728,7 @@ build_php_compatibility() {
 
 build_php_multirequest() {
   use_php 7.4
-  pushd php/tests
-  ./multirequest.sh
-  popd
+  php/tests/multirequest.sh
 }
 
 build_php7.1() {
@@ -768,15 +738,13 @@ build_php7.1() {
   composer update
   ./vendor/bin/phpunit
   popd
-  pushd conformance
-  make test_php
-  popd
+  (cd conformance && make test_php)
 }
 
 build_php7.1_c() {
   IS_64BIT=$1
   use_php 7.1
-  cd php/tests && /bin/bash ./test.sh 7.1 && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -792,9 +760,7 @@ build_php7.1_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  pushd tests
-  /bin/bash ./compile_extension.sh 7.1
-  popd
+  tests/compile_extension.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -802,7 +768,7 @@ build_php7.1_mixed() {
 build_php7.1_zts_c() {
   IS_64BIT=$1
   use_php_zts 7.1
-  cd php/tests && /bin/bash ./test.sh 7.1-zts && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -820,15 +786,13 @@ build_php7.4() {
   composer update
   ./vendor/bin/phpunit
   popd
-  pushd conformance
-  make test_php
-  popd
+  (cd conformance && make test_php)
 }
 
 build_php7.4_c() {
   IS_64BIT=$1
   use_php 7.4
-  cd php/tests && /bin/bash ./test.sh 7.4 && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -837,9 +801,7 @@ build_php7.4_c() {
     make test_php_c_32
   fi
   popd
-  pushd php/ext/google/protobuf
-  phpize --clean
-  popd
+  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php7.4_mixed() {
@@ -847,20 +809,16 @@ build_php7.4_mixed() {
   pushd php
   rm -rf vendor
   composer update
-  pushd tests
-  /bin/bash ./compile_extension.sh 7.4
-  popd
+  tests/compile_extension.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
-  pushd php/ext/google/protobuf
-  phpize --clean
-  popd
+  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php7.4_zts_c() {
   IS_64BIT=$1
   use_php_zts 7.4
-  cd php/tests && /bin/bash ./test.sh 7.4-zts && cd ../..
+  php/tests/test.sh
   pushd conformance
   if [ "$IS_64BIT" = "true" ]
   then
@@ -869,9 +827,7 @@ build_php7.4_zts_c() {
     make test_php_c_32
   fi
   popd
-  pushd php/ext/google/protobuf
-  phpize --clean
-  popd
+  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php_all_32() {

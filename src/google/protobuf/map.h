@@ -343,8 +343,8 @@ class Map {
   }
 
   ~Map() {
-    clear();
     if (arena_ == nullptr) {
+      clear();
       delete elements_;
     }
   }
@@ -1218,7 +1218,7 @@ class Map {
       first = erase(first);
     }
   }
-  void clear() { erase(begin(), end()); }
+  void clear() { elements_->clear(); }
 
   // Assign
   Map& operator=(const Map& other) {

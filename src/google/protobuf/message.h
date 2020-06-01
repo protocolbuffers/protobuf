@@ -740,8 +740,7 @@ class PROTOBUF_EXPORT Reflection final {
   // long as the message is not destroyed.
   //
   // Note that to use this method users need to include the header file
-  // "net/proto2/public/reflection.h" (which defines the RepeatedFieldRef
-  // class templates).
+  // "reflection.h" (which defines the RepeatedFieldRef class templates).
   template <typename T>
   RepeatedFieldRef<T> GetRepeatedFieldRef(const Message& message,
                                           const FieldDescriptor* field) const;
