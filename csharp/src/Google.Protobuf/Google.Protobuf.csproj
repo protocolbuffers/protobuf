@@ -4,7 +4,7 @@
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.12.0</VersionPrefix>
+    <VersionPrefix>3.12.2</VersionPrefix>
     <!-- C# 7.2 is required for Span/BufferWriter/ReadOnlySequence -->
     <LangVersion>7.2</LangVersion>
     <Authors>Google Inc.</Authors>
@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.2"/>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="1.0.0-beta2-18618-05"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="1.0.0"/>
     <!-- Needed for the net45 build to work on Unix. See https://github.com/dotnet/designs/pull/33 -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0"/>
   </ItemGroup>
