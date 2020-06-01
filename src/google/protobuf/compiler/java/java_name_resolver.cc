@@ -91,7 +91,7 @@ std::string ClassNameWithoutPackage(const ServiceDescriptor* descriptor,
 }
 
 // Return true if a and b are equals (case insensitive).
-NameEquality CheckNameEquality(const string& a, const string& b) {
+NameEquality CheckNameEquality(const std::string& a, const std::string& b) {
   if (ToUpper(a) == ToUpper(b)) {
     if (a == b) {
       return NameEquality::EXACT_EQUAL;

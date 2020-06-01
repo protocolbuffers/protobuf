@@ -1,3 +1,28 @@
+Unreleased Changes
+
+  C++:
+  * Enabled heterogeneous lookup for std::string keys in maps.
+  * Improved the randomness of map ordering.
+
+  Python:
+  * Improved the error message when AttributeError is returned from __getattr__
+    in EnumTypeWrapper.
+
+2020-05-26 version 3.12.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Simplified the template export macros to fix the build for mingw32. (#7539)
+
+  Objective-C
+  * Fix for the :protobuf_objc target in the Bazel BUILD file. (#7538)
+
+2020-05-20 version 3.12.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Re-add binary gems for Ruby 2.3 and 2.4. These are EOL upstream, however
+    many people still use them and dropping support will require more
+    coordination.
+
 2020-05-12 version 3.12.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler

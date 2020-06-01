@@ -980,6 +980,107 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
   EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }
 
+// Attempts to verify that a map with keys a and b has a random ordering. This
+// function returns true if it succeeds in observing both possible orderings.
+bool MapOrderingIsRandom(int a, int b) {
+  bool saw_a_first = false;
+  bool saw_b_first = false;
+
+  for (int i = 0; i < 50; ++i) {
+    Map<int32, int32> m;
+    m[a] = 0;
+    m[b] = 0;
+    int32 first_element = m.begin()->first;
+    if (first_element == a) saw_a_first = true;
+    if (first_element == b) saw_b_first = true;
+    if (saw_a_first && saw_b_first) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// This test verifies that the iteration order is reasonably random even for
+// small maps. Currently we only have sufficient randomness for debug builds and
+// builds where we can use the RDTSC instruction, so we only test for those
+// builds.
+#if defined(__x86_64__) && defined(__GNUC__) && \
+    !defined(GOOGLE_PROTOBUF_NO_RDTSC)
+TEST_F(MapImplTest, RandomOrdering) {
+  for (int i = 0; i < 10; ++i) {
+    for (int j = i + 1; j < 10; ++j) {
+      EXPECT_TRUE(MapOrderingIsRandom(i, j))
+          << "Map with keys " << i << " and " << j
+          << " has deterministic ordering";
+    }
+  }
+}
+#endif
+
+template <typename Key>
+void TestTransparent(const Key& key, const Key& miss_key) {
+  Map<std::string, int> m;
+  const auto& cm = m;
+
+  m.insert({"ABC", 1});
+
+  const auto abc_it = m.begin();
+
+  m.insert({"DEF", 2});
+
+  using testing::Pair;
+  using testing::UnorderedElementsAre;
+
+  EXPECT_EQ(m.at(key), 1);
+  EXPECT_EQ(cm.at(key), 1);
+
+#ifdef PROTOBUF_HAS_DEATH_TEST
+  EXPECT_DEATH(m.at(miss_key), "");
+  EXPECT_DEATH(cm.at(miss_key), "");
+#endif  // PROTOBUF_HAS_DEATH_TEST
+
+  EXPECT_EQ(m.count(key), 1);
+  EXPECT_EQ(cm.count(key), 1);
+  EXPECT_EQ(m.count(miss_key), 0);
+  EXPECT_EQ(cm.count(miss_key), 0);
+
+  EXPECT_EQ(m.find(key), abc_it);
+  EXPECT_EQ(cm.find(key), abc_it);
+  EXPECT_EQ(m.find(miss_key), m.end());
+  EXPECT_EQ(cm.find(miss_key), cm.end());
+
+  EXPECT_TRUE(m.contains(key));
+  EXPECT_TRUE(cm.contains(key));
+  EXPECT_FALSE(m.contains(miss_key));
+  EXPECT_FALSE(cm.contains(miss_key));
+
+  EXPECT_THAT(m.equal_range(key), Pair(abc_it, std::next(abc_it)));
+  EXPECT_THAT(cm.equal_range(key), Pair(abc_it, std::next(abc_it)));
+  EXPECT_THAT(m.equal_range(miss_key), Pair(m.end(), m.end()));
+  EXPECT_THAT(cm.equal_range(miss_key), Pair(m.end(), m.end()));
+
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 1), Pair("DEF", 2)));
+  EXPECT_EQ(m.erase(key), 1);
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("DEF", 2)));
+  EXPECT_EQ(m.erase(key), 0);
+  EXPECT_EQ(m.erase(miss_key), 0);
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("DEF", 2)));
+}
+
+TEST_F(MapImplTest, TransparentLookupForString) {
+  TestTransparent("ABC", "LKJ");
+  TestTransparent(std::string("ABC"), std::string("LKJ"));
+#if defined(__cpp_lib_string_view)
+  TestTransparent(std::string_view("ABC"), std::string_view("LKJ"));
+#endif  // defined(__cpp_lib_string_view)
+
+  // std::reference_wrapper
+  std::string abc = "ABC", lkj = "LKJ";
+  TestTransparent(std::ref(abc), std::ref(lkj));
+  TestTransparent(std::cref(abc), std::cref(lkj));
+}
+
 // Map Field Reflection Test ========================================
 
 static int Func(int i, int j) { return i * j; }
@@ -2408,45 +2509,45 @@ TEST(GeneratedMapFieldTest, IsInitialized) {
 
 TEST(GeneratedMapFieldTest, MessagesMustMerge) {
   unittest::TestRequiredMessageMap map_message;
+
   unittest::TestRequired with_dummy4;
   with_dummy4.set_a(97);
-  with_dummy4.set_b(0);
-  with_dummy4.set_c(0);
+  with_dummy4.set_b(91);
   with_dummy4.set_dummy4(98);
-
-  EXPECT_TRUE(with_dummy4.IsInitialized());
+  EXPECT_FALSE(with_dummy4.IsInitialized());
   (*map_message.mutable_map_field())[0] = with_dummy4;
-  EXPECT_TRUE(map_message.IsInitialized());
-  std::string s = map_message.SerializeAsString();
+  EXPECT_FALSE(map_message.IsInitialized());
 
-  // Modify s so that there are two values in the entry for key 0.
-  // The first will have no value for c.  The second will have no value for a.
-  // Those are required fields.  Also, make some other little changes, to
-  // ensure we are merging the two values (because they're messages).
-  ASSERT_EQ(s.size() - 2, s[1]);  // encoding of the length of what follows
-  std::string encoded_val(s.data() + 4, s.data() + s.size());
-  // In s, change the encoding of c to an encoding of dummy32.
-  s[s.size() - 3] -= 8;
-  // Make encoded_val slightly different from what's in s.
-  encoded_val[encoded_val.size() - 1] += 33;  // Encode c = 33.
-  for (int i = 0; i < encoded_val.size(); i++) {
-    if (encoded_val[i] == 97) {
-      // Encode b = 91 instead of a = 97.  But this won't matter, because
-      // we also encode b = 0 right after this.  The point is to leave out
-      // a required field, and make sure the parser doesn't complain, because
-      // every required field is set after the merge of the two values.
-      encoded_val[i - 1] += 16;
-      encoded_val[i] = 91;
-    } else if (encoded_val[i] == 98) {
-      // Encode dummy5 = 99 instead of dummy4 = 98.
-      encoded_val[i - 1] += 8;  // The tag for dummy5 is 8 more.
-      encoded_val[i]++;
-      break;
-    }
-  }
+  unittest::TestRequired with_dummy5;
+  with_dummy5.set_b(0);
+  with_dummy5.set_c(33);
+  with_dummy5.set_dummy5(99);
+  EXPECT_FALSE(with_dummy5.IsInitialized());
+  (*map_message.mutable_map_field())[0] = with_dummy5;
+  EXPECT_FALSE(map_message.IsInitialized());
 
-  s += encoded_val;            // Add the second message.
-  s[1] += encoded_val.size();  // Adjust encoded size.
+  // The wire format of MapEntry is straightforward (*) and can be manually
+  // constructed to force merging of two uninitialized messages that would
+  // result in an initialized message.
+  //
+  // (*) http://google3/net/proto2/internal/map_test.cc?l=2433&rcl=310012028
+  std::string dummy4_s = with_dummy4.SerializePartialAsString();
+  std::string dummy5_s = with_dummy5.SerializePartialAsString();
+  int payload_size = dummy4_s.size() + dummy5_s.size();
+  // Makes sure the payload size fits into one byte.
+  ASSERT_LT(payload_size, 128);
+
+  std::string s(6, 0);
+  char* p = &s[0];
+  *p++ = WireFormatLite::MakeTag(1, WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  // Length: 2B for key tag & val and 2B for val tag and length of the following
+  // payload.
+  *p++ = 4 + payload_size;
+  *p++ = WireFormatLite::MakeTag(1, WireFormatLite::WIRETYPE_VARINT);
+  *p++ = 0;
+  *p++ = WireFormatLite::MakeTag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  *p++ = payload_size;
+  StrAppend(&s, dummy4_s, dummy5_s);
 
   // Test key then value then value.
   int key = 0;
@@ -2983,10 +3084,9 @@ TEST(WireFormatForMapFieldTest, SerializeMap) {
     ASSERT_FALSE(output.HadError());
   }
 
-  // Should be the same.
-  // Don't use EXPECT_EQ here because we're comparing raw binary data and
-  // we really don't want it dumped to stdout on failure.
-  EXPECT_TRUE(dynamic_data == generated_data);
+  // Should parse to the same message.
+  EXPECT_TRUE(TestUtil::EqualsToSerialized(message, generated_data));
+  EXPECT_TRUE(TestUtil::EqualsToSerialized(message, dynamic_data));
 }
 
 TEST(WireFormatForMapFieldTest, SerializeMapDynamicMessage) {
@@ -3161,20 +3261,6 @@ static std::string DeterministicSerialization(const T& t) {
   return result;
 }
 
-// Helper to test the serialization of the first arg against a golden file.
-static void TestDeterministicSerialization(const protobuf_unittest::TestMaps& t,
-                                           const std::string& filename) {
-  std::string expected;
-  GOOGLE_CHECK_OK(File::GetContents(
-      TestUtil::GetTestDataPath("net/proto2/internal/testdata/" + filename),
-      &expected, true));
-  const std::string actual = DeterministicSerialization(t);
-  EXPECT_EQ(expected, actual);
-  protobuf_unittest::TestMaps u;
-  EXPECT_TRUE(u.ParseFromString(actual));
-  EXPECT_TRUE(util::MessageDifferencer::Equals(u, t));
-}
-
 // Helper for MapSerializationTest.  Return a 7-bit ASCII string.
 static std::string ConstructKey(uint64 n) {
   std::string s(n % static_cast<uint64>(9), '\0');
@@ -3219,7 +3305,17 @@ TEST(MapSerializationTest, Deterministic) {
     frog = frog * multiplier + i;
     frog ^= (frog >> 41);
   }
-  TestDeterministicSerialization(t, "golden_message_maps");
+
+  // Verifies if two consecutive calls to deterministic serialization produce
+  // the same bytes. Deterministic serialization means the same serialization
+  // bytes in the same binary.
+  const std::string s1 = DeterministicSerialization(t);
+  const std::string s2 = DeterministicSerialization(t);
+  EXPECT_EQ(s1, s2);
+
+  protobuf_unittest::TestMaps u;
+  EXPECT_TRUE(u.ParseFromString(s1));
+  EXPECT_TRUE(util::MessageDifferencer::Equals(u, t));
 }
 
 TEST(MapSerializationTest, DeterministicSubmessage) {

@@ -1419,10 +1419,10 @@ public class TextFormatTest extends TestCase {
             + "  value: -1\n"
             + "}\n";
     TestMap msg = TextFormat.parse(input, TestMap.class);
-    int val1 = msg.getInt32ToInt32Field().get(1);
+    int i1 = msg.getInt32ToInt32Field().get(1);
     TestMap msg2 = TextFormat.parse(msg.toString(), TestMap.class);
-    int val2 = msg2.getInt32ToInt32Field().get(1);
-    assertEquals(val1, val2);
+    int i2 = msg2.getInt32ToInt32Field().get(1);
+    assertEquals(i1, i2);
   }
 
   public void testMapShortForm() throws Exception {

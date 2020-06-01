@@ -46,7 +46,7 @@ namespace util {
 
 class SnakeCaseCamelCaseTest : public ::testing::Test {
  protected:
-  string SnakeCaseToCamelCase(const std::string& input) {
+  std::string SnakeCaseToCamelCase(const std::string& input) {
     std::string output;
     if (FieldMaskUtil::SnakeCaseToCamelCase(input, &output)) {
       return output;
@@ -55,7 +55,7 @@ class SnakeCaseCamelCaseTest : public ::testing::Test {
     }
   }
 
-  string CamelCaseToSnakeCase(const std::string& input) {
+  std::string CamelCaseToSnakeCase(const std::string& input) {
     std::string output;
     if (FieldMaskUtil::CamelCaseToSnakeCase(input, &output)) {
       return output;

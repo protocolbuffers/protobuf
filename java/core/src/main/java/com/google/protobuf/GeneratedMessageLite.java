@@ -234,7 +234,7 @@ public abstract class GeneratedMessageLite<
    *       It doesn't use or modify any memoized value.
    *   <li>{@code GET_MEMOIZED_IS_INITIALIZED} returns the memoized {@code isInitialized} byte
    *       value.
-   *   <li>{@code SET_MEMOIZED_IS_INITIALIZED} sets the memoized {@code isInitilaized} byte value to
+   *   <li>{@code SET_MEMOIZED_IS_INITIALIZED} sets the memoized {@code isInitialized} byte value to
    *       1 if the first parameter is not null, or to 0 if the first parameter is null.
    *   <li>{@code NEW_BUILDER} returns a {@code BuilderType} instance.
    * </ul>
@@ -461,7 +461,7 @@ public abstract class GeneratedMessageLite<
         throws IOException {
       copyOnWrite();
       try {
-        // TODO(yilunchong): Try to make input with type CodedInpuStream.ArrayDecoder use
+        // TODO(yilunchong): Try to make input with type CodedInputStream.ArrayDecoder use
         // fast path.
         Protobuf.getInstance().schemaFor(instance).mergeFrom(
             instance, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
