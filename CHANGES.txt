@@ -1,3 +1,8 @@
+2020-06-01 version 3.12.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Objective-C
+  * Tweak the union used for Extensions to support old generated code. #7573
+
 2020-05-26 version 3.12.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
