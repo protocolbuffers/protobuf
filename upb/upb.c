@@ -44,6 +44,15 @@ void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args) {
   status->msg[UPB_STATUS_MAX_MESSAGE - 1] = '\0';
 }
 
+void upb_status_vappenderrf(upb_status *status, const char *fmt, va_list args) {
+  size_t len;
+  if (!status) return;
+  status->ok = false;
+  len = strlen(status->msg);
+  _upb_vsnprintf(status->msg + len, sizeof(status->msg) - len, fmt, args);
+  status->msg[UPB_STATUS_MAX_MESSAGE - 1] = '\0';
+}
+
 /* upb_alloc ******************************************************************/
 
 static void *upb_global_allocfunc(upb_alloc *alloc, void *ptr, size_t oldsize,

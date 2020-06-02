@@ -111,18 +111,6 @@ static bool upb_put_float(upb_encstate *e, float d) {
   return upb_put_fixed32(e, u32);
 }
 
-static uint32_t upb_readcase(const char *msg, const upb_msglayout_field *f) {
-  uint32_t ret;
-  memcpy(&ret, msg - f->presence, sizeof(ret));
-  return ret;
-}
-
-static bool upb_readhasbit(const char *msg, const upb_msglayout_field *f) {
-  uint32_t hasbit = f->presence;
-  UPB_ASSERT(f->presence > 0);
-  return (*UPB_PTR_AT(msg, hasbit / 8, uint8_t)) & (1 << (hasbit % 8));
-}
-
 static bool upb_put_tag(upb_encstate *e, int field_number, int wire_type) {
   return upb_put_varint(e, (field_number << 3) | wire_type);
 }
@@ -390,12 +378,12 @@ bool upb_encode_message(upb_encstate *e, const char *msg,
         skip_empty = true;
       } else if (f->presence > 0) {
         /* Proto2 presence: hasbit. */
-        if (!upb_readhasbit(msg, f)) {
+        if (!_upb_hasbit_field(msg, f)) {
           continue;
         }
       } else {
         /* Field is in a oneof. */
-        if (upb_readcase(msg, f) != f->number) {
+        if (_upb_getoneofcase_field(msg, f) != f->number) {
           continue;
         }
       }
