@@ -237,7 +237,11 @@ namespace Google.Protobuf.Benchmarks {
   /// a message that has a large number of wrapper fields
   /// obfuscated version of an internal message
   /// </summary>
-  public sealed partial class ManyWrapperFieldsMessage : pb::IMessage<ManyWrapperFieldsMessage>, pb::IBufferMessage {
+  public sealed partial class ManyWrapperFieldsMessage : pb::IMessage<ManyWrapperFieldsMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ManyWrapperFieldsMessage> _parser = new pb::MessageParser<ManyWrapperFieldsMessage>(() => new ManyWrapperFieldsMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3303,9 +3307,787 @@ namespace Google.Protobuf.Benchmarks {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            double? value = _single_doubleField1_codec.Read(input);
+            if (doubleField1_ == null || value != 0D) {
+              DoubleField1 = value;
+            }
+            break;
+          }
+          case 18: {
+            long? value = _single_int64Field2_codec.Read(input);
+            if (int64Field2_ == null || value != 0L) {
+              Int64Field2 = value;
+            }
+            break;
+          }
+          case 26: {
+            long? value = _single_int64Field3_codec.Read(input);
+            if (int64Field3_ == null || value != 0L) {
+              Int64Field3 = value;
+            }
+            break;
+          }
+          case 34: {
+            long? value = _single_int64Field4_codec.Read(input);
+            if (int64Field4_ == null || value != 0L) {
+              Int64Field4 = value;
+            }
+            break;
+          }
+          case 58: {
+            double? value = _single_doubleField7_codec.Read(input);
+            if (doubleField7_ == null || value != 0D) {
+              DoubleField7 = value;
+            }
+            break;
+          }
+          case 66: {
+            double? value = _single_doubleField8_codec.Read(input);
+            if (doubleField8_ == null || value != 0D) {
+              DoubleField8 = value;
+            }
+            break;
+          }
+          case 74: {
+            double? value = _single_doubleField9_codec.Read(input);
+            if (doubleField9_ == null || value != 0D) {
+              DoubleField9 = value;
+            }
+            break;
+          }
+          case 82: {
+            double? value = _single_doubleField10_codec.Read(input);
+            if (doubleField10_ == null || value != 0D) {
+              DoubleField10 = value;
+            }
+            break;
+          }
+          case 90: {
+            double? value = _single_doubleField11_codec.Read(input);
+            if (doubleField11_ == null || value != 0D) {
+              DoubleField11 = value;
+            }
+            break;
+          }
+          case 114: {
+            double? value = _single_doubleField14_codec.Read(input);
+            if (doubleField14_ == null || value != 0D) {
+              DoubleField14 = value;
+            }
+            break;
+          }
+          case 122: {
+            double? value = _single_doubleField15_codec.Read(input);
+            if (doubleField15_ == null || value != 0D) {
+              DoubleField15 = value;
+            }
+            break;
+          }
+          case 154: {
+            long? value = _single_int64Field19_codec.Read(input);
+            if (int64Field19_ == null || value != 0L) {
+              Int64Field19 = value;
+            }
+            break;
+          }
+          case 162: {
+            double? value = _single_doubleField20_codec.Read(input);
+            if (doubleField20_ == null || value != 0D) {
+              DoubleField20 = value;
+            }
+            break;
+          }
+          case 170: {
+            double? value = _single_doubleField21_codec.Read(input);
+            if (doubleField21_ == null || value != 0D) {
+              DoubleField21 = value;
+            }
+            break;
+          }
+          case 178: {
+            double? value = _single_doubleField22_codec.Read(input);
+            if (doubleField22_ == null || value != 0D) {
+              DoubleField22 = value;
+            }
+            break;
+          }
+          case 202: {
+            double? value = _single_doubleField25_codec.Read(input);
+            if (doubleField25_ == null || value != 0D) {
+              DoubleField25 = value;
+            }
+            break;
+          }
+          case 210: {
+            long? value = _single_int64Field26_codec.Read(input);
+            if (int64Field26_ == null || value != 0L) {
+              Int64Field26 = value;
+            }
+            break;
+          }
+          case 226: {
+            double? value = _single_doubleField28_codec.Read(input);
+            if (doubleField28_ == null || value != 0D) {
+              DoubleField28 = value;
+            }
+            break;
+          }
+          case 234: {
+            double? value = _single_doubleField29_codec.Read(input);
+            if (doubleField29_ == null || value != 0D) {
+              DoubleField29 = value;
+            }
+            break;
+          }
+          case 242: {
+            double? value = _single_doubleField30_codec.Read(input);
+            if (doubleField30_ == null || value != 0D) {
+              DoubleField30 = value;
+            }
+            break;
+          }
+          case 250: {
+            double? value = _single_doubleField31_codec.Read(input);
+            if (doubleField31_ == null || value != 0D) {
+              DoubleField31 = value;
+            }
+            break;
+          }
+          case 258: {
+            long? value = _single_int64Field32_codec.Read(input);
+            if (int64Field32_ == null || value != 0L) {
+              Int64Field32 = value;
+            }
+            break;
+          }
+          case 298: {
+            long? value = _single_int64Field37_codec.Read(input);
+            if (int64Field37_ == null || value != 0L) {
+              Int64Field37 = value;
+            }
+            break;
+          }
+          case 306: {
+            double? value = _single_doubleField38_codec.Read(input);
+            if (doubleField38_ == null || value != 0D) {
+              DoubleField38 = value;
+            }
+            break;
+          }
+          case 314: {
+            long? value = _single_interactions_codec.Read(input);
+            if (interactions_ == null || value != 0L) {
+              Interactions = value;
+            }
+            break;
+          }
+          case 322: {
+            double? value = _single_doubleField40_codec.Read(input);
+            if (doubleField40_ == null || value != 0D) {
+              DoubleField40 = value;
+            }
+            break;
+          }
+          case 330: {
+            long? value = _single_int64Field41_codec.Read(input);
+            if (int64Field41_ == null || value != 0L) {
+              Int64Field41 = value;
+            }
+            break;
+          }
+          case 338: {
+            double? value = _single_doubleField42_codec.Read(input);
+            if (doubleField42_ == null || value != 0D) {
+              DoubleField42 = value;
+            }
+            break;
+          }
+          case 346: {
+            long? value = _single_int64Field43_codec.Read(input);
+            if (int64Field43_ == null || value != 0L) {
+              Int64Field43 = value;
+            }
+            break;
+          }
+          case 354: {
+            long? value = _single_int64Field44_codec.Read(input);
+            if (int64Field44_ == null || value != 0L) {
+              Int64Field44 = value;
+            }
+            break;
+          }
+          case 362: {
+            double? value = _single_doubleField45_codec.Read(input);
+            if (doubleField45_ == null || value != 0D) {
+              DoubleField45 = value;
+            }
+            break;
+          }
+          case 370: {
+            double? value = _single_doubleField46_codec.Read(input);
+            if (doubleField46_ == null || value != 0D) {
+              DoubleField46 = value;
+            }
+            break;
+          }
+          case 378: {
+            double? value = _single_doubleField47_codec.Read(input);
+            if (doubleField47_ == null || value != 0D) {
+              DoubleField47 = value;
+            }
+            break;
+          }
+          case 386: {
+            double? value = _single_doubleField48_codec.Read(input);
+            if (doubleField48_ == null || value != 0D) {
+              DoubleField48 = value;
+            }
+            break;
+          }
+          case 394: {
+            double? value = _single_doubleField49_codec.Read(input);
+            if (doubleField49_ == null || value != 0D) {
+              DoubleField49 = value;
+            }
+            break;
+          }
+          case 402: {
+            double? value = _single_doubleField50_codec.Read(input);
+            if (doubleField50_ == null || value != 0D) {
+              DoubleField50 = value;
+            }
+            break;
+          }
+          case 410: {
+            double? value = _single_doubleField51_codec.Read(input);
+            if (doubleField51_ == null || value != 0D) {
+              DoubleField51 = value;
+            }
+            break;
+          }
+          case 418: {
+            double? value = _single_doubleField52_codec.Read(input);
+            if (doubleField52_ == null || value != 0D) {
+              DoubleField52 = value;
+            }
+            break;
+          }
+          case 426: {
+            double? value = _single_doubleField53_codec.Read(input);
+            if (doubleField53_ == null || value != 0D) {
+              DoubleField53 = value;
+            }
+            break;
+          }
+          case 434: {
+            double? value = _single_doubleField54_codec.Read(input);
+            if (doubleField54_ == null || value != 0D) {
+              DoubleField54 = value;
+            }
+            break;
+          }
+          case 442: {
+            double? value = _single_doubleField55_codec.Read(input);
+            if (doubleField55_ == null || value != 0D) {
+              DoubleField55 = value;
+            }
+            break;
+          }
+          case 450: {
+            double? value = _single_doubleField56_codec.Read(input);
+            if (doubleField56_ == null || value != 0D) {
+              DoubleField56 = value;
+            }
+            break;
+          }
+          case 458: {
+            double? value = _single_doubleField57_codec.Read(input);
+            if (doubleField57_ == null || value != 0D) {
+              DoubleField57 = value;
+            }
+            break;
+          }
+          case 466: {
+            double? value = _single_doubleField58_codec.Read(input);
+            if (doubleField58_ == null || value != 0D) {
+              DoubleField58 = value;
+            }
+            break;
+          }
+          case 474: {
+            long? value = _single_int64Field59_codec.Read(input);
+            if (int64Field59_ == null || value != 0L) {
+              Int64Field59 = value;
+            }
+            break;
+          }
+          case 482: {
+            long? value = _single_int64Field60_codec.Read(input);
+            if (int64Field60_ == null || value != 0L) {
+              Int64Field60 = value;
+            }
+            break;
+          }
+          case 498: {
+            double? value = _single_doubleField62_codec.Read(input);
+            if (doubleField62_ == null || value != 0D) {
+              DoubleField62 = value;
+            }
+            break;
+          }
+          case 522: {
+            double? value = _single_doubleField65_codec.Read(input);
+            if (doubleField65_ == null || value != 0D) {
+              DoubleField65 = value;
+            }
+            break;
+          }
+          case 530: {
+            double? value = _single_doubleField66_codec.Read(input);
+            if (doubleField66_ == null || value != 0D) {
+              DoubleField66 = value;
+            }
+            break;
+          }
+          case 538: {
+            double? value = _single_doubleField67_codec.Read(input);
+            if (doubleField67_ == null || value != 0D) {
+              DoubleField67 = value;
+            }
+            break;
+          }
+          case 546: {
+            double? value = _single_doubleField68_codec.Read(input);
+            if (doubleField68_ == null || value != 0D) {
+              DoubleField68 = value;
+            }
+            break;
+          }
+          case 554: {
+            double? value = _single_doubleField69_codec.Read(input);
+            if (doubleField69_ == null || value != 0D) {
+              DoubleField69 = value;
+            }
+            break;
+          }
+          case 562: {
+            double? value = _single_doubleField70_codec.Read(input);
+            if (doubleField70_ == null || value != 0D) {
+              DoubleField70 = value;
+            }
+            break;
+          }
+          case 570: {
+            double? value = _single_doubleField71_codec.Read(input);
+            if (doubleField71_ == null || value != 0D) {
+              DoubleField71 = value;
+            }
+            break;
+          }
+          case 578: {
+            double? value = _single_doubleField72_codec.Read(input);
+            if (doubleField72_ == null || value != 0D) {
+              DoubleField72 = value;
+            }
+            break;
+          }
+          case 586: {
+            string value = _single_stringField73_codec.Read(input);
+            if (stringField73_ == null || value != "") {
+              StringField73 = value;
+            }
+            break;
+          }
+          case 594: {
+            string value = _single_stringField74_codec.Read(input);
+            if (stringField74_ == null || value != "") {
+              StringField74 = value;
+            }
+            break;
+          }
+          case 602: {
+            double? value = _single_doubleField75_codec.Read(input);
+            if (doubleField75_ == null || value != 0D) {
+              DoubleField75 = value;
+            }
+            break;
+          }
+          case 618: {
+            double? value = _single_doubleField77_codec.Read(input);
+            if (doubleField77_ == null || value != 0D) {
+              DoubleField77 = value;
+            }
+            break;
+          }
+          case 626: {
+            double? value = _single_doubleField78_codec.Read(input);
+            if (doubleField78_ == null || value != 0D) {
+              DoubleField78 = value;
+            }
+            break;
+          }
+          case 634: {
+            double? value = _single_doubleField79_codec.Read(input);
+            if (doubleField79_ == null || value != 0D) {
+              DoubleField79 = value;
+            }
+            break;
+          }
+          case 640: {
+            EnumField80 = input.ReadInt32();
+            break;
+          }
+          case 648: {
+            EnumField81 = input.ReadInt32();
+            break;
+          }
+          case 658: {
+            long? value = _single_int64Field82_codec.Read(input);
+            if (int64Field82_ == null || value != 0L) {
+              Int64Field82 = value;
+            }
+            break;
+          }
+          case 664: {
+            EnumField83 = input.ReadInt32();
+            break;
+          }
+          case 674: {
+            double? value = _single_doubleField84_codec.Read(input);
+            if (doubleField84_ == null || value != 0D) {
+              DoubleField84 = value;
+            }
+            break;
+          }
+          case 682: {
+            long? value = _single_int64Field85_codec.Read(input);
+            if (int64Field85_ == null || value != 0L) {
+              Int64Field85 = value;
+            }
+            break;
+          }
+          case 690: {
+            long? value = _single_int64Field86_codec.Read(input);
+            if (int64Field86_ == null || value != 0L) {
+              Int64Field86 = value;
+            }
+            break;
+          }
+          case 698: {
+            long? value = _single_int64Field87_codec.Read(input);
+            if (int64Field87_ == null || value != 0L) {
+              Int64Field87 = value;
+            }
+            break;
+          }
+          case 706: {
+            double? value = _single_doubleField88_codec.Read(input);
+            if (doubleField88_ == null || value != 0D) {
+              DoubleField88 = value;
+            }
+            break;
+          }
+          case 714: {
+            double? value = _single_doubleField89_codec.Read(input);
+            if (doubleField89_ == null || value != 0D) {
+              DoubleField89 = value;
+            }
+            break;
+          }
+          case 722: {
+            double? value = _single_doubleField90_codec.Read(input);
+            if (doubleField90_ == null || value != 0D) {
+              DoubleField90 = value;
+            }
+            break;
+          }
+          case 730: {
+            double? value = _single_doubleField91_codec.Read(input);
+            if (doubleField91_ == null || value != 0D) {
+              DoubleField91 = value;
+            }
+            break;
+          }
+          case 738: {
+            double? value = _single_doubleField92_codec.Read(input);
+            if (doubleField92_ == null || value != 0D) {
+              DoubleField92 = value;
+            }
+            break;
+          }
+          case 746: {
+            double? value = _single_doubleField93_codec.Read(input);
+            if (doubleField93_ == null || value != 0D) {
+              DoubleField93 = value;
+            }
+            break;
+          }
+          case 754: {
+            double? value = _single_doubleField94_codec.Read(input);
+            if (doubleField94_ == null || value != 0D) {
+              DoubleField94 = value;
+            }
+            break;
+          }
+          case 762: {
+            double? value = _single_doubleField95_codec.Read(input);
+            if (doubleField95_ == null || value != 0D) {
+              DoubleField95 = value;
+            }
+            break;
+          }
+          case 770: {
+            double? value = _single_doubleField96_codec.Read(input);
+            if (doubleField96_ == null || value != 0D) {
+              DoubleField96 = value;
+            }
+            break;
+          }
+          case 778: {
+            double? value = _single_doubleField97_codec.Read(input);
+            if (doubleField97_ == null || value != 0D) {
+              DoubleField97 = value;
+            }
+            break;
+          }
+          case 786: {
+            double? value = _single_doubleField98_codec.Read(input);
+            if (doubleField98_ == null || value != 0D) {
+              DoubleField98 = value;
+            }
+            break;
+          }
+          case 794: {
+            double? value = _single_doubleField99_codec.Read(input);
+            if (doubleField99_ == null || value != 0D) {
+              DoubleField99 = value;
+            }
+            break;
+          }
+          case 802:
+          case 800: {
+            repeatedIntField100_.AddEntriesFrom(input, _repeated_repeatedIntField100_codec);
+            break;
+          }
+          case 810: {
+            double? value = _single_doubleField101_codec.Read(input);
+            if (doubleField101_ == null || value != 0D) {
+              DoubleField101 = value;
+            }
+            break;
+          }
+          case 818: {
+            double? value = _single_doubleField102_codec.Read(input);
+            if (doubleField102_ == null || value != 0D) {
+              DoubleField102 = value;
+            }
+            break;
+          }
+          case 826: {
+            double? value = _single_doubleField103_codec.Read(input);
+            if (doubleField103_ == null || value != 0D) {
+              DoubleField103 = value;
+            }
+            break;
+          }
+          case 834: {
+            double? value = _single_doubleField104_codec.Read(input);
+            if (doubleField104_ == null || value != 0D) {
+              DoubleField104 = value;
+            }
+            break;
+          }
+          case 842: {
+            double? value = _single_doubleField105_codec.Read(input);
+            if (doubleField105_ == null || value != 0D) {
+              DoubleField105 = value;
+            }
+            break;
+          }
+          case 850: {
+            double? value = _single_doubleField106_codec.Read(input);
+            if (doubleField106_ == null || value != 0D) {
+              DoubleField106 = value;
+            }
+            break;
+          }
+          case 858: {
+            long? value = _single_int64Field107_codec.Read(input);
+            if (int64Field107_ == null || value != 0L) {
+              Int64Field107 = value;
+            }
+            break;
+          }
+          case 866: {
+            double? value = _single_doubleField108_codec.Read(input);
+            if (doubleField108_ == null || value != 0D) {
+              DoubleField108 = value;
+            }
+            break;
+          }
+          case 874: {
+            double? value = _single_doubleField109_codec.Read(input);
+            if (doubleField109_ == null || value != 0D) {
+              DoubleField109 = value;
+            }
+            break;
+          }
+          case 882: {
+            long? value = _single_int64Field110_codec.Read(input);
+            if (int64Field110_ == null || value != 0L) {
+              Int64Field110 = value;
+            }
+            break;
+          }
+          case 890: {
+            double? value = _single_doubleField111_codec.Read(input);
+            if (doubleField111_ == null || value != 0D) {
+              DoubleField111 = value;
+            }
+            break;
+          }
+          case 898: {
+            long? value = _single_int64Field112_codec.Read(input);
+            if (int64Field112_ == null || value != 0L) {
+              Int64Field112 = value;
+            }
+            break;
+          }
+          case 906: {
+            double? value = _single_doubleField113_codec.Read(input);
+            if (doubleField113_ == null || value != 0D) {
+              DoubleField113 = value;
+            }
+            break;
+          }
+          case 914: {
+            long? value = _single_int64Field114_codec.Read(input);
+            if (int64Field114_ == null || value != 0L) {
+              Int64Field114 = value;
+            }
+            break;
+          }
+          case 922: {
+            long? value = _single_int64Field115_codec.Read(input);
+            if (int64Field115_ == null || value != 0L) {
+              Int64Field115 = value;
+            }
+            break;
+          }
+          case 930: {
+            double? value = _single_doubleField116_codec.Read(input);
+            if (doubleField116_ == null || value != 0D) {
+              DoubleField116 = value;
+            }
+            break;
+          }
+          case 938: {
+            long? value = _single_int64Field117_codec.Read(input);
+            if (int64Field117_ == null || value != 0L) {
+              Int64Field117 = value;
+            }
+            break;
+          }
+          case 946: {
+            double? value = _single_doubleField118_codec.Read(input);
+            if (doubleField118_ == null || value != 0D) {
+              DoubleField118 = value;
+            }
+            break;
+          }
+          case 954: {
+            double? value = _single_doubleField119_codec.Read(input);
+            if (doubleField119_ == null || value != 0D) {
+              DoubleField119 = value;
+            }
+            break;
+          }
+          case 962: {
+            double? value = _single_doubleField120_codec.Read(input);
+            if (doubleField120_ == null || value != 0D) {
+              DoubleField120 = value;
+            }
+            break;
+          }
+          case 970: {
+            double? value = _single_doubleField121_codec.Read(input);
+            if (doubleField121_ == null || value != 0D) {
+              DoubleField121 = value;
+            }
+            break;
+          }
+          case 978: {
+            double? value = _single_doubleField122_codec.Read(input);
+            if (doubleField122_ == null || value != 0D) {
+              DoubleField122 = value;
+            }
+            break;
+          }
+          case 986: {
+            double? value = _single_doubleField123_codec.Read(input);
+            if (doubleField123_ == null || value != 0D) {
+              DoubleField123 = value;
+            }
+            break;
+          }
+          case 994: {
+            double? value = _single_doubleField124_codec.Read(input);
+            if (doubleField124_ == null || value != 0D) {
+              DoubleField124 = value;
+            }
+            break;
+          }
+          case 1002: {
+            long? value = _single_int64Field125_codec.Read(input);
+            if (int64Field125_ == null || value != 0L) {
+              Int64Field125 = value;
+            }
+            break;
+          }
+          case 1010: {
+            long? value = _single_int64Field126_codec.Read(input);
+            if (int64Field126_ == null || value != 0L) {
+              Int64Field126 = value;
+            }
+            break;
+          }
+          case 1018: {
+            long? value = _single_int64Field127_codec.Read(input);
+            if (int64Field127_ == null || value != 0L) {
+              Int64Field127 = value;
+            }
+            break;
+          }
+          case 1026: {
+            double? value = _single_doubleField128_codec.Read(input);
+            if (doubleField128_ == null || value != 0D) {
+              DoubleField128 = value;
+            }
+            break;
+          }
+          case 1034: {
+            double? value = _single_doubleField129_codec.Read(input);
+            if (doubleField129_ == null || value != 0D) {
+              DoubleField129 = value;
+            }
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -4083,6 +4865,7 @@ namespace Google.Protobuf.Benchmarks {
         }
       }
     }
+    #endif
 
   }
 
@@ -4090,7 +4873,11 @@ namespace Google.Protobuf.Benchmarks {
   /// same as ManyWrapperFieldsMessages, but with primitive fields
   /// for comparison.
   /// </summary>
-  public sealed partial class ManyPrimitiveFieldsMessage : pb::IMessage<ManyPrimitiveFieldsMessage>, pb::IBufferMessage {
+  public sealed partial class ManyPrimitiveFieldsMessage : pb::IMessage<ManyPrimitiveFieldsMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ManyPrimitiveFieldsMessage> _parser = new pb::MessageParser<ManyPrimitiveFieldsMessage>(() => new ManyPrimitiveFieldsMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6835,9 +7622,466 @@ namespace Google.Protobuf.Benchmarks {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 9: {
+            DoubleField1 = input.ReadDouble();
+            break;
+          }
+          case 16: {
+            Int64Field2 = input.ReadInt64();
+            break;
+          }
+          case 24: {
+            Int64Field3 = input.ReadInt64();
+            break;
+          }
+          case 32: {
+            Int64Field4 = input.ReadInt64();
+            break;
+          }
+          case 57: {
+            DoubleField7 = input.ReadDouble();
+            break;
+          }
+          case 65: {
+            DoubleField8 = input.ReadDouble();
+            break;
+          }
+          case 73: {
+            DoubleField9 = input.ReadDouble();
+            break;
+          }
+          case 81: {
+            DoubleField10 = input.ReadDouble();
+            break;
+          }
+          case 89: {
+            DoubleField11 = input.ReadDouble();
+            break;
+          }
+          case 113: {
+            DoubleField14 = input.ReadDouble();
+            break;
+          }
+          case 121: {
+            DoubleField15 = input.ReadDouble();
+            break;
+          }
+          case 152: {
+            Int64Field19 = input.ReadInt64();
+            break;
+          }
+          case 161: {
+            DoubleField20 = input.ReadDouble();
+            break;
+          }
+          case 169: {
+            DoubleField21 = input.ReadDouble();
+            break;
+          }
+          case 177: {
+            DoubleField22 = input.ReadDouble();
+            break;
+          }
+          case 201: {
+            DoubleField25 = input.ReadDouble();
+            break;
+          }
+          case 208: {
+            Int64Field26 = input.ReadInt64();
+            break;
+          }
+          case 225: {
+            DoubleField28 = input.ReadDouble();
+            break;
+          }
+          case 233: {
+            DoubleField29 = input.ReadDouble();
+            break;
+          }
+          case 241: {
+            DoubleField30 = input.ReadDouble();
+            break;
+          }
+          case 249: {
+            DoubleField31 = input.ReadDouble();
+            break;
+          }
+          case 256: {
+            Int64Field32 = input.ReadInt64();
+            break;
+          }
+          case 296: {
+            Int64Field37 = input.ReadInt64();
+            break;
+          }
+          case 305: {
+            DoubleField38 = input.ReadDouble();
+            break;
+          }
+          case 312: {
+            Interactions = input.ReadInt64();
+            break;
+          }
+          case 321: {
+            DoubleField40 = input.ReadDouble();
+            break;
+          }
+          case 328: {
+            Int64Field41 = input.ReadInt64();
+            break;
+          }
+          case 337: {
+            DoubleField42 = input.ReadDouble();
+            break;
+          }
+          case 344: {
+            Int64Field43 = input.ReadInt64();
+            break;
+          }
+          case 352: {
+            Int64Field44 = input.ReadInt64();
+            break;
+          }
+          case 361: {
+            DoubleField45 = input.ReadDouble();
+            break;
+          }
+          case 369: {
+            DoubleField46 = input.ReadDouble();
+            break;
+          }
+          case 377: {
+            DoubleField47 = input.ReadDouble();
+            break;
+          }
+          case 385: {
+            DoubleField48 = input.ReadDouble();
+            break;
+          }
+          case 393: {
+            DoubleField49 = input.ReadDouble();
+            break;
+          }
+          case 401: {
+            DoubleField50 = input.ReadDouble();
+            break;
+          }
+          case 409: {
+            DoubleField51 = input.ReadDouble();
+            break;
+          }
+          case 417: {
+            DoubleField52 = input.ReadDouble();
+            break;
+          }
+          case 425: {
+            DoubleField53 = input.ReadDouble();
+            break;
+          }
+          case 433: {
+            DoubleField54 = input.ReadDouble();
+            break;
+          }
+          case 441: {
+            DoubleField55 = input.ReadDouble();
+            break;
+          }
+          case 449: {
+            DoubleField56 = input.ReadDouble();
+            break;
+          }
+          case 457: {
+            DoubleField57 = input.ReadDouble();
+            break;
+          }
+          case 465: {
+            DoubleField58 = input.ReadDouble();
+            break;
+          }
+          case 472: {
+            Int64Field59 = input.ReadInt64();
+            break;
+          }
+          case 480: {
+            Int64Field60 = input.ReadInt64();
+            break;
+          }
+          case 497: {
+            DoubleField62 = input.ReadDouble();
+            break;
+          }
+          case 521: {
+            DoubleField65 = input.ReadDouble();
+            break;
+          }
+          case 529: {
+            DoubleField66 = input.ReadDouble();
+            break;
+          }
+          case 537: {
+            DoubleField67 = input.ReadDouble();
+            break;
+          }
+          case 545: {
+            DoubleField68 = input.ReadDouble();
+            break;
+          }
+          case 553: {
+            DoubleField69 = input.ReadDouble();
+            break;
+          }
+          case 561: {
+            DoubleField70 = input.ReadDouble();
+            break;
+          }
+          case 569: {
+            DoubleField71 = input.ReadDouble();
+            break;
+          }
+          case 577: {
+            DoubleField72 = input.ReadDouble();
+            break;
+          }
+          case 586: {
+            StringField73 = input.ReadString();
+            break;
+          }
+          case 594: {
+            StringField74 = input.ReadString();
+            break;
+          }
+          case 601: {
+            DoubleField75 = input.ReadDouble();
+            break;
+          }
+          case 617: {
+            DoubleField77 = input.ReadDouble();
+            break;
+          }
+          case 625: {
+            DoubleField78 = input.ReadDouble();
+            break;
+          }
+          case 633: {
+            DoubleField79 = input.ReadDouble();
+            break;
+          }
+          case 640: {
+            EnumField80 = input.ReadInt32();
+            break;
+          }
+          case 648: {
+            EnumField81 = input.ReadInt32();
+            break;
+          }
+          case 656: {
+            Int64Field82 = input.ReadInt64();
+            break;
+          }
+          case 664: {
+            EnumField83 = input.ReadInt32();
+            break;
+          }
+          case 673: {
+            DoubleField84 = input.ReadDouble();
+            break;
+          }
+          case 680: {
+            Int64Field85 = input.ReadInt64();
+            break;
+          }
+          case 688: {
+            Int64Field86 = input.ReadInt64();
+            break;
+          }
+          case 696: {
+            Int64Field87 = input.ReadInt64();
+            break;
+          }
+          case 705: {
+            DoubleField88 = input.ReadDouble();
+            break;
+          }
+          case 713: {
+            DoubleField89 = input.ReadDouble();
+            break;
+          }
+          case 721: {
+            DoubleField90 = input.ReadDouble();
+            break;
+          }
+          case 729: {
+            DoubleField91 = input.ReadDouble();
+            break;
+          }
+          case 737: {
+            DoubleField92 = input.ReadDouble();
+            break;
+          }
+          case 745: {
+            DoubleField93 = input.ReadDouble();
+            break;
+          }
+          case 753: {
+            DoubleField94 = input.ReadDouble();
+            break;
+          }
+          case 761: {
+            DoubleField95 = input.ReadDouble();
+            break;
+          }
+          case 769: {
+            DoubleField96 = input.ReadDouble();
+            break;
+          }
+          case 777: {
+            DoubleField97 = input.ReadDouble();
+            break;
+          }
+          case 785: {
+            DoubleField98 = input.ReadDouble();
+            break;
+          }
+          case 793: {
+            DoubleField99 = input.ReadDouble();
+            break;
+          }
+          case 802:
+          case 800: {
+            repeatedIntField100_.AddEntriesFrom(input, _repeated_repeatedIntField100_codec);
+            break;
+          }
+          case 809: {
+            DoubleField101 = input.ReadDouble();
+            break;
+          }
+          case 817: {
+            DoubleField102 = input.ReadDouble();
+            break;
+          }
+          case 825: {
+            DoubleField103 = input.ReadDouble();
+            break;
+          }
+          case 833: {
+            DoubleField104 = input.ReadDouble();
+            break;
+          }
+          case 841: {
+            DoubleField105 = input.ReadDouble();
+            break;
+          }
+          case 849: {
+            DoubleField106 = input.ReadDouble();
+            break;
+          }
+          case 856: {
+            Int64Field107 = input.ReadInt64();
+            break;
+          }
+          case 865: {
+            DoubleField108 = input.ReadDouble();
+            break;
+          }
+          case 873: {
+            DoubleField109 = input.ReadDouble();
+            break;
+          }
+          case 880: {
+            Int64Field110 = input.ReadInt64();
+            break;
+          }
+          case 889: {
+            DoubleField111 = input.ReadDouble();
+            break;
+          }
+          case 896: {
+            Int64Field112 = input.ReadInt64();
+            break;
+          }
+          case 905: {
+            DoubleField113 = input.ReadDouble();
+            break;
+          }
+          case 912: {
+            Int64Field114 = input.ReadInt64();
+            break;
+          }
+          case 920: {
+            Int64Field115 = input.ReadInt64();
+            break;
+          }
+          case 929: {
+            DoubleField116 = input.ReadDouble();
+            break;
+          }
+          case 936: {
+            Int64Field117 = input.ReadInt64();
+            break;
+          }
+          case 945: {
+            DoubleField118 = input.ReadDouble();
+            break;
+          }
+          case 953: {
+            DoubleField119 = input.ReadDouble();
+            break;
+          }
+          case 961: {
+            DoubleField120 = input.ReadDouble();
+            break;
+          }
+          case 969: {
+            DoubleField121 = input.ReadDouble();
+            break;
+          }
+          case 977: {
+            DoubleField122 = input.ReadDouble();
+            break;
+          }
+          case 985: {
+            DoubleField123 = input.ReadDouble();
+            break;
+          }
+          case 993: {
+            DoubleField124 = input.ReadDouble();
+            break;
+          }
+          case 1000: {
+            Int64Field125 = input.ReadInt64();
+            break;
+          }
+          case 1008: {
+            Int64Field126 = input.ReadInt64();
+            break;
+          }
+          case 1016: {
+            Int64Field127 = input.ReadInt64();
+            break;
+          }
+          case 1025: {
+            DoubleField128 = input.ReadDouble();
+            break;
+          }
+          case 1033: {
+            DoubleField129 = input.ReadDouble();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -7294,6 +8538,7 @@ namespace Google.Protobuf.Benchmarks {
         }
       }
     }
+    #endif
 
   }
 

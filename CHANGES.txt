@@ -13,6 +13,17 @@ Unreleased Changes
   * Improved the error message when AttributeError is returned from __getattr__
     in EnumTypeWrapper.
 
+  C#:
+  * Dropped support for netstandard1.0 (replaced by support for netstandard1.1).
+    This was required to modernize the parsing stack to use the `Span<byte>`
+    type internally. (#7351)
+  * Add `ParseFrom(ReadOnlySequence<byte>)` method to enable GC friendly
+    parsing with reduced allocations and buffer copies. (#7351)
+  * Add `GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE` define to make
+    generated code compatible with old C# compilers (pre-roslyn compilers
+    from .NET framework and old versions of mono) that do not support
+    ref structs. (#7490)
+
 2020-05-26 version 3.12.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++

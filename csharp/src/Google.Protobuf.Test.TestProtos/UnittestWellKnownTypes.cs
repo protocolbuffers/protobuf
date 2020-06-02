@@ -179,7 +179,11 @@ namespace Google.Protobuf.TestProtos {
   /// Each wrapper type is included separately, as languages
   /// map handle different wrappers in different ways.
   /// </summary>
-  public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes>, pb::IBufferMessage {
+  public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -784,9 +788,154 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (anyField_ == null) {
+              AnyField = new global::Google.Protobuf.WellKnownTypes.Any();
+            }
+            input.ReadMessage(AnyField);
+            break;
+          }
+          case 18: {
+            if (apiField_ == null) {
+              ApiField = new global::Google.Protobuf.WellKnownTypes.Api();
+            }
+            input.ReadMessage(ApiField);
+            break;
+          }
+          case 26: {
+            if (durationField_ == null) {
+              DurationField = new global::Google.Protobuf.WellKnownTypes.Duration();
+            }
+            input.ReadMessage(DurationField);
+            break;
+          }
+          case 34: {
+            if (emptyField_ == null) {
+              EmptyField = new global::Google.Protobuf.WellKnownTypes.Empty();
+            }
+            input.ReadMessage(EmptyField);
+            break;
+          }
+          case 42: {
+            if (fieldMaskField_ == null) {
+              FieldMaskField = new global::Google.Protobuf.WellKnownTypes.FieldMask();
+            }
+            input.ReadMessage(FieldMaskField);
+            break;
+          }
+          case 50: {
+            if (sourceContextField_ == null) {
+              SourceContextField = new global::Google.Protobuf.WellKnownTypes.SourceContext();
+            }
+            input.ReadMessage(SourceContextField);
+            break;
+          }
+          case 58: {
+            if (structField_ == null) {
+              StructField = new global::Google.Protobuf.WellKnownTypes.Struct();
+            }
+            input.ReadMessage(StructField);
+            break;
+          }
+          case 66: {
+            if (timestampField_ == null) {
+              TimestampField = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            }
+            input.ReadMessage(TimestampField);
+            break;
+          }
+          case 74: {
+            if (typeField_ == null) {
+              TypeField = new global::Google.Protobuf.WellKnownTypes.Type();
+            }
+            input.ReadMessage(TypeField);
+            break;
+          }
+          case 82: {
+            double? value = _single_doubleField_codec.Read(input);
+            if (doubleField_ == null || value != 0D) {
+              DoubleField = value;
+            }
+            break;
+          }
+          case 90: {
+            float? value = _single_floatField_codec.Read(input);
+            if (floatField_ == null || value != 0F) {
+              FloatField = value;
+            }
+            break;
+          }
+          case 98: {
+            long? value = _single_int64Field_codec.Read(input);
+            if (int64Field_ == null || value != 0L) {
+              Int64Field = value;
+            }
+            break;
+          }
+          case 106: {
+            ulong? value = _single_uint64Field_codec.Read(input);
+            if (uint64Field_ == null || value != 0UL) {
+              Uint64Field = value;
+            }
+            break;
+          }
+          case 114: {
+            int? value = _single_int32Field_codec.Read(input);
+            if (int32Field_ == null || value != 0) {
+              Int32Field = value;
+            }
+            break;
+          }
+          case 122: {
+            uint? value = _single_uint32Field_codec.Read(input);
+            if (uint32Field_ == null || value != 0) {
+              Uint32Field = value;
+            }
+            break;
+          }
+          case 130: {
+            bool? value = _single_boolField_codec.Read(input);
+            if (boolField_ == null || value != false) {
+              BoolField = value;
+            }
+            break;
+          }
+          case 138: {
+            string value = _single_stringField_codec.Read(input);
+            if (stringField_ == null || value != "") {
+              StringField = value;
+            }
+            break;
+          }
+          case 146: {
+            pb::ByteString value = _single_bytesField_codec.Read(input);
+            if (bytesField_ == null || value != pb::ByteString.Empty) {
+              BytesField = value;
+            }
+            break;
+          }
+          case 154: {
+            if (valueField_ == null) {
+              ValueField = new global::Google.Protobuf.WellKnownTypes.Value();
+            }
+            input.ReadMessage(ValueField);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -931,13 +1080,18 @@ namespace Google.Protobuf.TestProtos {
         }
       }
     }
+    #endif
 
   }
 
   /// <summary>
   /// A repeated field for each well-known type.
   /// </summary>
-  public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes>, pb::IBufferMessage {
+  public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1317,9 +1471,93 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            anyField_.AddEntriesFrom(input, _repeated_anyField_codec);
+            break;
+          }
+          case 18: {
+            apiField_.AddEntriesFrom(input, _repeated_apiField_codec);
+            break;
+          }
+          case 26: {
+            durationField_.AddEntriesFrom(input, _repeated_durationField_codec);
+            break;
+          }
+          case 34: {
+            emptyField_.AddEntriesFrom(input, _repeated_emptyField_codec);
+            break;
+          }
+          case 42: {
+            fieldMaskField_.AddEntriesFrom(input, _repeated_fieldMaskField_codec);
+            break;
+          }
+          case 50: {
+            sourceContextField_.AddEntriesFrom(input, _repeated_sourceContextField_codec);
+            break;
+          }
+          case 58: {
+            structField_.AddEntriesFrom(input, _repeated_structField_codec);
+            break;
+          }
+          case 66: {
+            timestampField_.AddEntriesFrom(input, _repeated_timestampField_codec);
+            break;
+          }
+          case 74: {
+            typeField_.AddEntriesFrom(input, _repeated_typeField_codec);
+            break;
+          }
+          case 82: {
+            doubleField_.AddEntriesFrom(input, _repeated_doubleField_codec);
+            break;
+          }
+          case 90: {
+            floatField_.AddEntriesFrom(input, _repeated_floatField_codec);
+            break;
+          }
+          case 98: {
+            int64Field_.AddEntriesFrom(input, _repeated_int64Field_codec);
+            break;
+          }
+          case 106: {
+            uint64Field_.AddEntriesFrom(input, _repeated_uint64Field_codec);
+            break;
+          }
+          case 114: {
+            int32Field_.AddEntriesFrom(input, _repeated_int32Field_codec);
+            break;
+          }
+          case 122: {
+            uint32Field_.AddEntriesFrom(input, _repeated_uint32Field_codec);
+            break;
+          }
+          case 130: {
+            boolField_.AddEntriesFrom(input, _repeated_boolField_codec);
+            break;
+          }
+          case 138: {
+            stringField_.AddEntriesFrom(input, _repeated_stringField_codec);
+            break;
+          }
+          case 146: {
+            bytesField_.AddEntriesFrom(input, _repeated_bytesField_codec);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -1403,10 +1641,15 @@ namespace Google.Protobuf.TestProtos {
         }
       }
     }
+    #endif
 
   }
 
-  public sealed partial class OneofWellKnownTypes : pb::IMessage<OneofWellKnownTypes>, pb::IBufferMessage {
+  public sealed partial class OneofWellKnownTypes : pb::IMessage<OneofWellKnownTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<OneofWellKnownTypes> _parser = new pb::MessageParser<OneofWellKnownTypes>(() => new OneofWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2033,9 +2276,138 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            global::Google.Protobuf.WellKnownTypes.Any subBuilder = new global::Google.Protobuf.WellKnownTypes.Any();
+            if (oneofFieldCase_ == OneofFieldOneofCase.AnyField) {
+              subBuilder.MergeFrom(AnyField);
+            }
+            input.ReadMessage(subBuilder);
+            AnyField = subBuilder;
+            break;
+          }
+          case 18: {
+            global::Google.Protobuf.WellKnownTypes.Api subBuilder = new global::Google.Protobuf.WellKnownTypes.Api();
+            if (oneofFieldCase_ == OneofFieldOneofCase.ApiField) {
+              subBuilder.MergeFrom(ApiField);
+            }
+            input.ReadMessage(subBuilder);
+            ApiField = subBuilder;
+            break;
+          }
+          case 26: {
+            global::Google.Protobuf.WellKnownTypes.Duration subBuilder = new global::Google.Protobuf.WellKnownTypes.Duration();
+            if (oneofFieldCase_ == OneofFieldOneofCase.DurationField) {
+              subBuilder.MergeFrom(DurationField);
+            }
+            input.ReadMessage(subBuilder);
+            DurationField = subBuilder;
+            break;
+          }
+          case 34: {
+            global::Google.Protobuf.WellKnownTypes.Empty subBuilder = new global::Google.Protobuf.WellKnownTypes.Empty();
+            if (oneofFieldCase_ == OneofFieldOneofCase.EmptyField) {
+              subBuilder.MergeFrom(EmptyField);
+            }
+            input.ReadMessage(subBuilder);
+            EmptyField = subBuilder;
+            break;
+          }
+          case 42: {
+            global::Google.Protobuf.WellKnownTypes.FieldMask subBuilder = new global::Google.Protobuf.WellKnownTypes.FieldMask();
+            if (oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField) {
+              subBuilder.MergeFrom(FieldMaskField);
+            }
+            input.ReadMessage(subBuilder);
+            FieldMaskField = subBuilder;
+            break;
+          }
+          case 50: {
+            global::Google.Protobuf.WellKnownTypes.SourceContext subBuilder = new global::Google.Protobuf.WellKnownTypes.SourceContext();
+            if (oneofFieldCase_ == OneofFieldOneofCase.SourceContextField) {
+              subBuilder.MergeFrom(SourceContextField);
+            }
+            input.ReadMessage(subBuilder);
+            SourceContextField = subBuilder;
+            break;
+          }
+          case 58: {
+            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = new global::Google.Protobuf.WellKnownTypes.Struct();
+            if (oneofFieldCase_ == OneofFieldOneofCase.StructField) {
+              subBuilder.MergeFrom(StructField);
+            }
+            input.ReadMessage(subBuilder);
+            StructField = subBuilder;
+            break;
+          }
+          case 66: {
+            global::Google.Protobuf.WellKnownTypes.Timestamp subBuilder = new global::Google.Protobuf.WellKnownTypes.Timestamp();
+            if (oneofFieldCase_ == OneofFieldOneofCase.TimestampField) {
+              subBuilder.MergeFrom(TimestampField);
+            }
+            input.ReadMessage(subBuilder);
+            TimestampField = subBuilder;
+            break;
+          }
+          case 74: {
+            global::Google.Protobuf.WellKnownTypes.Type subBuilder = new global::Google.Protobuf.WellKnownTypes.Type();
+            if (oneofFieldCase_ == OneofFieldOneofCase.TypeField) {
+              subBuilder.MergeFrom(TypeField);
+            }
+            input.ReadMessage(subBuilder);
+            TypeField = subBuilder;
+            break;
+          }
+          case 82: {
+            DoubleField = _oneof_doubleField_codec.Read(input);
+            break;
+          }
+          case 90: {
+            FloatField = _oneof_floatField_codec.Read(input);
+            break;
+          }
+          case 98: {
+            Int64Field = _oneof_int64Field_codec.Read(input);
+            break;
+          }
+          case 106: {
+            Uint64Field = _oneof_uint64Field_codec.Read(input);
+            break;
+          }
+          case 114: {
+            Int32Field = _oneof_int32Field_codec.Read(input);
+            break;
+          }
+          case 122: {
+            Uint32Field = _oneof_uint32Field_codec.Read(input);
+            break;
+          }
+          case 130: {
+            BoolField = _oneof_boolField_codec.Read(input);
+            break;
+          }
+          case 138: {
+            StringField = _oneof_stringField_codec.Read(input);
+            break;
+          }
+          case 146: {
+            BytesField = _oneof_bytesField_codec.Read(input);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -2164,6 +2536,7 @@ namespace Google.Protobuf.TestProtos {
         }
       }
     }
+    #endif
 
   }
 
@@ -2172,7 +2545,11 @@ namespace Google.Protobuf.TestProtos {
   /// need to worry about the value part of the map being the
   /// well-known types, as messages can't be map keys.
   /// </summary>
-  public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes>, pb::IBufferMessage {
+  public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2549,9 +2926,93 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            anyField_.AddEntriesFrom(input, _map_anyField_codec);
+            break;
+          }
+          case 18: {
+            apiField_.AddEntriesFrom(input, _map_apiField_codec);
+            break;
+          }
+          case 26: {
+            durationField_.AddEntriesFrom(input, _map_durationField_codec);
+            break;
+          }
+          case 34: {
+            emptyField_.AddEntriesFrom(input, _map_emptyField_codec);
+            break;
+          }
+          case 42: {
+            fieldMaskField_.AddEntriesFrom(input, _map_fieldMaskField_codec);
+            break;
+          }
+          case 50: {
+            sourceContextField_.AddEntriesFrom(input, _map_sourceContextField_codec);
+            break;
+          }
+          case 58: {
+            structField_.AddEntriesFrom(input, _map_structField_codec);
+            break;
+          }
+          case 66: {
+            timestampField_.AddEntriesFrom(input, _map_timestampField_codec);
+            break;
+          }
+          case 74: {
+            typeField_.AddEntriesFrom(input, _map_typeField_codec);
+            break;
+          }
+          case 82: {
+            doubleField_.AddEntriesFrom(input, _map_doubleField_codec);
+            break;
+          }
+          case 90: {
+            floatField_.AddEntriesFrom(input, _map_floatField_codec);
+            break;
+          }
+          case 98: {
+            int64Field_.AddEntriesFrom(input, _map_int64Field_codec);
+            break;
+          }
+          case 106: {
+            uint64Field_.AddEntriesFrom(input, _map_uint64Field_codec);
+            break;
+          }
+          case 114: {
+            int32Field_.AddEntriesFrom(input, _map_int32Field_codec);
+            break;
+          }
+          case 122: {
+            uint32Field_.AddEntriesFrom(input, _map_uint32Field_codec);
+            break;
+          }
+          case 130: {
+            boolField_.AddEntriesFrom(input, _map_boolField_codec);
+            break;
+          }
+          case 138: {
+            stringField_.AddEntriesFrom(input, _map_stringField_codec);
+            break;
+          }
+          case 146: {
+            bytesField_.AddEntriesFrom(input, _map_bytesField_codec);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -2635,6 +3096,7 @@ namespace Google.Protobuf.TestProtos {
         }
       }
     }
+    #endif
 
   }
 
