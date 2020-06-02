@@ -35,6 +35,7 @@ void upb_status_clear(upb_status *status);
 void upb_status_seterrmsg(upb_status *status, const char *msg);
 void upb_status_seterrf(upb_status *status, const char *fmt, ...);
 void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args);
+void upb_status_vappenderrf(upb_status *status, const char *fmt, va_list args);
 
 /** upb_strview ************************************************************/
 

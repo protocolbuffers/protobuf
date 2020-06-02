@@ -40,7 +40,7 @@ enum {
 typedef struct {
   uint32_t number;
   uint16_t offset;
-  int16_t presence;      /* If >0, hasbit_index.  If <0, -oneof_index. */
+  int16_t presence;      /* If >0, hasbit_index.  If <0, ~oneof_index. */
   uint16_t submsg_index;  /* undefined if descriptortype != MESSAGE or GROUP. */
   uint8_t descriptortype;
   uint8_t label;
@@ -95,24 +95,67 @@ bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
 /* Returns a reference to the message's unknown data. */
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
 
-UPB_INLINE bool _upb_has_field(const void *msg, size_t idx) {
+/** Hasbit access *************************************************************/
+
+UPB_INLINE bool _upb_hasbit(const upb_msg *msg, size_t idx) {
   return (*PTR_AT(msg, idx / 8, const char) & (1 << (idx % 8))) != 0;
 }
 
-UPB_INLINE bool _upb_sethas(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
+UPB_INLINE void _upb_sethas(const upb_msg *msg, size_t idx) {
+  (*PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
 }
 
-UPB_INLINE bool _upb_clearhas(const void *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
+UPB_INLINE void _upb_clearhas(const upb_msg *msg, size_t idx) {
+  (*PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
 }
 
-UPB_INLINE bool _upb_has_oneof_field(const void *msg, size_t case_ofs, int32_t num) {
-  return *PTR_AT(msg, case_ofs, int32_t) == num;
+UPB_INLINE size_t _upb_msg_hasidx(const upb_msglayout_field *f) {
+  UPB_ASSERT(f->presence > 0);
+  return f->presence;
 }
 
-UPB_INLINE bool _upb_has_submsg_nohasbit(const void *msg, size_t ofs) {
-  return *PTR_AT(msg, ofs, const void*) != NULL;
+UPB_INLINE bool _upb_hasbit_field(const upb_msg *msg,
+                                  const upb_msglayout_field *f) {
+  return _upb_hasbit(msg, _upb_msg_hasidx(f));
+}
+
+UPB_INLINE void _upb_sethas_field(const upb_msg *msg,
+                                  const upb_msglayout_field *f) {
+  _upb_sethas(msg, _upb_msg_hasidx(f));
+}
+
+UPB_INLINE void _upb_clearhas_field(const upb_msg *msg,
+                                    const upb_msglayout_field *f) {
+  _upb_clearhas(msg, _upb_msg_hasidx(f));
+}
+
+/** Oneof case access *********************************************************/
+
+UPB_INLINE int32_t *_upb_oneofcase(upb_msg *msg, size_t case_ofs) {
+  return PTR_AT(msg, case_ofs, int32_t);
+}
+
+UPB_INLINE int32_t _upb_getoneofcase(const void *msg, size_t case_ofs) {
+  return *PTR_AT(msg, case_ofs, int32_t);
+}
+
+UPB_INLINE size_t _upb_oneofcase_ofs(const upb_msglayout_field *f) {
+  UPB_ASSERT(f->presence < 0);
+  return ~(int64_t)f->presence;
+}
+
+UPB_INLINE int32_t *_upb_oneofcase_field(upb_msg *msg,
+                                         const upb_msglayout_field *f) {
+  return _upb_oneofcase(msg, _upb_oneofcase_ofs(f));
+}
+
+UPB_INLINE int32_t _upb_getoneofcase_field(const upb_msg *msg,
+                                           const upb_msglayout_field *f) {
+  return _upb_getoneofcase(msg, _upb_oneofcase_ofs(f));
+}
+
+UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_msg *msg, size_t ofs) {
+  return *PTR_AT(msg, ofs, const upb_msg*) != NULL;
 }
 
 UPB_INLINE bool _upb_isrepeated(const upb_msglayout_field *field) {

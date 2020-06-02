@@ -379,12 +379,12 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
     if (layout.HasHasbit(field)) {
       output(
           "UPB_INLINE bool $0_has_$1(const $0 *msg) { "
-          "return _upb_has_field(msg, $2); }\n",
+          "return _upb_hasbit(msg, $2); }\n",
           msgname, field->name(), layout.GetHasbitIndex(field));
     } else if (field->real_containing_oneof()) {
       output(
           "UPB_INLINE bool $0_has_$1(const $0 *msg) { "
-          "return _upb_has_oneof_field(msg, $2, $3); }\n",
+          "return _upb_getoneofcase(msg, $2) == $3; }\n",
           msgname, field->name(),
           GetSizeInit(
               layout.GetOneofCaseOffset(field->real_containing_oneof())),
@@ -758,10 +758,10 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
               layout.GetOneofCaseOffset(field->real_containing_oneof());
 
           // We encode as negative to distinguish from hasbits.
-          case_offset.size32 = -case_offset.size32;
-          case_offset.size64 = -case_offset.size64;
-          assert(case_offset.size32 != 0);
-          assert(case_offset.size64 != 0);
+          case_offset.size32 = ~case_offset.size32;
+          case_offset.size64 = ~case_offset.size64;
+          assert(case_offset.size32 < 0);
+          assert(case_offset.size64 < 0);
           presence = GetSizeInit(case_offset);
         }
 
