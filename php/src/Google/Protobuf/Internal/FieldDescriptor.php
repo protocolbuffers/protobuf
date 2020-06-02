@@ -214,7 +214,7 @@ class FieldDescriptor
             $field_type !== GPBType::BYTES);
     }
 
-    public static function getFieldDescriptor($proto)
+    public static function getFieldDescriptor($proto, $file_proto)
     {
         $type_name = null;
         $type = $proto->getType();
@@ -230,6 +230,20 @@ class FieldDescriptor
 
         $oneof_index = $proto->hasOneofIndex() ? $proto->getOneofIndex() : -1;
         $packed = false;
+        if ($file_proto->GetSyntax() == "proto3") {
+            if ($proto->getLabel() == GPBLabel::REPEATED) {
+                switch ($type) {
+                    case GPBType::MESSAGE:
+                    case GPBType::GROUP:
+                    case GPBType::BYTES:
+                    case GPBType::STRING:
+                        break;
+                    default:
+                        $packed = true;
+                        break;
+                }
+            }
+        }
         $options = $proto->getOptions();
         if ($options !== null) {
             $packed = $options->getPacked();
@@ -277,8 +291,8 @@ class FieldDescriptor
         return $field;
     }
 
-    public static function buildFromProto($proto)
+    public static function buildFromProto($proto, $file_proto)
     {
-        return FieldDescriptor::getFieldDescriptor($proto);
+        return FieldDescriptor::getFieldDescriptor($proto, $file_proto);
     }
 }

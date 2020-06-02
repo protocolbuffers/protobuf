@@ -36,8 +36,19 @@ class FileDescriptor
 {
 
     private $package;
+    private $syntax;
     private $message_type = [];
     private $enum_type = [];
+
+    public function setSyntax($syntax)
+    {
+        $this->syntax = $syntax;
+    }
+
+    public function getSyntax()
+    {
+        return $this->syntax;
+    }
 
     public function setPackage($package)
     {
@@ -73,6 +84,7 @@ class FileDescriptor
     {
         $file = new FileDescriptor();
         $file->setPackage($proto->getPackage());
+        $file->setSyntax($proto->getSyntax());
         foreach ($proto->getMessageType() as $message_proto) {
             $file->addMessageType(Descriptor::buildFromProto(
                 $message_proto, $proto, ""));
