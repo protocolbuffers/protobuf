@@ -515,7 +515,7 @@ class ImplementationTest extends TestBase
     {
         $m = new TestMessage();
         TestUtil::setTestMessage($m);
-        $this->assertSame(518, $m->byteSize());
+        $this->assertSame(504, $m->byteSize());
     }
 
     public function testPackedByteSize()
