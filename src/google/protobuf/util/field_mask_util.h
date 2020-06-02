@@ -106,7 +106,7 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   template <typename T>
   static void AddPathToFieldMask(StringPiece path, FieldMask* mask) {
     GOOGLE_CHECK(IsValidPath<T>(path)) << path;
-    mask->add_paths(path);
+    mask->add_paths(std::string(path));
   }
 
   // Creates a FieldMask with all fields of type T. This FieldMask only

@@ -561,7 +561,7 @@ bool IsStructurallyValidUTF8(const char* buf, int len) {
   return (bytes_consumed == len);
 }
 
-int UTF8SpnStructurallyValid(const StringPiece& str) {
+int UTF8SpnStructurallyValid(StringPiece str) {
   if (!module_initialized_) return str.size();
 
   int bytes_consumed = 0;
@@ -582,8 +582,7 @@ int UTF8SpnStructurallyValid(const StringPiece& str) {
 //
 // Fast case: all is structurally valid and no byte copying is done.
 //
-char* UTF8CoerceToStructurallyValid(const StringPiece& src_str,
-                                    char* idst,
+char* UTF8CoerceToStructurallyValid(StringPiece src_str, char* idst,
                                     const char replace_char) {
   const char* isrc = src_str.data();
   const int len = src_str.length();

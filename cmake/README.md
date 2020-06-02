@@ -343,23 +343,3 @@ unique, so there should be no problem with this, but MSVC prints warning
 nevertheless.  So, we disable it.  Unfortunately, this warning will also be
 produced when compiling code which merely uses protocol buffers, meaning you
 may have to disable it in your code too.
-
-Cross-compiling
-===============
-
-When cross-compiling you will need to disable building the tests which are ON
-by default. You can do so by specifying the following flags when configuring
-your build: 
-
-	-Dprotobuf_BUILD_TESTS=OFF
-
-Alternatively you can compile (or download) 'protoc' for your host machine
-prior to configuring your target build. To specify an existing 'protoc' binary
-for your build, specify the following flag:
-
-	-DWITH_PROTOC=<path to your protoc binary>
-
-You can also save compilation time by disabling building 'protoc' for your
-target build:
-
-	-Dprotobuf_BUILD_PROTOC_BINARIES=OFF

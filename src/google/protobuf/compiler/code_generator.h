@@ -110,7 +110,7 @@ class PROTOC_EXPORT CodeGenerator {
   // Implement this to indicate what features this code generator supports.
   // This should be a bitwise OR of features from the Features enum in
   // plugin.proto.
-  virtual uint64 GetSupportedFeatures() const { return 0; }
+  virtual uint64_t GetSupportedFeatures() const { return 0; }
 
   // This is no longer used, but this class is part of the opensource protobuf
   // library, so it has to remain to keep vtables the same for the current

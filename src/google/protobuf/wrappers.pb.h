@@ -1182,15 +1182,6 @@ class PROTOBUF_EXPORT StringValue PROTOBUF_FINAL :
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_value();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_value(
-      std::string* value);
   private:
   const std::string& _internal_value() const;
   void _internal_set_value(const std::string& value);
@@ -1335,15 +1326,6 @@ class PROTOBUF_EXPORT BytesValue PROTOBUF_FINAL :
   std::string* mutable_value();
   std::string* release_value();
   void set_allocated_value(std::string* value);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_value();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_value(
-      std::string* value);
   private:
   const std::string& _internal_value() const;
   void _internal_set_value(const std::string& value);
@@ -1601,25 +1583,6 @@ inline void StringValue::set_allocated_value(std::string* value) {
       GetArena());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.StringValue.value)
 }
-inline std::string* StringValue::unsafe_arena_release_value() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.StringValue.value)
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  
-  return value_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      GetArena());
-}
-inline void StringValue::unsafe_arena_set_allocated_value(
-    std::string* value) {
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (value != nullptr) {
-    
-  } else {
-    
-  }
-  value_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      value, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.StringValue.value)
-}
 
 // -------------------------------------------------------------------
 
@@ -1685,25 +1648,6 @@ inline void BytesValue::set_allocated_value(std::string* value) {
   value_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value,
       GetArena());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.BytesValue.value)
-}
-inline std::string* BytesValue::unsafe_arena_release_value() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.BytesValue.value)
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  
-  return value_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      GetArena());
-}
-inline void BytesValue::unsafe_arena_set_allocated_value(
-    std::string* value) {
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (value != nullptr) {
-    
-  } else {
-    
-  }
-  value_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      value, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.BytesValue.value)
 }
 
 #ifdef __GNUC__

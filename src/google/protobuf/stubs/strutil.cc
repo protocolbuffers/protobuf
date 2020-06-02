@@ -176,10 +176,8 @@ string StringReplace(const string& s, const string& oldsub,
 // the characters in the string, not the entire string as a single delimiter.
 // ----------------------------------------------------------------------
 template <typename ITR>
-static inline
-void SplitStringToIteratorUsing(const string& full,
-                                const char* delim,
-                                ITR& result) {
+static inline void SplitStringToIteratorUsing(StringPiece full,
+                                              const char *delim, ITR &result) {
   // Optimize the common case where delim is a single character.
   if (delim[0] != '\0' && delim[1] == '\0') {
     char c = delim[0];
@@ -191,7 +189,7 @@ void SplitStringToIteratorUsing(const string& full,
       } else {
         const char* start = p;
         while (++p != end && *p != c);
-        *result++ = string(start, p - start);
+        *result++ = std::string(start, p - start);
       }
     }
     return;
@@ -202,17 +200,17 @@ void SplitStringToIteratorUsing(const string& full,
   while (begin_index != string::npos) {
     end_index = full.find_first_of(delim, begin_index);
     if (end_index == string::npos) {
-      *result++ = full.substr(begin_index);
+      *result++ = std::string(full.substr(begin_index));
       return;
     }
-    *result++ = full.substr(begin_index, (end_index - begin_index));
+    *result++ =
+        std::string(full.substr(begin_index, (end_index - begin_index)));
     begin_index = full.find_first_not_of(delim, end_index);
   }
 }
 
-void SplitStringUsing(const string& full,
-                      const char* delim,
-                      std::vector<string>* result) {
+void SplitStringUsing(StringPiece full, const char *delim,
+                      std::vector<string> *result) {
   std::back_insert_iterator< std::vector<string> > it(*result);
   SplitStringToIteratorUsing(full, delim, it);
 }
@@ -228,29 +226,28 @@ void SplitStringUsing(const string& full,
 //
 // If "pieces" is negative for some reason, it returns the whole string
 // ----------------------------------------------------------------------
-template <typename StringType, typename ITR>
-static inline
-void SplitStringToIteratorAllowEmpty(const StringType& full,
-                                     const char* delim,
-                                     int pieces,
-                                     ITR& result) {
+template <typename ITR>
+static inline void SplitStringToIteratorAllowEmpty(StringPiece full,
+                                                   const char *delim,
+                                                   int pieces, ITR &result) {
   string::size_type begin_index, end_index;
   begin_index = 0;
 
   for (int i = 0; (i < pieces-1) || (pieces == 0); i++) {
     end_index = full.find_first_of(delim, begin_index);
     if (end_index == string::npos) {
-      *result++ = full.substr(begin_index);
+      *result++ = std::string(full.substr(begin_index));
       return;
     }
-    *result++ = full.substr(begin_index, (end_index - begin_index));
+    *result++ =
+        std::string(full.substr(begin_index, (end_index - begin_index)));
     begin_index = end_index + 1;
   }
-  *result++ = full.substr(begin_index);
+  *result++ = std::string(full.substr(begin_index));
 }
 
-void SplitStringAllowEmpty(const string& full, const char* delim,
-                           std::vector<string>* result) {
+void SplitStringAllowEmpty(StringPiece full, const char *delim,
+                           std::vector<string> *result) {
   std::back_insert_iterator<std::vector<string> > it(*result);
   SplitStringToIteratorAllowEmpty(full, delim, 0, it);
 }

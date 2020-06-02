@@ -456,15 +456,6 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
   std::string* mutable_string_value();
   std::string* release_string_value();
   void set_allocated_string_value(std::string* string_value);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_string_value();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_string_value(
-      std::string* string_value);
   private:
   const std::string& _internal_string_value() const;
   void _internal_set_string_value(const std::string& value);
@@ -917,29 +908,6 @@ inline void Value::set_allocated_string_value(std::string* string_value) {
     }
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.string_value)
-}
-inline std::string* Value::unsafe_arena_release_string_value() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.string_value)
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (_internal_has_string_value()) {
-    clear_has_kind();
-    return kind_.string_value_.UnsafeArenaRelease(
-        &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  } else {
-    return nullptr;
-  }
-}
-inline void Value::unsafe_arena_set_allocated_string_value(std::string* string_value) {
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (!_internal_has_string_value()) {
-    kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  }
-  clear_kind();
-  if (string_value) {
-    set_has_string_value();
-    kind_.string_value_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), string_value, GetArena());
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.string_value)
 }
 
 // bool bool_value = 4;

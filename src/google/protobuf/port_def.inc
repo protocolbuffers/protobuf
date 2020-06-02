@@ -356,42 +356,42 @@
 #endif
 
 #if defined(PROTOBUF_USE_DLLS)
-  #if defined(_MSC_VER)
-    #ifdef LIBPROTOBUF_EXPORTS
-      #define PROTOBUF_EXPORT __declspec(dllexport)
-      #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
-      #define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllexport)
-    #else
-      #define PROTOBUF_EXPORT __declspec(dllimport)
-      #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
-      #define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllimport)
-    #endif
-    #ifdef LIBPROTOC_EXPORTS
-      #define PROTOC_EXPORT __declspec(dllexport)
-    #else
-      #define PROTOC_EXPORT __declspec(dllimport)
-    #endif
-  #else  // defined(_MSC_VER)
-    #ifdef LIBPROTOBUF_EXPORTS
-      #define PROTOBUF_EXPORT __attribute__((visibility("default")))
-      #define PROTOBUF_EXPORT_TEMPLATE_DECLARE __attribute__((visibility("default")))
-      #define PROTOBUF_EXPORT_TEMPLATE_DEFINE
-    #else
-      #define PROTOBUF_EXPORT
-      #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
-      #define PROTOBUF_EXPORT_TEMPLATE_DEFINE
-    #endif
-    #ifdef LIBPROTOC_EXPORTS
-      #define PROTOC_EXPORT   __attribute__((visibility("default")))
-    #else
-      #define PROTOC_EXPORT
-    #endif
-  #endif
+#if defined(_MSC_VER)
+#ifdef LIBPROTOBUF_EXPORTS
+#define PROTOBUF_EXPORT __declspec(dllexport)
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllexport)
+#else
+#define PROTOBUF_EXPORT __declspec(dllimport)
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllimport)
+#endif
+#ifdef LIBPROTOC_EXPORTS
+#define PROTOC_EXPORT __declspec(dllexport)
+#else
+#define PROTOC_EXPORT __declspec(dllimport)
+#endif
+#else  // defined(_MSC_VER)
+#ifdef LIBPROTOBUF_EXPORTS
+#define PROTOBUF_EXPORT __attribute__((visibility("default")))
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE __attribute__((visibility("default")))
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE
+#else
+#define PROTOBUF_EXPORT
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE
+#endif
+#ifdef LIBPROTOC_EXPORTS
+#define PROTOC_EXPORT __attribute__((visibility("default")))
+#else
+#define PROTOC_EXPORT
+#endif
+#endif
 #else  // defined(PROTOBUF_USE_DLLS)
-  #define PROTOBUF_EXPORT
-  #define PROTOC_EXPORT
-  #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
-  #define PROTOBUF_EXPORT_TEMPLATE_DEFINE
+#define PROTOBUF_EXPORT
+#define PROTOC_EXPORT
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE
 #endif
 
 // Windows declares several inconvenient macro names.  We #undef them and then
@@ -521,4 +521,6 @@
 // ownership of arena. However, we cannot do that for nested messages. In order
 // to tell how many usages of nested messages affected by message owned arena,
 // we need to simulate the arena ownership.
-#define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
+// This experiment is purely for the purpose of gathering data. All code guarded
+// by this flag is supposed to be removed after this experiment.
+// #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT

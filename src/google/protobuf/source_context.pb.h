@@ -191,15 +191,6 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
   std::string* mutable_file_name();
   std::string* release_file_name();
   void set_allocated_file_name(std::string* file_name);
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  std::string* unsafe_arena_release_file_name();
-  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
-  "    string fields are deprecated and will be removed in a"
-  "    future release.")
-  void unsafe_arena_set_allocated_file_name(
-      std::string* file_name);
   private:
   const std::string& _internal_file_name() const;
   void _internal_set_file_name(const std::string& value);
@@ -288,25 +279,6 @@ inline void SourceContext::set_allocated_file_name(std::string* file_name) {
   file_name_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), file_name,
       GetArena());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
-}
-inline std::string* SourceContext::unsafe_arena_release_file_name() {
-  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.SourceContext.file_name)
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  
-  return file_name_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      GetArena());
-}
-inline void SourceContext::unsafe_arena_set_allocated_file_name(
-    std::string* file_name) {
-  GOOGLE_DCHECK(GetArena() != nullptr);
-  if (file_name != nullptr) {
-    
-  } else {
-    
-  }
-  file_name_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      file_name, GetArena());
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
 #ifdef __GNUC__

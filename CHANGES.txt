@@ -1,10 +1,15 @@
 Unreleased Changes
 
   C++:
+  * Removed deprecated unsafe arena string accessors
   * Enabled heterogeneous lookup for std::string keys in maps.
   * Improved the randomness of map ordering.
+  * Removed implicit conversion from StringPiece to std::string
+  * Fix use-after-destroy bug when the Map is allocated in the arena.
+  * Improved the randomness of proto map ordering
 
   Python:
+  * Reject lowercase t for Timestamp json format. Fixes a conformance test.
   * Improved the error message when AttributeError is returned from __getattr__
     in EnumTypeWrapper.
 
