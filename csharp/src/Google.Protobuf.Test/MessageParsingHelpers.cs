@@ -114,6 +114,8 @@ namespace Google.Protobuf
             Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray(), "Both serialization approaches need to result in the same data.");
 
             Assert.AreEqual(message.CalculateSize(), bytes.Length);
+
+            // TODO: also test different chunk sizes for IBufferWriter
         }
     }
 }

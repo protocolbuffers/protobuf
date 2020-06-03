@@ -33,6 +33,7 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
+using Google.Protobuf.Buffers;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -48,21 +49,38 @@ namespace Google.Protobuf
             // Only do 32-bit write if the value fits in 32 bits.
             if ((value >> 32) == 0)
             {
+                // CodedOutputStream
                 MemoryStream rawOutput = new MemoryStream();
                 CodedOutputStream output = new CodedOutputStream(rawOutput);
                 output.WriteRawVarint32((uint) value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
+
+                // IBufferWriter
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteUInt32((uint) value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
+
                 // Also try computing size.
                 Assert.AreEqual(data.Length, CodedOutputStream.ComputeRawVarint32Size((uint) value));
             }
 
             {
+                // CodedOutputStream
                 MemoryStream rawOutput = new MemoryStream();
                 CodedOutputStream output = new CodedOutputStream(rawOutput);
                 output.WriteRawVarint64(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
+
+                // IBufferWriter
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteUInt64(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
 
                 // Also try computing size.
                 Assert.AreEqual(data.Length, CodedOutputStream.ComputeRawVarint64Size(value));
@@ -89,6 +107,8 @@ namespace Google.Protobuf
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
                 }
+
+                // TODO: also test different chunk sizes for IBufferWriter
             }
         }
 
@@ -139,6 +159,12 @@ namespace Google.Protobuf
             output.Flush();
             Assert.AreEqual(data, rawOutput.ToArray());
 
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+            ctx.WriteFixed32(value);
+            ctx.Flush();
+            Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
+
             // Try different buffer sizes.
             for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2)
             {
@@ -147,6 +173,8 @@ namespace Google.Protobuf
                 output.WriteRawLittleEndian32(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
+
+                // TODO: also test different chunk sizes for IBufferWriter
             }
         }
 
@@ -162,6 +190,12 @@ namespace Google.Protobuf
             output.Flush();
             Assert.AreEqual(data, rawOutput.ToArray());
 
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+            ctx.WriteFixed64(value);
+            ctx.Flush();
+            Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
+
             // Try different block sizes.
             for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
             {
@@ -170,6 +204,8 @@ namespace Google.Protobuf
                 output.WriteRawLittleEndian64(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
+
+                // TODO: also test different chunk sizes for IBufferWriter 
             }
         }
 
