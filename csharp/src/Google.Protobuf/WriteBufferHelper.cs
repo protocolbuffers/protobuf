@@ -80,6 +80,7 @@ namespace Google.Protobuf
             {
                 // because we're using coded output stream, we know that "buffer" and codedOutputStream.InternalBuffer are identical.
                 codedOutputStream.InternalOutputStream.Write(codedOutputStream.InternalBuffer, 0, state.position);
+                // reset position, limit stays the same because we are reusing the codedOutputStream's internal buffer.
                 state.position = 0;
             }
             else if (bufferWriter != null)
@@ -88,6 +89,7 @@ namespace Google.Protobuf
                 bufferWriter.Advance(state.position);
                 state.position = 0;
                 buffer = bufferWriter.GetSpan();
+                state.limit = buffer.Length;
             }
             else
             {
@@ -108,6 +110,7 @@ namespace Google.Protobuf
             {
                 bufferWriter.Advance(state.position);
                 state.position = 0;
+                state.limit = 0;
                 buffer = default;  // invalidate the current buffer
                 // TODO: add a test when we flush and then try to write more data
             }
