@@ -33,6 +33,7 @@
 using Google.Protobuf.Reflection;
 using System.Buffers;
 using System.Collections;
+using System;
 using System.IO;
 using System.Linq;
 using System.Security;
@@ -143,6 +144,40 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             return ByteString.AttachBytes(message.ToByteArray());
+        }
+
+        /// <summary>
+        /// Writes the given message data to the given buffer writer in protobuf encoding.
+        /// </summary>
+        /// <param name="message">The message to write to the stream.</param>
+        /// <param name="output">The stream to write to.</param>
+        public static void WriteTo(this IMessage message, IBufferWriter<byte> output)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(output, nameof(output));
+
+            WriteContext.Initialize(output, out WriteContext ctx);
+            WritingPrimitivesMessages.WriteRawMessage(ref ctx, message);
+            ctx.Flush();
+
+            // TODO: handling errors when IBufferWriter is used?
+        }
+
+        /// <summary>
+        /// Writes the given message data to the given span in protobuf encoding.
+        /// The size of the destination span needs to fit the serialized size
+        /// of the message exactly, otherwise an exception is thrown.
+        /// </summary>
+        /// <param name="message">The message to write to the stream.</param>
+        /// <param name="output">The span to write to. Size must match size of the message exactly.</param>
+        public static void WriteTo(this IMessage message, Span<byte> output)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+
+            WriteContext.Initialize(ref output, out WriteContext ctx);
+            WritingPrimitivesMessages.WriteRawMessage(ref ctx, message);
+            ctx.Flush();
+            ctx.CheckNoSpaceLeft();
         }
 
         /// <summary>

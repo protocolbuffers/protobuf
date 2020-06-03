@@ -62,7 +62,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Initialize an instance with a coded output stream.
+        /// Initialize an instance with a buffer writer.
         /// This approach is faster than using a constructor because the instance to initialize is passed by reference
         /// and we can write directly into it without copying.
         /// </summary>
@@ -74,21 +74,65 @@ namespace Google.Protobuf
             buffer = default;  // TODO: initialize the initial buffer so that the first write is not via slowpath.
         }
 
-        public void RefreshBuffer(ref Span<byte> buffer, ref WriterInternalState state)
+        /// <summary>
+        /// Initialize an instance with a buffer represented by a single span (i.e. buffer cannot be refreshed)
+        /// This approach is faster than using a constructor because the instance to initialize is passed by reference
+        /// and we can write directly into it without copying.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void InitializeNonRefreshable(out WriteBufferHelper instance)
         {
-            if (codedOutputStream?.InternalOutputStream != null)
+            instance.bufferWriter = null;
+            instance.codedOutputStream = null;
+        }
+
+        /// <summary>
+        /// Verifies that SpaceLeft returns zero.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CheckNoSpaceLeft(ref WriterInternalState state)
+        {
+            if (GetSpaceLeft(ref state) != 0)
+            {
+                throw new InvalidOperationException("Did not write as much data as expected.");
+            }
+        }
+
+        /// <summary>
+        /// If writing to a flat array, returns the space left in the array. Otherwise,
+        /// throws an InvalidOperationException.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetSpaceLeft(ref WriterInternalState state)
+        {
+            if (state.writeBufferHelper.codedOutputStream?.InternalOutputStream == null && state.writeBufferHelper.bufferWriter == null)
+            {
+                return state.limit - state.position;
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "SpaceLeft can only be called on CodedOutputStreams that are " +
+                        "writing to a flat array or when writing to a single span.");
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void RefreshBuffer(ref Span<byte> buffer, ref WriterInternalState state)
+        {
+            if (state.writeBufferHelper.codedOutputStream?.InternalOutputStream != null)
             {
                 // because we're using coded output stream, we know that "buffer" and codedOutputStream.InternalBuffer are identical.
-                codedOutputStream.InternalOutputStream.Write(codedOutputStream.InternalBuffer, 0, state.position);
+                state.writeBufferHelper.codedOutputStream.InternalOutputStream.Write(state.writeBufferHelper.codedOutputStream.InternalBuffer, 0, state.position);
                 // reset position, limit stays the same because we are reusing the codedOutputStream's internal buffer.
                 state.position = 0;
             }
-            else if (bufferWriter != null)
+            else if (state.writeBufferHelper.bufferWriter != null)
             {
                 // commit the bytes and get a new buffer to write to.
-                bufferWriter.Advance(state.position);
+                state.writeBufferHelper.bufferWriter.Advance(state.position);
                 state.position = 0;
-                buffer = bufferWriter.GetSpan();
+                buffer = state.writeBufferHelper.bufferWriter.GetSpan();
                 state.limit = buffer.Length;
             }
             else
@@ -98,17 +142,18 @@ namespace Google.Protobuf
             }
         }
 
-        public void Flush(ref Span<byte> buffer, ref WriterInternalState state)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Flush(ref Span<byte> buffer, ref WriterInternalState state)
         {
-            if (codedOutputStream?.InternalOutputStream != null)
+            if (state.writeBufferHelper.codedOutputStream?.InternalOutputStream != null)
             {
                 // because we're using coded output stream, we know that "buffer" and codedOutputStream.InternalBuffer are identical.
-                codedOutputStream.InternalOutputStream.Write(codedOutputStream.InternalBuffer, 0, state.position);
+                state.writeBufferHelper.codedOutputStream.InternalOutputStream.Write(state.writeBufferHelper.codedOutputStream.InternalBuffer, 0, state.position);
                 state.position = 0;
             }
-            else if (bufferWriter != null)
+            else if (state.writeBufferHelper.bufferWriter != null)
             {
-                bufferWriter.Advance(state.position);
+                state.writeBufferHelper.bufferWriter.Advance(state.position);
                 state.position = 0;
                 state.limit = 0;
                 buffer = default;  // invalidate the current buffer

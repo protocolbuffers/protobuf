@@ -87,6 +87,16 @@ namespace Google.Protobuf
             ctx.state.position = 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ref Span<byte> buffer, out WriteContext ctx)
+        {
+            ctx.buffer = buffer;
+            ctx.state = default;
+            ctx.state.limit = ctx.buffer.Length;
+            ctx.state.position = 0;
+            WriteBufferHelper.InitializeNonRefreshable(out ctx.state.writeBufferHelper);
+        }
+
         /// <summary>
         /// Writes a double field value, without a tag.
         /// </summary>
@@ -340,8 +350,12 @@ namespace Google.Protobuf
 
         internal void Flush()
         {
-            // TODO: should the method be static or not?
-            state.writeBufferHelper.Flush(ref buffer, ref state);
+            WriteBufferHelper.Flush(ref buffer, ref state);
+        }
+
+        internal void CheckNoSpaceLeft()
+        {
+            WriteBufferHelper.CheckNoSpaceLeft(ref state);
         }
 
         internal void CopyStateTo(CodedOutputStream output)

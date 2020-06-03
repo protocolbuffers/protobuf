@@ -636,7 +636,7 @@ namespace Google.Protobuf
         public void Flush()
         {
             var span = new Span<byte>(buffer);
-            state.writeBufferHelper.Flush(ref span, ref state);
+            WriteBufferHelper.Flush(ref span, ref state);
             
             /*if (output != null)
             {
@@ -648,36 +648,18 @@ namespace Google.Protobuf
         /// Verifies that SpaceLeft returns zero. It's common to create a byte array
         /// that is exactly big enough to hold a message, then write to it with
         /// a CodedOutputStream. Calling CheckNoSpaceLeft after writing verifies that
-        /// the message was actually as big as expected, which can help bugs.
+        /// the message was actually as big as expected, which can help finding bugs.
         /// </summary>
         public void CheckNoSpaceLeft()
         {
-            if (SpaceLeft != 0)
-            {
-                throw new InvalidOperationException("Did not write as much data as expected.");
-            }
+            WriteBufferHelper.CheckNoSpaceLeft(ref state);
         }
 
         /// <summary>
         /// If writing to a flat array, returns the space left in the array. Otherwise,
         /// throws an InvalidOperationException.
         /// </summary>
-        public int SpaceLeft
-        {
-            get
-            {
-                if (output == null)
-                {
-                    return state.limit - state.position;
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        "SpaceLeft can only be called on CodedOutputStreams that are " +
-                        "writing to a flat array.");
-                }
-            }
-        }
+        public int SpaceLeft => WriteBufferHelper.GetSpaceLeft(ref state);
 
         internal byte[] InternalBuffer => buffer;
 

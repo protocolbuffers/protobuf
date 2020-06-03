@@ -376,7 +376,7 @@ namespace Google.Protobuf
         {
             if (state.position == state.limit)
             {
-                state.writeBufferHelper.RefreshBuffer(ref buffer, ref state);
+                WriteBufferHelper.RefreshBuffer(ref buffer, ref state);
             }
 
             buffer[state.position++] = value;
@@ -429,7 +429,7 @@ namespace Google.Protobuf
                     value.Slice(bytesWritten, length).CopyTo(buffer.Slice(state.position, length));
                     bytesWritten += length;
                     state.position += length;
-                    state.writeBufferHelper.RefreshBuffer(ref buffer, ref state);
+                    WriteBufferHelper.RefreshBuffer(ref buffer, ref state);
                 }
 
                 // copy the remaining data
