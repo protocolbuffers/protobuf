@@ -242,6 +242,8 @@ namespace Google.Protobuf
                 output.Flush();
                 Assert.AreEqual(rawBytes, rawOutput.ToArray());
             }
+
+            // TODO: test for different chunks sizes and IBufferWriter...
         }
         
         [Test]

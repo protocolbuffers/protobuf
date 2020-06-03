@@ -175,6 +175,8 @@ namespace Google.Protobuf.WellKnownTypes
             var message = new RepeatedWellKnownTypes { Int32Field = { 5, 0 } };
             var actualBytes = message.ToByteArray();
             Assert.AreEqual(expectedBytes, actualBytes);
+
+            MessageParsingHelpers.AssertWritingMessage(message);
         }
 
         [Test]
