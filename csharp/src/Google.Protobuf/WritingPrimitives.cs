@@ -65,6 +65,7 @@ namespace Google.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteFloat(ref Span<byte> buffer, ref WriterInternalState state, float value)
         {
+            // TODO: avoid allocating a byte array!!!
             byte[] rawBytes = BitConverter.GetBytes(value);
             if (!BitConverter.IsLittleEndian)
             {
