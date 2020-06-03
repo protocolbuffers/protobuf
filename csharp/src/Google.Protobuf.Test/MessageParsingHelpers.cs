@@ -33,6 +33,7 @@
 using NUnit.Framework;
 using System;
 using System.Buffers;
+using Google.Protobuf.Buffers;
 
 namespace Google.Protobuf
 {
@@ -81,6 +82,11 @@ namespace Google.Protobuf
         {
             var bytes = message.ToByteArray();
 
+            // also serialize using IBufferWriter and check it leads to the same data
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            message.WriteTo(bufferWriter);
+            Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray(), "Both serialization approaches need to result in the same data.");
+
             // Load content as single segment
             var parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
             Assert.AreEqual(message, parsedBuffer);
@@ -95,6 +101,19 @@ namespace Google.Protobuf
 
             Assert.AreEqual(message, parsedStream);
             additionalAssert?.Invoke(parsedStream);
+        }
+
+        public static void AssertWritingMessage(IMessage message)
+        {
+            // serialize using CodedOutputStream
+            var bytes = message.ToByteArray();
+
+            // also serialize using IBufferWriter and check it leads to the same data
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            message.WriteTo(bufferWriter);
+            Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray(), "Both serialization approaches need to result in the same data.");
+
+            Assert.AreEqual(message.CalculateSize(), bytes.Length);
         }
     }
 }
