@@ -335,13 +335,11 @@ static bool upb_encode_map(upb_encstate *e, const char *field_mem,
     size_t size;
     upb_strview key = upb_strtable_iter_key(&i);
     const upb_value val = upb_strtable_iter_value(&i);
-    const void *keyp =
-        map->key_size == UPB_MAPTYPE_STRING ? (void *)&key : key.data;
-    const void *valp =
-        map->val_size == UPB_MAPTYPE_STRING ? upb_value_getptr(val) : &val;
-
-    CHK(upb_encode_scalarfield(e, valp, entry, val_field, false));
-    CHK(upb_encode_scalarfield(e, keyp, entry, key_field, false));
+    upb_map_entry ent;
+    _upb_map_fromkey(key, &ent.k, map->key_size);
+    _upb_map_fromvalue(val, &ent.v, map->val_size);
+    CHK(upb_encode_scalarfield(e, &ent.v, entry, val_field, false));
+    CHK(upb_encode_scalarfield(e, &ent.k, entry, key_field, false));
     size = (e->limit - e->ptr) - pre_len;
     CHK(upb_put_varint(e, size));
     CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));

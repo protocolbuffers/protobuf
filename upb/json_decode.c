@@ -473,7 +473,7 @@ static void jsondec_skipval(jsondec *d) {
 
 /* Base64 decoding for bytes fields. ******************************************/
 
-static int jsondec_base64_tablelookup(const char ch) {
+static unsigned int jsondec_base64_tablelookup(const char ch) {
   /* Table includes the normal base64 chars plus the URL-safe variant. */
   const signed char table[256] = {
       -1,       -1,       -1,       -1,       -1,       -1,        -1,

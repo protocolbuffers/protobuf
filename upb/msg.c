@@ -35,16 +35,17 @@ static size_t upb_msg_sizeof(const upb_msglayout *l) {
   return l->size + upb_msg_internalsize(l);
 }
 
-static upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
-  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
+static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
+  ptrdiff_t size = sizeof(upb_msg_internal);
+  return UPB_PTR_AT(msg, -size, upb_msg_internal);
 }
 
-static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
-  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
+static upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
+  return (upb_msg_internal*)upb_msg_getinternal_const(msg);
 }
 
 void _upb_msg_clear(upb_msg *msg, const upb_msglayout *l) {
-  size_t internal = upb_msg_internalsize(l);
+  ptrdiff_t internal = upb_msg_internalsize(l);
   void *mem = UPB_PTR_AT(msg, -internal, char);
   memset(mem, 0, l->size + internal);
 }

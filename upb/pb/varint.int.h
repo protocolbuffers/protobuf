@@ -111,7 +111,8 @@ UPB_INLINE upb_decoderet upb_vdecode_fast(const char *p) {
 
 UPB_INLINE int upb_value_size(uint64_t val) {
 #ifdef __GNUC__
-  int high_bit = 63 - __builtin_clzll(val);  /* 0-based, undef if val == 0. */
+  /* 0-based, undef if val == 0. */
+  int high_bit = val ? 63 - __builtin_clzll(val) : 0;
 #else
   int high_bit = 0;
   uint64_t tmp = val;

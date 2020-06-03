@@ -52,7 +52,7 @@ static void jsonenc_putbytes(jsonenc *e, const void *data, size_t len) {
     memcpy(e->ptr, data, len);
     e->ptr += len;
   } else {
-    memcpy(e->ptr, data, have);
+    if (have) memcpy(e->ptr, data, have);
     e->ptr += have;
     e->overflow += (len - have);
   }
