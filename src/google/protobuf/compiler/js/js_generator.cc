@@ -1180,7 +1180,7 @@ std::string RepeatedFieldsArrayName(const GeneratorOptions& options,
 
 bool HasOneofFields(const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (InRealOneOf(desc->field(i))) {
+    if (InRealOneof(desc->field(i))) {
       return true;
     }
   }
@@ -1418,14 +1418,9 @@ std::string GetPivot(const Descriptor* desc) {
 // generate extra methods (clearFoo() and hasFoo()) for this field.
 bool HasFieldPresence(const GeneratorOptions& options,
                       const FieldDescriptor* field) {
-  if (field->is_repeated() || field->is_map()) {
-    // We say repeated fields and maps don't have presence, but we still do
-    // generate clearFoo() methods for them through a special case elsewhere.
-    return false;
-  }
-
-  return field->is_singular_with_presence() ||
-         field->containing_oneof() != NULL;
+  // This returns false for repeated fields and maps, but we still do
+  // generate clearFoo() methods for these through a special case elsewhere.
+  return field->has_presence();
 }
 
 // We use this to implement the semantics that same file can be generated
