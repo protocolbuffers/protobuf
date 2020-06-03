@@ -338,6 +338,12 @@ namespace Google.Protobuf
             WritingPrimitives.WriteRawTag(ref buffer, ref state, b1, b2, b3, b4, b5);
         }
 
+        internal void Flush()
+        {
+            // TODO: should the method be static or not?
+            state.writeBufferHelper.Flush(ref buffer, ref state);
+        }
+
         internal void CopyStateTo(CodedOutputStream output)
         {
             output.InternalState = state;
