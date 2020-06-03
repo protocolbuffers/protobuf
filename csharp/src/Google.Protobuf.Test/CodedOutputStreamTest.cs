@@ -98,6 +98,13 @@ namespace Google.Protobuf
                     output.WriteRawVarint32((uint) value);
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
+
+                    var bufferWriter = new ArrayBufferWriter<byte>();
+                    bufferWriter.MaxGrowBy = bufferSize;
+                    WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                    ctx.WriteUInt32((uint) value);
+                    ctx.Flush();
+                    Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
                 }
 
                 {
@@ -106,9 +113,15 @@ namespace Google.Protobuf
                     output.WriteRawVarint64(value);
                     output.Flush();
                     Assert.AreEqual(data, rawOutput.ToArray());
+
+                    var bufferWriter = new ArrayBufferWriter<byte>();
+                    bufferWriter.MaxGrowBy = bufferSize;
+                    WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                    ctx.WriteUInt64(value);
+                    ctx.Flush();
+                    Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
                 }
 
-                // TODO: also test different chunk sizes for IBufferWriter
             }
         }
 
@@ -153,28 +166,35 @@ namespace Google.Protobuf
         /// </summary>
         private static void AssertWriteLittleEndian32(byte[] data, uint value)
         {
-            MemoryStream rawOutput = new MemoryStream();
-            CodedOutputStream output = new CodedOutputStream(rawOutput);
-            output.WriteRawLittleEndian32(value);
-            output.Flush();
-            Assert.AreEqual(data, rawOutput.ToArray());
-
-            var bufferWriter = new ArrayBufferWriter<byte>();
-            WriteContext.Initialize(bufferWriter, out WriteContext ctx);
-            ctx.WriteFixed32(value);
-            ctx.Flush();
-            Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
-
-            // Try different buffer sizes.
-            for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2)
             {
-                rawOutput = new MemoryStream();
-                output = new CodedOutputStream(rawOutput, bufferSize);
+                var rawOutput = new MemoryStream();
+                var output = new CodedOutputStream(rawOutput);
                 output.WriteRawLittleEndian32(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
 
-                // TODO: also test different chunk sizes for IBufferWriter
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteFixed32(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
+            }
+
+            // Try different buffer sizes.
+            for (int bufferSize = 1; bufferSize <= 16; bufferSize *= 2)
+            {
+                var rawOutput = new MemoryStream();
+                var output = new CodedOutputStream(rawOutput, bufferSize);
+                output.WriteRawLittleEndian32(value);
+                output.Flush();
+                Assert.AreEqual(data, rawOutput.ToArray());
+
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                bufferWriter.MaxGrowBy = bufferSize;
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteFixed32(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
             }
         }
 
@@ -184,28 +204,35 @@ namespace Google.Protobuf
         /// </summary>
         private static void AssertWriteLittleEndian64(byte[] data, ulong value)
         {
-            MemoryStream rawOutput = new MemoryStream();
-            CodedOutputStream output = new CodedOutputStream(rawOutput);
-            output.WriteRawLittleEndian64(value);
-            output.Flush();
-            Assert.AreEqual(data, rawOutput.ToArray());
-
-            var bufferWriter = new ArrayBufferWriter<byte>();
-            WriteContext.Initialize(bufferWriter, out WriteContext ctx);
-            ctx.WriteFixed64(value);
-            ctx.Flush();
-            Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
-
-            // Try different block sizes.
-            for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
             {
-                rawOutput = new MemoryStream();
-                output = new CodedOutputStream(rawOutput, blockSize);
+                var rawOutput = new MemoryStream();
+                var output = new CodedOutputStream(rawOutput);
                 output.WriteRawLittleEndian64(value);
                 output.Flush();
                 Assert.AreEqual(data, rawOutput.ToArray());
 
-                // TODO: also test different chunk sizes for IBufferWriter 
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteFixed64(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
+            }
+
+            // Try different block sizes.
+            for (int blockSize = 1; blockSize <= 16; blockSize *= 2)
+            {
+                var rawOutput = new MemoryStream();
+                var output = new CodedOutputStream(rawOutput, blockSize);
+                output.WriteRawLittleEndian64(value);
+                output.Flush();
+                Assert.AreEqual(data, rawOutput.ToArray());
+
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                bufferWriter.MaxGrowBy = blockSize;
+                WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+                ctx.WriteFixed64(value);
+                ctx.Flush();
+                Assert.AreEqual(data, bufferWriter.WrittenSpan.ToArray());
             }
         }
 
@@ -241,9 +268,12 @@ namespace Google.Protobuf
                 message.WriteTo(output);
                 output.Flush();
                 Assert.AreEqual(rawBytes, rawOutput.ToArray());
-            }
 
-            // TODO: test for different chunks sizes and IBufferWriter...
+                var bufferWriter = new ArrayBufferWriter<byte>();
+                bufferWriter.MaxGrowBy = blockSize;
+                message.WriteTo(bufferWriter);
+                Assert.AreEqual(rawBytes, bufferWriter.WrittenSpan.ToArray()); 
+            }
         }
         
         [Test]

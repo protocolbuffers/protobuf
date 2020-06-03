@@ -60,6 +60,12 @@ namespace Google.Protobuf.Buffers
         }
 
         /// <summary>
+        /// Userful for testing writing to buffer writer with a lot of small segments.
+        /// If set, it limits the max number of bytes by which the buffer grows by at once.
+        /// </summary>
+        public int? MaxGrowBy { get; set; }
+
+        /// <summary>
         /// Creates an instance of an <see cref="ArrayBufferWriter{T}"/>, in which data can be written to,
         /// with an initial capacity specified.
         /// </summary>
@@ -200,6 +206,12 @@ namespace Google.Protobuf.Buffers
                 if (_buffer.Length == 0)
                 {
                     growBy = Math.Max(growBy, DefaultInitialBufferSize);
+                }
+
+                // enable tests that write to small buffer segments
+                if (MaxGrowBy.HasValue && growBy > MaxGrowBy.Value)
+                {
+                    growBy = MaxGrowBy.Value;
                 }
 
                 int newSize = checked(_buffer.Length + growBy);
