@@ -45,8 +45,6 @@ namespace Google.Protobuf
     {
         // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
         internal static readonly Encoding Utf8Encoding = Encoding.UTF8;
-     
-        // TODO: computing size....
 
         #region Writing of values (not including tags)
 
