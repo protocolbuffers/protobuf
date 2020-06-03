@@ -58,7 +58,15 @@ void GenerateMessageAssignment(const std::string& prefix,
                                const Descriptor* message, io::Printer* printer);
 void GenerateEnumAssignment(const std::string& prefix, const EnumDescriptor* en,
                             io::Printer* printer);
+void GenerateMessageDocumentation(const std::string& prefix,
+                                  const Descriptor* message, io::Printer* printer);
+void GenerateEnumDocumentation(const std::string& prefix, const EnumDescriptor* en,
+                               io::Printer* printer);
 std::string DefaultValueForField(const FieldDescriptor* field);
+std::string YardAnnotationForField(const FieldDescriptor* field);
+std::string MessageClassName(const Descriptor *message);
+std::string PackageToModule(const std::string& name);
+std::string RubifyConstant(const std::string& name);
 
 template<class numeric_type>
 std::string NumberToString(numeric_type value) {
@@ -167,6 +175,85 @@ std::string DefaultValueForField(const FieldDescriptor* field) {
     }
     default: assert(false); return "";
   }
+}
+
+std::string YardAnnotationForField(const FieldDescriptor* field) {
+  if (field->is_map()) {
+    const FieldDescriptor* key_field =
+      field->message_type()->FindFieldByNumber(1);
+    const FieldDescriptor* value_field =
+      field->message_type()->FindFieldByNumber(2);
+    return "Hash{" + YardAnnotationForField(key_field) + "=>" + YardAnnotationForField(value_field) + "}";
+  }
+
+  std::string base_type;
+  switch(field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+      base_type = "Integer";
+      break;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      base_type = "Float";
+      break;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      base_type = "Boolean";
+      break;
+    case FieldDescriptor::CPPTYPE_ENUM:
+      base_type = "Symbol, Integer";
+      break;
+    case FieldDescriptor::CPPTYPE_STRING:
+      base_type = "String";
+      break;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      base_type = MessageClassName(field->message_type());
+      break;
+  }
+  if (field->is_repeated()) {
+    return "Array<" + base_type + ">";
+  } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE || field->containing_oneof() != nullptr) {
+    return base_type + ", nil";
+  } else {
+    return base_type;
+  }
+}
+
+std::string MessageClassName(const Descriptor *message) {
+  std::string package_name;
+  bool need_change_to_module = true;
+  const FileDescriptor* file = message->file();
+  if (file->options().has_ruby_package()) {
+    package_name = file->options().ruby_package();
+    if (package_name.find("::") != std::string::npos) {
+      need_change_to_module = false;
+    }
+  } else {
+    package_name = file->package();
+  }
+
+  if (need_change_to_module) {
+    std::string package_name_orig = package_name;
+    package_name.clear();
+    size_t position = 0;
+    while (position < package_name_orig.size()) {
+      size_t next_dot = package_name_orig.find('.', position);
+      if (next_dot == std::string::npos) {
+        package_name.append(PackageToModule(package_name_orig.substr(position)));
+        position = package_name.size();
+      } else {
+        package_name.append(PackageToModule(package_name_orig.substr(position, next_dot - position)));
+        package_name.append("::");
+        position = next_dot + 1;
+      }
+    }
+  }
+
+  std::string name = package_name;
+  name.append("::");
+  name.append(RubifyConstant(message->name()));
+  return name;
 }
 
 void GenerateField(const FieldDescriptor* field, io::Printer* printer) {
@@ -400,6 +487,199 @@ void GenerateEnumAssignment(const std::string& prefix, const EnumDescriptor* en,
     "full_name", en->full_name());
 }
 
+void GenerateMessageDocumentation(const std::string& prefix,
+                                  const Descriptor* message,
+                                  io::Printer* printer) {
+  // Don't generate MapEntry messages -- we use the Ruby extension's native
+  // support for map fields instead.
+  if (message->options().map_entry()) {
+    return;
+  }
+
+  std::string messageClass = RubifyConstant(message->name());
+
+  printer->Print(
+    "class $prefix$$name$\n",
+    "prefix", prefix,
+    "name", messageClass);
+  printer->Indent();
+  printer->Print(
+    "include ::Google::Protobuf::MessageExts\n"
+    "extend ::Google::Protobuf::MessageExts::ClassMethods\n\n");
+
+  for (int i = 0; i < message->field_count(); i++) {
+    const FieldDescriptor* field = message->field(i);
+    printer->Print(
+      "# @return [$type$]\n"
+      "attr_accessor :$name$\n",
+      "type", YardAnnotationForField(field),
+      "name", field->name());
+    printer->Print(
+      "def clear_$name$; end\n",
+      "name", field->name());
+    printer->Print(
+      "# @return [Boolean]\n"
+      "def has_$name$?; end\n",
+      "name", field->name());
+
+    Descriptor::WellKnownType wellKnownType =
+      field->message_type() == nullptr ?
+      Descriptor::WELLKNOWNTYPE_UNSPECIFIED : field->message_type()->well_known_type();
+    switch (wellKnownType) {
+      case Descriptor::WELLKNOWNTYPE_DOUBLEVALUE:
+      case Descriptor::WELLKNOWNTYPE_FLOATVALUE:
+        printer->Print(
+          "# @return [Float, nil]\n"
+          "attr_accessor :$name$_as_value\n",
+          "name", field->name());
+        break;
+      case Descriptor::WELLKNOWNTYPE_INT64VALUE:
+      case Descriptor::WELLKNOWNTYPE_UINT64VALUE:
+      case Descriptor::WELLKNOWNTYPE_INT32VALUE:
+      case Descriptor::WELLKNOWNTYPE_UINT32VALUE:
+        printer->Print(
+          "# @return [Integer, nil]\n"
+          "attr_accessor :$name$_as_value\n",
+          "name", field->name());
+        break;
+      case Descriptor::WELLKNOWNTYPE_STRINGVALUE:
+      case Descriptor::WELLKNOWNTYPE_BYTESVALUE:
+        printer->Print(
+          "# @return [String, nil]\n"
+          "attr_accessor :$name$_as_value\n",
+          "name", field->name());
+        break;
+      case Descriptor::WELLKNOWNTYPE_BOOLVALUE:
+        printer->Print(
+          "# @return [Boolean, nil]\n"
+          "attr_accessor :$name$_as_value\n",
+          "name", field->name());
+        break;
+      default:
+        break;
+    }
+
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+      printer->Print(
+        "# @return [Integer$nil$]\n"
+        "attr_reader :$name$_const\n",
+        "name", field->name(),
+        "nil", field->containing_oneof() == nullptr ? "" : ", nil");
+    }
+
+    printer->Print("\n");
+  }
+
+  for (int i = 0; i < message->oneof_decl_count(); i++) {
+    printer->Print(
+      "# @return [Symbol, nil]\n"
+      "attr_reader :$name$\n\n",
+      "name", message->oneof_decl(i)->name());
+  }
+
+  printer->Print("# @param kwargs [Hash]\n");
+  for (int i = 0; i < message->field_count(); i++) {
+    const FieldDescriptor* field = message->field(i);
+    std::string default_value;
+    if (field->is_map()) {
+      default_value = "{}";
+    } if (field->is_repeated()) {
+      default_value = "[]";
+    } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE || field->containing_oneof() != nullptr) {
+      default_value = "nil";
+    } else {
+      default_value = DefaultValueForField(field);
+    }
+    printer->Print(
+      "# @option kwargs [$type$] :$name$ ($default$)\n",
+      "name", field->name(),
+      "type", YardAnnotationForField(field),
+      "default", default_value);
+  }
+  printer->Print("def initialize(kwargs = {}); end\n\n");
+
+  printer->Print(
+    "# @param index [String]\n"
+    "# @return [Object]\n"
+    "def [](index); end\n"
+  );
+  printer->Print(
+    "# @param index [String]\n"
+    "# @param value [Object]\n"
+    "def []=(index, value); end\n\n"
+  );
+
+  printer->Print(
+    "# @param data [String]\n"
+    "# @return [$msgclass$]\n"
+    "def self.decode(data); end\n",
+    "msgclass", messageClass
+  );
+  printer->Print(
+    "# @param msg [$msgclass$]\n"
+    "# @return [String]\n"
+    "def self.encode(msg); end\n",
+    "msgclass", messageClass
+  );
+  printer->Print(
+    "# @param data [String]\n"
+    "# @param options [Hash]\n"
+    "# @return [$msgclass$]\n"
+    "def self.decode_json(data, options = {}); end\n",
+    "msgclass", messageClass
+  );
+  printer->Print(
+    "# @param msg [$msgclass$]\n"
+    "# @param options [Hash]\n"
+    "# @return [String]\n"
+    "def self.encode_json(msg, options = {}); end\n",
+    "msgclass", messageClass
+  );
+  printer->Outdent();
+  printer->Print("end\n\n");
+
+  std::string nested_prefix = prefix + RubifyConstant(message->name()) + "::";
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    GenerateMessageDocumentation(nested_prefix, message->nested_type(i), printer);
+  }
+  for (int i = 0; i < message->enum_type_count(); i++) {
+    GenerateEnumDocumentation(nested_prefix, message->enum_type(i), printer);
+  }
+}
+
+void GenerateEnumDocumentation(const std::string& prefix, const EnumDescriptor* en,
+                               io::Printer* printer) {
+  printer->Print(
+    "module $prefix$$name$\n",
+    "prefix", prefix,
+    "name", RubifyConstant(en->name()));
+  printer->Indent();
+  for (int i = 0; i < en->value_count(); i++) {
+    const EnumValueDescriptor* value = en->value(i);
+    printer->Print(
+      "$name$ = $value$\n",
+      "name", value->name(),
+      "value", NumberToString(value->number()));
+  }
+  printer->Print(
+    "\n"
+    "# @param number [Integer]\n"
+    "# @return [Symbol, nil]\n"
+    "def self.lookup(number)\n"
+    "end\n");
+  printer->Print(
+    "# @param name [Symbol]\n"
+    "# @return [Integer, nil]\n"
+    "def self.resolve(name)\n"
+    "end\n");
+  printer->Print(
+    "# @return [Google::Protobuf::EnumDescriptor]\n"
+    "def self.descriptor\n"
+    "end\n");
+  printer->Outdent();
+  printer->Print("end\n");
+}
+
 int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
   int levels = 0;
   bool need_change_to_module = true;
@@ -574,6 +854,21 @@ bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
   for (int i = 0; i < file->enum_type_count(); i++) {
     GenerateEnumAssignment("", file->enum_type(i), printer);
   }
+
+  printer->Print(
+    "\n"
+    "# for documentation purpose\n"
+    "if false\n");
+  printer->Indent();
+  for (int i = 0; i < file->message_type_count(); i++) {
+    GenerateMessageDocumentation("", file->message_type(i), printer);
+  }
+  for (int i = 0; i < file->enum_type_count(); i++) {
+    GenerateEnumDocumentation("", file->enum_type(i), printer);
+  }
+  printer->Outdent();
+  printer->Print("end\n");
+
   EndPackageModules(levels, printer);
   return true;
 }
