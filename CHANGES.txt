@@ -3,15 +3,24 @@ Unreleased Changes
   C++:
   * Removed deprecated unsafe arena string accessors
   * Enabled heterogeneous lookup for std::string keys in maps.
-  * Improved the randomness of map ordering.
   * Removed implicit conversion from StringPiece to std::string
   * Fix use-after-destroy bug when the Map is allocated in the arena.
-  * Improved the randomness of proto map ordering
+  * Improved the randomness of map ordering
+  * Added stack overflow protection for text format with unknown fields
+  * Use std::hash for proto maps to help with portability.
+  * Added more Windows macros to proto whitelist.
+  * Arena constructors for map entry messages are now marked "explicit"
+    (for regular messages they were already explicit).
 
   Python:
   * Reject lowercase t for Timestamp json format. Fixes a conformance test.
   * Improved the error message when AttributeError is returned from __getattr__
     in EnumTypeWrapper.
+  * Json format will print full_name directly for extensions.
+
+  Java:
+  * Fixed a bug where setting optional proto3 enums with setFooValue() would
+    not mark the value as present.
 
   C#:
   * Dropped support for netstandard1.0 (replaced by support for netstandard1.1).
