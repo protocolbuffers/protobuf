@@ -642,7 +642,9 @@ static bool accumulate_append(upb_json_parser *p, const char *buf, size_t len,
   }
 
   if (p->accumulated != p->accumulate_buf) {
-    memcpy(p->accumulate_buf, p->accumulated, p->accumulated_len);
+    if (p->accumulated_len) {
+      memcpy(p->accumulate_buf, p->accumulated, p->accumulated_len);
+    }
     p->accumulated = p->accumulate_buf;
   }
 

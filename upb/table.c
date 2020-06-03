@@ -263,7 +263,7 @@ static upb_tabkey strcopy(lookupkey_t k2, upb_alloc *a) {
   char *str = upb_malloc(a, k2.str.len + sizeof(uint32_t) + 1);
   if (str == NULL) return 0;
   memcpy(str, &len, sizeof(uint32_t));
-  memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len);
+  if (k2.str.len) memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len);
   str[sizeof(uint32_t) + k2.str.len] = '\0';
   return (uintptr_t)str;
 }
@@ -277,7 +277,7 @@ static uint32_t strhash(upb_tabkey key) {
 static bool streql(upb_tabkey k1, lookupkey_t k2) {
   uint32_t len;
   char *str = upb_tabstr(k1, &len);
-  return len == k2.str.len && memcmp(str, k2.str.str, len) == 0;
+  return len == k2.str.len && (len == 0 || memcmp(str, k2.str.str, len) == 0);
 }
 
 bool upb_strtable_init2(upb_strtable *t, upb_ctype_t ctype, upb_alloc *a) {

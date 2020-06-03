@@ -18,7 +18,7 @@ static str_t *newstr(upb_alloc *alloc, const char *data, size_t len) {
   str_t *ret = upb_malloc(alloc, sizeof(*ret) + len);
   if (!ret) return NULL;
   ret->len = len;
-  memcpy(ret->str, data, len);
+  if (len) memcpy(ret->str, data, len);
   ret->str[len] = '\0';
   return ret;
 }
