@@ -176,7 +176,6 @@ namespace Google.Protobuf
 
             WriteContext.Initialize(ref output, out WriteContext ctx);
             WritingPrimitivesMessages.WriteRawMessage(ref ctx, message);
-            ctx.Flush();
             ctx.CheckNoSpaceLeft();
         }
 
