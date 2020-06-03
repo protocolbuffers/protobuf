@@ -548,20 +548,6 @@ namespace Google.Protobuf
 
         #endregion
 
-        //private void RefreshBuffer()
-        //{
-        //    if (output == null)
-        //    {
-        //        // We're writing to a single buffer.
-        //        throw new OutOfSpaceException();
-        //    }
-
-        //    // Since we have an output stream, this is our buffer
-        //    // and buffer offset == 0
-        //    output.Write(buffer, 0, position);
-        //    position = 0;
-        //}
-
         /// <summary>
         /// Indicates that a CodedOutputStream wrapping a flat byte array
         /// ran out of space.
@@ -605,11 +591,6 @@ namespace Google.Protobuf
         {
             var span = new Span<byte>(buffer);
             WriteBufferHelper.Flush(ref span, ref state);
-            
-            /*if (output != null)
-            {
-                RefreshBuffer();
-            }*/
         }
 
         /// <summary>

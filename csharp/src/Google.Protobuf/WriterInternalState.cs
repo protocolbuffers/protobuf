@@ -50,8 +50,8 @@ namespace Google.Protobuf
         // NOTE: the Span representing the current buffer is kept separate so that this doesn't have to be a ref struct and so it can
         // be included in CodedOutputStream's internal state
 
-        internal int limit;  // TODO: it's readonly in CodedOutputStream
-        internal int position;
+        internal int limit;  // the size of the current buffer
+        internal int position;  // position in the current buffer
 
         internal WriteBufferHelper writeBufferHelper;
 
