@@ -108,12 +108,18 @@ namespace Google.Protobuf
             // serialize using CodedOutputStream
             var bytes = message.ToByteArray();
 
-            // also serialize using IBufferWriter and check it leads to the same data
+            int messageSize = message.CalculateSize(); 
+            Assert.AreEqual(message.CalculateSize(), bytes.Length);
+
+            // serialize using IBufferWriter and check it leads to the same output
             var bufferWriter = new ArrayBufferWriter<byte>();
             message.WriteTo(bufferWriter);
-            Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray(), "Both serialization approaches need to result in the same data.");
+            Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray());
 
-            Assert.AreEqual(message.CalculateSize(), bytes.Length);
+            // serialize into a single span and check it leads to the same output
+            var singleSpan = new Span<byte>(new byte[messageSize]);
+            message.WriteTo(singleSpan);
+            Assert.AreEqual(bytes, singleSpan.ToArray());
 
             // TODO: also test different chunk sizes for IBufferWriter
         }
