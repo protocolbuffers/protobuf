@@ -59,9 +59,6 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     public sealed partial class CodedOutputStream : IDisposable
     {
-        // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
-        internal static readonly Encoding Utf8Encoding = Encoding.UTF8;
-
         /// <summary>
         /// The buffer size used by CreateInstance(Stream).
         /// </summary>
@@ -550,35 +547,6 @@ namespace Google.Protobuf
         }
 
         #endregion
-
-        ///// <summary>
-        ///// Encode a 32-bit value with ZigZag encoding.
-        ///// </summary>
-        ///// <remarks>
-        ///// ZigZag encodes signed integers into values that can be efficiently
-        ///// encoded with varint.  (Otherwise, negative values must be 
-        ///// sign-extended to 64 bits to be varint encoded, thus always taking
-        ///// 10 bytes on the wire.)
-        ///// </remarks>
-        //internal static uint EncodeZigZag32(int n)
-        //{
-        //    // Note:  the right-shift must be arithmetic
-        //    return (uint) ((n << 1) ^ (n >> 31));
-        //}
-
-        ///// <summary>
-        ///// Encode a 64-bit value with ZigZag encoding.
-        ///// </summary>
-        ///// <remarks>
-        ///// ZigZag encodes signed integers into values that can be efficiently
-        ///// encoded with varint.  (Otherwise, negative values must be 
-        ///// sign-extended to 64 bits to be varint encoded, thus always taking
-        ///// 10 bytes on the wire.)
-        ///// </remarks>
-        //internal static ulong EncodeZigZag64(long n)
-        //{
-        //    return (ulong) ((n << 1) ^ (n >> 63));
-        //}
 
         //private void RefreshBuffer()
         //{

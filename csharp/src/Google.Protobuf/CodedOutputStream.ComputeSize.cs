@@ -132,7 +132,7 @@ namespace Google.Protobuf
         /// </summary>
         public static int ComputeStringSize(String value)
         {
-            int byteArraySize = Utf8Encoding.GetByteCount(value);
+            int byteArraySize = WritingPrimitives.Utf8Encoding.GetByteCount(value);
             return ComputeLengthSize(byteArraySize) + byteArraySize;
         }
 
