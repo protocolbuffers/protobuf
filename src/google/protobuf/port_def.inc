@@ -505,11 +505,7 @@
 #define PROTOBUF_ALIGNAS(byte_alignment) alignas(byte_alignment)
 #endif
 
-#ifndef GOOGLE_PROTOBUF_NO_FINAL
 #define PROTOBUF_FINAL final
-#else
-#define PROTOBUF_FINAL
-#endif
 
 #if defined(_MSC_VER)
 #define PROTOBUF_THREAD_LOCAL __declspec(thread)
