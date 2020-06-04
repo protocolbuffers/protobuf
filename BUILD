@@ -28,6 +28,8 @@ exports_files([
 
 CPPOPTS = [
     # copybara:strip_for_google3_begin
+    "-Wextra",
+    # "-Wshorten-64-to-32",  # not in GCC (and my Kokoro images doesn't have Clang)
     "-Werror",
     "-Wno-long-long",
     # copybara:strip_end
@@ -164,6 +166,10 @@ cc_library(
     hdrs = [
         "upb/text_encode.h",
     ],
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS,
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":port",
@@ -181,6 +187,10 @@ cc_library(
         "upb/json_decode.h",
         "upb/json_encode.h",
     ],
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS,
+    }),
     deps = [
         ":port",
         ":reflection",

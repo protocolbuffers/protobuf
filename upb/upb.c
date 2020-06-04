@@ -110,10 +110,10 @@ static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
   mem_block *block = ptr;
 
   block->next = a->freelist;
-  block->size = size;
+  block->size = (uint32_t)size;
   block->cleanups = 0;
   a->freelist = block;
-  a->last_size = size;
+  a->last_size = block->size;
   if (!a->freelist_tail) a->freelist_tail = block;
 
   a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);

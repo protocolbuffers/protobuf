@@ -158,7 +158,9 @@ class upb::pb::DecoderPtr {
    * Setting the limit will fail if the parser is currently suspended at a depth
    * greater than this, or if memory allocation of the stack fails. */
   size_t max_nesting() { return upb_pbdecoder_maxnesting(ptr()); }
-  bool set_max_nesting(size_t max) { return upb_pbdecoder_maxnesting(ptr()); }
+  bool set_max_nesting(size_t max) {
+    return upb_pbdecoder_setmaxnesting(ptr(), max);
+  }
 
   void Reset() { upb_pbdecoder_reset(ptr()); }
 

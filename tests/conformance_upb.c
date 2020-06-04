@@ -138,7 +138,7 @@ void serialize_json(const upb_msg *msg, const upb_msgdef *m, const ctx *c) {
   upb_status_clear(&status);
   len = upb_json_encode(msg, m, c->symtab, opts, NULL, 0, &status);
 
-  if (len == -1) {
+  if (len == (size_t)-1) {
     const char *inerr = upb_status_errmsg(&status);
     size_t len = strlen(inerr);
     char *err = upb_arena_malloc(c->arena, len + 1);

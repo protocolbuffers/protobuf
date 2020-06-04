@@ -1909,11 +1909,11 @@ static bool build_filedef(
   }
 
   /* Now that all names are in the table, build layouts and resolve refs. */
-  for (i = 0; i < file->ext_count; i++) {
+  for (i = 0; i < (size_t)file->ext_count; i++) {
     CHK(resolve_fielddef(ctx, file->package, (upb_fielddef*)&file->exts[i]));
   }
 
-  for (i = 0; i < file->msg_count; i++) {
+  for (i = 0; i < (size_t)file->msg_count; i++) {
     const upb_msgdef *m = &file->msgs[i];
     int j;
     for (j = 0; j < m->field_count; j++) {
@@ -1922,7 +1922,7 @@ static bool build_filedef(
   }
 
   if (!ctx->layouts) {
-    for (i = 0; i < file->msg_count; i++) {
+    for (i = 0; i < (size_t)file->msg_count; i++) {
       const upb_msgdef *m = &file->msgs[i];
       make_layout(ctx->symtab, m);
     }
@@ -1931,8 +1931,7 @@ static bool build_filedef(
   return true;
  }
 
-static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
-                                 upb_status *status) {
+static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx) {
   const upb_filedef *file = ctx->file;
   upb_alloc *alloc = upb_arena_alloc(s->arena);
   upb_strtable_iter iter;
@@ -2075,10 +2074,8 @@ static const upb_filedef *_upb_symtab_addfile(
   ctx.layouts = layouts;
   ctx.status = status;
 
-  ok = file &&
-      upb_strtable_init2(&addtab, UPB_CTYPE_CONSTPTR, ctx.tmp) &&
-      build_filedef(&ctx, file, file_proto) &&
-      upb_symtab_addtotabs(s, &ctx, status);
+  ok = file && upb_strtable_init2(&addtab, UPB_CTYPE_CONSTPTR, ctx.tmp) &&
+       build_filedef(&ctx, file, file_proto) && upb_symtab_addtotabs(s, &ctx);
 
   upb_arena_free(tmparena);
   return ok ? file : NULL;

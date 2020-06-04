@@ -43,7 +43,7 @@ static std::string DefSourceFilename(std::string proto_filename) {
 class Output {
  public:
   Output(protobuf::io::ZeroCopyOutputStream* stream) : stream_(stream) {}
-  ~Output() { stream_->BackUp(size_); }
+  ~Output() { stream_->BackUp((int)size_); }
 
   template <class... Arg>
   void operator()(absl::string_view format, const Arg&... arg) {
@@ -922,9 +922,9 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
 }
 
 bool Generator::Generate(const protobuf::FileDescriptor* file,
-                         const std::string& parameter,
+                         const std::string& /* parameter */,
                          protoc::GeneratorContext* context,
-                         std::string* error) const {
+                         std::string* /* error */) const {
   Output h_output(context->Open(HeaderFilename(file->name())));
   WriteHeader(file, h_output);
 

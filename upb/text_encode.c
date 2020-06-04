@@ -263,7 +263,7 @@ static const char *txtenc_unknown(txtenc *e, const char *ptr, const char *end,
     tag = (uint32_t)tag_64;
 
     if ((tag & 7) == UPB_WIRE_TYPE_END_GROUP) {
-      CHK((tag >> 3) == groupnum);
+      CHK((tag >> 3) == (uint32_t)groupnum);
       return ptr;
     }
 
@@ -295,10 +295,11 @@ static const char *txtenc_unknown(txtenc *e, const char *ptr, const char *end,
       }
       case UPB_WIRE_TYPE_DELIMITED: {
         uint64_t len;
+        size_t avail = end - ptr;
         char *start = e->ptr;
         size_t start_overflow = e->overflow;
         CHK(ptr = txtenc_parsevarint(ptr, end, &len));
-        CHK(end - ptr >= len);
+        CHK(avail >= len);
 
         /* Speculatively try to parse as message. */
         txtenc_putstr(e, "{");
@@ -310,10 +311,12 @@ static const char *txtenc_unknown(txtenc *e, const char *ptr, const char *end,
           txtenc_putstr(e, "}");
         } else {
           /* Didn't work out, print as raw bytes. */
+          upb_strview str;
           e->indent_depth--;
           e->ptr = start;
           e->overflow = start_overflow;
-          upb_strview str = {ptr, len};
+          str.data = ptr;
+          str.size = len;
           txtenc_string(e, str, true);
         }
         ptr += len;

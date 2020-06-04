@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <float.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
@@ -83,8 +84,9 @@ static bool jsondec_tryparsech(jsondec *d, char ch) {
 }
 
 static void jsondec_parselit(jsondec *d, const char *lit) {
+  size_t avail = d->end - d->ptr;
   size_t len = strlen(lit);
-  if (d->end - d->ptr < len || memcmp(d->ptr, lit, len) != 0) {
+  if (avail < len || memcmp(d->ptr, lit, len) != 0) {
     jsondec_errf(d, "Expected: '%s'", lit);
   }
   d->ptr += len;
@@ -677,7 +679,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
     if (val.int64_val > INT32_MAX || val.int64_val < INT32_MIN) {
       jsondec_err(d, "Integer out of range.");
     }
-    val.int32_val = val.int64_val;
+    val.int32_val = (int32_t)val.int64_val;
   }
 
   return val;
@@ -713,7 +715,7 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
     if (val.uint64_val > UINT32_MAX) {
       jsondec_err(d, "Integer out of range.");
     }
-    val.uint32_val = val.uint64_val;
+    val.uint32_val = (uint32_t)val.uint64_val;
   }
 
   return val;
@@ -960,15 +962,17 @@ static int jsondec_tsdigits(jsondec *d, const char **ptr, size_t digits,
   const char *end = p + digits;
   size_t after_len = after ? strlen(after) : 0;
 
-  assert(digits <= 9);  /* int can't overflow. */
+  UPB_ASSERT(digits <= 9);  /* int can't overflow. */
 
   if (jsondec_buftouint64(d, p, end, &val) != end ||
       (after_len && memcmp(end, after, after_len) != 0)) {
     jsondec_err(d, "Malformed timestamp");
   }
 
+  UPB_ASSERT(val < INT_MAX);
+
   *ptr = end + after_len;
-  return val;
+  return (int)val;
 }
 
 static int jsondec_nanos(jsondec *d, const char **ptr, const char *end) {
@@ -977,7 +981,7 @@ static int jsondec_nanos(jsondec *d, const char **ptr, const char *end) {
 
   if (p != end && *p == '.') {
     const char *nano_end = jsondec_buftouint64(d, p + 1, end, &nanos);
-    int digits = nano_end - p - 1;
+    int digits = (int)(nano_end - p - 1);
     int exp_lg10 = 9 - digits;
     if (digits > 9) {
       jsondec_err(d, "Too many digits for partial seconds");
@@ -986,14 +990,16 @@ static int jsondec_nanos(jsondec *d, const char **ptr, const char *end) {
     *ptr = nano_end;
   }
 
-  return nanos;
+  UPB_ASSERT(nanos < INT_MAX);
+
+  return (int)nanos;
 }
 
 /* jsondec_epochdays(1970, 1, 1) == 1970-01-01 == 0. */
 int jsondec_epochdays(int y, int m, int d) {
   const uint32_t year_base = 4800;    /* Before min year, multiple of 400. */
   const uint32_t m_adj = m - 3;       /* March-based month. */
-  const uint32_t carry = m_adj > m ? 1 : 0;
+  const uint32_t carry = m_adj > (uint32_t)m ? 1 : 0;
   const uint32_t adjust = carry ? 12 : 0;
   const uint32_t y_adj = y + year_base - carry;
   const uint32_t month_days = ((m_adj + adjust) * 62719 + 769) / 2048;
@@ -1038,7 +1044,7 @@ static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
     switch (*ptr++) {
       case '-':
         neg = true;
-        /* Fallthrough intended. */
+        /* fallthrough */
       case '+':
         if ((end - ptr) != 5) goto malformed;
         ofs = jsondec_tsdigits(d, &ptr, 2, ":00");

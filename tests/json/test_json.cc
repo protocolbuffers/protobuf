@@ -149,6 +149,7 @@ static TestCase kTestSkipUnknown[] = {
 static TestCase kTestFailure[] = {
   {
     TEST("{\"optionalEnum\":\"UNKNOWN_ENUM_VALUE\"}"),
+    EXPECT("{}"),  /* Actually we expect error, this is checked later. */
   },
   TEST_SENTINEL
 };
@@ -242,7 +243,7 @@ void test_json_roundtrip() {
 
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
-                                  serialize_handlers, parser_method, i,
+                                  serialize_handlers, parser_method, (int)i,
                                   false);
     }
   }
@@ -257,7 +258,7 @@ void test_json_roundtrip() {
 
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
-                                  serialize_handlers, parser_method, i,
+                                  serialize_handlers, parser_method, (int)i,
                                   true);
     }
   }
@@ -274,7 +275,7 @@ void test_json_roundtrip() {
 
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_roundtrip_message(test_case->input, expected,
-                                  serialize_handlers, parser_method, i,
+                                  serialize_handlers, parser_method, (int)i,
                                   false);
     }
   }
@@ -319,7 +320,7 @@ void test_json_failure() {
        test_case->input != NULL; test_case++) {
     for (size_t i = 0; i < strlen(test_case->input); i++) {
       test_json_parse_failure(test_case->input, serialize_handlers,
-                              parser_method, i);
+                              parser_method, (int)i);
     }
   }
 }

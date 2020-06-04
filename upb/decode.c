@@ -155,7 +155,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 UPB_NORETURN static void decode_err(upb_decstate *d) { longjmp(d->err, 1); }
 
-static bool decode_reserve(upb_decstate *d, upb_array *arr, int elem) {
+static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
   bool need_realloc = arr->size - arr->len < elem;
   if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, d->arena)) {
     decode_err(d);
@@ -324,7 +324,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
       /* Fixed packed. */
       int lg2 = op - OP_FIXPCK_LG2(0);
       int mask = (1 << lg2) - 1;
-      int count = val.str_val.size >> lg2;
+      size_t count = val.str_val.size >> lg2;
       if ((val.str_val.size & mask) != 0) {
         decode_err(d); /* Length isn't a round multiple of elem size. */
       }
@@ -408,7 +408,7 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   /* Set presence if necessary. */
   if (field->presence < 0) {
     /* Oneof case */
-    int32_t *oneof_case = _upb_oneofcase_field(msg, field);
+    uint32_t *oneof_case = _upb_oneofcase_field(msg, field);
     if (op == OP_SUBMSG && *oneof_case != field->number) {
       memset(mem, 0, sizeof(void*));
     }

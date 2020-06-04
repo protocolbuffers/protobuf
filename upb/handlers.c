@@ -152,28 +152,6 @@ const void *effective_closure_type(upb_handlers *h, const upb_fielddef *f,
   return ret;
 }
 
-/* Checks whether the START* handler specified by f & type is missing even
- * though it is required to convert the established type of an outer frame
- * ("closure_type") into the established type of an inner frame (represented in
- * the return closure type of this handler's attr. */
-bool checkstart(upb_handlers *h, const upb_fielddef *f, upb_handlertype_t type,
-                upb_status *status) {
-  const void *closure_type;
-  const upb_handlerattr *attr;
-  const void *return_closure_type;
-
-  upb_selector_t sel = handlers_getsel(h, f, type);
-  if (h->table[sel].func) return true;
-  closure_type = effective_closure_type(h, f, type);
-  attr = &h->table[sel].attr;
-  return_closure_type = attr->return_closure_type;
-  if (closure_type && return_closure_type &&
-      closure_type != return_closure_type) {
-    return false;
-  }
-  return true;
-}
-
 static upb_handlers *upb_handlers_new(const upb_msgdef *md,
                                       upb_handlercache *cache,
                                       upb_arena *arena) {

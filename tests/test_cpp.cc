@@ -681,6 +681,7 @@ void DoNothingEndMessageHandler(C* closure, upb_status *status) {
 
 void RegisterMismatchedTypes(const void* closure, upb::Handlers* h_ptr) {
   upb::HandlersPtr h(h_ptr);
+  UPB_UNUSED(closure);
 
   upb::MessageDefPtr md(h.message_def());
   ASSERT(md);
@@ -797,6 +798,7 @@ void RegisterMismatchedTypes(const void* closure, upb::Handlers* h_ptr) {
 
 void RegisterMismatchedTypes2(const void* closure, upb::Handlers* h_ptr) {
   upb::HandlersPtr h(h_ptr);
+  UPB_UNUSED(closure);
 
   upb::MessageDefPtr md(h.message_def());
   ASSERT(md);
@@ -941,7 +943,7 @@ void TestArena() {
 
 extern "C" {
 
-int run_tests(int argc, char *argv[]) {
+int run_tests() {
   TestHandler<ValueTesterInt32VoidFunctionNoHandlerData>();
   TestHandler<ValueTesterInt32BoolFunctionNoHandlerData>();
   TestHandler<ValueTesterInt32VoidMethodNoHandlerData>();

@@ -73,9 +73,9 @@ static void PrintString(int max_cols, absl::string_view* str,
 
 bool LuaGenerator::Generate(
     const protobuf::FileDescriptor* file,
-    const std::string& parameter,
+    const std::string& /* parameter */,
     protoc::GeneratorContext* context,
-    std::string* error) const {
+    std::string* /* error */) const {
   std::string filename = Filename(file);
   protobuf::io::ZeroCopyOutputStream* out = context->Open(filename);
   protobuf::io::Printer printer(out, '$');

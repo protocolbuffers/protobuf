@@ -509,8 +509,8 @@ void do_run_decoder(VerboseParserEnvironment* env, upb::pb::DecoderPtr decoder,
     }
 
     bool ok = env->Start() &&
-              parse(env, decoder, i) &&
-              parse(env, decoder, j - i) &&
+              parse(env, decoder, (int)i) &&
+              parse(env, decoder, (int)(j - i)) &&
               parse(env, decoder, -1) &&
               env->End();
 
@@ -1108,7 +1108,7 @@ void test_valid() {
   run_decoder(buf, &textbuf);
 }
 
-void empty_callback(const void *closure, upb::Handlers* h_ptr) {}
+void empty_callback(const void* /* closure */, upb::Handlers* /* h_ptr */) {}
 
 void test_emptyhandlers(upb::SymbolTable* symtab) {
   // Create an empty handlers to make sure that the decoder can handle empty
@@ -1176,7 +1176,7 @@ extern "C" {
 
 int run_tests(int argc, char *argv[]) {
   if (argc > 1)
-    filter_hash = strtol(argv[1], NULL, 16);
+    filter_hash = (uint32_t)strtol(argv[1], NULL, 16);
   for (int i = 0; i < MAX_NESTING; i++) {
     closures[i] = i;
   }

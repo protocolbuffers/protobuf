@@ -271,7 +271,7 @@ typedef enum {
   UPB_DTYPE_SINT64   = 18
 } upb_descriptortype_t;
 
-#define UPB_MAP_BEGIN -1
+#define UPB_MAP_BEGIN ((size_t)-1)
 
 #include "upb/port_undef.inc"
 

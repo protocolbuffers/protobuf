@@ -281,6 +281,7 @@ static bool streql(upb_tabkey k1, lookupkey_t k2) {
 }
 
 bool upb_strtable_init2(upb_strtable *t, upb_ctype_t ctype, upb_alloc *a) {
+  UPB_UNUSED(ctype);  /* TODO(haberman): rm */
   return init(&t->t, 2, a);
 }
 
@@ -473,6 +474,7 @@ bool upb_inttable_sizedinit(upb_inttable *t, size_t asize, int hsize_lg2,
 }
 
 bool upb_inttable_init2(upb_inttable *t, upb_ctype_t ctype, upb_alloc *a) {
+  UPB_UNUSED(ctype);  /* TODO(haberman): rm */
   return upb_inttable_sizedinit(t, 0, 4, a);
 }
 
@@ -786,8 +788,8 @@ uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
     int32_t sr;
 
     switch(align) {
-      case 1: t |= data[2] << 16;
-      case 2: t |= data[1] << 8;
+      case 1: t |= data[2] << 16;  /* fallthrough */
+      case 2: t |= data[1] << 8;   /* fallthrough */
       case 3: t |= data[0];
     }
 
@@ -825,9 +827,9 @@ uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
       uint32_t k;
 
       switch(align) {
-        case 3: d |= data[2] << 16;
-        case 2: d |= data[1] << 8;
-        case 1: d |= data[0];
+        case 3: d |= data[2] << 16;  /* fallthrough */
+        case 2: d |= data[1] << 8;   /* fallthrough */
+        case 1: d |= data[0];        /* fallthrough */
       }
 
       k = (t >> sr) | (d << sl);
@@ -840,15 +842,15 @@ uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
        * Handle tail bytes */
 
       switch(len) {
-        case 3: h ^= data[2] << 16;
-        case 2: h ^= data[1] << 8;
-        case 1: h ^= data[0]; h *= m;
+        case 3: h ^= data[2] << 16;    /* fallthrough */
+        case 2: h ^= data[1] << 8;     /* fallthrough */
+        case 1: h ^= data[0]; h *= m;  /* fallthrough */
       };
     } else {
       switch(len) {
-        case 3: d |= data[2] << 16;
-        case 2: d |= data[1] << 8;
-        case 1: d |= data[0];
+        case 3: d |= data[2] << 16;  /* fallthrough */
+        case 2: d |= data[1] << 8;   /* fallthrough */
+        case 1: d |= data[0];        /* fallthrough */
         case 0: h ^= (t >> sr) | (d << sl); h *= m;
       }
     }
@@ -872,8 +874,8 @@ uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
      * Handle tail bytes */
 
     switch(len) {
-      case 3: h ^= data[2] << 16;
-      case 2: h ^= data[1] << 8;
+      case 3: h ^= data[2] << 16; /* fallthrough */
+      case 2: h ^= data[1] << 8;  /* fallthrough */
       case 1: h ^= data[0]; h *= m;
     };
 

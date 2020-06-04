@@ -102,7 +102,7 @@ class VerboseParserEnvironment {
 
   bool ParseBuffer(int bytes) {
     if (bytes < 0) {
-      bytes = len_ - ofs_;
+      bytes = (int)(len_ - ofs_);
     }
 
     ASSERT((size_t)bytes <= (len_ - ofs_));
@@ -130,7 +130,7 @@ class VerboseParserEnvironment {
               (unsigned)bytes, (unsigned)ofs_, (unsigned)(ofs_ + bytes));
     }
 
-    int parsed = sink_.PutBuffer(subc_, buf2, bytes, &global_handle);
+    int parsed = (int)sink_.PutBuffer(subc_, buf2, bytes, &global_handle);
     free(buf2);
 
     if (verbose_) {
@@ -156,7 +156,7 @@ class VerboseParserEnvironment {
     }
 
     if (parsed > bytes && skip_until_ >= 0) {
-      skip_until_ = ofs_ + parsed;
+      skip_until_ = (int)(ofs_ + parsed);
     }
 
     ofs_ += UPB_MIN(parsed, bytes);
