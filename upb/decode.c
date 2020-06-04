@@ -222,7 +222,7 @@ static void decode_munge(int type, wireval *val) {
 
 static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
                                                  uint32_t field_number) {
-  static upb_msglayout_field none = {0};
+  static upb_msglayout_field none = {0, 0, 0, 0, 0, 0};
 
   /* Lots of optimization opportunities here. */
   int i;

@@ -141,7 +141,7 @@ UPB_INLINE uint32_t _upb_getoneofcase(const void *msg, size_t case_ofs) {
 
 UPB_INLINE size_t _upb_oneofcase_ofs(const upb_msglayout_field *f) {
   UPB_ASSERT(f->presence < 0);
-  return ~(int64_t)f->presence;
+  return ~(ptrdiff_t)f->presence;
 }
 
 UPB_INLINE uint32_t *_upb_oneofcase_field(upb_msg *msg,
