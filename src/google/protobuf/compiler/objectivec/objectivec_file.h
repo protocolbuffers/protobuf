@@ -72,7 +72,7 @@ class FileGenerator {
   const Options options_;
 
   void PrintFileRuntimePreamble(
-      io::Printer* printer, const std::set<string>& headers_to_import) const;
+      io::Printer* printer, const std::vector<string>& headers_to_import) const;
 };
 
 }  // namespace objectivec
