@@ -72,7 +72,7 @@ gulp.task('genproto_group1_closure', function (cb) {
 });
 
 gulp.task('genproto_group2_closure', function (cb) {
-  exec(protoc + ' --js_out=library=testproto_libs2,binary:.  -I ../src -I . -I commonjs ' + group2Protos.join(' '),
+  exec(protoc + ' --experimental_allow_proto3_optional --js_out=library=testproto_libs2,binary:.  -I ../src -I . -I commonjs ' + group2Protos.join(' '),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
