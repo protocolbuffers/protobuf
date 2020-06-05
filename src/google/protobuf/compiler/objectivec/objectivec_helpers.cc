@@ -1585,8 +1585,7 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     if (include_wkt_imports_) {
       const string header_name =
         "GPB" + FilePathBasename(file) + header_extension;
-      protobuf_framework_imports_.push_back(header_name);
-      protobuf_non_framework_imports_.push_back(header_name);
+      protobuf_imports_.push_back(header_name);
     }
     return;
   }
@@ -1616,20 +1615,17 @@ void ImportWriter::AddFile(const FileDescriptor* file,
 }
 
 void ImportWriter::Print(io::Printer* printer) const {
-  assert(protobuf_non_framework_imports_.size() ==
-         protobuf_framework_imports_.size());
-
   bool add_blank_line = false;
 
-  if (!protobuf_framework_imports_.empty()) {
+  if (!protobuf_imports_.empty()) {
     const string framework_name(ProtobufLibraryFrameworkName);
     const string cpp_symbol(ProtobufFrameworkImportSymbol(framework_name));
 
     printer->Print(
         "#if $cpp_symbol$\n",
         "cpp_symbol", cpp_symbol);
-    for (std::vector<string>::const_iterator iter = protobuf_framework_imports_.begin();
-         iter != protobuf_framework_imports_.end(); ++iter) {
+    for (std::vector<string>::const_iterator iter = protobuf_imports_.begin();
+         iter != protobuf_imports_.end(); ++iter) {
       printer->Print(
           " #import <$framework_name$/$header$>\n",
           "framework_name", framework_name,
@@ -1637,8 +1633,8 @@ void ImportWriter::Print(io::Printer* printer) const {
     }
     printer->Print(
         "#else\n");
-    for (std::vector<string>::const_iterator iter = protobuf_non_framework_imports_.begin();
-         iter != protobuf_non_framework_imports_.end(); ++iter) {
+    for (std::vector<string>::const_iterator iter = protobuf_imports_.begin();
+         iter != protobuf_imports_.end(); ++iter) {
       printer->Print(
           " #import \"$header$\"\n",
           "header", *iter);
