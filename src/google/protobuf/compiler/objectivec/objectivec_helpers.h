@@ -305,8 +305,7 @@ class PROTOC_EXPORT ImportWriter {
   std::map<string, string> proto_file_to_framework_name_;
   bool need_to_parse_mapping_file_;
 
-  std::vector<string> protobuf_framework_imports_;
-  std::vector<string> protobuf_non_framework_imports_;
+  std::vector<string> protobuf_imports_;
   std::vector<string> other_framework_imports_;
   std::vector<string> other_imports_;
 };
