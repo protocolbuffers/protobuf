@@ -285,6 +285,10 @@ class PROTOC_EXPORT ImportWriter {
   void AddFile(const FileDescriptor* file, const string& header_extension);
   void Print(io::Printer *printer) const;
 
+  static void PrintRuntimeImports(io::Printer *printer,
+                                  const std::vector<string>& header_to_import,
+                                  bool default_cpp_symbol = false);
+
  private:
   class ProtoFrameworkCollector : public LineConsumer {
    public:
