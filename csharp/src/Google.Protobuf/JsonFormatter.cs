@@ -357,7 +357,7 @@ namespace Google.Protobuf
         /// <param name="value">The value to write. May be null.</param>
         public void WriteValue(TextWriter writer, object value)
         {
-            if (value == null)
+            if (value == null || value is NullValue)
             {
                 WriteNull(writer);
             }

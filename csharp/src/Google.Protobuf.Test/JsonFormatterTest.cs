@@ -226,6 +226,13 @@ namespace Google.Protobuf
                 JsonFormatter.Default.Format(new TestMap { MapBoolBool = { { false, true }, { true, false } } }));
         }
 
+        [Test]
+        public void NullValueOutsideStruct()
+        {
+            var message = new NullValueOutsideStruct { NullValue = NullValue.NullValue };
+            AssertJson("{ 'nullValue': null }", JsonFormatter.Default.Format(message));
+        }
+
         [TestCase(1.0, "1")]
         [TestCase(double.NaN, "'NaN'")]
         [TestCase(double.PositiveInfinity, "'Infinity'")]

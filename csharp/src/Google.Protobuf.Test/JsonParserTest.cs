@@ -36,6 +36,7 @@ using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 using ProtobufTestMessages.Proto2;
 using System;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf
 {
@@ -972,6 +973,25 @@ namespace Google.Protobuf
             var actual = parser.Parse<TestAllTypes>(json);
             var expected = new TestAllTypes { SingleString = "x" };
             Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void NullValueOutsideStruct_NullLiteral()
+        {
+            string json = "{ \"nullValue\": null }";
+            var message = NullValueOutsideStruct.Parser.ParseJson(json);
+            Assert.AreEqual(NullValueOutsideStruct.ValueOneofCase.NullValue, message.ValueCase);
+        }
+
+        // NullValue used to only be converted to the null literal when part of a struct.
+        // Otherwise, it would end up as a string "NULL_VALUE" (the name of the enum value).
+        // We still parse that form, for compatibility.
+        [Test]
+        public void NullValueOutsideStruct_Compatibility()
+        {
+            string json = "{ \"nullValue\": \"NULL_VALUE\" }";
+            var message = NullValueOutsideStruct.Parser.ParseJson(json);
+            Assert.AreEqual(NullValueOutsideStruct.ValueOneofCase.NullValue, message.ValueCase);
         }
 
         /// <summary>
