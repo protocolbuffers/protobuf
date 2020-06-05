@@ -1,8 +1,16 @@
 #!/bin/bash
 
+set -ex
+
 cd $(dirname $0)
 
+./generate_protos.sh
 ./compile_extension.sh
+
+# Oldest major version that supports PHP 7.2
+PHPUNIT=phpunit-6.5.9.phar
+
+[ -f $PHPUNIT ] || wget https://phar.phpunit.de/$PHPUNIT
 
 tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php wrapper_type_setters_test.php)
 
@@ -11,7 +19,7 @@ do
   echo "****************************"
   echo "* $t"
   echo "****************************"
-  php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
+  php -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
   echo ""
 done
 
@@ -20,7 +28,7 @@ do
   echo "****************************"
   echo "* $t persistent"
   echo "****************************"
-  php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
+  php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
   echo ""
 done
 
@@ -40,6 +48,6 @@ valgrind --leak-check=yes php -d protobuf.keep_descriptor_pool_after_request=1 -
 #   echo "****************************"
 #   echo "* $t (memory leak)"
 #   echo "****************************"
-#   valgrind --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
+#   valgrind --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
 #   echo ""
 # done

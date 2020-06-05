@@ -457,48 +457,16 @@ build_javascript() {
   cd conformance && make test_nodejs && cd ..
 }
 
-generate_php_test_proto() {
-  internal_build_cpp
-  pushd php/tests
-  # Generate test file
-  rm -rf generated
-  mkdir generated
-  ../../src/protoc --php_out=generated         \
-    -I../../src -I.                            \
-    proto/empty/echo.proto                     \
-    proto/test.proto                           \
-    proto/test_include.proto                   \
-    proto/test_no_namespace.proto              \
-    proto/test_prefix.proto                    \
-    proto/test_php_namespace.proto             \
-    proto/test_empty_php_namespace.proto       \
-    proto/test_reserved_enum_lower.proto       \
-    proto/test_reserved_enum_upper.proto       \
-    proto/test_reserved_enum_value_lower.proto \
-    proto/test_reserved_enum_value_upper.proto \
-    proto/test_reserved_message_lower.proto    \
-    proto/test_reserved_message_upper.proto    \
-    proto/test_service.proto                   \
-    proto/test_service_namespace.proto         \
-    proto/test_wrapper_type_setters.proto      \
-    proto/test_descriptors.proto
-  pushd ../../src
-  ./protoc --php_out=../php/tests/generated -I../php/tests -I. \
-    ../php/tests/proto/test_import_descriptor_proto.proto
-  popd
-  popd
-}
-
 use_php() {
   VERSION=$1
   export PATH=/usr/local/php-${VERSION}/bin:$PATH
-  generate_php_test_proto
+  internal_build_cpp
 }
 
 use_php_zts() {
   VERSION=$1
   export PATH=/usr/local/php-${VERSION}-zts/bin:$PATH
-  generate_php_test_proto
+  internal_build_cpp
 }
 
 build_php5.5() {
@@ -610,11 +578,6 @@ build_php5.6_mac() {
   test ! -z "$PHP_FOLDER"
   export PATH="$PHP_FOLDER/bin:$PATH"
 
-  # Install phpunit
-  curl https://phar.phpunit.de/phpunit-5.6.8.phar -L -o phpunit.phar
-  chmod +x phpunit.phar
-  sudo mv phpunit.phar /usr/local/bin/phpunit
-
   # Install valgrind
   echo "#! /bin/bash" > valgrind
   chmod ug+x valgrind
@@ -681,11 +644,6 @@ build_php7.0_mac() {
   test ! -z "$PHP_FOLDER"
   export PATH="$PHP_FOLDER/bin:$PATH"
 
-  # Install phpunit
-  curl https://phar.phpunit.de/phpunit-5.6.0.phar -L -o phpunit.phar
-  chmod +x phpunit.phar
-  sudo mv phpunit.phar /usr/local/bin/phpunit
-
   # Install valgrind
   echo "#! /bin/bash" > valgrind
   chmod ug+x valgrind
@@ -705,11 +663,6 @@ build_php7.3_mac() {
   PHP_FOLDER=`find /usr/local -type d -name "php5-7.3*"`  # The folder name may change upon time
   test ! -z "$PHP_FOLDER"
   export PATH="$PHP_FOLDER/bin:$PATH"
-
-  # Install phpunit
-  curl https://phar.phpunit.de/phpunit-8.phar -L -o phpunit.phar
-  chmod +x phpunit.phar
-  sudo mv phpunit.phar /usr/local/bin/phpunit
 
   # Install valgrind
   echo "#! /bin/bash" > valgrind
