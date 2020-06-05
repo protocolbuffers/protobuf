@@ -1,1 +1,1 @@
-Required.ProtobufInput.PrematureEofInSubmessageValue.MESSAGE
+Recommended.Proto2.JsonInput.FieldNameExtension.Validator

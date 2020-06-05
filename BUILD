@@ -1,8 +1,4 @@
 load(
-    "@rules_proto//proto:defs.bzl",
-    "proto_library",
-)
-load(
     "//bazel:build_defs.bzl",
     "generated_file_staleness_test",
     "licenses",  # copybara:strip_for_google3
@@ -14,10 +10,17 @@ load(
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
+
+# copybara:strip_for_google3_begin
+load(
+    "@rules_proto//proto:defs.bzl",
+    "proto_library",
+)
 load(
     "//:upb/bindings/lua/lua_proto_library.bzl",
     "lua_proto_library",
 )
+# copybara:strip_end
 
 licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
 
@@ -627,11 +630,15 @@ cc_binary(
     srcs = [
         "tests/conformance_upb.c",
     ],
+    data = [
+        "tests/conformance_upb_failures.txt",
+    ],
     copts = select({
         ":windows": [],
         "//conditions:default": COPTS,
     }) + ["-Ibazel-out/k8-fastbuild/bin"],
     deps = [
+        ":port",
         ":conformance_proto_upb",
         ":conformance_proto_upbdefs",
         ":json",
@@ -646,7 +653,10 @@ cc_binary(
 make_shell_script(
     name = "gen_test_conformance_upb",
     out = "test_conformance_upb.sh",
-    contents = "external/com_google_protobuf/conformance_test_runner --enforce_recommended ./conformance_upb",
+    contents = "external/com_google_protobuf/conformance_test_runner " +
+               " --enforce_recommended " +
+               " --failure_list ./tests/conformance_upb_failures.txt" +
+               " ./conformance_upb",
 )
 
 sh_test(
