@@ -32,6 +32,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 
@@ -61,25 +62,35 @@ namespace Google.Protobuf
         /// Writes a float field value, without a tag, to the stream.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteFloat(ref Span<byte> buffer, ref WriterInternalState state, float value)
+        public static unsafe void WriteFloat(ref Span<byte> buffer, ref WriterInternalState state, float value)
         {
-            // TODO: avoid allocating a byte array!!!
-            byte[] rawBytes = BitConverter.GetBytes(value);
-            if (!BitConverter.IsLittleEndian)
+            const int length = sizeof(float);
+            if (state.limit - state.position >= length)
             {
-                ByteArray.Reverse(rawBytes);
-            }
+                // if there's enough space in the buffer, write the float directly into the buffer
+                var floatSpan = buffer.Slice(state.position, length);
+                Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(floatSpan), value);
 
-            if (state.limit - state.position >= 4)
-            {
-                buffer[state.position++] = rawBytes[0];
-                buffer[state.position++] = rawBytes[1];
-                buffer[state.position++] = rawBytes[2];
-                buffer[state.position++] = rawBytes[3];
+                if (!BitConverter.IsLittleEndian)
+                {
+                    floatSpan.Reverse();
+                }
+                state.position += length;
             }
             else
             {
-                WriteRawBytes(ref buffer, ref state, rawBytes, 0, 4);
+                Span<byte> floatSpan = stackalloc byte[length];
+                Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(floatSpan), value);
+
+                if (!BitConverter.IsLittleEndian)
+                {
+                    floatSpan.Reverse();
+                }
+
+                WriteRawByte(ref buffer, ref state, floatSpan[0]);
+                WriteRawByte(ref buffer, ref state, floatSpan[1]);
+                WriteRawByte(ref buffer, ref state, floatSpan[2]);
+                WriteRawByte(ref buffer, ref state, floatSpan[3]);
             }
         }
 
