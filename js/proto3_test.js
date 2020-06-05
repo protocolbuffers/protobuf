@@ -151,17 +151,6 @@ describe('proto3Test', function() {
     assertEquals(msg.getRepeatedBytesList().length, 0);
     assertEquals(msg.getRepeatedForeignEnumList().length, 0);
     assertEquals(msg.getRepeatedForeignMessageList().length, 0);
-
-    // BEGIN GOOGLE-INTERNAL
-    assertEquals(msg.getSingularInt32String(), '0');
-    assertEquals(msg.getSingularInt64String(), '0');
-    assertEquals(msg.getSingularUint32String(), '0');
-    assertEquals(msg.getSingularUint64String(), '0');
-    assertEquals(msg.getRepeatedInt32StringList().length, 0);
-    assertEquals(msg.getRepeatedInt64StringList().length, 0);
-    assertEquals(msg.getRepeatedUint32StringList().length, 0);
-    assertEquals(msg.getRepeatedUint64StringList().length, 0);
-    // END GOOGLE-INTERNAL
   });
 
   /**
