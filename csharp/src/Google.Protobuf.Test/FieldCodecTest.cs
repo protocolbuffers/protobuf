@@ -124,11 +124,10 @@ namespace Google.Protobuf
             {
                 var stream = new MemoryStream();
                 var codedOutput = new CodedOutputStream(stream);
-
-                // TODO: simplify
                 WriteContext.Initialize(codedOutput, out WriteContext ctx);
                 try
                 {
+                    // only write the value using the codec
                     codec.ValueWriter(ref ctx, sampleValue);
                 }
                 finally
@@ -186,11 +185,10 @@ namespace Google.Protobuf
                 if (codec.DefaultValue != null) // This part isn't appropriate for message types.
                 {
                     codedOutput = new CodedOutputStream(stream);
-
-                    // TODO: simplify
                     WriteContext.Initialize(codedOutput, out WriteContext ctx);
                     try
                     {
+                        // only write the value using the codec
                         codec.ValueWriter(ref ctx, codec.DefaultValue);
                     }
                     finally
