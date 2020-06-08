@@ -179,12 +179,23 @@ namespace Google.Protobuf
                 }
                 else
                 {
-                    // TODO: optimize this part!!!!
+#if NETSTANDARD1_1
+                    // slowpath when Encoding.GetBytes(Char*, Int32, Byte*, Int32) is not available
                     byte[] bytes = Utf8Encoding.GetBytes(value);
                     WriteRawBytes(ref buffer, ref state, bytes);
-                    // TODO: we need to write to a span...
-                    //Utf8Encoding.GetBytes(value, 0, value.Length, buffer, state.position);
-                    //state.position += length;
+#else
+                    ReadOnlySpan<char> source = value.AsSpan();
+                    int bytesUsed;
+                    unsafe
+                    {
+                        fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
+                        fixed (byte* destinationBytes = &MemoryMarshal.GetReference(buffer.Slice(state.position)))
+                        {
+                            bytesUsed = Utf8Encoding.GetBytes(sourceChars, source.Length, destinationBytes, buffer.Length);
+                        }
+                    }
+                    state.position += bytesUsed;
+#endif
                 }
             }
             else
