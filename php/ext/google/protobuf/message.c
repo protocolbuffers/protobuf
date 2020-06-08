@@ -1726,7 +1726,7 @@ PHP_PROTO_INIT_SUBMSGCLASS_START("Google\\Protobuf\\Timestamp",
                              0 ,ZEND_ACC_PRIVATE TSRMLS_CC);
 PHP_PROTO_INIT_SUBMSGCLASS_END
 
-PHP_METHOD(Timestamp, __construct) {
+static PHP_METHOD(Timestamp, __construct) {
   init_file_timestamp(TSRMLS_C);
   INIT_MESSAGE_WITH_ARRAY;
 }
