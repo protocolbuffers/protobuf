@@ -57,6 +57,9 @@ namespace Google.Protobuf.Benchmarks
         Dictionary<int, string[]> stringValues;
 
         // key is the encodedSize of string values
+        Dictionary<int, string[]> nonAsciiStringValues;
+
+        // key is the encodedSize of string values
         Dictionary<int, ByteString[]> byteStringValues;
 
         // the buffer to which all the data will be written
@@ -65,6 +68,8 @@ namespace Google.Protobuf.Benchmarks
         Random random = new Random(417384220);  // random but deterministic seed
 
         public IEnumerable<int> StringEncodedSizes => new[] { 1, 4, 10, 105, 10080 };
+
+        public IEnumerable<int> NonAsciiStringEncodedSizes => new[] { 4, 10, 105, 10080 };
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -86,11 +91,18 @@ namespace Google.Protobuf.Benchmarks
             floatValues = CreateRandomFloats(random, BytesToWrite / sizeof(float));
 
             stringValues = new Dictionary<int, string[]>();
+
             byteStringValues = new Dictionary<int, ByteString[]>();
             foreach(var encodedSize in StringEncodedSizes)
             {
                 stringValues.Add(encodedSize, CreateStrings(BytesToWrite / encodedSize, encodedSize));
                 byteStringValues.Add(encodedSize, CreateByteStrings(BytesToWrite / encodedSize, encodedSize));
+            }
+
+            nonAsciiStringValues = new Dictionary<int, string[]>();
+            foreach(var encodedSize in NonAsciiStringEncodedSizes)
+            {
+                nonAsciiStringValues.Add(encodedSize, CreateNonAsciiStrings(BytesToWrite / encodedSize, encodedSize));
             }
         }
 
@@ -319,6 +331,35 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
+        [ArgumentsSource(nameof(NonAsciiStringEncodedSizes))]
+        public void WriteNonAsciiString_CodedOutputStream(int encodedSize)
+        {
+            var values = nonAsciiStringValues[encodedSize];
+            var cos = new CodedOutputStream(outputBuffer);
+            foreach (var value in values)
+            {
+                cos.WriteString(value);
+            }
+            cos.Flush();
+            cos.CheckNoSpaceLeft();
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(NonAsciiStringEncodedSizes))]
+        public void WriteNonAsciiString_WriteContext(int encodedSize)
+        {
+            var values = nonAsciiStringValues[encodedSize];
+            var span = new Span<byte>(outputBuffer);
+            WriteContext.Initialize(ref span, out WriteContext ctx);
+            foreach (var value in values)
+            {
+                ctx.WriteString(value);
+            }
+            ctx.Flush();
+            ctx.CheckNoSpaceLeft();
+        }
+
+        [Benchmark]
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public void WriteBytes_CodedOutputStream(int encodedSize)
         {
@@ -390,6 +431,18 @@ namespace Google.Protobuf.Benchmarks
         private static string[] CreateStrings(int valueCount, int encodedSize)
         {
             var str = ParseRawPrimitivesBenchmark.CreateStringWithEncodedSize(encodedSize);
+
+            var result = new string[valueCount];
+            for (int i = 0; i < valueCount; i++)
+            {
+                result[i] = str;
+            }
+            return result;
+        }
+
+        private static string[] CreateNonAsciiStrings(int valueCount, int encodedSize)
+        {
+            var str = ParseRawPrimitivesBenchmark.CreateNonAsciiStringWithEncodedSize(encodedSize);
 
             var result = new string[valueCount];
             for (int i = 0; i < valueCount; i++)

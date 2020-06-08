@@ -463,5 +463,34 @@ namespace Google.Protobuf.Benchmarks
             }
             return str;
         }
+
+        public static string CreateNonAsciiStringWithEncodedSize(int encodedSize)
+        {
+            if (encodedSize < 3)
+            {
+                throw new ArgumentException("Illegal encoded size for a string with non-ascii chars.");
+            }
+            var twoByteChar = '\u00DC';  // U-umlaut, UTF8 encoding has 2 bytes
+            var str = new string(twoByteChar, encodedSize / 2);
+            while (CodedOutputStream.ComputeStringSize(str) > encodedSize)
+            {
+                str = str.Substring(1);
+            }
+
+            // add padding of ascii characters to reach the desired encoded size.
+            while (CodedOutputStream.ComputeStringSize(str) < encodedSize)
+            {
+                str += 'a';
+            }
+
+            // Note that for a few specific encodedSize values, it might be impossible to generate
+            // the string with the desired encodedSize using the algorithm above. For testing purposes, checking that
+            // the encoded size we got is actually correct is good enough.
+            if (CodedOutputStream.ComputeStringSize(str) != encodedSize)
+            {
+                throw new InvalidOperationException($"Generated string with wrong encodedSize");
+            }
+            return str;
+        }
     }
 }
