@@ -81,11 +81,6 @@ namespace Google.Protobuf
             {
                 ctx.CopyStateTo(output);
             }
-
-            //foreach (KeyValuePair<int, UnknownField> entry in fields)
-            //{
-            //    entry.Value.WriteTo(entry.Key, output);
-            //}
         }
 
         /// <summary>

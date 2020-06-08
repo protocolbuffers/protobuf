@@ -474,15 +474,6 @@ namespace Google.Protobuf.Collections
             {
                 ctx.CopyStateTo(output);
             }
-
-            //var message = new Codec.MessageAdapter(codec);
-            //foreach (var entry in list)
-            //{
-            //    message.Key = entry.Key;
-            //    message.Value = entry.Value;
-            //    output.WriteTag(codec.MapTag);
-            //    output.WriteMessage(message);
-            //}
         }
 
         /// <summary>

@@ -181,11 +181,6 @@ namespace Google.Protobuf
             }
         }
 
-        //public void MergeFrom(CodedInputStream input)
-        //{
-        //    field.AddEntriesFrom(input, codec);
-        //}
-
         public void MergeFrom(ref ParseContext ctx)
         {
             field.AddEntriesFrom(ref ctx, codec);

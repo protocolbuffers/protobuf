@@ -355,11 +355,6 @@ namespace Google.Protobuf
             {
                 ctx.CopyStateTo(stream);
             }
-
-            // foreach (var value in ValuesByNumber.Values)
-            // {
-            //     value.WriteTo(stream);
-            // }
         }
 
         /// <summary>

@@ -216,38 +216,6 @@ namespace Google.Protobuf.Collections
             {
                 ctx.CopyStateTo(output);
             }
-
-            //if (count == 0)
-            //{
-            //    return;
-            //}
-            //var writer = codec.ValueWriter;
-            //var tag = codec.Tag;
-            //if (codec.PackedRepeatedField)
-            //{
-            //    // Packed primitive type
-            //    int size = CalculatePackedDataSize(codec);
-            //    output.WriteTag(tag);
-            //    output.WriteLength(size);
-            //    for (int i = 0; i < count; i++)
-            //    {
-            //        writer(output, array[i]);
-            //    }
-            //}
-            //else
-            //{
-            //    // Not packed: a simple tag/value pair for each value.
-            //    // Can't use codec.WriteTagAndValue, as that omits default values.
-            //    for (int i = 0; i < count; i++)
-            //    {
-            //        output.WriteTag(tag);
-            //        writer(output, array[i]);
-            //        if (codec.EndTag != 0)
-            //        {
-            //            output.WriteTag(codec.EndTag);
-            //        }
-            //    }
-            //}
         }
 
         /// <summary>
