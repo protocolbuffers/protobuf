@@ -7,8 +7,14 @@ cd $(dirname $0)
 ./generate_protos.sh
 ./compile_extension.sh
 
-# Oldest major version that supports PHP 7.2
-PHPUNIT=phpunit-6.5.9.phar
+PHP_VERSION=$(php -r "echo PHP_VERSION;")
+
+# Each version of PHPUnit supports a fairly narrow range of PHP versions.
+case "$PHP_VERSION" in
+  5.6.*) PHPUNIT=phpunit-5.6.8.phar;;
+  7.0.*) PHPUNIT=phpunit-5.6.0.phar;;  # Oddly older than for 5.6. Not sure the reason.
+  7.3.*) PHPUNIT=phpunit-8.phar;;
+esac
 
 [ -f $PHPUNIT ] || wget https://phar.phpunit.de/$PHPUNIT
 
