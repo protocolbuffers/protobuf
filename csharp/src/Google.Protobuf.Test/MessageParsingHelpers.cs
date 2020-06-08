@@ -127,7 +127,15 @@ namespace Google.Protobuf
                 var segmentedBufferWriter = new ArrayBufferWriter<byte>();
                 segmentedBufferWriter.MaxGrowBy = blockSize;
                 message.WriteTo(segmentedBufferWriter);
-                Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray());
+                Assert.AreEqual(bytes, segmentedBufferWriter.WrittenSpan.ToArray());
+            }
+
+            // if the full message is small enough, try serializing directly into stack-allocated buffer
+            if (bytes.Length <= 256)
+            {
+                Span<byte> stackAllocBuffer = stackalloc byte[bytes.Length];
+                message.WriteTo(stackAllocBuffer);
+                Assert.AreEqual(bytes, stackAllocBuffer.ToArray());
             }
         }
     }
