@@ -463,7 +463,7 @@ namespace Google.Protobuf
             Assert.IsTrue(memoryStream.CanWrite);
             using (var cos = new CodedOutputStream(memoryStream))
             {
-                cos.WriteRawByte(0);
+                cos.WriteRawBytes(new byte[] {0});
                 Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
             }
             Assert.AreEqual(1, memoryStream.ToArray().Length); // Flushed data from CodedOutputStream to MemoryStream
@@ -477,7 +477,7 @@ namespace Google.Protobuf
             Assert.IsTrue(memoryStream.CanWrite);
             using (var cos = new CodedOutputStream(memoryStream, true))
             {
-                cos.WriteRawByte(0);
+                cos.WriteRawBytes(new byte[] {0});
                 Assert.AreEqual(0, memoryStream.Position); // Not flushed yet
             }
             Assert.AreEqual(1, memoryStream.Position); // Flushed data from CodedOutputStream to MemoryStream

@@ -151,6 +151,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="message">The message to write to the stream.</param>
         /// <param name="output">The stream to write to.</param>
+        [SecuritySafeCritical]
         public static void WriteTo(this IMessage message, IBufferWriter<byte> output)
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
@@ -170,6 +171,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="message">The message to write to the stream.</param>
         /// <param name="output">The span to write to. Size must match size of the message exactly.</param>
+        [SecuritySafeCritical]
         public static void WriteTo(this IMessage message, Span<byte> output)
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));

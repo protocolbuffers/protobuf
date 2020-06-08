@@ -391,12 +391,6 @@ namespace Google.Protobuf
             buffer[state.position++] = value;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteRawByte(ref Span<byte> buffer, ref WriterInternalState state, uint value)
-        {
-            WriteRawByte(ref buffer, ref state, (byte)value);
-        }
-
         /// <summary>
         /// Writes out an array of bytes.
         /// </summary>

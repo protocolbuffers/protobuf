@@ -517,18 +517,6 @@ namespace Google.Protobuf
             WritingPrimitives.WriteRawLittleEndian64(ref span, ref state, value);
         }
 
-        internal void WriteRawByte(byte value)
-        {
-            var span = new Span<byte>(buffer);
-            WritingPrimitives.WriteRawByte(ref span, ref state, value);
-        }
-
-        internal void WriteRawByte(uint value)
-        {
-            var span = new Span<byte>(buffer);
-            WritingPrimitives.WriteRawByte(ref span, ref state, value);
-        }
-
         /// <summary>
         /// Writes out an array of bytes.
         /// </summary>
