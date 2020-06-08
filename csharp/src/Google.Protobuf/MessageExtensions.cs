@@ -160,8 +160,6 @@ namespace Google.Protobuf
             WriteContext.Initialize(output, out WriteContext ctx);
             WritingPrimitivesMessages.WriteRawMessage(ref ctx, message);
             ctx.Flush();
-
-            // TODO: handling errors when IBufferWriter is used?
         }
 
         /// <summary>

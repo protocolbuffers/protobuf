@@ -121,7 +121,14 @@ namespace Google.Protobuf
             message.WriteTo(singleSpan);
             Assert.AreEqual(bytes, singleSpan.ToArray());
 
-            // TODO: also test different chunk sizes for IBufferWriter
+            // test for different IBufferWriter.GetSpan() segment sizes
+            for (int blockSize = 1; blockSize < 256; blockSize *= 2)
+            {
+                var segmentedBufferWriter = new ArrayBufferWriter<byte>();
+                segmentedBufferWriter.MaxGrowBy = blockSize;
+                message.WriteTo(segmentedBufferWriter);
+                Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray());
+            }
         }
     }
 }
