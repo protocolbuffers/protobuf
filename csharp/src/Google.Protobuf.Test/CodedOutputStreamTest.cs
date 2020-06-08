@@ -275,6 +275,32 @@ namespace Google.Protobuf
                 Assert.AreEqual(rawBytes, bufferWriter.WrittenSpan.ToArray()); 
             }
         }
+
+        [Test]
+        public void WriteContext_WritesWithFlushes()
+        {
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
+
+            MemoryStream expectedOutput = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(expectedOutput);
+            output.WriteMessage(message);
+            output.Flush();
+            byte[] expectedBytes1 = expectedOutput.ToArray();
+
+            output.WriteMessage(message);
+            output.Flush();
+            byte[] expectedBytes2 = expectedOutput.ToArray();
+
+            var bufferWriter = new ArrayBufferWriter<byte>();
+            WriteContext.Initialize(bufferWriter, out WriteContext ctx);
+            ctx.WriteMessage(message);
+            ctx.Flush();
+            Assert.AreEqual(expectedBytes1, bufferWriter.WrittenSpan.ToArray());
+
+            ctx.WriteMessage(message);
+            ctx.Flush();
+            Assert.AreEqual(expectedBytes2, bufferWriter.WrittenSpan.ToArray());
+        }
         
         [Test]
         public void EncodeZigZag32()

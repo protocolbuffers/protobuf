@@ -153,11 +153,13 @@ namespace Google.Protobuf
             }
             else if (state.writeBufferHelper.bufferWriter != null)
             {
+                // calling Advance invalidates the current buffer and we must not continue writing to it,
+                // so we set the current buffer to point to an empty Span. If any subsequent writes happen,
+                // the first subsequent write will trigger refresing of the buffer.
                 state.writeBufferHelper.bufferWriter.Advance(state.position);
                 state.position = 0;
                 state.limit = 0;
                 buffer = default;  // invalidate the current buffer
-                // TODO: add a test when we flush and then try to write more data
             }
         }
     }
