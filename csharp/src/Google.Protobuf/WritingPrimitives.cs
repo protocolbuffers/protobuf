@@ -200,7 +200,10 @@ namespace Google.Protobuf
             }
             else
             {
-                // TODO: do this more efficiently
+                // Opportunity for future optimization:
+                // Large strings that don't fit into the current buffer segment
+                // can probably be optimized by using Utf8Encoding.GetEncoder()
+                // but more benchmarks would need to be added as evidence.
                 byte[] bytes = Utf8Encoding.GetBytes(value);
                 WriteRawBytes(ref buffer, ref state, bytes);
             }
@@ -434,8 +437,12 @@ namespace Google.Protobuf
             }
             else
             {
-                // TODO: save copies when using coded output stream and there's a lot of data to write...
-
+                // When writing to a CodedOutputStream backed by a Stream, we could avoid
+                // copying the data twice (first copying to the current buffer and
+                // and later writing from the current buffer to the underlying Stream)
+                // in some circumstances by writing the data directly to the underlying Stream.
+                // Current this is not being done to avoid specialcasing the code for
+                // CodedOutputStream vs IBufferWriter<byte>.
                 int bytesWritten = 0;
                 while (state.limit - state.position < value.Length - bytesWritten)
                 {
