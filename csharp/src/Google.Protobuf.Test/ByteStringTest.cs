@@ -233,5 +233,21 @@ namespace Google.Protobuf
             ByteString b2 = ByteString.CopyFrom(200, 1, 2, 3, 4);
             Assert.AreNotEqual(b1.GetHashCode(), b2.GetHashCode());
         }
+
+        [Test]
+        public void GetContentsAsReadOnlySpan()
+        {
+            var byteString = ByteString.CopyFrom(1, 2, 3, 4, 5);
+            var copied = byteString.Span.ToArray();
+            CollectionAssert.AreEqual(byteString, copied);
+        }
+
+        [Test]
+        public void GetContentsAsReadOnlyMemory()
+        {
+            var byteString = ByteString.CopyFrom(1, 2, 3, 4, 5);
+            var copied = byteString.Memory.ToArray();
+            CollectionAssert.AreEqual(byteString, copied);
+        }
     }
 }

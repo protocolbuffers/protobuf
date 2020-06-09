@@ -34,6 +34,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 using System.Text;
 #if !NET35
 using System.Threading;
@@ -115,13 +116,27 @@ namespace Google.Protobuf
         /// Provides read-only access to the data of this <see cref="ByteString"/>.
         /// No data is copied so this is the most efficient way of accessing.
         /// </summary>
-        public ReadOnlySpan<byte> Span => new ReadOnlySpan<byte>(bytes);
+        public ReadOnlySpan<byte> Span
+        {
+            [SecuritySafeCritical]
+            get
+            {
+                return new ReadOnlySpan<byte>(bytes);
+            }
+        }
 
         /// <summary>
         /// Provides read-only access to the data of this <see cref="ByteString"/>.
         /// No data is copied so this is the most efficient way of accessing.
         /// </summary>
-        public ReadOnlyMemory<byte> Memory => new ReadOnlyMemory<byte>(bytes);
+        public ReadOnlyMemory<byte> Memory
+        {
+            [SecuritySafeCritical]
+            get
+            {
+                return new ReadOnlyMemory<byte>(bytes);
+            }
+        }
 #endif
 
         /// <summary>
