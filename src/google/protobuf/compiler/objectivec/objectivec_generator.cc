@@ -127,6 +127,13 @@ bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& 
       // with generate_for_named_framework, or the relative path to it's include
       // path otherwise.
       generation_options.named_framework_to_proto_path_mappings_path = options[i].second;
+    } else if (options[i].first == "runtime_import_prefix") {
+      // Path to use as a prefix on #imports of runtime provided headers in the
+      // generated files. When integrating ObjC protos into a build system,
+      // this can be used to avoid having to add the runtime directory to the
+      // header search path since the generate #import will be more complete.
+      generation_options.runtime_import_prefix =
+          StripSuffixString(options[i].second, "/");
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
       return false;
