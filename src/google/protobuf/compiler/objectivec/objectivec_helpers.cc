@@ -1566,10 +1566,12 @@ bool ParseSimpleFile(
 ImportWriter::ImportWriter(
   const string& generate_for_named_framework,
   const string& named_framework_to_proto_path_mappings_path,
+  const string& runtime_import_prefix,
   bool include_wkt_imports)
     : generate_for_named_framework_(generate_for_named_framework),
       named_framework_to_proto_path_mappings_path_(
           named_framework_to_proto_path_mappings_path),
+      runtime_import_prefix_(runtime_import_prefix),
       include_wkt_imports_(include_wkt_imports),
       need_to_parse_mapping_file_(true) {
 }
@@ -1618,7 +1620,7 @@ void ImportWriter::Print(io::Printer* printer) const {
   bool add_blank_line = false;
 
   if (!protobuf_imports_.empty()) {
-    PrintRuntimeImports(printer, protobuf_imports_);
+    PrintRuntimeImports(printer, protobuf_imports_, runtime_import_prefix_);
     add_blank_line = true;
   }
 
@@ -1654,7 +1656,20 @@ void ImportWriter::Print(io::Printer* printer) const {
 void ImportWriter::PrintRuntimeImports(
     io::Printer* printer,
     const std::vector<string>& header_to_import,
+    const string& runtime_import_prefix,
     bool default_cpp_symbol) {
+
+  // Given an override, use that.
+  if (!runtime_import_prefix.empty()) {
+    for (const auto& header : header_to_import) {
+      printer->Print(
+          " #import \"$import_prefix$/$header$\"\n",
+          "import_prefix", runtime_import_prefix,
+          "header", header);
+    }
+    return;
+  }
+
   const string framework_name(ProtobufLibraryFrameworkName);
   const string cpp_symbol(ProtobufFrameworkImportSymbol(framework_name));
 

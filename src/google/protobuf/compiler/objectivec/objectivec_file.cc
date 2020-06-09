@@ -242,6 +242,7 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
     ImportWriter import_writer(
         options_.generate_for_named_framework,
         options_.named_framework_to_proto_path_mappings_path,
+        options_.runtime_import_prefix,
         is_bundled_proto_);
     const string header_extension(kHeaderExtension);
     for (int i = 0; i < file_->public_dependency_count(); i++) {
@@ -355,6 +356,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     ImportWriter import_writer(
         options_.generate_for_named_framework,
         options_.named_framework_to_proto_path_mappings_path,
+        options_.runtime_import_prefix,
         is_bundled_proto_);
     const string header_extension(kHeaderExtension);
 
@@ -596,7 +598,8 @@ void FileGenerator::PrintFileRuntimePreamble(
       "// source: $filename$\n"
       "\n",
       "filename", file_->name());
-  ImportWriter::PrintRuntimeImports(printer, headers_to_import, true);
+  ImportWriter::PrintRuntimeImports(
+      printer, headers_to_import, options_.runtime_import_prefix, true);
   printer->Print("\n");
 }
 
