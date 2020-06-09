@@ -477,7 +477,7 @@ build_php5.5() {
   composer update
   composer test
   popd
-  $(cd conformance && make test_php)
+  (cd conformance && make test_php)
 }
 
 build_php5.5_c() {
@@ -526,7 +526,7 @@ build_php5.6() {
   composer update
   composer test
   popd
-  $(cd conformance && make test_php)
+  (cd conformance && make test_php)
 }
 
 build_php5.6_c() {
