@@ -96,11 +96,13 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Benchmarks/Program.cs                           \
   csharp/src/Google.Protobuf.Benchmarks/wrapper_benchmark_messages.proto     \
   csharp/src/Google.Protobuf.Benchmarks/WrapperBenchmarkMessages.cs          \
+  csharp/src/Google.Protobuf.Benchmarks/WriteRawPrimitivesBenchmark.cs       \
   csharp/src/Google.Protobuf.Conformance/Conformance.cs                      \
   csharp/src/Google.Protobuf.Conformance/Google.Protobuf.Conformance.csproj  \
   csharp/src/Google.Protobuf.Conformance/Program.cs                          \
   csharp/src/Google.Protobuf.JsonDump/Google.Protobuf.JsonDump.csproj        \
   csharp/src/Google.Protobuf.JsonDump/Program.cs                             \
+  csharp/src/Google.Protobuf.Test/Buffers/ArrayBufferWriter.cs               \
   csharp/src/Google.Protobuf.Test/ByteStringTest.cs                          \
   csharp/src/Google.Protobuf.Test/CodedInputStreamExtensions.cs              \
   csharp/src/Google.Protobuf.Test/CodedInputStreamTest.cs                    \
@@ -259,6 +261,11 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs                      \
   csharp/src/Google.Protobuf/WellKnownTypes/WrappersPartial.cs               \
   csharp/src/Google.Protobuf/WireFormat.cs                                   \
+  csharp/src/Google.Protobuf/WritingPrimitivesMessages.cs                    \
+  csharp/src/Google.Protobuf/WritingPrimitives.cs                            \
+  csharp/src/Google.Protobuf/WriterInternalState.cs                          \
+  csharp/src/Google.Protobuf/WriteContext.cs                                 \
+  csharp/src/Google.Protobuf/WriteBufferHelper.cs                            \
   csharp/src/Google.Protobuf/UnknownField.cs                                 \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs
 
