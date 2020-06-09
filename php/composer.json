@@ -24,6 +24,6 @@
   },
   "scripts": {
     "test": "tests/generate_protos.sh && vendor/bin/phpunit",
-    "aggregate_metadata_test": "tets/generate_protos.sh && vendor/bin/phpunit"
+    "aggregate_metadata_test": "tests/generate_protos.sh --aggregate_metadata && vendor/bin/phpunit"
   }
 }
