@@ -733,7 +733,7 @@ static upb_msgval jsondec_double(jsondec *d, const upb_fielddef *f) {
     case JD_STRING:
       str = jsondec_string(d);
       if (jsondec_streql(str, "NaN")) {
-        val.double_val = 0.0 / 0.0;
+        val.double_val = UPB_NAN;
       } else if (jsondec_streql(str, "Infinity")) {
         val.double_val = UPB_INFINITY;
       } else if (jsondec_streql(str, "-Infinity")) {

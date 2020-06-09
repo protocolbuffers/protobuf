@@ -172,3 +172,8 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #else
 #define UPB_INFINITY (1.0 / 0.0)
 #endif
+#ifdef NAN
+#define UPB_NAN NAN
+#else
+#define UPB_NAN (0.0 / 0.0)
+#endif

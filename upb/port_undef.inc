@@ -21,6 +21,7 @@
 #undef UPB_ASSERT_DEBUGVAR
 #undef UPB_UNREACHABLE
 #undef UPB_INFINITY
+#undef UPB_NAN
 #undef UPB_MSVC_VSNPRINTF
 #undef _upb_snprintf
 #undef _upb_vsnprintf
