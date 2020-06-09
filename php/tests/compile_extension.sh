@@ -14,6 +14,5 @@ fi
 
 pushd  ../ext/google/protobuf
 make clean || true
-set -e
 phpize && ./configure --with-php-config=$(which php-config) CFLAGS="$CFLAGS" && make
 popd
