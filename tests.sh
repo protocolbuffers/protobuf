@@ -475,11 +475,9 @@ build_php5.5() {
   pushd php
   rm -rf vendor
   composer update
-  ./vendor/bin/phpunit
+  composer test
   popd
-  pushd conformance
-  make test_php
-  popd
+  $(cd conformance && make test_php)
 }
 
 build_php5.5_c() {
@@ -502,6 +500,7 @@ build_php5.5_mixed() {
   rm -rf vendor
   composer update
   tests/compile_extension.sh
+  tests/generate_protos.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -525,11 +524,9 @@ build_php5.6() {
   pushd php
   rm -rf vendor
   composer update
-  ./vendor/bin/phpunit
+  composer test
   popd
-  pushd conformance
-  make test_php
-  popd
+  $(cd conformance && make test_php)
 }
 
 build_php5.6_c() {
@@ -552,6 +549,7 @@ build_php5.6_mixed() {
   rm -rf vendor
   composer update
   tests/compile_extension.sh
+  tests/generate_protos.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -593,7 +591,7 @@ build_php7.0() {
   pushd php
   rm -rf vendor
   composer update
-  ./vendor/bin/phpunit
+  composer test
   popd
   (cd conformance && make test_php)
 }
@@ -618,6 +616,7 @@ build_php7.0_mixed() {
   rm -rf vendor
   composer update
   tests/compile_extension.sh
+  tests/generate_protos.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -689,7 +688,7 @@ build_php7.1() {
   pushd php
   rm -rf vendor
   composer update
-  ./vendor/bin/phpunit
+  composer test
   popd
   (cd conformance && make test_php)
 }
@@ -714,6 +713,7 @@ build_php7.1_mixed() {
   rm -rf vendor
   composer update
   tests/compile_extension.sh
+  tests/generate_protos.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
 }
@@ -737,7 +737,7 @@ build_php7.4() {
   pushd php
   rm -rf vendor
   composer update
-  ./vendor/bin/phpunit
+  composer test
   popd
   (cd conformance && make test_php)
 }
@@ -763,6 +763,7 @@ build_php7.4_mixed() {
   rm -rf vendor
   composer update
   tests/compile_extension.sh
+  tests/generate_protos.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
   (cd php/ext/google/protobuf && phpize --clean)
