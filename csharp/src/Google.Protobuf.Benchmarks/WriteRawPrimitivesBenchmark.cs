@@ -240,7 +240,7 @@ namespace Google.Protobuf.Benchmarks
         [Benchmark]
         public void WriteFixed64_WriteContext()
         {
-            const int encodedSize = sizeof(uint);
+            const int encodedSize = sizeof(ulong);
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
             for (uint i = 0; i < BytesToWrite / encodedSize; i++)

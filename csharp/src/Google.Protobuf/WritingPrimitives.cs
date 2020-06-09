@@ -31,6 +31,7 @@
 #endregion
 
 using System;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -351,7 +352,8 @@ namespace Google.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteRawLittleEndian32(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
-            if (state.position + 4 > state.limit)
+            const int length = sizeof(uint);
+            if (state.position + length > state.limit)
             {
                 WriteRawByte(ref buffer, ref state, (byte)value);
                 WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
@@ -360,17 +362,16 @@ namespace Google.Protobuf
             }
             else
             {
-                buffer[state.position++] = ((byte)value);
-                buffer[state.position++] = ((byte)(value >> 8));
-                buffer[state.position++] = ((byte)(value >> 16));
-                buffer[state.position++] = ((byte)(value >> 24));
+                BinaryPrimitives.WriteUInt32LittleEndian(buffer.Slice(state.position), value);
+                state.position += length;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteRawLittleEndian64(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
         {
-            if (state.position + 8 > state.limit)
+            const int length = sizeof(ulong);
+            if (state.position + length > state.limit)
             {
                 WriteRawByte(ref buffer, ref state, (byte)value);
                 WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
@@ -383,6 +384,10 @@ namespace Google.Protobuf
             }
             else
             {
+                // TODO(jtattermusch): According to the benchmarks, writing byte-by-byte is actually faster
+                // than using BinaryPrimitives.WriteUInt64LittleEndian.
+                // This is strange especially because WriteUInt32LittleEndian seems to be much faster
+                // in terms of throughput.
                 buffer[state.position++] = ((byte)value);
                 buffer[state.position++] = ((byte)(value >> 8));
                 buffer[state.position++] = ((byte)(value >> 16));
