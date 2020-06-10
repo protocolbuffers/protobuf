@@ -123,7 +123,7 @@ namespace Google.Protobuf.Benchmarks
             manyPrimitiveFieldsTest.ParseDelimitedMessagesFromReadOnlySequence(messageCount);
         }
 
-        private static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()
+        public static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()
         {
             // Example data match data of an internal benchmarks
             return new ManyWrapperFieldsMessage()
@@ -140,7 +140,7 @@ namespace Google.Protobuf.Benchmarks
             };
         }
 
-        private static ManyPrimitiveFieldsMessage CreateManyPrimitiveFieldsMessage()
+        public static ManyPrimitiveFieldsMessage CreateManyPrimitiveFieldsMessage()
         {
             // Example data match data of an internal benchmarks
             return new ManyPrimitiveFieldsMessage()
