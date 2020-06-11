@@ -307,7 +307,7 @@ static const upb_msgdef *jsonenc_getanymsg(jsonenc *e, upb_strview type_url) {
   ret = upb_symtab_lookupmsg2(e->ext_pool, ptr, end - ptr);
 
   if (!ret) {
-    jsonenc_errf(e, "Couldn't find Any type: %.*s (full URL: " UPB_STRVIEW_FORMAT ")", (int)(end - ptr), ptr, UPB_STRVIEW_ARGS(type_url));
+    jsonenc_errf(e, "Couldn't find Any type: %.*s", (int)(end - ptr), ptr);
   }
 
   return ret;
