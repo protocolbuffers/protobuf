@@ -12,7 +12,14 @@ else
   CFLAGS="-g -O0 -Wall"
 fi
 
+
 pushd  ../ext/google/protobuf
 make clean || true
+phpize && ./configure --with-php-config=$(which php-config) CFLAGS="$CFLAGS" && make
+popd
+
+pushd  ../ext/google/protobuf2
+make clean || true
+./make-preload.py
 phpize && ./configure --with-php-config=$(which php-config) CFLAGS="$CFLAGS" && make
 popd
