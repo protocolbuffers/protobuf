@@ -53,6 +53,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Java: https://github.com/google/protobuf (Google-official implementation)
 * Java/Android: https://github.com/square/wire
 * Java: https://github.com/HebiRobotics/QuickBuffers/
+* Java: https://github.com/protostuff/protostuff
 * Java ME: http://code.google.com/p/protobuf-javame/
 * Java ME: http://swingme.sourceforge.net/encode.shtml
 * Java ME: http://code.google.com/p/protobuf-j2me/
@@ -60,7 +61,6 @@ These are projects we know about implementing Protocol Buffers for other program
 * Javascript: http://github.com/sirikata/protojs
 * Javascript: https://github.com/dcodeIO/ProtoBuf.js
 * Javascript: http://code.google.com/p/protobuf-for-node/
-* Javascript: http://code.google.com/p/protostuff/
 * Julia: https://github.com/tanmaykm/ProtoBuf.jl
 * Kotlin: https://github.com/marcoferrer/kroto-plus
 * Kotlin: https://github.com/Kotlin/kotlinx.serialization
