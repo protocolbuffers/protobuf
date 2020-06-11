@@ -328,7 +328,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 UPB_NORETURN static void decode_err(upb_decstate *d) { longjmp(d->err, 1); }
 
-static bool decode_reserve(upb_decstate *d, upb_array *arr, int elem) {
+static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
   bool need_realloc = arr->size - arr->len < elem;
   if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, d->arena)) {
     decode_err(d);
@@ -497,7 +497,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
       /* Fixed packed. */
       int lg2 = op - OP_FIXPCK_LG2(0);
       int mask = (1 << lg2) - 1;
-      int count = val.str_val.size >> lg2;
+      size_t count = val.str_val.size >> lg2;
       if ((val.str_val.size & mask) != 0) {
         decode_err(d); /* Length isn't a round multiple of elem size. */
       }
@@ -581,7 +581,7 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   /* Set presence if necessary. */
   if (field->presence < 0) {
     /* Oneof case */
-    int32_t *oneof_case = _upb_oneofcase_field(msg, field);
+    uint32_t *oneof_case = _upb_oneofcase_field(msg, field);
     if (op == OP_SUBMSG && *oneof_case != field->number) {
       memset(mem, 0, sizeof(void*));
     }
@@ -1076,13 +1076,11 @@ static bool upb_encode_map(upb_encstate *e, const char *field_mem,
     size_t size;
     upb_strview key = upb_strtable_iter_key(&i);
     const upb_value val = upb_strtable_iter_value(&i);
-    const void *keyp =
-        map->key_size == UPB_MAPTYPE_STRING ? (void *)&key : key.data;
-    const void *valp =
-        map->val_size == UPB_MAPTYPE_STRING ? upb_value_getptr(val) : &val;
-
-    CHK(upb_encode_scalarfield(e, valp, entry, val_field, false));
-    CHK(upb_encode_scalarfield(e, keyp, entry, key_field, false));
+    upb_map_entry ent;
+    _upb_map_fromkey(key, &ent.k, map->key_size);
+    _upb_map_fromvalue(val, &ent.v, map->val_size);
+    CHK(upb_encode_scalarfield(e, &ent.v, entry, val_field, false));
+    CHK(upb_encode_scalarfield(e, &ent.k, entry, key_field, false));
     size = (e->limit - e->ptr) - pre_len;
     CHK(upb_put_varint(e, size));
     CHK(upb_put_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED));
@@ -1195,16 +1193,17 @@ static size_t upb_msg_sizeof(const upb_msglayout *l) {
   return l->size + upb_msg_internalsize(l);
 }
 
-static upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
-  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
+static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
+  ptrdiff_t size = sizeof(upb_msg_internal);
+  return UPB_PTR_AT(msg, -size, upb_msg_internal);
 }
 
-static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
-  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
+static upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
+  return (upb_msg_internal*)upb_msg_getinternal_const(msg);
 }
 
 void _upb_msg_clear(upb_msg *msg, const upb_msglayout *l) {
-  size_t internal = upb_msg_internalsize(l);
+  ptrdiff_t internal = upb_msg_internalsize(l);
   void *mem = UPB_PTR_AT(msg, -internal, char);
   memset(mem, 0, l->size + internal);
 }
@@ -1597,7 +1596,7 @@ static upb_tabkey strcopy(lookupkey_t k2, upb_alloc *a) {
   char *str = upb_malloc(a, k2.str.len + sizeof(uint32_t) + 1);
   if (str == NULL) return 0;
   memcpy(str, &len, sizeof(uint32_t));
-  memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len);
+  if (k2.str.len) memcpy(str + sizeof(uint32_t), k2.str.str, k2.str.len);
   str[sizeof(uint32_t) + k2.str.len] = '\0';
   return (uintptr_t)str;
 }
@@ -1611,10 +1610,11 @@ static uint32_t strhash(upb_tabkey key) {
 static bool streql(upb_tabkey k1, lookupkey_t k2) {
   uint32_t len;
   char *str = upb_tabstr(k1, &len);
-  return len == k2.str.len && memcmp(str, k2.str.str, len) == 0;
+  return len == k2.str.len && (len == 0 || memcmp(str, k2.str.str, len) == 0);
 }
 
 bool upb_strtable_init2(upb_strtable *t, upb_ctype_t ctype, upb_alloc *a) {
+  UPB_UNUSED(ctype);  /* TODO(haberman): rm */
   return init(&t->t, 2, a);
 }
 
@@ -1807,6 +1807,7 @@ bool upb_inttable_sizedinit(upb_inttable *t, size_t asize, int hsize_lg2,
 }
 
 bool upb_inttable_init2(upb_inttable *t, upb_ctype_t ctype, upb_alloc *a) {
+  UPB_UNUSED(ctype);  /* TODO(haberman): rm */
   return upb_inttable_sizedinit(t, 0, 4, a);
 }
 
@@ -2120,8 +2121,8 @@ uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
     int32_t sr;
 
     switch(align) {
-      case 1: t |= data[2] << 16;
-      case 2: t |= data[1] << 8;
+      case 1: t |= data[2] << 16;  /* fallthrough */
+      case 2: t |= data[1] << 8;   /* fallthrough */
       case 3: t |= data[0];
     }
 
@@ -2159,9 +2160,9 @@ uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
       uint32_t k;
 
       switch(align) {
-        case 3: d |= data[2] << 16;
-        case 2: d |= data[1] << 8;
-        case 1: d |= data[0];
+        case 3: d |= data[2] << 16;  /* fallthrough */
+        case 2: d |= data[1] << 8;   /* fallthrough */
+        case 1: d |= data[0];        /* fallthrough */
       }
 
       k = (t >> sr) | (d << sl);
@@ -2174,15 +2175,15 @@ uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
        * Handle tail bytes */
 
       switch(len) {
-        case 3: h ^= data[2] << 16;
-        case 2: h ^= data[1] << 8;
-        case 1: h ^= data[0]; h *= m;
+        case 3: h ^= data[2] << 16;    /* fallthrough */
+        case 2: h ^= data[1] << 8;     /* fallthrough */
+        case 1: h ^= data[0]; h *= m;  /* fallthrough */
       };
     } else {
       switch(len) {
-        case 3: d |= data[2] << 16;
-        case 2: d |= data[1] << 8;
-        case 1: d |= data[0];
+        case 3: d |= data[2] << 16;  /* fallthrough */
+        case 2: d |= data[1] << 8;   /* fallthrough */
+        case 1: d |= data[0];        /* fallthrough */
         case 0: h ^= (t >> sr) | (d << sl); h *= m;
       }
     }
@@ -2206,8 +2207,8 @@ uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed) {
      * Handle tail bytes */
 
     switch(len) {
-      case 3: h ^= data[2] << 16;
-      case 2: h ^= data[1] << 8;
+      case 3: h ^= data[2] << 16; /* fallthrough */
+      case 2: h ^= data[1] << 8;  /* fallthrough */
       case 1: h ^= data[0]; h *= m;
     };
 
@@ -2331,10 +2332,10 @@ static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
   mem_block *block = ptr;
 
   block->next = a->freelist;
-  block->size = size;
+  block->size = (uint32_t)size;
   block->cleanups = 0;
   a->freelist = block;
-  a->last_size = size;
+  a->last_size = block->size;
   if (!a->freelist_tail) a->freelist_tail = block;
 
   a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
@@ -3387,7 +3388,7 @@ static str_t *newstr(upb_alloc *alloc, const char *data, size_t len) {
   str_t *ret = upb_malloc(alloc, sizeof(*ret) + len);
   if (!ret) return NULL;
   ret->len = len;
-  memcpy(ret->str, data, len);
+  if (len) memcpy(ret->str, data, len);
   ret->str[len] = '\0';
   return ret;
 }
@@ -4291,6 +4292,22 @@ static uint32_t upb_msglayout_place(upb_msglayout *l, size_t size) {
   return ret;
 }
 
+static int field_number_cmp(const void *p1, const void *p2) {
+  const upb_msglayout_field *f1 = p1;
+  const upb_msglayout_field *f2 = p2;
+  return f1->number - f2->number;
+}
+
+static void assign_layout_indices(const upb_msgdef *m, upb_msglayout_field *fields) {
+  int i;
+  int n = upb_msgdef_numfields(m);
+  for (i = 0; i < n; i++) {
+    upb_fielddef *f = (upb_fielddef*)upb_msgdef_itof(m, fields[i].number);
+    UPB_ASSERT(f);
+    f->layout_index = i;
+  }
+}
+
 /* This function is the dynamic equivalent of message_layout.{cc,h} in upbc.
  * It computes a dynamic layout for all of the fields in |m|. */
 static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
@@ -4372,10 +4389,6 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
       field->label = _UPB_LABEL_PACKED;
     }
 
-    /* TODO: we probably should sort the fields by field number to match the
-     * output of upbc, and to improve search speed for the table parser. */
-    f->layout_index = f->index_;
-
     if (upb_fielddef_issubmsg(f)) {
       const upb_msgdef *subm = upb_fielddef_msgsubdef(f);
       field->submsg_index = submsg_count++;
@@ -4447,6 +4460,10 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
   /* Size of the entire structure should be a multiple of its greatest
    * alignment.  TODO: track overall alignment for real? */
   l->size = UPB_ALIGN_UP(l->size, 8);
+
+  /* Sort fields by number. */
+  qsort(fields, upb_msgdef_numfields(m), sizeof(*fields), field_number_cmp);
+  assign_layout_indices(m, fields);
 
   return true;
 }
@@ -5278,11 +5295,11 @@ static bool build_filedef(
   }
 
   /* Now that all names are in the table, build layouts and resolve refs. */
-  for (i = 0; i < file->ext_count; i++) {
+  for (i = 0; i < (size_t)file->ext_count; i++) {
     CHK(resolve_fielddef(ctx, file->package, (upb_fielddef*)&file->exts[i]));
   }
 
-  for (i = 0; i < file->msg_count; i++) {
+  for (i = 0; i < (size_t)file->msg_count; i++) {
     const upb_msgdef *m = &file->msgs[i];
     int j;
     for (j = 0; j < m->field_count; j++) {
@@ -5291,7 +5308,7 @@ static bool build_filedef(
   }
 
   if (!ctx->layouts) {
-    for (i = 0; i < file->msg_count; i++) {
+    for (i = 0; i < (size_t)file->msg_count; i++) {
       const upb_msgdef *m = &file->msgs[i];
       make_layout(ctx->symtab, m);
     }
@@ -5300,8 +5317,7 @@ static bool build_filedef(
   return true;
  }
 
-static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx,
-                                 upb_status *status) {
+static bool upb_symtab_addtotabs(upb_symtab *s, symtab_addctx *ctx) {
   const upb_filedef *file = ctx->file;
   upb_alloc *alloc = upb_arena_alloc(s->arena);
   upb_strtable_iter iter;
@@ -5444,10 +5460,8 @@ static const upb_filedef *_upb_symtab_addfile(
   ctx.layouts = layouts;
   ctx.status = status;
 
-  ok = file &&
-      upb_strtable_init2(&addtab, UPB_CTYPE_CONSTPTR, ctx.tmp) &&
-      build_filedef(&ctx, file, file_proto) &&
-      upb_symtab_addtotabs(s, &ctx, status);
+  ok = file && upb_strtable_init2(&addtab, UPB_CTYPE_CONSTPTR, ctx.tmp) &&
+       build_filedef(&ctx, file, file_proto) && upb_symtab_addtotabs(s, &ctx);
 
   upb_arena_free(tmparena);
   return ok ? file : NULL;
@@ -5513,27 +5527,30 @@ err:
 #include <string.h>
 
 
-static char field_size[] = {
-  0,/* 0 */
-  8, /* UPB_DESCRIPTOR_TYPE_DOUBLE */
-  4, /* UPB_DESCRIPTOR_TYPE_FLOAT */
-  8, /* UPB_DESCRIPTOR_TYPE_INT64 */
-  8, /* UPB_DESCRIPTOR_TYPE_UINT64 */
-  4, /* UPB_DESCRIPTOR_TYPE_INT32 */
-  8, /* UPB_DESCRIPTOR_TYPE_FIXED64 */
-  4, /* UPB_DESCRIPTOR_TYPE_FIXED32 */
-  1, /* UPB_DESCRIPTOR_TYPE_BOOL */
-  sizeof(upb_strview), /* UPB_DESCRIPTOR_TYPE_STRING */
-  sizeof(void*), /* UPB_DESCRIPTOR_TYPE_GROUP */
-  sizeof(void*), /* UPB_DESCRIPTOR_TYPE_MESSAGE */
-  sizeof(upb_strview), /* UPB_DESCRIPTOR_TYPE_BYTES */
-  4, /* UPB_DESCRIPTOR_TYPE_UINT32 */
-  4, /* UPB_DESCRIPTOR_TYPE_ENUM */
-  4, /* UPB_DESCRIPTOR_TYPE_SFIXED32 */
-  8, /* UPB_DESCRIPTOR_TYPE_SFIXED64 */
-  4, /* UPB_DESCRIPTOR_TYPE_SINT32 */
-  8, /* UPB_DESCRIPTOR_TYPE_SINT64 */
-};
+static size_t get_field_size(const upb_msglayout_field *f) {
+  static unsigned char sizes[] = {
+    0,/* 0 */
+    8, /* UPB_DESCRIPTOR_TYPE_DOUBLE */
+    4, /* UPB_DESCRIPTOR_TYPE_FLOAT */
+    8, /* UPB_DESCRIPTOR_TYPE_INT64 */
+    8, /* UPB_DESCRIPTOR_TYPE_UINT64 */
+    4, /* UPB_DESCRIPTOR_TYPE_INT32 */
+    8, /* UPB_DESCRIPTOR_TYPE_FIXED64 */
+    4, /* UPB_DESCRIPTOR_TYPE_FIXED32 */
+    1, /* UPB_DESCRIPTOR_TYPE_BOOL */
+    sizeof(upb_strview), /* UPB_DESCRIPTOR_TYPE_STRING */
+    sizeof(void*), /* UPB_DESCRIPTOR_TYPE_GROUP */
+    sizeof(void*), /* UPB_DESCRIPTOR_TYPE_MESSAGE */
+    sizeof(upb_strview), /* UPB_DESCRIPTOR_TYPE_BYTES */
+    4, /* UPB_DESCRIPTOR_TYPE_UINT32 */
+    4, /* UPB_DESCRIPTOR_TYPE_ENUM */
+    4, /* UPB_DESCRIPTOR_TYPE_SFIXED32 */
+    8, /* UPB_DESCRIPTOR_TYPE_SFIXED64 */
+    4, /* UPB_DESCRIPTOR_TYPE_SINT32 */
+    8, /* UPB_DESCRIPTOR_TYPE_SINT64 */
+  };
+  return _upb_repeated_or_map(f) ? sizeof(void *) : sizes[f->descriptortype];
+}
 
 /* Strings/bytes are special-cased in maps. */
 static char _upb_fieldtype_to_mapsize[12] = {
@@ -5565,9 +5582,7 @@ static upb_msgval _upb_msg_getraw(const upb_msg *msg, const upb_fielddef *f) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
   const char *mem = UPB_PTR_AT(msg, field->offset, char);
   upb_msgval val = {0};
-  int size = upb_fielddef_isseq(f) ? sizeof(void *)
-                                   : field_size[field->descriptortype];
-  memcpy(&val, mem, size);
+  memcpy(&val, mem, get_field_size(field));
   return val;
 }
 
@@ -5681,9 +5696,8 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
                  upb_arena *a) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
   char *mem = UPB_PTR_AT(msg, field->offset, char);
-  int size = upb_fielddef_isseq(f) ? sizeof(void *)
-                                   : field_size[field->descriptortype];
-  memcpy(mem, &val, size);
+  UPB_UNUSED(a);  /* We reserve the right to make set insert into a map. */
+  memcpy(mem, &val, get_field_size(field));
   if (field->presence > 0) {
     _upb_sethas_field(msg, field);
   } else if (in_oneof(field)) {
@@ -5694,18 +5708,16 @@ void upb_msg_set(upb_msg *msg, const upb_fielddef *f, upb_msgval val,
 void upb_msg_clearfield(upb_msg *msg, const upb_fielddef *f) {
   const upb_msglayout_field *field = upb_fielddef_layout(f);
   char *mem = UPB_PTR_AT(msg, field->offset, char);
-  int size = upb_fielddef_isseq(f) ? sizeof(void *)
-                                   : field_size[field->descriptortype];
 
   if (field->presence > 0) {
     _upb_clearhas_field(msg, field);
   } else if (in_oneof(field)) {
-    int32_t *oneof_case = _upb_oneofcase_field(msg, field);
+    uint32_t *oneof_case = _upb_oneofcase_field(msg, field);
     if (*oneof_case != field->number) return;
     *oneof_case = 0;
   }
 
-  memset(mem, 0, size);
+  memset(mem, 0, get_field_size(field));
 }
 
 void upb_msg_clear(upb_msg *msg, const upb_msgdef *m) {
@@ -5718,6 +5730,7 @@ bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
   size_t i = *iter;
   const upb_msgval zero = {0};
   const upb_fielddef *f;
+  UPB_UNUSED(ext_pool);
   while ((f = _upb_msgdef_field(m, (int)++i)) != NULL) {
     upb_msgval val = _upb_msg_getraw(msg, f);
 
@@ -5926,6 +5939,7 @@ int msvc_snprintf(char* s, size_t n, const char* format, ...) {
 #include <errno.h>
 #include <float.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6002,8 +6016,9 @@ static bool jsondec_tryparsech(jsondec *d, char ch) {
 }
 
 static void jsondec_parselit(jsondec *d, const char *lit) {
+  size_t avail = d->end - d->ptr;
   size_t len = strlen(lit);
-  if (d->end - d->ptr < len || memcmp(d->ptr, lit, len) != 0) {
+  if (avail < len || memcmp(d->ptr, lit, len) != 0) {
     jsondec_errf(d, "Expected: '%s'", lit);
   }
   d->ptr += len;
@@ -6392,7 +6407,7 @@ static void jsondec_skipval(jsondec *d) {
 
 /* Base64 decoding for bytes fields. ******************************************/
 
-static int jsondec_base64_tablelookup(const char ch) {
+static unsigned int jsondec_base64_tablelookup(const char ch) {
   /* Table includes the normal base64 chars plus the URL-safe variant. */
   const signed char table[256] = {
       -1,       -1,       -1,       -1,       -1,       -1,        -1,
@@ -6596,7 +6611,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
     if (val.int64_val > INT32_MAX || val.int64_val < INT32_MIN) {
       jsondec_err(d, "Integer out of range.");
     }
-    val.int32_val = val.int64_val;
+    val.int32_val = (int32_t)val.int64_val;
   }
 
   return val;
@@ -6632,7 +6647,7 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
     if (val.uint64_val > UINT32_MAX) {
       jsondec_err(d, "Integer out of range.");
     }
-    val.uint32_val = val.uint64_val;
+    val.uint32_val = (uint32_t)val.uint64_val;
   }
 
   return val;
@@ -6879,15 +6894,17 @@ static int jsondec_tsdigits(jsondec *d, const char **ptr, size_t digits,
   const char *end = p + digits;
   size_t after_len = after ? strlen(after) : 0;
 
-  assert(digits <= 9);  /* int can't overflow. */
+  UPB_ASSERT(digits <= 9);  /* int can't overflow. */
 
   if (jsondec_buftouint64(d, p, end, &val) != end ||
       (after_len && memcmp(end, after, after_len) != 0)) {
     jsondec_err(d, "Malformed timestamp");
   }
 
+  UPB_ASSERT(val < INT_MAX);
+
   *ptr = end + after_len;
-  return val;
+  return (int)val;
 }
 
 static int jsondec_nanos(jsondec *d, const char **ptr, const char *end) {
@@ -6896,7 +6913,7 @@ static int jsondec_nanos(jsondec *d, const char **ptr, const char *end) {
 
   if (p != end && *p == '.') {
     const char *nano_end = jsondec_buftouint64(d, p + 1, end, &nanos);
-    int digits = nano_end - p - 1;
+    int digits = (int)(nano_end - p - 1);
     int exp_lg10 = 9 - digits;
     if (digits > 9) {
       jsondec_err(d, "Too many digits for partial seconds");
@@ -6905,14 +6922,16 @@ static int jsondec_nanos(jsondec *d, const char **ptr, const char *end) {
     *ptr = nano_end;
   }
 
-  return nanos;
+  UPB_ASSERT(nanos < INT_MAX);
+
+  return (int)nanos;
 }
 
 /* jsondec_epochdays(1970, 1, 1) == 1970-01-01 == 0. */
 int jsondec_epochdays(int y, int m, int d) {
   const uint32_t year_base = 4800;    /* Before min year, multiple of 400. */
   const uint32_t m_adj = m - 3;       /* March-based month. */
-  const uint32_t carry = m_adj > m ? 1 : 0;
+  const uint32_t carry = m_adj > (uint32_t)m ? 1 : 0;
   const uint32_t adjust = carry ? 12 : 0;
   const uint32_t y_adj = y + year_base - carry;
   const uint32_t month_days = ((m_adj + adjust) * 62719 + 769) / 2048;
@@ -6957,7 +6976,7 @@ static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
     switch (*ptr++) {
       case '-':
         neg = true;
-        /* Fallthrough intended. */
+        /* fallthrough */
       case '+':
         if ((end - ptr) != 5) goto malformed;
         ofs = jsondec_tsdigits(d, &ptr, 2, ":00");
@@ -7367,6 +7386,14 @@ UPB_NORETURN static void jsonenc_err(jsonenc *e, const char *msg) {
   longjmp(e->err, 1);
 }
 
+UPB_NORETURN static void jsonenc_errf(jsonenc *e, const char *fmt, ...) {
+  va_list argp;
+  va_start(argp, fmt);
+  upb_status_vseterrf(e->status, fmt, argp);
+  va_end(argp);
+  longjmp(e->err, 1);
+}
+
 static upb_arena *jsonenc_arena(jsonenc *e) {
   /* Create lazily, since it's only needed for Any */
   if (!e->arena) {
@@ -7381,7 +7408,7 @@ static void jsonenc_putbytes(jsonenc *e, const void *data, size_t len) {
     memcpy(e->ptr, data, len);
     e->ptr += len;
   } else {
-    memcpy(e->ptr, data, have);
+    if (have) memcpy(e->ptr, data, have);
     e->ptr += have;
     e->overflow += (len - have);
   }
@@ -7446,7 +7473,7 @@ static void jsonenc_timestamp(jsonenc *e, const upb_msg *msg,
    * Fliegel, H. F., and Van Flandern, T. C., "A Machine Algorithm for
    *   Processing Calendar Dates," Communications of the Association of
    *   Computing Machines, vol. 11 (1968), p. 657.  */
-  L = (seconds / 86400) + 68569 + 2440588;
+  L = (int)(seconds / 86400) + 68569 + 2440588;
   N = 4 * L / 146097;
   L = L - (146097 * N + 3) / 4;
   I = 4000 * (L + 1) / 1461001;
@@ -7608,7 +7635,11 @@ static const upb_msgdef *jsonenc_getanymsg(jsonenc *e, upb_strview type_url) {
   const char *ptr = end;
   const upb_msgdef *ret;
 
-  if (!e->ext_pool || type_url.size == 0) goto badurl;
+  if (!e->ext_pool) {
+    jsonenc_err(e, "Tried to encode Any, but no symtab was provided");
+  }
+
+  if (type_url.size == 0) goto badurl;
 
   while (true) {
     if (--ptr == type_url.data) {
@@ -7624,13 +7655,14 @@ static const upb_msgdef *jsonenc_getanymsg(jsonenc *e, upb_strview type_url) {
   ret = upb_symtab_lookupmsg2(e->ext_pool, ptr, end - ptr);
 
   if (!ret) {
-    jsonenc_err(e, "Couldn't find Any type");
+    jsonenc_errf(e, "Couldn't find Any type: %.*s (full URL: " UPB_STRVIEW_FORMAT ")", (int)(end - ptr), ptr, UPB_STRVIEW_ARGS(type_url));
   }
 
   return ret;
 
 badurl:
-  jsonenc_err(e, "Bad type URL");
+  jsonenc_errf(
+      e, "Bad type URL: " UPB_STRVIEW_FORMAT, UPB_STRVIEW_ARGS(type_url));
 }
 
 static void jsonenc_any(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {

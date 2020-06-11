@@ -489,7 +489,7 @@ typedef enum {
   UPB_DTYPE_SINT64   = 18
 } upb_descriptortype_t;
 
-#define UPB_MAP_BEGIN -1
+#define UPB_MAP_BEGIN ((size_t)-1)
 
 
 #ifdef __cplusplus
@@ -971,10 +971,10 @@ enum {
 typedef struct {
   uint32_t number;
   uint16_t offset;
-  int16_t presence;      /* If >0, hasbit_index.  If <0, ~oneof_index. */
+  int16_t presence;       /* If >0, hasbit_index.  If <0, ~oneof_index. */
   uint16_t submsg_index;  /* undefined if descriptortype != MESSAGE or GROUP. */
   uint8_t descriptortype;
-  uint8_t label;
+  uint8_t label;          /* google.protobuf.Label or _UPB_LABEL_* above. */
 } upb_msglayout_field;
 
 typedef struct upb_msglayout {
@@ -1062,12 +1062,12 @@ UPB_INLINE void _upb_clearhas_field(const upb_msg *msg,
 
 /** Oneof case access *********************************************************/
 
-UPB_INLINE int32_t *_upb_oneofcase(upb_msg *msg, size_t case_ofs) {
-  return PTR_AT(msg, case_ofs, int32_t);
+UPB_INLINE uint32_t *_upb_oneofcase(upb_msg *msg, size_t case_ofs) {
+  return PTR_AT(msg, case_ofs, uint32_t);
 }
 
-UPB_INLINE int32_t _upb_getoneofcase(const void *msg, size_t case_ofs) {
-  return *PTR_AT(msg, case_ofs, int32_t);
+UPB_INLINE uint32_t _upb_getoneofcase(const void *msg, size_t case_ofs) {
+  return *PTR_AT(msg, case_ofs, uint32_t);
 }
 
 UPB_INLINE size_t _upb_oneofcase_ofs(const upb_msglayout_field *f) {
@@ -1075,13 +1075,13 @@ UPB_INLINE size_t _upb_oneofcase_ofs(const upb_msglayout_field *f) {
   return ~(int64_t)f->presence;
 }
 
-UPB_INLINE int32_t *_upb_oneofcase_field(upb_msg *msg,
-                                         const upb_msglayout_field *f) {
+UPB_INLINE uint32_t *_upb_oneofcase_field(upb_msg *msg,
+                                          const upb_msglayout_field *f) {
   return _upb_oneofcase(msg, _upb_oneofcase_ofs(f));
 }
 
-UPB_INLINE int32_t _upb_getoneofcase_field(const upb_msg *msg,
-                                           const upb_msglayout_field *f) {
+UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_msg *msg,
+                                            const upb_msglayout_field *f) {
   return _upb_getoneofcase(msg, _upb_oneofcase_ofs(f));
 }
 
@@ -1091,6 +1091,10 @@ UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_msg *msg, size_t ofs) {
 
 UPB_INLINE bool _upb_isrepeated(const upb_msglayout_field *field) {
   return (field->label & 3) == UPB_LABEL_REPEATED;
+}
+
+UPB_INLINE bool _upb_repeated_or_map(const upb_msglayout_field *field) {
+  return field->label >= UPB_LABEL_REPEATED;
 }
 
 /** upb_array *****************************************************************/
