@@ -922,6 +922,22 @@ static uint32_t upb_msglayout_place(upb_msglayout *l, size_t size) {
   return ret;
 }
 
+static int field_number_cmp(const void *p1, const void *p2) {
+  const upb_msglayout_field *f1 = p1;
+  const upb_msglayout_field *f2 = p2;
+  return f1->number - f2->number;
+}
+
+static void assign_layout_indices(const upb_msgdef *m, upb_msglayout_field *fields) {
+  int i;
+  int n = upb_msgdef_numfields(m);
+  for (i = 0; i < n; i++) {
+    upb_fielddef *f = (upb_fielddef*)upb_msgdef_itof(m, fields[i].number);
+    UPB_ASSERT(f);
+    f->layout_index = i;
+  }
+}
+
 /* This function is the dynamic equivalent of message_layout.{cc,h} in upbc.
  * It computes a dynamic layout for all of the fields in |m|. */
 static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
@@ -1003,10 +1019,6 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
       field->label = _UPB_LABEL_PACKED;
     }
 
-    /* TODO: we probably should sort the fields by field number to match the
-     * output of upbc, and to improve search speed for the table parser. */
-    f->layout_index = f->index_;
-
     if (upb_fielddef_issubmsg(f)) {
       const upb_msgdef *subm = upb_fielddef_msgsubdef(f);
       field->submsg_index = submsg_count++;
@@ -1078,6 +1090,10 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
   /* Size of the entire structure should be a multiple of its greatest
    * alignment.  TODO: track overall alignment for real? */
   l->size = UPB_ALIGN_UP(l->size, 8);
+
+  /* Sort fields by number. */
+  qsort(fields, upb_msgdef_numfields(m), sizeof(*fields), field_number_cmp);
+  assign_layout_indices(m, fields);
 
   return true;
 }
