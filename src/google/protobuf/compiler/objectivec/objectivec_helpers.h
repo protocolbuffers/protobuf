@@ -53,6 +53,7 @@ struct Options {
   std::vector<string> expected_prefixes_suppressions;
   string generate_for_named_framework;
   string named_framework_to_proto_path_mappings_path;
+  string runtime_import_prefix;
 };
 
 // Escape C++ trigraphs by escaping question marks to "\?".
@@ -279,11 +280,17 @@ class PROTOC_EXPORT ImportWriter {
  public:
   ImportWriter(const string& generate_for_named_framework,
                const string& named_framework_to_proto_path_mappings_path,
+               const string& runtime_import_prefix,
                bool include_wkt_imports);
   ~ImportWriter();
 
   void AddFile(const FileDescriptor* file, const string& header_extension);
   void Print(io::Printer *printer) const;
+
+  static void PrintRuntimeImports(io::Printer *printer,
+                                  const std::vector<string>& header_to_import,
+                                  const string& runtime_import_prefix,
+                                  bool default_cpp_symbol = false);
 
  private:
   class ProtoFrameworkCollector : public LineConsumer {
@@ -301,12 +308,12 @@ class PROTOC_EXPORT ImportWriter {
 
   const string generate_for_named_framework_;
   const string named_framework_to_proto_path_mappings_path_;
+  const string runtime_import_prefix_;
   const bool include_wkt_imports_;
   std::map<string, string> proto_file_to_framework_name_;
   bool need_to_parse_mapping_file_;
 
-  std::vector<string> protobuf_framework_imports_;
-  std::vector<string> protobuf_non_framework_imports_;
+  std::vector<string> protobuf_imports_;
   std::vector<string> other_framework_imports_;
   std::vector<string> other_imports_;
 };

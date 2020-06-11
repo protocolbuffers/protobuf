@@ -2,6 +2,8 @@
 #
 # This script sets up a Kokoro MacOS worker for running Protobuf tests
 
+set -eux
+
 ##
 # Select Xcode version
 
@@ -18,24 +20,61 @@ export CC=gcc
 export CXX=g++
 
 ##
-# Install Brew and core softwares
+# Brew: update, then upgrade the installed tools to current version and install
+# some needed ones not in the Kokoro base image. This ensure current versions
+# of CMake, autotools, etc.
 
-ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-source $HOME/.rvm/scripts/rvm
-brew uninstall node icu4c cmake wget
-brew prune
-brew install gflags gpg gpg2 node openssl pcre ruby cmake wget
-sudo chown -R $(whoami) /usr/local
-brew postinstall node
+# But first...
+#
+# The transitive deps of the installed tools need protobuf, but Kokoro manually
+# installed it outside of brew so it needs to be removed so brew can install the
+# tools (and a newer version of protobuf). g/kokoro-users/7FRvQMUdN40 about why
+# it is a manual install vs. a brew install in the first place.
+sudo rm -rf \
+    /usr/local/include/google/protobuf \
+    /usr/local/bin/protoc
+# Likewise, updating python can have issues because of some existing binaries.
+sudo rm -rf \
+    /usr/local/bin/2to3* \
+    /usr/local/bin/idle3* \
+    /usr/local/bin/pydoc3* \
+    /usr/local/bin/python3* \
+    /usr/local/bin/pyvenv*
+
+brew update
+brew upgrade
+
+##
+# Install Ruby
+
+if [[ "${KOKORO_INSTALL_RUBY:-}" == "yes" ]] ; then
+  brew install ruby
+fi
+
+##
+# Install Cocoapods
+
+if [[ "${KOKORO_INSTALL_COCOAPODS:-}" == "yes" ]] ; then
+  # The existing cocoapods was installed via gem, but that doesn't work well
+  # with the overlap in deps with things managed by brew (errors around ruby
+  # versions, etc.); so remove it and install in via brew instead.
+  gem uninstall -a "$(gem list | grep cocoapods | cut -d ' ' -f 1)"
+  brew install cocoapods
+fi
 
 ##
 # Install Tox
 
-sudo pip install tox==2.4.1
+if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
+  sudo pip install tox==2.4.1
+fi
 
 ##
 # Install RVM
 
-gpg2 --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
-command curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
-curl -sSL https://get.rvm.io | bash -s stable --ruby
+if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
+  curl -sSL https://rvm.io/mpapis.asc | gpg --import -
+  curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
+
+  curl -sSL https://get.rvm.io | bash -s stable --ruby
+fi

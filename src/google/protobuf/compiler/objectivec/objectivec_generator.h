@@ -67,7 +67,7 @@ class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
                    GeneratorContext* context,
                    string* error) const override;
 
-  uint64 GetSupportedFeatures() const override {
+  uint64_t GetSupportedFeatures() const override {
     return FEATURE_PROTO3_OPTIONAL;
   }
 };

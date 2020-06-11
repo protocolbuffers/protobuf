@@ -131,14 +131,29 @@ typedef NS_OPTIONS(uint8_t, GPBExtensionOptions) {
 typedef struct GPBExtensionDescription {
   GPBGenericValue defaultValue;
   const char *singletonName;
+  // Before 3.12, `extendedClass` was just a `const char *`. Thanks to nested
+  // initialization (https://en.cppreference.com/w/c/language/struct_initialization#Nested_initialization)
+  // old generated code with `.extendedClass = GPBStringifySymbol(Something)`
+  // still works; and the current generator can use `extendedClass.clazz`, to
+  // pass a Class reference.
   union {
     const char *name;
     Class clazz;
   } extendedClass;
+  // Before 3.12, this was `const char *messageOrGroupClassName`. In the
+  // initial 3.12 release, we moved the `union messageOrGroupClass`, and failed
+  // to realize that would break existing source code for extensions. So to
+  // keep existing source code working, we added an unnamed union (C11) to
+  // provide both the old field name and the new union. This keeps both older
+  // and newer code working.
+  // Background: https://github.com/protocolbuffers/protobuf/issues/7555
   union {
-    const char *name;
-    Class clazz;
-  } messageOrGroupClass;
+    const char *messageOrGroupClassName;
+    union {
+     const char *name;
+     Class clazz;
+   } messageOrGroupClass;
+  };
   GPBEnumDescriptorFunc enumDescriptorFunc;
   int32_t fieldNumber;
   GPBDataType dataType;
