@@ -303,8 +303,7 @@ class Any extends \Google\Protobuf\Internal\Message
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName(get_class($msg));
         $fully_qualifed_name = $desc->getFullName();
-        $this->type_url = GPBUtil::TYPE_URL_PREFIX.substr(
-            $fully_qualifed_name, 1, strlen($fully_qualifed_name));
+        $this->type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualifed_name;
     }
 
     /**
@@ -317,8 +316,7 @@ class Any extends \Google\Protobuf\Internal\Message
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName($klass);
         $fully_qualifed_name = $desc->getFullName();
-        $type_url = GPBUtil::TYPE_URL_PREFIX.substr(
-            $fully_qualifed_name, 1, strlen($fully_qualifed_name));
+        $type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualifed_name;
         return $this->type_url === $type_url;
     }
 }
