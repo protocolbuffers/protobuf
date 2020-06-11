@@ -38,6 +38,14 @@ UPB_NORETURN static void jsonenc_err(jsonenc *e, const char *msg) {
   longjmp(e->err, 1);
 }
 
+UPB_NORETURN static void jsonenc_errf(jsonenc *e, const char *fmt, ...) {
+  va_list argp;
+  va_start(argp, fmt);
+  upb_status_vseterrf(e->status, fmt, argp);
+  va_end(argp);
+  longjmp(e->err, 1);
+}
+
 static upb_arena *jsonenc_arena(jsonenc *e) {
   /* Create lazily, since it's only needed for Any */
   if (!e->arena) {
@@ -279,7 +287,11 @@ static const upb_msgdef *jsonenc_getanymsg(jsonenc *e, upb_strview type_url) {
   const char *ptr = end;
   const upb_msgdef *ret;
 
-  if (!e->ext_pool || type_url.size == 0) goto badurl;
+  if (!e->ext_pool) {
+    jsonenc_err(e, "Tried to encode Any, but no symtab was provided");
+  }
+
+  if (type_url.size == 0) goto badurl;
 
   while (true) {
     if (--ptr == type_url.data) {
@@ -295,13 +307,14 @@ static const upb_msgdef *jsonenc_getanymsg(jsonenc *e, upb_strview type_url) {
   ret = upb_symtab_lookupmsg2(e->ext_pool, ptr, end - ptr);
 
   if (!ret) {
-    jsonenc_err(e, "Couldn't find Any type");
+    jsonenc_errf(e, "Couldn't find Any type: %.*s", (int)(end - ptr), ptr);
   }
 
   return ret;
 
 badurl:
-  jsonenc_err(e, "Bad type URL");
+  jsonenc_errf(
+      e, "Bad type URL: " UPB_STRVIEW_FORMAT, UPB_STRVIEW_ARGS(type_url));
 }
 
 static void jsonenc_any(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
