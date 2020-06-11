@@ -129,7 +129,6 @@ void MapField_GetPhpWrapper(zval *val, upb_map *map, const upb_fielddef *f,
 }
 
 upb_map *MapField_GetUpbMap(zval *val, const upb_fielddef *f, upb_arena *arena) {
-  upb_fieldtype_t type = upb_fielddef_type(f);
   const upb_msgdef *ent = upb_fielddef_msgsubdef(f);
   const upb_fielddef *key_f = upb_msgdef_itof(ent, 1);
   const upb_fielddef *val_f = upb_msgdef_itof(ent, 2);
@@ -274,7 +273,6 @@ PHP_METHOD(MapField, offsetExists) {
  */
 PHP_METHOD(MapField, offsetGet) {
   MapField *intern = (MapField*)Z_OBJ_P(getThis());
-  upb_arena *arena = Arena_Get(&intern->arena);
   zval *key;
   zval ret;
   upb_msgval upb_key, upb_val;
@@ -375,9 +373,7 @@ PHP_METHOD(MapField, count) {
  * @return object Beginning iterator.
  */
 PHP_METHOD(MapField, getIterator) {
-  MapField *intern = (MapField*)Z_OBJ_P(getThis());
   zval ret;
-
   MapFieldIter_make(&ret, getThis());
   RETURN_ZVAL(&ret, 0, 1);
 }
@@ -498,7 +494,6 @@ PHP_METHOD(MapFieldIter, rewind) {
 PHP_METHOD(MapFieldIter, current) {
   MapFieldIter *intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField *field = (MapField*)Z_OBJ_P(&intern->map_field);
-  upb_arena *arena = Arena_Get(&field->arena);
   upb_msgval upb_val = upb_mapiter_value(field->map, intern->position);
   zval ret;
   Convert_UpbToPhp(upb_val, &ret, field->val_type, field->desc, &field->arena);

@@ -175,7 +175,6 @@ static void fill_classname(const char *fullname,
     classname_start = package_len == 0 ? 0 : package_len + 1;
   }
   size_t fullname_len = strlen(fullname);
-  bool is_first_segment = true;
 
   int i = classname_start, j;
   while (i < fullname_len) {
@@ -184,7 +183,6 @@ static void fill_classname(const char *fullname,
       j++;
     }
     fill_prefix(fullname + i, j - i, prefix, package, classname);
-    is_first_segment = false;
     fill_segment(fullname + i, j - i, classname, false);
     if (j != fullname_len) {
       stringsink_string(classname, "\\", 1);

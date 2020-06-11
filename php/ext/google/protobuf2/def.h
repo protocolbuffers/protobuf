@@ -35,7 +35,7 @@
 
 #include "php-upb.h"
 
-void def_module_init();
+void Def_ModuleInit();
 
 // Creates a new DescriptorPool to wrap the given symtab. The DescriptorPool
 // takes ownership of the given symtab. If symtab is NULL, the DescriptorPool

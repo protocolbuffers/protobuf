@@ -261,7 +261,6 @@ PHP_METHOD(RepeatedField, offsetExists) {
  */
 PHP_METHOD(RepeatedField, offsetGet) {
   RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
-  upb_arena *arena = Arena_Get(&intern->arena);
   zend_long index;
   upb_msgval msgval;
   zval ret;
@@ -383,9 +382,7 @@ PHP_METHOD(RepeatedField, count) {
  * @return object Beginning iterator.
  */
 PHP_METHOD(RepeatedField, getIterator) {
-  RepeatedField *intern = (RepeatedField*)Z_OBJ_P(getThis());
   zval ret;
-
   RepeatedFieldIter_make(&ret, getThis());
   RETURN_ZVAL(&ret, 0, 1);
 }
@@ -413,9 +410,6 @@ static zend_function_entry repeated_field_methods[] = {
   PHP_ME(RepeatedField, getIterator,  arginfo_void,      ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
-
-static void repeated_field_init() {
-}
 
 // -----------------------------------------------------------------------------
 // PHP RepeatedFieldIter
@@ -504,7 +498,6 @@ PHP_METHOD(RepeatedFieldIter, rewind) {
 PHP_METHOD(RepeatedFieldIter, current) {
   RepeatedFieldIter *intern = (RepeatedFieldIter*)Z_OBJ_P(getThis());
   RepeatedField *field = (RepeatedField*)Z_OBJ_P(&intern->repeated_field);
-  upb_arena *arena = Arena_Get(&field->arena);
   upb_array *array = field->array;
   zend_long index = intern->position;
   upb_msgval msgval;

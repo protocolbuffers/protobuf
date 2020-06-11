@@ -162,7 +162,6 @@ static bool buftouint64(const char *ptr, const char *end, uint64_t *val) {
   if (ptr != end) {
     // In PHP tradition, we allow truncation: "1.1" -> 1.
     // But we don't allow 'e', eg. '1.1e2' or any other non-numeric chars.
-    size_t size = end - ptr;
     if (*ptr++ != '.') return false;
 
     for (;ptr < end; ptr++) {

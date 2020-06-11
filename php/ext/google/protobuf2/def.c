@@ -447,7 +447,6 @@ PHP_METHOD(FieldDescriptor, isMap) {
 PHP_METHOD(FieldDescriptor, getEnumType) {
   FieldDescriptor *intern = (FieldDescriptor*)Z_OBJ_P(getThis());
   const upb_enumdef *e = upb_fielddef_enumsubdef(intern->fielddef);
-  EnumDescriptor *desc;
   zval ret;
 
   if (!e) {
@@ -501,7 +500,6 @@ zend_class_entry *Descriptor_class_entry;
 static zend_object_handlers Descriptor_object_handlers;
 
 static void Descriptor_destructor(zend_object* obj) {
-  Descriptor* intern = (Descriptor*)obj;
   // We don't really need to do anything here, we don't allow this to be
   // collected before the end of the request.
 }
@@ -802,7 +800,6 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
   zend_long classname_len;
   zend_class_entry *ce;
   zend_string *str;
-  Descriptor *desc = NULL;
   zval ret;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &classname,
@@ -832,7 +829,6 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
   zend_long classname_len;
   zend_class_entry *ce;
   zend_string *str;
-  EnumDescriptor *desc = NULL;
   zval ret;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &classname,
@@ -861,8 +857,6 @@ PHP_METHOD(DescriptorPool, getDescriptorByProtoName) {
   DescriptorPool *intern = GetPool(getThis());
   char *protoname = NULL;
   zend_long protoname_len;
-  zend_class_entry *ce;
-  zend_string *str;
   const upb_msgdef *m;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &protoname,

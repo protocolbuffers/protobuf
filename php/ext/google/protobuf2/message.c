@@ -131,7 +131,6 @@ static zval *Message_read_property(zval *obj, zval *member, int type,
   Message* intern = (Message*)Z_OBJ_P(obj);
   const upb_fielddef *f = get_field(intern, member);
   upb_arena *arena = Arena_Get(&intern->arena);
-  upb_msgval msgval;
 
   if (!f) return NULL;
 
@@ -143,7 +142,6 @@ static zval *Message_read_property(zval *obj, zval *member, int type,
     RepeatedField_GetPhpWrapper(rv, msgval.array, f, &intern->arena);
   } else {
     upb_msgval msgval = upb_msg_get(intern->msg, f);
-    upb_fieldtype_t type = upb_fielddef_type(f);
     const Descriptor *subdesc = Descriptor_GetFromFieldDef(f);
     Convert_UpbToPhp(msgval, rv, upb_fielddef_type(f), subdesc, &intern->arena);
   }
@@ -313,7 +311,8 @@ bool Message_InitFromPhp(upb_msg *msg, const upb_msgdef *m, zval *init,
   }
 
   zend_hash_internal_pointer_reset_ex(table, &pos);
-  while (true) {
+
+  while (true) {  // Iterate over key/value pairs.
     zval key;
     zval *val;
     const upb_fielddef *f;
@@ -322,7 +321,7 @@ bool Message_InitFromPhp(upb_msg *msg, const upb_msgdef *m, zval *init,
     zend_hash_get_current_key_zval_ex(table, &key, &pos);
     val = zend_hash_get_current_data_ex(table, &pos);
 
-    if (!val) break;
+    if (!val) return true;  // Finished iteration.
 
     if (Z_ISREF_P(val)) {
       ZVAL_DEREF(val);
@@ -507,7 +506,6 @@ PHP_METHOD(Message, mergeFromJsonString) {
   char *data = NULL;
   char *data_copy = NULL;
   zend_long data_len;
-  const upb_msglayout *l = upb_msgdef_layout(intern->desc->msgdef);
   upb_arena *arena = Arena_Get(&intern->arena);
   upb_status status;
   zend_bool ignore_json_unknown = false;
@@ -545,8 +543,6 @@ PHP_METHOD(Message, mergeFromJsonString) {
  */
 PHP_METHOD(Message, serializeToJsonString) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
-  const upb_msglayout *l = upb_msgdef_layout(intern->desc->msgdef);
-  char *data;
   size_t size;
   int options = 0;
   char buf[1024];
