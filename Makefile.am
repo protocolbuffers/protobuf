@@ -96,6 +96,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Benchmarks/Program.cs                           \
   csharp/src/Google.Protobuf.Benchmarks/wrapper_benchmark_messages.proto     \
   csharp/src/Google.Protobuf.Benchmarks/WrapperBenchmarkMessages.cs          \
+  csharp/src/Google.Protobuf.Benchmarks/WriteMessagesBenchmark.cs            \
   csharp/src/Google.Protobuf.Benchmarks/WriteRawPrimitivesBenchmark.cs       \
   csharp/src/Google.Protobuf.Conformance/Conformance.cs                      \
   csharp/src/Google.Protobuf.Conformance/Google.Protobuf.Conformance.csproj  \
