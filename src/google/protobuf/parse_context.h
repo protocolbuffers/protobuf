@@ -744,11 +744,9 @@ PROTOBUF_EXPORT PROTOBUF_MUST_USE_RESULT const char* PackedEnumParser(
     void* object, const char* ptr, ParseContext* ctx);
 
 template <typename T>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE
-PROTOBUF_MUST_USE_RESULT const
-    char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
-                           bool (*is_valid)(int), InternalMetadata* metadata,
-                           int field_num) {
+PROTOBUF_MUST_USE_RESULT const char* PackedEnumParser(
+    void* object, const char* ptr, ParseContext* ctx, bool (*is_valid)(int),
+    InternalMetadata* metadata, int field_num) {
   return ctx->ReadPackedVarint(
       ptr, [object, is_valid, metadata, field_num](uint64 val) {
         if (is_valid(val)) {
@@ -760,12 +758,10 @@ PROTOBUF_MUST_USE_RESULT const
 }
 
 template <typename T>
-PROTOBUF_EXPORT_TEMPLATE_DEFINE
-PROTOBUF_MUST_USE_RESULT const
-    char* PackedEnumParserArg(void* object, const char* ptr, ParseContext* ctx,
-                              bool (*is_valid)(const void*, int),
-                              const void* data, InternalMetadata* metadata,
-                              int field_num) {
+PROTOBUF_MUST_USE_RESULT const char* PackedEnumParserArg(
+    void* object, const char* ptr, ParseContext* ctx,
+    bool (*is_valid)(const void*, int), const void* data,
+    InternalMetadata* metadata, int field_num) {
   return ctx->ReadPackedVarint(
       ptr, [object, is_valid, data, metadata, field_num](uint64 val) {
         if (is_valid(data, val)) {

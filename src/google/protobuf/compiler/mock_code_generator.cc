@@ -87,7 +87,7 @@ MockCodeGenerator::MockCodeGenerator(const std::string& name) : name_(name) {}
 
 MockCodeGenerator::~MockCodeGenerator() {}
 
-uint64 MockCodeGenerator::GetSupportedFeatures() const {
+uint64_t MockCodeGenerator::GetSupportedFeatures() const {
   uint64 all_features = CodeGenerator::FEATURE_PROTO3_OPTIONAL;
   return all_features & ~suppressed_features_;
 }

@@ -858,23 +858,6 @@ TEST(ArenaTest, ReleaseLastRepeatedField) {
   }
 }
 
-TEST(ArenaTest, UnsafeArenaReleaseAdd) {
-  // Use unsafe_arena_release() and unsafe_arena_set_allocated() to transfer an
-  // arena-allocated string from one message to another.
-  const char kContent[] = "Test content";
-
-  Arena arena;
-  TestAllTypes* message1 = Arena::CreateMessage<TestAllTypes>(&arena);
-  TestAllTypes* message2 = Arena::CreateMessage<TestAllTypes>(&arena);
-  std::string* arena_string = Arena::Create<std::string>(&arena);
-  *arena_string = kContent;
-
-  message1->unsafe_arena_set_allocated_optional_string(arena_string);
-  message2->unsafe_arena_set_allocated_optional_string(
-      message1->unsafe_arena_release_optional_string());
-  EXPECT_EQ(kContent, message2->optional_string());
-}
-
 TEST(ArenaTest, UnsafeArenaAddAllocated) {
   Arena arena;
   TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
@@ -885,43 +868,20 @@ TEST(ArenaTest, UnsafeArenaAddAllocated) {
   }
 }
 
-TEST(ArenaTest, UnsafeArenaRelease) {
-  Arena arena;
-  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
-
-  std::string* s = new std::string("test string");
-  message->unsafe_arena_set_allocated_optional_string(s);
-  EXPECT_TRUE(message->has_optional_string());
-  EXPECT_EQ("test string", message->optional_string());
-  s = message->unsafe_arena_release_optional_string();
-  EXPECT_FALSE(message->has_optional_string());
-  delete s;
-
-  s = new std::string("test string");
-  message->unsafe_arena_set_allocated_oneof_string(s);
-  EXPECT_TRUE(message->has_oneof_string());
-  EXPECT_EQ("test string", message->oneof_string());
-  s = message->unsafe_arena_release_oneof_string();
-  EXPECT_FALSE(message->has_oneof_string());
-  delete s;
-}
-
 TEST(ArenaTest, OneofMerge) {
   Arena arena;
   TestAllTypes* message0 = Arena::CreateMessage<TestAllTypes>(&arena);
   TestAllTypes* message1 = Arena::CreateMessage<TestAllTypes>(&arena);
 
-  message0->unsafe_arena_set_allocated_oneof_string(new std::string("x"));
+  message0->set_oneof_string("x");
   ASSERT_TRUE(message0->has_oneof_string());
-  message1->unsafe_arena_set_allocated_oneof_string(new std::string("y"));
+  message1->set_oneof_string("y");
   ASSERT_TRUE(message1->has_oneof_string());
   EXPECT_EQ("x", message0->oneof_string());
   EXPECT_EQ("y", message1->oneof_string());
   message0->MergeFrom(*message1);
   EXPECT_EQ("y", message0->oneof_string());
   EXPECT_EQ("y", message1->oneof_string());
-  delete message0->unsafe_arena_release_oneof_string();
-  delete message1->unsafe_arena_release_oneof_string();
 }
 
 TEST(ArenaTest, ArenaOneofReflection) {
@@ -1343,19 +1303,6 @@ TEST(ArenaTest, AddCleanup) {
   for (int i = 0; i < 100; i++) {
     arena.Own(new int);
   }
-}
-
-TEST(ArenaTest, UnsafeSetAllocatedOnArena) {
-  Arena arena;
-  TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
-  EXPECT_FALSE(message->has_optional_string());
-
-  std::string owned_string = "test with long enough content to heap-allocate";
-  message->unsafe_arena_set_allocated_optional_string(&owned_string);
-  EXPECT_TRUE(message->has_optional_string());
-
-  message->unsafe_arena_set_allocated_optional_string(NULL);
-  EXPECT_FALSE(message->has_optional_string());
 }
 
 // A helper utility class to only contain static hook functions, some

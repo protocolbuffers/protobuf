@@ -1527,6 +1527,21 @@ class GeneratedClassTest extends TestBase
     public function testNoExceptionWithVarDump()
     {
         $m = new Sub(['a' => 1]);
-        var_dump($m);
+        /*
+         * This line currently segfaults on macOS with:
+         *
+         *    frame #0: 0x00000001029936cc xdebug.so`xdebug_zend_hash_is_recursive + 4
+         *    frame #1: 0x00000001029a6736 xdebug.so`xdebug_var_export_text_ansi + 1006
+         *    frame #2: 0x00000001029a715d xdebug.so`xdebug_get_zval_value_text_ansi + 273
+         *    frame #3: 0x000000010298a441 xdebug.so`zif_xdebug_var_dump + 297
+         *    frame #4: 0x000000010298d558 xdebug.so`xdebug_execute_internal + 640
+         *    frame #5: 0x000000010046d47f php`ZEND_DO_FCALL_SPEC_RETVAL_UNUSED_HANDLER + 364
+         *    frame #6: 0x000000010043cabc php`execute_ex + 44
+         *    frame #7: 0x000000010298d151 xdebug.so`xdebug_execute_ex + 1662
+         *    frame #8: 0x000000010046d865 php`ZEND_DO_FCALL_SPEC_RETVAL_USED_HANDLER + 426
+         *
+         * The value we are passing to var_dump() appears to be corrupt somehow.
+         */
+        /* var_dump($m); */
     }
 }

@@ -63,7 +63,11 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
   }
 
   #region Messages
-  public sealed partial class FooOptions : pb::IExtendableMessage<FooOptions>, pb::IBufferMessage {
+  public sealed partial class FooOptions : pb::IExtendableMessage<FooOptions>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<FooOptions> _parser = new pb::MessageParser<FooOptions>(() => new FooOptions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<FooOptions> _extensions;
@@ -250,9 +254,31 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            }
+            break;
+          case 8: {
+            IntOpt = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Foo = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -274,6 +300,7 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
         }
       }
     }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<FooOptions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);

@@ -127,6 +127,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/MessageParsingHelpers.cs                   \
   csharp/src/Google.Protobuf.Test/Proto3OptionalTest.cs                      \
   csharp/src/Google.Protobuf.Test/ReadOnlySequenceFactory.cs                 \
+  csharp/src/Google.Protobuf.Test/RefStructCompatibilityTest.cs              \
   csharp/src/Google.Protobuf.Test/Reflection/CustomOptionsTest.cs            \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorDeclarationTest.cs    \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
@@ -908,6 +909,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/descriptors_test.php                                      \
   php/tests/encode_decode_test.php                                    \
   php/tests/gdb_test.sh                                               \
+  php/tests/generate_protos.sh                                        \
   php/tests/generated_class_test.php                                  \
   php/tests/generated_phpdoc_test.php                                 \
   php/tests/generated_service_test.php                                \

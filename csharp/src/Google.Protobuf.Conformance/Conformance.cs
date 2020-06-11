@@ -107,7 +107,11 @@ namespace Conformance {
   /// This will be known by message_type == "conformance.FailureSet", a conformance
   /// test should return a serialized FailureSet in protobuf_payload.
   /// </summary>
-  public sealed partial class FailureSet : pb::IMessage<FailureSet>, pb::IBufferMessage {
+  public sealed partial class FailureSet : pb::IMessage<FailureSet>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<FailureSet> _parser = new pb::MessageParser<FailureSet>(() => new FailureSet());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -212,9 +216,25 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            failure_.AddEntriesFrom(input, _repeated_failure_codec);
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -230,6 +250,7 @@ namespace Conformance {
         }
       }
     }
+    #endif
 
   }
 
@@ -240,7 +261,11 @@ namespace Conformance {
   ///   2. parse the protobuf or JSON payload in "payload" (which may fail)
   ///   3. if the parse succeeded, serialize the message in the requested format.
   /// </summary>
-  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest>, pb::IBufferMessage {
+  public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -608,9 +633,60 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            ProtobufPayload = input.ReadBytes();
+            break;
+          }
+          case 18: {
+            JsonPayload = input.ReadString();
+            break;
+          }
+          case 24: {
+            RequestedOutputFormat = (global::Conformance.WireFormat) input.ReadEnum();
+            break;
+          }
+          case 34: {
+            MessageType = input.ReadString();
+            break;
+          }
+          case 40: {
+            TestCategory = (global::Conformance.TestCategory) input.ReadEnum();
+            break;
+          }
+          case 50: {
+            if (jspbEncodingOptions_ == null) {
+              JspbEncodingOptions = new global::Conformance.JspbEncodingConfig();
+            }
+            input.ReadMessage(JspbEncodingOptions);
+            break;
+          }
+          case 58: {
+            JspbPayload = input.ReadString();
+            break;
+          }
+          case 66: {
+            TextPayload = input.ReadString();
+            break;
+          }
+          case 72: {
+            PrintUnknownFields = input.ReadBool();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -661,13 +737,18 @@ namespace Conformance {
         }
       }
     }
+    #endif
 
   }
 
   /// <summary>
   /// Represents a single test case's output.
   /// </summary>
-  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse>, pb::IBufferMessage {
+  public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1035,9 +1116,53 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            ParseError = input.ReadString();
+            break;
+          }
+          case 18: {
+            RuntimeError = input.ReadString();
+            break;
+          }
+          case 26: {
+            ProtobufPayload = input.ReadBytes();
+            break;
+          }
+          case 34: {
+            JsonPayload = input.ReadString();
+            break;
+          }
+          case 42: {
+            Skipped = input.ReadString();
+            break;
+          }
+          case 50: {
+            SerializeError = input.ReadString();
+            break;
+          }
+          case 58: {
+            JspbPayload = input.ReadString();
+            break;
+          }
+          case 66: {
+            TextPayload = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -1081,13 +1206,18 @@ namespace Conformance {
         }
       }
     }
+    #endif
 
   }
 
   /// <summary>
   /// Encoding options for jspb format.
   /// </summary>
-  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig>, pb::IBufferMessage {
+  public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<JspbEncodingConfig> _parser = new pb::MessageParser<JspbEncodingConfig>(() => new JspbEncodingConfig());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1203,9 +1333,25 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            UseJspbArrayAnyFormat = input.ReadBool();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -1221,6 +1367,7 @@ namespace Conformance {
         }
       }
     }
+    #endif
 
   }
 

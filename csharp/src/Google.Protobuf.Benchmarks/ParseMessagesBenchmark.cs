@@ -37,6 +37,7 @@ using System.IO;
 using System.Linq;
 using System.Buffers;
 using Google.Protobuf.WellKnownTypes;
+using Benchmarks.Proto3;
 
 namespace Google.Protobuf.Benchmarks
 {
@@ -50,6 +51,7 @@ namespace Google.Protobuf.Benchmarks
 
         SubTest manyWrapperFieldsTest = new SubTest(CreateManyWrapperFieldsMessage(), ManyWrapperFieldsMessage.Parser, () => new ManyWrapperFieldsMessage(), MaxMessages);
         SubTest manyPrimitiveFieldsTest = new SubTest(CreateManyPrimitiveFieldsMessage(), ManyPrimitiveFieldsMessage.Parser, () => new ManyPrimitiveFieldsMessage(), MaxMessages);
+        SubTest repeatedFieldTest = new SubTest(CreateRepeatedFieldMessage(), GoogleMessage1.Parser, () => new GoogleMessage1(), MaxMessages);
         SubTest emptyMessageTest = new SubTest(new Empty(), Empty.Parser, () => new Empty(), MaxMessages);
 
         public IEnumerable<int> MessageCountValues => new[] { 10, 100 };
@@ -81,6 +83,18 @@ namespace Google.Protobuf.Benchmarks
         public IMessage ManyPrimitiveFieldsMessage_ParseFromReadOnlySequence()
         {
             return manyPrimitiveFieldsTest.ParseFromReadOnlySequence();
+        }
+
+        [Benchmark]
+        public IMessage RepeatedFieldMessage_ParseFromByteArray()
+        {
+            return repeatedFieldTest.ParseFromByteArray();
+        }
+
+        [Benchmark]
+        public IMessage RepeatedFieldMessage_ParseFromReadOnlySequence()
+        {
+            return repeatedFieldTest.ParseFromReadOnlySequence();
         }
 
         [Benchmark]
@@ -123,6 +137,20 @@ namespace Google.Protobuf.Benchmarks
             manyPrimitiveFieldsTest.ParseDelimitedMessagesFromReadOnlySequence(messageCount);
         }
 
+        [Benchmark]
+        [ArgumentsSource(nameof(MessageCountValues))]
+        public void RepeatedFieldMessage_ParseDelimitedMessagesFromByteArray(int messageCount)
+        {
+            repeatedFieldTest.ParseDelimitedMessagesFromByteArray(messageCount);
+        }
+
+        [Benchmark]
+        [ArgumentsSource(nameof(MessageCountValues))]
+        public void RepeatedFieldMessage_ParseDelimitedMessagesFromReadOnlySequence(int messageCount)
+        {
+            repeatedFieldTest.ParseDelimitedMessagesFromReadOnlySequence(messageCount);
+        }
+
         private static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()
         {
             // Example data match data of an internal benchmarks
@@ -155,6 +183,17 @@ namespace Google.Protobuf.Benchmarks
                 DoubleField7 = 234,
                 DoubleField50 = 2.45
             };
+        }
+
+        private static GoogleMessage1 CreateRepeatedFieldMessage()
+        {
+            // Message with a repeated fixed length item collection
+            var message = new GoogleMessage1();
+            for (ulong i = 0; i < 1000; i++)
+            {
+                message.Field5.Add(i);
+            }
+            return message;
         }
 
         private class SubTest

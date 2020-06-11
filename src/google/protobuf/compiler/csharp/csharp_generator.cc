@@ -51,7 +51,7 @@ namespace csharp {
 Generator::Generator() {}
 Generator::~Generator() {}
 
-uint64 Generator::GetSupportedFeatures() const {
+uint64_t Generator::GetSupportedFeatures() const {
   return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
 }
 

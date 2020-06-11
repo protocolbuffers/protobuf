@@ -78,9 +78,15 @@ void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) 
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
+  GenerateParsingCode(printer, true);
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer, bool use_parse_context) {
   printer->Print(
     variables_,
-    "$name$_.AddEntriesFrom(ref input, _repeated_$name$_codec);\n");
+    use_parse_context
+    ? "$name$_.AddEntriesFrom(ref input, _repeated_$name$_codec);\n"
+    : "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {

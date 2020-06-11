@@ -64,7 +64,11 @@ namespace Benchmarks.Proto3 {
 
   }
   #region Messages
-  public sealed partial class GoogleMessage1 : pb::IMessage<GoogleMessage1>, pb::IBufferMessage {
+  public sealed partial class GoogleMessage1 : pb::IMessage<GoogleMessage1>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<GoogleMessage1> _parser = new pb::MessageParser<GoogleMessage1>(() => new GoogleMessage1());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1132,9 +1136,189 @@ namespace Benchmarks.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            Field1 = input.ReadString();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            Field4 = input.ReadString();
+            break;
+          }
+          case 42:
+          case 41: {
+            field5_.AddEntriesFrom(input, _repeated_field5_codec);
+            break;
+          }
+          case 48: {
+            Field6 = input.ReadInt32();
+            break;
+          }
+          case 58: {
+            Field7 = input.ReadString();
+            break;
+          }
+          case 74: {
+            Field9 = input.ReadString();
+            break;
+          }
+          case 96: {
+            Field12 = input.ReadBool();
+            break;
+          }
+          case 104: {
+            Field13 = input.ReadBool();
+            break;
+          }
+          case 112: {
+            Field14 = input.ReadBool();
+            break;
+          }
+          case 122: {
+            if (field15_ == null) {
+              Field15 = new global::Benchmarks.Proto3.GoogleMessage1SubMessage();
+            }
+            input.ReadMessage(Field15);
+            break;
+          }
+          case 128: {
+            Field16 = input.ReadInt32();
+            break;
+          }
+          case 136: {
+            Field17 = input.ReadBool();
+            break;
+          }
+          case 146: {
+            Field18 = input.ReadString();
+            break;
+          }
+          case 176: {
+            Field22 = input.ReadInt64();
+            break;
+          }
+          case 184: {
+            Field23 = input.ReadInt32();
+            break;
+          }
+          case 192: {
+            Field24 = input.ReadBool();
+            break;
+          }
+          case 200: {
+            Field25 = input.ReadInt32();
+            break;
+          }
+          case 232: {
+            Field29 = input.ReadInt32();
+            break;
+          }
+          case 240: {
+            Field30 = input.ReadBool();
+            break;
+          }
+          case 472: {
+            Field59 = input.ReadBool();
+            break;
+          }
+          case 480: {
+            Field60 = input.ReadInt32();
+            break;
+          }
+          case 536: {
+            Field67 = input.ReadInt32();
+            break;
+          }
+          case 544: {
+            Field68 = input.ReadInt32();
+            break;
+          }
+          case 624: {
+            Field78 = input.ReadBool();
+            break;
+          }
+          case 640: {
+            Field80 = input.ReadBool();
+            break;
+          }
+          case 648: {
+            Field81 = input.ReadBool();
+            break;
+          }
+          case 800: {
+            Field100 = input.ReadInt32();
+            break;
+          }
+          case 808: {
+            Field101 = input.ReadInt32();
+            break;
+          }
+          case 818: {
+            Field102 = input.ReadString();
+            break;
+          }
+          case 826: {
+            Field103 = input.ReadString();
+            break;
+          }
+          case 832: {
+            Field104 = input.ReadInt32();
+            break;
+          }
+          case 1024: {
+            Field128 = input.ReadInt32();
+            break;
+          }
+          case 1034: {
+            Field129 = input.ReadString();
+            break;
+          }
+          case 1040: {
+            Field130 = input.ReadInt32();
+            break;
+          }
+          case 1048: {
+            Field131 = input.ReadInt32();
+            break;
+          }
+          case 1200: {
+            Field150 = input.ReadInt32();
+            break;
+          }
+          case 2168: {
+            Field271 = input.ReadInt32();
+            break;
+          }
+          case 2176: {
+            Field272 = input.ReadInt32();
+            break;
+          }
+          case 2240: {
+            Field280 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -1314,10 +1498,15 @@ namespace Benchmarks.Proto3 {
         }
       }
     }
+    #endif
 
   }
 
-  public sealed partial class GoogleMessage1SubMessage : pb::IMessage<GoogleMessage1SubMessage>, pb::IBufferMessage {
+  public sealed partial class GoogleMessage1SubMessage : pb::IMessage<GoogleMessage1SubMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<GoogleMessage1SubMessage> _parser = new pb::MessageParser<GoogleMessage1SubMessage>(() => new GoogleMessage1SubMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1886,9 +2075,101 @@ namespace Benchmarks.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Field1 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            Field12 = input.ReadBool();
+            break;
+          }
+          case 104: {
+            Field13 = input.ReadInt64();
+            break;
+          }
+          case 112: {
+            Field14 = input.ReadInt64();
+            break;
+          }
+          case 122: {
+            Field15 = input.ReadString();
+            break;
+          }
+          case 128: {
+            Field16 = input.ReadInt32();
+            break;
+          }
+          case 152: {
+            Field19 = input.ReadInt32();
+            break;
+          }
+          case 160: {
+            Field20 = input.ReadBool();
+            break;
+          }
+          case 169: {
+            Field21 = input.ReadFixed64();
+            break;
+          }
+          case 176: {
+            Field22 = input.ReadInt32();
+            break;
+          }
+          case 184: {
+            Field23 = input.ReadBool();
+            break;
+          }
+          case 224: {
+            Field28 = input.ReadBool();
+            break;
+          }
+          case 1629: {
+            Field203 = input.ReadFixed32();
+            break;
+          }
+          case 1632: {
+            Field204 = input.ReadInt32();
+            break;
+          }
+          case 1642: {
+            Field205 = input.ReadString();
+            break;
+          }
+          case 1648: {
+            Field206 = input.ReadBool();
+            break;
+          }
+          case 1656: {
+            Field207 = input.ReadUInt64();
+            break;
+          }
+          case 2400: {
+            Field300 = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -1980,6 +2261,7 @@ namespace Benchmarks.Proto3 {
         }
       }
     }
+    #endif
 
   }
 

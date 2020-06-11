@@ -160,6 +160,10 @@ class Timestamp(object):
     else:
       second_value = time_value[:point_position]
       nano_value = time_value[point_position + 1:]
+    if 't' in second_value:
+      raise ValueError(
+          'time data \'{0}\' does not match format \'%Y-%m-%dT%H:%M:%S\', '
+          'lowercase \'t\' is not accepted'.format(second_value))
     date_object = datetime.strptime(second_value, _TIMESTAMPFOMAT)
     td = date_object - datetime(1970, 1, 1)
     seconds = td.seconds + td.days * _SECONDS_PER_DAY

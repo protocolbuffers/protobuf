@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.12.2"
+#define PHP_PROTOBUF_VERSION "3.12.3"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -1292,7 +1292,7 @@ PHP_METHOD(Duration, setSeconds);
 PHP_METHOD(Duration, getNanos);
 PHP_METHOD(Duration, setNanos);
 
-PHP_METHOD(Timestamp, __construct);
+static PHP_METHOD(Timestamp, __construct);
 PHP_METHOD(Timestamp, fromDateTime);
 PHP_METHOD(Timestamp, toDateTime);
 PHP_METHOD(Timestamp, getSeconds);

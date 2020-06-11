@@ -28,4 +28,3 @@ Required.Proto3.JsonInput.DoubleFieldTooSmall
 Required.Proto3.JsonInput.FloatFieldTooLarge
 Required.Proto3.JsonInput.FloatFieldTooSmall
 Required.Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingIntegersGotBool
-Required.Proto3.JsonInput.TimestampJsonInputLowercaseT
