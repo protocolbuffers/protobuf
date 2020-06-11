@@ -26,6 +26,7 @@ do
   echo "* $t"
   echo "****************************"
   php -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
+  php -dextension=../ext/google/protobuf2/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
   echo ""
 done
 
