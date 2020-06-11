@@ -1802,7 +1802,7 @@ static bool build_filedef(
   const google_protobuf_FieldDescriptorProto *const *exts;
   const upb_strview* strs;
   size_t i, n;
-  decl_counts counts = {0};
+  decl_counts counts = {0, 0, 0};
 
   count_types_in_file(file_proto, &counts);
 
