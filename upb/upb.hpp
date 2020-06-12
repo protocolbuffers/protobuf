@@ -60,6 +60,8 @@ class Arena {
     });
   }
 
+  void Fuse(Arena& other) { upb_arena_fuse(ptr(), other.ptr()); }
+
  private:
   std::unique_ptr<upb_arena, decltype(&upb_arena_free)> ptr_;
 };

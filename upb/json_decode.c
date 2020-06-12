@@ -409,6 +409,7 @@ static upb_strview jsondec_string(jsondec *d) {
         upb_strview ret;
         ret.data = buf;
         ret.size = end - buf;
+        *end = '\0';  /* Needed for possible strtod(). */
         return ret;
       }
       case '\\':

@@ -939,6 +939,17 @@ void TestArena() {
     upb_arena_malloc(arena.ptr(), 1000000);
   }
   ASSERT(n == 0);
+
+  {
+    // Test fuse.
+    upb::Arena arena1;
+    upb::Arena arena2;
+
+    arena1.Fuse(arena2);
+
+    upb_arena_malloc(arena1.ptr(), 10000);
+    upb_arena_malloc(arena2.ptr(), 10000);
+  }
 }
 
 extern "C" {
