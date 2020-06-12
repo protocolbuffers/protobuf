@@ -399,7 +399,11 @@ namespace Google.Protobuf
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        // This method is intentionally not marked as "AggressiveInlining", because it slows down
+        // serialization of messages with lots of empty fields. Likely explanation is that
+        // thw WriteRawTag invocations in InternalWriteTo method get inlined too deep and that makes
+        // skipping fields which are not present more expensive (which is especially constly for
+        // messages with lots of fields of which only a few are present).
         public static void WriteRawByte(ref Span<byte> buffer, ref WriterInternalState state, byte value)
         {
             if (state.position == state.limit)
