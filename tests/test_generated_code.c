@@ -70,7 +70,7 @@ static void test_scalars() {
 
 static void check_string_map_empty(
     protobuf_test_messages_proto3_TestAllTypesProto3 *msg) {
-  size_t iter;
+  size_t iter = UPB_MAP_BEGIN;
 
   ASSERT(
       protobuf_test_messages_proto3_TestAllTypesProto3_map_string_string_size(
@@ -212,7 +212,7 @@ static void test_string_map() {
 
 static void check_int32_map_empty(
     protobuf_test_messages_proto3_TestAllTypesProto3 *msg) {
-  size_t iter;
+  size_t iter = UPB_MAP_BEGIN;
 
   ASSERT(
       protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_size(
