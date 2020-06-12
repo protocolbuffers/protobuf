@@ -106,15 +106,28 @@ struct upb_arena {
 
 static const size_t memblock_reserve = UPB_ALIGN_UP(sizeof(mem_block), 16);
 
+static upb_arena *arena_findroot(upb_arena *a) {
+  /* Path splitting keeps time complexity down, see:
+   *   https://en.wikipedia.org/wiki/Disjoint-set_data_structure */
+  while (a->parent != a) {
+    upb_arena *next = a->parent;
+    a->parent = next->parent;
+    a = next;
+  }
+  return a;
+}
+
 static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
   mem_block *block = ptr;
+  upb_arena *root = arena_findroot(a);
 
-  block->next = a->freelist;
+  /* The block is for arena |a|, but should appear in the freelist of |root|. */
+  block->next = root->freelist;
   block->size = (uint32_t)size;
   block->cleanups = 0;
-  a->freelist = block;
+  root->freelist = block;
   a->last_size = block->size;
-  if (!a->freelist_tail) a->freelist_tail = block;
+  if (!root->freelist_tail) root->freelist_tail = block;
 
   a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
   a->head.end = UPB_PTR_AT(block, size, char);
@@ -147,17 +160,6 @@ static void *upb_arena_doalloc(upb_alloc *alloc, void *ptr, size_t oldsize,
                                size_t size) {
   upb_arena *a = (upb_arena*)alloc;  /* upb_alloc is initial member. */
   return upb_arena_realloc(a, ptr, oldsize, size);
-}
-
-static upb_arena *arena_findroot(upb_arena *a) {
-  /* Path splitting keeps time complexity down, see:
-   *   https://en.wikipedia.org/wiki/Disjoint-set_data_structure */
-  while (a->parent != a) {
-    upb_arena *next = a->parent;
-    a->parent = next->parent;
-    a = next;
-  }
-  return a;
 }
 
 /* Public Arena API ***********************************************************/

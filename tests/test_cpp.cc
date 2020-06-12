@@ -947,8 +947,8 @@ void TestArena() {
 
     arena1.Fuse(arena2);
 
-    upb_arena_malloc(arena1.ptr(), 1);
-    upb_arena_malloc(arena2.ptr(), 1);
+    upb_arena_malloc(arena1.ptr(), 10000);
+    upb_arena_malloc(arena2.ptr(), 10000);
   }
 }
 
