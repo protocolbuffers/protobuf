@@ -36,6 +36,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Delphi: http://fundementals.sourceforge.net/dl.html
 * Elixir: https://github.com/jeremyong/exprotoc
 * Elixir: https://github.com/tony612/protobuf-elixir
+* Elixir: https://github.com/ahamez/protox
 * Elm: https://github.com/tiziano88/elm-protobuf
 * Erlang: https://github.com/tomas-abrahamsson/gpb
 * Erlang: http://piqi.org/
