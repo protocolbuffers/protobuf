@@ -30,15 +30,16 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+#include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
+#include <google/protobuf/compiler/csharp/csharp_generator.h>
 #include <google/protobuf/compiler/java/java_generator.h>
 #include <google/protobuf/compiler/js/js_generator.h>
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/python/python_generator.h>
-#include <google/protobuf/compiler/csharp/csharp_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
 #include <google/protobuf/compiler/php/php_generator.h>
+#include <google/protobuf/compiler/python/python_generator.h>
 #include <google/protobuf/compiler/ruby/ruby_generator.h>
+#include <google/protobuf/compiler/ts/ts_generator.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -47,7 +48,6 @@ namespace protobuf {
 namespace compiler {
 
 int ProtobufMain(int argc, char* argv[]) {
-
   CommandLineInterface cli;
   cli.AllowPlugins("protoc-");
 
@@ -65,7 +65,6 @@ int ProtobufMain(int argc, char* argv[]) {
   java::JavaGenerator java_generator;
   cli.RegisterGenerator("--java_out", "--java_opt", &java_generator,
                         "Generate Java source file.");
-
 
   // Proto2 Python
   python::Generator py_generator;
@@ -96,6 +95,11 @@ int ProtobufMain(int argc, char* argv[]) {
   js::Generator js_generator;
   cli.RegisterGenerator("--js_out", "--js_opt", &js_generator,
                         "Generate JavaScript source.");
+
+  // TypeScript
+  ts::Generator ts_generator;
+  cli.RegisterGenerator("--ts_out", &ts_generator,
+                        "Generate TypeScript source.");
 
   return cli.Run(argc, argv);
 }
