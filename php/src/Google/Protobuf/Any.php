@@ -270,7 +270,7 @@ class Any extends \Google\Protobuf\Internal\Message
 
         // Create message according to fully qualified name.
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
-        $desc = $pool->getDescriptorByProtoName( ".".$fully_qualifed_name);
+        $desc = $pool->getDescriptorByProtoName($fully_qualifed_name);
         if (is_null($desc)) {
             throw new \Exception("Class ".$fully_qualifed_name
                                      ." hasn't been added to descriptor pool");
