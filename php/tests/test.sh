@@ -12,7 +12,7 @@ TEST_NEW_EXTENSION=true
 
 # Each version of PHPUnit supports a fairly narrow range of PHP versions.
 case "$PHP_VERSION" in
-  5.6.*)
+  5.*.*)
     PHPUNIT=phpunit-5.6.8.phar
     TEST_NEW_EXTENSION=false
     ;;
