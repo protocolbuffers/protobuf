@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import os
 import sys
@@ -33,7 +33,7 @@ with open("../" + output, "w") as f:
     for i in range(0, len(contents)):
       if i % 10 == 0:
         f.write('\n')
-      f.write('  0x%02x,' % contents[i])
+      f.write('  0x%02x,' % ord(contents[i]))
     f.write('0};\n')
 
   f.write('static BundledPhp_File php[] = {\n')
