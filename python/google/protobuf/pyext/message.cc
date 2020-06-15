@@ -243,7 +243,7 @@ static PyObject* New(PyTypeObject* type,
     }
     message_descriptor =
         GetDefaultDescriptorPool()->pool->FindMessageTypeByName(
-            std::string(full_name, name_size));
+            StringParam(full_name, name_size));
     if (message_descriptor == nullptr) {
       PyErr_Format(PyExc_KeyError,
                    "Can not find message descriptor %s "
@@ -984,7 +984,7 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
       return NULL;
     }
     const EnumValueDescriptor* enum_value_descriptor =
-        enum_descriptor->FindValueByName(std::string(enum_label, size));
+        enum_descriptor->FindValueByName(StringParam(enum_label, size));
     if (enum_value_descriptor == NULL) {
       PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", enum_label);
       return NULL;
@@ -1399,7 +1399,7 @@ int HasFieldByDescriptor(CMessage* self,
 }
 
 const FieldDescriptor* FindFieldWithOneofs(const Message* message,
-                                           const std::string& field_name,
+                                           ConstStringParam field_name,
                                            bool* in_oneof) {
   *in_oneof = false;
   const Descriptor* descriptor = message->GetDescriptor();
@@ -1455,7 +1455,7 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
   Message* message = self->message;
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor =
-      FindFieldWithOneofs(message, std::string(field_name, size), &is_in_oneof);
+      FindFieldWithOneofs(message, StringParam(field_name, size), &is_in_oneof);
   if (field_descriptor == NULL) {
     if (!is_in_oneof) {
       PyErr_Format(PyExc_ValueError, "Protocol message %s has no field %s.",
@@ -1632,7 +1632,7 @@ PyObject* ClearField(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
-      self->message, std::string(field_name, field_size), &is_in_oneof);
+      self->message, StringParam(field_name, field_size), &is_in_oneof);
   if (field_descriptor == NULL) {
     if (is_in_oneof) {
       // We gave the name of a oneof, and none of its fields are set.
@@ -2033,13 +2033,12 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   char *name_data;
   if (PyString_AsStringAndSize(arg, &name_data, &name_size) < 0)
     return NULL;
-  std::string oneof_name = std::string(name_data, name_size);
   const OneofDescriptor* oneof_desc =
-      self->message->GetDescriptor()->FindOneofByName(oneof_name);
+      self->message->GetDescriptor()->FindOneofByName(
+          StringParam(name_data, name_size));
   if (oneof_desc == NULL) {
     PyErr_Format(PyExc_ValueError,
-                 "Protocol message has no oneof \"%s\" field.",
-                 oneof_name.c_str());
+                 "Protocol message has no oneof \"%s\" field.", name_data);
     return NULL;
   }
   const FieldDescriptor* field_in_oneof =

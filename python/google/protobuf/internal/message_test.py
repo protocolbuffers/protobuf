@@ -1675,6 +1675,17 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
 
+  def testProto3ParserDropDefaultScalar(self):
+    message_proto2 = unittest_pb2.TestAllTypes()
+    message_proto2.optional_int32 = 0
+    message_proto2.optional_string = ''
+    message_proto2.optional_bytes = b''
+    self.assertEqual(len(message_proto2.ListFields()), 3)
+
+    message_proto3 = unittest_proto3_arena_pb2.TestAllTypes()
+    message_proto3.ParseFromString(message_proto2.SerializeToString())
+    self.assertEqual(len(message_proto3.ListFields()), 0)
+
   def testProto3Optional(self):
     msg = test_proto3_optional_pb2.TestProto3Optional()
     self.assertFalse(msg.HasField('optional_int32'))

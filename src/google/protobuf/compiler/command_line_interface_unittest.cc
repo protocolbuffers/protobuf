@@ -2373,48 +2373,50 @@ TEST_F(CommandLineInterfaceTest, MissingValueAtEndError) {
 }
 
 TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowed) {
-  CreateTempFile("foo.proto",
+  CreateTempFile("google/foo.proto",
                  "syntax = \"proto3\";\n"
                  "message Foo {\n"
                  "  optional int32 i = 1;\n"
                  "}\n");
 
-  Run("protocol_compiler --proto_path=$tmpdir foo.proto -odescriptor.pb");
+  Run("protocol_compiler --proto_path=$tmpdir google/foo.proto "
+      "-odescriptor.pb");
 
   ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
 }
 
 TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedDescriptor) {
-  CreateTempFile("foo.proto",
+  CreateTempFile("google/foo.proto",
                  "syntax = \"proto3\";\n"
                  "message Foo {\n"
                  "  optional int32 i = 1;\n"
                  "}\n");
 
   Run("protocol_compiler --experimental_allow_proto3_optional "
-      "--proto_path=$tmpdir foo.proto "
+      "--proto_path=$tmpdir google/foo.proto "
       " -o$tmpdir/descriptor.pb");
   ExpectNoErrors();
 
-  Run("protocol_compiler --descriptor_set_in=$tmpdir/descriptor.pb foo.proto "
-      "--test_out=$tmpdir");
+  Run("protocol_compiler --descriptor_set_in=$tmpdir/descriptor.pb"
+      " google/foo.proto --test_out=$tmpdir");
   ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
 }
 
 TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedGenCode) {
-  CreateTempFile("foo.proto",
+  CreateTempFile("google/foo.proto",
                  "syntax = \"proto3\";\n"
                  "message Foo {\n"
                  "  optional int32 i = 1;\n"
                  "}\n");
 
-  Run("protocol_compiler --proto_path=$tmpdir foo.proto --test_out=$tmpdir");
+  Run("protocol_compiler --proto_path=$tmpdir google/foo.proto "
+      "--test_out=$tmpdir");
 
   ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
 }
 
 TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedNoCodegenSupport) {
-  CreateTempFile("foo.proto",
+  CreateTempFile("google/foo.proto",
                  "syntax = \"proto3\";\n"
                  "message Foo {\n"
                  "  optional int32 i = 1;\n"
@@ -2425,7 +2427,7 @@ TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedNoCodegenSupport) {
                                      CodeGenerator::FEATURE_PROTO3_OPTIONAL);
 
   Run("protocol_compiler --experimental_allow_proto3_optional "
-      "--proto_path=$tmpdir foo.proto --no_proto3_optional_out=$tmpdir");
+      "--proto_path=$tmpdir google/foo.proto --no_proto3_optional_out=$tmpdir");
 
   ExpectErrorSubstring(
       "code generator --no_proto3_optional_out hasn't been updated to support "
@@ -2433,14 +2435,14 @@ TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedNoCodegenSupport) {
 }
 
 TEST_F(CommandLineInterfaceTest, Proto3OptionalAllowWithFlag) {
-  CreateTempFile("foo.proto",
+  CreateTempFile("google/foo.proto",
                  "syntax = \"proto3\";\n"
                  "message Foo {\n"
                  "  optional int32 i = 1;\n"
                  "}\n");
 
   Run("protocol_compiler --experimental_allow_proto3_optional "
-      "--proto_path=$tmpdir foo.proto --test_out=$tmpdir");
+      "--proto_path=$tmpdir google/foo.proto --test_out=$tmpdir");
   ExpectNoErrors();
 }
 

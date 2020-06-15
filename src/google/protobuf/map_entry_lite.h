@@ -266,13 +266,8 @@ class MapEntryImpl : public Base {
 
   size_t ByteSizeLong() const override {
     size_t size = 0;
-    size += has_key() ? kTagSize +
-                            static_cast<size_t>(KeyTypeHandler::ByteSize(key()))
-                      : 0;
-    size += has_value()
-                ? kTagSize +
-                      static_cast<size_t>(ValueTypeHandler::ByteSize(value()))
-                : 0;
+    size += kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key()));
+    size += kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value()));
     return size;
   }
 

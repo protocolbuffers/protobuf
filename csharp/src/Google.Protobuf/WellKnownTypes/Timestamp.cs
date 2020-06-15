@@ -123,7 +123,11 @@ namespace Google.Protobuf.WellKnownTypes {
   /// http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime%2D%2D
   /// ) to obtain a formatter capable of generating timestamps in this format.
   /// </summary>
-  public sealed partial class Timestamp : pb::IMessage<Timestamp>, pb::IBufferMessage {
+  public sealed partial class Timestamp : pb::IMessage<Timestamp>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Timestamp> _parser = new pb::MessageParser<Timestamp>(() => new Timestamp());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -271,9 +275,29 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Seconds = input.ReadInt64();
+            break;
+          }
+          case 16: {
+            Nanos = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -293,6 +317,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
       }
     }
+    #endif
 
   }
 

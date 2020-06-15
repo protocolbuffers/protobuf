@@ -1104,6 +1104,7 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
 
 bool CommandLineInterface::AllowProto3Optional(
     const FileDescriptor& file) const {
+  // If the --experimental_allow_proto3_optional flag was set, we allow.
   if (allow_proto3_optional_) return true;
 
   // Whitelist all ads protos. Ads is an early adopter of this feature.

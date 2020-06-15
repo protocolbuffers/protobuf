@@ -101,7 +101,7 @@ PROTOBUF_NAMESPACE_OPEN
 class PROTOBUF_EXPORT DoubleValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
  public:
-  inline DoubleValue() : DoubleValue(nullptr) {};
+  inline DoubleValue() : DoubleValue(nullptr) {}
   virtual ~DoubleValue();
 
   DoubleValue(const DoubleValue& from);
@@ -238,7 +238,7 @@ class PROTOBUF_EXPORT DoubleValue PROTOBUF_FINAL :
 class PROTOBUF_EXPORT FloatValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
  public:
-  inline FloatValue() : FloatValue(nullptr) {};
+  inline FloatValue() : FloatValue(nullptr) {}
   virtual ~FloatValue();
 
   FloatValue(const FloatValue& from);
@@ -375,7 +375,7 @@ class PROTOBUF_EXPORT FloatValue PROTOBUF_FINAL :
 class PROTOBUF_EXPORT Int64Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
  public:
-  inline Int64Value() : Int64Value(nullptr) {};
+  inline Int64Value() : Int64Value(nullptr) {}
   virtual ~Int64Value();
 
   Int64Value(const Int64Value& from);
@@ -512,7 +512,7 @@ class PROTOBUF_EXPORT Int64Value PROTOBUF_FINAL :
 class PROTOBUF_EXPORT UInt64Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
  public:
-  inline UInt64Value() : UInt64Value(nullptr) {};
+  inline UInt64Value() : UInt64Value(nullptr) {}
   virtual ~UInt64Value();
 
   UInt64Value(const UInt64Value& from);
@@ -649,7 +649,7 @@ class PROTOBUF_EXPORT UInt64Value PROTOBUF_FINAL :
 class PROTOBUF_EXPORT Int32Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
  public:
-  inline Int32Value() : Int32Value(nullptr) {};
+  inline Int32Value() : Int32Value(nullptr) {}
   virtual ~Int32Value();
 
   Int32Value(const Int32Value& from);
@@ -786,7 +786,7 @@ class PROTOBUF_EXPORT Int32Value PROTOBUF_FINAL :
 class PROTOBUF_EXPORT UInt32Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
  public:
-  inline UInt32Value() : UInt32Value(nullptr) {};
+  inline UInt32Value() : UInt32Value(nullptr) {}
   virtual ~UInt32Value();
 
   UInt32Value(const UInt32Value& from);
@@ -923,7 +923,7 @@ class PROTOBUF_EXPORT UInt32Value PROTOBUF_FINAL :
 class PROTOBUF_EXPORT BoolValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
  public:
-  inline BoolValue() : BoolValue(nullptr) {};
+  inline BoolValue() : BoolValue(nullptr) {}
   virtual ~BoolValue();
 
   BoolValue(const BoolValue& from);
@@ -1060,7 +1060,7 @@ class PROTOBUF_EXPORT BoolValue PROTOBUF_FINAL :
 class PROTOBUF_EXPORT StringValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
  public:
-  inline StringValue() : StringValue(nullptr) {};
+  inline StringValue() : StringValue(nullptr) {}
   virtual ~StringValue();
 
   StringValue(const StringValue& from);
@@ -1204,7 +1204,7 @@ class PROTOBUF_EXPORT StringValue PROTOBUF_FINAL :
 class PROTOBUF_EXPORT BytesValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
  public:
-  inline BytesValue() : BytesValue(nullptr) {};
+  inline BytesValue() : BytesValue(nullptr) {}
   virtual ~BytesValue();
 
   BytesValue(const BytesValue& from);

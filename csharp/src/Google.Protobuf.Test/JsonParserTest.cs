@@ -34,6 +34,7 @@ using Google.Protobuf.Reflection;
 using Google.Protobuf.TestProtos;
 using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
+using ProtobufTestMessages.Proto2;
 using System;
 
 namespace Google.Protobuf
@@ -947,6 +948,16 @@ namespace Google.Protobuf
         {
             string json = "{ \"unknownField\": 10, \"singleString\": \"x\" }";
             Assert.Throws<InvalidProtocolBufferException>(() => TestAllTypes.Parser.ParseJson(json));
+        }
+
+        [Test]
+        public void Proto2_DefaultValuesPreserved()
+        {
+            string json = "{ \"FieldName13\": 0 }";
+            var parsed = TestAllTypesProto2.Parser.ParseJson(json);
+            Assert.False(parsed.HasFieldName10);
+            Assert.True(parsed.HasFieldName13);
+            Assert.AreEqual(0, parsed.FieldName13);
         }
 
         [Test]

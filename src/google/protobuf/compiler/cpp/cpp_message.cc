@@ -1123,7 +1123,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format.Indent();
 
   if (SupportsArenas(descriptor_)) {
-    format("inline $classname$() : $classname$(nullptr) {};\n");
+    format("inline $classname$() : $classname$(nullptr) {}\n");
   } else {
     format("$classname$();\n");
   }

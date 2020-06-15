@@ -79,7 +79,7 @@ PROTOBUF_NAMESPACE_OPEN
 class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Api) */ {
  public:
-  inline Api() : Api(nullptr) {};
+  inline Api() : Api(nullptr) {}
   virtual ~Api();
 
   Api(const Api& from);
@@ -332,7 +332,7 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
 class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Method) */ {
  public:
-  inline Method() : Method(nullptr) {};
+  inline Method() : Method(nullptr) {}
   virtual ~Method();
 
   Method(const Method& from);
@@ -565,7 +565,7 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
 class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Mixin) */ {
  public:
-  inline Mixin() : Mixin(nullptr) {};
+  inline Mixin() : Mixin(nullptr) {}
   virtual ~Mixin();
 
   Mixin(const Mixin& from);

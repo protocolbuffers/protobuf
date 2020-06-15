@@ -333,7 +333,7 @@ inline bool MethodOptions_IdempotencyLevel_Parse(
 class PROTOBUF_EXPORT FileDescriptorSet PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet) */ {
  public:
-  inline FileDescriptorSet() : FileDescriptorSet(nullptr) {};
+  inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
   virtual ~FileDescriptorSet();
 
   FileDescriptorSet(const FileDescriptorSet& from);
@@ -486,7 +486,7 @@ class PROTOBUF_EXPORT FileDescriptorSet PROTOBUF_FINAL :
 class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto) */ {
  public:
-  inline FileDescriptorProto() : FileDescriptorProto(nullptr) {};
+  inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
   virtual ~FileDescriptorProto();
 
   FileDescriptorProto(const FileDescriptorProto& from);
@@ -880,7 +880,7 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
 class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange) */ {
  public:
-  inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {};
+  inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
   virtual ~DescriptorProto_ExtensionRange();
 
   DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from);
@@ -1064,7 +1064,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
 class PROTOBUF_EXPORT DescriptorProto_ReservedRange PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
  public:
-  inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {};
+  inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
   virtual ~DescriptorProto_ReservedRange();
 
   DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from);
@@ -1228,7 +1228,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange PROTOBUF_FINAL :
 class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */ {
  public:
-  inline DescriptorProto() : DescriptorProto(nullptr) {};
+  inline DescriptorProto() : DescriptorProto(nullptr) {}
   virtual ~DescriptorProto();
 
   DescriptorProto(const DescriptorProto& from);
@@ -1573,7 +1573,7 @@ class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
 class PROTOBUF_EXPORT ExtensionRangeOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
  public:
-  inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {};
+  inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
   virtual ~ExtensionRangeOptions();
 
   ExtensionRangeOptions(const ExtensionRangeOptions& from);
@@ -1729,7 +1729,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
  public:
-  inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {};
+  inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
   virtual ~FieldDescriptorProto();
 
   FieldDescriptorProto(const FieldDescriptorProto& from);
@@ -2162,7 +2162,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
 class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto) */ {
  public:
-  inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {};
+  inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
   virtual ~OneofDescriptorProto();
 
   OneofDescriptorProto(const OneofDescriptorProto& from);
@@ -2338,7 +2338,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
 class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto.EnumReservedRange) */ {
  public:
-  inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {};
+  inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
   virtual ~EnumDescriptorProto_EnumReservedRange();
 
   EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from);
@@ -2502,7 +2502,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange PROTOBUF_FINAL :
 class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto) */ {
  public:
-  inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {};
+  inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
   virtual ~EnumDescriptorProto();
 
   EnumDescriptorProto(const EnumDescriptorProto& from);
@@ -2746,7 +2746,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
 class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto) */ {
  public:
-  inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {};
+  inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
   virtual ~EnumValueDescriptorProto();
 
   EnumValueDescriptorProto(const EnumValueDescriptorProto& from);
@@ -2937,7 +2937,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
 class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto) */ {
  public:
-  inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {};
+  inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
   virtual ~ServiceDescriptorProto();
 
   ServiceDescriptorProto(const ServiceDescriptorProto& from);
@@ -3133,7 +3133,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
 class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto) */ {
  public:
-  inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {};
+  inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
   virtual ~MethodDescriptorProto();
 
   MethodDescriptorProto(const MethodDescriptorProto& from);
@@ -3383,7 +3383,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
 class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileOptions) */ {
  public:
-  inline FileOptions() : FileOptions(nullptr) {};
+  inline FileOptions() : FileOptions(nullptr) {}
   virtual ~FileOptions();
 
   FileOptions(const FileOptions& from);
@@ -3942,7 +3942,7 @@ class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */ {
  public:
-  inline MessageOptions() : MessageOptions(nullptr) {};
+  inline MessageOptions() : MessageOptions(nullptr) {}
   virtual ~MessageOptions();
 
   MessageOptions(const MessageOptions& from);
@@ -4159,7 +4159,7 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions) */ {
  public:
-  inline FieldOptions() : FieldOptions(nullptr) {};
+  inline FieldOptions() : FieldOptions(nullptr) {}
   virtual ~FieldOptions();
 
   FieldOptions(const FieldOptions& from);
@@ -4470,7 +4470,7 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT OneofOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.OneofOptions) */ {
  public:
-  inline OneofOptions() : OneofOptions(nullptr) {};
+  inline OneofOptions() : OneofOptions(nullptr) {}
   virtual ~OneofOptions();
 
   OneofOptions(const OneofOptions& from);
@@ -4626,7 +4626,7 @@ class PROTOBUF_EXPORT OneofOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT EnumOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumOptions) */ {
  public:
-  inline EnumOptions() : EnumOptions(nullptr) {};
+  inline EnumOptions() : EnumOptions(nullptr) {}
   virtual ~EnumOptions();
 
   EnumOptions(const EnumOptions& from);
@@ -4813,7 +4813,7 @@ class PROTOBUF_EXPORT EnumOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT EnumValueOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions) */ {
  public:
-  inline EnumValueOptions() : EnumValueOptions(nullptr) {};
+  inline EnumValueOptions() : EnumValueOptions(nullptr) {}
   virtual ~EnumValueOptions();
 
   EnumValueOptions(const EnumValueOptions& from);
@@ -4985,7 +4985,7 @@ class PROTOBUF_EXPORT EnumValueOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT ServiceOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */ {
  public:
-  inline ServiceOptions() : ServiceOptions(nullptr) {};
+  inline ServiceOptions() : ServiceOptions(nullptr) {}
   virtual ~ServiceOptions();
 
   ServiceOptions(const ServiceOptions& from);
@@ -5157,7 +5157,7 @@ class PROTOBUF_EXPORT ServiceOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MethodOptions) */ {
  public:
-  inline MethodOptions() : MethodOptions(nullptr) {};
+  inline MethodOptions() : MethodOptions(nullptr) {}
   virtual ~MethodOptions();
 
   MethodOptions(const MethodOptions& from);
@@ -5376,7 +5376,7 @@ class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
 class PROTOBUF_EXPORT UninterpretedOption_NamePart PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart) */ {
  public:
-  inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {};
+  inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
   virtual ~UninterpretedOption_NamePart();
 
   UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from);
@@ -5550,7 +5550,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart PROTOBUF_FINAL :
 class PROTOBUF_EXPORT UninterpretedOption PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption) */ {
  public:
-  inline UninterpretedOption() : UninterpretedOption(nullptr) {};
+  inline UninterpretedOption() : UninterpretedOption(nullptr) {}
   virtual ~UninterpretedOption();
 
   UninterpretedOption(const UninterpretedOption& from);
@@ -5817,7 +5817,7 @@ class PROTOBUF_EXPORT UninterpretedOption PROTOBUF_FINAL :
 class PROTOBUF_EXPORT SourceCodeInfo_Location PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location) */ {
  public:
-  inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {};
+  inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
   virtual ~SourceCodeInfo_Location();
 
   SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
@@ -6071,7 +6071,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location PROTOBUF_FINAL :
 class PROTOBUF_EXPORT SourceCodeInfo PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */ {
  public:
-  inline SourceCodeInfo() : SourceCodeInfo(nullptr) {};
+  inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
   virtual ~SourceCodeInfo();
 
   SourceCodeInfo(const SourceCodeInfo& from);
@@ -6226,7 +6226,7 @@ class PROTOBUF_EXPORT SourceCodeInfo PROTOBUF_FINAL :
 class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation) */ {
  public:
-  inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {};
+  inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
   virtual ~GeneratedCodeInfo_Annotation();
 
   GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from);
@@ -6437,7 +6437,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation PROTOBUF_FINAL :
 class PROTOBUF_EXPORT GeneratedCodeInfo PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo) */ {
  public:
-  inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {};
+  inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
   virtual ~GeneratedCodeInfo();
 
   GeneratedCodeInfo(const GeneratedCodeInfo& from);

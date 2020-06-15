@@ -195,7 +195,6 @@ class _Printer(object):
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
-    # TODO(jieluo): change the float precision default to 8 valid digits.
     if float_precision:
       self.float_format = '.{}g'.format(float_precision)
     else:
@@ -720,12 +719,18 @@ def _ConvertScalarFieldValue(value, field, require_str=False):
   if field.cpp_type in _INT_TYPES:
     return _ConvertInteger(value)
   elif field.cpp_type in _FLOAT_TYPES:
-    return _ConvertFloat(value)
+    return _ConvertFloat(value, field)
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_BOOL:
     return _ConvertBool(value, require_str)
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
     if field.type == descriptor.FieldDescriptor.TYPE_BYTES:
-      return base64.b64decode(value)
+      if isinstance(value, six.text_type):
+        encoded = value.encode('utf-8')
+      else:
+        encoded = value
+      # Add extra padding '='
+      padded_value = encoded + b'=' * (4 - len(encoded) % 4)
+      return base64.urlsafe_b64decode(padded_value)
     else:
       # Checking for unpaired surrogates appears to be unreliable,
       # depending on the specific Python version, so we check manually.
@@ -769,11 +774,32 @@ def _ConvertInteger(value):
   if isinstance(value, six.text_type) and value.find(' ') != -1:
     raise ParseError('Couldn\'t parse integer: "{0}".'.format(value))
 
+  if isinstance(value, bool):
+    raise ParseError('Bool value {0} is not acceptable for '
+                     'integer field.'.format(value))
+
   return int(value)
 
 
-def _ConvertFloat(value):
+def _ConvertFloat(value, field):
   """Convert an floating point number."""
+  if isinstance(value, float):
+    if math.isnan(value):
+      raise ParseError('Couldn\'t parse NaN, use quoted "NaN" instead.')
+    if math.isinf(value):
+      if value > 0:
+        raise ParseError('Couldn\'t parse Infinity or value too large, '
+                         'use quoted "Infinity" instead.')
+      else:
+        raise ParseError('Couldn\'t parse -Infinity or value too small, '
+                         'use quoted "-Infinity" instead.')
+    if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
+      # pylint: disable=protected-access
+      if value > type_checkers._FLOAT_MAX:
+        raise ParseError('Float value too large')
+      # pylint: disable=protected-access
+      if value < type_checkers._FLOAT_MIN:
+        raise ParseError('Float value too small')
   if value == 'nan':
     raise ParseError('Couldn\'t parse float "nan", use "NaN" instead.')
   try:

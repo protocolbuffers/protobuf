@@ -40,6 +40,7 @@ using Google.Protobuf.Reflection;
 using static Google.Protobuf.JsonParserTest; // For WrapInQuotes
 using System.IO;
 using Google.Protobuf.Collections;
+using ProtobufUnittest;
 
 namespace Google.Protobuf
 {
@@ -151,6 +152,48 @@ namespace Google.Protobuf
                 "'singlePublicImportMessage': { 'e': 54 }" +
                 " }";
             AssertJson(expectedText, actualText);
+        }
+
+        [Test]
+        public void WithFormatDefaultValues_DoesNotAffectMessageFields()
+        {
+            var message = new TestAllTypes();
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithFormatDefaultValues(true));
+            var json = formatter.Format(message);
+            Assert.IsFalse(json.Contains("\"singleNestedMessage\""));
+            Assert.IsFalse(json.Contains("\"singleForeignMessage\""));
+            Assert.IsFalse(json.Contains("\"singleImportMessage\""));
+        }
+
+        [Test]
+        public void WithFormatDefaultValues_DoesNotAffectProto3OptionalFields()
+        {
+            var message = new TestProto3Optional();
+            message.OptionalInt32 = 0;
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithFormatDefaultValues(true));
+            var json = formatter.Format(message);
+            // The non-optional proto3 fields are formatted, as is the optional-but-specified field.
+            AssertJson("{ 'optionalInt32': 0, 'singularInt32': 0, 'singularInt64': '0' }", json);
+        }
+
+        [Test]
+        public void WithFormatDefaultValues_DoesNotAffectProto2Fields()
+        {
+            var message = new TestProtos.Proto2.ForeignMessage();
+            message.C = 0;
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithFormatDefaultValues(true));
+            var json = formatter.Format(message);
+            // The specified field is formatted, but the non-specified field (d) is not.
+            AssertJson("{ 'c': 0 }", json);
+        }
+
+        [Test]
+        public void WithFormatDefaultValues_DoesNotAffectOneofFields()
+        {
+            var message = new TestOneof();
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithFormatDefaultValues(true));
+            var json = formatter.Format(message);
+            AssertJson("{ }", json);
         }
 
         [Test]
@@ -313,14 +356,16 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void WrapperFormatting_IncludeNull()
+        public void WrapperFormatting_FormatDefaultValuesDoesNotFormatNull()
         {
             // The actual JSON here is very large because there are lots of fields. Just test a couple of them.
             var message = new TestWellKnownTypes { Int32Field = 10 };
             var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithFormatDefaultValues(true));
             var actualJson = formatter.Format(message);
-            Assert.IsTrue(actualJson.Contains("\"int64Field\": null"));
-            Assert.IsFalse(actualJson.Contains("\"int32Field\": null"));
+            // This *used* to include "int64Field": null, but that was a bug.
+            // WithDefaultValues should not affect message fields, including wrapper types.
+            Assert.IsFalse(actualJson.Contains("\"int64Field\": null"));
+            Assert.IsTrue(actualJson.Contains("\"int32Field\": 10"));
         }
 
         [Test]
@@ -600,6 +645,13 @@ namespace Google.Protobuf
         {
             var value = new RepeatedField<int> { 1, 2, 3 };
             AssertWriteValue(value, "[ 1, 2, 3 ]");
+        }
+
+        [Test]
+        public void Proto2_DefaultValuesWritten()
+        {
+            var value = new ProtobufTestMessages.Proto2.TestAllTypesProto2() { FieldName13 = 0 };
+            AssertWriteValue(value, "{ 'FieldName13': 0 }");
         }
 
         private static void AssertWriteValue(object value, string expectedJson)

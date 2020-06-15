@@ -172,6 +172,12 @@ supported keys are:
     lot of proto files included in it; and having multiple lines makes things
     easier to read.
 
+  * `runtime_import_prefix`: The `value` used for this key to be used as a
+    prefix on `#import`s of runtime provided headers in the generated files.
+    When integrating ObjC protos into a build system, this can be used to avoid
+    having to add the runtime directory to the header search path since the
+    generate `#import` will be more complete.
+
 Contributing
 ------------
 

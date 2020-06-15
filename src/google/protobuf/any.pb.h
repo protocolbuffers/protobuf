@@ -69,7 +69,7 @@ PROTOBUF_NAMESPACE_OPEN
 class PROTOBUF_EXPORT Any PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
-  inline Any() : Any(nullptr) {};
+  inline Any() : Any(nullptr) {}
   virtual ~Any();
 
   Any(const Any& from);

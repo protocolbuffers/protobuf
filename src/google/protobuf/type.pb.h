@@ -182,7 +182,7 @@ inline bool Syntax_Parse(
 class PROTOBUF_EXPORT Type PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
-  inline Type() : Type(nullptr) {};
+  inline Type() : Type(nullptr) {}
   virtual ~Type();
 
   Type(const Type& from);
@@ -423,7 +423,7 @@ class PROTOBUF_EXPORT Type PROTOBUF_FINAL :
 class PROTOBUF_EXPORT Field PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
-  inline Field() : Field(nullptr) {};
+  inline Field() : Field(nullptr) {}
   virtual ~Field();
 
   Field(const Field& from);
@@ -794,7 +794,7 @@ class PROTOBUF_EXPORT Field PROTOBUF_FINAL :
 class PROTOBUF_EXPORT Enum PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
-  inline Enum() : Enum(nullptr) {};
+  inline Enum() : Enum(nullptr) {}
   virtual ~Enum();
 
   Enum(const Enum& from);
@@ -1009,7 +1009,7 @@ class PROTOBUF_EXPORT Enum PROTOBUF_FINAL :
 class PROTOBUF_EXPORT EnumValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
-  inline EnumValue() : EnumValue(nullptr) {};
+  inline EnumValue() : EnumValue(nullptr) {}
   virtual ~EnumValue();
 
   EnumValue(const EnumValue& from);
@@ -1184,7 +1184,7 @@ class PROTOBUF_EXPORT EnumValue PROTOBUF_FINAL :
 class PROTOBUF_EXPORT Option PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
-  inline Option() : Option(nullptr) {};
+  inline Option() : Option(nullptr) {}
   virtual ~Option();
 
   Option(const Option& from);

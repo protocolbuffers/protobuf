@@ -100,7 +100,11 @@ namespace Google.Protobuf.WellKnownTypes {
   /// be expressed in JSON format as "3.000000001s", and 3 seconds and 1
   /// microsecond should be expressed in JSON format as "3.000001s".
   /// </summary>
-  public sealed partial class Duration : pb::IMessage<Duration>, pb::IBufferMessage {
+  public sealed partial class Duration : pb::IMessage<Duration>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Duration> _parser = new pb::MessageParser<Duration>(() => new Duration());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -250,9 +254,29 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Seconds = input.ReadInt64();
+            break;
+          }
+          case 16: {
+            Nanos = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
@@ -272,6 +296,7 @@ namespace Google.Protobuf.WellKnownTypes {
         }
       }
     }
+    #endif
 
   }
 

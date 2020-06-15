@@ -125,13 +125,15 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "$access_level$ sealed partial class $class_name$ : ");
 
   if (has_extension_ranges_) {
-    printer->Print(vars, "pb::IExtendableMessage<$class_name$>");
+    printer->Print(vars, "pb::IExtendableMessage<$class_name$>\n");
   }
   else {
-    printer->Print(vars, "pb::IMessage<$class_name$>");
+    printer->Print(vars, "pb::IMessage<$class_name$>\n");
   }
-  printer->Print(", pb::IBufferMessage");
-  printer->Print(" {\n");
+  printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
+  printer->Print("    , pb::IBufferMessage\n");
+  printer->Print("#endif\n");
+  printer->Print("{\n");
   printer->Indent();
 
   // All static fields and properties
@@ -633,17 +635,34 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n\n");
 
-
   WriteGeneratedCodeAttributes(printer);
   printer->Print("public void MergeFrom(pb::CodedInputStream input) {\n");
+  printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
   printer->Indent();
   printer->Print("input.ReadRawMessage(this);\n");
   printer->Outdent();
+  printer->Print("#else\n");
+  printer->Indent();
+  GenerateMainParseLoop(printer, false);
+  printer->Outdent();
+  printer->Print("#endif\n");
   printer->Print("}\n\n");
 
+  printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
   WriteGeneratedCodeAttributes(printer);
   printer->Print("void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {\n");
   printer->Indent();
+  GenerateMainParseLoop(printer, true);
+  printer->Outdent();
+  printer->Print("}\n"); // method
+  printer->Print("#endif\n\n");
+
+}
+
+void MessageGenerator::GenerateMainParseLoop(io::Printer* printer, bool use_parse_context) {
+  std::map<string, string> vars;
+  vars["maybe_ref_input"] = use_parse_context ? "ref input" : "input";
+
   printer->Print(
     "uint tag;\n"
     "while ((tag = input.ReadTag()) != 0) {\n"
@@ -657,16 +676,16 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
         "end_tag", StrCat(end_tag_));
   }
   if (has_extension_ranges_) {
-    printer->Print(
+    printer->Print(vars,
       "default:\n"
-      "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {\n"
-      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);\n"
+      "  if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, $maybe_ref_input$)) {\n"
+      "    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, $maybe_ref_input$);\n"
       "  }\n"
       "  break;\n");
   } else {
-    printer->Print(
+    printer->Print(vars,
       "default:\n"
-      "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);\n"
+      "  _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, $maybe_ref_input$);\n"
       "  break;\n");
   }
   for (int i = 0; i < fields_by_number().size(); i++) {
@@ -693,7 +712,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     printer->Indent();
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(field));
-    generator->GenerateParsingCode(printer);
+    generator->GenerateParsingCode(printer, use_parse_context);
     printer->Print("break;\n");
     printer->Outdent();
     printer->Print("}\n");
@@ -702,8 +721,6 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print("}\n"); // switch
   printer->Outdent();
   printer->Print("}\n"); // while
-  printer->Outdent();
-  printer->Print("}\n\n"); // method
 }
 
 // it's a waste of space to track presence for all values, so we only track them if they're not nullable
