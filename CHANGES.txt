@@ -29,6 +29,7 @@ Unreleased Changes
   Java:
   * Fixed a bug where setting optional proto3 enums with setFooValue() would
     not mark the value as present.
+  * Add Subtract function to FieldMaskUtil.
 
   C#:
   * Dropped support for netstandard1.0 (replaced by support for netstandard1.1).
