@@ -807,6 +807,14 @@ TEST(RepeatedField, ClearThenReserveMore) {
   // strings.
 }
 
+TEST(RepeatedField, TestSAddFromSelf) {
+  RepeatedField<int> field;
+  field.Add(0);
+  for (int i = 0; i < 1000; i++) {
+    field.Add(field[0]);
+  }
+}
+
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField
 // tests above.

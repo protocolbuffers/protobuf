@@ -69,7 +69,7 @@ PROTOBUF_NAMESPACE_OPEN
 class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
  public:
-  inline Duration() : Duration(nullptr) {};
+  inline Duration() : Duration(nullptr) {}
   virtual ~Duration();
 
   Duration(const Duration& from);

@@ -30,6 +30,8 @@
 
 package com.google.protobuf.util;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.UninitializedMessageException;
@@ -43,9 +45,9 @@ import junit.framework.TestCase;
 public class FieldMaskTreeTest extends TestCase {
   public void testAddFieldPath() throws Exception {
     FieldMaskTree tree = new FieldMaskTree();
-    assertEquals("", tree.toString());
+    assertThat(tree.toString()).isEmpty();
     tree.addFieldPath("");
-    assertEquals("", tree.toString());
+    assertThat(tree.toString()).isEmpty();
     // New branch.
     tree.addFieldPath("foo");
     assertEquals("foo", tree.toString());
@@ -73,15 +75,45 @@ public class FieldMaskTreeTest extends TestCase {
     assertEquals("bar,foo", tree.toString());
   }
 
+  public void testRemoveFieldPath() throws Exception {
+    String initialTreeString = "bar.baz,bar.quz.bar,foo";
+    FieldMaskTree tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
+    // Empty path.
+    tree.removeFieldPath("");
+    assertEquals(initialTreeString, tree.toString());
+    // Non-exist sub-path of an existing leaf.
+    tree.removeFieldPath("foo.bar");
+    assertEquals(initialTreeString, tree.toString());
+    // Non-exist path.
+    tree.removeFieldPath("bar.foo");
+    assertEquals(initialTreeString, tree.toString());
+    // Match an existing leaf node.
+    tree.removeFieldPath("foo");
+    assertEquals("bar.baz,bar.quz.bar", tree.toString());
+    // Match sub-path of an existing leaf node.
+    tree.removeFieldPath("bar.quz.bar");
+    assertEquals("bar.baz,bar.quz", tree.toString());
+    // Match a non-leaf node.
+    tree.removeFieldPath("bar");
+    assertThat(tree.toString()).isEmpty();
+  }
+
+  public void testRemoveFromFieldMask() throws Exception {
+    FieldMaskTree tree = new FieldMaskTree(FieldMaskUtil.fromString("foo,bar.baz,bar.quz"));
+    assertEquals("bar.baz,bar.quz,foo", tree.toString());
+    tree.removeFromFieldMask(FieldMaskUtil.fromString("foo.bar,bar"));
+    assertEquals("foo", tree.toString());
+  }
+
   public void testIntersectFieldPath() throws Exception {
     FieldMaskTree tree = new FieldMaskTree(FieldMaskUtil.fromString("foo,bar.baz,bar.quz"));
     FieldMaskTree result = new FieldMaskTree();
     // Empty path.
     tree.intersectFieldPath("", result);
-    assertEquals("", result.toString());
+    assertThat(result.toString()).isEmpty();
     // Non-exist path.
     tree.intersectFieldPath("quz", result);
-    assertEquals("", result.toString());
+    assertThat(result.toString()).isEmpty();
     // Sub-path of an existing leaf.
     tree.intersectFieldPath("foo.bar", result);
     assertEquals("foo.bar", result.toString());
