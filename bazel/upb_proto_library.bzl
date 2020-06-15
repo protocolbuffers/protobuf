@@ -120,6 +120,9 @@ _WrappedGeneratedSrcsInfo = provider(fields = ["srcs"])
 _WrappedDefsGeneratedSrcsInfo = provider(fields = ["srcs"])
 
 def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
+    if len(proto_sources) == 0:
+        return GeneratedSrcsInfo(srcs = [], hdrs = [])
+
     srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
     hdrs = [_generate_output_file(ctx, name, ext + ".h") for name in proto_sources]
     transitive_sets = proto_info.transitive_descriptor_sets.to_list()

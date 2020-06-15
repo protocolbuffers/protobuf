@@ -281,7 +281,9 @@ std::string FieldDefault(const protobuf::FieldDescriptor* field) {
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "true" : "false";
     case protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      return EnumValueSymbol(field->default_value_enum());
+      // Use a number instead of a symbolic name so that we don't require
+      // this enum's header to be included.
+      return absl::StrCat(field->default_value_enum()->number());
   }
   ABSL_ASSERT(false);
   return "XXX";
