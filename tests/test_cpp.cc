@@ -50,7 +50,7 @@ static const int kExpectedHandlerData = 1232323;
 
 class StringBufTesterBase {
  public:
-  static const int kFieldNumber = 3;
+  static constexpr int kFieldNumber = 3;
 
   StringBufTesterBase() : seen_(false), handler_data_val_(0) {}
 
@@ -286,7 +286,7 @@ class StartMsgTesterBase {
  public:
   // We don't need the FieldDef it will create, but the test harness still
   // requires that we provide one.
-  static const int kFieldNumber = 3;
+  static constexpr int kFieldNumber = 3;
 
   StartMsgTesterBase() : seen_(false), handler_data_val_(0) {}
 
@@ -437,7 +437,7 @@ class StartMsgTesterBoolMethodWithHandlerData : public StartMsgTesterBase {
 
 class Int32ValueTesterBase {
  public:
-  static const int kFieldNumber = 1;
+  static constexpr int kFieldNumber = 1;
 
   Int32ValueTesterBase() : seen_(false), val_(0), handler_data_val_(0) {}
 

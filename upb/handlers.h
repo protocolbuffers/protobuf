@@ -106,7 +106,7 @@ typedef struct {
 #define UPB_HANDLERATTR_INIT {NULL, NULL, NULL, false}
 
 /* Bufhandle, data passed along with a buffer to indicate its provenance. */
-typedef struct {
+struct upb_bufhandle {
   /* The beginning of the buffer.  This may be different than the pointer
    * passed to a StringBuf handler because the handler may receive data
    * that is from the middle or end of a larger buffer. */
@@ -133,7 +133,9 @@ typedef struct {
                                             : NULL;
   }
 #endif
-} upb_bufhandle;
+};
+
+typedef struct upb_bufhandle upb_bufhandle;
 
 #define UPB_BUFHANDLE_INIT {NULL, 0, NULL, NULL}
 
