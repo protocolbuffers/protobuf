@@ -276,6 +276,16 @@ public final class FieldMaskUtil {
     return maskTree.toFieldMask();
   }
 
+  /** Subtracts {@code secondMask} and {@code otherMasks} from {@code firstMask}. */
+  public static FieldMask subtract(
+      FieldMask firstMask, FieldMask secondMask, FieldMask... otherMasks) {
+    FieldMaskTree maskTree = new FieldMaskTree(firstMask).removeFromFieldMask(secondMask);
+    for (FieldMask mask : otherMasks) {
+      maskTree.removeFromFieldMask(mask);
+    }
+    return maskTree.toFieldMask();
+  }
+
   /**
    * Calculates the intersection of two FieldMasks.
    */

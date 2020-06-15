@@ -30,6 +30,7 @@
 
 package com.google.protobuf.util;
 
+import com.google.common.base.Splitter;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -66,7 +67,7 @@ final class FieldMaskTree {
   private static final String FIELD_PATH_SEPARATOR_REGEX = "\\.";
 
   private static final class Node {
-    final SortedMap<String, Node> children = new TreeMap<String, Node>();
+    final SortedMap<String, Node> children = new TreeMap<>();
   }
 
   private final Node root = new Node();
@@ -97,6 +98,7 @@ final class FieldMaskTree {
    * to add is a sub-path of an existing leaf node, nothing will be changed in the tree.
    */
   @CanIgnoreReturnValue
+  @SuppressWarnings("StringSplitter")
   FieldMaskTree addFieldPath(String path) {
     String[] parts = path.split(FIELD_PATH_SEPARATOR_REGEX);
     if (parts.length == 0) {
@@ -135,13 +137,52 @@ final class FieldMaskTree {
   }
 
   /**
+   * Remove {@code path} from the tree.
+   *
+   * <p>When removing a field path from the tree, all sub-paths will be removed. That is, after
+   * removing "foo.bar" from the tree, "foo.bar.baz" will be removed. Likewise, if the field path to
+   * remove is a non-exist sub-path, nothing will be changed.
+   */
+  @CanIgnoreReturnValue
+  FieldMaskTree removeFieldPath(String path) {
+    List<String> parts = Splitter.onPattern(FIELD_PATH_SEPARATOR_REGEX).splitToList(path);
+    if (parts.isEmpty()) {
+      return this;
+    }
+    Node node = root;
+    for (int i = 0; i < parts.size(); i++) {
+      String key = parts.get(i);
+      if (!node.children.containsKey(key)) {
+        // Path does not exist.
+        return this;
+      }
+      if (i == parts.size() - 1) {
+        // Remove path.
+        node.children.remove(key);
+        return this;
+      }
+      node = node.children.get(key);
+    }
+    return this;
+  }
+
+  /** Removes all field paths in {@code mask} from this tree. */
+  @CanIgnoreReturnValue
+  FieldMaskTree removeFromFieldMask(FieldMask mask) {
+    for (String path : mask.getPathsList()) {
+      removeFieldPath(path);
+    }
+    return this;
+  }
+
+  /**
    * Converts this tree to a FieldMask.
    */
   FieldMask toFieldMask() {
     if (root.children.isEmpty()) {
       return FieldMask.getDefaultInstance();
     }
-    List<String> paths = new ArrayList<String>();
+    List<String> paths = new ArrayList<>();
     getFieldPaths(root, "", paths);
     return FieldMask.newBuilder().addAllPaths(paths).build();
   }
@@ -186,7 +227,7 @@ final class FieldMaskTree {
     }
     // We found a matching node for the path. All leaf children of this matching
     // node is in the intersection.
-    List<String> paths = new ArrayList<String>();
+    List<String> paths = new ArrayList<>();
     getFieldPaths(node, path, paths);
     for (String value : paths) {
       output.addFieldPath(value);

@@ -115,7 +115,7 @@ inline bool CodeGeneratorResponse_Feature_Parse(
 class PROTOC_EXPORT Version PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
  public:
-  inline Version() : Version(nullptr) {};
+  inline Version() : Version(nullptr) {}
   virtual ~Version();
 
   Version(const Version& from);
@@ -316,7 +316,7 @@ class PROTOC_EXPORT Version PROTOBUF_FINAL :
 class PROTOC_EXPORT CodeGeneratorRequest PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
-  inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {};
+  inline CodeGeneratorRequest() : CodeGeneratorRequest(nullptr) {}
   virtual ~CodeGeneratorRequest();
 
   CodeGeneratorRequest(const CodeGeneratorRequest& from);
@@ -538,7 +538,7 @@ class PROTOC_EXPORT CodeGeneratorRequest PROTOBUF_FINAL :
 class PROTOC_EXPORT CodeGeneratorResponse_File PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
-  inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {};
+  inline CodeGeneratorResponse_File() : CodeGeneratorResponse_File(nullptr) {}
   virtual ~CodeGeneratorResponse_File();
 
   CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from);
@@ -738,7 +738,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File PROTOBUF_FINAL :
 class PROTOC_EXPORT CodeGeneratorResponse PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
-  inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {};
+  inline CodeGeneratorResponse() : CodeGeneratorResponse(nullptr) {}
   virtual ~CodeGeneratorResponse();
 
   CodeGeneratorResponse(const CodeGeneratorResponse& from);

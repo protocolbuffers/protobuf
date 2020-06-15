@@ -439,42 +439,49 @@ class RepeatedField final {
   //
   // The first version executes at 7 cycles per iteration while the second
   // version near 1 or 2 cycles.
-  class FastAdder {
+  template <int = 0, bool = std::is_pod<Element>::value>
+  class FastAdderImpl {
    public:
-    explicit FastAdder(RepeatedField* rf) : repeated_field_(rf) {
-      if (kIsPod) {
-        index_ = repeated_field_->current_size_;
+    explicit FastAdderImpl(RepeatedField* rf) : repeated_field_(rf) {
+      index_ = repeated_field_->current_size_;
+      capacity_ = repeated_field_->total_size_;
+      buffer_ = repeated_field_->unsafe_elements();
+    }
+    ~FastAdderImpl() { repeated_field_->current_size_ = index_; }
+
+    void Add(Element val) {
+      if (index_ == capacity_) {
+        repeated_field_->current_size_ = index_;
+        repeated_field_->Reserve(index_ + 1);
         capacity_ = repeated_field_->total_size_;
         buffer_ = repeated_field_->unsafe_elements();
       }
-    }
-    ~FastAdder() {
-      if (kIsPod) repeated_field_->current_size_ = index_;
-    }
-
-    void Add(const Element& val) {
-      if (kIsPod) {
-        if (index_ == capacity_) {
-          repeated_field_->current_size_ = index_;
-          repeated_field_->Reserve(index_ + 1);
-          capacity_ = repeated_field_->total_size_;
-          buffer_ = repeated_field_->unsafe_elements();
-        }
-        buffer_[index_++] = val;
-      } else {
-        repeated_field_->Add(val);
-      }
+      buffer_[index_++] = val;
     }
 
    private:
-    constexpr static bool kIsPod = std::is_pod<Element>::value;
     RepeatedField* repeated_field_;
     int index_;
     int capacity_;
     Element* buffer_;
 
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastAdder);
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastAdderImpl);
   };
+
+  // FastAdder is a wrapper for adding fields. The specialization above handles
+  // POD types more efficiently than RepeatedField.
+  template <int I>
+  class FastAdderImpl<I, false> {
+   public:
+    explicit FastAdderImpl(RepeatedField* rf) : repeated_field_(rf) {}
+    void Add(const Element& val) { repeated_field_->Add(val); }
+
+   private:
+    RepeatedField* repeated_field_;
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastAdderImpl);
+  };
+
+  using FastAdder = FastAdderImpl<>;
 
   friend class TestRepeatedFieldHelper;
   friend class ::google::protobuf::internal::ParseContext;
@@ -1329,8 +1336,15 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 template <typename Element>
 inline void RepeatedField<Element>::Add(const Element& value) {
   uint32 size = current_size_;
-  if (static_cast<int>(size) == total_size_) Reserve(total_size_ + 1);
-  elements()[size] = value;
+  if (static_cast<int>(size) == total_size_) {
+    // value could reference an element of the array. Reserving new space will
+    // invalidate the reference. So we must make a copy first.
+    auto tmp = value;
+    Reserve(total_size_ + 1);
+    elements()[size] = std::move(tmp);
+  } else {
+    elements()[size] = value;
+  }
   current_size_ = size + 1;
 }
 

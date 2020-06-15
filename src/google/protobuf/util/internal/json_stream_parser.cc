@@ -82,8 +82,8 @@ inline bool IsAlphanumeric(char c) {
 
 // Indicates a character may not be part of an unquoted key.
 inline bool IsKeySeparator(char c) {
-  return (ascii_isspace(c) || c == '"' || c == '\'' || c == '{' || c == '}' ||
-          c == '[' || c == ']' || c == ':' || c == ',');
+  return (ascii_isspace(c) || c == '"' || c == '\'' || c == '{' ||
+          c == '}' || c == '[' || c == ']' || c == ':' || c == ',');
 }
 
 inline void ReplaceInvalidCodePoints(StringPiece str,
