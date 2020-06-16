@@ -147,3 +147,7 @@ message NullValueOutsideStruct {
     google.protobuf.NullValue null_value = 2;
   }
 }
+
+message NullValueNotInOneof {
+  google.protobuf.NullValue null_value = 2;
+}

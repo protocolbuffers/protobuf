@@ -233,6 +233,21 @@ namespace Google.Protobuf
             AssertJson("{ 'nullValue': null }", JsonFormatter.Default.Format(message));
         }
 
+        [Test]
+        public void NullValueNotInOneof()
+        {
+            var message = new NullValueNotInOneof();
+            AssertJson("{ }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void NullValueNotInOneof_FormatDefaults()
+        {
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithFormatDefaultValues(true));
+            var message = new NullValueNotInOneof();
+            AssertJson("{ 'nullValue': null }", formatter.Format(message));
+        }
+
         [TestCase(1.0, "1")]
         [TestCase(double.NaN, "'NaN'")]
         [TestCase(double.PositiveInfinity, "'Infinity'")]

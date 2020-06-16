@@ -50,11 +50,13 @@ namespace UnitTest.Issues.TestProtos {
             "ZXJnaW5nLk5lc3RlZEgAGh4KBk5lc3RlZBIJCgF4GAEgASgFEgkKAXkYAiAB",
             "KAVCBwoFdmFsdWUiawoWTnVsbFZhbHVlT3V0c2lkZVN0cnVjdBIWCgxzdHJp",
             "bmdfdmFsdWUYASABKAlIABIwCgpudWxsX3ZhbHVlGAIgASgOMhouZ29vZ2xl",
-            "LnByb3RvYnVmLk51bGxWYWx1ZUgAQgcKBXZhbHVlKlUKDE5lZ2F0aXZlRW51",
-            "bRIWChJORUdBVElWRV9FTlVNX1pFUk8QABIWCglGaXZlQmVsb3cQ+///////",
-            "////ARIVCghNaW51c09uZRD///////////8BKi4KDkRlcHJlY2F0ZWRFbnVt",
-            "EhMKD0RFUFJFQ0FURURfWkVSTxAAEgcKA29uZRABQh2qAhpVbml0VGVzdC5J",
-            "c3N1ZXMuVGVzdFByb3Rvc2IGcHJvdG8z"));
+            "LnByb3RvYnVmLk51bGxWYWx1ZUgAQgcKBXZhbHVlIkUKE051bGxWYWx1ZU5v",
+            "dEluT25lb2YSLgoKbnVsbF92YWx1ZRgCIAEoDjIaLmdvb2dsZS5wcm90b2J1",
+            "Zi5OdWxsVmFsdWUqVQoMTmVnYXRpdmVFbnVtEhYKEk5FR0FUSVZFX0VOVU1f",
+            "WkVSTxAAEhYKCUZpdmVCZWxvdxD7//////////8BEhUKCE1pbnVzT25lEP//",
+            "/////////wEqLgoORGVwcmVjYXRlZEVudW0SEwoPREVQUkVDQVRFRF9aRVJP",
+            "EAASBwoDb25lEAFCHaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZw",
+            "cm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -67,7 +69,8 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering), global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering.Parser, new[]{ "PlainInt32", "O1String", "O1Int32", "PlainString", "O2Int32", "O2String" }, new[]{ "O1", "O2" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonName), global::UnitTest.Issues.TestProtos.TestJsonName.Parser, new[]{ "Name", "Description", "Guid" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging), global::UnitTest.Issues.TestProtos.OneofMerging.Parser, new[]{ "Text", "Nested" }, new[]{ "Value" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested), global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested.Parser, new[]{ "X", "Y" }, null, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueOutsideStruct), global::UnitTest.Issues.TestProtos.NullValueOutsideStruct.Parser, new[]{ "StringValue", "NullValue" }, new[]{ "Value" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueOutsideStruct), global::UnitTest.Issues.TestProtos.NullValueOutsideStruct.Parser, new[]{ "StringValue", "NullValue" }, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueNotInOneof), global::UnitTest.Issues.TestProtos.NullValueNotInOneof.Parser, new[]{ "NullValue" }, null, null, null, null)
           }));
     }
     #endregion
@@ -3099,6 +3102,161 @@ namespace UnitTest.Issues.TestProtos {
           case 16: {
             value_ = input.ReadEnum();
             valueCase_ = ValueOneofCase.NullValue;
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class NullValueNotInOneof : pb::IMessage<NullValueNotInOneof>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<NullValueNotInOneof> _parser = new pb::MessageParser<NullValueNotInOneof>(() => new NullValueNotInOneof());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<NullValueNotInOneof> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[10]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueNotInOneof() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueNotInOneof(NullValueNotInOneof other) : this() {
+      nullValue_ = other.nullValue_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueNotInOneof Clone() {
+      return new NullValueNotInOneof(this);
+    }
+
+    /// <summary>Field number for the "null_value" field.</summary>
+    public const int NullValueFieldNumber = 2;
+    private global::Google.Protobuf.WellKnownTypes.NullValue nullValue_ = global::Google.Protobuf.WellKnownTypes.NullValue.NullValue;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.NullValue NullValue {
+      get { return nullValue_; }
+      set {
+        nullValue_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as NullValueNotInOneof);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(NullValueNotInOneof other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (NullValue != other.NullValue) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) hash ^= NullValue.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) NullValue);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) NullValue);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(NullValueNotInOneof other) {
+      if (other == null) {
+        return;
+      }
+      if (other.NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        NullValue = other.NullValue;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 16: {
+            NullValue = (global::Google.Protobuf.WellKnownTypes.NullValue) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 16: {
+            NullValue = (global::Google.Protobuf.WellKnownTypes.NullValue) input.ReadEnum();
             break;
           }
         }
