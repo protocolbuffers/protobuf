@@ -83,6 +83,9 @@ const zval *get_generated_pool() {
   return &PROTOBUF_G(generated_pool);
 }
 
+// This is a PHP extension (not a Zend extension). What follows is a summary of
+// a PHP extension's lifetime and when various handlers are called.
+//
 //  * PHP_GINIT_FUNCTION(protobuf) / PHP_GSHUTDOWN_FUNCTION(protobuf)
 //    are the constructor/destructor for the globals. The sequence over the
 //    course of a process lifetime is:

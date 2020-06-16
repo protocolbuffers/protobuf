@@ -33,6 +33,9 @@
 #include <Zend/zend_API.h>
 #include <Zend/zend_interfaces.h>
 
+// Must be last.
+#include <Zend/zend_exceptions.h>
+
 #include <ext/spl/spl_iterators.h>
 
 #include "arena.h"
@@ -315,7 +318,9 @@ PHP_METHOD(RepeatedField, offsetSet) {
     return;
   }
 
-  if (index == size) {
+  if (index > size) {
+    zend_error(NULL, 0, "Element at index %ld doesn't exist.\n", index);
+  } else if (index == size) {
     upb_array_append(intern->array, msgval, Arena_Get(&intern->arena));
   } else {
     upb_array_set(intern->array, index, msgval);

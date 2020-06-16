@@ -31,11 +31,16 @@
 #ifndef PHP_PROTOBUF_BUNDLED_PHP_H_
 #define PHP_PROTOBUF_BUNDLED_PHP_H_
 
+// We embed PHP source code into the binary for things we don't want to
+// implement in C. This struct serves as a table of contents for all of
+// the embedded files.
 typedef struct {
   const char *filename;
   const char *contents;
 } BundledPhp_File;
 
+// An array of all the embedded file structs. This array is terminated with a
+// {NULL, NULL} entry.
 extern BundledPhp_File *bundled_files;
 
 #endif  // PHP_PROTOBUF_BUNDLED_PHP_H_

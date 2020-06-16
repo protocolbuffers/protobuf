@@ -138,7 +138,7 @@ upb_fieldtype_t pbphp_dtype_to_type(upb_descriptortype_t type) {
   CASE(SFIXED32, INT32);
   CASE(SFIXED64, INT64);
 
-#undef CONVERT
+#undef CASE
 
   }
 
@@ -149,7 +149,7 @@ upb_fieldtype_t pbphp_dtype_to_type(upb_descriptortype_t type) {
 static bool buftouint64(const char *ptr, const char *end, uint64_t *val) {
   uint64_t u64 = 0;
   while (ptr < end) {
-    unsigned ch = *ptr - '0';
+    unsigned ch = (unsigned)(*ptr - '0');
     if (ch >= 10) break;
     if (u64 > UINT64_MAX / 10 || u64 * 10 > UINT64_MAX - ch) {
       return false;

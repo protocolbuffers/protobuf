@@ -47,7 +47,7 @@ bool Convert_PhpToInt64(zval *php_val, int64_t *i64);
 // If type is string, message, or bytes, then |arena| will be used to copy
 // string data or fuse this arena to the given message's arena.
 bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, upb_fieldtype_t type,
-                    const Descriptor *desc, upb_arena *arena);
+                      const Descriptor *desc, upb_arena *arena);
 
 // Similar to Convert_PhpToUpb, but supports automatically wrapping the wrapper
 // types if a primitive is specified:

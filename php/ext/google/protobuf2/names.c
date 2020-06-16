@@ -97,14 +97,29 @@ bool is_reserved_name(const char* name) {
   return false;
 }
 
+static char nolocale_tolower(char ch) {
+  if (ch >= 'A' && ch <= 'Z') {
+    return ch - ('A' - 'a');
+  } else {
+    return ch;
+  }
+}
+
+static char nolocale_toupper(char ch) {
+  if (ch >= 'a' && ch <= 'z') {
+    return ch - ('a' - 'A');
+  } else {
+    return ch;
+  }
+}
+
 static bool is_reserved(const char *segment, int length) {
   bool result;
-  char* lower = malloc(length + 1);
-  memset(lower, 0, length + 1);
+  char* lower = calloc(1, length + 1);
   memcpy(lower, segment, length);
   int i = 0;
   while(lower[i]) {
-    lower[i] = (char)tolower(lower[i]);
+    lower[i] = nolocale_tolower(lower[i]);
     i++;
   }
   lower[length] = 0;
@@ -134,7 +149,7 @@ static void fill_prefix(const char *segment, int length,
 static void fill_segment(const char *segment, int length,
                          stringsink *classname, bool use_camel) {
   if (use_camel && (segment[0] < 'A' || segment[0] > 'Z')) {
-    char first = segment[0] + ('A' - 'a');
+    char first = nolocale_toupper(segment[0]);
     stringsink_string(classname, &first, 1);
     stringsink_string(classname, segment + 1, length - 1);
   } else {
