@@ -983,6 +983,15 @@ namespace Google.Protobuf
             Assert.AreEqual(NullValueOutsideStruct.ValueOneofCase.NullValue, message.ValueCase);
         }
 
+        [Test]
+        public void NullValueNotInOneof_NullLiteral()
+        {
+            // We'd only normally see this with FormatDefaultValues set to true.
+            string json = "{ \"nullValue\": null }";
+            var message = NullValueNotInOneof.Parser.ParseJson(json);
+            Assert.AreEqual(NullValue.NullValue, message.NullValue);
+        }
+
         // NullValue used to only be converted to the null literal when part of a struct.
         // Otherwise, it would end up as a string "NULL_VALUE" (the name of the enum value).
         // We still parse that form, for compatibility.
@@ -992,6 +1001,15 @@ namespace Google.Protobuf
             string json = "{ \"nullValue\": \"NULL_VALUE\" }";
             var message = NullValueOutsideStruct.Parser.ParseJson(json);
             Assert.AreEqual(NullValueOutsideStruct.ValueOneofCase.NullValue, message.ValueCase);
+        }
+
+        [Test]
+        public void NullValueNotInOneof_Compatibility()
+        {
+            // We'd only normally see this with FormatDefaultValues set to true.
+            string json = "{ \"nullValue\": \"NULL_VALUE\" }";
+            var message = NullValueNotInOneof.Parser.ParseJson(json);
+            Assert.AreEqual(NullValue.NullValue, message.NullValue);
         }
 
         /// <summary>
