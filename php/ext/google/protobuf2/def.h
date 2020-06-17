@@ -35,6 +35,7 @@
 
 #include "php-upb.h"
 
+// Initializes the Def module, which defines all of the descriptor classes.
 void Def_ModuleInit();
 
 // Creates a new DescriptorPool to wrap the given symtab. The DescriptorPool

@@ -32,7 +32,7 @@
 
 #include <php.h>
 
-// Must be last.
+// This is not self-contained: it must be after other Zend includes.
 #include <Zend/zend_exceptions.h>
 
 #include "names.h"
@@ -150,7 +150,9 @@ void EnumDescriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
 }
 
 void EnumDescriptor_FromEnumDef(zval *val, const upb_enumdef *m) {
-  if (m) {
+  if (!m) {
+    ZVAL_NULL(val);
+  } else {
     char *classname =
         GetPhpClassname(upb_enumdef_file(m), upb_enumdef_fullname(m));
     zend_string *str = zend_string_init(classname, strlen(classname), 0);
@@ -164,8 +166,6 @@ void EnumDescriptor_FromEnumDef(zval *val, const upb_enumdef *m) {
 
     free(classname);
     EnumDescriptor_FromClassEntry(val, ce);
-  } else {
-    ZVAL_NULL(val);
   }
 }
 

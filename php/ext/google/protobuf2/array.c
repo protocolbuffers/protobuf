@@ -33,10 +33,10 @@
 #include <Zend/zend_API.h>
 #include <Zend/zend_interfaces.h>
 
-// Must be last.
-#include <Zend/zend_exceptions.h>
-
 #include <ext/spl/spl_iterators.h>
+
+// This is not self-contained: it must be after other Zend includes.
+#include <Zend/zend_exceptions.h>
 
 #include "arena.h"
 #include "convert.h"
@@ -319,7 +319,7 @@ PHP_METHOD(RepeatedField, offsetSet) {
   }
 
   if (index > size) {
-    zend_error(NULL, 0, "Element at index %ld doesn't exist.\n", index);
+    zend_error(E_USER_ERROR, "Element at index %ld doesn't exist.\n", index);
   } else if (index == size) {
     upb_array_append(intern->array, msgval, Arena_Get(&intern->arena));
   } else {

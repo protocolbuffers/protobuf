@@ -34,7 +34,7 @@
 #include <php.h>
 #include <stdlib.h>
 
-// Must be last.
+// This is not self-contained: it must be after other Zend includes.
 #include <Zend/zend_exceptions.h>
 
 #include "arena.h"
