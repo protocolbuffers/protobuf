@@ -11,16 +11,25 @@ Unreleased Changes
   * Added more Windows macros to proto whitelist.
   * Arena constructors for map entry messages are now marked "explicit"
     (for regular messages they were already explicit).
+  * Fix subtle aliasing bug in RepeatedField::Add
+  * Fix mismatch between MapEntry ByteSize and Serialize with respect to unset
+    fields.
 
   Python:
-  * Reject lowercase t for Timestamp json format. Fixes a conformance test.
+  * JSON format conformance fixes:
+    * Reject lowercase t for Timestamp json format.
+    * Print full_name directly for extensions (no camelCase).
+    * Reject boolean values for integer fields.
+    * Reject NaN, Infinity, -Infinity that is not quoted.
+    * Base64 fixes for bytes fields: accept URL-safe base64 and missing padding.
+  * Bugfix for fields/files named "async" or "await".
   * Improved the error message when AttributeError is returned from __getattr__
     in EnumTypeWrapper.
-  * Json format will print full_name directly for extensions.
 
   Java:
   * Fixed a bug where setting optional proto3 enums with setFooValue() would
     not mark the value as present.
+  * Add Subtract function to FieldMaskUtil.
 
   C#:
   * Dropped support for netstandard1.0 (replaced by support for netstandard1.1).

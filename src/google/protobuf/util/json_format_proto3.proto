@@ -91,6 +91,7 @@ message TestOneof {
     bytes oneof_bytes_value = 3;
     EnumType oneof_enum_value = 4;
     MessageType oneof_message_value = 5;
+    google.protobuf.NullValue oneof_null_value = 6;
   }
 }
 

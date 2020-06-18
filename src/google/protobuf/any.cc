@@ -46,7 +46,7 @@ void AnyMetadata::PackFrom(const Message& message) {
 }
 
 void AnyMetadata::PackFrom(const Message& message,
-                           const std::string& type_url_prefix) {
+                           StringPiece type_url_prefix) {
   type_url_->SetNoArena(
       &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
       GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix));

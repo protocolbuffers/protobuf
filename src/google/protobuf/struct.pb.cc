@@ -136,11 +136,10 @@ const char descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto[] PROTOB
   "\000\0220\n\nlist_value\030\006 \001(\0132\032.google.protobuf."
   "ListValueH\000B\006\n\004kind\"3\n\tListValue\022&\n\006valu"
   "es\030\001 \003(\0132\026.google.protobuf.Value*\033\n\tNull"
-  "Value\022\016\n\nNULL_VALUE\020\000B\201\001\n\023com.google.pro"
-  "tobufB\013StructProtoP\001Z1github.com/golang/"
-  "protobuf/ptypes/struct;structpb\370\001\001\242\002\003GPB"
-  "\252\002\036Google.Protobuf.WellKnownTypesb\006proto"
-  "3"
+  "Value\022\016\n\nNULL_VALUE\020\000B\177\n\023com.google.prot"
+  "obufB\013StructProtoP\001Z/google.golang.org/p"
+  "rotobuf/types/known/structpb\370\001\001\242\002\003GPB\252\002\036"
+  "Google.Protobuf.WellKnownTypesb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fstruct_2eproto_deps[1] = {
 };
@@ -149,7 +148,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_goo
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fstruct_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto, "google/protobuf/struct.proto", 641,
+  false, false, descriptor_table_protodef_google_2fprotobuf_2fstruct_2eproto, "google/protobuf/struct.proto", 638,
   &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once, descriptor_table_google_2fprotobuf_2fstruct_2eproto_sccs, descriptor_table_google_2fprotobuf_2fstruct_2eproto_deps, 1, 0,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fstruct_2eproto, 4, file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto, file_level_service_descriptors_google_2fprotobuf_2fstruct_2eproto,

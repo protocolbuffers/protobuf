@@ -100,20 +100,20 @@ bool AnyMetadata::InternalIs(StringPiece type_name) const {
          HasSuffixString(type_url, type_name);
 }
 
-bool ParseAnyTypeUrl(const std::string& type_url, std::string* url_prefix,
+bool ParseAnyTypeUrl(StringPiece type_url, std::string* url_prefix,
                      std::string* full_type_name) {
   size_t pos = type_url.find_last_of("/");
   if (pos == std::string::npos || pos + 1 == type_url.size()) {
     return false;
   }
   if (url_prefix) {
-    *url_prefix = type_url.substr(0, pos + 1);
+    *url_prefix = std::string(type_url.substr(0, pos + 1));
   }
-  *full_type_name = type_url.substr(pos + 1);
+  *full_type_name = std::string(type_url.substr(pos + 1));
   return true;
 }
 
-bool ParseAnyTypeUrl(const std::string& type_url, std::string* full_type_name) {
+bool ParseAnyTypeUrl(StringPiece type_url, std::string* full_type_name) {
   return ParseAnyTypeUrl(type_url, nullptr, full_type_name);
 }
 

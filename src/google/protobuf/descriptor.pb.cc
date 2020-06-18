@@ -1156,11 +1156,10 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
   "tation\030\001 \003(\0132-.google.protobuf.Generated"
   "CodeInfo.Annotation\032O\n\nAnnotation\022\020\n\004pat"
   "h\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begi"
-  "n\030\003 \001(\005\022\013\n\003end\030\004 \001(\005B\217\001\n\023com.google.prot"
-  "obufB\020DescriptorProtosH\001Z>github.com/gol"
-  "ang/protobuf/protoc-gen-go/descriptor;de"
-  "scriptor\370\001\001\242\002\003GPB\252\002\032Google.Protobuf.Refl"
-  "ection"
+  "n\030\003 \001(\005\022\013\n\003end\030\004 \001(\005B~\n\023com.google.proto"
+  "bufB\020DescriptorProtosH\001Z-google.golang.o"
+  "rg/protobuf/types/descriptorpb\370\001\001\242\002\003GPB\252"
+  "\002\032Google.Protobuf.Reflection"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_deps[1] = {
 };
@@ -1195,7 +1194,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_goo
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto, "google/protobuf/descriptor.proto", 6046,
+  false, false, descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto, "google/protobuf/descriptor.proto", 6028,
   &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once, descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_sccs, descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_deps, 27, 0,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto, 27, file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto, file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto,

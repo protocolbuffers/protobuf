@@ -180,10 +180,9 @@ const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2epro
   "atorResponse.File\032>\n\004File\022\014\n\004name\030\001 \001(\t\022"
   "\027\n\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001("
   "\t\"8\n\007Feature\022\020\n\014FEATURE_NONE\020\000\022\033\n\027FEATUR"
-  "E_PROTO3_OPTIONAL\020\001Bg\n\034com.google.protob"
-  "uf.compilerB\014PluginProtosZ9github.com/go"
-  "lang/protobuf/protoc-gen-go/plugin;plugi"
-  "n_go"
+  "E_PROTO3_OPTIONAL\020\001BW\n\034com.google.protob"
+  "uf.compilerB\014PluginProtosZ)google.golang"
+  ".org/protobuf/types/pluginpb"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps[1] = {
   &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
@@ -196,7 +195,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_goo
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto, "google/protobuf/compiler/plugin.proto", 724,
+  false, false, descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto, "google/protobuf/compiler/plugin.proto", 708,
   &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once, descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_sccs, descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_deps, 4, 1,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto, 4, file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto, file_level_service_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto,

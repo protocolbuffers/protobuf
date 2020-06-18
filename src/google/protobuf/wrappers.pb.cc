@@ -270,11 +270,11 @@ const char descriptor_table_protodef_google_2fprotobuf_2fwrappers_2eproto[] PROT
   "e\030\001 \001(\004\"\033\n\nInt32Value\022\r\n\005value\030\001 \001(\005\"\034\n\013"
   "UInt32Value\022\r\n\005value\030\001 \001(\r\"\032\n\tBoolValue\022"
   "\r\n\005value\030\001 \001(\010\"\034\n\013StringValue\022\r\n\005value\030\001"
-  " \001(\t\"\033\n\nBytesValue\022\r\n\005value\030\001 \001(\014B|\n\023com"
-  ".google.protobufB\rWrappersProtoP\001Z*githu"
-  "b.com/golang/protobuf/ptypes/wrappers\370\001\001"
-  "\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTypesb"
-  "\006proto3"
+  " \001(\t\"\033\n\nBytesValue\022\r\n\005value\030\001 \001(\014B\203\001\n\023co"
+  "m.google.protobufB\rWrappersProtoP\001Z1goog"
+  "le.golang.org/protobuf/types/known/wrapp"
+  "erspb\370\001\001\242\002\003GPB\252\002\036Google.Protobuf.WellKno"
+  "wnTypesb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fwrappers_2eproto_deps[1] = {
 };
@@ -291,7 +291,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_goo
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fwrappers_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2fwrappers_2eproto, "google/protobuf/wrappers.proto", 447,
+  false, false, descriptor_table_protodef_google_2fprotobuf_2fwrappers_2eproto, "google/protobuf/wrappers.proto", 455,
   &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once, descriptor_table_google_2fprotobuf_2fwrappers_2eproto_sccs, descriptor_table_google_2fprotobuf_2fwrappers_2eproto_deps, 9, 0,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto, 9, file_level_enum_descriptors_google_2fprotobuf_2fwrappers_2eproto, file_level_service_descriptors_google_2fprotobuf_2fwrappers_2eproto,
