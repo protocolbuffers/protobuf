@@ -495,12 +495,8 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
   do {
     ret = stat(filename.c_str(), &sb);
   } while (ret != 0 && errno == EINTR);
-#ifdef _WIN32
-  if ((sb.st_mode & _S_IFMT) == _S_IFREG) {
-#else
-  if (!S_ISREG(sb.st_mode)) {
-#endif
-    last_error_message_ = "Input file is not a regular file.";
+  if (sb.st_mode & S_IFDIR) {
+    last_error_message_ = "Input file is a directory.";
     return NULL;
   }
   int file_descriptor;
