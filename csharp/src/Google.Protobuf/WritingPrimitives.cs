@@ -64,7 +64,7 @@ namespace Google.Protobuf
         public static unsafe void WriteFloat(ref Span<byte> buffer, ref WriterInternalState state, float value)
         {
             const int length = sizeof(float);
-            if (state.limit - state.position >= length)
+            if (buffer.Length - state.position >= length)
             {
                 // if there's enough space in the buffer, write the float directly into the buffer
                 var floatSpan = buffer.Slice(state.position, length);
@@ -78,19 +78,27 @@ namespace Google.Protobuf
             }
             else
             {
-                Span<byte> floatSpan = stackalloc byte[length];
-                Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(floatSpan), value);
-
-                if (!BitConverter.IsLittleEndian)
-                {
-                    floatSpan.Reverse();
-                }
-
-                WriteRawByte(ref buffer, ref state, floatSpan[0]);
-                WriteRawByte(ref buffer, ref state, floatSpan[1]);
-                WriteRawByte(ref buffer, ref state, floatSpan[2]);
-                WriteRawByte(ref buffer, ref state, floatSpan[3]);
+                WriteFloatSlowPath(ref buffer, ref state, value);
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static unsafe void WriteFloatSlowPath(ref Span<byte> buffer, ref WriterInternalState state, float value)
+        {
+            const int length = sizeof(float);
+
+            // TODO(jtattermusch): deduplicate the code. Populating the span is the same as for the fastpath.
+            Span<byte> floatSpan = stackalloc byte[length];
+            Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(floatSpan), value);
+            if (!BitConverter.IsLittleEndian)
+            {
+                floatSpan.Reverse();
+            }
+
+            WriteRawByte(ref buffer, ref state, floatSpan[0]);
+            WriteRawByte(ref buffer, ref state, floatSpan[1]);
+            WriteRawByte(ref buffer, ref state, floatSpan[2]);
+            WriteRawByte(ref buffer, ref state, floatSpan[3]);
         }
 
         /// <summary>
