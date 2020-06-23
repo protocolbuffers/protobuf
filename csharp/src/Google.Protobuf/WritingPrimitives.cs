@@ -340,12 +340,9 @@ namespace Google.Protobuf
         public static void WriteRawLittleEndian32(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             const int length = sizeof(uint);
-            if (state.position + length > state.limit)
+            if (state.position + length > buffer.Length)
             {
-                WriteRawByte(ref buffer, ref state, (byte)value);
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 16));
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 24));
+                WriteRawLittleEndian32SlowPath(ref buffer, ref state, value);
             }
             else
             {
@@ -354,19 +351,21 @@ namespace Google.Protobuf
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void WriteRawLittleEndian32SlowPath(ref Span<byte> buffer, ref WriterInternalState state, uint value)
+        {
+            WriteRawByte(ref buffer, ref state, (byte)value);
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 16));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 24));
+        }
+
         public static void WriteRawLittleEndian64(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
         {
             const int length = sizeof(ulong);
-            if (state.position + length > state.limit)
+            if (state.position + length > buffer.Length)
             {
-                WriteRawByte(ref buffer, ref state, (byte)value);
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 16));
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 24));
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 32));
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 40));
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 48));
-                WriteRawByte(ref buffer, ref state, (byte)(value >> 56));
+                WriteRawLittleEndian64SlowPath(ref buffer, ref state, value);
             }
             else
             {
@@ -383,6 +382,19 @@ namespace Google.Protobuf
                 buffer[state.position++] = ((byte)(value >> 48));
                 buffer[state.position++] = ((byte)(value >> 56));
             }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static void WriteRawLittleEndian64SlowPath(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
+        {
+            WriteRawByte(ref buffer, ref state, (byte)value);
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 8));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 16));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 24));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 32));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 40));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 48));
+            WriteRawByte(ref buffer, ref state, (byte)(value >> 56));
         }
 
         public static void WriteRawByte(ref Span<byte> buffer, ref WriterInternalState state, byte value)
