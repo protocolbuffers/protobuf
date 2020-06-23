@@ -289,30 +289,34 @@ namespace Google.Protobuf
         public static void WriteRawVarint32(ref Span<byte> buffer, ref WriterInternalState state, uint value)
         {
             // Optimize for the common case of a single byte value
-            if (value < 128 && state.position < state.limit)
+            if (value < 128 && state.position < buffer.Length)
             {
                 buffer[state.position++] = (byte)value;
                 return;
             }
 
-            while (value > 127 && state.position < state.limit)
+            // Fast path when capacity is available
+            while (state.position < buffer.Length)
             {
-                buffer[state.position++] = (byte)((value & 0x7F) | 0x80);
-                value >>= 7;
+                if (value > 127)
+                {
+                    buffer[state.position++] = (byte)((value & 0x7F) | 0x80);
+                    value >>= 7;
+                }
+                else
+                {
+                    buffer[state.position++] = (byte)value;
+                    return;
+                }
             }
+
             while (value > 127)
             {
                 WriteRawByte(ref buffer, ref state, (byte)((value & 0x7F) | 0x80));
                 value >>= 7;
             }
-            if (state.position < state.limit)
-            {
-                buffer[state.position++] = (byte)value;
-            }
-            else
-            {
-                WriteRawByte(ref buffer, ref state, (byte)value);
-            }
+
+            WriteRawByte(ref buffer, ref state, (byte)value);
         }
 
         public static void WriteRawVarint64(ref Span<byte> buffer, ref WriterInternalState state, ulong value)
