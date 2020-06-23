@@ -489,21 +489,19 @@ build_php5.6() {
 }
 
 build_php5.6_mac() {
-  internal_build_cpp
   # Install PHP
   curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
   PHP_FOLDER=`find /usr/local -type d -name "php5-5.6*"`  # The folder name may change upon time
   test ! -z "$PHP_FOLDER"
   export PATH="$PHP_FOLDER/bin:$PATH"
 
-  # Install valgrind
-  echo "#! /bin/bash" > valgrind
-  chmod ug+x valgrind
-  sudo mv valgrind /usr/local/bin/valgrind
-
-  # Test
-  php/tests/test.sh
-  (cd conformance && make test_php_c)
+  # Run pure-PHP tests only.
+  pushd php
+  rm -rf vendor
+  composer update
+  composer test
+  popd
+  (cd conformance && make test_php)
 }
 
 build_php7.0() {
@@ -710,18 +708,12 @@ build_php_all_32() {
   build_php7.0
   build_php7.1
   build_php7.4
-  build_php5.5_c $1
-  build_php5.6_c $1
   build_php7.0_c $1
   build_php7.1_c $1
   build_php7.4_c $1
-  build_php5.5_mixed
-  build_php5.6_mixed
   build_php7.0_mixed
   build_php7.1_mixed
   build_php7.4_mixed
-  build_php5.5_zts_c $1
-  build_php5.6_zts_c $1
   build_php7.0_zts_c $1
   build_php7.1_zts_c $1
   build_php7.4_zts_c $1
@@ -768,9 +760,7 @@ Usage: $0 { cpp |
             jruby |
             ruby_all |
             php5.5   |
-            php5.5_c |
             php5.6   |
-            php5.6_c |
             php7.0   |
             php7.0_c |
             php_compatibility |
