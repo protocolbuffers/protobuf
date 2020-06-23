@@ -428,7 +428,7 @@ namespace Google.Protobuf
         /// </summary>
         public static void WriteRawBytes(ref Span<byte> buffer, ref WriterInternalState state, ReadOnlySpan<byte> value)
         {
-            if (state.limit - state.position >= value.Length)
+            if (buffer.Length - state.position >= value.Length)
             {
                 // We have room in the current buffer.    
                 value.CopyTo(buffer.Slice(state.position, value.Length));
@@ -443,9 +443,9 @@ namespace Google.Protobuf
                 // Current this is not being done to avoid specialcasing the code for
                 // CodedOutputStream vs IBufferWriter<byte>.
                 int bytesWritten = 0;
-                while (state.limit - state.position < value.Length - bytesWritten)
+                while (buffer.Length - state.position < value.Length - bytesWritten)
                 {
-                    int length = state.limit - state.position;
+                    int length = buffer.Length - state.position;
                     value.Slice(bytesWritten, length).CopyTo(buffer.Slice(state.position, length));
                     bytesWritten += length;
                     state.position += length;
