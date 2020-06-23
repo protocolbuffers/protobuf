@@ -40,7 +40,7 @@ upb_fieldtype_t pbphp_dtype_to_type(upb_descriptortype_t type);
 
 // Converts |php_val| to an int64_t. Returns false if the value cannot be
 // converted.
-bool Convert_PhpToInt64(zval *php_val, int64_t *i64);
+bool Convert_PhpToInt64(const zval *php_val, int64_t *i64);
 
 // Converts |php_val| to a upb_msgval according to |type|. If type is
 // UPB_TYPE_MESSAGE, then |desc| must be the Descriptor for this message type.

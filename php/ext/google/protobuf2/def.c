@@ -747,7 +747,9 @@ static zend_object* DescriptorPool_create(zend_class_entry *class_type) {
  */
 static void DescriptorPool_destructor(zend_object* obj) {
   DescriptorPool* intern = (DescriptorPool*)obj;
-  upb_symtab_free(intern->symtab);
+  if (intern->symtab) {
+    upb_symtab_free(intern->symtab);
+  }
   intern->symtab = NULL;
   zend_object_std_dtor(&intern->std);
 }
@@ -765,12 +767,7 @@ void DescriptorPool_CreateWithSymbolTable(zval *zv, upb_symtab *symtab) {
 upb_symtab *DescriptorPool_Steal(zval *zv) {
   DescriptorPool *intern = GetPool(zv);
   upb_symtab *ret = intern->symtab;
-
-  // We're going to be destroyed immediately after this, but we create a new
-  // empty symtab just to keep the object in a consistent state. The destructor
-  // will delete this momentarily.
-  intern->symtab = upb_symtab_new();
-
+  intern->symtab = NULL;
   return ret;
 }
 

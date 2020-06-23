@@ -210,7 +210,7 @@ static void throw_conversion_exception(const char *to, zval *zv) {
   }
 }
 
-bool Convert_PhpToInt64(zval *php_val, int64_t *i64) {
+bool Convert_PhpToInt64(const zval *php_val, int64_t *i64) {
   switch (Z_TYPE_P(php_val)) {
     case IS_LONG:
       *i64 = Z_LVAL_P(php_val);
