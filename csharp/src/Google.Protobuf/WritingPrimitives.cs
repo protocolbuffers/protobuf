@@ -505,6 +505,20 @@ namespace Google.Protobuf
         /// </summary>
         public static void WriteRawTag(ref Span<byte> buffer, ref WriterInternalState state, byte b1, byte b2)
         {
+            if (state.position + 2 > buffer.Length)
+            {
+                WriteRawTagSlowPath(ref buffer, ref state, b1, b2);
+            }
+            else
+            {
+                buffer[state.position++] = b1;
+                buffer[state.position++] = b2;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void WriteRawTagSlowPath(ref Span<byte> buffer, ref WriterInternalState state, byte b1, byte b2)
+        {
             WriteRawByte(ref buffer, ref state, b1);
             WriteRawByte(ref buffer, ref state, b2);
         }
@@ -513,6 +527,21 @@ namespace Google.Protobuf
         /// Writes the given three-byte tag directly to the stream.
         /// </summary>
         public static void WriteRawTag(ref Span<byte> buffer, ref WriterInternalState state, byte b1, byte b2, byte b3)
+        {
+            if (state.position + 3 > buffer.Length)
+            {
+                WriteRawTagSlowPath(ref buffer, ref state, b1, b2, b3);
+            }
+            else
+            {
+                buffer[state.position++] = b1;
+                buffer[state.position++] = b2;
+                buffer[state.position++] = b3;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void WriteRawTagSlowPath(ref Span<byte> buffer, ref WriterInternalState state, byte b1, byte b2, byte b3)
         {
             WriteRawByte(ref buffer, ref state, b1);
             WriteRawByte(ref buffer, ref state, b2);
@@ -524,6 +553,23 @@ namespace Google.Protobuf
         /// </summary>
         public static void WriteRawTag(ref Span<byte> buffer, ref WriterInternalState state, byte b1, byte b2, byte b3, byte b4)
         {
+            if (state.position + 4 > buffer.Length)
+            {
+                WriteRawTagSlowPath(ref buffer, ref state, b1, b2, b3, b4);
+            }
+            else
+            {
+                buffer[state.position++] = b1;
+                buffer[state.position++] = b2;
+                buffer[state.position++] = b3;
+                buffer[state.position++] = b4;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+
+        private static void WriteRawTagSlowPath(ref Span<byte> buffer, ref WriterInternalState state, byte b1, byte b2, byte b3, byte b4)
+        {
             WriteRawByte(ref buffer, ref state, b1);
             WriteRawByte(ref buffer, ref state, b2);
             WriteRawByte(ref buffer, ref state, b3);
@@ -534,6 +580,23 @@ namespace Google.Protobuf
         /// Writes the given five-byte tag directly to the stream.
         /// </summary>
         public static void WriteRawTag(ref Span<byte> buffer, ref WriterInternalState state, byte b1, byte b2, byte b3, byte b4, byte b5)
+        {
+            if (state.position + 5 > buffer.Length)
+            {
+                WriteRawTagSlowPath(ref buffer, ref state, b1, b2, b3, b4, b5);
+            }
+            else
+            {
+                buffer[state.position++] = b1;
+                buffer[state.position++] = b2;
+                buffer[state.position++] = b3;
+                buffer[state.position++] = b4;
+                buffer[state.position++] = b5;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static void WriteRawTagSlowPath(ref Span<byte> buffer, ref WriterInternalState state, byte b1, byte b2, byte b3, byte b4, byte b5)
         {
             WriteRawByte(ref buffer, ref state, b1);
             WriteRawByte(ref buffer, ref state, b2);
