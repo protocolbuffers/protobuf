@@ -167,7 +167,7 @@ namespace Google.Protobuf
             // the string directly to the buffer, which should be common.
             int length = Utf8Encoding.GetByteCount(value);
             WriteLength(ref buffer, ref state, length);
-            if (state.limit - state.position >= length)
+            if (buffer.Length - state.position >= length)
             {
                 if (length == value.Length) // Must be all ASCII...
                 {
