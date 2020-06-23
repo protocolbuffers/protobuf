@@ -397,9 +397,9 @@ namespace Google.Protobuf
             WriteRawByte(ref buffer, ref state, (byte)(value >> 56));
         }
 
-        public static void WriteRawByte(ref Span<byte> buffer, ref WriterInternalState state, byte value)
+        private static void WriteRawByte(ref Span<byte> buffer, ref WriterInternalState state, byte value)
         {
-            if (state.position == state.limit)
+            if (state.position == buffer.Length)
             {
                 WriteBufferHelper.RefreshBuffer(ref buffer, ref state);
             }

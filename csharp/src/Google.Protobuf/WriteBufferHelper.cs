@@ -117,7 +117,7 @@ namespace Google.Protobuf
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void RefreshBuffer(ref Span<byte> buffer, ref WriterInternalState state)
         {
             if (state.writeBufferHelper.codedOutputStream?.InternalOutputStream != null)
