@@ -34,6 +34,9 @@ using System;
 using System.Text;
 using NUnit.Framework;
 using System.IO;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -54,6 +57,7 @@ namespace Google.Protobuf
             EqualityTester.AssertInequality(b1, b3);
             EqualityTester.AssertInequality(b1, b4);
             EqualityTester.AssertInequality(b1, null);
+            EqualityTester.AssertEquality(ByteString.Empty, ByteString.Empty);
 #pragma warning disable 1718 // Deliberately calling ==(b1, b1) and !=(b1, b1)
             Assert.IsTrue(b1 == b1);
             Assert.IsTrue(b1 == b2);
@@ -63,6 +67,7 @@ namespace Google.Protobuf
             Assert.IsTrue((ByteString) null == null);
             Assert.IsFalse(b1 != b1);
             Assert.IsFalse(b1 != b2);
+            Assert.IsTrue(ByteString.Empty == ByteString.Empty);
 #pragma warning disable 1718
             Assert.IsTrue(b1 != b3);
             Assert.IsTrue(b1 != b4);
@@ -152,6 +157,65 @@ namespace Google.Protobuf
             Assert.AreEqual(3, bs.Length);
             Assert.AreEqual(2, bs[0]);
             Assert.AreEqual(3, bs[1]);
+        }
+
+        [Test]
+        public void CopyTo()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = ByteString.CopyFrom(data);
+
+            byte[] dest = new byte[data.Length];
+            bs.CopyTo(dest, 0);
+
+            CollectionAssert.AreEqual(data, dest);
+        }
+
+        [Test]
+        public void GetEnumerator()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = ByteString.CopyFrom(data);
+
+            IEnumerator<byte> genericEnumerator = bs.GetEnumerator();
+            Assert.IsTrue(genericEnumerator.MoveNext());
+            Assert.AreEqual(0, genericEnumerator.Current);
+
+            IEnumerator enumerator = ((IEnumerable)bs).GetEnumerator();
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(0, enumerator.Current);
+
+            // Call via LINQ
+            CollectionAssert.AreEqual(bs.Span.ToArray(), bs.ToArray());
+        }
+
+        [Test]
+        public void UnsafeWrap()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = UnsafeByteOperations.UnsafeWrap(data.AsMemory(2, 3));
+            ReadOnlySpan<byte> s = bs.Span;
+
+            Assert.AreEqual(3, s.Length);
+            Assert.AreEqual(2, s[0]);
+            Assert.AreEqual(3, s[1]);
+            Assert.AreEqual(4, s[2]);
+
+            // Check that the value is not a copy
+            data[2] = byte.MaxValue;
+            Assert.AreEqual(byte.MaxValue, s[0]);
+        }
+
+        [Test]
+        public void WriteToStream()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = ByteString.CopyFrom(data);
+
+            MemoryStream ms = new MemoryStream();
+            bs.WriteTo(ms);
+
+            CollectionAssert.AreEqual(data, ms.ToArray());
         }
 
         [Test]
