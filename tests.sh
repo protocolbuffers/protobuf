@@ -495,6 +495,8 @@ build_php5.6_mac() {
   test ! -z "$PHP_FOLDER"
   export PATH="$PHP_FOLDER/bin:$PATH"
 
+  internal_build_cpp
+
   # Run pure-PHP tests only.
   pushd php
   rm -rf vendor
