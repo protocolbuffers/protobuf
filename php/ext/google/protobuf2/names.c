@@ -88,7 +88,8 @@ const char *const kReservedNames[] = {
     "null",       "void",       "iterable",     NULL};
 
 bool is_reserved_name(const char* name) {
-  for (int i = 0; kReservedNames[i]; i++) {
+  int i;
+  for (i = 0; kReservedNames[i]; i++) {
     if (strcmp(kReservedNames[i], name) == 0) {
       return true;
     }
