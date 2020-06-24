@@ -193,21 +193,15 @@ static bool buftoint64(const char *ptr, const char *end, int64_t *val) {
   return true;
 }
 
-static void throw_conversion_exception(const char *to, zval *zv) {
-  zval *print = zv;
+static void throw_conversion_exception(const char *to, const zval *zv) {
   zval tmp;
-  if (Z_TYPE_P(print) != IS_STRING) {
-    ZVAL_COPY(&tmp, zv);
-    print = &tmp;
-    convert_to_string(print);
-  }
+  ZVAL_COPY(&tmp, zv);
+  convert_to_string(&tmp);
 
   zend_throw_exception_ex(NULL, 0, "Cannot convert '%s' to %s",
-                          Z_STRVAL_P(print), to);
+                          Z_STRVAL_P(&tmp), to);
 
-  if (print != zv) {
-    zval_ptr_dtor(print);
-  }
+  zval_ptr_dtor(&tmp);
 }
 
 bool Convert_PhpToInt64(const zval *php_val, int64_t *i64) {

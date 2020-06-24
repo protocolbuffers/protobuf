@@ -21,7 +21,7 @@ popd
 if [ $(php -r "echo PHP_VERSION;" | cut -c1) != "5" ]; then
   pushd  ../ext/google/protobuf2
   make clean || true
-  ./make-preload.py
+  php make-preload.php
   phpize && ./configure --with-php-config=$(which php-config) CFLAGS="$CFLAGS" && make
   popd
 fi
