@@ -54,6 +54,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
+import com.google.protobuf.DescriptorProtos.FieldOptions;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
@@ -1153,7 +1154,13 @@ public class JsonFormat {
         case INT64:
         case SINT64:
         case SFIXED64:
-          generator.print("\"" + ((Long) value).toString() + "\"");
+          if (field.getOptions().getJstype() != FieldOptions.JSType.JS_NUMBER) {
+            generator.print("\"");
+          }
+          generator.print(((Long) value).toString());
+          if (field.getOptions().getJstype() != FieldOptions.JSType.JS_NUMBER) {
+            generator.print("\"");
+          }
           break;
 
         case BOOL:
@@ -1225,7 +1232,13 @@ public class JsonFormat {
 
         case UINT64:
         case FIXED64:
-          generator.print("\"" + unsignedToString((Long) value) + "\"");
+          if (field.getOptions().getJstype() != FieldOptions.JSType.JS_NUMBER) {
+            generator.print("\"");
+          }
+          generator.print(unsignedToString((Long) value));
+          if (field.getOptions().getJstype() != FieldOptions.JSType.JS_NUMBER) {
+            generator.print("\"");
+          }
           break;
 
         case STRING:

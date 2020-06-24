@@ -57,6 +57,7 @@ import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes.NestedEnum;
 import com.google.protobuf.util.proto.JsonTestProto.TestAllTypes.NestedMessage;
 import com.google.protobuf.util.proto.JsonTestProto.TestAny;
 import com.google.protobuf.util.proto.JsonTestProto.TestCustomJsonName;
+import com.google.protobuf.util.proto.JsonTestProto.TestJsonNumberTypes;
 import com.google.protobuf.util.proto.JsonTestProto.TestDuration;
 import com.google.protobuf.util.proto.JsonTestProto.TestFieldMask;
 import com.google.protobuf.util.proto.JsonTestProto.TestMap;
@@ -1314,6 +1315,12 @@ public class JsonFormatTest extends TestCase {
   public void testCustomJsonName() throws Exception {
     TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(12345).build();
     assertEquals("{\n" + "  \"@value\": 12345\n" + "}", JsonFormat.printer().print(message));
+    assertRoundTripEquals(message);
+  }
+
+  public void testJsonNumberTypes() throws Exception {
+    TestJsonNumberTypes message = TestJsonNumberTypes.newBuilder().setInt64Normal(12345).setInt64String(12345).setInt64Number(12345).build();
+    assertEquals("{\n  \"int64Normal\": \"12345\",\n  \"int64String\": \"12345\",\n  \"int64Number\": 12345\n}", JsonFormat.printer().print(message));
     assertRoundTripEquals(message);
   }
 

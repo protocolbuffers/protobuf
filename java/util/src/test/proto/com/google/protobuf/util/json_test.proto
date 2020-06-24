@@ -184,6 +184,12 @@ message TestCustomJsonName {
   int32 value = 1 [json_name = "@value"];
 }
 
+message TestJsonNumberTypes {
+  int64 int64_normal = 1 [jstype = JS_NORMAL];
+  sint64 int64_string = 2 [jstype = JS_STRING];
+  uint64 int64_number = 3 [jstype = JS_NUMBER];
+}
+
 message TestRecursive {
   int32 value = 1;
   TestRecursive nested = 2;
