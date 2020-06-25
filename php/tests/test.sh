@@ -16,11 +16,11 @@ case "$PHP_VERSION" in
     PHPUNIT=phpunit-5.6.8.phar
     TEST_NEW_EXTENSION=false
     ;;
-  7.0.*)
+  7.0.*|7.1.*|7.2.*)
     # Oddly older than for 5.6. Not sure the reason.
     PHPUNIT=phpunit-5.6.0.phar
     ;;
-  7.3.*)
+  7.3.*|7.4.*)
     PHPUNIT=phpunit-8.phar
     ;;
   *)
