@@ -385,14 +385,30 @@ void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, upb_fieldtype_t type,
                       const Descriptor *desc, zval *arena) {
   switch (type) {
     case UPB_TYPE_INT64:
+#if SIZEOF_ZEND_LONG == 8
       ZVAL_LONG(php_val, upb_val.int64_val);
+#else
+      {
+        char buf[20];
+        int size = sprintf(buf, "%lld", upb_val.int64_val);
+        ZVAL_NEW_STR(php_val, zend_string_init(buf, size, 0));
+      }
+#endif
+      break;
+    case UPB_TYPE_UINT64:
+#if SIZEOF_ZEND_LONG == 8
+      ZVAL_LONG(php_val, upb_val.uint64_val);
+#else
+      {
+        char buf[20];
+        int size = sprintf(buf, "%lld", (int64_t)upb_val.uint64_val);
+        ZVAL_NEW_STR(php_val, zend_string_init(buf, size, 0));
+      }
+#endif
       break;
     case UPB_TYPE_INT32:
     case UPB_TYPE_ENUM:
       ZVAL_LONG(php_val, upb_val.int32_val);
-      break;
-    case UPB_TYPE_UINT64:
-      ZVAL_LONG(php_val, upb_val.uint64_val);
       break;
     case UPB_TYPE_UINT32: {
       // Sign-extend for consistency between 32/64-bit builds.

@@ -46,7 +46,7 @@ const zval *get_generated_pool();
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
 //  * upb_msg* -> Message
-//  * upb_array* -> RepeatedFIeld
+//  * upb_array* -> RepeatedField
 //  * upb_map*, -> MapField
 //  * upb_msgdef* -> Descriptor
 //  * upb_enumdef* -> EnumDescriptor
