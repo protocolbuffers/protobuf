@@ -8,12 +8,25 @@ cd $(dirname $0)
 ./compile_extension.sh
 
 PHP_VERSION=$(php -r "echo PHP_VERSION;")
+TEST_NEW_EXTENSION=true
 
 # Each version of PHPUnit supports a fairly narrow range of PHP versions.
 case "$PHP_VERSION" in
-  5.6.*) PHPUNIT=phpunit-5.6.8.phar;;
-  7.0.*) PHPUNIT=phpunit-5.6.0.phar;;  # Oddly older than for 5.6. Not sure the reason.
-  7.3.*) PHPUNIT=phpunit-8.phar;;
+  5.*.*)
+    PHPUNIT=phpunit-5.6.8.phar
+    TEST_NEW_EXTENSION=false
+    ;;
+  7.0.*|7.1.*|7.2.*)
+    # Oddly older than for 5.6. Not sure the reason.
+    PHPUNIT=phpunit-5.6.0.phar
+    ;;
+  7.3.*|7.4.*)
+    PHPUNIT=phpunit-8.phar
+    ;;
+  *)
+    echo "ERROR: Unknown PHP version $PHP_VERSION"
+    exit 1
+    ;;
 esac
 
 [ -f $PHPUNIT ] || wget https://phar.phpunit.de/$PHPUNIT
@@ -26,6 +39,9 @@ do
   echo "* $t"
   echo "****************************"
   php -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
+  if [ "$TEST_NEW_EXTENSION" = "true" ]; then
+    php -dextension=../ext/google/protobuf2/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
+  fi
   echo ""
 done
 
@@ -35,6 +51,9 @@ do
   echo "* $t persistent"
   echo "****************************"
   php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
+  if [ "$TEST_NEW_EXTENSION" = "true" ]; then
+    php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf2/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
+  fi
   echo ""
 done
 
@@ -45,6 +64,10 @@ export ZEND_DONT_UNLOAD_MODULES=1
 export USE_ZEND_ALLOC=0
 valgrind --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
 valgrind --leak-check=yes php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
+if [ "$TEST_NEW_EXTENSION" = "true" ]; then
+  valgrind --leak-check=yes php -dextension=../ext/google/protobuf2/modules/protobuf.so memory_leak_test.php
+  valgrind --leak-check=yes php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf2/modules/protobuf.so memory_leak_test.php
+fi
 
 # TODO(teboring): Only for debug (phpunit has memory leak which blocks this beging used by
 # regresssion test.)

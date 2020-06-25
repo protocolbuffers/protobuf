@@ -775,6 +775,27 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/upb.h                                       \
   php/ext/google/protobuf/utf8.c                                      \
   php/ext/google/protobuf/utf8.h                                      \
+  php/ext/google/protobuf2/arena.c                                    \
+  php/ext/google/protobuf2/arena.h                                    \
+  php/ext/google/protobuf2/array.c                                    \
+  php/ext/google/protobuf2/array.h                                    \
+  php/ext/google/protobuf2/bundled_php.h                              \
+  php/ext/google/protobuf2/config.m4                                  \
+  php/ext/google/protobuf2/convert.c                                  \
+  php/ext/google/protobuf2/convert.h                                  \
+  php/ext/google/protobuf2/def.c                                      \
+  php/ext/google/protobuf2/def.h                                      \
+  php/ext/google/protobuf2/make-preload.php                           \
+  php/ext/google/protobuf2/map.c                                      \
+  php/ext/google/protobuf2/map.h                                      \
+  php/ext/google/protobuf2/message.c                                  \
+  php/ext/google/protobuf2/message.h                                  \
+  php/ext/google/protobuf2/names.c                                    \
+  php/ext/google/protobuf2/names.h                                    \
+  php/ext/google/protobuf2/php-upb.c                                  \
+  php/ext/google/protobuf2/php-upb.h                                  \
+  php/ext/google/protobuf2/protobuf.c                                 \
+  php/ext/google/protobuf2/protobuf.h                                 \
   php/generate_descriptor_protos.sh                                   \
   php/phpunit.xml                                                     \
   php/release.sh                                                      \
