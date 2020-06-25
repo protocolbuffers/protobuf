@@ -674,7 +674,6 @@ build_php7.4_c() {
     make test_php_c_32
   fi
   popd
-  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php7.4_mixed() {
@@ -686,7 +685,6 @@ build_php7.4_mixed() {
   tests/generate_protos.sh
   php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
   popd
-  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php7.4_zts_c() {
@@ -701,7 +699,6 @@ build_php7.4_zts_c() {
     make test_php_c_32
   fi
   popd
-  (cd php/ext/google/protobuf && phpize --clean)
 }
 
 build_php_all_32() {
