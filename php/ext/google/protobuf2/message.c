@@ -366,7 +366,7 @@ PHP_METHOD(Message, __construct) {
   const Descriptor* desc = Descriptor_GetFromClassEntry(Z_OBJCE_P(getThis()));
   const upb_msgdef *msgdef = desc->msgdef;
   upb_arena *arena = Arena_Get(&intern->arena);
-  zval *init_arr;
+  zval *init_arr = NULL;
 
   intern->desc = desc;
   intern->msg = upb_msg_new(msgdef, arena);
