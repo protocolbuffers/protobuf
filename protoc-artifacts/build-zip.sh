@@ -11,17 +11,25 @@ Example:
   $ $0 protoc-gen-javalite 3.0.0
 
 This script will download pre-built protoc or protoc plugin binaries from maven
-repository and create .zip packages suitable to be included in the github
+repository and create .zip and .tar.gz packages suitable to be included in the github
 release page. If the target is protoc, well-known type .proto files will also be
-included. Each invocation will create 8 zip packages:
+included. Each invocation will create 16 files (8 zip files and 8 tarballs):
   dist/<TARGET>-<VERSION_NUMBER>-win32.zip
+  dist/<TARGET>-<VERSION_NUMBER>-win32.tar.gz
   dist/<TARGET>-<VERSION_NUMBER>-win64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-win64.tar.gz
   dist/<TARGET>-<VERSION_NUMBER>-osx-x86_64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-osx-x86_64.tar.gz
   dist/<TARGET>-<VERSION_NUMBER>-linux-x86_32.zip
+  dist/<TARGET>-<VERSION_NUMBER>-linux-x86_32.tar.gz
   dist/<TARGET>-<VERSION_NUMBER>-linux-x86_64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-linux-x86_64.tar.gz
   dist/<TARGET>-<VERSION_NUMBER>-linux-aarch_64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-linux-aarch_64.tar.gz
   dist/<TARGET>-<VERSION_NUMBER>-linux-ppcle_64.zip
+  dist/<TARGET>-<VERSION_NUMBER>-linux-ppcle_64.tar.gz
   dist/<TARGET>-<VERSION_NUMBER>-linux-s390x.zip
+  dist/<TARGET>-<VERSION_NUMBER>-linux-s390x.tar.gz
 EOF
   exit 1
 fi
@@ -29,16 +37,16 @@ fi
 TARGET=$1
 VERSION_NUMBER=$2
 
-# <zip file name> <binary file name> pairs.
+# <file basename> <binary file name> pairs.
 declare -a FILE_NAMES=( \
-  win32.zip windows-x86_32.exe \
-  win64.zip windows-x86_64.exe \
-  osx-x86_64.zip osx-x86_64.exe \
-  linux-x86_32.zip linux-x86_32.exe \
-  linux-x86_64.zip linux-x86_64.exe \
-  linux-aarch_64.zip linux-aarch_64.exe \
-  linux-ppcle_64.zip linux-ppcle_64.exe \
-  linux-s390x.zip linux-s390x.exe \
+  win32 windows-x86_32.exe \
+  win64 windows-x86_64.exe \
+  osx-x86_64 osx-x86_64.exe \
+  linux-x86_32 linux-x86_32.exe \
+  linux-x86_64 linux-x86_64.exe \
+  linux-aarch_64 linux-aarch_64.exe \
+  linux-ppcle_64 linux-ppcle_64.exe \
+  linux-s390x linux-s390x.exe \
 )
 
 # List of all well-known types to be included.
@@ -89,9 +97,11 @@ EOF
 
 mkdir -p dist
 mkdir -p ${DIR}/bin
-# Create a zip file for each binary.
+# Create a zip file and tarball for each binary.
 for((i=0;i<${#FILE_NAMES[@]};i+=2));do
-  ZIP_NAME=${FILE_NAMES[$i]}
+  BASE_NAME=${FILE_NAMES[$i]}
+  ZIP_NAME=${BASE_NAME}.zip
+  TARBALL_NAME=${BASE_NAME}.tar.gz
   if [ ${ZIP_NAME:0:3} = "win" ]; then
     BINARY="$TARGET.exe"
   else
@@ -105,14 +115,18 @@ for((i=0;i<${#FILE_NAMES[@]};i+=2));do
     continue
   fi
   TARGET_ZIP_FILE=`pwd`/dist/$TARGET-${VERSION_NUMBER}-${ZIP_NAME}
+  TARGET_TARBALL=`pwd`/dist/$TARGET-${VERSION_NUMBER}-${TARBALL_NAME}
   pushd $DIR &> /dev/null
   chmod +x bin/$BINARY
   if [ "$TARGET" = "protoc" ]; then
     zip -r ${TARGET_ZIP_FILE} include bin readme.txt &> /dev/null
+    tar -czf ${TARGET_TARBALL} include bin readme.txt &> /dev/null
   else
     zip -r ${TARGET_ZIP_FILE} bin &> /dev/null
+    tar -czf ${TARGET_TARBALL} bin &> /dev/null
   fi
   rm  bin/$BINARY
   popd &> /dev/null
   echo "[INFO] Successfully created ${TARGET_ZIP_FILE}"
+  echo "[INFO] Successfully created ${TARGET_TARBALL}"
 done
