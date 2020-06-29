@@ -384,18 +384,8 @@ namespace Google.Protobuf
             }
             else
             {
-                // TODO(jtattermusch): According to the benchmarks, writing byte-by-byte is actually faster
-                // than using BinaryPrimitives.WriteUInt64LittleEndian.
-                // This is strange especially because WriteUInt32LittleEndian seems to be much faster
-                // in terms of throughput.
-                buffer[state.position++] = ((byte)value);
-                buffer[state.position++] = ((byte)(value >> 8));
-                buffer[state.position++] = ((byte)(value >> 16));
-                buffer[state.position++] = ((byte)(value >> 24));
-                buffer[state.position++] = ((byte)(value >> 32));
-                buffer[state.position++] = ((byte)(value >> 40));
-                buffer[state.position++] = ((byte)(value >> 48));
-                buffer[state.position++] = ((byte)(value >> 56));
+                BinaryPrimitives.WriteUInt64LittleEndian(buffer.Slice(state.position), value);
+                state.position += length;
             }
         }
 
