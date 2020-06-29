@@ -559,17 +559,6 @@ bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val) {
   return success;
 }
 
-bool upb_inttable_push2(upb_inttable *t, upb_value val, upb_alloc *a) {
-  return upb_inttable_insert2(t, upb_inttable_count(t), val, a);
-}
-
-upb_value upb_inttable_pop(upb_inttable *t) {
-  upb_value val;
-  bool ok = upb_inttable_remove(t, upb_inttable_count(t) - 1, &val);
-  UPB_ASSERT(ok);
-  return val;
-}
-
 bool upb_inttable_insertptr2(upb_inttable *t, const void *key, upb_value val,
                              upb_alloc *a) {
   return upb_inttable_insert2(t, (uintptr_t)key, val, a);

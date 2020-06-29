@@ -326,15 +326,6 @@ UPB_INLINE bool upb_strtable_remove(upb_strtable *t, const char *key,
  * invalidate iterators. */
 bool upb_inttable_replace(upb_inttable *t, uintptr_t key, upb_value val);
 
-/* Handy routines for treating an inttable like a stack.  May not be mixed with
- * other insert/remove calls. */
-bool upb_inttable_push2(upb_inttable *t, upb_value val, upb_alloc *a);
-upb_value upb_inttable_pop(upb_inttable *t);
-
-UPB_INLINE bool upb_inttable_push(upb_inttable *t, upb_value val) {
-  return upb_inttable_push2(t, val, &upb_alloc_global);
-}
-
 /* Convenience routines for inttables with pointer keys. */
 bool upb_inttable_insertptr2(upb_inttable *t, const void *key, upb_value val,
                              upb_alloc *a);
