@@ -101,8 +101,8 @@ namespace Google.Protobuf
         /// <paramref name="output"/>
         /// </summary>
         /// <param name="fieldNumber">The unknown field number.</param>
-        /// <param name="output">The CodedOutputStream to write to.</param>
-        internal void WriteTo(int fieldNumber, CodedOutputStream output)
+        /// <param name="output">The write context to write to.</param>
+        internal void WriteTo(int fieldNumber, ref WriteContext output)
         {
             if (varintList != null)
             {
@@ -141,7 +141,7 @@ namespace Google.Protobuf
                 foreach (UnknownFieldSet value in groupList)
                 {
                     output.WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
-                    value.WriteTo(output);
+                    value.WriteTo(ref output);
                     output.WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
                 }
             }

@@ -629,7 +629,7 @@ namespace Google.Protobuf
                 {
                     fixed (byte* sourceBytes = &MemoryMarshal.GetReference(data))
                     {
-                        value = CodedOutputStream.Utf8Encoding.GetString(sourceBytes, length);
+                        value = WritingPrimitives.Utf8Encoding.GetString(sourceBytes, length);
                     }
                 }
 
@@ -638,7 +638,7 @@ namespace Google.Protobuf
             }
 #endif
 
-            var decoder = CodedOutputStream.Utf8Encoding.GetDecoder();
+            var decoder = WritingPrimitives.Utf8Encoding.GetDecoder();
 
             // TODO: even if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING is not supported,
             // we could still create a string efficiently by using Utf8Encoding.GetString(byte[] bytes, int index, int count)
@@ -649,7 +649,7 @@ namespace Google.Protobuf
             // creating a string from that array might be more efficient than creating a string from the copied bytes.
 
             // Slow path: Build a byte array first then copy it.
-            return CodedOutputStream.Utf8Encoding.GetString(ReadRawBytes(ref buffer, ref state, length), 0, length);
+            return WritingPrimitives.Utf8Encoding.GetString(ReadRawBytes(ref buffer, ref state, length), 0, length);
         }
 
         [SecuritySafeCritical]

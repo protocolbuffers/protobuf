@@ -535,6 +535,9 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (anyField_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(AnyField);
@@ -605,7 +608,84 @@ namespace Google.Protobuf.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (anyField_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(AnyField);
+      }
+      if (apiField_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(ApiField);
+      }
+      if (durationField_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(DurationField);
+      }
+      if (emptyField_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(EmptyField);
+      }
+      if (fieldMaskField_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(FieldMaskField);
+      }
+      if (sourceContextField_ != null) {
+        output.WriteRawTag(50);
+        output.WriteMessage(SourceContextField);
+      }
+      if (structField_ != null) {
+        output.WriteRawTag(58);
+        output.WriteMessage(StructField);
+      }
+      if (timestampField_ != null) {
+        output.WriteRawTag(66);
+        output.WriteMessage(TimestampField);
+      }
+      if (typeField_ != null) {
+        output.WriteRawTag(74);
+        output.WriteMessage(TypeField);
+      }
+      if (doubleField_ != null) {
+        _single_doubleField_codec.WriteTagAndValue(ref output, DoubleField);
+      }
+      if (floatField_ != null) {
+        _single_floatField_codec.WriteTagAndValue(ref output, FloatField);
+      }
+      if (int64Field_ != null) {
+        _single_int64Field_codec.WriteTagAndValue(ref output, Int64Field);
+      }
+      if (uint64Field_ != null) {
+        _single_uint64Field_codec.WriteTagAndValue(ref output, Uint64Field);
+      }
+      if (int32Field_ != null) {
+        _single_int32Field_codec.WriteTagAndValue(ref output, Int32Field);
+      }
+      if (uint32Field_ != null) {
+        _single_uint32Field_codec.WriteTagAndValue(ref output, Uint32Field);
+      }
+      if (boolField_ != null) {
+        _single_boolField_codec.WriteTagAndValue(ref output, BoolField);
+      }
+      if (stringField_ != null) {
+        _single_stringField_codec.WriteTagAndValue(ref output, StringField);
+      }
+      if (bytesField_ != null) {
+        _single_bytesField_codec.WriteTagAndValue(ref output, BytesField);
+      }
+      if (valueField_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(ValueField);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1393,6 +1473,9 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       anyField_.WriteTo(output, _repeated_anyField_codec);
       apiField_.WriteTo(output, _repeated_apiField_codec);
       durationField_.WriteTo(output, _repeated_durationField_codec);
@@ -1414,7 +1497,35 @@ namespace Google.Protobuf.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      anyField_.WriteTo(ref output, _repeated_anyField_codec);
+      apiField_.WriteTo(ref output, _repeated_apiField_codec);
+      durationField_.WriteTo(ref output, _repeated_durationField_codec);
+      emptyField_.WriteTo(ref output, _repeated_emptyField_codec);
+      fieldMaskField_.WriteTo(ref output, _repeated_fieldMaskField_codec);
+      sourceContextField_.WriteTo(ref output, _repeated_sourceContextField_codec);
+      structField_.WriteTo(ref output, _repeated_structField_codec);
+      timestampField_.WriteTo(ref output, _repeated_timestampField_codec);
+      typeField_.WriteTo(ref output, _repeated_typeField_codec);
+      doubleField_.WriteTo(ref output, _repeated_doubleField_codec);
+      floatField_.WriteTo(ref output, _repeated_floatField_codec);
+      int64Field_.WriteTo(ref output, _repeated_int64Field_codec);
+      uint64Field_.WriteTo(ref output, _repeated_uint64Field_codec);
+      int32Field_.WriteTo(ref output, _repeated_int32Field_codec);
+      uint32Field_.WriteTo(ref output, _repeated_uint32Field_codec);
+      boolField_.WriteTo(ref output, _repeated_boolField_codec);
+      stringField_.WriteTo(ref output, _repeated_stringField_codec);
+      bytesField_.WriteTo(ref output, _repeated_bytesField_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -2051,6 +2162,9 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (oneofFieldCase_ == OneofFieldOneofCase.AnyField) {
         output.WriteRawTag(10);
         output.WriteMessage(AnyField);
@@ -2117,7 +2231,80 @@ namespace Google.Protobuf.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (oneofFieldCase_ == OneofFieldOneofCase.AnyField) {
+        output.WriteRawTag(10);
+        output.WriteMessage(AnyField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.ApiField) {
+        output.WriteRawTag(18);
+        output.WriteMessage(ApiField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.DurationField) {
+        output.WriteRawTag(26);
+        output.WriteMessage(DurationField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.EmptyField) {
+        output.WriteRawTag(34);
+        output.WriteMessage(EmptyField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField) {
+        output.WriteRawTag(42);
+        output.WriteMessage(FieldMaskField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.SourceContextField) {
+        output.WriteRawTag(50);
+        output.WriteMessage(SourceContextField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.StructField) {
+        output.WriteRawTag(58);
+        output.WriteMessage(StructField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.TimestampField) {
+        output.WriteRawTag(66);
+        output.WriteMessage(TimestampField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.TypeField) {
+        output.WriteRawTag(74);
+        output.WriteMessage(TypeField);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.DoubleField) {
+        _oneof_doubleField_codec.WriteTagAndValue(ref output, (double?) oneofField_);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.FloatField) {
+        _oneof_floatField_codec.WriteTagAndValue(ref output, (float?) oneofField_);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.Int64Field) {
+        _oneof_int64Field_codec.WriteTagAndValue(ref output, (long?) oneofField_);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.Uint64Field) {
+        _oneof_uint64Field_codec.WriteTagAndValue(ref output, (ulong?) oneofField_);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.Int32Field) {
+        _oneof_int32Field_codec.WriteTagAndValue(ref output, (int?) oneofField_);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.Uint32Field) {
+        _oneof_uint32Field_codec.WriteTagAndValue(ref output, (uint?) oneofField_);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.BoolField) {
+        _oneof_boolField_codec.WriteTagAndValue(ref output, (bool?) oneofField_);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.StringField) {
+        _oneof_stringField_codec.WriteTagAndValue(ref output, (string) oneofField_);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.BytesField) {
+        _oneof_bytesField_codec.WriteTagAndValue(ref output, (pb::ByteString) oneofField_);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -2848,6 +3035,9 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       anyField_.WriteTo(output, _map_anyField_codec);
       apiField_.WriteTo(output, _map_apiField_codec);
       durationField_.WriteTo(output, _map_durationField_codec);
@@ -2869,7 +3059,35 @@ namespace Google.Protobuf.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      anyField_.WriteTo(ref output, _map_anyField_codec);
+      apiField_.WriteTo(ref output, _map_apiField_codec);
+      durationField_.WriteTo(ref output, _map_durationField_codec);
+      emptyField_.WriteTo(ref output, _map_emptyField_codec);
+      fieldMaskField_.WriteTo(ref output, _map_fieldMaskField_codec);
+      sourceContextField_.WriteTo(ref output, _map_sourceContextField_codec);
+      structField_.WriteTo(ref output, _map_structField_codec);
+      timestampField_.WriteTo(ref output, _map_timestampField_codec);
+      typeField_.WriteTo(ref output, _map_typeField_codec);
+      doubleField_.WriteTo(ref output, _map_doubleField_codec);
+      floatField_.WriteTo(ref output, _map_floatField_codec);
+      int64Field_.WriteTo(ref output, _map_int64Field_codec);
+      uint64Field_.WriteTo(ref output, _map_uint64Field_codec);
+      int32Field_.WriteTo(ref output, _map_int32Field_codec);
+      uint32Field_.WriteTo(ref output, _map_uint32Field_codec);
+      boolField_.WriteTo(ref output, _map_boolField_codec);
+      stringField_.WriteTo(ref output, _map_stringField_codec);
+      bytesField_.WriteTo(ref output, _map_bytesField_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {

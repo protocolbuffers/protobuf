@@ -203,6 +203,9 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasIntOpt) {
         output.WriteRawTag(8);
         output.WriteInt32(IntOpt);
@@ -217,7 +220,28 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasIntOpt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(IntOpt);
+      }
+      if (HasFoo) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Foo);
+      }
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {

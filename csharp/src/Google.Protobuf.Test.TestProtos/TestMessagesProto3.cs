@@ -2419,6 +2419,9 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (OptionalInt32 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(OptionalInt32);
@@ -2757,7 +2760,352 @@ namespace ProtobufTestMessages.Proto3 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (OptionalInt32 != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (OptionalInt64 != 0L) {
+        output.WriteRawTag(16);
+        output.WriteInt64(OptionalInt64);
+      }
+      if (OptionalUint32 != 0) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(OptionalUint32);
+      }
+      if (OptionalUint64 != 0UL) {
+        output.WriteRawTag(32);
+        output.WriteUInt64(OptionalUint64);
+      }
+      if (OptionalSint32 != 0) {
+        output.WriteRawTag(40);
+        output.WriteSInt32(OptionalSint32);
+      }
+      if (OptionalSint64 != 0L) {
+        output.WriteRawTag(48);
+        output.WriteSInt64(OptionalSint64);
+      }
+      if (OptionalFixed32 != 0) {
+        output.WriteRawTag(61);
+        output.WriteFixed32(OptionalFixed32);
+      }
+      if (OptionalFixed64 != 0UL) {
+        output.WriteRawTag(65);
+        output.WriteFixed64(OptionalFixed64);
+      }
+      if (OptionalSfixed32 != 0) {
+        output.WriteRawTag(77);
+        output.WriteSFixed32(OptionalSfixed32);
+      }
+      if (OptionalSfixed64 != 0L) {
+        output.WriteRawTag(81);
+        output.WriteSFixed64(OptionalSfixed64);
+      }
+      if (OptionalFloat != 0F) {
+        output.WriteRawTag(93);
+        output.WriteFloat(OptionalFloat);
+      }
+      if (OptionalDouble != 0D) {
+        output.WriteRawTag(97);
+        output.WriteDouble(OptionalDouble);
+      }
+      if (OptionalBool != false) {
+        output.WriteRawTag(104);
+        output.WriteBool(OptionalBool);
+      }
+      if (OptionalString.Length != 0) {
+        output.WriteRawTag(114);
+        output.WriteString(OptionalString);
+      }
+      if (OptionalBytes.Length != 0) {
+        output.WriteRawTag(122);
+        output.WriteBytes(OptionalBytes);
+      }
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(146, 1);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (optionalForeignMessage_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(OptionalForeignMessage);
+      }
+      if (OptionalNestedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum.Foo) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) OptionalNestedEnum);
+      }
+      if (OptionalForeignEnum != global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) OptionalForeignEnum);
+      }
+      if (OptionalAliasedEnum != global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum.AliasFoo) {
+        output.WriteRawTag(184, 1);
+        output.WriteEnum((int) OptionalAliasedEnum);
+      }
+      if (OptionalStringPiece.Length != 0) {
+        output.WriteRawTag(194, 1);
+        output.WriteString(OptionalStringPiece);
+      }
+      if (OptionalCord.Length != 0) {
+        output.WriteRawTag(202, 1);
+        output.WriteString(OptionalCord);
+      }
+      if (recursiveMessage_ != null) {
+        output.WriteRawTag(218, 1);
+        output.WriteMessage(RecursiveMessage);
+      }
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      repeatedInt64_.WriteTo(ref output, _repeated_repeatedInt64_codec);
+      repeatedUint32_.WriteTo(ref output, _repeated_repeatedUint32_codec);
+      repeatedUint64_.WriteTo(ref output, _repeated_repeatedUint64_codec);
+      repeatedSint32_.WriteTo(ref output, _repeated_repeatedSint32_codec);
+      repeatedSint64_.WriteTo(ref output, _repeated_repeatedSint64_codec);
+      repeatedFixed32_.WriteTo(ref output, _repeated_repeatedFixed32_codec);
+      repeatedFixed64_.WriteTo(ref output, _repeated_repeatedFixed64_codec);
+      repeatedSfixed32_.WriteTo(ref output, _repeated_repeatedSfixed32_codec);
+      repeatedSfixed64_.WriteTo(ref output, _repeated_repeatedSfixed64_codec);
+      repeatedFloat_.WriteTo(ref output, _repeated_repeatedFloat_codec);
+      repeatedDouble_.WriteTo(ref output, _repeated_repeatedDouble_codec);
+      repeatedBool_.WriteTo(ref output, _repeated_repeatedBool_codec);
+      repeatedString_.WriteTo(ref output, _repeated_repeatedString_codec);
+      repeatedBytes_.WriteTo(ref output, _repeated_repeatedBytes_codec);
+      repeatedNestedMessage_.WriteTo(ref output, _repeated_repeatedNestedMessage_codec);
+      repeatedForeignMessage_.WriteTo(ref output, _repeated_repeatedForeignMessage_codec);
+      repeatedNestedEnum_.WriteTo(ref output, _repeated_repeatedNestedEnum_codec);
+      repeatedForeignEnum_.WriteTo(ref output, _repeated_repeatedForeignEnum_codec);
+      repeatedStringPiece_.WriteTo(ref output, _repeated_repeatedStringPiece_codec);
+      repeatedCord_.WriteTo(ref output, _repeated_repeatedCord_codec);
+      mapInt32Int32_.WriteTo(ref output, _map_mapInt32Int32_codec);
+      mapInt64Int64_.WriteTo(ref output, _map_mapInt64Int64_codec);
+      mapUint32Uint32_.WriteTo(ref output, _map_mapUint32Uint32_codec);
+      mapUint64Uint64_.WriteTo(ref output, _map_mapUint64Uint64_codec);
+      mapSint32Sint32_.WriteTo(ref output, _map_mapSint32Sint32_codec);
+      mapSint64Sint64_.WriteTo(ref output, _map_mapSint64Sint64_codec);
+      mapFixed32Fixed32_.WriteTo(ref output, _map_mapFixed32Fixed32_codec);
+      mapFixed64Fixed64_.WriteTo(ref output, _map_mapFixed64Fixed64_codec);
+      mapSfixed32Sfixed32_.WriteTo(ref output, _map_mapSfixed32Sfixed32_codec);
+      mapSfixed64Sfixed64_.WriteTo(ref output, _map_mapSfixed64Sfixed64_codec);
+      mapInt32Float_.WriteTo(ref output, _map_mapInt32Float_codec);
+      mapInt32Double_.WriteTo(ref output, _map_mapInt32Double_codec);
+      mapBoolBool_.WriteTo(ref output, _map_mapBoolBool_codec);
+      mapStringString_.WriteTo(ref output, _map_mapStringString_codec);
+      mapStringBytes_.WriteTo(ref output, _map_mapStringBytes_codec);
+      mapStringNestedMessage_.WriteTo(ref output, _map_mapStringNestedMessage_codec);
+      mapStringForeignMessage_.WriteTo(ref output, _map_mapStringForeignMessage_codec);
+      mapStringNestedEnum_.WriteTo(ref output, _map_mapStringNestedEnum_codec);
+      mapStringForeignEnum_.WriteTo(ref output, _map_mapStringForeignEnum_codec);
+      packedInt32_.WriteTo(ref output, _repeated_packedInt32_codec);
+      packedInt64_.WriteTo(ref output, _repeated_packedInt64_codec);
+      packedUint32_.WriteTo(ref output, _repeated_packedUint32_codec);
+      packedUint64_.WriteTo(ref output, _repeated_packedUint64_codec);
+      packedSint32_.WriteTo(ref output, _repeated_packedSint32_codec);
+      packedSint64_.WriteTo(ref output, _repeated_packedSint64_codec);
+      packedFixed32_.WriteTo(ref output, _repeated_packedFixed32_codec);
+      packedFixed64_.WriteTo(ref output, _repeated_packedFixed64_codec);
+      packedSfixed32_.WriteTo(ref output, _repeated_packedSfixed32_codec);
+      packedSfixed64_.WriteTo(ref output, _repeated_packedSfixed64_codec);
+      packedFloat_.WriteTo(ref output, _repeated_packedFloat_codec);
+      packedDouble_.WriteTo(ref output, _repeated_packedDouble_codec);
+      packedBool_.WriteTo(ref output, _repeated_packedBool_codec);
+      packedNestedEnum_.WriteTo(ref output, _repeated_packedNestedEnum_codec);
+      unpackedInt32_.WriteTo(ref output, _repeated_unpackedInt32_codec);
+      unpackedInt64_.WriteTo(ref output, _repeated_unpackedInt64_codec);
+      unpackedUint32_.WriteTo(ref output, _repeated_unpackedUint32_codec);
+      unpackedUint64_.WriteTo(ref output, _repeated_unpackedUint64_codec);
+      unpackedSint32_.WriteTo(ref output, _repeated_unpackedSint32_codec);
+      unpackedSint64_.WriteTo(ref output, _repeated_unpackedSint64_codec);
+      unpackedFixed32_.WriteTo(ref output, _repeated_unpackedFixed32_codec);
+      unpackedFixed64_.WriteTo(ref output, _repeated_unpackedFixed64_codec);
+      unpackedSfixed32_.WriteTo(ref output, _repeated_unpackedSfixed32_codec);
+      unpackedSfixed64_.WriteTo(ref output, _repeated_unpackedSfixed64_codec);
+      unpackedFloat_.WriteTo(ref output, _repeated_unpackedFloat_codec);
+      unpackedDouble_.WriteTo(ref output, _repeated_unpackedDouble_codec);
+      unpackedBool_.WriteTo(ref output, _repeated_unpackedBool_codec);
+      unpackedNestedEnum_.WriteTo(ref output, _repeated_unpackedNestedEnum_codec);
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint32) {
+        output.WriteRawTag(248, 6);
+        output.WriteUInt32(OneofUint32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+        output.WriteRawTag(130, 7);
+        output.WriteMessage(OneofNestedMessage);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) {
+        output.WriteRawTag(138, 7);
+        output.WriteString(OneofString);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
+        output.WriteRawTag(146, 7);
+        output.WriteBytes(OneofBytes);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBool) {
+        output.WriteRawTag(152, 7);
+        output.WriteBool(OneofBool);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint64) {
+        output.WriteRawTag(160, 7);
+        output.WriteUInt64(OneofUint64);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofFloat) {
+        output.WriteRawTag(173, 7);
+        output.WriteFloat(OneofFloat);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofDouble) {
+        output.WriteRawTag(177, 7);
+        output.WriteDouble(OneofDouble);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
+        output.WriteRawTag(184, 7);
+        output.WriteEnum((int) OneofEnum);
+      }
+      if (optionalBoolWrapper_ != null) {
+        _single_optionalBoolWrapper_codec.WriteTagAndValue(ref output, OptionalBoolWrapper);
+      }
+      if (optionalInt32Wrapper_ != null) {
+        _single_optionalInt32Wrapper_codec.WriteTagAndValue(ref output, OptionalInt32Wrapper);
+      }
+      if (optionalInt64Wrapper_ != null) {
+        _single_optionalInt64Wrapper_codec.WriteTagAndValue(ref output, OptionalInt64Wrapper);
+      }
+      if (optionalUint32Wrapper_ != null) {
+        _single_optionalUint32Wrapper_codec.WriteTagAndValue(ref output, OptionalUint32Wrapper);
+      }
+      if (optionalUint64Wrapper_ != null) {
+        _single_optionalUint64Wrapper_codec.WriteTagAndValue(ref output, OptionalUint64Wrapper);
+      }
+      if (optionalFloatWrapper_ != null) {
+        _single_optionalFloatWrapper_codec.WriteTagAndValue(ref output, OptionalFloatWrapper);
+      }
+      if (optionalDoubleWrapper_ != null) {
+        _single_optionalDoubleWrapper_codec.WriteTagAndValue(ref output, OptionalDoubleWrapper);
+      }
+      if (optionalStringWrapper_ != null) {
+        _single_optionalStringWrapper_codec.WriteTagAndValue(ref output, OptionalStringWrapper);
+      }
+      if (optionalBytesWrapper_ != null) {
+        _single_optionalBytesWrapper_codec.WriteTagAndValue(ref output, OptionalBytesWrapper);
+      }
+      repeatedBoolWrapper_.WriteTo(ref output, _repeated_repeatedBoolWrapper_codec);
+      repeatedInt32Wrapper_.WriteTo(ref output, _repeated_repeatedInt32Wrapper_codec);
+      repeatedInt64Wrapper_.WriteTo(ref output, _repeated_repeatedInt64Wrapper_codec);
+      repeatedUint32Wrapper_.WriteTo(ref output, _repeated_repeatedUint32Wrapper_codec);
+      repeatedUint64Wrapper_.WriteTo(ref output, _repeated_repeatedUint64Wrapper_codec);
+      repeatedFloatWrapper_.WriteTo(ref output, _repeated_repeatedFloatWrapper_codec);
+      repeatedDoubleWrapper_.WriteTo(ref output, _repeated_repeatedDoubleWrapper_codec);
+      repeatedStringWrapper_.WriteTo(ref output, _repeated_repeatedStringWrapper_codec);
+      repeatedBytesWrapper_.WriteTo(ref output, _repeated_repeatedBytesWrapper_codec);
+      if (optionalDuration_ != null) {
+        output.WriteRawTag(234, 18);
+        output.WriteMessage(OptionalDuration);
+      }
+      if (optionalTimestamp_ != null) {
+        output.WriteRawTag(242, 18);
+        output.WriteMessage(OptionalTimestamp);
+      }
+      if (optionalFieldMask_ != null) {
+        output.WriteRawTag(250, 18);
+        output.WriteMessage(OptionalFieldMask);
+      }
+      if (optionalStruct_ != null) {
+        output.WriteRawTag(130, 19);
+        output.WriteMessage(OptionalStruct);
+      }
+      if (optionalAny_ != null) {
+        output.WriteRawTag(138, 19);
+        output.WriteMessage(OptionalAny);
+      }
+      if (optionalValue_ != null) {
+        output.WriteRawTag(146, 19);
+        output.WriteMessage(OptionalValue);
+      }
+      repeatedDuration_.WriteTo(ref output, _repeated_repeatedDuration_codec);
+      repeatedTimestamp_.WriteTo(ref output, _repeated_repeatedTimestamp_codec);
+      repeatedFieldmask_.WriteTo(ref output, _repeated_repeatedFieldmask_codec);
+      repeatedAny_.WriteTo(ref output, _repeated_repeatedAny_codec);
+      repeatedValue_.WriteTo(ref output, _repeated_repeatedValue_codec);
+      repeatedListValue_.WriteTo(ref output, _repeated_repeatedListValue_codec);
+      repeatedStruct_.WriteTo(ref output, _repeated_repeatedStruct_codec);
+      if (Fieldname1 != 0) {
+        output.WriteRawTag(136, 25);
+        output.WriteInt32(Fieldname1);
+      }
+      if (FieldName2 != 0) {
+        output.WriteRawTag(144, 25);
+        output.WriteInt32(FieldName2);
+      }
+      if (FieldName3 != 0) {
+        output.WriteRawTag(152, 25);
+        output.WriteInt32(FieldName3);
+      }
+      if (FieldName4 != 0) {
+        output.WriteRawTag(160, 25);
+        output.WriteInt32(FieldName4);
+      }
+      if (Field0Name5 != 0) {
+        output.WriteRawTag(168, 25);
+        output.WriteInt32(Field0Name5);
+      }
+      if (Field0Name6 != 0) {
+        output.WriteRawTag(176, 25);
+        output.WriteInt32(Field0Name6);
+      }
+      if (FieldName7 != 0) {
+        output.WriteRawTag(184, 25);
+        output.WriteInt32(FieldName7);
+      }
+      if (FieldName8 != 0) {
+        output.WriteRawTag(192, 25);
+        output.WriteInt32(FieldName8);
+      }
+      if (FieldName9 != 0) {
+        output.WriteRawTag(200, 25);
+        output.WriteInt32(FieldName9);
+      }
+      if (FieldName10 != 0) {
+        output.WriteRawTag(208, 25);
+        output.WriteInt32(FieldName10);
+      }
+      if (FIELDNAME11 != 0) {
+        output.WriteRawTag(216, 25);
+        output.WriteInt32(FIELDNAME11);
+      }
+      if (FIELDName12 != 0) {
+        output.WriteRawTag(224, 25);
+        output.WriteInt32(FIELDName12);
+      }
+      if (FieldName13 != 0) {
+        output.WriteRawTag(232, 25);
+        output.WriteInt32(FieldName13);
+      }
+      if (FieldName14 != 0) {
+        output.WriteRawTag(240, 25);
+        output.WriteInt32(FieldName14);
+      }
+      if (FieldName15 != 0) {
+        output.WriteRawTag(248, 25);
+        output.WriteInt32(FieldName15);
+      }
+      if (FieldName16 != 0) {
+        output.WriteRawTag(128, 26);
+        output.WriteInt32(FieldName16);
+      }
+      if (FieldName17 != 0) {
+        output.WriteRawTag(136, 26);
+        output.WriteInt32(FieldName17);
+      }
+      if (FieldName18 != 0) {
+        output.WriteRawTag(144, 26);
+        output.WriteInt32(FieldName18);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -4933,6 +5281,9 @@ namespace ProtobufTestMessages.Proto3 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (A != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(A);
@@ -4944,7 +5295,25 @@ namespace ProtobufTestMessages.Proto3 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (A != 0) {
+            output.WriteRawTag(8);
+            output.WriteInt32(A);
+          }
+          if (corecursive_ != null) {
+            output.WriteRawTag(18);
+            output.WriteMessage(Corecursive);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -5120,6 +5489,9 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (C != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(C);
@@ -5127,7 +5499,21 @@ namespace ProtobufTestMessages.Proto3 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (C != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(C);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {

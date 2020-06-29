@@ -35,7 +35,7 @@ namespace Google.Protobuf
 #if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
     /// <summary>
     /// Interface for a Protocol Buffers message, supporting
-    /// parsing from <see cref="ParseContext"/>.
+    /// parsing from <see cref="ParseContext"/> and writing to <see cref="WriteContext"/>.
     /// </summary>
     public interface IBufferMessage : IMessage
     {
@@ -44,6 +44,12 @@ namespace Google.Protobuf
         /// Users should never invoke this method directly.
         /// </summary>        
         void InternalMergeFrom(ref ParseContext ctx);
+
+        /// <summary>
+        /// Internal implementation of writing this message to a given write context.
+        /// Users should never invoke this method directly.
+        /// </summary>        
+        void InternalWriteTo(ref WriteContext ctx);
     }
 #endif
 }

@@ -124,7 +124,17 @@ namespace Google.Protobuf
             {
                 var stream = new MemoryStream();
                 var codedOutput = new CodedOutputStream(stream);
-                codec.ValueWriter(codedOutput, sampleValue);
+                WriteContext.Initialize(codedOutput, out WriteContext ctx);
+                try
+                {
+                    // only write the value using the codec
+                    codec.ValueWriter(ref ctx, sampleValue);
+                }
+                finally
+                {
+                    ctx.CopyStateTo(codedOutput);
+                }
+                
                 codedOutput.Flush();
                 stream.Position = 0;
                 var codedInput = new CodedInputStream(stream);
@@ -175,7 +185,17 @@ namespace Google.Protobuf
                 if (codec.DefaultValue != null) // This part isn't appropriate for message types.
                 {
                     codedOutput = new CodedOutputStream(stream);
-                    codec.ValueWriter(codedOutput, codec.DefaultValue);
+                    WriteContext.Initialize(codedOutput, out WriteContext ctx);
+                    try
+                    {
+                        // only write the value using the codec
+                        codec.ValueWriter(ref ctx, codec.DefaultValue);
+                    }
+                    finally
+                    {
+                        ctx.CopyStateTo(codedOutput);
+                    }
+                    
                     codedOutput.Flush();
                     Assert.AreNotEqual(0, stream.Position);
                     Assert.AreEqual(stream.Position, codec.ValueSizeCalculator(codec.DefaultValue));

@@ -132,11 +132,19 @@ void WrapperFieldGenerator::GenerateParsingCode(io::Printer* printer, bool use_p
 }
 
 void WrapperFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
+  GenerateSerializationCode(printer, true);
+}
+
+void WrapperFieldGenerator::GenerateSerializationCode(io::Printer* printer, bool use_write_context) {
   printer->Print(
     variables_,
-    "if ($has_property_check$) {\n"
-    "  _single_$name$_codec.WriteTagAndValue(output, $property_name$);\n"
-    "}\n");
+    use_write_context
+    ? "if ($has_property_check$) {\n"
+      "  _single_$name$_codec.WriteTagAndValue(ref output, $property_name$);\n"
+      "}\n"
+    : "if ($has_property_check$) {\n"
+      "  _single_$name$_codec.WriteTagAndValue(output, $property_name$);\n"
+      "}\n");
 }
 
 void WrapperFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
@@ -269,12 +277,20 @@ void WrapperOneofFieldGenerator::GenerateParsingCode(io::Printer* printer, bool 
 }
 
 void WrapperOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
+  GenerateSerializationCode(printer, true);
+}
+
+void WrapperOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer, bool use_write_context) {
   // TODO: I suspect this is wrong...
   printer->Print(
     variables_,
-    "if ($has_property_check$) {\n"
-    "  _oneof_$name$_codec.WriteTagAndValue(output, ($type_name$) $oneof_name$_);\n"
-    "}\n");
+    use_write_context
+    ? "if ($has_property_check$) {\n"
+      "  _oneof_$name$_codec.WriteTagAndValue(ref output, ($type_name$) $oneof_name$_);\n"
+      "}\n"
+    : "if ($has_property_check$) {\n"
+      "  _oneof_$name$_codec.WriteTagAndValue(output, ($type_name$) $oneof_name$_);\n"
+      "}\n");
 }
 
 void WrapperOneofFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

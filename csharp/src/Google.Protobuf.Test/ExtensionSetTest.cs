@@ -34,6 +34,8 @@ namespace Google.Protobuf
             message.SetExtension(OptionalBoolExtension, true);
             var serialized = message.ToByteArray();
 
+            MessageParsingHelpers.AssertWritingMessage(message);
+
             MessageParsingHelpers.AssertReadingMessage(
                 TestAllExtensions.Parser.WithExtensionRegistry(new ExtensionRegistry() { OptionalBoolExtension }),
                 serialized,
