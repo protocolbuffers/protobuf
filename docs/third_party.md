@@ -70,6 +70,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Lua: https://github.com/Neopallium/lua-pb
 * Matlab: http://code.google.com/p/protobuf-matlab/
 * Mercury: http://code.google.com/p/protobuf-mercury/
+* Monkey C: https://github.com/chesapeaketechnology/BufMonkey
 * Objective C: http://code.google.com/p/protobuf-objc/
 * Objective C: https://github.com/alexeyxo/protobuf-objc
 * OCaml: http://piqi.org/
