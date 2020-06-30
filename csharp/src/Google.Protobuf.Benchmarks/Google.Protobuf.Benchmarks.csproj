@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Compile Include="..\Google.Protobuf.Test\ReadOnlySequenceFactory.cs" Link="ReadOnlySequenceFactory.cs" />
+    <Compile Include="..\Google.Protobuf.Test\Buffers\ArrayBufferWriter.cs" Link="ArrayBufferWriter.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -125,7 +125,7 @@ namespace Google.Protobuf
             for (int blockSize = 1; blockSize < 256; blockSize *= 2)
             {
                 var segmentedBufferWriter = new ArrayBufferWriter<byte>();
-                segmentedBufferWriter.MaxGrowBy = blockSize;
+                segmentedBufferWriter.MaxBufferSize = blockSize;
                 message.WriteTo(segmentedBufferWriter);
                 Assert.AreEqual(bytes, segmentedBufferWriter.WrittenSpan.ToArray());
             }

@@ -47,6 +47,7 @@ namespace Google.Protobuf
     {
         // "Local" copy of Encoding.UTF8, for efficiency. (Yes, it makes a difference.)
         internal static readonly Encoding Utf8Encoding = Encoding.UTF8;
+        private const int MaximumBytesPerUtf8Char = 4;
 
         #region Writing of values (not including tags)
 
@@ -163,50 +164,126 @@ namespace Google.Protobuf
         /// </summary>
         public static void WriteString(ref Span<byte> buffer, ref WriterInternalState state, string value)
         {
-            // Optimise the case where we have enough space to write
-            // the string directly to the buffer, which should be common.
-            int length = Utf8Encoding.GetByteCount(value);
+            int length = Encoding.UTF8.GetByteCount(value);
             WriteLength(ref buffer, ref state, length);
-            if (buffer.Length - state.position >= length)
+
+            if (buffer.Length < length + state.position)
             {
-                if (length == value.Length) // Must be all ASCII...
+                // String doesn't fit in the remaining buffer.
+                // Refreshing the buffer could free up enough space to write string.
+                WriteBufferHelper.RefreshBuffer(ref buffer, ref state);
+
+                if (buffer.Length < length + state.position)
                 {
-                    for (int i = 0; i < length; i++)
-                    {
-                        buffer[state.position + i] = (byte)value[i];
-                    }
-                    state.position += length;
+                    // String doesn't fit in refreshed buffer. Write across multiple
+                    WriteStringMultiBuffer(ref buffer, ref state, value);
                 }
                 else
                 {
-#if NETSTANDARD1_1
-                    // slowpath when Encoding.GetBytes(Char*, Int32, Byte*, Int32) is not available
-                    byte[] bytes = Utf8Encoding.GetBytes(value);
-                    WriteRawBytes(ref buffer, ref state, bytes);
-#else
-                    ReadOnlySpan<char> source = value.AsSpan();
-                    int bytesUsed;
-                    unsafe
-                    {
-                        fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
-                        fixed (byte* destinationBytes = &MemoryMarshal.GetReference(buffer.Slice(state.position)))
-                        {
-                            bytesUsed = Utf8Encoding.GetBytes(sourceChars, source.Length, destinationBytes, buffer.Length);
-                        }
-                    }
-                    state.position += bytesUsed;
-#endif
+                    // String now fits in refreshed buffer
+                    WriteStringSingleBuffer(ref buffer, ref state, value, length);
                 }
             }
             else
             {
-                // Opportunity for future optimization:
-                // Large strings that don't fit into the current buffer segment
-                // can probably be optimized by using Utf8Encoding.GetEncoder()
-                // but more benchmarks would need to be added as evidence.
+                // String fits in remaining buffer space
+                WriteStringSingleBuffer(ref buffer, ref state, value, length);
+            }
+        }
+
+        private static void WriteStringSingleBuffer(ref Span<byte> buffer, ref WriterInternalState state, string value, int length)
+        {
+            // Can write string to a single buffer
+            Span<byte> destinationBuffer = buffer.Slice(state.position);
+
+            if (length == value.Length)
+            {
+                // Fast path when all content is ASCII
+                for (int i = 0; i < length; i++)
+                {
+                    destinationBuffer[i] = (byte)value[i];
+                }
+
+                state.position += length;
+            }
+            else
+            {
+#if NETSTANDARD1_1
+                // slowpath when Encoding.GetBytes(Char*, Int32, Byte*, Int32) is not available
                 byte[] bytes = Utf8Encoding.GetBytes(value);
                 WriteRawBytes(ref buffer, ref state, bytes);
+#else
+                ReadOnlySpan<char> source = value.AsSpan();
+
+                int bytesUsed;
+
+                unsafe
+                {
+                    fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
+                    fixed (byte* destinationBytes = &MemoryMarshal.GetReference(destinationBuffer))
+                    {
+                        bytesUsed = Encoding.UTF8.GetBytes(sourceChars, source.Length, destinationBytes, destinationBuffer.Length);
+                    }
+                }
+
+                state.position += bytesUsed;
+#endif
             }
+        }
+
+        private static void WriteStringMultiBuffer(ref Span<byte> buffer, ref WriterInternalState state, string value)
+        {
+#if NETSTANDARD1_1
+            // slowpath when Encoding.GetBytes(Char*, Int32, Byte*, Int32) is not available
+            byte[] bytes = Utf8Encoding.GetBytes(value);
+            WriteRawBytes(ref buffer, ref state, bytes);
+#else
+            if (state.CodedOutputStream != null)
+            {
+                // When writing to Encoder we need at least 4 bytes available in the buffer to ensure
+                // there is space to write a character. Because CodedOutputStream always writes to the
+                // end of its buffer we can't guarantee that so use slow path.
+                byte[] bytes = Utf8Encoding.GetBytes(value);
+                WriteRawBytes(ref buffer, ref state, bytes);
+                return;
+            }
+
+            // The destination byte array is not be large enough so multiple writes are required.
+            // Encoder will keep state of unwritten data.
+            if (state.stringEncoder == null)
+            {
+                state.stringEncoder = Encoding.UTF8.GetEncoder();
+            }
+
+            ReadOnlySpan<char> source = value.AsSpan();
+            bool completed = false;
+
+            // When completed is true then all chars from the source string have been consumed and
+            // the encoder has no state left to write as bytes.
+            while (!completed)
+            {
+                // Refresh the buffer with a minimum size of the maximum unicode char byte size.
+                // A minimum buffer size is required because at least one unicode character must
+                // be written when Encoder.Convert is called. 
+                WriteBufferHelper.RefreshBuffer(ref buffer, ref state, sizeHint: MaximumBytesPerUtf8Char);
+
+                int bytesUsed;
+                int charsUsed;
+
+                unsafe
+                {
+                    fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
+                    fixed (byte* destinationBytes = &MemoryMarshal.GetReference(buffer))
+                    {
+                        // Flush should be set to true because we have all the chars that we want to convert.
+                        state.stringEncoder.Convert(sourceChars, source.Length, destinationBytes, buffer.Length, flush: true, out charsUsed, out bytesUsed, out completed);
+                    }
+                }
+
+                source = source.Slice(charsUsed);
+                state.position += bytesUsed;
+            }
+#endif
         }
 
         /// <summary>
@@ -278,9 +355,9 @@ namespace Google.Protobuf
             WriteRawVarint32(ref buffer, ref state, (uint)length);
         }
 
-        #endregion
+#endregion
 
-        #region Writing primitives
+#region Writing primitives
         /// <summary>
         /// Writes a 32 bit value as a varint. The fast route is taken when
         /// there's enough buffer space left to whizz through without checking
@@ -463,9 +540,9 @@ namespace Google.Protobuf
                 state.position += remainderLength;
             }
         }
-        #endregion
+#endregion
 
-        #region Raw tag writing
+#region Raw tag writing
         /// <summary>
         /// Encodes and writes a tag.
         /// </summary>
@@ -594,7 +671,7 @@ namespace Google.Protobuf
             WriteRawByte(ref buffer, ref state, b4);
             WriteRawByte(ref buffer, ref state, b5);
         }
-        #endregion
+#endregion
 
         /// <summary>
         /// Encode a 32-bit value with ZigZag encoding.

@@ -32,6 +32,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security;
@@ -71,7 +72,7 @@ namespace Google.Protobuf
         {
             instance.bufferWriter = bufferWriter;
             instance.codedOutputStream = null;
-            buffer = default;  // TODO: initialize the initial buffer so that the first write is not via slowpath.
+            buffer = bufferWriter.GetSpan();
         }
 
         /// <summary>
@@ -118,10 +119,12 @@ namespace Google.Protobuf
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void RefreshBuffer(ref Span<byte> buffer, ref WriterInternalState state)
+        public static void RefreshBuffer(ref Span<byte> buffer, ref WriterInternalState state, int sizeHint = 0)
         {
             if (state.writeBufferHelper.codedOutputStream?.InternalOutputStream != null)
             {
+                Debug.Assert(sizeHint == 0, "CodedOutputStream does not support sizeHint.");
+
                 // because we're using coded output stream, we know that "buffer" and codedOutputStream.InternalBuffer are identical.
                 state.writeBufferHelper.codedOutputStream.InternalOutputStream.Write(state.writeBufferHelper.codedOutputStream.InternalBuffer, 0, state.position);
                 // reset position, limit stays the same because we are reusing the codedOutputStream's internal buffer.
@@ -132,7 +135,7 @@ namespace Google.Protobuf
                 // commit the bytes and get a new buffer to write to.
                 state.writeBufferHelper.bufferWriter.Advance(state.position);
                 state.position = 0;
-                buffer = state.writeBufferHelper.bufferWriter.GetSpan();
+                buffer = state.writeBufferHelper.bufferWriter.GetSpan(sizeHint);
                 state.limit = buffer.Length;
             }
             else
