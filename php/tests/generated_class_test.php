@@ -375,6 +375,15 @@ class GeneratedClassTest extends TestBase
         // Set bool.
         $m->setOptionalString(true);
         $this->assertSame('1', $m->getOptionalString());
+
+    }
+
+    /**
+     * @expectedException PHPUnit\Framework\Error\Error
+     */
+    public function testInvalidUTF8() {
+        $m = new TestMessage();
+        $m->setOptionalString("\xff");
     }
 
     #########################################################
@@ -400,6 +409,10 @@ class GeneratedClassTest extends TestBase
         // Set bool.
         $m->setOptionalBytes(true);
         $this->assertSame('1', $m->getOptionalBytes());
+
+        // Set invalid UTF-8.
+        $m->setOptionalBytes("\xff");
+        $this->assertSame("\xff", $m->getOptionalBytes());
     }
 
       public function testBytesFieldInvalidUTF8Success()

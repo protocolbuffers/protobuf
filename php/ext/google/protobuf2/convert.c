@@ -113,6 +113,40 @@ static zend_function_entry util_methods[] = {
 // Conversion functions used from C
 // -----------------------------------------------------------------------------
 
+bool IsStructurallyValidUtf8(const char *buf, int len) {
+  static const uint8_t utf8_offset[] = {
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+      2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
+
+  int i, j;
+  uint8_t offset;
+
+  i = 0;
+  while (i < len) {
+    offset = utf8_offset[(uint8_t)buf[i]];
+    if (offset == 0 || i + offset > len) {
+      return false;
+    }
+    for (j = i + 1; j < i + offset; j++) {
+      if ((buf[j] & 0xc0) != 0x80) {
+        return false;
+      }
+    }
+    i += offset;
+  }
+  return i == len;
+}
+
 upb_fieldtype_t pbphp_dtype_to_type(upb_descriptortype_t type) {
   switch (type) {
 #define CASE(descriptor_type, type)           \
@@ -370,6 +404,12 @@ bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, upb_fieldtype_t type,
       }
 
       upb_val->str_val = upb_strview_make(ptr, size);
+
+      if (type == UPB_TYPE_STRING && !IsStructurallyValidUtf8(ptr, size)) {
+        zend_error(E_USER_ERROR, "Given string is not UTF8 encoded.");
+        return false;
+      }
+
       return true;
     }
     case UPB_TYPE_MESSAGE:
