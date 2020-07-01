@@ -123,9 +123,9 @@ namespace Google.Protobuf.Benchmarks
         {
             var values = varint32Values[encodedSize];
             var cos = new CodedOutputStream(outputBuffer);
-            foreach (var value in values)
+            for (int i = 0; i < values.Length; i++)
             {
-                cos.WriteRawVarint32(value);
+                cos.WriteRawVarint32(values[i]);
             }
             cos.Flush();
             cos.CheckNoSpaceLeft();
@@ -142,9 +142,9 @@ namespace Google.Protobuf.Benchmarks
             var values = varint32Values[encodedSize];
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
-            foreach (var value in values)
+            for (int i = 0; i < values.Length; i++)
             {
-                ctx.WriteUInt32(value);
+                ctx.WriteUInt32(values[i]);
             }
             ctx.Flush();
             ctx.CheckNoSpaceLeft();
@@ -165,9 +165,9 @@ namespace Google.Protobuf.Benchmarks
         {
             var values = varint64Values[encodedSize];
             var cos = new CodedOutputStream(outputBuffer);
-            foreach (var value in values)
+            for (int i = 0; i < values.Length; i++)
             {
-                cos.WriteRawVarint64(value);
+                cos.WriteRawVarint64(values[i]);
             }
             cos.Flush();
             cos.CheckNoSpaceLeft();
@@ -189,9 +189,9 @@ namespace Google.Protobuf.Benchmarks
             var values = varint64Values[encodedSize];
             var span = new Span<byte>(outputBuffer);
             WriteContext.Initialize(ref span, out WriteContext ctx);
-            foreach (var value in values)
+            for (int i = 0; i < values.Length; i++)
             {
-                ctx.WriteUInt64(value);
+                ctx.WriteUInt64(values[i]);
             }
             ctx.Flush();
             ctx.CheckNoSpaceLeft();
@@ -202,7 +202,7 @@ namespace Google.Protobuf.Benchmarks
         {
             const int encodedSize = sizeof(uint);
             var cos = new CodedOutputStream(outputBuffer);
-            for(int i = 0; i < BytesToWrite / encodedSize; i++)
+            for (int i = 0; i < BytesToWrite / encodedSize; i++)
             {
                 cos.WriteFixed32(12345);
             }
@@ -247,6 +247,58 @@ namespace Google.Protobuf.Benchmarks
             {
                 ctx.WriteFixed64(123456789);
             }
+            ctx.Flush();
+            ctx.CheckNoSpaceLeft();
+        }
+
+        [Benchmark]
+        public void WriteRawTag_OneByte_WriteContext()
+        {
+            const int encodedSize = 1;
+            var span = new Span<byte>(outputBuffer);
+            WriteContext.Initialize(ref span, out WriteContext ctx);
+            for (uint i = 0; i < BytesToWrite / encodedSize; i++)
+            {
+                ctx.WriteRawTag(16);
+            }
+            ctx.Flush();
+            ctx.CheckNoSpaceLeft();
+        }
+
+        [Benchmark]
+        public void WriteRawTag_TwoBytes_WriteContext()
+        {
+            const int encodedSize = 2;
+            var span = new Span<byte>(outputBuffer);
+            WriteContext.Initialize(ref span, out WriteContext ctx);
+            for (uint i = 0; i < BytesToWrite / encodedSize; i++)
+            {
+                ctx.WriteRawTag(137, 6);
+            }
+            ctx.Flush();
+            ctx.CheckNoSpaceLeft();
+        }
+
+        [Benchmark]
+        public void WriteRawTag_ThreeBytes_WriteContext()
+        {
+            const int encodedSize = 3;
+            var span = new Span<byte>(outputBuffer);
+            WriteContext.Initialize(ref span, out WriteContext ctx);
+            for (uint i = 0; i < BytesToWrite / encodedSize; i++)
+            {
+                ctx.WriteRawTag(160, 131, 1);
+            }
+            ctx.Flush();
+            ctx.CheckNoSpaceLeft();
+        }
+
+        [Benchmark]
+        public void Baseline_WriteContext()
+        {
+            var span = new Span<byte>(outputBuffer);
+            WriteContext.Initialize(ref span, out WriteContext ctx);
+            ctx.state.position = outputBuffer.Length;
             ctx.Flush();
             ctx.CheckNoSpaceLeft();
         }
