@@ -438,8 +438,6 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.NegativeSize();
             }
 
-            ValidateCurrentLimit(ref buffer, ref state, size);
-
             if (size <= state.bufferSize - state.bufferPos)
             {
                 // We have all the bytes we need already.
@@ -448,7 +446,16 @@ namespace Google.Protobuf
                 state.bufferPos += size;
                 return bytes;
             }
-            else if (IsDataAvailableInSource(ref state, size))
+
+            return ReadRawBytesSlow(ref buffer, ref state, size);
+        }
+
+        private static byte[] ReadRawBytesSlow(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int size)
+        {
+            ValidateCurrentLimit(ref buffer, ref state, size);
+
+            if ((!state.segmentedBufferHelper.TotalLength.HasValue && size < buffer.Length) ||
+                IsDataAvailableInSource(ref state, size))
             {
                 // Reading more bytes than are in the buffer, but not an excessive number
                 // of bytes.  We can safely allocate the resulting array ahead of time.
@@ -490,7 +497,7 @@ namespace Google.Protobuf
                 }
 
                 // OK, got everything.  Now concatenate it all into one buffer.
-                byte[] bytes = new byte[size];          
+                byte[] bytes = new byte[size];
                 int newPos = 0;
                 foreach (byte[] chunk in chunks)
                 {
