@@ -74,6 +74,9 @@ void EnumGenerator::Generate(io::Printer* printer) {
           << ") in " << descriptor_->name() << "; adding underscore to distinguish";
         name += "_";
       }
+      if (descriptor_->value(i)->options().deprecated()) {
+          printer->Print("[global::System.Obsolete]");
+      }
       int number = descriptor_->value(i)->number();
       if (!used_number.insert(number).second) {
           printer->Print("[pbr::OriginalName(\"$original_name$\", PreferredAlias = false)] $name$ = $number$,\n",
