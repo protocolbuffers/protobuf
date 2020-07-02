@@ -3,6 +3,7 @@
          colors="true">
   <testsuites>
     <testsuite name="protobuf-tests">
+      <file>tests/php_deprecation_test.php</file>
       <file>tests/php_implementation_test.php</file>
       <file>tests/array_test.php</file>
       <file>tests/encode_decode_test.php</file>
@@ -15,4 +16,7 @@
       <file>tests/wrapper_type_setters_test.php</file>
     </testsuite>
   </testsuites>
+  <listeners>
+    <listener class="Symfony\Bridge\PhpUnit\SymfonyTestsListener"/>
+  </listeners>
 </phpunit>

@@ -9,7 +9,8 @@
     "php": ">=5.5.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^5|^4.8.0"
+    "phpunit/phpunit": "^5|^4.8.0",
+    "symfony/phpunit-bridge": "^5.1"
   },
   "autoload": {
     "psr-4": {
