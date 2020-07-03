@@ -248,6 +248,19 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
+        /// Adds the specified entries to the map. The keys and values are not automatically cloned.
+        /// </summary>
+        /// <param name="entries">The entries to add to the map.</param>
+        public void Add(IEnumerable<KeyValuePair<TKey, TValue>> entries)
+        {
+            ProtoPreconditions.CheckNotNull(entries, nameof(entries));
+            foreach (var pair in entries)
+            {
+                Add(pair.Key, pair.Value);
+            }
+        }
+
+        /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns>

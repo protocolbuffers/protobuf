@@ -179,6 +179,35 @@ namespace Google.Protobuf.Collections
             CollectionAssert.AreEqual(new[] { "before", "x", "a", "after" }, map2.Keys);
         }
 
+        [Test]
+        public void Add_IEnumerable()
+        {
+            var map1 = new MapField<string, string>
+            {
+                { "x", "y" },
+                { "a", "b" }
+            };
+
+            IReadOnlyDictionary<string, string> map2 = new Dictionary<string, string>
+            {
+                {"before", ""},
+                {"after", ""}
+            };
+
+            var expected = new MapField<string, string>
+            {
+                { "before", "" },
+                { "x", "y" },
+                { "a", "b" },
+                { "after", "" }
+            };
+
+            map1.Add(map2);
+
+            Assert.AreEqual(expected, map1);
+            CollectionAssert.AreEqual(new[] { "before", "x", "a", "after" }, map1.Keys);
+        }
+
         // General IDictionary<TKey, TValue> behavior tests
         [Test]
         public void Add_KeyAlreadyExists()
