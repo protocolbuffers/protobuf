@@ -196,16 +196,16 @@ namespace Google.Protobuf.Collections
 
             var expected = new MapField<string, string>
             {
-                { "before", "" },
                 { "x", "y" },
                 { "a", "b" },
-                { "after", "" }
+                { "before", "" },
+                { "after", "" },
             };
 
             map1.Add(map2);
 
             Assert.AreEqual(expected, map1);
-            CollectionAssert.AreEqual(new[] { "before", "x", "a", "after" }, map1.Keys);
+            CollectionAssert.AreEqual(new[] { "x", "a", "before", "after" }, map1.Keys);
         }
 
         // General IDictionary<TKey, TValue> behavior tests
