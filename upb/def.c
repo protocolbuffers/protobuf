@@ -1015,8 +1015,8 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
 
     if (field->descriptortype == UPB_DTYPE_STRING &&
         f->file->syntax == UPB_SYNTAX_PROTO2) {
-      // See TableDescriptorType() in upbc/generator.cc for details and
-      // rationale.
+      /* See TableDescriptorType() in upbc/generator.cc for details and
+       * rationale. */
       field->descriptortype = UPB_DTYPE_BYTES;
     }
 
