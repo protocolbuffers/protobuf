@@ -151,7 +151,7 @@ namespace Google.Protobuf.Benchmarks
             repeatedFieldTest.ParseDelimitedMessagesFromReadOnlySequence(messageCount);
         }
 
-        private static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()
+        public static ManyWrapperFieldsMessage CreateManyWrapperFieldsMessage()
         {
             // Example data match data of an internal benchmarks
             return new ManyWrapperFieldsMessage()
@@ -168,7 +168,7 @@ namespace Google.Protobuf.Benchmarks
             };
         }
 
-        private static ManyPrimitiveFieldsMessage CreateManyPrimitiveFieldsMessage()
+        public static ManyPrimitiveFieldsMessage CreateManyPrimitiveFieldsMessage()
         {
             // Example data match data of an internal benchmarks
             return new ManyPrimitiveFieldsMessage()
@@ -185,7 +185,7 @@ namespace Google.Protobuf.Benchmarks
             };
         }
 
-        private static GoogleMessage1 CreateRepeatedFieldMessage()
+        public static GoogleMessage1 CreateRepeatedFieldMessage()
         {
             // Message with a repeated fixed length item collection
             var message = new GoogleMessage1();

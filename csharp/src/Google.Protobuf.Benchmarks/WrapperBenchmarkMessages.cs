@@ -2073,6 +2073,9 @@ namespace Google.Protobuf.Benchmarks {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (doubleField1_ != null) {
         _single_doubleField1_codec.WriteTagAndValue(output, DoubleField1);
       }
@@ -2410,7 +2413,351 @@ namespace Google.Protobuf.Benchmarks {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (doubleField1_ != null) {
+        _single_doubleField1_codec.WriteTagAndValue(ref output, DoubleField1);
+      }
+      if (int64Field2_ != null) {
+        _single_int64Field2_codec.WriteTagAndValue(ref output, Int64Field2);
+      }
+      if (int64Field3_ != null) {
+        _single_int64Field3_codec.WriteTagAndValue(ref output, Int64Field3);
+      }
+      if (int64Field4_ != null) {
+        _single_int64Field4_codec.WriteTagAndValue(ref output, Int64Field4);
+      }
+      if (doubleField7_ != null) {
+        _single_doubleField7_codec.WriteTagAndValue(ref output, DoubleField7);
+      }
+      if (doubleField8_ != null) {
+        _single_doubleField8_codec.WriteTagAndValue(ref output, DoubleField8);
+      }
+      if (doubleField9_ != null) {
+        _single_doubleField9_codec.WriteTagAndValue(ref output, DoubleField9);
+      }
+      if (doubleField10_ != null) {
+        _single_doubleField10_codec.WriteTagAndValue(ref output, DoubleField10);
+      }
+      if (doubleField11_ != null) {
+        _single_doubleField11_codec.WriteTagAndValue(ref output, DoubleField11);
+      }
+      if (doubleField14_ != null) {
+        _single_doubleField14_codec.WriteTagAndValue(ref output, DoubleField14);
+      }
+      if (doubleField15_ != null) {
+        _single_doubleField15_codec.WriteTagAndValue(ref output, DoubleField15);
+      }
+      if (int64Field19_ != null) {
+        _single_int64Field19_codec.WriteTagAndValue(ref output, Int64Field19);
+      }
+      if (doubleField20_ != null) {
+        _single_doubleField20_codec.WriteTagAndValue(ref output, DoubleField20);
+      }
+      if (doubleField21_ != null) {
+        _single_doubleField21_codec.WriteTagAndValue(ref output, DoubleField21);
+      }
+      if (doubleField22_ != null) {
+        _single_doubleField22_codec.WriteTagAndValue(ref output, DoubleField22);
+      }
+      if (doubleField25_ != null) {
+        _single_doubleField25_codec.WriteTagAndValue(ref output, DoubleField25);
+      }
+      if (int64Field26_ != null) {
+        _single_int64Field26_codec.WriteTagAndValue(ref output, Int64Field26);
+      }
+      if (doubleField28_ != null) {
+        _single_doubleField28_codec.WriteTagAndValue(ref output, DoubleField28);
+      }
+      if (doubleField29_ != null) {
+        _single_doubleField29_codec.WriteTagAndValue(ref output, DoubleField29);
+      }
+      if (doubleField30_ != null) {
+        _single_doubleField30_codec.WriteTagAndValue(ref output, DoubleField30);
+      }
+      if (doubleField31_ != null) {
+        _single_doubleField31_codec.WriteTagAndValue(ref output, DoubleField31);
+      }
+      if (int64Field32_ != null) {
+        _single_int64Field32_codec.WriteTagAndValue(ref output, Int64Field32);
+      }
+      if (int64Field37_ != null) {
+        _single_int64Field37_codec.WriteTagAndValue(ref output, Int64Field37);
+      }
+      if (doubleField38_ != null) {
+        _single_doubleField38_codec.WriteTagAndValue(ref output, DoubleField38);
+      }
+      if (interactions_ != null) {
+        _single_interactions_codec.WriteTagAndValue(ref output, Interactions);
+      }
+      if (doubleField40_ != null) {
+        _single_doubleField40_codec.WriteTagAndValue(ref output, DoubleField40);
+      }
+      if (int64Field41_ != null) {
+        _single_int64Field41_codec.WriteTagAndValue(ref output, Int64Field41);
+      }
+      if (doubleField42_ != null) {
+        _single_doubleField42_codec.WriteTagAndValue(ref output, DoubleField42);
+      }
+      if (int64Field43_ != null) {
+        _single_int64Field43_codec.WriteTagAndValue(ref output, Int64Field43);
+      }
+      if (int64Field44_ != null) {
+        _single_int64Field44_codec.WriteTagAndValue(ref output, Int64Field44);
+      }
+      if (doubleField45_ != null) {
+        _single_doubleField45_codec.WriteTagAndValue(ref output, DoubleField45);
+      }
+      if (doubleField46_ != null) {
+        _single_doubleField46_codec.WriteTagAndValue(ref output, DoubleField46);
+      }
+      if (doubleField47_ != null) {
+        _single_doubleField47_codec.WriteTagAndValue(ref output, DoubleField47);
+      }
+      if (doubleField48_ != null) {
+        _single_doubleField48_codec.WriteTagAndValue(ref output, DoubleField48);
+      }
+      if (doubleField49_ != null) {
+        _single_doubleField49_codec.WriteTagAndValue(ref output, DoubleField49);
+      }
+      if (doubleField50_ != null) {
+        _single_doubleField50_codec.WriteTagAndValue(ref output, DoubleField50);
+      }
+      if (doubleField51_ != null) {
+        _single_doubleField51_codec.WriteTagAndValue(ref output, DoubleField51);
+      }
+      if (doubleField52_ != null) {
+        _single_doubleField52_codec.WriteTagAndValue(ref output, DoubleField52);
+      }
+      if (doubleField53_ != null) {
+        _single_doubleField53_codec.WriteTagAndValue(ref output, DoubleField53);
+      }
+      if (doubleField54_ != null) {
+        _single_doubleField54_codec.WriteTagAndValue(ref output, DoubleField54);
+      }
+      if (doubleField55_ != null) {
+        _single_doubleField55_codec.WriteTagAndValue(ref output, DoubleField55);
+      }
+      if (doubleField56_ != null) {
+        _single_doubleField56_codec.WriteTagAndValue(ref output, DoubleField56);
+      }
+      if (doubleField57_ != null) {
+        _single_doubleField57_codec.WriteTagAndValue(ref output, DoubleField57);
+      }
+      if (doubleField58_ != null) {
+        _single_doubleField58_codec.WriteTagAndValue(ref output, DoubleField58);
+      }
+      if (int64Field59_ != null) {
+        _single_int64Field59_codec.WriteTagAndValue(ref output, Int64Field59);
+      }
+      if (int64Field60_ != null) {
+        _single_int64Field60_codec.WriteTagAndValue(ref output, Int64Field60);
+      }
+      if (doubleField62_ != null) {
+        _single_doubleField62_codec.WriteTagAndValue(ref output, DoubleField62);
+      }
+      if (doubleField65_ != null) {
+        _single_doubleField65_codec.WriteTagAndValue(ref output, DoubleField65);
+      }
+      if (doubleField66_ != null) {
+        _single_doubleField66_codec.WriteTagAndValue(ref output, DoubleField66);
+      }
+      if (doubleField67_ != null) {
+        _single_doubleField67_codec.WriteTagAndValue(ref output, DoubleField67);
+      }
+      if (doubleField68_ != null) {
+        _single_doubleField68_codec.WriteTagAndValue(ref output, DoubleField68);
+      }
+      if (doubleField69_ != null) {
+        _single_doubleField69_codec.WriteTagAndValue(ref output, DoubleField69);
+      }
+      if (doubleField70_ != null) {
+        _single_doubleField70_codec.WriteTagAndValue(ref output, DoubleField70);
+      }
+      if (doubleField71_ != null) {
+        _single_doubleField71_codec.WriteTagAndValue(ref output, DoubleField71);
+      }
+      if (doubleField72_ != null) {
+        _single_doubleField72_codec.WriteTagAndValue(ref output, DoubleField72);
+      }
+      if (stringField73_ != null) {
+        _single_stringField73_codec.WriteTagAndValue(ref output, StringField73);
+      }
+      if (stringField74_ != null) {
+        _single_stringField74_codec.WriteTagAndValue(ref output, StringField74);
+      }
+      if (doubleField75_ != null) {
+        _single_doubleField75_codec.WriteTagAndValue(ref output, DoubleField75);
+      }
+      if (doubleField77_ != null) {
+        _single_doubleField77_codec.WriteTagAndValue(ref output, DoubleField77);
+      }
+      if (doubleField78_ != null) {
+        _single_doubleField78_codec.WriteTagAndValue(ref output, DoubleField78);
+      }
+      if (doubleField79_ != null) {
+        _single_doubleField79_codec.WriteTagAndValue(ref output, DoubleField79);
+      }
+      if (EnumField80 != 0) {
+        output.WriteRawTag(128, 5);
+        output.WriteInt32(EnumField80);
+      }
+      if (EnumField81 != 0) {
+        output.WriteRawTag(136, 5);
+        output.WriteInt32(EnumField81);
+      }
+      if (int64Field82_ != null) {
+        _single_int64Field82_codec.WriteTagAndValue(ref output, Int64Field82);
+      }
+      if (EnumField83 != 0) {
+        output.WriteRawTag(152, 5);
+        output.WriteInt32(EnumField83);
+      }
+      if (doubleField84_ != null) {
+        _single_doubleField84_codec.WriteTagAndValue(ref output, DoubleField84);
+      }
+      if (int64Field85_ != null) {
+        _single_int64Field85_codec.WriteTagAndValue(ref output, Int64Field85);
+      }
+      if (int64Field86_ != null) {
+        _single_int64Field86_codec.WriteTagAndValue(ref output, Int64Field86);
+      }
+      if (int64Field87_ != null) {
+        _single_int64Field87_codec.WriteTagAndValue(ref output, Int64Field87);
+      }
+      if (doubleField88_ != null) {
+        _single_doubleField88_codec.WriteTagAndValue(ref output, DoubleField88);
+      }
+      if (doubleField89_ != null) {
+        _single_doubleField89_codec.WriteTagAndValue(ref output, DoubleField89);
+      }
+      if (doubleField90_ != null) {
+        _single_doubleField90_codec.WriteTagAndValue(ref output, DoubleField90);
+      }
+      if (doubleField91_ != null) {
+        _single_doubleField91_codec.WriteTagAndValue(ref output, DoubleField91);
+      }
+      if (doubleField92_ != null) {
+        _single_doubleField92_codec.WriteTagAndValue(ref output, DoubleField92);
+      }
+      if (doubleField93_ != null) {
+        _single_doubleField93_codec.WriteTagAndValue(ref output, DoubleField93);
+      }
+      if (doubleField94_ != null) {
+        _single_doubleField94_codec.WriteTagAndValue(ref output, DoubleField94);
+      }
+      if (doubleField95_ != null) {
+        _single_doubleField95_codec.WriteTagAndValue(ref output, DoubleField95);
+      }
+      if (doubleField96_ != null) {
+        _single_doubleField96_codec.WriteTagAndValue(ref output, DoubleField96);
+      }
+      if (doubleField97_ != null) {
+        _single_doubleField97_codec.WriteTagAndValue(ref output, DoubleField97);
+      }
+      if (doubleField98_ != null) {
+        _single_doubleField98_codec.WriteTagAndValue(ref output, DoubleField98);
+      }
+      if (doubleField99_ != null) {
+        _single_doubleField99_codec.WriteTagAndValue(ref output, DoubleField99);
+      }
+      repeatedIntField100_.WriteTo(ref output, _repeated_repeatedIntField100_codec);
+      if (doubleField101_ != null) {
+        _single_doubleField101_codec.WriteTagAndValue(ref output, DoubleField101);
+      }
+      if (doubleField102_ != null) {
+        _single_doubleField102_codec.WriteTagAndValue(ref output, DoubleField102);
+      }
+      if (doubleField103_ != null) {
+        _single_doubleField103_codec.WriteTagAndValue(ref output, DoubleField103);
+      }
+      if (doubleField104_ != null) {
+        _single_doubleField104_codec.WriteTagAndValue(ref output, DoubleField104);
+      }
+      if (doubleField105_ != null) {
+        _single_doubleField105_codec.WriteTagAndValue(ref output, DoubleField105);
+      }
+      if (doubleField106_ != null) {
+        _single_doubleField106_codec.WriteTagAndValue(ref output, DoubleField106);
+      }
+      if (int64Field107_ != null) {
+        _single_int64Field107_codec.WriteTagAndValue(ref output, Int64Field107);
+      }
+      if (doubleField108_ != null) {
+        _single_doubleField108_codec.WriteTagAndValue(ref output, DoubleField108);
+      }
+      if (doubleField109_ != null) {
+        _single_doubleField109_codec.WriteTagAndValue(ref output, DoubleField109);
+      }
+      if (int64Field110_ != null) {
+        _single_int64Field110_codec.WriteTagAndValue(ref output, Int64Field110);
+      }
+      if (doubleField111_ != null) {
+        _single_doubleField111_codec.WriteTagAndValue(ref output, DoubleField111);
+      }
+      if (int64Field112_ != null) {
+        _single_int64Field112_codec.WriteTagAndValue(ref output, Int64Field112);
+      }
+      if (doubleField113_ != null) {
+        _single_doubleField113_codec.WriteTagAndValue(ref output, DoubleField113);
+      }
+      if (int64Field114_ != null) {
+        _single_int64Field114_codec.WriteTagAndValue(ref output, Int64Field114);
+      }
+      if (int64Field115_ != null) {
+        _single_int64Field115_codec.WriteTagAndValue(ref output, Int64Field115);
+      }
+      if (doubleField116_ != null) {
+        _single_doubleField116_codec.WriteTagAndValue(ref output, DoubleField116);
+      }
+      if (int64Field117_ != null) {
+        _single_int64Field117_codec.WriteTagAndValue(ref output, Int64Field117);
+      }
+      if (doubleField118_ != null) {
+        _single_doubleField118_codec.WriteTagAndValue(ref output, DoubleField118);
+      }
+      if (doubleField119_ != null) {
+        _single_doubleField119_codec.WriteTagAndValue(ref output, DoubleField119);
+      }
+      if (doubleField120_ != null) {
+        _single_doubleField120_codec.WriteTagAndValue(ref output, DoubleField120);
+      }
+      if (doubleField121_ != null) {
+        _single_doubleField121_codec.WriteTagAndValue(ref output, DoubleField121);
+      }
+      if (doubleField122_ != null) {
+        _single_doubleField122_codec.WriteTagAndValue(ref output, DoubleField122);
+      }
+      if (doubleField123_ != null) {
+        _single_doubleField123_codec.WriteTagAndValue(ref output, DoubleField123);
+      }
+      if (doubleField124_ != null) {
+        _single_doubleField124_codec.WriteTagAndValue(ref output, DoubleField124);
+      }
+      if (int64Field125_ != null) {
+        _single_int64Field125_codec.WriteTagAndValue(ref output, Int64Field125);
+      }
+      if (int64Field126_ != null) {
+        _single_int64Field126_codec.WriteTagAndValue(ref output, Int64Field126);
+      }
+      if (int64Field127_ != null) {
+        _single_int64Field127_codec.WriteTagAndValue(ref output, Int64Field127);
+      }
+      if (doubleField128_ != null) {
+        _single_doubleField128_codec.WriteTagAndValue(ref output, DoubleField128);
+      }
+      if (doubleField129_ != null) {
+        _single_doubleField129_codec.WriteTagAndValue(ref output, DoubleField129);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -6495,6 +6842,9 @@ namespace Google.Protobuf.Benchmarks {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (DoubleField1 != 0D) {
         output.WriteRawTag(9);
         output.WriteDouble(DoubleField1);
@@ -6939,7 +7289,458 @@ namespace Google.Protobuf.Benchmarks {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (DoubleField1 != 0D) {
+        output.WriteRawTag(9);
+        output.WriteDouble(DoubleField1);
+      }
+      if (Int64Field2 != 0L) {
+        output.WriteRawTag(16);
+        output.WriteInt64(Int64Field2);
+      }
+      if (Int64Field3 != 0L) {
+        output.WriteRawTag(24);
+        output.WriteInt64(Int64Field3);
+      }
+      if (Int64Field4 != 0L) {
+        output.WriteRawTag(32);
+        output.WriteInt64(Int64Field4);
+      }
+      if (DoubleField7 != 0D) {
+        output.WriteRawTag(57);
+        output.WriteDouble(DoubleField7);
+      }
+      if (DoubleField8 != 0D) {
+        output.WriteRawTag(65);
+        output.WriteDouble(DoubleField8);
+      }
+      if (DoubleField9 != 0D) {
+        output.WriteRawTag(73);
+        output.WriteDouble(DoubleField9);
+      }
+      if (DoubleField10 != 0D) {
+        output.WriteRawTag(81);
+        output.WriteDouble(DoubleField10);
+      }
+      if (DoubleField11 != 0D) {
+        output.WriteRawTag(89);
+        output.WriteDouble(DoubleField11);
+      }
+      if (DoubleField14 != 0D) {
+        output.WriteRawTag(113);
+        output.WriteDouble(DoubleField14);
+      }
+      if (DoubleField15 != 0D) {
+        output.WriteRawTag(121);
+        output.WriteDouble(DoubleField15);
+      }
+      if (Int64Field19 != 0L) {
+        output.WriteRawTag(152, 1);
+        output.WriteInt64(Int64Field19);
+      }
+      if (DoubleField20 != 0D) {
+        output.WriteRawTag(161, 1);
+        output.WriteDouble(DoubleField20);
+      }
+      if (DoubleField21 != 0D) {
+        output.WriteRawTag(169, 1);
+        output.WriteDouble(DoubleField21);
+      }
+      if (DoubleField22 != 0D) {
+        output.WriteRawTag(177, 1);
+        output.WriteDouble(DoubleField22);
+      }
+      if (DoubleField25 != 0D) {
+        output.WriteRawTag(201, 1);
+        output.WriteDouble(DoubleField25);
+      }
+      if (Int64Field26 != 0L) {
+        output.WriteRawTag(208, 1);
+        output.WriteInt64(Int64Field26);
+      }
+      if (DoubleField28 != 0D) {
+        output.WriteRawTag(225, 1);
+        output.WriteDouble(DoubleField28);
+      }
+      if (DoubleField29 != 0D) {
+        output.WriteRawTag(233, 1);
+        output.WriteDouble(DoubleField29);
+      }
+      if (DoubleField30 != 0D) {
+        output.WriteRawTag(241, 1);
+        output.WriteDouble(DoubleField30);
+      }
+      if (DoubleField31 != 0D) {
+        output.WriteRawTag(249, 1);
+        output.WriteDouble(DoubleField31);
+      }
+      if (Int64Field32 != 0L) {
+        output.WriteRawTag(128, 2);
+        output.WriteInt64(Int64Field32);
+      }
+      if (Int64Field37 != 0L) {
+        output.WriteRawTag(168, 2);
+        output.WriteInt64(Int64Field37);
+      }
+      if (DoubleField38 != 0D) {
+        output.WriteRawTag(177, 2);
+        output.WriteDouble(DoubleField38);
+      }
+      if (Interactions != 0L) {
+        output.WriteRawTag(184, 2);
+        output.WriteInt64(Interactions);
+      }
+      if (DoubleField40 != 0D) {
+        output.WriteRawTag(193, 2);
+        output.WriteDouble(DoubleField40);
+      }
+      if (Int64Field41 != 0L) {
+        output.WriteRawTag(200, 2);
+        output.WriteInt64(Int64Field41);
+      }
+      if (DoubleField42 != 0D) {
+        output.WriteRawTag(209, 2);
+        output.WriteDouble(DoubleField42);
+      }
+      if (Int64Field43 != 0L) {
+        output.WriteRawTag(216, 2);
+        output.WriteInt64(Int64Field43);
+      }
+      if (Int64Field44 != 0L) {
+        output.WriteRawTag(224, 2);
+        output.WriteInt64(Int64Field44);
+      }
+      if (DoubleField45 != 0D) {
+        output.WriteRawTag(233, 2);
+        output.WriteDouble(DoubleField45);
+      }
+      if (DoubleField46 != 0D) {
+        output.WriteRawTag(241, 2);
+        output.WriteDouble(DoubleField46);
+      }
+      if (DoubleField47 != 0D) {
+        output.WriteRawTag(249, 2);
+        output.WriteDouble(DoubleField47);
+      }
+      if (DoubleField48 != 0D) {
+        output.WriteRawTag(129, 3);
+        output.WriteDouble(DoubleField48);
+      }
+      if (DoubleField49 != 0D) {
+        output.WriteRawTag(137, 3);
+        output.WriteDouble(DoubleField49);
+      }
+      if (DoubleField50 != 0D) {
+        output.WriteRawTag(145, 3);
+        output.WriteDouble(DoubleField50);
+      }
+      if (DoubleField51 != 0D) {
+        output.WriteRawTag(153, 3);
+        output.WriteDouble(DoubleField51);
+      }
+      if (DoubleField52 != 0D) {
+        output.WriteRawTag(161, 3);
+        output.WriteDouble(DoubleField52);
+      }
+      if (DoubleField53 != 0D) {
+        output.WriteRawTag(169, 3);
+        output.WriteDouble(DoubleField53);
+      }
+      if (DoubleField54 != 0D) {
+        output.WriteRawTag(177, 3);
+        output.WriteDouble(DoubleField54);
+      }
+      if (DoubleField55 != 0D) {
+        output.WriteRawTag(185, 3);
+        output.WriteDouble(DoubleField55);
+      }
+      if (DoubleField56 != 0D) {
+        output.WriteRawTag(193, 3);
+        output.WriteDouble(DoubleField56);
+      }
+      if (DoubleField57 != 0D) {
+        output.WriteRawTag(201, 3);
+        output.WriteDouble(DoubleField57);
+      }
+      if (DoubleField58 != 0D) {
+        output.WriteRawTag(209, 3);
+        output.WriteDouble(DoubleField58);
+      }
+      if (Int64Field59 != 0L) {
+        output.WriteRawTag(216, 3);
+        output.WriteInt64(Int64Field59);
+      }
+      if (Int64Field60 != 0L) {
+        output.WriteRawTag(224, 3);
+        output.WriteInt64(Int64Field60);
+      }
+      if (DoubleField62 != 0D) {
+        output.WriteRawTag(241, 3);
+        output.WriteDouble(DoubleField62);
+      }
+      if (DoubleField65 != 0D) {
+        output.WriteRawTag(137, 4);
+        output.WriteDouble(DoubleField65);
+      }
+      if (DoubleField66 != 0D) {
+        output.WriteRawTag(145, 4);
+        output.WriteDouble(DoubleField66);
+      }
+      if (DoubleField67 != 0D) {
+        output.WriteRawTag(153, 4);
+        output.WriteDouble(DoubleField67);
+      }
+      if (DoubleField68 != 0D) {
+        output.WriteRawTag(161, 4);
+        output.WriteDouble(DoubleField68);
+      }
+      if (DoubleField69 != 0D) {
+        output.WriteRawTag(169, 4);
+        output.WriteDouble(DoubleField69);
+      }
+      if (DoubleField70 != 0D) {
+        output.WriteRawTag(177, 4);
+        output.WriteDouble(DoubleField70);
+      }
+      if (DoubleField71 != 0D) {
+        output.WriteRawTag(185, 4);
+        output.WriteDouble(DoubleField71);
+      }
+      if (DoubleField72 != 0D) {
+        output.WriteRawTag(193, 4);
+        output.WriteDouble(DoubleField72);
+      }
+      if (StringField73.Length != 0) {
+        output.WriteRawTag(202, 4);
+        output.WriteString(StringField73);
+      }
+      if (StringField74.Length != 0) {
+        output.WriteRawTag(210, 4);
+        output.WriteString(StringField74);
+      }
+      if (DoubleField75 != 0D) {
+        output.WriteRawTag(217, 4);
+        output.WriteDouble(DoubleField75);
+      }
+      if (DoubleField77 != 0D) {
+        output.WriteRawTag(233, 4);
+        output.WriteDouble(DoubleField77);
+      }
+      if (DoubleField78 != 0D) {
+        output.WriteRawTag(241, 4);
+        output.WriteDouble(DoubleField78);
+      }
+      if (DoubleField79 != 0D) {
+        output.WriteRawTag(249, 4);
+        output.WriteDouble(DoubleField79);
+      }
+      if (EnumField80 != 0) {
+        output.WriteRawTag(128, 5);
+        output.WriteInt32(EnumField80);
+      }
+      if (EnumField81 != 0) {
+        output.WriteRawTag(136, 5);
+        output.WriteInt32(EnumField81);
+      }
+      if (Int64Field82 != 0L) {
+        output.WriteRawTag(144, 5);
+        output.WriteInt64(Int64Field82);
+      }
+      if (EnumField83 != 0) {
+        output.WriteRawTag(152, 5);
+        output.WriteInt32(EnumField83);
+      }
+      if (DoubleField84 != 0D) {
+        output.WriteRawTag(161, 5);
+        output.WriteDouble(DoubleField84);
+      }
+      if (Int64Field85 != 0L) {
+        output.WriteRawTag(168, 5);
+        output.WriteInt64(Int64Field85);
+      }
+      if (Int64Field86 != 0L) {
+        output.WriteRawTag(176, 5);
+        output.WriteInt64(Int64Field86);
+      }
+      if (Int64Field87 != 0L) {
+        output.WriteRawTag(184, 5);
+        output.WriteInt64(Int64Field87);
+      }
+      if (DoubleField88 != 0D) {
+        output.WriteRawTag(193, 5);
+        output.WriteDouble(DoubleField88);
+      }
+      if (DoubleField89 != 0D) {
+        output.WriteRawTag(201, 5);
+        output.WriteDouble(DoubleField89);
+      }
+      if (DoubleField90 != 0D) {
+        output.WriteRawTag(209, 5);
+        output.WriteDouble(DoubleField90);
+      }
+      if (DoubleField91 != 0D) {
+        output.WriteRawTag(217, 5);
+        output.WriteDouble(DoubleField91);
+      }
+      if (DoubleField92 != 0D) {
+        output.WriteRawTag(225, 5);
+        output.WriteDouble(DoubleField92);
+      }
+      if (DoubleField93 != 0D) {
+        output.WriteRawTag(233, 5);
+        output.WriteDouble(DoubleField93);
+      }
+      if (DoubleField94 != 0D) {
+        output.WriteRawTag(241, 5);
+        output.WriteDouble(DoubleField94);
+      }
+      if (DoubleField95 != 0D) {
+        output.WriteRawTag(249, 5);
+        output.WriteDouble(DoubleField95);
+      }
+      if (DoubleField96 != 0D) {
+        output.WriteRawTag(129, 6);
+        output.WriteDouble(DoubleField96);
+      }
+      if (DoubleField97 != 0D) {
+        output.WriteRawTag(137, 6);
+        output.WriteDouble(DoubleField97);
+      }
+      if (DoubleField98 != 0D) {
+        output.WriteRawTag(145, 6);
+        output.WriteDouble(DoubleField98);
+      }
+      if (DoubleField99 != 0D) {
+        output.WriteRawTag(153, 6);
+        output.WriteDouble(DoubleField99);
+      }
+      repeatedIntField100_.WriteTo(ref output, _repeated_repeatedIntField100_codec);
+      if (DoubleField101 != 0D) {
+        output.WriteRawTag(169, 6);
+        output.WriteDouble(DoubleField101);
+      }
+      if (DoubleField102 != 0D) {
+        output.WriteRawTag(177, 6);
+        output.WriteDouble(DoubleField102);
+      }
+      if (DoubleField103 != 0D) {
+        output.WriteRawTag(185, 6);
+        output.WriteDouble(DoubleField103);
+      }
+      if (DoubleField104 != 0D) {
+        output.WriteRawTag(193, 6);
+        output.WriteDouble(DoubleField104);
+      }
+      if (DoubleField105 != 0D) {
+        output.WriteRawTag(201, 6);
+        output.WriteDouble(DoubleField105);
+      }
+      if (DoubleField106 != 0D) {
+        output.WriteRawTag(209, 6);
+        output.WriteDouble(DoubleField106);
+      }
+      if (Int64Field107 != 0L) {
+        output.WriteRawTag(216, 6);
+        output.WriteInt64(Int64Field107);
+      }
+      if (DoubleField108 != 0D) {
+        output.WriteRawTag(225, 6);
+        output.WriteDouble(DoubleField108);
+      }
+      if (DoubleField109 != 0D) {
+        output.WriteRawTag(233, 6);
+        output.WriteDouble(DoubleField109);
+      }
+      if (Int64Field110 != 0L) {
+        output.WriteRawTag(240, 6);
+        output.WriteInt64(Int64Field110);
+      }
+      if (DoubleField111 != 0D) {
+        output.WriteRawTag(249, 6);
+        output.WriteDouble(DoubleField111);
+      }
+      if (Int64Field112 != 0L) {
+        output.WriteRawTag(128, 7);
+        output.WriteInt64(Int64Field112);
+      }
+      if (DoubleField113 != 0D) {
+        output.WriteRawTag(137, 7);
+        output.WriteDouble(DoubleField113);
+      }
+      if (Int64Field114 != 0L) {
+        output.WriteRawTag(144, 7);
+        output.WriteInt64(Int64Field114);
+      }
+      if (Int64Field115 != 0L) {
+        output.WriteRawTag(152, 7);
+        output.WriteInt64(Int64Field115);
+      }
+      if (DoubleField116 != 0D) {
+        output.WriteRawTag(161, 7);
+        output.WriteDouble(DoubleField116);
+      }
+      if (Int64Field117 != 0L) {
+        output.WriteRawTag(168, 7);
+        output.WriteInt64(Int64Field117);
+      }
+      if (DoubleField118 != 0D) {
+        output.WriteRawTag(177, 7);
+        output.WriteDouble(DoubleField118);
+      }
+      if (DoubleField119 != 0D) {
+        output.WriteRawTag(185, 7);
+        output.WriteDouble(DoubleField119);
+      }
+      if (DoubleField120 != 0D) {
+        output.WriteRawTag(193, 7);
+        output.WriteDouble(DoubleField120);
+      }
+      if (DoubleField121 != 0D) {
+        output.WriteRawTag(201, 7);
+        output.WriteDouble(DoubleField121);
+      }
+      if (DoubleField122 != 0D) {
+        output.WriteRawTag(209, 7);
+        output.WriteDouble(DoubleField122);
+      }
+      if (DoubleField123 != 0D) {
+        output.WriteRawTag(217, 7);
+        output.WriteDouble(DoubleField123);
+      }
+      if (DoubleField124 != 0D) {
+        output.WriteRawTag(225, 7);
+        output.WriteDouble(DoubleField124);
+      }
+      if (Int64Field125 != 0L) {
+        output.WriteRawTag(232, 7);
+        output.WriteInt64(Int64Field125);
+      }
+      if (Int64Field126 != 0L) {
+        output.WriteRawTag(240, 7);
+        output.WriteInt64(Int64Field126);
+      }
+      if (Int64Field127 != 0L) {
+        output.WriteRawTag(248, 7);
+        output.WriteInt64(Int64Field127);
+      }
+      if (DoubleField128 != 0D) {
+        output.WriteRawTag(129, 8);
+        output.WriteDouble(DoubleField128);
+      }
+      if (DoubleField129 != 0D) {
+        output.WriteRawTag(137, 8);
+        output.WriteDouble(DoubleField129);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {

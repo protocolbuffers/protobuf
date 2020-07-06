@@ -91,8 +91,9 @@ bool Any::GetAnyFieldDescriptors(
   return ::PROTOBUF_NAMESPACE_ID::internal::GetAnyFieldDescriptors(
       message, type_url_field, value_field);
 }
-bool Any::ParseAnyTypeUrl(const string& type_url,
-                                  std::string* full_type_name) {
+bool Any::ParseAnyTypeUrl(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url,
+    std::string* full_type_name) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseAnyTypeUrl(type_url,
                                              full_type_name);
 }

@@ -78,10 +78,13 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  Example 4: Pack and unpack a message in Go
   ///
   ///      foo := &amp;pb.Foo{...}
-  ///      any, err := ptypes.MarshalAny(foo)
+  ///      any, err := anypb.New(foo)
+  ///      if err != nil {
+  ///        ...
+  ///      }
   ///      ...
   ///      foo := &amp;pb.Foo{}
-  ///      if err := ptypes.UnmarshalAny(any, foo); err != nil {
+  ///      if err := any.UnmarshalTo(foo); err != nil {
   ///        ...
   ///      }
   ///
@@ -248,6 +251,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (TypeUrl.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(TypeUrl);
@@ -259,7 +265,25 @@ namespace Google.Protobuf.WellKnownTypes {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (TypeUrl.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(TypeUrl);
+      }
+      if (Value.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteBytes(Value);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {

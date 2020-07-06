@@ -338,9 +338,9 @@ class GPBUtil
 
         $package = $file_proto->getPackage();
         if ($package === "") {
-            $fullname = "." . $message_name_without_package;
+            $fullname = $message_name_without_package;
         } else {
-            $fullname = "." . $package . "." . $message_name_without_package;
+            $fullname = $package . "." . $message_name_without_package;
         }
 
         $class_name_without_package =

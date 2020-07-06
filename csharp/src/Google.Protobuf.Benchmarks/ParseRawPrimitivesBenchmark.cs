@@ -337,7 +337,7 @@ namespace Google.Protobuf.Benchmarks
             CodedOutputStream cos = new CodedOutputStream(ms);
             for (int i = 0; i < valueCount + paddingValueCount; i++)
             {
-                cos.WriteUInt64(RandomUnsignedVarint(random, encodedSize));
+                cos.WriteUInt64(RandomUnsignedVarint(random, encodedSize, false));
             }
             cos.Flush();
             var buffer = ms.ToArray();
@@ -386,11 +386,11 @@ namespace Google.Protobuf.Benchmarks
         /// <summary>
         /// Generate a random value that will take exactly "encodedSize" bytes when varint-encoded.
         /// </summary>
-        private static ulong RandomUnsignedVarint(Random random, int encodedSize)
+        public static ulong RandomUnsignedVarint(Random random, int encodedSize, bool fitsIn32Bits)
         {
             Span<byte> randomBytesBuffer = stackalloc byte[8];
 
-            if (encodedSize < 1 || encodedSize > 10)
+            if (encodedSize < 1 || encodedSize > 10 || (fitsIn32Bits && encodedSize > 5))
             {
                 throw new ArgumentException("Illegal encodedSize value requested", nameof(encodedSize));
             }
@@ -405,6 +405,12 @@ namespace Google.Protobuf.Benchmarks
                 // only use the number of random bits we need
                 ulong bitmask = encodedSize < 10 ? ((1UL << (encodedSize * bitsPerByte)) - 1) : ulong.MaxValue;
                 result = randomValue & bitmask;
+
+                if (fitsIn32Bits)
+                {
+                    // make sure the resulting value is representable by a uint.
+                    result &= uint.MaxValue;
+                }
 
                 if (encodedSize == 10)
                 {
@@ -443,7 +449,7 @@ namespace Google.Protobuf.Benchmarks
             return buffer;
         }
 
-        private static string CreateStringWithEncodedSize(int encodedSize)
+        public static string CreateStringWithEncodedSize(int encodedSize)
         {
             var str = new string('a', encodedSize);
             while (CodedOutputStream.ComputeStringSize(str) > encodedSize)
@@ -451,6 +457,35 @@ namespace Google.Protobuf.Benchmarks
                 str = str.Substring(1);
             }
 
+            if (CodedOutputStream.ComputeStringSize(str) != encodedSize)
+            {
+                throw new InvalidOperationException($"Generated string with wrong encodedSize");
+            }
+            return str;
+        }
+
+        public static string CreateNonAsciiStringWithEncodedSize(int encodedSize)
+        {
+            if (encodedSize < 3)
+            {
+                throw new ArgumentException("Illegal encoded size for a string with non-ascii chars.");
+            }
+            var twoByteChar = '\u00DC';  // U-umlaut, UTF8 encoding has 2 bytes
+            var str = new string(twoByteChar, encodedSize / 2);
+            while (CodedOutputStream.ComputeStringSize(str) > encodedSize)
+            {
+                str = str.Substring(1);
+            }
+
+            // add padding of ascii characters to reach the desired encoded size.
+            while (CodedOutputStream.ComputeStringSize(str) < encodedSize)
+            {
+                str += 'a';
+            }
+
+            // Note that for a few specific encodedSize values, it might be impossible to generate
+            // the string with the desired encodedSize using the algorithm above. For testing purposes, checking that
+            // the encoded size we got is actually correct is good enough.
             if (CodedOutputStream.ComputeStringSize(str) != encodedSize)
             {
                 throw new InvalidOperationException($"Generated string with wrong encodedSize");

@@ -24,36 +24,41 @@ namespace UnitTest.Issues.TestProtos {
     static UnittestIssuesReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyInCghJ",
-            "c3N1ZTMwNxobCgpOZXN0ZWRPbmNlGg0KC05lc3RlZFR3aWNlIrABChNOZWdh",
-            "dGl2ZUVudW1NZXNzYWdlEiwKBXZhbHVlGAEgASgOMh0udW5pdHRlc3RfaXNz",
-            "dWVzLk5lZ2F0aXZlRW51bRIxCgZ2YWx1ZXMYAiADKA4yHS51bml0dGVzdF9p",
-            "c3N1ZXMuTmVnYXRpdmVFbnVtQgIQABI4Cg1wYWNrZWRfdmFsdWVzGAMgAygO",
-            "Mh0udW5pdHRlc3RfaXNzdWVzLk5lZ2F0aXZlRW51bUICEAEiEQoPRGVwcmVj",
-            "YXRlZENoaWxkIrkCChdEZXByZWNhdGVkRmllbGRzTWVzc2FnZRIaCg5Qcmlt",
-            "aXRpdmVWYWx1ZRgBIAEoBUICGAESGgoOUHJpbWl0aXZlQXJyYXkYAiADKAVC",
-            "AhgBEjoKDE1lc3NhZ2VWYWx1ZRgDIAEoCzIgLnVuaXR0ZXN0X2lzc3Vlcy5E",
-            "ZXByZWNhdGVkQ2hpbGRCAhgBEjoKDE1lc3NhZ2VBcnJheRgEIAMoCzIgLnVu",
-            "aXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkQ2hpbGRCAhgBEjYKCUVudW1WYWx1",
-            "ZRgFIAEoDjIfLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkRW51bUICGAES",
-            "NgoJRW51bUFycmF5GAYgAygOMh8udW5pdHRlc3RfaXNzdWVzLkRlcHJlY2F0",
-            "ZWRFbnVtQgIYASIZCglJdGVtRmllbGQSDAoEaXRlbRgBIAEoBSJECg1SZXNl",
-            "cnZlZE5hbWVzEg0KBXR5cGVzGAEgASgFEhIKCmRlc2NyaXB0b3IYAiABKAUa",
-            "EAoOU29tZU5lc3RlZFR5cGUioAEKFVRlc3RKc29uRmllbGRPcmRlcmluZxIT",
-            "CgtwbGFpbl9pbnQzMhgEIAEoBRITCglvMV9zdHJpbmcYAiABKAlIABISCghv",
-            "MV9pbnQzMhgFIAEoBUgAEhQKDHBsYWluX3N0cmluZxgBIAEoCRISCghvMl9p",
-            "bnQzMhgGIAEoBUgBEhMKCW8yX3N0cmluZxgDIAEoCUgBQgQKAm8xQgQKAm8y",
-            "IksKDFRlc3RKc29uTmFtZRIMCgRuYW1lGAEgASgJEhkKC2Rlc2NyaXB0aW9u",
-            "GAIgASgJUgRkZXNjEhIKBGd1aWQYAyABKAlSBGV4aWQifwoMT25lb2ZNZXJn",
-            "aW5nEg4KBHRleHQYASABKAlIABI2CgZuZXN0ZWQYAiABKAsyJC51bml0dGVz",
-            "dF9pc3N1ZXMuT25lb2ZNZXJnaW5nLk5lc3RlZEgAGh4KBk5lc3RlZBIJCgF4",
-            "GAEgASgFEgkKAXkYAiABKAVCBwoFdmFsdWUqVQoMTmVnYXRpdmVFbnVtEhYK",
-            "Ek5FR0FUSVZFX0VOVU1fWkVSTxAAEhYKCUZpdmVCZWxvdxD7//////////8B",
-            "EhUKCE1pbnVzT25lEP///////////wEqLgoORGVwcmVjYXRlZEVudW0SEwoP",
-            "REVQUkVDQVRFRF9aRVJPEAASBwoDb25lEAFCHaoCGlVuaXRUZXN0Lklzc3Vl",
-            "cy5UZXN0UHJvdG9zYgZwcm90bzM="));
+            "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcxocZ29v",
+            "Z2xlL3Byb3RvYnVmL3N0cnVjdC5wcm90byInCghJc3N1ZTMwNxobCgpOZXN0",
+            "ZWRPbmNlGg0KC05lc3RlZFR3aWNlIrABChNOZWdhdGl2ZUVudW1NZXNzYWdl",
+            "EiwKBXZhbHVlGAEgASgOMh0udW5pdHRlc3RfaXNzdWVzLk5lZ2F0aXZlRW51",
+            "bRIxCgZ2YWx1ZXMYAiADKA4yHS51bml0dGVzdF9pc3N1ZXMuTmVnYXRpdmVF",
+            "bnVtQgIQABI4Cg1wYWNrZWRfdmFsdWVzGAMgAygOMh0udW5pdHRlc3RfaXNz",
+            "dWVzLk5lZ2F0aXZlRW51bUICEAEiEQoPRGVwcmVjYXRlZENoaWxkIrkCChdE",
+            "ZXByZWNhdGVkRmllbGRzTWVzc2FnZRIaCg5QcmltaXRpdmVWYWx1ZRgBIAEo",
+            "BUICGAESGgoOUHJpbWl0aXZlQXJyYXkYAiADKAVCAhgBEjoKDE1lc3NhZ2VW",
+            "YWx1ZRgDIAEoCzIgLnVuaXR0ZXN0X2lzc3Vlcy5EZXByZWNhdGVkQ2hpbGRC",
+            "AhgBEjoKDE1lc3NhZ2VBcnJheRgEIAMoCzIgLnVuaXR0ZXN0X2lzc3Vlcy5E",
+            "ZXByZWNhdGVkQ2hpbGRCAhgBEjYKCUVudW1WYWx1ZRgFIAEoDjIfLnVuaXR0",
+            "ZXN0X2lzc3Vlcy5EZXByZWNhdGVkRW51bUICGAESNgoJRW51bUFycmF5GAYg",
+            "AygOMh8udW5pdHRlc3RfaXNzdWVzLkRlcHJlY2F0ZWRFbnVtQgIYASIZCglJ",
+            "dGVtRmllbGQSDAoEaXRlbRgBIAEoBSJECg1SZXNlcnZlZE5hbWVzEg0KBXR5",
+            "cGVzGAEgASgFEhIKCmRlc2NyaXB0b3IYAiABKAUaEAoOU29tZU5lc3RlZFR5",
+            "cGUioAEKFVRlc3RKc29uRmllbGRPcmRlcmluZxITCgtwbGFpbl9pbnQzMhgE",
+            "IAEoBRITCglvMV9zdHJpbmcYAiABKAlIABISCghvMV9pbnQzMhgFIAEoBUgA",
+            "EhQKDHBsYWluX3N0cmluZxgBIAEoCRISCghvMl9pbnQzMhgGIAEoBUgBEhMK",
+            "CW8yX3N0cmluZxgDIAEoCUgBQgQKAm8xQgQKAm8yIksKDFRlc3RKc29uTmFt",
+            "ZRIMCgRuYW1lGAEgASgJEhkKC2Rlc2NyaXB0aW9uGAIgASgJUgRkZXNjEhIK",
+            "BGd1aWQYAyABKAlSBGV4aWQifwoMT25lb2ZNZXJnaW5nEg4KBHRleHQYASAB",
+            "KAlIABI2CgZuZXN0ZWQYAiABKAsyJC51bml0dGVzdF9pc3N1ZXMuT25lb2ZN",
+            "ZXJnaW5nLk5lc3RlZEgAGh4KBk5lc3RlZBIJCgF4GAEgASgFEgkKAXkYAiAB",
+            "KAVCBwoFdmFsdWUiawoWTnVsbFZhbHVlT3V0c2lkZVN0cnVjdBIWCgxzdHJp",
+            "bmdfdmFsdWUYASABKAlIABIwCgpudWxsX3ZhbHVlGAIgASgOMhouZ29vZ2xl",
+            "LnByb3RvYnVmLk51bGxWYWx1ZUgAQgcKBXZhbHVlIkUKE051bGxWYWx1ZU5v",
+            "dEluT25lb2YSLgoKbnVsbF92YWx1ZRgCIAEoDjIaLmdvb2dsZS5wcm90b2J1",
+            "Zi5OdWxsVmFsdWUqVQoMTmVnYXRpdmVFbnVtEhYKEk5FR0FUSVZFX0VOVU1f",
+            "WkVSTxAAEhYKCUZpdmVCZWxvdxD7//////////8BEhUKCE1pbnVzT25lEP//",
+            "/////////wEqLgoORGVwcmVjYXRlZEVudW0SEwoPREVQUkVDQVRFRF9aRVJP",
+            "EAASBwoDb25lEAFCHaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZw",
+            "cm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { },
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307), global::UnitTest.Issues.TestProtos.Issue307.Parser, null, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Parser, null, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice.Parser, null, null, null, null, null)})}),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Parser, new[]{ "Value", "Values", "PackedValues" }, null, null, null, null),
@@ -63,7 +68,9 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), global::UnitTest.Issues.TestProtos.ReservedNames.Parser, new[]{ "Types_", "Descriptor_" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType.Parser, null, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering), global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering.Parser, new[]{ "PlainInt32", "O1String", "O1Int32", "PlainString", "O2Int32", "O2String" }, new[]{ "O1", "O2" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonName), global::UnitTest.Issues.TestProtos.TestJsonName.Parser, new[]{ "Name", "Description", "Guid" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging), global::UnitTest.Issues.TestProtos.OneofMerging.Parser, new[]{ "Text", "Nested" }, new[]{ "Value" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested), global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested.Parser, new[]{ "X", "Y" }, null, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging), global::UnitTest.Issues.TestProtos.OneofMerging.Parser, new[]{ "Text", "Nested" }, new[]{ "Value" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested), global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested.Parser, new[]{ "X", "Y" }, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueOutsideStruct), global::UnitTest.Issues.TestProtos.NullValueOutsideStruct.Parser, new[]{ "StringValue", "NullValue" }, new[]{ "Value" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueNotInOneof), global::UnitTest.Issues.TestProtos.NullValueNotInOneof.Parser, new[]{ "NullValue" }, null, null, null, null)
           }));
     }
     #endregion
@@ -157,10 +164,23 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -282,10 +302,23 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -407,10 +440,23 @@ namespace UnitTest.Issues.TestProtos {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              output.WriteRawMessage(this);
+            #else
               if (_unknownFields != null) {
                 _unknownFields.WriteTo(output);
               }
+            #endif
             }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+              if (_unknownFields != null) {
+                _unknownFields.WriteTo(ref output);
+              }
+            }
+            #endif
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public int CalculateSize() {
@@ -580,6 +626,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.Zero) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
@@ -589,7 +638,23 @@ namespace UnitTest.Issues.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.Zero) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Value);
+      }
+      values_.WriteTo(ref output, _repeated_values_codec);
+      packedValues_.WriteTo(ref output, _repeated_packedValues_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -747,10 +812,23 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -957,6 +1035,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (PrimitiveValue != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveValue);
@@ -975,7 +1056,32 @@ namespace UnitTest.Issues.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (PrimitiveValue != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(PrimitiveValue);
+      }
+      primitiveArray_.WriteTo(ref output, _repeated_primitiveArray_codec);
+      if (messageValue_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(MessageValue);
+      }
+      messageArray_.WriteTo(ref output, _repeated_messageArray_codec);
+      if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DeprecatedZero) {
+        output.WriteRawTag(40);
+        output.WriteEnum((int) EnumValue);
+      }
+      enumArray_.WriteTo(ref output, _repeated_enumArray_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1197,6 +1303,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Item != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Item);
@@ -1204,7 +1313,21 @@ namespace UnitTest.Issues.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Item != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Item);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1366,6 +1489,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Types_ != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Types_);
@@ -1377,7 +1503,25 @@ namespace UnitTest.Issues.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Types_ != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Types_);
+      }
+      if (Descriptor_ != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Descriptor_);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1530,10 +1674,23 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -1810,6 +1967,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (PlainString.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(PlainString);
@@ -1837,7 +1997,41 @@ namespace UnitTest.Issues.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (PlainString.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(PlainString);
+      }
+      if (o1Case_ == O1OneofCase.O1String) {
+        output.WriteRawTag(18);
+        output.WriteString(O1String);
+      }
+      if (o2Case_ == O2OneofCase.O2String) {
+        output.WriteRawTag(26);
+        output.WriteString(O2String);
+      }
+      if (PlainInt32 != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(PlainInt32);
+      }
+      if (o1Case_ == O1OneofCase.O1Int32) {
+        output.WriteRawTag(40);
+        output.WriteInt32(O1Int32);
+      }
+      if (o2Case_ == O2OneofCase.O2Int32) {
+        output.WriteRawTag(48);
+        output.WriteInt32(O2Int32);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -2092,6 +2286,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -2107,7 +2304,29 @@ namespace UnitTest.Issues.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (Description.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Description);
+      }
+      if (Guid.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Guid);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -2330,6 +2549,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (valueCase_ == ValueOneofCase.Text) {
         output.WriteRawTag(10);
         output.WriteString(Text);
@@ -2341,7 +2563,25 @@ namespace UnitTest.Issues.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (valueCase_ == ValueOneofCase.Text) {
+        output.WriteRawTag(10);
+        output.WriteString(Text);
+      }
+      if (valueCase_ == ValueOneofCase.Nested) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Nested);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -2535,6 +2775,9 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (X != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(X);
@@ -2546,7 +2789,25 @@ namespace UnitTest.Issues.TestProtos {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (X != 0) {
+            output.WriteRawTag(8);
+            output.WriteInt32(X);
+          }
+          if (Y != 0) {
+            output.WriteRawTag(16);
+            output.WriteInt32(Y);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -2627,6 +2888,419 @@ namespace UnitTest.Issues.TestProtos {
 
     }
     #endregion
+
+  }
+
+  public sealed partial class NullValueOutsideStruct : pb::IMessage<NullValueOutsideStruct>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<NullValueOutsideStruct> _parser = new pb::MessageParser<NullValueOutsideStruct>(() => new NullValueOutsideStruct());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<NullValueOutsideStruct> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[9]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueOutsideStruct() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueOutsideStruct(NullValueOutsideStruct other) : this() {
+      switch (other.ValueCase) {
+        case ValueOneofCase.StringValue:
+          StringValue = other.StringValue;
+          break;
+        case ValueOneofCase.NullValue:
+          NullValue = other.NullValue;
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueOutsideStruct Clone() {
+      return new NullValueOutsideStruct(this);
+    }
+
+    /// <summary>Field number for the "string_value" field.</summary>
+    public const int StringValueFieldNumber = 1;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string StringValue {
+      get { return valueCase_ == ValueOneofCase.StringValue ? (string) value_ : ""; }
+      set {
+        value_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        valueCase_ = ValueOneofCase.StringValue;
+      }
+    }
+
+    /// <summary>Field number for the "null_value" field.</summary>
+    public const int NullValueFieldNumber = 2;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.NullValue NullValue {
+      get { return valueCase_ == ValueOneofCase.NullValue ? (global::Google.Protobuf.WellKnownTypes.NullValue) value_ : global::Google.Protobuf.WellKnownTypes.NullValue.NullValue; }
+      set {
+        value_ = value;
+        valueCase_ = ValueOneofCase.NullValue;
+      }
+    }
+
+    private object value_;
+    /// <summary>Enum of possible cases for the "value" oneof.</summary>
+    public enum ValueOneofCase {
+      None = 0,
+      StringValue = 1,
+      NullValue = 2,
+    }
+    private ValueOneofCase valueCase_ = ValueOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ValueOneofCase ValueCase {
+      get { return valueCase_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearValue() {
+      valueCase_ = ValueOneofCase.None;
+      value_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as NullValueOutsideStruct);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(NullValueOutsideStruct other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (StringValue != other.StringValue) return false;
+      if (NullValue != other.NullValue) return false;
+      if (ValueCase != other.ValueCase) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (valueCase_ == ValueOneofCase.StringValue) hash ^= StringValue.GetHashCode();
+      if (valueCase_ == ValueOneofCase.NullValue) hash ^= NullValue.GetHashCode();
+      hash ^= (int) valueCase_;
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (valueCase_ == ValueOneofCase.StringValue) {
+        output.WriteRawTag(10);
+        output.WriteString(StringValue);
+      }
+      if (valueCase_ == ValueOneofCase.NullValue) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) NullValue);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (valueCase_ == ValueOneofCase.StringValue) {
+        output.WriteRawTag(10);
+        output.WriteString(StringValue);
+      }
+      if (valueCase_ == ValueOneofCase.NullValue) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) NullValue);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (valueCase_ == ValueOneofCase.StringValue) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(StringValue);
+      }
+      if (valueCase_ == ValueOneofCase.NullValue) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) NullValue);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(NullValueOutsideStruct other) {
+      if (other == null) {
+        return;
+      }
+      switch (other.ValueCase) {
+        case ValueOneofCase.StringValue:
+          StringValue = other.StringValue;
+          break;
+        case ValueOneofCase.NullValue:
+          NullValue = other.NullValue;
+          break;
+      }
+
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            StringValue = input.ReadString();
+            break;
+          }
+          case 16: {
+            value_ = input.ReadEnum();
+            valueCase_ = ValueOneofCase.NullValue;
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            StringValue = input.ReadString();
+            break;
+          }
+          case 16: {
+            value_ = input.ReadEnum();
+            valueCase_ = ValueOneofCase.NullValue;
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class NullValueNotInOneof : pb::IMessage<NullValueNotInOneof>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<NullValueNotInOneof> _parser = new pb::MessageParser<NullValueNotInOneof>(() => new NullValueNotInOneof());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<NullValueNotInOneof> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[10]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueNotInOneof() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueNotInOneof(NullValueNotInOneof other) : this() {
+      nullValue_ = other.nullValue_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public NullValueNotInOneof Clone() {
+      return new NullValueNotInOneof(this);
+    }
+
+    /// <summary>Field number for the "null_value" field.</summary>
+    public const int NullValueFieldNumber = 2;
+    private global::Google.Protobuf.WellKnownTypes.NullValue nullValue_ = global::Google.Protobuf.WellKnownTypes.NullValue.NullValue;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.NullValue NullValue {
+      get { return nullValue_; }
+      set {
+        nullValue_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as NullValueNotInOneof);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(NullValueNotInOneof other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (NullValue != other.NullValue) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) hash ^= NullValue.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) NullValue);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        output.WriteRawTag(16);
+        output.WriteEnum((int) NullValue);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) NullValue);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(NullValueNotInOneof other) {
+      if (other == null) {
+        return;
+      }
+      if (other.NullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        NullValue = other.NullValue;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 16: {
+            NullValue = (global::Google.Protobuf.WellKnownTypes.NullValue) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 16: {
+            NullValue = (global::Google.Protobuf.WellKnownTypes.NullValue) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

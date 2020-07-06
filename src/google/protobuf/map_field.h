@@ -425,7 +425,7 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 // directly.
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value = 0>
+          WireFormatLite::FieldType kValueFieldType>
 class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
@@ -436,8 +436,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   typedef Derived EntryType;
 
   // Define abbreviation for parent MapFieldLite
-  typedef MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType,
-                       default_enum_value>
+  typedef MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType>
       MapFieldLiteType;
 
   // Enum needs to be handled differently from other types because it has
@@ -522,10 +521,9 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type, int default_enum_value>
+          WireFormatLite::FieldType value_wire_type>
 bool AllAreInitialized(
-    const MapField<Derived, Key, T, key_wire_type, value_wire_type,
-                   default_enum_value>& field) {
+    const MapField<Derived, Key, T, key_wire_type, value_wire_type>& field) {
   const auto& t = field.GetMap();
   for (typename Map<Key, T>::const_iterator it = t.begin(); it != t.end();
        ++it) {
@@ -536,12 +534,10 @@ bool AllAreInitialized(
 
 template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-struct MapEntryToMapField<MapEntry<T, Key, Value, kKeyFieldType,
-                                   kValueFieldType, default_enum_value>> {
-  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType,
-                   default_enum_value>
-      MapFieldType;
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntryToMapField<
+    MapEntry<T, Key, Value, kKeyFieldType, kValueFieldType>> {
+  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType> MapFieldType;
 };
 
 class PROTOBUF_EXPORT DynamicMapField
@@ -675,8 +671,7 @@ class PROTOBUF_EXPORT MapValueRef {
  private:
   template <typename Derived, typename K, typename V,
             internal::WireFormatLite::FieldType key_wire_type,
-            internal::WireFormatLite::FieldType value_wire_type,
-            int default_enum_value>
+            internal::WireFormatLite::FieldType value_wire_type>
   friend class internal::MapField;
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
@@ -778,8 +773,7 @@ class PROTOBUF_EXPORT MapIterator {
   friend class internal::DynamicMapField;
   template <typename Derived, typename Key, typename T,
             internal::WireFormatLite::FieldType kKeyFieldType,
-            internal::WireFormatLite::FieldType kValueFieldType,
-            int default_enum_value>
+            internal::WireFormatLite::FieldType kValueFieldType>
   friend class internal::MapField;
 
   // reinterpret_cast from heap-allocated Map<...>::iterator*. MapIterator owns

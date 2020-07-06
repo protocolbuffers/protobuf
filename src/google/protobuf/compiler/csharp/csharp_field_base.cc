@@ -167,6 +167,12 @@ void FieldGeneratorBase::GenerateParsingCode(io::Printer* printer, bool use_pars
   GenerateParsingCode(printer);
 }
 
+void FieldGeneratorBase::GenerateSerializationCode(io::Printer* printer, bool use_write_context) {
+  // for some field types the value of "use_write_context" doesn't matter,
+  // so we fallback to the default implementation.
+  GenerateSerializationCode(printer);
+}
+
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
   if (descriptor_->options().deprecated()) {
     printer->Print("[global::System.ObsoleteAttribute]\n");

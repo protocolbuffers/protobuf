@@ -38,6 +38,7 @@
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 
@@ -63,7 +64,7 @@ std::string ConvertFieldMaskPath(const StringPiece path,
 // Note that we also support Apiary style FieldMask form. The above example in
 // the Apiary style will look like "a.b,a.c(d,e)".
 util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
-                                           PathSinkCallback path_sink);
+                                         PathSinkCallback path_sink);
 
 }  // namespace converter
 }  // namespace util

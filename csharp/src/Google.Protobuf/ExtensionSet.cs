@@ -34,6 +34,7 @@ using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf
 {
@@ -344,9 +345,27 @@ namespace Google.Protobuf
         /// </summary>
         public void WriteTo(CodedOutputStream stream)
         {
+            
+            WriteContext.Initialize(stream, out WriteContext ctx);
+            try
+            {
+                WriteTo(ref ctx);
+            }
+            finally
+            {
+                ctx.CopyStateTo(stream);
+            }
+        }
+
+        /// <summary>
+        /// Writes the extension values in this set to the write context
+        /// </summary>
+        [SecuritySafeCritical]
+        public void WriteTo(ref WriteContext ctx)
+        {
             foreach (var value in ValuesByNumber.Values)
             {
-                value.WriteTo(stream);
+                value.WriteTo(ref ctx);
             }
         }
 

@@ -132,6 +132,8 @@ namespace Google.Protobuf
             byte[] bytes = message.ToByteArray();
             Assert.AreEqual(0, bytes.Length);
 
+            MessageParsingHelpers.AssertWritingMessage(message);
+
             MessageParsingHelpers.AssertRoundtrip(TestAllTypes.Parser, message);
         }
 
@@ -164,7 +166,7 @@ namespace Google.Protobuf
                 SingleUint64 = ulong.MaxValue
             };
 
-            byte[] bytes = message.ToByteArray();
+            MessageParsingHelpers.AssertWritingMessage(message);
 
             MessageParsingHelpers.AssertRoundtrip(TestAllTypes.Parser, message);
         }
@@ -198,7 +200,7 @@ namespace Google.Protobuf
                 RepeatedUint64 = { ulong.MaxValue, uint.MinValue }
             };
 
-            byte[] bytes = message.ToByteArray();
+            MessageParsingHelpers.AssertWritingMessage(message);
 
             MessageParsingHelpers.AssertRoundtrip(TestAllTypes.Parser, message);
         }
@@ -230,7 +232,7 @@ namespace Google.Protobuf
                 }
             };
 
-            byte[] bytes = message.ToByteArray();
+            MessageParsingHelpers.AssertWritingMessage(message);
 
             MessageParsingHelpers.AssertRoundtrip(TestMap.Parser, message);
         }
@@ -245,6 +247,8 @@ namespace Google.Protobuf
 
             byte[] bytes = message.ToByteArray();
             Assert.AreEqual(2, bytes.Length); // Tag for field entry (1 byte), length of entry (0; 1 byte)
+
+            MessageParsingHelpers.AssertWritingMessage(message);
 
             MessageParsingHelpers.AssertReadingMessage(
                 TestMap.Parser,
@@ -660,6 +664,8 @@ namespace Google.Protobuf
             var bytes = message.ToByteArray();
             Assert.AreEqual(3, bytes.Length); // 2 bytes for the tag + 1 for the value - no string!
 
+            MessageParsingHelpers.AssertWritingMessage(message);
+
             MessageParsingHelpers.AssertRoundtrip(TestAllTypes.Parser, message, parsedMessage =>
             {
                 Assert.AreEqual(TestAllTypes.OneofFieldOneofCase.OneofUint32, parsedMessage.OneofFieldCase);
@@ -674,6 +680,8 @@ namespace Google.Protobuf
             message.OneofUint32 = 0; // This is the default value for UInt32; normally wouldn't be serialized
             var bytes = message.ToByteArray();
             Assert.AreEqual(3, bytes.Length); // 2 bytes for the tag + 1 for the value - it's still serialized
+
+            MessageParsingHelpers.AssertWritingMessage(message);
 
             MessageParsingHelpers.AssertRoundtrip(TestAllTypes.Parser, message, parsedMessage =>
             {

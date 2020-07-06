@@ -219,7 +219,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<string> ForString(uint tag, string defaultValue)
         {
-            return new FieldCodec<string>((ref ParseContext ctx) => ctx.ReadString(), (output, value) => output.WriteString(value), CodedOutputStream.ComputeStringSize, tag, defaultValue);
+            return new FieldCodec<string>((ref ParseContext ctx) => ctx.ReadString(), (ref WriteContext ctx, string value) => ctx.WriteString(value), CodedOutputStream.ComputeStringSize, tag, defaultValue);
         }
 
         /// <summary>
@@ -230,7 +230,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<ByteString> ForBytes(uint tag, ByteString defaultValue)
         {
-            return new FieldCodec<ByteString>((ref ParseContext ctx) => ctx.ReadBytes(), (output, value) => output.WriteBytes(value), CodedOutputStream.ComputeBytesSize, tag, defaultValue);
+            return new FieldCodec<ByteString>((ref ParseContext ctx) => ctx.ReadBytes(), (ref WriteContext ctx, ByteString value) => ctx.WriteBytes(value), CodedOutputStream.ComputeBytesSize, tag, defaultValue);
         }
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<bool> ForBool(uint tag, bool defaultValue)
         {
-            return new FieldCodec<bool>((ref ParseContext ctx) => ctx.ReadBool(), (output, value) => output.WriteBool(value), CodedOutputStream.BoolSize, tag, defaultValue);
+            return new FieldCodec<bool>((ref ParseContext ctx) => ctx.ReadBool(), (ref WriteContext ctx, bool value) => ctx.WriteBool(value), CodedOutputStream.BoolSize, tag, defaultValue);
         }
 
         /// <summary>
@@ -252,7 +252,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<int> ForInt32(uint tag, int defaultValue)
         {
-            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadInt32(), (output, value) => output.WriteInt32(value), CodedOutputStream.ComputeInt32Size, tag, defaultValue);
+            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadInt32(), (ref WriteContext output, int value) => output.WriteInt32(value), CodedOutputStream.ComputeInt32Size, tag, defaultValue);
         }
 
         /// <summary>
@@ -263,7 +263,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<int> ForSInt32(uint tag, int defaultValue)
         {
-            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadSInt32(), (output, value) => output.WriteSInt32(value), CodedOutputStream.ComputeSInt32Size, tag, defaultValue);
+            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadSInt32(), (ref WriteContext output, int value) => output.WriteSInt32(value), CodedOutputStream.ComputeSInt32Size, tag, defaultValue);
         }
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<uint> ForFixed32(uint tag, uint defaultValue)
         {
-            return new FieldCodec<uint>((ref ParseContext ctx) => ctx.ReadFixed32(), (output, value) => output.WriteFixed32(value), 4, tag, defaultValue);
+            return new FieldCodec<uint>((ref ParseContext ctx) => ctx.ReadFixed32(), (ref WriteContext output, uint value) => output.WriteFixed32(value), 4, tag, defaultValue);
         }
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<int> ForSFixed32(uint tag, int defaultValue)
         {
-            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadSFixed32(), (output, value) => output.WriteSFixed32(value), 4, tag, defaultValue);
+            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadSFixed32(), (ref WriteContext output, int value) => output.WriteSFixed32(value), 4, tag, defaultValue);
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<uint> ForUInt32(uint tag, uint defaultValue)
         {
-            return new FieldCodec<uint>((ref ParseContext ctx) => ctx.ReadUInt32(), (output, value) => output.WriteUInt32(value), CodedOutputStream.ComputeUInt32Size, tag, defaultValue);
+            return new FieldCodec<uint>((ref ParseContext ctx) => ctx.ReadUInt32(), (ref WriteContext output, uint value) => output.WriteUInt32(value), CodedOutputStream.ComputeUInt32Size, tag, defaultValue);
         }
 
         /// <summary>
@@ -307,7 +307,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<long> ForInt64(uint tag, long defaultValue)
         {
-            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadInt64(), (output, value) => output.WriteInt64(value), CodedOutputStream.ComputeInt64Size, tag, defaultValue);
+            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadInt64(), (ref WriteContext output, long value) => output.WriteInt64(value), CodedOutputStream.ComputeInt64Size, tag, defaultValue);
         }
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<long> ForSInt64(uint tag, long defaultValue)
         {
-            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadSInt64(), (output, value) => output.WriteSInt64(value), CodedOutputStream.ComputeSInt64Size, tag, defaultValue);
+            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadSInt64(), (ref WriteContext output, long value) => output.WriteSInt64(value), CodedOutputStream.ComputeSInt64Size, tag, defaultValue);
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<ulong> ForFixed64(uint tag, ulong defaultValue)
         {
-            return new FieldCodec<ulong>((ref ParseContext ctx) => ctx.ReadFixed64(), (output, value) => output.WriteFixed64(value), 8, tag, defaultValue);
+            return new FieldCodec<ulong>((ref ParseContext ctx) => ctx.ReadFixed64(), (ref WriteContext output, ulong value) => output.WriteFixed64(value), 8, tag, defaultValue);
         }
 
         /// <summary>
@@ -340,7 +340,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<long> ForSFixed64(uint tag, long defaultValue)
         {
-            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadSFixed64(), (output, value) => output.WriteSFixed64(value), 8, tag, defaultValue);
+            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadSFixed64(), (ref WriteContext output, long value) => output.WriteSFixed64(value), 8, tag, defaultValue);
         }
 
         /// <summary>
@@ -351,7 +351,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<ulong> ForUInt64(uint tag, ulong defaultValue)
         {
-            return new FieldCodec<ulong>((ref ParseContext ctx) => ctx.ReadUInt64(), (output, value) => output.WriteUInt64(value), CodedOutputStream.ComputeUInt64Size, tag, defaultValue);
+            return new FieldCodec<ulong>((ref ParseContext ctx) => ctx.ReadUInt64(), (ref WriteContext output, ulong value) => output.WriteUInt64(value), CodedOutputStream.ComputeUInt64Size, tag, defaultValue);
         }
 
         /// <summary>
@@ -362,7 +362,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<float> ForFloat(uint tag, float defaultValue)
         {
-            return new FieldCodec<float>((ref ParseContext ctx) => ctx.ReadFloat(), (output, value) => output.WriteFloat(value), CodedOutputStream.FloatSize, tag, defaultValue);
+            return new FieldCodec<float>((ref ParseContext ctx) => ctx.ReadFloat(), (ref WriteContext output, float value) => output.WriteFloat(value), CodedOutputStream.FloatSize, tag, defaultValue);
         }
 
         /// <summary>
@@ -373,7 +373,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<double> ForDouble(uint tag, double defaultValue)
         {
-            return new FieldCodec<double>((ref ParseContext ctx) => ctx.ReadDouble(), (output, value) => output.WriteDouble(value), CodedOutputStream.DoubleSize, tag, defaultValue);
+            return new FieldCodec<double>((ref ParseContext ctx) => ctx.ReadDouble(), (ref WriteContext output, double value) => output.WriteDouble(value), CodedOutputStream.DoubleSize, tag, defaultValue);
         }
 
         // Enums are tricky. We can probably use expression trees to build these delegates automatically,
@@ -391,7 +391,7 @@ namespace Google.Protobuf
         {
             return new FieldCodec<T>((ref ParseContext ctx) => fromInt32(
                 ctx.ReadEnum()),
-                (output, value) => output.WriteEnum(toInt32(value)),
+                (ref WriteContext output, T value) => output.WriteEnum(toInt32(value)),
                 value => CodedOutputStream.ComputeEnumSize(toInt32(value)), tag, defaultValue);
         }
 
@@ -410,7 +410,7 @@ namespace Google.Protobuf
                     ctx.ReadMessage(message); 
                     return message; 
                 },
-                (output, value) => output.WriteMessage(value),
+                (ref WriteContext output, T value) => output.WriteMessage(value),
                 (ref ParseContext ctx, ref T v) => 
                 {
                     if (v == null)
@@ -455,7 +455,7 @@ namespace Google.Protobuf
                     ctx.ReadGroup(message);
                     return message;
                 },
-                (output, value) => output.WriteGroup(value), 
+                (ref WriteContext output, T value) => output.WriteGroup(value), 
                 (ref ParseContext ctx, ref T v) => 
                 {
                     if (v == null)
@@ -492,7 +492,7 @@ namespace Google.Protobuf
             var nestedCodec = WrapperCodecs.GetCodec<T>();
             return new FieldCodec<T>(
                 (ref ParseContext ctx) => WrapperCodecs.Read<T>(ref ctx, nestedCodec),
-                (output, value) => WrapperCodecs.Write<T>(output, value, nestedCodec),
+                (ref WriteContext output, T value) => WrapperCodecs.Write<T>(ref output, value, nestedCodec),
                 (ref ParseContext ctx, ref T v) => v = WrapperCodecs.Read<T>(ref ctx, nestedCodec),
                 (ref T v, T v2) => { v = v2; return v == null; },
                 value => WrapperCodecs.CalculateSize<T>(value, nestedCodec),
@@ -509,7 +509,7 @@ namespace Google.Protobuf
             var nestedCodec = WrapperCodecs.GetCodec<T>();
             return new FieldCodec<T?>(
                 WrapperCodecs.GetReader<T>(),
-                (output, value) => WrapperCodecs.Write<T>(output, value.Value, nestedCodec),
+                (ref WriteContext output, T? value) => WrapperCodecs.Write<T>(ref output, value.Value, nestedCodec),
                 (ref ParseContext ctx, ref T? v) => v = WrapperCodecs.Read<T>(ref ctx, nestedCodec),
                 (ref T? v, T? v2) => { if (v2.HasValue) { v = v2; } return v.HasValue; },
                 value => value == null ? 0 : WrapperCodecs.CalculateSize<T>(value.Value, nestedCodec),
@@ -616,10 +616,10 @@ namespace Google.Protobuf
                 return value;
             }
 
-            internal static void Write<T>(CodedOutputStream output, T value, FieldCodec<T> codec)
+            internal static void Write<T>(ref WriteContext ctx, T value, FieldCodec<T> codec)
             {
-                output.WriteLength(codec.CalculateSizeWithTag(value));
-                codec.WriteTagAndValue(output, value);
+                ctx.WriteLength(codec.CalculateSizeWithTag(value));
+                codec.WriteTagAndValue(ref ctx, value);
             }
 
             internal  static int CalculateSize<T>(T value, FieldCodec<T> codec)
@@ -631,6 +631,7 @@ namespace Google.Protobuf
     }
 
     internal delegate TValue ValueReader<out TValue>(ref ParseContext ctx);
+    internal delegate void ValueWriter<T>(ref WriteContext ctx, T value);
 
     /// <summary>
     /// <para>
@@ -685,7 +686,7 @@ namespace Google.Protobuf
         /// <summary>
         /// Returns a delegate to write a value (unconditionally) to a coded output stream.
         /// </summary>
-        internal Action<CodedOutputStream, T> ValueWriter { get; }
+        internal ValueWriter<T> ValueWriter { get; }
 
         /// <summary>
         /// Returns the size calculator for just a value.
@@ -744,7 +745,7 @@ namespace Google.Protobuf
 
         internal FieldCodec(
                 ValueReader<T> reader,
-                Action<CodedOutputStream, T> writer,
+                ValueWriter<T> writer,
                 int fixedSize,
                 uint tag,
                 T defaultValue) : this(reader, writer, _ => fixedSize, tag, defaultValue)
@@ -754,7 +755,7 @@ namespace Google.Protobuf
 
         internal FieldCodec(
             ValueReader<T> reader,
-            Action<CodedOutputStream, T> writer,
+            ValueWriter<T> writer,
             Func<T, int> sizeCalculator,
             uint tag,
             T defaultValue) : this(reader, writer, (ref ParseContext ctx, ref T v) => v = reader(ref ctx), (ref T v, T v2) => { v = v2; return true; }, sizeCalculator, tag, 0, defaultValue)
@@ -763,7 +764,7 @@ namespace Google.Protobuf
 
         internal FieldCodec(
             ValueReader<T> reader,
-            Action<CodedOutputStream, T> writer,
+            ValueWriter<T> writer,
             InputMerger inputMerger,
             ValuesMerger valuesMerger,
             Func<T, int> sizeCalculator,
@@ -774,7 +775,7 @@ namespace Google.Protobuf
 
         internal FieldCodec(
             ValueReader<T> reader,
-            Action<CodedOutputStream, T> writer,
+            ValueWriter<T> writer,
             InputMerger inputMerger,
             ValuesMerger valuesMerger,
             Func<T, int> sizeCalculator,
@@ -803,13 +804,40 @@ namespace Google.Protobuf
         /// </summary>
         public void WriteTagAndValue(CodedOutputStream output, T value)
         {
+            WriteContext.Initialize(output, out WriteContext ctx);
+            try
+            {
+                WriteTagAndValue(ref ctx, value);
+            }
+            finally
+            {
+                ctx.CopyStateTo(output);
+            }
+
+
+            //if (!IsDefault(value))
+            //{
+            //    output.WriteTag(Tag);
+            //    ValueWriter(output, value);
+            //    if (EndTag != 0)
+            //    {
+            //        output.WriteTag(EndTag);
+            //    }
+            //}
+        }
+
+        /// <summary>
+        /// Write a tag and the given value, *if* the value is not the default.
+        /// </summary>
+        public void WriteTagAndValue(ref WriteContext ctx, T value)
+        {
             if (!IsDefault(value))
             {
-                output.WriteTag(Tag);
-                ValueWriter(output, value);
+                ctx.WriteTag(Tag);
+                ValueWriter(ref ctx, value);
                 if (EndTag != 0)
                 {
-                    output.WriteTag(EndTag);
+                    ctx.WriteTag(EndTag);
                 }
             }
         }

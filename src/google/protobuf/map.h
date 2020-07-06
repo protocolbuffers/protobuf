@@ -76,12 +76,12 @@ struct is_proto_enum;
 namespace internal {
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type, int default_enum_value>
+          WireFormatLite::FieldType value_wire_type>
 class MapFieldLite;
 
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type, int default_enum_value>
+          WireFormatLite::FieldType value_wire_type>
 class MapField;
 
 template <typename Key, typename T>
@@ -133,8 +133,7 @@ class MapAllocator {
     }
   }
 
-#if __cplusplus >= 201103L && !defined(GOOGLE_PROTOBUF_OS_APPLE) && \
-    !defined(GOOGLE_PROTOBUF_OS_NACL) &&                            \
+#if !defined(GOOGLE_PROTOBUF_OS_APPLE) && !defined(GOOGLE_PROTOBUF_OS_NACL) && \
     !defined(GOOGLE_PROTOBUF_OS_EMSCRIPTEN)
   template <class NodeType, class... Args>
   void construct(NodeType* p, Args&&... args) {
@@ -252,6 +251,76 @@ struct TransparentSupport<std::string> {
 };
 #endif  // defined(__cpp_lib_string_view)
 
+template <typename Key>
+using TreeForMap =
+    std::map<KeyForTree<Key>, void*, typename TransparentSupport<Key>::less,
+             MapAllocator<std::pair<const KeyForTree<Key>, void*>>>;
+
+inline bool TableEntryIsEmpty(void* const* table, size_t b) {
+  return table[b] == nullptr;
+}
+inline bool TableEntryIsNonEmptyList(void* const* table, size_t b) {
+  return table[b] != nullptr && table[b] != table[b ^ 1];
+}
+inline bool TableEntryIsTree(void* const* table, size_t b) {
+  return !TableEntryIsEmpty(table, b) && !TableEntryIsNonEmptyList(table, b);
+}
+inline bool TableEntryIsList(void* const* table, size_t b) {
+  return !TableEntryIsTree(table, b);
+}
+
+// This captures all numeric types.
+inline size_t MapValueSpaceUsedExcludingSelfLong(bool) { return 0; }
+inline size_t MapValueSpaceUsedExcludingSelfLong(const std::string& str) {
+  return StringSpaceUsedExcludingSelfLong(str);
+}
+template <typename T,
+          typename = decltype(std::declval<const T&>().SpaceUsedLong())>
+size_t MapValueSpaceUsedExcludingSelfLong(const T& message) {
+  return message.SpaceUsedLong() - sizeof(T);
+}
+
+// Space used for the table, trees, and nodes.
+// Does not include the indirect space used. Eg the data of a std::string.
+template <typename Key>
+PROTOBUF_NOINLINE size_t SpaceUsedInTable(void** table, size_t num_buckets,
+                                          size_t num_elements,
+                                          size_t sizeof_node) {
+  size_t size = 0;
+  // The size of the table.
+  size += sizeof(void*) * num_buckets;
+  // All the nodes.
+  size += sizeof_node * num_elements;
+  // For each tree, count the overhead of the those nodes.
+  // Two buckets at a time because we only care about trees.
+  for (size_t b = 0; b < num_buckets; b += 2) {
+    if (internal::TableEntryIsTree(table, b)) {
+      using Tree = TreeForMap<Key>;
+      Tree* tree = static_cast<Tree*>(table[b]);
+      // Estimated cost of the red-black tree nodes, 3 pointers plus a
+      // bool (plus alignment, so 4 pointers).
+      size += tree->size() *
+              (sizeof(typename Tree::value_type) + sizeof(void*) * 4);
+    }
+  }
+  return size;
+}
+
+template <typename Map,
+          typename = typename std::enable_if<
+              !std::is_scalar<typename Map::key_type>::value ||
+              !std::is_scalar<typename Map::mapped_type>::value>::type>
+size_t SpaceUsedInValues(const Map* map) {
+  size_t size = 0;
+  for (const auto& v : *map) {
+    size += internal::MapValueSpaceUsedExcludingSelfLong(v.first) +
+            internal::MapValueSpaceUsedExcludingSelfLong(v.second);
+  }
+  return size;
+}
+
+inline size_t SpaceUsedInValues(const void*) { return 0; }
+
 }  // namespace internal
 
 // This is the class for Map's internal value_type. Instead of using
@@ -308,11 +377,10 @@ class Map {
   using size_type = size_t;
   using hasher = typename internal::TransparentSupport<Key>::hash;
 
-  Map() : arena_(nullptr), default_enum_value_(0) { Init(); }
-  explicit Map(Arena* arena) : arena_(arena), default_enum_value_(0) { Init(); }
+  Map() : arena_(nullptr) { Init(); }
+  explicit Map(Arena* arena) : arena_(arena) { Init(); }
 
-  Map(const Map& other)
-      : arena_(nullptr), default_enum_value_(other.default_enum_value_) {
+  Map(const Map& other) : arena_(nullptr) {
     Init();
     insert(other.begin(), other.end());
   }
@@ -336,8 +404,7 @@ class Map {
   }
 
   template <class InputIt>
-  Map(const InputIt& first, const InputIt& last)
-      : arena_(nullptr), default_enum_value_(0) {
+  Map(const InputIt& first, const InputIt& last) : arena_(nullptr) {
     Init();
     insert(first, last);
   }
@@ -421,11 +488,7 @@ class Map {
     // The value is a void* pointing to Node. We use void* instead of Node* to
     // avoid code bloat. That way there is only one instantiation of the tree
     // class per key type.
-    using TreeAllocator = typename Allocator::template rebind<
-        std::pair<const internal::KeyForTree<Key>, void*>>::other;
-    using Tree = std::map<internal::KeyForTree<Key>, void*,
-                          typename internal::TransparentSupport<Key>::less,
-                          TreeAllocator>;
+    using Tree = internal::TreeForMap<Key>;
     using TreeIterator = typename Tree::iterator;
 
     static Node* NodeFromTreeIterator(TreeIterator it) {
@@ -675,6 +738,11 @@ class Map {
       }
     }
 
+    size_t SpaceUsedInternal() const {
+      return internal::SpaceUsedInTable<Key>(table_, num_buckets_,
+                                             num_elements_, sizeof(Node));
+    }
+
    private:
     const_iterator find(const Key& k, TreeIterator* it) const {
       return FindHelper(k, it).first;
@@ -835,9 +903,9 @@ class Map {
       const size_type start = index_of_first_non_null_;
       index_of_first_non_null_ = num_buckets_;
       for (size_type i = start; i < old_table_size; i++) {
-        if (TableEntryIsNonEmptyList(old_table, i)) {
+        if (internal::TableEntryIsNonEmptyList(old_table, i)) {
           TransferList(old_table, i);
-        } else if (TableEntryIsTree(old_table, i)) {
+        } else if (internal::TableEntryIsTree(old_table, i)) {
           TransferTree(old_table, i++);
         }
       }
@@ -873,29 +941,16 @@ class Map {
     }
 
     bool TableEntryIsEmpty(size_type b) const {
-      return TableEntryIsEmpty(table_, b);
+      return internal::TableEntryIsEmpty(table_, b);
     }
     bool TableEntryIsNonEmptyList(size_type b) const {
-      return TableEntryIsNonEmptyList(table_, b);
+      return internal::TableEntryIsNonEmptyList(table_, b);
     }
     bool TableEntryIsTree(size_type b) const {
-      return TableEntryIsTree(table_, b);
+      return internal::TableEntryIsTree(table_, b);
     }
     bool TableEntryIsList(size_type b) const {
-      return TableEntryIsList(table_, b);
-    }
-    static bool TableEntryIsEmpty(void* const* table, size_type b) {
-      return table[b] == nullptr;
-    }
-    static bool TableEntryIsNonEmptyList(void* const* table, size_type b) {
-      return table[b] != nullptr && table[b] != table[b ^ 1];
-    }
-    static bool TableEntryIsTree(void* const* table, size_type b) {
-      return !TableEntryIsEmpty(table, b) &&
-             !TableEntryIsNonEmptyList(table, b);
-    }
-    static bool TableEntryIsList(void* const* table, size_type b) {
-      return !TableEntryIsTree(table, b);
+      return internal::TableEntryIsList(table_, b);
     }
 
     void TreeConvert(size_type b) {
@@ -1231,7 +1286,6 @@ class Map {
 
   void swap(Map& other) {
     if (arena_ == other.arena_) {
-      std::swap(default_enum_value_, other.default_enum_value_);
       std::swap(elements_, other.elements_);
     } else {
       // TODO(zuguang): optimize this. The temporary copy can be allocated
@@ -1247,14 +1301,13 @@ class Map {
   // be modified to return a const reference in the future.
   hasher hash_function() const { return elements_->hash_function(); }
 
- private:
-  // Set default enum value only for proto2 map field whose value is enum type.
-  void SetDefaultEnumValue(int default_enum_value) {
-    default_enum_value_ = default_enum_value;
+  size_t SpaceUsedExcludingSelfLong() const {
+    return sizeof(InnerMap) + elements_->SpaceUsedInternal() +
+           internal::SpaceUsedInValues(this);
   }
 
+ private:
   Arena* arena_;
-  int default_enum_value_;
   InnerMap* elements_;
 
   friend class Arena;
@@ -1262,8 +1315,7 @@ class Map {
   using DestructorSkippable_ = void;
   template <typename Derived, typename K, typename V,
             internal::WireFormatLite::FieldType key_wire_type,
-            internal::WireFormatLite::FieldType value_wire_type,
-            int default_enum_value>
+            internal::WireFormatLite::FieldType value_wire_type>
   friend class internal::MapFieldLite;
 };
 

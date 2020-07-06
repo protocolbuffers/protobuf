@@ -268,13 +268,6 @@ void CollectMapInfo(const Options& options, const Descriptor* descriptor,
       "TYPE_" + ToUpper(DeclaredTypeMethodName(key->type()));
   vars["val_wire_type"] =
       "TYPE_" + ToUpper(DeclaredTypeMethodName(val->type()));
-  if (descriptor->file()->syntax() != FileDescriptor::SYNTAX_PROTO3 &&
-      val->type() == FieldDescriptor::TYPE_ENUM) {
-    const EnumValueDescriptor* default_value = val->default_value_enum();
-    vars["default_enum_value"] = Int32ToString(default_value->number());
-  } else {
-    vars["default_enum_value"] = "0";
-  }
 }
 
 // Does the given field have a private (internal helper only) has_$name$()
@@ -1017,14 +1010,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
         "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
-        "    $default_enum_value$ > {\n"
+        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {\n"
         "public:\n"
         "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
         "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
-        "    $default_enum_value$ > SuperType;\n"
+        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
+        "SuperType;\n"
         "  $classname$();\n"
         "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
         "  void MergeFrom(const $classname$& other);\n"
@@ -1235,7 +1227,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "  _any_metadata_.PackFrom(message);\n"
           "}\n"
           "void PackFrom(const ::$proto_ns$::Message& message,\n"
-          "              const std::string& type_url_prefix) {\n"
+          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
+          "type_url_prefix) {\n"
           "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
           "}\n"
           "bool UnpackTo(::$proto_ns$::Message* message) const {\n"
@@ -1255,7 +1248,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
           "::value>::type>\n"
           "void PackFrom(const T& message,\n"
-          "              const std::string& type_url_prefix) {\n"
+          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
+          "type_url_prefix) {\n"
           "  _any_metadata_.PackFrom<T>(message, type_url_prefix);"
           "}\n"
           "template <typename T, class = typename std::enable_if<"
@@ -1272,7 +1266,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "}\n"
           "template <typename T>\n"
           "void PackFrom(const T& message,\n"
-          "              const std::string& type_url_prefix) {\n"
+          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
+          "type_url_prefix) {\n"
           "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
           "}\n"
           "template <typename T>\n"
@@ -1284,7 +1279,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "template<typename T> bool Is() const {\n"
         "  return _any_metadata_.Is<T>();\n"
         "}\n"
-        "static bool ParseAnyTypeUrl(const string& type_url,\n"
+        "static bool ParseAnyTypeUrl(::PROTOBUF_NAMESPACE_ID::ConstStringParam "
+        "type_url,\n"
         "                            std::string* full_type_name);\n");
   }
 
@@ -2047,8 +2043,9 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
           "}\n");
     }
     format(
-        "bool $classname$::ParseAnyTypeUrl(const string& type_url,\n"
-        "                                  std::string* full_type_name) {\n"
+        "bool $classname$::ParseAnyTypeUrl(\n"
+        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url,\n"
+        "    std::string* full_type_name) {\n"
         "  return ::$proto_ns$::internal::ParseAnyTypeUrl(type_url,\n"
         "                                             full_type_name);\n"
         "}\n"
