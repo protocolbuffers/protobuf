@@ -1013,6 +1013,13 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
     field->descriptortype = upb_fielddef_descriptortype(f);
     field->label = upb_fielddef_label(f);
 
+    if (field->descriptortype == UPB_DTYPE_STRING &&
+        f->file->syntax == UPB_SYNTAX_PROTO2) {
+      // See TableDescriptorType() in upbc/generator.cc for details and
+      // rationale.
+      field->descriptortype = UPB_DTYPE_BYTES;
+    }
+
     if (upb_fielddef_ismap(f)) {
       field->label = _UPB_LABEL_MAP;
     } else if (upb_fielddef_packed(f)) {
