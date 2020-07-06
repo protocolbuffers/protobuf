@@ -157,7 +157,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 UPB_NORETURN static void decode_err(upb_decstate *d) { longjmp(d->err, 1); }
 
-bool decode_verifyutf8(const char *buf, int len) {
+void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
   static const uint8_t utf8_offset[] = {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -179,16 +179,16 @@ bool decode_verifyutf8(const char *buf, int len) {
   while (i < len) {
     offset = utf8_offset[(uint8_t)buf[i]];
     if (offset == 0 || i + offset > len) {
-      return false;
+      decode_err(d);
     }
     for (j = i + 1; j < i + offset; j++) {
       if ((buf[j] & 0xc0) != 0x80) {
-        return false;
+        decode_err(d);
       }
     }
     i += offset;
   }
-  return i == len;
+  if (i != len) decode_err(d);
 }
 
 static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
@@ -336,7 +336,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
       memcpy(mem, &val, 1 << op);
       return ptr;
     case OP_STRING:
-      decode_verifyutf8(val.str_val.data, val.str_val.size);
+      decode_verifyutf8(d, val.str_val.data, val.str_val.size);
       /* Fallthrough. */
     case OP_BYTES:
       /* Append bytes. */
@@ -473,7 +473,7 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
       break;
     }
     case OP_STRING:
-      decode_verifyutf8(val.str_val.data, val.str_val.size);
+      decode_verifyutf8(d, val.str_val.data, val.str_val.size);
       /* Fallthrough. */
     case OP_BYTES:
       memcpy(mem, &val, sizeof(upb_strview));

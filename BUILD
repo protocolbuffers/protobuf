@@ -765,6 +765,7 @@ cc_test(
         "upb/bindings/lua/upb.lua",
         ":descriptor_proto_lua",
         ":test_messages_proto3_proto_lua",
+        ":test_messages_proto2_proto_lua",
         ":test_proto_lua",
         "@com_google_protobuf//:conformance_proto",
         "@com_google_protobuf//:descriptor_proto",
@@ -805,6 +806,12 @@ lua_proto_library(
     name = "test_messages_proto3_proto_lua",
     testonly = 1,
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+)
+
+lua_proto_library(
+    name = "test_messages_proto2_proto_lua",
+    testonly = 1,
+    deps = ["@com_google_protobuf//:test_messages_proto2_proto"],
 )
 
 # Test the CMake build #########################################################
