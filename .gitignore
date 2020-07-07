@@ -209,3 +209,6 @@ cmake/cmake-build-debug/
 # IntelliJ
 .idea
 *.iml
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
