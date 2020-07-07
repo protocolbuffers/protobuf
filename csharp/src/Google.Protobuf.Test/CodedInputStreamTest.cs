@@ -324,7 +324,25 @@ namespace Google.Protobuf
                 Assert.AreEqual(message, message2);
             }
         }
-                
+
+        [Test]
+        public void ReadWholeMessage_VaryingBlockSizes_FromSequence()
+        {
+            TestAllTypes message = SampleMessages.CreateFullTestAllTypes();
+
+            byte[] rawBytes = message.ToByteArray();
+            Assert.AreEqual(rawBytes.Length, message.CalculateSize());
+            TestAllTypes message2 = TestAllTypes.Parser.ParseFrom(rawBytes);
+            Assert.AreEqual(message, message2);
+
+            // Try different block sizes.
+            for (int blockSize = 1; blockSize < 256; blockSize *= 2)
+            {
+                message2 = TestAllTypes.Parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(rawBytes, blockSize));
+                Assert.AreEqual(message, message2);
+            }
+        }
+
         [Test]
         public void ReadHugeBlob()
         {
@@ -363,6 +381,70 @@ namespace Google.Protobuf
             Assert.AreEqual(tag, input.ReadTag());
 
             Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
+        }
+
+        [Test]
+        public void ReadBlobGreaterThanCurrentLimit()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteRawVarint32(4);
+            output.WriteRawBytes(new byte[4]); // Pad with a few random bytes.
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+            Assert.AreEqual(tag, input.ReadTag());
+
+            // Specify limit smaller than data length
+            input.PushLimit(3);
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
+
+            AssertReadFromParseContext(new ReadOnlySequence<byte>(ms.ToArray()), (ref ParseContext ctx) =>
+            {
+                Assert.AreEqual(tag, ctx.ReadTag());
+                SegmentedBufferHelper.PushLimit(ref ctx.state, 3);
+                try
+                {
+                    ctx.ReadBytes();
+                    Assert.Fail();
+                }
+                catch (InvalidProtocolBufferException) {}
+            }, true);
+        }
+
+        [Test]
+        public void ReadStringGreaterThanCurrentLimit()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+            uint tag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteRawVarint32(4);
+            output.WriteRawBytes(new byte[4]); // Pad with a few random bytes.
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms.ToArray());
+            Assert.AreEqual(tag, input.ReadTag());
+
+            // Specify limit smaller than data length
+            input.PushLimit(3);
+            Assert.Throws<InvalidProtocolBufferException>(() => input.ReadString());
+
+            AssertReadFromParseContext(new ReadOnlySequence<byte>(ms.ToArray()), (ref ParseContext ctx) =>
+            {
+                Assert.AreEqual(tag, ctx.ReadTag());
+                SegmentedBufferHelper.PushLimit(ref ctx.state, 3);
+                try
+                {
+                    ctx.ReadString();
+                    Assert.Fail();
+                }
+                catch (InvalidProtocolBufferException) { }
+            }, true);
         }
 
         // Representations of a tag for field 0 with various wire types
