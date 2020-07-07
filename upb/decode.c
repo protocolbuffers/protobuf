@@ -62,11 +62,13 @@ static const unsigned fixed64_ok = (1 << UPB_DTYPE_DOUBLE) |
                                    (1 << UPB_DTYPE_SFIXED64);
 
 /* Op: an action to be performed for a wire-type/field-type combination. */
-#define OP_SCALAR_LG2(n) (n)
-#define OP_FIXPCK_LG2(n) (n + 4)
-#define OP_VARPCK_LG2(n) (n + 8)
+#define OP_SCALAR_LG2(n) (n)      /* n in [0, 2, 3] => op in [0, 2, 3] */
 #define OP_STRING 4
-#define OP_SUBMSG 5
+#define OP_BYTES 5
+#define OP_SUBMSG 6
+/* Ops above are scalar-only. Repeated fields can use any op.  */
+#define OP_FIXPCK_LG2(n) (n + 5)  /* n in [2, 3] => op in [7, 8] */
+#define OP_VARPCK_LG2(n) (n + 9)  /* n in [0, 2, 3] => op in [9, 11, 12] */
 
 static const int8_t varint_ops[19] = {
     -1,               /* field not found */
@@ -104,7 +106,7 @@ static const int8_t delim_ops[37] = {
     OP_STRING, /* STRING */
     -1,        /* GROUP */
     OP_SUBMSG, /* MESSAGE */
-    OP_STRING, /* BYTES */
+    OP_BYTES,  /* BYTES */
     -1,        /* UINT32 */
     -1,        /* ENUM */
     -1,        /* SFIXED32 */
@@ -123,7 +125,7 @@ static const int8_t delim_ops[37] = {
     OP_STRING,        /* REPEATED STRING */
     OP_SUBMSG,        /* REPEATED GROUP */
     OP_SUBMSG,        /* REPEATED MESSAGE */
-    OP_STRING,        /* REPEATED BYTES */
+    OP_BYTES,         /* REPEATED BYTES */
     OP_VARPCK_LG2(2), /* REPEATED UINT32 */
     OP_VARPCK_LG2(2), /* REPEATED ENUM */
     OP_FIXPCK_LG2(2), /* REPEATED SFIXED32 */
@@ -154,6 +156,40 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout);
 
 UPB_NORETURN static void decode_err(upb_decstate *d) { longjmp(d->err, 1); }
+
+void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
+  static const uint8_t utf8_offset[] = {
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+      2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
+
+  int i, j;
+  uint8_t offset;
+
+  i = 0;
+  while (i < len) {
+    offset = utf8_offset[(uint8_t)buf[i]];
+    if (offset == 0 || i + offset > len) {
+      decode_err(d);
+    }
+    for (j = i + 1; j < i + offset; j++) {
+      if ((buf[j] & 0xc0) != 0x80) {
+        decode_err(d);
+      }
+    }
+    i += offset;
+  }
+  if (i != len) decode_err(d);
+}
 
 static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
   bool need_realloc = arr->size - arr->len < elem;
@@ -300,7 +336,10 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
       memcpy(mem, &val, 1 << op);
       return ptr;
     case OP_STRING:
-      /* Append string. */
+      decode_verifyutf8(d, val.str_val.data, val.str_val.size);
+      /* Fallthrough. */
+    case OP_BYTES:
+      /* Append bytes. */
       mem =
           UPB_PTR_AT(_upb_array_ptr(arr), arr->len * sizeof(upb_strview), void);
       arr->len++;
@@ -434,6 +473,9 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
       break;
     }
     case OP_STRING:
+      decode_verifyutf8(d, val.str_val.data, val.str_val.size);
+      /* Fallthrough. */
+    case OP_BYTES:
       memcpy(mem, &val, sizeof(upb_strview));
       break;
     case OP_SCALAR_LG2(3):

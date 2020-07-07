@@ -687,6 +687,22 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
       ToPreproc(file->name()));
 }
 
+int TableDescriptorType(const protobuf::FieldDescriptor* field) {
+  if (field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2 &&
+      field->type() == protobuf::FieldDescriptor::TYPE_STRING) {
+    // From the perspective of the binary encoder/decoder, proto2 string fields
+    // are identical to bytes fields. Only in proto3 do we check UTF-8 for
+    // string fields at parse time.
+    //
+    // If we ever use these tables for JSON encoding/decoding (for example by
+    // embedding field names on the side) we will have to revisit this, because
+    // string vs. bytes behavior is not affected by proto2 vs proto3.
+    return protobuf::FieldDescriptor::TYPE_BYTES;
+  } else {
+    return field->type();
+  }
+}
+
 void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
   EmitFileWarning(file, output);
 
@@ -781,7 +797,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
                GetSizeInit(layout.GetFieldOffset(field)),
                presence,
                submsg_index,
-               field->type(),
+               TableDescriptorType(field),
                label);
       }
       output("};\n\n");

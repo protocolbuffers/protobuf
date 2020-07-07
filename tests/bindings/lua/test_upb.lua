@@ -3,6 +3,7 @@ local upb = require "lupb"
 local lunit = require "lunit"
 local upb_test = require "tests.test_pb"
 local test_messages_proto3 = require "google.protobuf.test_messages_proto3_pb"
+local test_messages_proto2 = require "google.protobuf.test_messages_proto2_pb"
 local descriptor = require "google.protobuf.descriptor_pb"
 
 if _VERSION >= 'Lua 5.2' then
@@ -67,6 +68,22 @@ function test_msg_map()
   local msg2 = upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
   assert_equal(10, msg2.map_int32_int32[5])
   assert_equal(12, msg2.map_int32_int32[6])
+end
+
+function test_utf8()
+  local proto2_msg = test_messages_proto2.TestAllTypesProto2()
+  proto2_msg.optional_string = "\xff"
+  local serialized = upb.encode(proto2_msg)
+
+  -- Decoding invalid UTF-8 succeeds in proto2.
+  upb.decode(test_messages_proto2.TestAllTypesProto2, serialized)
+
+  -- Decoding invalid UTF-8 fails in proto2.
+  assert_error_match("Error decoding protobuf", function()
+    upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
+  end)
+
+  -- TOOD(haberman): should proto3 accessors also check UTF-8 at set time?
 end
 
 function test_string_double_map()
