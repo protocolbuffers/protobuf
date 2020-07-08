@@ -8,7 +8,7 @@ $handle = popen($cmd, 'r');
 $filenames = explode("\n", stream_get_contents($handle));
 array_pop($filenames);  // empty string after last '\n'
 $filenames[] = "Google/Protobuf/DescriptorPool.php";
-$output = "../ext/google/protobuf2/bundled_php.c";
+$output = "../ext/google/protobuf/bundled_php.c";
 
 function stripSuffix($str, $suffix) {
   return substr($str, 0, strlen($str) - strlen($suffix));
