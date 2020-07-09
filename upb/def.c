@@ -1555,13 +1555,21 @@ static bool create_fielddef(
     f->oneof = NULL;
   }
 
-  if (google_protobuf_FieldDescriptorProto_has_options(field_proto)) {
-    options = google_protobuf_FieldDescriptorProto_options(field_proto);
-    f->lazy_ = google_protobuf_FieldOptions_lazy(options);
+  options = google_protobuf_FieldDescriptorProto_has_options(field_proto) ?
+    google_protobuf_FieldDescriptorProto_options(field_proto) : NULL;
+
+  if (options && google_protobuf_FieldOptions_has_packed(options)) {
     f->packed_ = google_protobuf_FieldOptions_packed(options);
   } else {
+    /* Repeated fields default to packed for proto3 only. */
+    f->packed_ = upb_fielddef_isprimitive(f) &&
+        f->label_ == UPB_LABEL_REPEATED && f->file->syntax == UPB_SYNTAX_PROTO3;
+  }
+
+  if (options) {
+    f->lazy_ = google_protobuf_FieldOptions_lazy(options);
+  } else {
     f->lazy_ = false;
-    f->packed_ = false;
   }
 
   return true;
