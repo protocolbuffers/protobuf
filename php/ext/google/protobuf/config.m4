@@ -4,7 +4,7 @@ if test "$PHP_PROTOBUF" != "no"; then
 
   PHP_NEW_EXTENSION(
     protobuf,
-    array.c def.c encode_decode.c map.c message.c protobuf.c storage.c type_check.c upb.c utf8.c,
+    arena.c array.c bundled_php.c convert.c def.c map.c message.c names.c php-upb.c protobuf.c,
     $ext_shared)
 
 fi
