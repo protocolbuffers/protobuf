@@ -34,6 +34,7 @@ using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -49,6 +50,7 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     internal static class ParsingPrimitives
     {
+        private const int StackallocThreshold = 256;
 
         /// <summary>
         /// Reads a length for length-delimited data.
@@ -58,7 +60,6 @@ namespace Google.Protobuf
         /// to make the calling code clearer.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-
         public static int ParseLength(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             return (int)ParseRawVarint32(ref buffer, ref state);
@@ -437,14 +438,6 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.NegativeSize();
             }
 
-            if (state.totalBytesRetired + state.bufferPos + size > state.currentLimit)
-            {
-                // Read to the end of the stream (up to the current limit) anyway.
-                SkipRawBytes(ref buffer, ref state, state.currentLimit - state.totalBytesRetired - state.bufferPos);
-                // Then fail.
-                throw InvalidProtocolBufferException.TruncatedMessage();
-            }
-
             if (size <= state.bufferSize - state.bufferPos)
             {
                 // We have all the bytes we need already.
@@ -453,36 +446,22 @@ namespace Google.Protobuf
                 state.bufferPos += size;
                 return bytes;
             }
-            else if (size < buffer.Length || size < state.segmentedBufferHelper.TotalLength)
+
+            return ReadRawBytesSlow(ref buffer, ref state, size);
+        }
+
+        private static byte[] ReadRawBytesSlow(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int size)
+        {
+            ValidateCurrentLimit(ref buffer, ref state, size);
+
+            if ((!state.segmentedBufferHelper.TotalLength.HasValue && size < buffer.Length) ||
+                IsDataAvailableInSource(ref state, size))
             {
                 // Reading more bytes than are in the buffer, but not an excessive number
                 // of bytes.  We can safely allocate the resulting array ahead of time.
 
-                // First copy what we have.
                 byte[] bytes = new byte[size];
-                var bytesSpan = new Span<byte>(bytes);
-                int pos = state.bufferSize - state.bufferPos;
-                buffer.Slice(state.bufferPos, pos).CopyTo(bytesSpan.Slice(0, pos));
-                state.bufferPos = state.bufferSize;
-
-                // We want to use RefillBuffer() and then copy from the buffer into our
-                // byte array rather than reading directly into our byte array because
-                // the input may be unbuffered.
-                state.segmentedBufferHelper.RefillBuffer(ref buffer, ref state, true);
-
-                while (size - pos > state.bufferSize)
-                {
-                    buffer.Slice(0, state.bufferSize)
-                        .CopyTo(bytesSpan.Slice(pos, state.bufferSize));
-                    pos += state.bufferSize;
-                    state.bufferPos = state.bufferSize;
-                    state.segmentedBufferHelper.RefillBuffer(ref buffer, ref state, true);
-                }
-
-                buffer.Slice(0, size - pos)
-                        .CopyTo(bytesSpan.Slice(pos, size - pos));
-                state.bufferPos = size - pos;
-
+                ReadRawBytesIntoSpan(ref buffer, ref state, size, bytes);
                 return bytes;
             }
             else
@@ -518,7 +497,7 @@ namespace Google.Protobuf
                 }
 
                 // OK, got everything.  Now concatenate it all into one buffer.
-                byte[] bytes = new byte[size];          
+                byte[] bytes = new byte[size];
                 int newPos = 0;
                 foreach (byte[] chunk in chunks)
                 {
@@ -543,13 +522,7 @@ namespace Google.Protobuf
                 throw InvalidProtocolBufferException.NegativeSize();
             }
 
-            if (state.totalBytesRetired + state.bufferPos + size > state.currentLimit)
-            {
-                // Read to the end of the stream anyway.
-                SkipRawBytes(ref buffer, ref state, state.currentLimit - state.totalBytesRetired - state.bufferPos);
-                // Then fail.
-                throw InvalidProtocolBufferException.TruncatedMessage();
-            }
+            ValidateCurrentLimit(ref buffer, ref state, size);
 
             if (size <= state.bufferSize - state.bufferPos)
             {
@@ -619,7 +592,7 @@ namespace Google.Protobuf
             }
 
 #if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING
-            if (length <= state.bufferSize - state.bufferPos && length > 0)
+            if (length <= state.bufferSize - state.bufferPos)
             {
                 // Fast path: all bytes to decode appear in the same span.
                 ReadOnlySpan<byte> data = buffer.Slice(state.bufferPos, length);
@@ -638,18 +611,74 @@ namespace Google.Protobuf
             }
 #endif
 
-            var decoder = WritingPrimitives.Utf8Encoding.GetDecoder();
+            return ReadStringSlow(ref buffer, ref state, length);
+        }
 
-            // TODO: even if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING is not supported,
-            // we could still create a string efficiently by using Utf8Encoding.GetString(byte[] bytes, int index, int count)
-            // whenever the buffer is backed by a byte array (and avoid creating a new byte array), but the problem is
-            // there is no way to get the underlying byte array from a span.
+        /// <summary>
+        /// Reads a string assuming that it is spread across multiple spans in a <see cref="ReadOnlySequence{T}"/>.
+        /// </summary>
+        private static string ReadStringSlow(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int length)
+        {
+            ValidateCurrentLimit(ref buffer, ref state, length);
 
-            // TODO: in case the string spans multiple buffer segments, creating a char[] and decoding into it and then
-            // creating a string from that array might be more efficient than creating a string from the copied bytes.
+#if GOOGLE_PROTOBUF_SUPPORT_FAST_STRING
+            if (IsDataAvailable(ref state, length))
+            {
+                // Read string data into a temporary buffer, either stackalloc'ed or from ArrayPool
+                // Once all data is read then call Encoding.GetString on buffer and return to pool if needed.
+
+                byte[] byteArray = null;
+                Span<byte> byteSpan = length <= StackallocThreshold ?
+                    stackalloc byte[length] :
+                    (byteArray = ArrayPool<byte>.Shared.Rent(length));
+
+                try
+                {
+                    unsafe
+                    {
+                        fixed (byte* pByteSpan = &MemoryMarshal.GetReference(byteSpan))
+                        {
+                            // Compiler doesn't like that a potentially stackalloc'd Span<byte> is being used
+                            // in a method with a "ref Span<byte> buffer" argument. If the stackalloc'd span was assigned
+                            // to the ref argument then bad things would happen. We'll never do that so it is ok.
+                            // Make compiler happy by passing a new span created from pointer.
+                            var tempSpan = new Span<byte>(pByteSpan, byteSpan.Length);
+                            ReadRawBytesIntoSpan(ref buffer, ref state, length, tempSpan);
+
+                            return WritingPrimitives.Utf8Encoding.GetString(pByteSpan, length);
+                        }
+                    }
+                }
+                finally
+                {
+                    if (byteArray != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(byteArray);
+                    }
+                }
+            }
+#endif
 
             // Slow path: Build a byte array first then copy it.
+            // This will be called when reading from a Stream because we don't know the length of the stream,
+            // or there is not enough data in the sequence. If there is not enough data then ReadRawBytes will
+            // throw an exception.
             return WritingPrimitives.Utf8Encoding.GetString(ReadRawBytes(ref buffer, ref state, length), 0, length);
+        }
+
+        /// <summary>
+        /// Validates that the specified size doesn't exceed the current limit. If it does then remaining bytes
+        /// are skipped and an error is thrown.
+        /// </summary>
+        private static void ValidateCurrentLimit(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int size)
+        {
+            if (state.totalBytesRetired + state.bufferPos + size > state.currentLimit)
+            {
+                // Read to the end of the stream (up to the current limit) anyway.
+                SkipRawBytes(ref buffer, ref state, state.currentLimit - state.totalBytesRetired - state.bufferPos);
+                // Then fail.
+                throw InvalidProtocolBufferException.TruncatedMessage();
+            }
         }
 
         [SecuritySafeCritical]
@@ -730,6 +759,57 @@ namespace Google.Protobuf
         public static long DecodeZigZag64(ulong n)
         {
             return (long)(n >> 1) ^ -(long)(n & 1);
+        }
+
+        /// <summary>
+        /// Checks whether there is known data available of the specified size remaining to parse.
+        /// When parsing from a Stream this can return false because we have no knowledge of the amount
+        /// of data remaining in the stream until it is read.
+        /// </summary>
+        public static bool IsDataAvailable(ref ParserInternalState state, int size)
+        {
+            // Data fits in remaining buffer
+            if (size <= state.bufferSize - state.bufferPos)
+            {
+                return true;
+            }
+
+            return IsDataAvailableInSource(ref state, size);
+        }
+
+        /// <summary>
+        /// Checks whether there is known data available of the specified size remaining to parse
+        /// in the underlying data source.
+        /// When parsing from a Stream this will return false because we have no knowledge of the amount
+        /// of data remaining in the stream until it is read.
+        /// </summary>
+        private static bool IsDataAvailableInSource(ref ParserInternalState state, int size)
+        {
+            // Data fits in remaining source data.
+            // Note that this will never be true when reading from a stream as the total length is unknown.
+            return size <= state.segmentedBufferHelper.TotalLength - state.totalBytesRetired - state.bufferPos;
+        }
+
+        /// <summary>
+        /// Read raw bytes of the specified length into a span. The amount of data available and the current limit should
+        /// be checked before calling this method.
+        /// </summary>
+        private static void ReadRawBytesIntoSpan(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state, int length, Span<byte> byteSpan)
+        {
+            int remainingByteLength = length;
+            while (remainingByteLength > 0)
+            {
+                if (state.bufferSize - state.bufferPos == 0)
+                {
+                    state.segmentedBufferHelper.RefillBuffer(ref buffer, ref state, true);
+                }
+
+                ReadOnlySpan<byte> unreadSpan = buffer.Slice(state.bufferPos, Math.Min(remainingByteLength, state.bufferSize - state.bufferPos));
+                unreadSpan.CopyTo(byteSpan.Slice(length - remainingByteLength));
+
+                remainingByteLength -= unreadSpan.Length;
+                state.bufferPos += unreadSpan.Length;
+            }
         }
     }
 }

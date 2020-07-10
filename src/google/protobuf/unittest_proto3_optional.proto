@@ -77,3 +77,12 @@ message TestProto3Optional {
   int32 singular_int32 = 22;
   int64 singular_int64 = 23;
 }
+
+message TestProto3OptionalMessage {
+  message NestedMessage {
+    string s = 1;
+  }
+
+  NestedMessage nested_message = 1;
+  optional NestedMessage optional_nested_message = 2;
+}

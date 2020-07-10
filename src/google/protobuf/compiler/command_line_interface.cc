@@ -1274,13 +1274,17 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
                    "comes first."
                 << std::endl;
       return false;
-    case DiskSourceTree::CANNOT_OPEN:
+    case DiskSourceTree::CANNOT_OPEN: {
       if (in_fallback_database) {
         return true;
       }
+      std::string error_str = source_tree->GetLastErrorMessage().empty()
+                                  ? strerror(errno)
+                                  : source_tree->GetLastErrorMessage();
       std::cerr << "Could not map to virtual file: " << *proto << ": "
-                << strerror(errno) << std::endl;
+                << error_str << std::endl;
       return false;
+    }
     case DiskSourceTree::NO_MAPPING: {
       // Try to interpret the path as a virtual path.
       std::string disk_file;

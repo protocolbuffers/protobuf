@@ -119,7 +119,7 @@ std::string ReservedNamePrefix(const string& classname,
   bool is_reserved = false;
 
   string lower = classname;
-  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
   for (int i = 0; i < kReservedNamesSize; i++) {
     if (lower == kReservedNames[i]) {
@@ -203,7 +203,7 @@ std::string LegacyGeneratedClassName(const DescriptorType* desc) {
 
 std::string ClassNamePrefix(const string& classname) {
   string lower = classname;
-  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
   for (int i = 0; i < kReservedNamesSize; i++) {
     if (lower == kReservedNames[i]) {
@@ -218,7 +218,7 @@ std::string ConstantNamePrefix(const string& classname) {
   bool is_reserved = false;
 
   string lower = classname;
-  transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
   for (int i = 0; i < kReservedNamesSize; i++) {
     if (lower == kReservedNames[i]) {
@@ -744,11 +744,11 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     printer->Print(
         "GPBUtil::checkMessage($var, \\^class_name^::class);\n",
-        "class_name", LegacyFullClassName(field->message_type(), is_descriptor));
+        "class_name", FullClassName(field->message_type(), is_descriptor));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
     printer->Print(
         "GPBUtil::checkEnum($var, \\^class_name^::class);\n",
-        "class_name", LegacyFullClassName(field->enum_type(), is_descriptor));
+        "class_name", FullClassName(field->enum_type(), is_descriptor));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     printer->Print(
         "GPBUtil::checkString($var, ^utf8^);\n",
@@ -1754,7 +1754,7 @@ void GenerateWrapperFieldSetterDocComment(io::Printer* printer, const FieldDescr
   printer->Print("/**\n");
   printer->Print(
       " * Sets the field by wrapping a primitive type in a ^message_name^ object.\n\n",
-      "message_name", LegacyFullClassName(field->message_type(), false));
+      "message_name", FullClassName(field->message_type(), false));
   GenerateDocCommentBody(printer, field);
   printer->Print(
     " * Generated from protobuf field <code>^def^</code>\n",
