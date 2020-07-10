@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Google.Protobuf.Test\ReadOnlySequenceFactory.cs" Link="ReadOnlySequenceFactory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.12.1" />
     <ProjectReference Include="..\Google.Protobuf\Google.Protobuf.csproj" />
   </ItemGroup>

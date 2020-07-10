@@ -300,7 +300,7 @@
 
 // Shared google3/opensource definitions. //////////////////////////////////////
 
-#define PROTOBUF_VERSION 3012002
+#define PROTOBUF_VERSION 3012003
 #define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3012000
 #define PROTOBUF_MIN_PROTOC_VERSION 3012000
 #define PROTOBUF_VERSION_SUFFIX ""
@@ -356,8 +356,8 @@
 #endif
 
 #if defined(PROTOBUF_USE_DLLS)
-  #if defined(_MSC_VER)
-    #ifdef LIBPROTOBUF_EXPORTS
+#if defined(_MSC_VER)
+#ifdef LIBPROTOBUF_EXPORTS
 #define PROTOBUF_EXPORT __declspec(dllexport)
 #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
 #define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllexport)
@@ -388,8 +388,8 @@
 #endif
 #endif
 #else  // defined(PROTOBUF_USE_DLLS)
-  #define PROTOBUF_EXPORT
-  #define PROTOC_EXPORT
+#define PROTOBUF_EXPORT
+#define PROTOC_EXPORT
 #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
 #define PROTOBUF_EXPORT_TEMPLATE_DEFINE
 #endif

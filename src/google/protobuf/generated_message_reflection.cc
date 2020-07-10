@@ -2044,10 +2044,8 @@ void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
 void Reflection::ClearBit(Message* message,
                           const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
-  if (!schema_.HasHasbits()) {
-    return;
-  }
   const uint32 index = schema_.HasBitIndex(field);
+  if (index == -1) return;
   MutableHasBits(message)[index / 32] &=
       ~(static_cast<uint32>(1) << (index % 32));
 }

@@ -25,20 +25,26 @@
  <contents>
   <dir baseinstalldir="/" name="/">
     <file baseinstalldir="/" name="config.m4" role="src"/>
+    <file baseinstalldir="/" name="arena.c" role="src"/>
+    <file baseinstalldir="/" name="arena.h" role="src"/>
     <file baseinstalldir="/" name="array.c" role="src"/>
-    <file baseinstalldir="/" name="builtin_descriptors.inc" role="src"/>
+    <file baseinstalldir="/" name="array.h" role="src"/>
+    <file baseinstalldir="/" name="bundled_php.c" role="src"/>
+    <file baseinstalldir="/" name="bundled_php.h" role="src"/>
+    <file baseinstalldir="/" name="convert.c" role="src"/>
+    <file baseinstalldir="/" name="convert.h" role="src"/>
     <file baseinstalldir="/" name="def.c" role="src"/>
-    <file baseinstalldir="/" name="encode_decode.c" role="src"/>
+    <file baseinstalldir="/" name="def.h" role="src"/>
     <file baseinstalldir="/" name="map.c" role="src"/>
+    <file baseinstalldir="/" name="map.h" role="src"/>
     <file baseinstalldir="/" name="message.c" role="src"/>
+    <file baseinstalldir="/" name="message.h" role="src"/>
+    <file baseinstalldir="/" name="names.c" role="src"/>
+    <file baseinstalldir="/" name="names.h" role="src"/>
+    <file baseinstalldir="/" name="php-upb.c" role="src"/>
+    <file baseinstalldir="/" name="php-upb.h" role="src"/>
     <file baseinstalldir="/" name="protobuf.c" role="src"/>
     <file baseinstalldir="/" name="protobuf.h" role="src"/>
-    <file baseinstalldir="/" name="storage.c" role="src"/>
-    <file baseinstalldir="/" name="type_check.c" role="src"/>
-    <file baseinstalldir="/" name="upb.c" role="src"/>
-    <file baseinstalldir="/" name="upb.h" role="src"/>
-    <file baseinstalldir="/" name="utf8.c" role="src"/>
-    <file baseinstalldir="/" name="utf8.h" role="src"/>
     <file baseinstalldir="/" name="LICENSE" role="doc"/>
   </dir>
  </contents>

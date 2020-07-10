@@ -252,7 +252,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setLabel($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto_Label::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto\Label::class);
         $this->label = $var;
         $this->has_label = true;
 
@@ -286,7 +286,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setType($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto_Type::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto\Type::class);
         $this->type = $var;
         $this->has_type = true;
 

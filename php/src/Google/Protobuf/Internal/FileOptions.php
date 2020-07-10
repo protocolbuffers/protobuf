@@ -506,7 +506,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setOptimizeFor($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FileOptions_OptimizeMode::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FileOptions\OptimizeMode::class);
         $this->optimize_for = $var;
         $this->has_optimize_for = true;
 

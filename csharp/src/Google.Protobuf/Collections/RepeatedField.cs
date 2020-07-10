@@ -133,7 +133,7 @@ namespace Google.Protobuf.Collections
                     //
                     // Check that the supplied length doesn't exceed the underlying buffer.
                     // That prevents a malicious length from initializing a very large collection.
-                    if (codec.FixedSize > 0 && length % codec.FixedSize == 0 && IsDataAvailable(ref ctx, length))
+                    if (codec.FixedSize > 0 && length % codec.FixedSize == 0 && ParsingPrimitives.IsDataAvailable(ref ctx.state, length))
                     {
                         EnsureSize(count + (length / codec.FixedSize));
 
@@ -165,24 +165,6 @@ namespace Google.Protobuf.Collections
                     Add(reader(ref ctx));
                 } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, tag));
             }
-        }
-
-        private bool IsDataAvailable(ref ParseContext ctx, int size)
-        {
-            // Data fits in remaining buffer
-            if (size <= ctx.state.bufferSize - ctx.state.bufferPos)
-            {
-                return true;
-            }
-
-            // Data fits in remaining source data.
-            // Note that this will never be true when reading from a stream as the total length is unknown.
-            if (size < ctx.state.segmentedBufferHelper.TotalLength - ctx.state.totalBytesRetired - ctx.state.bufferPos)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
