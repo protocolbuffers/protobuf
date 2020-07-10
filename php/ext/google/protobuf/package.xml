@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2020-06-01</date>
- <time>01:14:10</time>
+ <date>2020-07-09</date>
+ <time>18:05:38</time>
  <version>
-  <release>3.12.3</release>
-  <api>3.12.3</api>
+  <release>3.12.4</release>
+  <api>3.12.4</api>
  </version>
  <stability>
   <release>stable</release>
@@ -610,6 +610,20 @@ G  A release.
    </stability>
    <date>2020-06-01</date>
    <time>01:09:39</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>GA release.</notes>
+  </release>
+  <release>
+   <version>
+    <release>3.12.4</release>
+    <api>3.12.4</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2020-07-09</date>
+   <time>18:05:38</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>GA release.</notes>
   </release>

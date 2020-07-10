@@ -1,3 +1,8 @@
+2020-07-09 version 3.12.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  General
+  * Increment the patch version to ensure that all packages match.
+
 2020-06-01 version 3.12.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Objective-C
