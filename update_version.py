@@ -227,8 +227,8 @@ def UpdateJavaScript():
 
 
 def UpdateMakefile():
-  protobuf_version_offset = 11
-  expected_major_version = 3
+  protobuf_version_offset = 24
+  expected_major_version = 4
   if NEW_VERSION_INFO[0] != expected_major_version:
     print """[ERROR] Major protobuf version has changed. Please update
 update_version.py to readjust the protobuf_version_offset and
