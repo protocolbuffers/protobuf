@@ -261,6 +261,5 @@ namespace Google.Protobuf
             var copied = byteString.Memory.ToArray();
             CollectionAssert.AreEqual(byteString, copied);
         }
-
     }
 }
