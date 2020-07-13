@@ -9,7 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
+
 	pb "github.com/protocolbuffers/protobuf/examples/tutorial"
 )
 

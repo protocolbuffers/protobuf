@@ -44,14 +44,13 @@ $ sudo apt-get install python3-dev
 And you also need to make sure `pkg-config` is installed.
 
 ### Go
-Go protobufs are maintained at [github.com/golang/protobuf](
-http://github.com/golang/protobuf). If not done already, you need to install the
-toolchain and the Go protoc-gen-go plugin for protoc.
+Go protobufs are maintained at [google.golang.org/protobuf](https://github.com/protocolbuffers/protobuf-go).
+If not done already, you need to install the toolchain and the Go protoc-gen-go plugin for protoc.
 
 To install protoc-gen-go, run:
 
 ```
-$ go get -u github.com/golang/protobuf/protoc-gen-go
+$ go install google.golang.org/protobuf/cmd/protoc-gen-go
 $ export PATH=$PATH:$(go env GOPATH)/bin
 ```
 

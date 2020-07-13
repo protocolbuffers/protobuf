@@ -161,16 +161,6 @@ build_golang() {
   # Add protoc to the path so that the examples build finds it.
   export PATH="`pwd`/src:$PATH"
 
-  export GOPATH="$HOME/gocode"
-  mkdir -p "$GOPATH/src/github.com/protocolbuffers"
-  mkdir -p "$GOPATH/src/github.com/golang"
-  rm -f "$GOPATH/src/github.com/protocolbuffers/protobuf"
-  rm -f "$GOPATH/src/github.com/golang/protobuf"
-  ln -s "`pwd`" "$GOPATH/src/github.com/protocolbuffers/protobuf"
-  export PATH="$GOPATH/bin:$PATH"
-  (cd $GOPATH/src/github.com/golang && git clone https://github.com/golang/protobuf.git && cd protobuf && git checkout v1.3.5)
-  go install github.com/golang/protobuf/protoc-gen-go
-
   cd examples && PROTO_PATH="-I../src -I." make gotest && cd ..
 }
 

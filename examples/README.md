@@ -94,7 +94,7 @@ scripts) and can be used to create/display an address book data file.
 The Go example requires a plugin to the protocol buffer compiler, so it is not
 build with all the other examples.  See:
 
-    https://github.com/golang/protobuf
+    https://github.com/protocolbuffers/protobuf-go
 
 for more information about Go protocol buffer support.
 
@@ -103,7 +103,7 @@ First, install the Protocol Buffers compiler (protoc).
 Then, install the Go Protocol Buffers plugin ($GOPATH/bin must be in your $PATH
 for protoc to find it):
 
-    go get github.com/golang/protobuf/protoc-gen-go
+    go install google.golang.org/protobuf/cmd/protoc-gen-go
 
 Build the Go samples in this directory with "make go".  This creates the
 following executable files in the current directory:

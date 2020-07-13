@@ -207,9 +207,8 @@ RUN cd /tmp && \
 
 ##################
 # Go dependencies.
-RUN apt-get install -y  \
-  # -- For go -- \
-  golang
+RUN curl -sSL https://golang.org/dl/go1.14.4.linux-amd64.tar.gz | tar -zx -C /usr/local && \
+  ln -s /usr/local/go/bin/go /usr/local/bin/go
 
 ##################
 # Javascript dependencies.

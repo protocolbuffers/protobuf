@@ -1,16 +1,18 @@
 package main
 
 import (
-	benchmarkWrapper "../tmp"
-	googleMessage1Proto2 "../tmp/datasets/google_message1/proto2"
-	googleMessage1Proto3 "../tmp/datasets/google_message1/proto3"
-	googleMessage2 "../tmp/datasets/google_message2"
-	googleMessage3 "../tmp/datasets/google_message3"
-	googleMessage4 "../tmp/datasets/google_message4"
-	"flag"
-	"github.com/golang/protobuf/proto"
 	"io/ioutil"
+	"os"
 	"testing"
+
+	"google.golang.org/protobuf/proto"
+
+	pb "github.com/protocolbuffers/protobuf/benchmarks/go/benchmarks"
+	pb1a "github.com/protocolbuffers/protobuf/benchmarks/go/benchmarks/datasets/google_message1/proto2"
+	pb1b "github.com/protocolbuffers/protobuf/benchmarks/go/benchmarks/datasets/google_message1/proto3"
+	pb2 "github.com/protocolbuffers/protobuf/benchmarks/go/benchmarks/datasets/google_message2"
+	pb3 "github.com/protocolbuffers/protobuf/benchmarks/go/benchmarks/datasets/google_message3"
+	pb4 "github.com/protocolbuffers/protobuf/benchmarks/go/benchmarks/datasets/google_message4"
 )
 
 // Data is returned by the Load function.
@@ -24,34 +26,42 @@ type Dataset struct {
 var datasets []Dataset
 
 // This is used to getDefaultInstance for a message type.
-func generateNewMessageFunction(dataset benchmarkWrapper.BenchmarkDataset) func() proto.Message {
+func generateNewMessageFunction(dataset pb.BenchmarkDataset) func() proto.Message {
 	switch dataset.MessageName {
 	case "benchmarks.proto3.GoogleMessage1":
-		return func() proto.Message { return new(googleMessage1Proto3.GoogleMessage1) }
+		return func() proto.Message { return new(pb1b.GoogleMessage1) }
 	case "benchmarks.proto2.GoogleMessage1":
-		return func() proto.Message { return new(googleMessage1Proto2.GoogleMessage1) }
+		return func() proto.Message { return new(pb1a.GoogleMessage1) }
 	case "benchmarks.proto2.GoogleMessage2":
-		return func() proto.Message { return new(googleMessage2.GoogleMessage2) }
+		return func() proto.Message { return new(pb2.GoogleMessage2) }
 	case "benchmarks.google_message3.GoogleMessage3":
-		return func() proto.Message { return new(googleMessage3.GoogleMessage3) }
+		return func() proto.Message { return new(pb3.GoogleMessage3) }
 	case "benchmarks.google_message4.GoogleMessage4":
-		return func() proto.Message { return new(googleMessage4.GoogleMessage4) }
+		return func() proto.Message { return new(pb4.GoogleMessage4) }
 	default:
 		panic("Unknown message type: " + dataset.MessageName)
 	}
 }
 
 func init() {
-	flag.Parse()
-	for _, f := range flag.Args() {
+	var foundDashDash bool
+	for _, arg := range os.Args {
+		switch {
+		case arg == "--":
+			foundDashDash = true
+			continue
+		case !foundDashDash:
+			continue
+		}
+
 		// Load the benchmark.
-		b, err := ioutil.ReadFile(f)
+		b, err := ioutil.ReadFile(arg)
 		if err != nil {
 			panic(err)
 		}
 
 		// Parse the benchmark.
-		var dm benchmarkWrapper.BenchmarkDataset
+		var dm pb.BenchmarkDataset
 		if err := proto.Unmarshal(b, &dm); err != nil {
 			panic(err)
 		}
@@ -69,7 +79,7 @@ func init() {
 			}
 			ds.unmarshaled = append(ds.unmarshaled, m)
 		}
-		ds.name = f
+		ds.name = arg
 
 		datasets = append(datasets, ds)
 	}

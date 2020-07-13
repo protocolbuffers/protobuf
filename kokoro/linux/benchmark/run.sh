@@ -59,23 +59,11 @@ mvn package
 cd ..
 
 # build CPP benchmark
-cd benchmarks
 mv tmp/python_result.json . && make clean && make -j8 cpp-benchmark && mv python_result.json tmp
 echo "benchmarking cpp..."
 env LD_PRELOAD="$oldpwd/gperftools/.libs/libtcmalloc.so" ./cpp-benchmark --benchmark_min_time=5.0 --benchmark_out_format=json --benchmark_out="tmp/cpp_result.json" $datasets
-cd $oldpwd
-
-# build go protobuf
-export PATH="`pwd`/src:$PATH"
-export GOPATH="$HOME/gocode"
-mkdir -p "$GOPATH/src/github.com/google"
-rm -f "$GOPATH/src/github.com/protocolbuffers/protobuf"
-ln -s "`pwd`" "$GOPATH/src/github.com/protocolbuffers/protobuf"
-export PATH="$GOPATH/bin:$PATH"
-go get github.com/golang/protobuf/protoc-gen-go
 
 # build go benchmark
-cd benchmarks
 make go-benchmark
 echo "benchmarking go..."
 ./go-benchmark $datasets > tmp/go_result.txt

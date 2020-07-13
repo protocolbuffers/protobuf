@@ -16,9 +16,10 @@ clean:
 	rm -f javac_middleman AddPerson*.class ListPeople*.class com/example/tutorial/*.class
 	rm -f protoc_middleman addressbook.pb.cc addressbook.pb.h addressbook_pb2.py com/example/tutorial/AddressBookProtos.java
 	rm -f *.pyc
-	rm -f protoc_middleman_go tutorial/*.pb.go add_person_go list_people_go
+	rm -f gobin/protoc-gen-go protoc_middleman_go tutorial/*.pb.go add_person_go list_people_go
 	rm -f protoc_middleman_dart dart_tutorial/*.pb*.dart
 	rmdir dart_tutorial 2>/dev/null || true
+	rmdir gobin 2>/dev/null || true
 	rmdir tutorial 2>/dev/null || true
 	rmdir com/example/tutorial 2>/dev/null || true
 	rmdir com/example 2>/dev/null || true
@@ -30,7 +31,9 @@ protoc_middleman: addressbook.proto
 
 protoc_middleman_go: addressbook.proto
 	mkdir -p tutorial # make directory for go package
-	protoc $$PROTO_PATH --go_out=tutorial addressbook.proto
+	mkdir -p gobin # directory for protoc-gen-go binary
+	GOBIN="`pwd`/gobin" go install google.golang.org/protobuf/cmd/protoc-gen-go
+	PATH="`pwd`/gobin:$$PATH" protoc $$PROTO_PATH --go_out=module=github.com/protocolbuffers/protobuf/examples:. addressbook.proto
 	@touch protoc_middleman_go
 
 protoc_middleman_dart: addressbook.proto

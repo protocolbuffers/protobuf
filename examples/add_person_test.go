@@ -4,7 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
+	"github.com/google/go-cmp/cmp"
+	"google.golang.org/protobuf/testing/protocmp"
+
 	pb "github.com/protocolbuffers/protobuf/examples/tutorial"
 )
 
@@ -22,37 +24,28 @@ work
 unknown
 
 `
-	got, err := promptForAddress(strings.NewReader(in))
+	m, err := promptForAddress(strings.NewReader(in))
 	if err != nil {
-		t.Fatalf("promptForAddress(%q) had unexpected error: %s", in, err.Error())
+		t.Fatalf("promptForAddress(%q) error: %v", in, err)
 	}
-	if got.Id != 12345 {
-		t.Errorf("promptForAddress(%q) got %d, want ID %d", in, got.Id, 12345)
+	if got, want := m.GetId(), int32(12345); got != want {
+		t.Errorf("promptForAddress(%q).Id = %d, want %d", in, got, want)
 	}
-	if got.Name != "Example Name" {
-		t.Errorf("promptForAddress(%q) => want name %q, got %q", in, "Example Name", got.Name)
+	if got, want := m.GetName(), "Example Name"; got != want {
+		t.Errorf("promptForAddress(%q).Name = %q, want %q", in, got, want)
 	}
-	if got.Email != "name@example.com" {
-		t.Errorf("promptForAddress(%q) => want email %q, got %q", in, "name@example.com", got.Email)
+	if got, want := m.GetEmail(), "name@example.com"; got != want {
+		t.Errorf("promptForAddress(%q).Email = %q, want %q", in, got, want)
 	}
 
-	want := []*pb.Person_PhoneNumber{
+	gotPhones := m.GetPhones()
+	wantPhones := []*pb.Person_PhoneNumber{
 		{Number: "123-456-7890", Type: pb.Person_HOME},
 		{Number: "222-222-2222", Type: pb.Person_MOBILE},
 		{Number: "111-111-1111", Type: pb.Person_WORK},
 		{Number: "777-777-7777", Type: pb.Person_MOBILE},
 	}
-	if len(got.Phones) != len(want) {
-		t.Errorf("want %d phone numbers, got %d", len(want), len(got.Phones))
-	}
-	phones := len(got.Phones)
-	if phones > len(want) {
-		phones = len(want)
-	}
-	for i := 0; i < phones; i++ {
-		if !proto.Equal(got.Phones[i], want[i]) {
-			t.Errorf("want phone %q, got %q", *want[i], *got.Phones[i])
-		}
-
+	if diff := cmp.Diff(wantPhones, gotPhones, protocmp.Transform()); diff != "" {
+		t.Errorf("promptForAddress(%q).Phones mismatch (-want +got):\n%s", in, diff)
 	}
 }

@@ -13,6 +13,10 @@ package tutorial;
 import "google/protobuf/timestamp.proto";
 // [END declaration]
 
+// [START go_declaration]
+option go_package = "github.com/protocolbuffers/protobuf/examples/tutorial";
+// [END go_declaration]
+
 // [START java_declaration]
 option java_package = "com.example.tutorial";
 option java_outer_classname = "AddressBookProtos";

@@ -1374,6 +1374,8 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/add_person.py                 \
   examples/add_person_test.go            \
   examples/addressbook.proto             \
+  examples/go.mod                        \
+  examples/go.sum                        \
   examples/list_people.cc                \
   examples/list_people.dart              \
   examples/list_people.go                \

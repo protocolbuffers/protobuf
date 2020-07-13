@@ -43,8 +43,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Erlang: https://github.com/basho/erlang_protobuffs (no longer maintained, use gpb instead)
 * Hacklang/HHVM: https://github.com/y3llowcake/proto-hack
 * GDScript: https://github.com/oniksan/godobuf (Godot v3 engine plugin)
-* Go: https://github.com/golang/protobuf (Google-official implementation)
-* Go: https://github.com/akunspy/gopbuf
+* Go: https://github.com/protocolbuffers/protobuf-go (Google-official implementation)
 * Go: https://github.com/gogo/protobuf
 * GopherJS: https://github.com/johanbrandhorst/protobuf
 * Haskell: http://hackage.haskell.org/package/hprotoc
