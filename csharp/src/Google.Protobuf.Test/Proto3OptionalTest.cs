@@ -34,6 +34,7 @@ using NUnit.Framework;
 using ProtobufUnittest;
 using System;
 using System.IO;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.Test
 {
@@ -138,6 +139,15 @@ namespace Google.Protobuf.Test
 
             Assert.IsTrue(message1.Equals(message2));
             message1.ClearOptionalInt32();
+        }
+
+        [Test]
+        public void MixedFields()
+        {
+            var descriptor = MixedRegularAndOptional.Descriptor;
+            Assert.AreEqual(1, descriptor.Oneofs.Count);
+            Assert.AreEqual(0, descriptor.RealOneofCount);
+            Assert.True(descriptor.Oneofs[0].IsSynthetic);
         }
     }
 }
