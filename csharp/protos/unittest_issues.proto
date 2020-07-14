@@ -151,3 +151,8 @@ message NullValueOutsideStruct {
 message NullValueNotInOneof {
   google.protobuf.NullValue null_value = 2;
 }
+
+message MixedRegularAndOptional {
+  string regular_field = 1;
+  optional string optional_field = 2;
+}
