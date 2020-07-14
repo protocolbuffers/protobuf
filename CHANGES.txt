@@ -1,4 +1,4 @@
-Unreleased Changes
+2020-07-14 version 3.13.0-rc1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++:
   * Removed deprecated unsafe arena string accessors
