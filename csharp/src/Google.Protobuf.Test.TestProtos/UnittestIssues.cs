@@ -52,11 +52,13 @@ namespace UnitTest.Issues.TestProtos {
             "bmdfdmFsdWUYASABKAlIABIwCgpudWxsX3ZhbHVlGAIgASgOMhouZ29vZ2xl",
             "LnByb3RvYnVmLk51bGxWYWx1ZUgAQgcKBXZhbHVlIkUKE051bGxWYWx1ZU5v",
             "dEluT25lb2YSLgoKbnVsbF92YWx1ZRgCIAEoDjIaLmdvb2dsZS5wcm90b2J1",
-            "Zi5OdWxsVmFsdWUqVQoMTmVnYXRpdmVFbnVtEhYKEk5FR0FUSVZFX0VOVU1f",
-            "WkVSTxAAEhYKCUZpdmVCZWxvdxD7//////////8BEhUKCE1pbnVzT25lEP//",
-            "/////////wEqLgoORGVwcmVjYXRlZEVudW0SEwoPREVQUkVDQVRFRF9aRVJP",
-            "EAASBwoDb25lEAFCHaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZw",
-            "cm90bzM="));
+            "Zi5OdWxsVmFsdWUiYAoXTWl4ZWRSZWd1bGFyQW5kT3B0aW9uYWwSFQoNcmVn",
+            "dWxhcl9maWVsZBgBIAEoCRIbCg5vcHRpb25hbF9maWVsZBgCIAEoCUgAiAEB",
+            "QhEKD19vcHRpb25hbF9maWVsZCpVCgxOZWdhdGl2ZUVudW0SFgoSTkVHQVRJ",
+            "VkVfRU5VTV9aRVJPEAASFgoJRml2ZUJlbG93EPv//////////wESFQoITWlu",
+            "dXNPbmUQ////////////ASouCg5EZXByZWNhdGVkRW51bRITCg9ERVBSRUNB",
+            "VEVEX1pFUk8QABIHCgNvbmUQAUIdqgIaVW5pdFRlc3QuSXNzdWVzLlRlc3RQ",
+            "cm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -70,7 +72,8 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonName), global::UnitTest.Issues.TestProtos.TestJsonName.Parser, new[]{ "Name", "Description", "Guid" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging), global::UnitTest.Issues.TestProtos.OneofMerging.Parser, new[]{ "Text", "Nested" }, new[]{ "Value" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested), global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested.Parser, new[]{ "X", "Y" }, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueOutsideStruct), global::UnitTest.Issues.TestProtos.NullValueOutsideStruct.Parser, new[]{ "StringValue", "NullValue" }, new[]{ "Value" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueNotInOneof), global::UnitTest.Issues.TestProtos.NullValueNotInOneof.Parser, new[]{ "NullValue" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueNotInOneof), global::UnitTest.Issues.TestProtos.NullValueNotInOneof.Parser, new[]{ "NullValue" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.MixedRegularAndOptional), global::UnitTest.Issues.TestProtos.MixedRegularAndOptional.Parser, new[]{ "RegularField", "OptionalField" }, new[]{ "OptionalField" }, null, null, null)
           }));
     }
     #endregion
@@ -3295,6 +3298,224 @@ namespace UnitTest.Issues.TestProtos {
             break;
           case 16: {
             NullValue = (global::Google.Protobuf.WellKnownTypes.NullValue) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class MixedRegularAndOptional : pb::IMessage<MixedRegularAndOptional>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<MixedRegularAndOptional> _parser = new pb::MessageParser<MixedRegularAndOptional>(() => new MixedRegularAndOptional());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<MixedRegularAndOptional> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[11]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MixedRegularAndOptional() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MixedRegularAndOptional(MixedRegularAndOptional other) : this() {
+      regularField_ = other.regularField_;
+      optionalField_ = other.optionalField_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public MixedRegularAndOptional Clone() {
+      return new MixedRegularAndOptional(this);
+    }
+
+    /// <summary>Field number for the "regular_field" field.</summary>
+    public const int RegularFieldFieldNumber = 1;
+    private string regularField_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string RegularField {
+      get { return regularField_; }
+      set {
+        regularField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "optional_field" field.</summary>
+    public const int OptionalFieldFieldNumber = 2;
+    private string optionalField_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string OptionalField {
+      get { return optionalField_ ?? ""; }
+      set {
+        optionalField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+    /// <summary>Gets whether the "optional_field" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HasOptionalField {
+      get { return optionalField_ != null; }
+    }
+    /// <summary>Clears the value of the "optional_field" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void ClearOptionalField() {
+      optionalField_ = null;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as MixedRegularAndOptional);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(MixedRegularAndOptional other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (RegularField != other.RegularField) return false;
+      if (OptionalField != other.OptionalField) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (RegularField.Length != 0) hash ^= RegularField.GetHashCode();
+      if (HasOptionalField) hash ^= OptionalField.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (RegularField.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(RegularField);
+      }
+      if (HasOptionalField) {
+        output.WriteRawTag(18);
+        output.WriteString(OptionalField);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (RegularField.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(RegularField);
+      }
+      if (HasOptionalField) {
+        output.WriteRawTag(18);
+        output.WriteString(OptionalField);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (RegularField.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(RegularField);
+      }
+      if (HasOptionalField) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(OptionalField);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(MixedRegularAndOptional other) {
+      if (other == null) {
+        return;
+      }
+      if (other.RegularField.Length != 0) {
+        RegularField = other.RegularField;
+      }
+      if (other.HasOptionalField) {
+        OptionalField = other.OptionalField;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            RegularField = input.ReadString();
+            break;
+          }
+          case 18: {
+            OptionalField = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            RegularField = input.ReadString();
+            break;
+          }
+          case 18: {
+            OptionalField = input.ReadString();
             break;
           }
         }

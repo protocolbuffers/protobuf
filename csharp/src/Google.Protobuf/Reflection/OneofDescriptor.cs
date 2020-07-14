@@ -59,7 +59,7 @@ namespace Google.Protobuf.Reflection
 
             // It's useful to determine whether or not this is a synthetic oneof before cross-linking. That means
             // diving into the proto directly rather than using FieldDescriptor, but that's okay.
-            var firstFieldInOneof = parent.Proto.Field.FirstOrDefault(fieldProto => fieldProto.OneofIndex == index);
+            var firstFieldInOneof = parent.Proto.Field.FirstOrDefault(fieldProto => fieldProto.HasOneofIndex && fieldProto.OneofIndex == index);
             IsSynthetic = firstFieldInOneof?.Proto3Optional ?? false;
 
             accessor = CreateAccessor(clrName);
