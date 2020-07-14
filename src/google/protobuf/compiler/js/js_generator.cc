@@ -1654,6 +1654,8 @@ void Generator::GenerateHeader(const GeneratorOptions& options,
       " * @public\n"
       " */\n"
       "// GENERATED CODE -- DO NOT EDIT!\n"
+      "/* eslint-disable */\n"
+      "// @ts-nocheck\n"
       "\n");
 }
 
