@@ -37,10 +37,19 @@ Unreleased Changes
     type internally. (#7351)
   * Add `ParseFrom(ReadOnlySequence<byte>)` method to enable GC friendly
     parsing with reduced allocations and buffer copies. (#7351)
+  * Add support for serialization directly to a `IBufferWriter<byte>` or
+    to a `Span<byte>` to enable GC friendly serialization.
+    The new API is available as extension methods on the `IMessage` type. (#7576)
   * Add `GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE` define to make
     generated code compatible with old C# compilers (pre-roslyn compilers
     from .NET framework and old versions of mono) that do not support
-    ref structs. (#7490)
+    ref structs. Users that are still on a legacy stack that does
+    not support C# 7.2 compiler might need to use the new define
+    in their projects to be able to build the newly generated code. (#7490)
+  * Due to the major overhaul of parsing and serialization internals (#7351 and #7576),
+    it is recommended to regenerate your generated code to achieve the best
+    performance (the legacy generated code will still work, but might incur
+    a slight performance penalty).
 
 2020-06-01 version 3.12.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
