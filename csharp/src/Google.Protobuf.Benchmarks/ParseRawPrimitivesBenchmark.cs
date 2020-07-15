@@ -54,10 +54,12 @@ namespace Google.Protobuf.Benchmarks
 
         // key is the encodedSize of string values
         Dictionary<int, byte[]> stringInputBuffers;
+        Dictionary<int, ReadOnlySequence<byte>> stringInputBuffersSegmented;
 
         Random random = new Random(417384220);  // random but deterministic seed
 
         public IEnumerable<int> StringEncodedSizes => new[] { 1, 4, 10, 105, 10080 };
+        public IEnumerable<int> StringSegmentedEncodedSizes => new[] { 105, 10080 };
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -78,10 +80,17 @@ namespace Google.Protobuf.Benchmarks
             fixedIntInputBuffer = CreateBufferWithRandomData(random, BytesToParse / sizeof(long), sizeof(long), paddingValueCount);
 
             stringInputBuffers = new Dictionary<int, byte[]>();
-            foreach(var encodedSize in StringEncodedSizes)
+            foreach (var encodedSize in StringEncodedSizes)
             {
                 byte[] buffer = CreateBufferWithStrings(BytesToParse / encodedSize, encodedSize, encodedSize < 10 ? 10 : 1 );
                 stringInputBuffers.Add(encodedSize, buffer);
+            }
+
+            stringInputBuffersSegmented = new Dictionary<int, ReadOnlySequence<byte>>();
+            foreach (var encodedSize in StringSegmentedEncodedSizes)
+            {
+                byte[] buffer = CreateBufferWithStrings(BytesToParse / encodedSize, encodedSize, encodedSize < 10 ? 10 : 1);
+                stringInputBuffersSegmented.Add(encodedSize, ReadOnlySequenceFactory.CreateWithContent(buffer, segmentSize: 128, addEmptySegmentDelimiters: false));
             }
         }
 
@@ -301,6 +310,19 @@ namespace Google.Protobuf.Benchmarks
         }
 
         [Benchmark]
+        [ArgumentsSource(nameof(StringSegmentedEncodedSizes))]
+        public int ParseString_ParseContext_MultipleSegments(int encodedSize)
+        {
+            InitializeParseContext(stringInputBuffersSegmented[encodedSize], out ParseContext ctx);
+            int sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadString().Length;
+            }
+            return sum;
+        }
+
+        [Benchmark]
         [ArgumentsSource(nameof(StringEncodedSizes))]
         public int ParseBytes_CodedInputStream(int encodedSize)
         {
@@ -326,9 +348,27 @@ namespace Google.Protobuf.Benchmarks
             return sum;
         }
 
+        [Benchmark]
+        [ArgumentsSource(nameof(StringSegmentedEncodedSizes))]
+        public int ParseBytes_ParseContext_MultipleSegments(int encodedSize)
+        {
+            InitializeParseContext(stringInputBuffersSegmented[encodedSize], out ParseContext ctx);
+            int sum = 0;
+            for (int i = 0; i < BytesToParse / encodedSize; i++)
+            {
+                sum += ctx.ReadBytes().Length;
+            }
+            return sum;
+        }
+
         private static void InitializeParseContext(byte[] buffer, out ParseContext ctx)
         {
             ParseContext.Initialize(new ReadOnlySequence<byte>(buffer), out ctx);
+        }
+
+        private static void InitializeParseContext(ReadOnlySequence<byte> buffer, out ParseContext ctx)
+        {
+            ParseContext.Initialize(buffer, out ctx);
         }
 
         private static byte[] CreateBufferWithRandomVarints(Random random, int valueCount, int encodedSize, int paddingValueCount)

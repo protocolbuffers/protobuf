@@ -66,7 +66,7 @@ fi
 # Install Tox
 
 if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
-  sudo pip install tox==2.4.1
+  sudo python3 -m pip install --upgrade pip tox
 fi
 
 ##
