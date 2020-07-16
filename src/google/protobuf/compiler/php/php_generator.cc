@@ -664,6 +664,10 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "public function get^camel_name^()\n"
         "{\n"
         "    return $this->readOneof(^number^);\n"
+        "}\n\n"
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    return $this->hasOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()));
@@ -676,6 +680,10 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "public function has^camel_name^()\n"
         "{\n"
         "    return isset($this->^name^);\n"
+        "}\n\n"
+        "public function clear^camel_name^()\n"
+        "{\n"
+        "    unset($this->^name^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
