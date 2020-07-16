@@ -104,7 +104,7 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) {
     variables_,
     "if (other.$has_property_check$) {\n"
     "  if ($has_not_property_check$) {\n"
-    "    $property_name$ = new $type_name$();\n"
+    "    $property_name$ = $type_name$.Parser.CreateTemplate();\n"
     "  }\n"
     "  $property_name$.MergeFrom(other.$property_name$);\n"
     "}\n");
@@ -114,7 +114,7 @@ void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_not_property_check$) {\n"
-    "  $property_name$ = new $type_name$();\n"
+    "  $property_name$ = $type_name$.Parser.CreateTemplate();\n"
     "}\n");
   if (descriptor_->type() == FieldDescriptor::Type::TYPE_MESSAGE) {
     printer->Print(variables_, "input.ReadMessage($property_name$);\n");
@@ -255,7 +255,7 @@ void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
 void MessageOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) {
   printer->Print(variables_,
     "if ($property_name$ == null) {\n"
-    "  $property_name$ = new $type_name$();\n"
+    "  $property_name$ = $type_name$.Parser.CreateTemplate();\n"
     "}\n"
     "$property_name$.MergeFrom(other.$property_name$);\n");
 }
@@ -264,7 +264,7 @@ void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
   // TODO(jonskeet): We may be able to do better than this
   printer->Print(
     variables_,
-    "$type_name$ subBuilder = new $type_name$();\n"
+    "$type_name$ subBuilder = $type_name$.Parser.CreateTemplate();\n"
     "if ($has_property_check$) {\n"
     "  subBuilder.MergeFrom($property_name$);\n"
     "}\n");
