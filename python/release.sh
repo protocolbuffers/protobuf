@@ -11,7 +11,7 @@ function run_install_test() {
   local PYTHON=$2
   local PYPI=$3
 
-  virtualenv --no-site-packages -p `which $PYTHON` test-venv
+  virtualenv -p `which $PYTHON` test-venv
 
   # Intentionally put a broken protoc in the path to make sure installation
   # doesn't require protoc installed.
