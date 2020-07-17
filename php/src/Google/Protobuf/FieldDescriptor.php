@@ -114,4 +114,12 @@ class FieldDescriptor
     {
         return $this->internal_desc->isMap();
     }
+
+    /**
+     * @return boolean
+     */
+    public function hasOptionalKeyword()
+    {
+        return $this->internal_desc->hasOptionalKeyword();
+    }
 }
