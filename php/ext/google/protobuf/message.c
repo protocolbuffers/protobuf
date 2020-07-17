@@ -109,6 +109,76 @@ static const upb_fielddef *get_field(Message *msg, zval *member) {
 }
 
 /**
+ * Message_has_property()
+ *
+ * Object handler for testing whether a property exists. Called when PHP code
+ * does any of:
+ *
+ *   isset($message->foobar);
+ *   property_exists($message->foobar);
+ *
+ * Note that all properties of generated messages are private, so this should
+ * only be possible to invoke from generated code, which has accessors like this
+ * (if the field has presence):
+ *
+ *   public function hasOptionalInt32()
+ *   {
+ *       return isset($this->optional_int32);
+ *   }
+ */
+static int Message_has_property(zval *obj, zval *member, int has_set_exists,
+                                void **cache_slot) {
+  Message* intern = (Message*)Z_OBJ_P(obj);
+  const upb_fielddef *f = get_field(intern, member);
+
+  if (!f) return 0;
+
+  if (!upb_fielddef_haspresence(f)) {
+    zend_throw_exception_ex(
+        NULL, 0,
+        "Cannot call isset() on field %s which does not have presence.",
+        ZSTR_VAL(intern->desc->class_entry->name));
+    return 0;
+  }
+
+  return upb_msg_has(intern->msg, f);
+}
+
+/**
+ * Message_unset_property()
+ *
+ * Object handler for unsetting a property. Called when PHP code calls:
+ * does any of:
+ *
+ *   unset($message->foobar);
+ *
+ * Note that all properties of generated messages are private, so this should
+ * only be possible to invoke from generated code, which has accessors like this
+ * (if the field has presence):
+ *
+ *   public function clearOptionalInt32()
+ *   {
+ *       unset($this->optional_int32);
+ *   }
+ */
+static void Message_unset_property(zval *obj, zval *member, void **cache_slot) {
+  Message* intern = (Message*)Z_OBJ_P(obj);
+  const upb_fielddef *f = get_field(intern, member);
+
+  if (!f) return;
+
+  if (!upb_fielddef_haspresence(f)) {
+    zend_throw_exception_ex(
+        NULL, 0,
+        "Cannot call unset() on field %s which does not have presence.",
+        ZSTR_VAL(intern->desc->class_entry->name));
+    return;
+  }
+
+  upb_msg_clearfield(intern->msg, f);
+}
+
+/**
  * Message_read_property()
  *
  * Object handler for reading a property in PHP. Called when PHP code does:
@@ -836,6 +906,8 @@ void Message_ModuleInit() {
   h->dtor_obj = Message_dtor;
   h->read_property = Message_read_property;
   h->write_property = Message_write_property;
+  h->has_property = Message_has_property;
+  h->unset_property = Message_unset_property;
   h->get_properties = Message_get_properties;
   h->get_property_ptr_ptr = Message_get_property_ptr_ptr;
 }
