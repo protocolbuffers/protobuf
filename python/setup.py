@@ -279,6 +279,7 @@ if __name__ == '__main__':
           'build_py': build_py,
           'test_conformance': test_conformance,
       },
+      setup_requires = ['wheel'],
       install_requires=install_requires,
       ext_modules=ext_module_list,
   )
