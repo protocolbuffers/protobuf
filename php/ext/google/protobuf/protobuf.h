@@ -43,7 +43,7 @@ const zval *get_generated_pool();
 #define GC_DELREF(h) --GC_REFCOUNT(h)
 #endif
 
-#define PHP_PROTOBUF_VERSION "4.0.0RC1"
+#define PHP_PROTOBUF_VERSION "4.0.0RC2"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
