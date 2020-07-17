@@ -51,8 +51,8 @@ done
 
 export ZEND_DONT_UNLOAD_MODULES=1
 export USE_ZEND_ALLOC=0
-valgrind --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
-valgrind --leak-check=yes php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
+valgrind --suppressions=valgrind.supp --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
+valgrind --suppressions=valgrind.supp --leak-check=yes php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
 
 # TODO(teboring): Only for debug (phpunit has memory leak which blocks this beging used by
 # regresssion test.)
