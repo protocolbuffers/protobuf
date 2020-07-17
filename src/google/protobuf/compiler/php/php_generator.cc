@@ -624,15 +624,17 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
     printer->Print(
         "private $^name^;\n",
         "name", field->name());
-  } else if (field->containing_oneof()) {
+  } else if (field->real_containing_oneof()) {
     // Oneof fields are handled by GenerateOneofField.
     return;
   } else {
+    std::string initial_value =
+        field->has_presence() ? "null" : DefaultForField(field);
     GenerateFieldDocComment(printer, field, is_descriptor, kFieldProperty);
     printer->Print(
-        "protected $^name^ = ^default^;\n",
+        "protected $^name^ = ^initial_value^;\n",
         "name", field->name(),
-        "default", DefaultForField(field));
+        "initial_value", initial_value);
   }
 
   if (is_descriptor) {
@@ -652,20 +654,41 @@ void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
 
 void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
                            io::Printer* printer) {
-  const OneofDescriptor* oneof = field->containing_oneof();
+  const OneofDescriptor* oneof = field->real_containing_oneof();
 
   // Generate getter.
+  GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
+
   if (oneof != NULL) {
-    GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
         "    return $this->readOneof(^number^);\n"
+        "}\n\n"
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    return $this->hasOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()));
+  } else if (field->has_presence()) {
+    printer->Print(
+        "public function get^camel_name^()\n"
+        "{\n"
+        "    return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
+        "}\n\n"
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    return isset($this->^name^);\n"
+        "}\n\n"
+        "public function clear^camel_name^()\n"
+        "{\n"
+        "    unset($this->^name^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "default_value", DefaultForField(field));
   } else {
-    GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
@@ -878,7 +901,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
           "value", ToUpper(val->type_name()),
           "number", StrCat(field->number()),
           "other", EnumOrMessageSuffix(val, true));
-    } else if (!field->containing_oneof()) {
+    } else if (!field->real_containing_oneof()) {
       printer->Print(
           "->^label^('^field^', "
           "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",
@@ -891,7 +914,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
   }
 
   // oneofs.
-  for (int i = 0; i < message->oneof_decl_count(); i++) {
+  for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
     printer->Print("->oneof(^name^)\n",
                    "name", oneof->name());
@@ -1414,7 +1437,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
     const FieldDescriptor* field = message->field(i);
     GenerateField(field, &printer, is_descriptor);
   }
-  for (int i = 0; i < message->oneof_decl_count(); i++) {
+  for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
     GenerateOneofField(oneof, &printer);
   }
@@ -1443,7 +1466,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
     const FieldDescriptor* field = message->field(i);
     GenerateFieldAccessor(field, is_descriptor, &printer);
   }
-  for (int i = 0; i < message->oneof_decl_count(); i++) {
+  for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
     printer.Print(
       "/**\n"

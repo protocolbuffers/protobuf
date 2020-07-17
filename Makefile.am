@@ -954,6 +954,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
   php/tests/undefined_test.php                                        \
+  php/tests/valgrind.supp                                             \
   php/tests/well_known_test.php                                       \
   php/tests/wrapper_type_setters_test.php
 
