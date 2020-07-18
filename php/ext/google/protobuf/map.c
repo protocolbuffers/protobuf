@@ -95,7 +95,7 @@ static zval *Map_GetPropertyPtrPtr(zval *object, zval *member, int type,
   return NULL;  // We don't offer direct references to our properties.
 }
 
-static HashTable *map_get_properties(zval *object TSRMLS_DC) {
+static HashTable *map_get_properties(zval *object) {
   return NULL;  // We do not have a properties table.
 }
 

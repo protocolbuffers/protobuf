@@ -283,7 +283,7 @@ static zval *Message_get_property_ptr_ptr(zval *object, zval *member, int type,
  * Object handler for the get_properties event in PHP. This returns a HashTable
  * of our internal properties. We don't support this, so we return NULL.
  */
-static HashTable* Message_get_properties(zval* object TSRMLS_DC) {
+static HashTable *Message_get_properties(zval *object) {
   return NULL;  // We don't offer direct references to our properties.
 }
 
@@ -619,7 +619,7 @@ PHP_METHOD(Message, serializeToJsonString) {
   zend_bool preserve_proto_fieldnames = false;
   upb_status status;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b",
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|b",
                             &preserve_proto_fieldnames) == FAILURE) {
     return;
   }

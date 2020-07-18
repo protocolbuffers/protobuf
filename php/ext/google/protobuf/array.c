@@ -94,7 +94,7 @@ static void RepeatedField_destructor(zend_object* obj) {
   zend_object_std_dtor(&intern->std);
 }
 
-static HashTable *RepeatedField_GetProperties(zval *object TSRMLS_DC) {
+static HashTable *RepeatedField_GetProperties(zval *object) {
   return NULL;  // We do not have a properties table.
 }
 
