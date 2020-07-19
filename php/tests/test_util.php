@@ -320,76 +320,7 @@ class TestUtil
     public static function getGoldenTestMessage()
     {
         return hex2bin(
-            "08D6FFFFFFFFFFFFFFFF01" .
-            "10D5FFFFFFFFFFFFFFFF01" .
-            "182A" .
-            "202B" .
-            "2857" .
-            "3059" .
-            "3D2E000000" .
-            "412F00000000000000" .
-            "4DD2FFFFFF" .
-            "51D1FFFFFFFFFFFFFF" .
-            "5D0000C03F" .
-            "619A9999999999F93F" .
-            "6801" .
-            "720161" .
-            "7A0462626262" .
-            "800101" .
-            "8A01020821" .
-
-            "F801D6FFFFFFFFFFFFFFFF01" .
-            "F801CCFFFFFFFFFFFFFFFF01" .
-            "8002D5FFFFFFFFFFFFFFFF01" .
-            "8002CBFFFFFFFFFFFFFFFF01" .
-            "88022A" .
-            "880234" .
-            "90022B" .
-            "900235" .
-            "980257" .
-            "98026B" .
-            "A00259" .
-            "A0026D" .
-            "AD022E000000" .
-            "AD0238000000" .
-            "B1022F00000000000000" .
-            "B1023900000000000000" .
-            "BD02D2FFFFFF" .
-            "BD02C8FFFFFF" .
-            "C102D1FFFFFFFFFFFFFF" .
-            "C102C7FFFFFFFFFFFFFF" .
-            "CD020000C03F" .
-            "CD0200002040" .
-            "D1029A9999999999F93F" .
-            "D102CDCCCCCCCCCC0440" .
-            "D80201" .
-            "D80200" .
-            "E2020161" .
-            "E2020163" .
-            "EA020462626262" .
-            "EA020464646464" .
-            "F00200" .
-            "F00201" .
-            "FA02020822" .
-            "FA02020823" .
-
-            "BA041608C2FFFFFFFFFFFFFFFF0110C2FFFFFFFFFFFFFFFF01" .
-            "C2041608C1FFFFFFFFFFFFFFFF0110C1FFFFFFFFFFFFFFFF01" .
-            "CA0404083E103E" .
-            "D20404083F103F" .
-            "DA0404087f107F" .
-            "E20406088101108101" .
-            "EA040A0D420000001542000000" .
-            "F20412094300000000000000114300000000000000" .
-            "FA040A0DBCFFFFFF15BCFFFFFF" .
-            "82051209BBFFFFFFFFFFFFFF11BBFFFFFFFFFFFFFF" .
-            "8A050708011500006040" .
-            "92050B080111CDCCCCCCCCCC0C40" .
-            "9A050408011001" .
-            "A205060a0165120165" .
-            "AA05080801120466666666" .
-            "B2050408011001" .
-            "Ba0506080112020824"
+            '08d6ffffffffffffffff0110d5ffffffffffffffff01182a202b285730593d2e000000412f000000000000004dd2ffffff51d1ffffffffffffff5d0000c03f619a9999999999f93f68017201617a04626262628001018a01020821fa0114d6ffffffffffffffff01ccffffffffffffffff01820214d5ffffffffffffffff01cbffffffffffffffff018a02022a349202022b359a0202576ba20202596daa02082e00000038000000b202102f000000000000003900000000000000ba0208d2ffffffc8ffffffc20210d1ffffffffffffffc7ffffffffffffffca02080000c03f00002040d202109a9999999999f93fcdcccccccccc0440da02020100e2020161e2020163ea020462626262ea020464646464f202020001fa02020822fa02020823ba041608c2ffffffffffffffff0110c2ffffffffffffffff01c2041608c1ffffffffffffffff0110c1ffffffffffffffff01ca0404083e103ed20404083f103fda0404087f107fe20406088101108101ea040a0d420000001542000000f20412094300000000000000114300000000000000fa040a0dbcffffff15bcffffff82051209bbffffffffffffff11bbffffffffffffff8a05070801150000604092050b080111cdcccccccccc0c409a050408011001a205060a0165120165aa05080801120466666666b2050408011001ba0506080112020824'
         );
     }
 
