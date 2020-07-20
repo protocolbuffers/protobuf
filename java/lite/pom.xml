@@ -52,6 +52,7 @@
         <includes>
           <include>google/protobuf/any.proto</include>
           <include>google/protobuf/api.proto</include>
+          <include>google/protobuf/duration.proto</include>
           <include>google/protobuf/empty.proto</include>
           <include>google/protobuf/field_mask.proto</include>
           <include>google/protobuf/source_context.proto</include>
