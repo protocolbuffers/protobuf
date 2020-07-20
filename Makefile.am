@@ -551,13 +551,14 @@ java_EXTRA_DIST=                                                                
   java/util/src/test/java/com/google/protobuf/util/FieldMaskTreeTest.java          \
   java/util/src/test/java/com/google/protobuf/util/FieldMaskUtilTest.java          \
   java/util/src/test/java/com/google/protobuf/util/JsonFormatTest.java             \
-  java/util/src/test/java/com/google/protobuf/util/StructsTest.java                 \
+  java/util/src/test/java/com/google/protobuf/util/StructsTest.java                \
   java/util/src/test/java/com/google/protobuf/util/TimeUtilTest.java               \
   java/util/src/test/java/com/google/protobuf/util/ValuesTest.java                 \
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
 
 objectivec_EXTRA_DIST=                                                       \
   objectivec/.clang-format                                                   \
+  objectivec/BUILD                                                           \
   objectivec/DevTools/check_version_stamps.sh                                \
   objectivec/DevTools/compile_testing_protos.sh                              \
   objectivec/DevTools/full_mac_build.sh                                      \
