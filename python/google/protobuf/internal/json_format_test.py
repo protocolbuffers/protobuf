@@ -1213,6 +1213,15 @@ class JsonFormatTest(JsonFormatBase):
         {'value': UnknownClass()},
         message)
 
+  def testParseDictMergeDicts(self):
+      js_dict_1 = {'string_value': 'aaabbbccc', 'empty_dict': {}, 'dict': {'float_value_1': 1.0}}
+      js_dict_2 = {'dict': {'float_value_1': 1.0, 'float_value_2': 2.0}, 'list_value': ['x']}
+      js_dict_result = {'string_value': 'aaabbbccc', 'empty_dict': {}, 'list_value': ['x'],
+                        'dict': {'float_value_1': 1.0, 'float_value_2': 2.0}}
+      struct = json_format.ParseDict(js_dict_1, struct_pb2.Struct())
+      json_format.ParseDict(js_dict_2, struct)
+      self.assertDictEqual(json_format.MessageToDict(struct), js_dict_result)
+
   def testMessageToDict(self):
     message = json_format_proto3_pb2.TestMessage()
     message.int32_value = 12345
