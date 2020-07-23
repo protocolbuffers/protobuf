@@ -593,8 +593,8 @@ std::string JSOneofIndex(const OneofDescriptor* oneof) {
   return StrCat(index);
 }
 
-// Decodes a codepoint in \x0000 -- \xFFFF.
-uint16 DecodeUTF8Codepoint(uint8* bytes, size_t* length) {
+// Decodes a codepoint in \x0000 -- \x10FFFF.
+uint32 DecodeUTF8Codepoint(uint8* bytes, size_t* length) {
   if (*length == 0) {
     return 0;
   }
@@ -605,6 +605,8 @@ uint16 DecodeUTF8Codepoint(uint8* bytes, size_t* length) {
     expected = 2;
   } else if ((*bytes & 0xf0) == 0xe0) {
     expected = 3;
+  } else if ((*bytes & 0xf8) == 0xf0) {
+    expected = 4;
   } else {
     // Too long -- don't accept.
     *length = 0;
@@ -626,6 +628,9 @@ uint16 DecodeUTF8Codepoint(uint8* bytes, size_t* length) {
     case 3:
       return ((bytes[0] & 0x0F) << 12) | ((bytes[1] & 0x3F) << 6) |
              ((bytes[2] & 0x3F) << 0);
+    case 4:
+      return ((bytes[0] & 0x07) << 18) | ((bytes[1] & 0x3F) << 12) |
+             ((bytes[2] & 0x3F) << 6) | ((bytes[3] & 0x3F) << 0);
     default:
       return 0;
   }
@@ -633,19 +638,18 @@ uint16 DecodeUTF8Codepoint(uint8* bytes, size_t* length) {
 
 // Escapes the contents of a string to be included within double-quotes ("") in
 // JavaScript. The input data should be a UTF-8 encoded C++ string of chars.
-// Returns false if |out| was truncated because |in| contained invalid UTF-8 or
-// codepoints outside the BMP.
-// TODO(b/115551870): Support codepoints outside the BMP.
+// Returns false if |out| was truncated because |in| contained invalid UTF-8.
 bool EscapeJSString(const std::string& in, std::string* out) {
   size_t decoded = 0;
   for (size_t i = 0; i < in.size(); i += decoded) {
-    uint16 codepoint = 0;
+    uint32 codepoint = 0;
     // Decode the next UTF-8 codepoint.
     size_t have_bytes = in.size() - i;
-    uint8 bytes[3] = {
+    uint8 bytes[4] = {
         static_cast<uint8>(in[i]),
         static_cast<uint8>(((i + 1) < in.size()) ? in[i + 1] : 0),
         static_cast<uint8>(((i + 2) < in.size()) ? in[i + 2] : 0),
+        static_cast<uint8>(((i + 3) < in.size()) ? in[i + 3] : 0),
     };
     codepoint = DecodeUTF8Codepoint(bytes, &have_bytes);
     if (have_bytes == 0) {
@@ -691,12 +695,10 @@ bool EscapeJSString(const std::string& in, std::string* out) {
         *out += "\\\\";
         break;
       default:
-        // TODO(b/115551870): Once we're supporting codepoints outside the BMP,
-        // use a single Unicode codepoint escape if the output language is
-        // ECMAScript 2015 or above. Otherwise, use a surrogate pair.
-        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar#String_literals
         if (codepoint >= 0x20 && codepoint <= 0x7e) {
           *out += static_cast<char>(codepoint);
+        } else if (codepoint >= 0x10000) {
+          *out += StringPrintf("\\u{%x}", codepoint);
         } else if (codepoint >= 0x100) {
           *out += StringPrintf("\\u%04x", codepoint);
         } else {
@@ -859,8 +861,7 @@ std::string JSFieldDefault(const FieldDescriptor* field) {
         if (!is_valid) {
           // TODO(b/115551870): Decide whether this should be a hard error.
           GOOGLE_LOG(WARNING) << "The default value for field " << field->full_name()
-                       << " was truncated since it contained invalid UTF-8 or"
-                          " codepoints outside the basic multilingual plane.";
+                       << " was truncated since it contained invalid UTF-8.";
         }
         return "\"" + out + "\"";
       } else {  // Bytes
