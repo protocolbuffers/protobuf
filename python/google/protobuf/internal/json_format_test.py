@@ -1064,7 +1064,7 @@ class JsonFormatTest(JsonFormatBase):
         json_format.ParseError,
         'Failed to parse value field: year (0 )?is out of range.',
         json_format.Parse, text, message)
-    # Time bigger than maxinum time.
+    # Time bigger than maximum time.
     message.value.seconds = 253402300800
     self.assertRaisesRegexp(
         OverflowError,

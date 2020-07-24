@@ -108,7 +108,7 @@ namespace Google.Protobuf
 
             // we still must read the tag correctly, even though the tag is at the very end of our limited input
             // (which is a corner case and will most likely result in an error when trying to read value of the field
-            // decribed by this tag, but it would be a logical error not to read the tag that's actually present).
+            // described by this tag, but it would be a logical error not to read the tag that's actually present).
             // See https://github.com/protocolbuffers/protobuf/pull/7289
             cis.AssertNextTag(WireFormat.MakeTag(11, WireFormat.WireType.Varint));
         }

@@ -113,7 +113,7 @@ class MessageGenerator {
   bool GenerateParseTable(io::Printer* printer, size_t offset,
                           size_t aux_offset);
 
-  // Generate the field offsets array.  Returns the a pair of the total numer
+  // Generate the field offsets array.  Returns the a pair of the total number
   // of entries generated and the index of the first has_bit entry.
   std::pair<size_t, size_t> GenerateOffsets(io::Printer* printer);
   void GenerateSchema(io::Printer* printer, int offset, int has_offset);

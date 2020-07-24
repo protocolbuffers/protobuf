@@ -142,7 +142,7 @@ enum {
 typedef char UIntToStringBuffer[uintToStringBufferSize];
 
 /** Converts an unsigned integer to string.
- * @param value Unsigned interger to convert to string
+ * @param value Unsigned integer to convert to string
  * @param current Input/Output string buffer.
  *        Must have at least uintToStringBufferSize chars free.
  */

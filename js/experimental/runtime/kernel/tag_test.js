@@ -95,12 +95,12 @@ describe('skipField', () => {
 
   it('skips group in group', () => {
     const buffer = createArrayBuffer(
-        0x0B,        // start outter
+        0x0B,        // start outer
         0x10, 0x01,  // field: 2, value: 1
         0x0B,        // start inner group
         0x10, 0x01,  // payload inner group
         0x0C,        // stop inner group
-        0x0C         // end outter
+        0x0C         // end outer
     );
     const bufferDecoder = BufferDecoder.fromArrayBuffer(buffer);
     bufferDecoder.setCursor(1);

@@ -486,7 +486,7 @@ enum CommentPlacement {
 
 /** \brief Lightweight wrapper to tag static string.
  *
- * Value constructor and objectValue member assignement takes advantage of the
+ * Value constructor and objectValue member assignment takes advantage of the
  * StaticString and avoid the cost of string duplication when storing the
  * string or the member name.
  *
@@ -1867,7 +1867,7 @@ private:
  *     - otherwise, it the values do not fit on one line, or the array contains
  *       object or non empty array, then print one value per line.
  *
- * If the Value have comments then they are outputed according to their
+ * If the Value have comments then they are outputted according to their
  *#CommentPlacement.
  *
  * \sa Reader, Value, Value::setComment()
@@ -1928,7 +1928,7 @@ private:
  *     - otherwise, it the values do not fit on one line, or the array contains
  *       object or non empty array, then print one value per line.
  *
- * If the Value have comments then they are outputed according to their
+ * If the Value have comments then they are outputted according to their
  #CommentPlacement.
  *
  * \param indentation Each level will be indented by this amount extra.

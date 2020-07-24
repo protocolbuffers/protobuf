@@ -1526,7 +1526,7 @@ int MaximumMatcher::FindMaximumMatch(bool early_return) {
     }
   }
   // Backfill match_list1_ as we only filled match_list2_ when finding
-  // argumenting pathes.
+  // argumenting paths.
   for (int i = 0; i < count2_; ++i) {
     if ((*match_list2_)[i] != -1) {
       (*match_list1_)[(*match_list2_)[i]] = i;

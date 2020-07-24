@@ -304,7 +304,7 @@ void DoNothing() {}
 //
 // TODO(xiaofeng): PROTOBUF_LITTLE_ENDIAN is unfortunately defined in
 // google/protobuf/io/coded_stream.h and therefore can not be used here.
-// Maybe move that macro definition here in the furture.
+// Maybe move that macro definition here in the future.
 uint32 ghtonl(uint32 x) {
   union {
     uint32 result;
