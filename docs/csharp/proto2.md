@@ -126,7 +126,7 @@ Assert.False(foo.HasExtension(Bas.Extensions.FooExt));
 
 ### Custom options
 
-Due to their limited use and lack of type safety, the original `CustomOptions` APIs are now deprecated. Using the new generated extension identifiers, you can access extensions safely through the GetOption APIs. Note that clonable values such as 
+Due to their limited use and lack of type safety, the original `CustomOptions` APIs are now deprecated. Using the new generated extension identifiers, you can access extensions safely through the GetOption APIs. Note that cloneable values such as 
 repeated fields and messages will be deep cloned.
 
 Example based on custom options usage example [here](https://github.com/protocolbuffers/protobuf/issues/5007#issuecomment-411604515).
