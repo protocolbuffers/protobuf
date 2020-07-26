@@ -2432,7 +2432,7 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
   EXPECT_TRUE(debug_string.find("option map_entry") == std::string::npos);
   EXPECT_TRUE(debug_string.find("MapEntry") == std::string::npos);
 
-  // Make sure the descriptor debug string is parsable.
+  // Make sure the descriptor debug string is parseable.
   FileDescriptorProto parsed;
   SetupParser(debug_string.c_str());
   parsed.set_name("foo.proto");

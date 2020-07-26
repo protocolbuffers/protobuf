@@ -65,7 +65,7 @@ bool TextFormatConformanceTestSuite::ParseTextFormatResponse(
   }
   if (!parser.ParseFromString(response.text_payload(), test_message)) {
     GOOGLE_LOG(ERROR) << "INTERNAL ERROR: internal text->protobuf transcode "
-               << "yielded unparsable proto. Text payload: "
+               << "yielded unparseable proto. Text payload: "
                << response.text_payload();
     return false;
   }
@@ -94,7 +94,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 
       if (!test_message->ParseFromString(response.protobuf_payload())) {
         ReportFailure(test_name, level, request, response,
-                      "Protobuf output we received from test was unparsable.");
+                      "Protobuf output we received from test was unparseable.");
         return false;
       }
 
@@ -114,7 +114,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
       if (!ParseTextFormatResponse(response, setting, test_message)) {
         ReportFailure(
             test_name, level, request, response,
-            "TEXT_FORMAT output we received from test was unparsable.");
+            "TEXT_FORMAT output we received from test was unparseable.");
         return false;
       }
 

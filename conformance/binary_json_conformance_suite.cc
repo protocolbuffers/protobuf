@@ -364,7 +364,7 @@ bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
 
   if (!test_message->ParseFromString(binary_protobuf)) {
     GOOGLE_LOG(FATAL) << "INTERNAL ERROR: internal JSON->protobuf transcode "
-               << "yielded unparsable proto.";
+               << "yielded unparseable proto.";
     return false;
   }
 
@@ -393,7 +393,7 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
 
       if (!test_message->ParseFromString(response.protobuf_payload())) {
         ReportFailure(test_name, level, request, response,
-                   "Protobuf output we received from test was unparsable.");
+                   "Protobuf output we received from test was unparseable.");
         return false;
       }
 
@@ -412,7 +412,7 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
 
       if (!ParseJsonResponse(response, test_message)) {
         ReportFailure(test_name, level, request, response,
-                      "JSON output we received from test was unparsable.");
+                      "JSON output we received from test was unparseable.");
         return false;
       }
 

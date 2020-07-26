@@ -157,7 +157,7 @@ struct SourceLocation {
   std::vector<std::string> leading_detached_comments;
 };
 
-// Options when generating machine-parsable output from a descriptor with
+// Options when generating machine-parseable output from a descriptor with
 // DebugString().
 struct DebugStringOptions {
   // include original user comments as recorded in SourceLocation entries. N.B.
