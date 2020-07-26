@@ -486,7 +486,7 @@ enum CommentPlacement {
 
 /** \brief Lightweight wrapper to tag static string.
  *
- * Value constructor and objectValue member assignment takes advantage of the
+ * Value constructor and objectValue member assignement takes advantage of the
  * StaticString and avoid the cost of string duplication when storing the
  * string or the member name.
  *
