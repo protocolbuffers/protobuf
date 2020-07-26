@@ -868,7 +868,7 @@ bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_alloc *a);
  *    the program accesses an invalidated iterator.
  *
  * For C++11 range-based for:
- *  - iterators must be copiable
+ *  - iterators must be copyable
  *  - iterators must be comparable
  *  - it must be possible to construct an "end" value.
  *
