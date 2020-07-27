@@ -26,8 +26,8 @@ These are projects we know about implementing Protocol Buffers for other program
 * Clojure: http://github.com/ninjudd/clojure-protobuf
 * Clojure: https://github.com/clojusc/protobuf
 * Clojure: https://protojure.github.io
-* Common Lisp: http://github.com/ndantam/s-protobuf
 * Common Lisp: http://github.com/brown/protobuf
+* Common Lisp: http://github.com/qitab/cl-protobuf
 * D: https://github.com/dcarp/protobuf-d
 * D: https://github.com/msoucy/dproto
 * D: https://github.com/opticron/ProtocolBuffer
