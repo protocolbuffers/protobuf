@@ -43,6 +43,24 @@ const zval *get_generated_pool();
 #define GC_DELREF(h) --GC_REFCOUNT(h)
 #endif
 
+#if PHP_VERSION_ID < 80000
+#define PROTO_VAL zval 
+#define PROTO_STR zval
+#define PROTO_MSG_P(obj) (Message*)Z_OBJ_P(obj)
+#define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
+#define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
+#define PROTO_RETURN_VAL void
+#else
+#define PROTO_VAL zend_object
+#define PROTO_STR zend_string
+#define PROTO_MSG_P(obj) (Message*)(obj)
+#define PROTO_STRVAL_P(obj) ZSTR_VAL(obj)
+#define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
+#define PROTO_RETURN_VAL zval*
+#endif
+
+#define PHP_PROTOBUF_VERSION "4.0.0RC2"
+
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
 //  * upb_msg* -> Message
