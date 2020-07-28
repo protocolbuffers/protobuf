@@ -30,7 +30,7 @@ class GeneratedServiceTest extends TestBase
         'sayHelloAgain'
     ];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -46,12 +46,14 @@ class GeneratedServiceTest extends TestBase
 
     public function testPhpDocForClass()
     {
-        $this->assertContains('foo.Greeter', $this->serviceClass->getDocComment());
+        $this->assertStringContainsString(
+            'foo.Greeter', $this->serviceClass->getDocComment());
     }
 
     public function testPhpDocForNamespacedClass()
     {
-        $this->assertContains('foo.OtherGreeter', $this->namespacedServiceClass->getDocComment());
+        $this->assertStringContainsString(
+            'foo.OtherGreeter', $this->namespacedServiceClass->getDocComment());
     }
 
     public function testServiceMethodsAreGenerated()
@@ -66,9 +68,11 @@ class GeneratedServiceTest extends TestBase
     {
         foreach ($this->methodNames as $methodName) {
             $docComment = $this->serviceClass->getMethod($methodName)->getDocComment();
-            $this->assertContains($methodName, $docComment);
-            $this->assertContains('@param \Foo\HelloRequest $request', $docComment);
-            $this->assertContains('@return \Foo\HelloReply', $docComment);
+            $this->assertStringContainsString($methodName, $docComment);
+            $this->assertStringContainsString(
+                '@param \Foo\HelloRequest $request', $docComment);
+            $this->assertStringContainsString(
+                '@return \Foo\HelloReply', $docComment);
         }
     }
 
@@ -76,9 +80,11 @@ class GeneratedServiceTest extends TestBase
     {
         foreach ($this->methodNames as $methodName) {
             $docComment = $this->namespacedServiceClass->getMethod($methodName)->getDocComment();
-            $this->assertContains($methodName, $docComment);
-            $this->assertContains('@param \Foo\HelloRequest $request', $docComment);
-            $this->assertContains('@return \Foo\HelloReply', $docComment);
+            $this->assertStringContainsString($methodName, $docComment);
+            $this->assertStringContainsString(
+                '@param \Foo\HelloRequest $request', $docComment);
+            $this->assertStringContainsString(
+                '@return \Foo\HelloReply', $docComment);
         }
     }
 
@@ -91,7 +97,8 @@ class GeneratedServiceTest extends TestBase
             $this->assertFalse($param->isOptional());
             $this->assertSame('request', $param->getName());
             // ReflectionParameter::getType only exists in PHP 7+, so get the type from __toString
-            $this->assertContains('Foo\HelloRequest $request', (string) $param);
+            $this->assertStringContainsString(
+                'Foo\HelloRequest $request', (string) $param);
         }
     }
 
@@ -104,7 +111,8 @@ class GeneratedServiceTest extends TestBase
             $this->assertFalse($param->isOptional());
             $this->assertSame('request', $param->getName());
             // ReflectionParameter::getType only exists in PHP 7+, so get the type from __toString
-            $this->assertContains('Foo\HelloRequest $request', (string) $param);
+            $this->assertStringContainsString(
+                'Foo\HelloRequest $request', (string) $param);
         }
     }
 }

@@ -90,12 +90,12 @@ static void MapField_destructor(zend_object* obj) {
   zend_object_std_dtor(&intern->std);
 }
 
-static zval *Map_GetPropertyPtrPtr(zval *object, zval *member, int type,
-                                      void **cache_slot) {
+static zval *Map_GetPropertyPtrPtr(PROTO_VAL *object, PROTO_STR *member,
+                                   int type, void **cache_slot) {
   return NULL;  // We don't offer direct references to our properties.
 }
 
-static HashTable *map_get_properties(zval *object) {
+static HashTable *Map_GetProperties(PROTO_VAL *object) {
   return NULL;  // We do not have a properties table.
 }
 
@@ -378,6 +378,12 @@ PHP_METHOD(MapField, getIterator) {
   RETURN_ZVAL(&ret, 0, 1);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_construct, 0, 0, 2)
+  ZEND_ARG_INFO(0, key_type)
+  ZEND_ARG_INFO(0, value_type)
+  ZEND_ARG_INFO(0, value_class)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
@@ -391,7 +397,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry MapField_methods[] = {
-  PHP_ME(MapField, __construct,  NULL,              ZEND_ACC_PUBLIC)
+  PHP_ME(MapField, __construct,  arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, offsetExists, arginfo_offsetGet, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, offsetGet,    arginfo_offsetGet, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, offsetSet,    arginfo_offsetSet, ZEND_ACC_PUBLIC)
@@ -572,7 +578,7 @@ void Map_ModuleInit() {
   h = &MapField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = MapField_destructor;
-  h->get_properties = map_get_properties;
+  h->get_properties = Map_GetProperties;
   h->get_property_ptr_ptr = Map_GetPropertyPtrPtr;
 
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\MapFieldIter",

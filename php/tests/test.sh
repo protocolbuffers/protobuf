@@ -18,6 +18,9 @@ case "$PHP_VERSION" in
   7.3.*|7.4.*)
     PHPUNIT=phpunit-8.phar
     ;;
+  8.0.*)
+    PHPUNIT=phpunit-9.phar
+    ;;
   *)
     echo "ERROR: Unsupported PHP version $PHP_VERSION"
     exit 1
@@ -26,7 +29,7 @@ esac
 
 [ -f $PHPUNIT ] || wget https://phar.phpunit.de/$PHPUNIT
 
-tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php wrapper_type_setters_test.php)
+tests=( ArrayTest.php EncodeDecodeTest.php GeneratedClassTest.php MapFieldTest.php WellKnownTest.php DescriptorsTest.php WrapperTypeSettersTest.php)
 
 for t in "${tests[@]}"
 do
