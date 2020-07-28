@@ -273,11 +273,18 @@ const upb_msgdef *NameMap_GetMessage(zend_class_entry *ce) {
       zend_hash_find_ptr(&PROTOBUF_G(name_msg_cache), ce->name);
 
   if (!ret && ce->create_object) {
+#if PHP_VERSION_ID < 80000
     zval tmp;
     zval zv;
     ZVAL_OBJ(&tmp, ce->create_object(ce));
     zend_call_method_with_0_params(&tmp, ce, NULL, "__construct", &zv);
     zval_ptr_dtor(&tmp);
+#else
+    zval zv;
+    zend_object *tmp = ce->create_object(ce);
+    zend_call_method_with_0_params(tmp, ce, NULL, "__construct", &zv);
+    OBJ_RELEASE(tmp);
+#endif
     zval_ptr_dtor(&zv);
     ret = zend_hash_find_ptr(&PROTOBUF_G(name_msg_cache), ce->name);
   }

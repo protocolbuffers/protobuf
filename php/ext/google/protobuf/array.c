@@ -94,11 +94,12 @@ static void RepeatedField_destructor(zend_object* obj) {
   zend_object_std_dtor(&intern->std);
 }
 
-static HashTable *RepeatedField_GetProperties(zval *object) {
+static HashTable *RepeatedField_GetProperties(PROTO_VAL *object) {
   return NULL;  // We do not have a properties table.
 }
 
-static zval *RepeatedField_GetPropertyPtrPtr(zval *object, zval *member,
+static zval *RepeatedField_GetPropertyPtrPtr(PROTO_VAL *object,
+                                             PROTO_STR *member,
                                              int type, void **cache_slot) {
   return NULL;  // We don't offer direct references to our properties.
 }

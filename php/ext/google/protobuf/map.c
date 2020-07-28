@@ -90,12 +90,12 @@ static void MapField_destructor(zend_object* obj) {
   zend_object_std_dtor(&intern->std);
 }
 
-static zval *Map_GetPropertyPtrPtr(zval *object, zval *member, int type,
-                                      void **cache_slot) {
+static zval *Map_GetPropertyPtrPtr(PROTO_VAL *object, PROTO_STR *member,
+                                   int type, void **cache_slot) {
   return NULL;  // We don't offer direct references to our properties.
 }
 
-static HashTable *map_get_properties(zval *object) {
+static HashTable *Map_GetProperties(PROTO_VAL *object) {
   return NULL;  // We do not have a properties table.
 }
 
@@ -572,7 +572,7 @@ void Map_ModuleInit() {
   h = &MapField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = MapField_destructor;
-  h->get_properties = map_get_properties;
+  h->get_properties = Map_GetProperties;
   h->get_property_ptr_ptr = Map_GetPropertyPtrPtr;
 
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\MapFieldIter",
