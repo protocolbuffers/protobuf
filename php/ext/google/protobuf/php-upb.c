@@ -5665,7 +5665,11 @@ const upb_fielddef *upb_msg_whichoneof(const upb_msg *msg,
   if (upb_oneof_done(&i)) return false;
   f = upb_oneof_iter_field(&i);
   field = upb_fielddef_layout(f);
-  oneof_case = _upb_getoneofcase_field(msg, field);
+  if (in_oneof(field)) {
+    oneof_case = _upb_getoneofcase_field(msg, field);
+  } else {
+    return _upb_hasbit_field(msg, field) ? f : NULL;
+  }
 
   return oneof_case ? upb_msgdef_itof(m, oneof_case) : NULL;
 }
