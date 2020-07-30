@@ -141,7 +141,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #elif defined _MSC_VER
 #define UPB_ASSUME(expr) if (!(expr)) __assume(0)
 #else
-#define UPB_ASSUME(expr) do {} if (false && (expr))
+#define UPB_ASSUME(expr) do {} while (false && (expr))
 #endif
 #else
 #define UPB_ASSUME(expr) assert(expr)
