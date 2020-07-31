@@ -46,15 +46,12 @@ namespace Google.Protobuf.Reflection
     public sealed class OneofDescriptor : DescriptorBase
     {
         private readonly OneofDescriptorProto proto;
-        private MessageDescriptor containingType;
-        private IList<FieldDescriptor> fields;
-        private readonly OneofAccessor accessor;
 
         internal OneofDescriptor(OneofDescriptorProto proto, FileDescriptor file, MessageDescriptor parent, int index, string clrName)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
             this.proto = proto;
-            containingType = parent;
+            ContainingType = parent;
             file.DescriptorPool.AddSymbol(this);
 
             // It's useful to determine whether or not this is a synthetic oneof before cross-linking. That means
@@ -62,13 +59,13 @@ namespace Google.Protobuf.Reflection
             var firstFieldInOneof = parent.Proto.Field.FirstOrDefault(fieldProto => fieldProto.HasOneofIndex && fieldProto.OneofIndex == index);
             IsSynthetic = firstFieldInOneof?.Proto3Optional ?? false;
 
-            accessor = CreateAccessor(clrName);
+            Accessor = CreateAccessor(clrName);
         }
 
         /// <summary>
         /// The brief name of the descriptor's target.
         /// </summary>
-        public override string Name { get { return proto.Name; } }
+        public override string Name => proto.Name;
 
         /// <summary>
         /// Gets the message type containing this oneof.
@@ -76,10 +73,7 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The message type containing this oneof.
         /// </value>
-        public MessageDescriptor ContainingType
-        {
-            get { return containingType; }
-        }
+        public MessageDescriptor ContainingType { get; }
 
         /// <summary>
         /// Gets the fields within this oneof, in declaration order.
@@ -87,7 +81,7 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The fields within this oneof, in declaration order.
         /// </value>
-        public IList<FieldDescriptor> Fields { get { return fields; } }
+        public IList<FieldDescriptor> Fields { get; private set; }
 
         /// <summary>
         /// Returns <c>true</c> if this oneof is a synthetic oneof containing a proto3 optional field;
@@ -112,7 +106,7 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// The accessor used for reflective access.
         /// </value>
-        public OneofAccessor Accessor { get { return accessor; } }
+        public OneofAccessor Accessor { get; }
 
         /// <summary>
         /// The (possibly empty) set of custom options for this oneof.
@@ -157,7 +151,7 @@ namespace Google.Protobuf.Reflection
                     fieldCollection.Add(field);
                 }
             }
-            fields = new ReadOnlyCollection<FieldDescriptor>(fieldCollection);
+            Fields = new ReadOnlyCollection<FieldDescriptor>(fieldCollection);
         }
 
         private OneofAccessor CreateAccessor(string clrName)
@@ -174,19 +168,19 @@ namespace Google.Protobuf.Reflection
             }
             else
             {
-                var caseProperty = containingType.ClrType.GetProperty(clrName + "Case");
+                var caseProperty = ContainingType.ClrType.GetProperty(clrName + "Case");
                 if (caseProperty == null)
                 {
-                    throw new DescriptorValidationException(this, $"Property {clrName}Case not found in {containingType.ClrType}");
+                    throw new DescriptorValidationException(this, $"Property {clrName}Case not found in {ContainingType.ClrType}");
                 }
                 if (!caseProperty.CanRead)
                 {
-                    throw new ArgumentException($"Cannot read from property {clrName}Case in {containingType.ClrType}");
+                    throw new ArgumentException($"Cannot read from property {clrName}Case in {ContainingType.ClrType}");
                 }
-                var clearMethod = containingType.ClrType.GetMethod("Clear" + clrName);
+                var clearMethod = ContainingType.ClrType.GetMethod("Clear" + clrName);
                 if (clearMethod == null)
                 {
-                    throw new DescriptorValidationException(this, $"Method Clear{clrName} not found in {containingType.ClrType}");
+                    throw new DescriptorValidationException(this, $"Method Clear{clrName} not found in {ContainingType.ClrType}");
                 }
                 return OneofAccessor.ForRegularOneof(this, caseProperty, clearMethod);
             }
