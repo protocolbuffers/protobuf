@@ -938,6 +938,38 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Enum_InvalidString_IgnoreUnknownFields()
+        {
+            // When ignoring unknown fields, invalid enum value strings are ignored too.
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"singleForeignEnum\": \"NOT_A_VALID_VALUE\" }";
+            var parsed = parser.Parse<TestAllTypes>(json);
+            Assert.AreEqual(ForeignEnum.ForeignUnspecified, parsed.SingleForeignEnum);
+        }
+
+        [Test]
+        public void RepeatedEnum_InvalidString_IgnoreUnknownFields()
+        {
+            // When ignoring unknown fields, invalid enum value strings are ignored too.
+            // For a repeated field, the presence of the value is preserved using the 0 value.
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"repeatedForeignEnum\": [ \"FOREIGN_FOO\", \"NOT_A_VALID_VALUE\", \"FOREIGN_BAR\" ] }";
+            var parsed = parser.Parse<TestAllTypes>(json);
+            var expected = new[] { ForeignEnum.ForeignFoo, ForeignEnum.ForeignUnspecified, ForeignEnum.ForeignBar };
+            Assert.AreEqual(expected , parsed.RepeatedForeignEnum);
+        }
+
+        [Test]
+        public void Enum_InvalidNumber_IgnoreUnknownFields()
+        {
+            // Even when ignoring unknown fields, fail for non-integer numeric values, because
+            // they could *never* be valid.
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"singleForeignEnum\": 5.5 }";
+            Assert.Throws<InvalidProtocolBufferException>(() => parser.Parse<TestAllTypes>(json));
+        }
+
+        [Test]
         public void OneofDuplicate_Invalid()
         {
             string json = "{ \"oneofString\": \"x\", \"oneofUint32\": 10 }";

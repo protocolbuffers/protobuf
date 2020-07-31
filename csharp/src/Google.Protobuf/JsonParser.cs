@@ -690,7 +690,7 @@ namespace Google.Protobuf
             }
         }
 
-        private static object ParseSingleStringValue(FieldDescriptor field, string text)
+        private object ParseSingleStringValue(FieldDescriptor field, string text)
         {
             switch (field.FieldType)
             {
@@ -731,6 +731,10 @@ namespace Google.Protobuf
                     var enumValue = field.EnumType.FindValueByName(text);
                     if (enumValue == null)
                     {
+                        if (settings.IgnoreUnknownFields)
+                        {
+                            return 0;
+                        }
                         throw new InvalidProtocolBufferException($"Invalid enum value: {text} for enum type: {field.EnumType.FullName}");
                     }
                     // Just return it as an int, and let the CLR convert it.
