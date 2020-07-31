@@ -263,16 +263,16 @@ class Any extends \Google\Protobuf\Internal\Message
         if (substr($this->type_url, 0, $url_prifix_len) !=
                 GPBUtil::TYPE_URL_PREFIX) {
             throw new \Exception(
-                "Type url needs to be type.googleapis.com/fully-qulified");
+                "Type url needs to be type.googleapis.com/fully-qualified");
         }
-        $fully_qualifed_name =
+        $fully_qualified_name =
             substr($this->type_url, $url_prifix_len);
 
         // Create message according to fully qualified name.
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
-        $desc = $pool->getDescriptorByProtoName($fully_qualifed_name);
+        $desc = $pool->getDescriptorByProtoName($fully_qualified_name);
         if (is_null($desc)) {
-            throw new \Exception("Class ".$fully_qualifed_name
+            throw new \Exception("Class ".$fully_qualified_name
                                      ." hasn't been added to descriptor pool");
         }
         $klass = $desc->getClass();
