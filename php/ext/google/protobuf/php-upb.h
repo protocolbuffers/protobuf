@@ -115,7 +115,11 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
  */
 #define _upb_snprintf __builtin_snprintf
 #define _upb_vsnprintf __builtin_vsnprintf
+#if __GNUC__ >= 3
+#define _upb_va_copy(a, b) va_copy(a, b)
+#else
 #define _upb_va_copy(a, b) __va_copy(a, b)
+#endif
 #else
 #error Need implementations of [v]snprintf and va_copy
 #endif
