@@ -667,6 +667,11 @@ void ImmutableMapFieldGenerator::GenerateBuilderClearCode(
                  "internalGetMutable$capitalized_name$().clear();\n");
 }
 
+void ImmutableMapFieldGenerator::GenerateMessageClearCode(
+        io::Printer* printer) const {
+    GenerateBuilderClearCode(printer);
+}
+
 void ImmutableMapFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(variables_,

@@ -285,6 +285,11 @@ void ImmutableEnumFieldGenerator::GenerateBuilderClearCode(
                  "$clear_has_field_bit_builder$\n");
 }
 
+void ImmutableEnumFieldGenerator::GenerateMessageClearCode(
+        io::Printer* printer) const {
+    GenerateBuilderClearCode(printer);
+}
+
 void ImmutableEnumFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_)) {
@@ -879,6 +884,11 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderClearCode(
   printer->Print(variables_,
                  "$name$_ = java.util.Collections.emptyList();\n"
                  "$clear_mutable_bit_builder$;\n");
+}
+
+void RepeatedImmutableEnumFieldGenerator::GenerateMessageClearCode(
+        io::Printer* printer) const {
+    GenerateBuilderClearCode(printer);
 }
 
 void RepeatedImmutableEnumFieldGenerator::GenerateMergingCode(
