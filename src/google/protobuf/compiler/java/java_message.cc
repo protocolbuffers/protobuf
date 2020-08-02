@@ -390,21 +390,24 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   printer->Print("memoizedHashCode = 0;\n");
   printer->Print("this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance();\n");
 
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-        if (!IsRealOneof(descriptor_->field(i))) {
-            field_generators_.get(descriptor_->field(i))
-                    .GenerateBuilderClearCode(printer);
-        }
-    }
+  printer->Print("// Reset class fields\n");
 
-    for (auto oneof : oneofs_) {
-        printer->Print(
-                "$oneof_name$Case_ = 0;\n"
-                "$oneof_name$_ = null;\n",
-                "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
-    }
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+      if (!IsRealOneof(descriptor_->field(i))) {
+          field_generators_.get(descriptor_->field(i))
+          .GenerateBuilderClearCode(printer);
+      }
+  }
 
-  // Need to reset class fields
+  for (auto oneof : oneofs_) {
+      printer->Print(
+              "$oneof_name$Case_ = 0;\n"
+              "$oneof_name$_ = null;\n",
+              "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
+  }
+
+  printer->Print("if (handle != null) { RECYCLER.recycle(this, handle); }\n");
+
   printer->Outdent();
   printer->Print(
       "}\n"
