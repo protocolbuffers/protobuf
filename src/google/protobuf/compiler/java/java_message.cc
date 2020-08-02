@@ -408,7 +408,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
               "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
   }
 
-  printer->Print("if (handle != null) { RECYCLER.recycle(this, handle); }\n");
+  printer->Print("if (handle != null) { handle.recycle(this); }\n");
 
   printer->Outdent();
   printer->Print(
