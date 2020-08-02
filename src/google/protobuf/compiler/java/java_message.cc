@@ -358,6 +358,46 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       "}\n"
       "\n");
 
+  printer->Print("private io.netty.util.Recycler.Handle<$classname$> handle;\n", "classname", descriptor_->name());
+  printer->Print("private $classname$(io.netty.util.Recycler.Handle<$classname$> handle) {\n", "classname",
+                 descriptor_->name());
+  printer->Indent();
+  printer->Print("this.handle = handle;\n");
+  printer->Outdent();
+  printer->Print(
+      "}\n"
+      "\n");
+  printer->Print("private static final io.netty.util.Recycler<$classname$> RECYCLER = new io.netty.util.Recycler<$classname$>() {\n",
+                 "classname", descriptor_->name());
+  printer->Indent();
+  printer->Indent();
+  printer->Print("protected $classname$ newObject(Handle handle) {\n",  "classname", descriptor_->name());
+  printer->Indent();
+  printer->Print("return new $classname$(handle);\n", "classname", descriptor_->name());
+  printer->Outdent();
+  printer->Print(
+      "}\n"
+      "\n");
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print(
+      "};\n"
+      "\n");
+
+  printer->Print("public void recycle() {\n");
+  printer->Indent();
+  printer->Print("memoizedIsInitialized = -1;\n");
+  printer->Print("memoizedSize = -1;\n");
+  printer->Print("memoizedHashCode = 0;\n");
+  printer->Print("this.unknownFields = UnknownFieldSet.getDefaultInstance();\n");
+
+  // Need to reset class fields
+  printer->Outdent();
+  printer->Print(
+      "}\n"
+      "\n");
+
+
   printer->Print(variables,
                  "@java.lang.Override\n"
                  "@SuppressWarnings({\"unused\"})\n"
