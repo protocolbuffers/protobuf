@@ -413,7 +413,10 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       "}\n"
       "\n");
 
+  // TODO(Maithem): generate default instance
 
+
+  /**
   printer->Print(variables,
                  "@java.lang.Override\n"
                  "@SuppressWarnings({\"unused\"})\n"
@@ -422,6 +425,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                  "  return new $classname$();\n"
                  "}\n"
                  "\n");
+  **/
 
   printer->Print(
       "@java.lang.Override\n"
