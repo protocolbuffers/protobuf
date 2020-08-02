@@ -358,6 +358,65 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       "}\n"
       "\n");
 
+  printer->Print("private io.netty.util.Recycler.Handle<$classname$> handle;\n", "classname", descriptor_->name());
+  printer->Print("private $classname$(io.netty.util.Recycler.Handle<$classname$> handle) {\n", "classname",
+                 descriptor_->name());
+  printer->Indent();
+  printer->Print("this.handle = handle;\n");
+  printer->Outdent();
+  printer->Print(
+      "}\n"
+      "\n");
+  printer->Print("private static final io.netty.util.Recycler<$classname$> RECYCLER = new io.netty.util.Recycler<$classname$>() {\n",
+                 "classname", descriptor_->name());
+  printer->Indent();
+  printer->Indent();
+  printer->Print("protected $classname$ newObject(Handle handle) {\n",  "classname", descriptor_->name());
+  printer->Indent();
+  printer->Print("return new $classname$(handle);\n", "classname", descriptor_->name());
+  printer->Outdent();
+  printer->Print(
+      "}\n");
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print(
+      "};\n"
+      "\n");
+
+  printer->Print("public void recycle() {\n");
+  printer->Indent();
+  printer->Print("memoizedIsInitialized = -1;\n");
+  printer->Print("memoizedSize = -1;\n");
+  printer->Print("memoizedHashCode = 0;\n");
+  printer->Print("this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance();\n");
+
+  printer->Print("// Reset class fields\n");
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+      if (!IsRealOneof(descriptor_->field(i))) {
+          field_generators_.get(descriptor_->field(i))
+          .GenerateBuilderClearCode(printer);
+      }
+  }
+
+  for (auto oneof : oneofs_) {
+      printer->Print(
+              "$oneof_name$Case_ = 0;\n"
+              "$oneof_name$_ = null;\n",
+              "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
+  }
+
+  printer->Print("if (handle != null) { RECYCLER.recycle(this, handle); }\n");
+
+  printer->Outdent();
+  printer->Print(
+      "}\n"
+      "\n");
+
+  // TODO(Maithem): generate default instance
+
+
+  /**
   printer->Print(variables,
                  "@java.lang.Override\n"
                  "@SuppressWarnings({\"unused\"})\n"
@@ -366,6 +425,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                  "  return new $classname$();\n"
                  "}\n"
                  "\n");
+  **/
 
   printer->Print(
       "@java.lang.Override\n"

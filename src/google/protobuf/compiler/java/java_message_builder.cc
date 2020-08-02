@@ -385,7 +385,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
   printer->Print(
       "@java.lang.Override\n"
       "public $classname$ buildPartial() {\n"
-      "  $classname$ result = new $classname$(this);\n",
+      "  $classname$ result = $classname$.RECYCLER.get();\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   printer->Indent();
