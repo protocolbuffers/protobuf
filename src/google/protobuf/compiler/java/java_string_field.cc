@@ -382,6 +382,11 @@ void ImmutableStringFieldGenerator::GenerateBuilderClearCode(
                  "$clear_has_field_bit_builder$\n");
 }
 
+void ImmutableStringFieldGenerator::GenerateMessageClearCode(
+        io::Printer* printer) const {
+    printer->Print(variables_, "$name$_ = $default$;\n");
+}
+
 void ImmutableStringFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_)) {
@@ -934,6 +939,11 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderClearCode(
   printer->Print(variables_,
                  "$name$_ = $empty_list$;\n"
                  "$clear_mutable_bit_builder$;\n");
+}
+
+void RepeatedImmutableStringFieldGenerator::GenerateMessageClearCode(
+                io::Printer* printer) const {
+    printer->Print(variables_, "$name$_ = $empty_list$;\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateMergingCode(

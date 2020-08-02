@@ -72,6 +72,7 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
   void GenerateBuilderClearCode(io::Printer* printer) const;
+  void GenerateMessageClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateBuildingCode(io::Printer* printer) const;
   void GenerateParsingCode(io::Printer* printer) const;
@@ -137,6 +138,7 @@ class RepeatedImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
   void GenerateBuilderClearCode(io::Printer* printer) const;
+  void GenerateMessageClearCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateBuildingCode(io::Printer* printer) const;
   void GenerateParsingCode(io::Printer* printer) const;

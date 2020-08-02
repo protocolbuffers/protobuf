@@ -392,10 +392,12 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
   printer->Print("// Reset class fields\n");
 
+  //TODO(Maithem): reset/clear repeated/collections/repeated enum
+
   for (int i = 0; i < descriptor_->field_count(); i++) {
       if (!IsRealOneof(descriptor_->field(i))) {
           field_generators_.get(descriptor_->field(i))
-          .GenerateBuilderClearCode(printer);
+          .GenerateMessageClearCode(printer);
       }
   }
 

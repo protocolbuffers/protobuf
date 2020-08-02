@@ -431,6 +431,11 @@ void ImmutableMessageFieldGenerator::GenerateBuilderClearCode(
   }
 }
 
+void ImmutableMessageFieldGenerator::GenerateMessageClearCode(
+        io::Printer* printer) const {
+    printer->Print(variables_, "$name$_ = null;\n");
+}
+
 void ImmutableMessageFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
@@ -1236,6 +1241,11 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderClearCode(
                               "$clear_mutable_bit_builder$;\n",
 
                               "$name$Builder_.clear();\n");
+}
+
+void RepeatedImmutableMessageFieldGenerator::GenerateMessageClearCode(
+        io::Printer* printer) const {
+    printer->Print(variables_, "$name$_ = java.util.Collections.emptyList();\n");
 }
 
 void RepeatedImmutableMessageFieldGenerator::GenerateMergingCode(
