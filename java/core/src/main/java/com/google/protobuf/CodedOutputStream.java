@@ -223,8 +223,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     return new ByteOutputEncoder(byteOutput, bufferSize);
   }
 
-  // Disallow construction outside of this class.
-  private CodedOutputStream() {}
+  public CodedOutputStream() {}
 
   // -----------------------------------------------------------------
 
