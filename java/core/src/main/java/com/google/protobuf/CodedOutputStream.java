@@ -37,6 +37,9 @@ import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
 
 import com.google.protobuf.Utf8.UnpairedSurrogateException;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.BufferOverflowException;
@@ -1142,6 +1145,256 @@ public abstract class CodedOutputStream extends ByteOutput {
   @Deprecated
   public final void writeRawLittleEndian64(final long value) throws IOException {
     writeFixed64NoTag(value);
+  }
+
+  // =================================================================
+
+  private static class ByteBufCodedOutputStream extends CodedOutputStream {
+
+    ByteBuf buffer;
+
+    ByteBufCodedOutputStream(ByteBuf buffer) {
+      this.buffer = buffer.order(ByteOrder.LITTLE_ENDIAN);
+    }
+
+    @Override
+    public final void writeTag(final int fieldNumber, final int wireType) throws IOException {
+      writeUInt32NoTag(WireFormat.makeTag(fieldNumber, wireType));
+    }
+
+    @Override
+    public final void writeInt32(final int fieldNumber, final int value) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+      writeInt32NoTag(value);
+    }
+
+    @Override
+    public final void writeUInt32(final int fieldNumber, final int value) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+      writeUInt32NoTag(value);
+    }
+
+    @Override
+    public final void writeFixed32(final int fieldNumber, final int value) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED32);
+      writeFixed32NoTag(value);
+    }
+
+    @Override
+    public final void writeUInt64(final int fieldNumber, final long value) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+      writeUInt64NoTag(value);
+    }
+
+    @Override
+    public final void writeFixed64(final int fieldNumber, final long value) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_FIXED64);
+      writeFixed64NoTag(value);
+    }
+
+    @Override
+    public final void writeBool(final int fieldNumber, final boolean value) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_VARINT);
+      write((byte) (value ? 1 : 0));
+    }
+
+    @Override
+    public final void writeString(final int fieldNumber, final String value) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeStringNoTag(value);
+    }
+
+    @Override
+    public final void writeBytes(final int fieldNumber, final ByteString value) throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeBytesNoTag(value);
+    }
+
+    @Override
+    public final void writeByteArray(final int fieldNumber, final byte[] value) throws IOException {
+      writeByteArray(fieldNumber, value, 0, value.length);
+    }
+
+    @Override
+    public final void writeByteArray(
+            final int fieldNumber, final byte[] value, final int offset, final int length)
+            throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeByteArrayNoTag(value, offset, length);
+    }
+
+    @Override
+    public final void writeByteBuffer(final int fieldNumber, final ByteBuffer value)
+            throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeUInt32NoTag(value.capacity());
+      writeRawBytes(value);
+    }
+
+    @Override
+    public final void writeBytesNoTag(final ByteString value) throws IOException {
+      writeUInt32NoTag(value.size());
+      value.writeTo(this);
+    }
+
+    @Override
+    public final void writeByteArrayNoTag(final byte[] value, int offset, int length)
+            throws IOException {
+      writeUInt32NoTag(length);
+      write(value, offset, length);
+    }
+
+    @Override
+    public final void writeRawBytes(final ByteBuffer value) throws IOException {
+      if (value.hasArray()) {
+        write(value.array(), value.arrayOffset(), value.capacity());
+      } else {
+        ByteBuffer duplicated = value.duplicate();
+        duplicated.clear();
+        write(duplicated);
+      }
+    }
+
+    @Override
+    public final void writeMessage(final int fieldNumber, final MessageLite value)
+            throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeMessageNoTag(value);
+    }
+
+    @Override
+    final void writeMessage(final int fieldNumber, final MessageLite value, Schema schema)
+            throws IOException {
+      writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      writeUInt32NoTag(((AbstractMessageLite) value).getSerializedSize(schema));
+      schema.writeTo(value, wrapper);
+    }
+
+    @Override
+    public final void writeMessageSetExtension(final int fieldNumber, final MessageLite value)
+            throws IOException {
+      writeTag(WireFormat.MESSAGE_SET_ITEM, WireFormat.WIRETYPE_START_GROUP);
+      writeUInt32(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber);
+      writeMessage(WireFormat.MESSAGE_SET_MESSAGE, value);
+      writeTag(WireFormat.MESSAGE_SET_ITEM, WireFormat.WIRETYPE_END_GROUP);
+    }
+
+    @Override
+    public final void writeRawMessageSetExtension(final int fieldNumber, final ByteString value)
+            throws IOException {
+      writeTag(WireFormat.MESSAGE_SET_ITEM, WireFormat.WIRETYPE_START_GROUP);
+      writeUInt32(WireFormat.MESSAGE_SET_TYPE_ID, fieldNumber);
+      writeBytes(WireFormat.MESSAGE_SET_MESSAGE, value);
+      writeTag(WireFormat.MESSAGE_SET_ITEM, WireFormat.WIRETYPE_END_GROUP);
+    }
+
+    @Override
+    public final void writeMessageNoTag(final MessageLite value) throws IOException {
+      writeUInt32NoTag(value.getSerializedSize());
+      value.writeTo(this);
+    }
+
+    @Override
+    final void writeMessageNoTag(final MessageLite value, Schema schema) throws IOException {
+      writeUInt32NoTag(((AbstractMessageLite) value).getSerializedSize(schema));
+      schema.writeTo(value, wrapper);
+    }
+
+    @Override
+    public final void write(byte value) throws IOException {
+      buffer.writeByte(value);
+    }
+
+    @Override
+    public final void writeInt32NoTag(int value) throws IOException {
+      if (value >= 0) {
+        writeUInt32NoTag(value);
+      } else {
+        // Must sign-extend.
+        writeUInt64NoTag(value);
+      }
+    }
+
+    @Override
+    public final void writeUInt32NoTag(int value) throws IOException {
+      while (true) {
+        if ((value & ~0x7F) == 0) {
+          writeRawByte(value);
+          return;
+        } else {
+          writeRawByte((value & 0x7F) | 0x80);
+          value >>>= 7;
+        }
+      }
+    }
+
+    @Override
+    public final void writeFixed32NoTag(int value) throws IOException {
+      buffer.writeIntLE(value);
+    }
+
+    @Override
+    public final void writeUInt64NoTag(long value) throws IOException {
+      while (true) {
+        if ((value & ~0x7FL) == 0) {
+          writeRawByte((int) value);
+          return;
+        } else {
+          writeRawByte(((int) value & 0x7F) | 0x80);
+          value >>>= 7;
+        }
+      }
+    }
+
+    @Override
+    public final void writeFixed64NoTag(long value) throws IOException {
+      buffer.writeLongLE(value);
+    }
+
+    @Override
+    public final void write(byte[] value, int offset, int length) throws IOException {
+      buffer.writeBytes(value, offset, length);
+    }
+
+    @Override
+    public final void writeLazy(byte[] value, int offset, int length) throws IOException {
+      write(value, offset, length);
+    }
+
+    @Override
+    public final void write(ByteBuffer value) throws IOException {
+      buffer.writeBytes(value);
+    }
+
+    @Override
+    public final void writeLazy(ByteBuffer value) throws IOException {
+      write(value);
+    }
+
+    @Override
+    public final void writeStringNoTag(String value) throws IOException {
+      int length = Utf8.encodedLength(value);
+      writeUInt32NoTag(length);
+      ByteBufUtil.writeUtf8(buffer, value);
+    }
+
+    @Override
+    public void flush() {
+      // Do nothing.
+    }
+
+    @Override
+    public final int spaceLeft() {
+      throw new UnsupportedOperationException(
+              "spaceLeft() can only be called on CodedOutputStreams that are "
+                      + "writing to a flat array or ByteBuffer.");
+    }
+
+    @Override
+    public final int getTotalBytesWritten() {
+      return buffer.writerIndex();
+    }
+
   }
 
   // =================================================================

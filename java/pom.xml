@@ -107,6 +107,11 @@
         <version>1.0.1</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-buffer</artifactId>
+        <version>4.1.51.Final</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
