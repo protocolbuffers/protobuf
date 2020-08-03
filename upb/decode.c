@@ -145,8 +145,6 @@ typedef struct {
 
 typedef union {
   bool bool_val;
-  int32_t int32_val;
-  int64_t int64_val;
   uint32_t uint32_val;
   uint64_t uint64_val;
   upb_strview str_val;
@@ -245,14 +243,21 @@ static void decode_munge(int type, wireval *val) {
       break;
     case UPB_DESCRIPTOR_TYPE_SINT32: {
       uint32_t n = val->uint32_val;
-      val->int32_val = (n >> 1) ^ -(int32_t)(n & 1);
+      val->uint32_val = (n >> 1) ^ -(int32_t)(n & 1);
       break;
     }
     case UPB_DESCRIPTOR_TYPE_SINT64: {
       uint64_t n = val->uint64_val;
-      val->int64_val = (n >> 1) ^ -(int64_t)(n & 1);
+      val->uint64_val = (n >> 1) ^ -(int64_t)(n & 1);
       break;
     }
+    case UPB_DESCRIPTOR_TYPE_INT32:
+    case UPB_DESCRIPTOR_TYPE_UINT32:
+      if (!_upb_isle()) {
+        /* The next stage will memcpy(dst, &val, 4) */
+        val->uint32_val = val->uint64_val;
+      }
+      break;
   }
 }
 
@@ -428,7 +433,7 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
   if (entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
       entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_GROUP) {
     /* Create proactively to handle the case where it doesn't appear. */
-    ent.v.val.val = (uint64_t)_upb_msg_new(entry->submsgs[0], d->arena);
+    ent.v.val = upb_value_ptr(_upb_msg_new(entry->submsgs[0], d->arena));
   }
 
   decode_tosubmsg(d, &ent.k, layout, field, val.str_val);
@@ -519,14 +524,16 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
         break;
       case UPB_WIRE_TYPE_32BIT:
         if (d->limit - ptr < 4) decode_err(d);
-        memcpy(&val, ptr, 4);
+        memcpy(&val.uint32_val, ptr, 4);
+        val.uint32_val = _upb_be_swap32(val.uint32_val);
         ptr += 4;
         op = OP_SCALAR_LG2(2);
         if (((1 << field->descriptortype) & fixed32_ok) == 0) goto unknown;
         break;
       case UPB_WIRE_TYPE_64BIT:
         if (d->limit - ptr < 8) decode_err(d);
-        memcpy(&val, ptr, 8);
+        memcpy(&val.uint64_val, ptr, 8);
+        val.uint64_val = _upb_be_swap64(val.uint64_val);
         ptr += 8;
         op = OP_SCALAR_LG2(3);
         if (((1 << field->descriptortype) & fixed64_ok) == 0) goto unknown;
@@ -546,7 +553,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
         break;
       }
       case UPB_WIRE_TYPE_START_GROUP:
-        val.int32_val = field_number;
+        val.uint32_val = field_number;
         op = OP_SUBMSG;
         if (field->descriptortype != UPB_DTYPE_GROUP) goto unknown;
         break;

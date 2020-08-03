@@ -735,6 +735,33 @@ cc_library(
     }),
 )
 
+upb_amalgamation(
+    name = "gen_ruby_amalgamation",
+    prefix = "ruby-",
+    outs = [
+        "ruby-upb.c",
+        "ruby-upb.h",
+    ],
+    amalgamator = ":amalgamate",
+    libs = [
+        ":upb",
+        ":descriptor_upb_proto",
+        ":reflection",
+        ":port",
+        ":json",
+    ],
+)
+
+cc_library(
+    name = "ruby_amalgamation",
+    srcs = ["ruby-upb.c"],
+    hdrs = ["ruby-upb.h"],
+    copts = select({
+        ":windows": [],
+        "//conditions:default": COPTS,
+    }),
+)
+
 # Lua ##########################################################################
 
 cc_library(
