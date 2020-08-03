@@ -77,12 +77,12 @@ static bool upb_put_bytes(upb_encstate *e, const void *data, size_t len) {
 }
 
 static bool upb_put_fixed64(upb_encstate *e, uint64_t val) {
-  /* TODO(haberman): byte-swap for big endian. */
+  val = _upb_be_swap64(val);
   return upb_put_bytes(e, &val, sizeof(uint64_t));
 }
 
 static bool upb_put_fixed32(upb_encstate *e, uint32_t val) {
-  /* TODO(haberman): byte-swap for big endian. */
+  val = _upb_be_swap32(val);
   return upb_put_bytes(e, &val, sizeof(uint32_t));
 }
 

@@ -324,7 +324,7 @@ UPB_INLINE upb_value _upb_map_tovalue(const void *val, size_t size,
   if (size == UPB_MAPTYPE_STRING) {
     upb_strview *strp = (upb_strview*)upb_arena_malloc(a, sizeof(*strp));
     *strp = *(upb_strview*)val;
-    memcpy(&ret, &strp, sizeof(strp));
+    ret = upb_value_ptr(strp);
   } else {
     memcpy(&ret, val, size);
   }
@@ -455,7 +455,7 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val, size_t size) 
   /* This is like _upb_map_tovalue() except the entry already exists so we can
    * reuse the allocated upb_strview for string fields. */
   if (size == UPB_MAPTYPE_STRING) {
-    upb_strview *strp = (upb_strview*)ent->val.val;
+    upb_strview *strp = (upb_strview*)(uintptr_t)ent->val.val;
     memcpy(strp, val, sizeof(*strp));
   } else {
     memcpy(&ent->val.val, val, size);
