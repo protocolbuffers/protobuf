@@ -79,6 +79,10 @@
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline))
 #define UPB_NOINLINE __attribute__((noinline))
 #define UPB_NORETURN __attribute__((__noreturn__))
+#elif defined(_MSC_VER)
+#define UPB_NOINLINE
+#define UPB_FORCEINLINE
+#define UPB_NORETURN __declspec(noreturn)
 #else  /* !defined(__GNUC__) */
 #define UPB_FORCEINLINE
 #define UPB_NOINLINE
