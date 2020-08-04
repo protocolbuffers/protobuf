@@ -145,6 +145,28 @@ Map* ruby_to_Map(VALUE _self) {
   return self;
 }
 
+upb_map* Map_from_value(VALUE value, const upb_fielddef *field) {
+  const upb_fielddef* key_field = map_field_key(field);
+  const upb_fielddef* value_field = map_field_value(field);
+  Map* self;
+
+  if (!RB_TYPE_P(val, T_DATA) || !RTYPEDDATA_P(val) ||
+      RTYPEDDATA_TYPE(val) != &Map_type) {
+    rb_raise(cTypeError, "Expected Map instance");
+  }
+
+  self = ruby_to_Map(val);
+  if (self->key_type != upb_fielddef_type(key_field)) {
+    rb_raise(cTypeError, "Map key type does not match field's key type");
+  }
+  if (self->value_type != upb_fielddef_type(value_field)) {
+    rb_raise(cTypeError, "Map value type does not match field's value type");
+  }
+  if (self->value_type_class != field_type_class(layout, value_field)) {
+    rb_raise(cTypeError, "Map value type has wrong message/enum class");
+  }
+}
+
 void Map_mark(void* _self) {
   Map* self = _self;
 

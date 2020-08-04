@@ -35,7 +35,7 @@
 #include <ruby/vm.h>
 #include <ruby/encoding.h>
 
-#include "upb.h"
+#include "ruby-upb.h"
 
 // Forward decls.
 struct DescriptorPool;
@@ -43,9 +43,9 @@ struct Descriptor;
 struct FileDescriptor;
 struct FieldDescriptor;
 struct EnumDescriptor;
+struct Message;
 struct MessageLayout;
 struct MessageField;
-struct MessageHeader;
 struct MessageBuilderContext;
 struct EnumBuilderContext;
 struct FileBuilderContext;
@@ -57,10 +57,10 @@ typedef struct FileDescriptor FileDescriptor;
 typedef struct FieldDescriptor FieldDescriptor;
 typedef struct OneofDescriptor OneofDescriptor;
 typedef struct EnumDescriptor EnumDescriptor;
+typedef struct Message Message;
 typedef struct MessageLayout MessageLayout;
 typedef struct MessageField MessageField;
 typedef struct MessageOneof MessageOneof;
-typedef struct MessageHeader MessageHeader;
 typedef struct MessageBuilderContext MessageBuilderContext;
 typedef struct OneofBuilderContext OneofBuilderContext;
 typedef struct EnumBuilderContext EnumBuilderContext;
@@ -110,17 +110,10 @@ typedef struct Builder Builder;
 struct DescriptorPool {
   VALUE def_to_descriptor;  // Hash table of def* -> Ruby descriptor.
   upb_symtab* symtab;
-  upb_handlercache* fill_handler_cache;
-  upb_handlercache* pb_serialize_handler_cache;
-  upb_handlercache* json_serialize_handler_cache;
-  upb_handlercache* json_serialize_handler_preserve_cache;
-  upb_pbcodecache* fill_method_cache;
-  upb_json_codecache* json_fill_method_cache;
 };
 
 struct Descriptor {
   const upb_msgdef* msgdef;
-  MessageLayout* layout;
   VALUE klass;
   VALUE descriptor_pool;
 };
@@ -209,6 +202,7 @@ void Descriptor_free(void* _self);
 VALUE Descriptor_alloc(VALUE klass);
 void Descriptor_register(VALUE module);
 Descriptor* ruby_to_Descriptor(VALUE value);
+Descriptor* Descriptor_from_fielddef(const upb_fielddef *f);
 VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE descriptor_pool,
                             VALUE ptr);
 VALUE Descriptor_name(VALUE _self);
@@ -421,6 +415,7 @@ extern const rb_data_type_t RepeatedField_type;
 extern VALUE cRepeatedField;
 
 RepeatedField* ruby_to_RepeatedField(VALUE value);
+upb_array* RepeatedField_from_value(VALUE value, const upb_fielddef* field);
 
 VALUE RepeatedField_new_this_type(VALUE _self);
 VALUE RepeatedField_each(VALUE _self);
@@ -470,6 +465,7 @@ extern const rb_data_type_t Map_type;
 extern VALUE cMap;
 
 Map* ruby_to_Map(VALUE value);
+upb_map* Map_from_value(VALUE value, const upb_fielddef* field);
 
 VALUE Map_new_this_type(VALUE _self);
 VALUE Map_each(VALUE _self);
@@ -505,54 +501,8 @@ VALUE Map_iter_value(Map_iter* iter);
 // Message layout / storage.
 // -----------------------------------------------------------------------------
 
-#define MESSAGE_FIELD_NO_HASBIT ((uint32_t)-1)
-
-struct MessageField {
-  uint32_t offset;
-  uint32_t hasbit;
-};
-
-struct MessageOneof {
-  uint32_t offset;
-  uint32_t case_offset;
-};
-
-// MessageLayout is owned by the enclosing Descriptor, which must outlive us.
-struct MessageLayout {
-  const Descriptor* desc;
-  const upb_msgdef* msgdef;
-  void* empty_template;  // Can memcpy() onto a layout to clear it.
-  MessageField* fields;
-  MessageOneof* oneofs;
-  uint32_t size;
-  uint32_t value_offset;
-  int value_count;
-  int repeated_count;
-  int map_count;
-};
-
 #define ONEOF_CASE_MASK 0x80000000
 
-void create_layout(Descriptor* desc);
-void free_layout(MessageLayout* layout);
-bool field_contains_hasbit(MessageLayout* layout,
-                 const upb_fielddef* field);
-VALUE layout_get_default(const upb_fielddef* field);
-VALUE layout_get(MessageLayout* layout,
-                 const void* storage,
-                 const upb_fielddef* field);
-void layout_set(MessageLayout* layout,
-                void* storage,
-                const upb_fielddef* field,
-                VALUE val);
-VALUE layout_has(MessageLayout* layout,
-                 const void* storage,
-                 const upb_fielddef* field);
-void layout_clear(MessageLayout* layout,
-                 const void* storage,
-                 const upb_fielddef* field);
-void layout_init(MessageLayout* layout, void* storage);
-void layout_mark(MessageLayout* layout, void* storage);
 void layout_dup(MessageLayout* layout, void* to, void* from);
 void layout_deep_copy(MessageLayout* layout, void* to, void* from);
 VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2);
@@ -566,22 +516,14 @@ VALUE ruby_wrapper_type(VALUE type_class, VALUE value);
 // Message class creation.
 // -----------------------------------------------------------------------------
 
-// This should probably be factored into a common upb component.
-
-typedef struct {
-  upb_byteshandler handler;
-  upb_bytessink sink;
-  char *ptr;
-  size_t len, size;
-} stringsink;
-
-void stringsink_uninit(stringsink *sink);
-
-struct MessageHeader {
+struct Message {
+  VALUE arena;
+  upb_msg* msg;
   Descriptor* descriptor;      // kept alive by self.class.descriptor reference.
-  stringsink* unknown_fields;  // store unknown fields in decoding.
-  // Data comes after this.
 };
+
+VALUE Arena_new();
+upb_arena *Arena_get(VALUE arena);
 
 extern rb_data_type_t Message_type;
 
@@ -613,10 +555,6 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc);
 VALUE enum_lookup(VALUE self, VALUE number);
 VALUE enum_resolve(VALUE self, VALUE sym);
 VALUE enum_descriptor(VALUE self);
-
-const upb_pbdecodermethod *new_fillmsg_decodermethod(
-    Descriptor* descriptor, const void *owner);
-void add_handlers_for_message(const void *closure, upb_handlers *h);
 
 // Maximum depth allowed during encoding, to avoid stack overflows due to
 // cycles.

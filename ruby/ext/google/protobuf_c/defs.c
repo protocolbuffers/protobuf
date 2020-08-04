@@ -31,6 +31,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include "protobuf.h"
+#include "convert.h"
 
 // -----------------------------------------------------------------------------
 // Common utilities.
@@ -368,13 +369,6 @@ void DescriptorPool_free(void* _self) {
   DescriptorPool* self = _self;
 
   upb_symtab_free(self->symtab);
-  upb_handlercache_free(self->fill_handler_cache);
-  upb_handlercache_free(self->pb_serialize_handler_cache);
-  upb_handlercache_free(self->json_serialize_handler_cache);
-  upb_handlercache_free(self->json_serialize_handler_preserve_cache);
-  upb_pbcodecache_free(self->fill_method_cache);
-  upb_json_codecache_free(self->json_fill_method_cache);
-
   xfree(self);
 }
 
@@ -393,14 +387,6 @@ VALUE DescriptorPool_alloc(VALUE klass) {
 
   self->def_to_descriptor = rb_hash_new();
   self->symtab = upb_symtab_new();
-  self->fill_handler_cache =
-      upb_handlercache_new(add_handlers_for_message, (void*)ret);
-  self->pb_serialize_handler_cache = upb_pb_encoder_newcache();
-  self->json_serialize_handler_cache = upb_json_printer_newcache(false);
-  self->json_serialize_handler_preserve_cache =
-      upb_json_printer_newcache(true);
-  self->fill_method_cache = upb_pbcodecache_new(self->fill_handler_cache);
-  self->json_fill_method_cache = upb_json_codecache_new();
 
   return ret;
 }
@@ -487,16 +473,10 @@ void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
   rb_gc_mark(self->klass);
   rb_gc_mark(self->descriptor_pool);
-  if (self->layout && self->layout->empty_template) {
-    layout_mark(self->layout, self->layout->empty_template);
-  }
 }
 
 void Descriptor_free(void* _self) {
   Descriptor* self = _self;
-  if (self->layout) {
-    free_layout(self->layout);
-  }
   xfree(self);
 }
 
@@ -515,7 +495,6 @@ VALUE Descriptor_alloc(VALUE klass) {
   self->msgdef = NULL;
   self->klass = Qnil;
   self->descriptor_pool = Qnil;
-  self->layout = NULL;
   return ret;
 }
 
@@ -992,8 +971,38 @@ VALUE FieldDescriptor_type(VALUE _self) {
  * Returns this field's default, as a Ruby object, or nil if not yet set.
  */
 VALUE FieldDescriptor_default(VALUE _self) {
+  const upb_fielddef *field;
   DEFINE_SELF(FieldDescriptor, self, _self);
-  return layout_get_default(self->fielddef);
+  field = self->fielddef;
+  switch (upb_fielddef_type(field)) {
+    case UPB_TYPE_FLOAT:   return DBL2NUM(upb_fielddef_defaultfloat(field));
+    case UPB_TYPE_DOUBLE:  return DBL2NUM(upb_fielddef_defaultdouble(field));
+    case UPB_TYPE_BOOL:
+      return upb_fielddef_defaultbool(field) ? Qtrue : Qfalse;
+    case UPB_TYPE_MESSAGE: return Qnil;
+    case UPB_TYPE_ENUM: {
+      const upb_enumdef *enumdef = upb_fielddef_enumsubdef(field);
+      int32_t num = upb_fielddef_defaultint32(field);
+      const char *label = upb_enumdef_iton(enumdef, num);
+      if (label) {
+        return ID2SYM(rb_intern(label));
+      } else {
+        return INT2NUM(num);
+      }
+    }
+    case UPB_TYPE_INT32:   return INT2NUM(upb_fielddef_defaultint32(field));
+    case UPB_TYPE_INT64:   return LL2NUM(upb_fielddef_defaultint64(field));;
+    case UPB_TYPE_UINT32:  return UINT2NUM(upb_fielddef_defaultuint32(field));
+    case UPB_TYPE_UINT64:  return ULL2NUM(upb_fielddef_defaultuint64(field));
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      size_t size;
+      const char *str = upb_fielddef_defaultstr(field, &size);
+      return get_frozen_string(str, size,
+                               upb_fielddef_type(field) == UPB_TYPE_BYTES);
+    }
+    default: return Qnil;
+  }
 }
 
 /*
@@ -1087,12 +1096,18 @@ VALUE FieldDescriptor_subtype(VALUE _self) {
  */
 VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  MessageHeader* msg;
-  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+  Message* msg;
+  upb_msgval msgval;
+  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "get method called on wrong message type");
   }
-  return layout_get(msg->descriptor->layout, Message_data(msg), self->fielddef);
+
+  msgval = upb_msg_get(msg->msg, self->fielddef);
+  return Convert_UpbToRuby(msgval, upb_fielddef_type(self->fielddef),
+                           Descriptor_from_fielddef(self->fielddef),
+                           msg->arena);
 }
 
 /*
@@ -1104,15 +1119,16 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
  */
 VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  MessageHeader* msg;
-  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+  Message* msg;
+  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
   } else if (!upb_fielddef_haspresence(self->fielddef)) {
     rb_raise(rb_eArgError, "does not track presence");
   }
 
-  return layout_has(msg->descriptor->layout, Message_data(msg), self->fielddef);
+  return upb_msg_has(msg->msg, self->fielddef);
 }
 
 /*
@@ -1123,13 +1139,14 @@ VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
  */
 VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  MessageHeader* msg;
-  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+  Message* msg;
+  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
   }
 
-  layout_clear(msg->descriptor->layout, Message_data(msg), self->fielddef);
+  upb_msg_clearfield(msg->msg, self->fielddef);
   return Qnil;
 }
 
@@ -1143,12 +1160,19 @@ VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
  */
 VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  MessageHeader* msg;
-  TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+  Message* msg;
+  upb_arena *arena;
+  upb_msgval msgval;
+  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+  arena = Arena_get(msg->arena);
+
   if (msg->descriptor->msgdef != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "set method called on wrong message type");
   }
-  layout_set(msg->descriptor->layout, Message_data(msg), self->fielddef, value);
+
+  msgval = Convert_RubyToUpb(value, upb_fielddef_type(self->fielddef),
+                             Descriptor_from_fielddef(self->fielddef), arena);
+  upb_msg_set(msg->msg, self->fielddef, msgval, arena);
   return Qnil;
 }
 

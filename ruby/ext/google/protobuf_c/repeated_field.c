@@ -47,6 +47,22 @@ RepeatedField* ruby_to_RepeatedField(VALUE _self) {
   return self;
 }
 
+upb_array* RepeatedField_from_value(VALUE value, const upb_fielddef* field) {
+  if (!RB_TYPE_P(val, T_DATA) || !RTYPEDDATA_P(val) ||
+      RTYPEDDATA_TYPE(val) != &RepeatedField_type) {
+    rb_raise(cTypeError, "Expected repeated field array");
+  }
+
+  self = ruby_to_RepeatedField(val);
+  if (self->field_type != upb_fielddef_type(field)) {
+    rb_raise(cTypeError, "Repeated field array has wrong element type");
+  }
+
+  if (self->field_type_class != field_type_class(layout, field)) {
+    rb_raise(cTypeError, "Repeated field array has wrong message/enum class");
+  }
+}
+
 void* RepeatedField_memoryat(RepeatedField* self, int index, int element_size) {
   return ((uint8_t *)self->elements) + index * element_size;
 }

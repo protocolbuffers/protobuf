@@ -15,7 +15,7 @@ if RUBY_PLATFORM =~ /linux/
 end
 
 $objs = ["protobuf.o", "defs.o", "storage.o", "message.o",
-         "repeated_field.o", "map.o", "encode_decode.o", "upb.o",
+         "repeated_field.o", "map.o", "encode_decode.o", "ruby-upb.o",
          "wrap_memcpy.o"]
 
 create_makefile("google/protobuf_c")

@@ -29,71 +29,142 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "protobuf.h"
+#include "convert.h"
+
+VALUE field_type_class(const MessageLayout* layout, const upb_fielddef* field) {
+  VALUE type_class = Qnil;
+  if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
+    VALUE submsgdesc = get_msgdef_obj(layout->desc->descriptor_pool,
+                                      upb_fielddef_msgsubdef(field));
+    type_class = Descriptor_msgclass(submsgdesc);
+  } else if (upb_fielddef_type(field) == UPB_TYPE_ENUM) {
+    VALUE subenumdesc = get_enumdef_obj(layout->desc->descriptor_pool,
+                                        upb_fielddef_enumsubdef(field));
+    type_class = EnumDescriptor_enummodule(subenumdesc);
+  }
+  return type_class;
+}
+
+VALUE layout_hash(MessageLayout* layout, void* storage) {
+  upb_msg_field_iter it;
+  st_index_t h = rb_hash_start(0);
+  VALUE hash_sym = rb_intern("hash");
+  for (upb_msg_field_begin(&it, layout->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    VALUE field_val = layout_get(layout, storage, field);
+    h = rb_hash_uint(h, NUM2LONG(rb_funcall(field_val, hash_sym, 0)));
+  }
+  h = rb_hash_end(h);
+
+  return INT2FIX(h);
+}
+
+VALUE layout_inspect(MessageLayout* layout, void* storage) {
+  VALUE str = rb_str_new2("");
+
+  upb_msg_field_iter it;
+  bool first = true;
+  for (upb_msg_field_begin(&it, layout->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    VALUE field_val = layout_get(layout, storage, field);
+
+    if (!first) {
+      str = rb_str_cat2(str, ", ");
+    } else {
+      first = false;
+    }
+    str = rb_str_cat2(str, upb_fielddef_name(field));
+    str = rb_str_cat2(str, ": ");
+
+    str = rb_str_append(str, rb_funcall(field_val, rb_intern("inspect"), 0));
+  }
+
+  return str;
+}
+
+VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2) {
+  upb_msg_field_iter it;
+  for (upb_msg_field_begin(&it, layout->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
+
+    void* msg1_memory = slot_memory(layout, msg1, field);
+    void* msg2_memory = slot_memory(layout, msg2, field);
+
+    if (oneof) {
+      uint32_t* msg1_oneof_case = slot_oneof_case(layout, msg1, oneof);
+      uint32_t* msg2_oneof_case = slot_oneof_case(layout, msg2, oneof);
+      if (*msg1_oneof_case != *msg2_oneof_case ||
+          (slot_read_oneof_case(layout, msg1, oneof) ==
+               upb_fielddef_number(field) &&
+           !native_slot_eq(upb_fielddef_type(field),
+                           field_type_class(layout, field), msg1_memory,
+                           msg2_memory))) {
+        return Qfalse;
+      }
+    } else if (is_map_field(field)) {
+      if (!Map_eq(DEREF(msg1_memory, VALUE),
+                  DEREF(msg2_memory, VALUE))) {
+        return Qfalse;
+      }
+    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+      if (!RepeatedField_eq(DEREF(msg1_memory, VALUE),
+                            DEREF(msg2_memory, VALUE))) {
+        return Qfalse;
+      }
+    } else {
+      if (field_contains_hasbit(layout, field) &&
+          slot_is_hasbit_set(layout, msg1, field) !=
+              slot_is_hasbit_set(layout, msg2, field)) {
+        // TODO(haberman): I don't think we should actually care about hasbits
+        // here: an unset default should be able to equal a set default. But we
+        // can address this later (will also have to make sure defaults are
+        // being properly set when hasbit is clear).
+        return Qfalse;
+      }
+      if (!native_slot_eq(upb_fielddef_type(field),
+                          field_type_class(layout, field), msg1_memory,
+                          msg2_memory)) {
+        return Qfalse;
+      }
+    }
+  }
+  return Qtrue;
+}
 
 // -----------------------------------------------------------------------------
 // Class/module creation from msgdefs and enumdefs, respectively.
 // -----------------------------------------------------------------------------
 
-void* Message_data(void* msg) {
-  return ((uint8_t *)msg) + sizeof(MessageHeader);
-}
-
 void Message_mark(void* _self) {
-  MessageHeader* self = (MessageHeader *)_self;
-  layout_mark(self->descriptor->layout, Message_data(self));
-}
-
-void Message_free(void* self) {
-  stringsink* unknown = ((MessageHeader *)self)->unknown_fields;
-  if (unknown != NULL) {
-    stringsink_uninit(unknown);
-    free(unknown);
-  }
-  xfree(self);
+  Message* self = (Message *)_self;
+  rb_gc_mark(self->arena);
 }
 
 rb_data_type_t Message_type = {
   "Message",
-  { Message_mark, Message_free, NULL },
+  { Message_mark, NULL, NULL },
 };
 
 VALUE Message_alloc(VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
-  MessageHeader* msg;
+  Message* msg = ALLOC(Message);
   VALUE ret;
 
-  if (desc->layout == NULL) {
-    create_layout(desc);
-  }
-
-  msg = (void*)ALLOC_N(uint8_t, sizeof(MessageHeader) + desc->layout->size);
   msg->descriptor = desc;
-  msg->unknown_fields = NULL;
-  memcpy(Message_data(msg), desc->layout->empty_template, desc->layout->size);
+  msg->arena = Arena_new();
 
   ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
   rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
 
   return ret;
-}
-
-static const upb_fielddef* which_oneof_field(MessageHeader* self, const upb_oneofdef* o) {
-  uint32_t oneof_case;
-  const upb_fielddef* f;
-
-  oneof_case =
-      slot_read_oneof_case(self->descriptor->layout, Message_data(self), o);
-
-  if (oneof_case == ONEOF_CASE_NONE) {
-    return NULL;
-  }
-
-  // oneof_case is a field index, so find that field.
-  f = upb_oneofdef_itof(o, oneof_case);
-  assert(f != NULL);
-
-  return f;
 }
 
 enum {
@@ -143,7 +214,7 @@ VALUE ruby_wrapper_type(VALUE type_class, VALUE value) {
   return Qnil;
 }
 
-static int extract_method_call(VALUE method_name, MessageHeader* self,
+static int extract_method_call(VALUE method_name, Message* self,
                             const upb_fielddef **f, const upb_oneofdef **o) {
   VALUE method_str;
   char* name;
@@ -285,15 +356,18 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
  * 'proto3' syntax, calling this for a basic type field will result in an error.
  */
 VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
-  MessageHeader* self;
+  Message* self;
   const upb_oneofdef* o;
   const upb_fielddef* f;
   int accessor_type;
+  upb_arena *arena;
 
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
+
+  arena = Arena_get(self->arena);
 
   accessor_type = extract_method_call(argv[0], self, &f, &o);
   if (accessor_type == METHOD_UNKNOWN || (o == NULL && f == NULL) ) {
@@ -309,7 +383,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
 
   // Return which of the oneof fields are set
   if (o != NULL) {
-    const upb_fielddef* oneof_field = which_oneof_field(self, o);
+    const upb_fielddef* oneof_field = upb_msg_whichoneof(self->msg, o);
 
     if (accessor_type == METHOD_SETTER) {
       rb_raise(rb_eRuntimeError, "Oneof accessors are read-only.");
@@ -319,7 +393,7 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
       return oneof_field == NULL ? Qfalse : Qtrue;
     } else if (accessor_type == METHOD_CLEAR) {
       if (oneof_field != NULL) {
-        layout_clear(self->descriptor->layout, Message_data(self), oneof_field);
+        upb_msg_clearfield(self->msg, oneof_field);
       }
       return Qnil;
     } else {
@@ -329,15 +403,19 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     }
   // Otherwise we're operating on a single proto field
   } else if (accessor_type == METHOD_SETTER) {
-    layout_set(self->descriptor->layout, Message_data(self), f, argv[1]);
+    upb_msgval msgval = Convert_RubyToUpb(argv[1], upb_fielddef_type(f),
+                                          Descriptor_from_fielddef(f), arena);
+    upb_msg_set(self->msg, f, msgval, arena);
     return Qnil;
   } else if (accessor_type == METHOD_CLEAR) {
-    layout_clear(self->descriptor->layout, Message_data(self), f);
+    upb_msg_clearfield(self->msg, f);
     return Qnil;
   } else if (accessor_type == METHOD_PRESENCE) {
-    return layout_has(self->descriptor->layout, Message_data(self), f);
+    return upb_msg_has(self->msg, f);
   } else if (accessor_type == METHOD_WRAPPER_GETTER) {
-    VALUE value = layout_get(self->descriptor->layout, Message_data(self), f);
+    upb_msgval msgval = upb_msg_get(self->msg, f);
+    VALUE value = Convert_UpbToRuby(msgval, upb_fielddef_type(f),
+                                    Descriptor_from_fielddef(f), self->arena);
     switch (TYPE(value)) {
       case T_DATA:
         return rb_funcall(value, rb_intern("value"), 0);
@@ -349,7 +427,9 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
   } else if (accessor_type == METHOD_WRAPPER_SETTER) {
     VALUE wrapper = ruby_wrapper_type(
         field_type_class(self->descriptor->layout, f), argv[1]);
-    layout_set(self->descriptor->layout, Message_data(self), f, wrapper);
+    upb_msgval msgval = Convert_RubyToUpb(wrapper, upb_fielddef_type(f),
+                                          Descriptor_from_fielddef(f), arena);
+    upb_msg_set(self->msg, f, msgval, arena);
     return Qnil;
   } else if (accessor_type == METHOD_ENUM_GETTER) {
     VALUE enum_type = field_type_class(self->descriptor->layout, f);
@@ -378,12 +458,12 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
 
 
 VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
-  MessageHeader* self;
+  Message* self;
   const upb_oneofdef* o;
   const upb_fielddef* f;
   int accessor_type;
 
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
   if (argc < 1) {
     rb_raise(rb_eArgError, "Expected method name as first argument.");
   }
@@ -405,10 +485,10 @@ VALUE create_submsg_from_hash(const MessageLayout* layout,
 }
 
 int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
-  MessageHeader* self;
+  Message* self;
   char *name;
   const upb_fielddef* f;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
 
   if (TYPE(key) == T_STRING) {
     name = RSTRING_PTR(key);
@@ -480,9 +560,9 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
  * Message class are provided on each concrete message class.
  */
 VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
-  MessageHeader* self;
+  Message* self;
   VALUE hash_args;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
 
   layout_init(self->descriptor->layout, Message_data(self));
 
@@ -508,13 +588,13 @@ VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
  * Performs a shallow copy of this message and returns the new copy.
  */
 VALUE Message_dup(VALUE _self) {
-  MessageHeader* self;
+  Message* self;
   VALUE new_msg;
-  MessageHeader* new_msg_self;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  Message* new_msg_self;
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
 
   new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
-  TypedData_Get_Struct(new_msg, MessageHeader, &Message_type, new_msg_self);
+  TypedData_Get_Struct(new_msg, Message, &Message_type, new_msg_self);
 
   layout_dup(self->descriptor->layout,
              Message_data(new_msg_self),
@@ -525,13 +605,13 @@ VALUE Message_dup(VALUE _self) {
 
 // Internal only; used by Google::Protobuf.deep_copy.
 VALUE Message_deep_copy(VALUE _self) {
-  MessageHeader* self;
-  MessageHeader* new_msg_self;
+  Message* self;
+  Message* new_msg_self;
   VALUE new_msg;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
 
   new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
-  TypedData_Get_Struct(new_msg, MessageHeader, &Message_type, new_msg_self);
+  TypedData_Get_Struct(new_msg, Message, &Message_type, new_msg_self);
 
   layout_deep_copy(self->descriptor->layout,
                    Message_data(new_msg_self),
@@ -550,13 +630,13 @@ VALUE Message_deep_copy(VALUE _self) {
  * field is of a primitive type).
  */
 VALUE Message_eq(VALUE _self, VALUE _other) {
-  MessageHeader* self;
-  MessageHeader* other;
+  Message* self;
+  Message* other;
   if (TYPE(_self) != TYPE(_other)) {
     return Qfalse;
   }
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
-  TypedData_Get_Struct(_other, MessageHeader, &Message_type, other);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
+  TypedData_Get_Struct(_other, Message, &Message_type, other);
 
   if (self->descriptor != other->descriptor) {
     return Qfalse;
@@ -574,8 +654,8 @@ VALUE Message_eq(VALUE _self, VALUE _other) {
  * Returns a hash value that represents this message's field values.
  */
 VALUE Message_hash(VALUE _self) {
-  MessageHeader* self;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  Message* self;
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
 
   return layout_hash(self->descriptor->layout, Message_data(self));
 }
@@ -589,9 +669,9 @@ VALUE Message_hash(VALUE _self) {
  * field's value is represented according to its own #inspect method.
  */
 VALUE Message_inspect(VALUE _self) {
-  MessageHeader* self;
+  Message* self;
   VALUE str;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
 
   str = rb_str_new2("<");
   str = rb_str_append(str, rb_str_new2(rb_class2name(CLASS_OF(_self))));
@@ -609,11 +689,11 @@ VALUE Message_inspect(VALUE _self) {
  * Returns the message as a Ruby Hash object, with keys as symbols.
  */
 VALUE Message_to_h(VALUE _self) {
-  MessageHeader* self;
+  Message* self;
   VALUE hash = rb_hash_new();
   upb_msg_field_iter it;
   bool is_proto2;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
 
   // We currently have a few behaviors that are specific to proto2.
   // This is unfortunate, we should key behaviors off field attributes (like
@@ -672,9 +752,9 @@ VALUE Message_to_h(VALUE _self) {
  * string.
  */
 VALUE Message_index(VALUE _self, VALUE field_name) {
-  MessageHeader* self;
+  Message* self;
   const upb_fielddef* field;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
   Check_Type(field_name, T_STRING);
   field = upb_msgdef_ntofz(self->descriptor->msgdef, RSTRING_PTR(field_name));
   if (field == NULL) {
@@ -691,9 +771,9 @@ VALUE Message_index(VALUE _self, VALUE field_name) {
  * string.
  */
 VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
-  MessageHeader* self;
+  Message* self;
   const upb_fielddef* field;
-  TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
   Check_Type(field_name, T_STRING);
   field = upb_msgdef_ntofz(self->descriptor->msgdef, RSTRING_PTR(field_name));
   if (field == NULL) {
