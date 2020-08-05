@@ -178,3 +178,5 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Protolint - A tool to enforce Protocol Buffer style and conventions.](https://github.com/yoheimuta/protolint)
     * [vscode-protolint: A protobuf linter for visual studio code](https://github.com/plexsystems/vscode-protolint)
     * [intellij-protolint: A protobuf linter for JetBrains IDEs](https://github.com/yoheimuta/intellij-protolint)
+    * [vim-protolint: A protobuf linter for Vim](https://github.com/yoheimuta/vim-protolint)
+* [super-linter: Protocol Buffer lint as GitHub Action](https://github.com/github/super-linter)
