@@ -8,7 +8,7 @@ compiler (`protoc`) to generate Python sources.
 To use this extension, it needs to be installed so it can be imported by other
 projects' setup.py.
 
-```python
+```shell
 $ python setup.py build
 $ python setup.py install
 ```

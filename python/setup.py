@@ -271,6 +271,7 @@ if __name__ == '__main__':
       packages=find_packages(
           exclude=[
               'import_test_package',
+              'protobuf_distutils',
           ],
       ),
       test_suite='google.protobuf.internal',

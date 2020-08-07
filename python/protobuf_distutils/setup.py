@@ -97,6 +97,21 @@ setup(
     maintainer='protobuf@googlegroups.com',
     maintainer_email='protobuf@googlegroups.com',
     license='3-Clause BSD License',
+    classifiers=[
+        "Framework :: Setuptools Plugin",
+        "Operating System :: OS Independent",
+        # These Python versions should match the protobuf package:
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Software Development :: Code Generators",
+    ],
     description='This is a distutils extension to generate Python code for .proto files using an installed protoc binary.',
     url='https://github.com/protocolbuffers/protobuf/',
     entry_points={
