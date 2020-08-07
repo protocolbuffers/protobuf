@@ -62,6 +62,8 @@ These are projects we know about implementing Protocol Buffers for other program
 * Javascript: https://github.com/dcodeIO/ProtoBuf.js
 * Javascript: http://code.google.com/p/protobuf-for-node/
 * Javascript: http://code.google.com/p/protostuff/
+* Javascript: https://github.com/seishun/node-protoc-plugin (Node.js port of plugin.h)
+* Javascript: https://github.com/seishun/node-protoc-gen-javascript (Node.js port of the Google-official implementation)
 * Julia: https://github.com/tanmaykm/ProtoBuf.jl
 * Kotlin: https://github.com/marcoferrer/kroto-plus
 * Kotlin: https://github.com/Kotlin/kotlinx.serialization
