@@ -3158,7 +3158,7 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
   // repeated field to calculate ByteSizeLong but use map to serialize the real
   // data, thus the ByteSizeLong may bigger than real serialized size. A crash
-  // might be happen at SerializeToString(). Or an "unexpect end group" warning
+  // might be happen at SerializeToString(). Or an "unexpected end group" warning
   // was raised at parse back if user use SerializeWithCachedSizes() which
   // avoids size check at serialize.
   std::string serialized_data;

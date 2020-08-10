@@ -38,7 +38,7 @@ namespace internal {
 namespace {
 static const int64 kSecondsPerDay = 3600 * 24;
 
-// For DateTime, tests will mostly focuse on the date part because that's
+// For DateTime, tests will mostly focus on the date part because that's
 // the tricky one.
 int64 CreateTimestamp(int year, int month, int day) {
   DateTime time;

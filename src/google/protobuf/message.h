@@ -752,7 +752,7 @@ class PROTOBUF_EXPORT Reflection final {
       Message* message, const FieldDescriptor* field) const;
 
   // DEPRECATED. Please use Get(Mutable)RepeatedFieldRef() for repeated field
-  // access. The following repeated field accesors will be removed in the
+  // access. The following repeated field accessors will be removed in the
   // future.
   //
   // Repeated field accessors  -------------------------------------------------

@@ -200,7 +200,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 ** store pointers or integers of at least 32 bits (upb isn't really useful on
 ** systems where sizeof(void*) < 4).
 **
-** The table must be homogenous (all values of the same type).  In debug
+** The table must be homogeneous (all values of the same type).  In debug
 ** mode, we check this on insert and lookup.
 */
 
@@ -6057,7 +6057,7 @@ typedef struct {
 typedef struct {
   /* Space optimization note: we store two pointers here that the JIT
    * doesn't need at all; the upb_handlers* inside the sink and
-   * the dispatch table pointer.  We can optimze so that the JIT uses
+   * the dispatch table pointer.  We can optimize so that the JIT uses
    * smaller stack frames than the interpreter.  The only thing we need
    * to guarantee is that the fallback routines can find end_ofs. */
   upb_sink sink;

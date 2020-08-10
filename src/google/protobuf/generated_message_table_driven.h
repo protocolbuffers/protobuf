@@ -102,7 +102,7 @@ struct PROTOBUF_EXPORT FieldMetadata {
     kNumTypeClasses  // must be last enum
   };
   // C++ protobuf has 20 fundamental types, were we added Cord and StringPiece
-  // and also distinquish the same types if they have different wire format.
+  // and also distinguish the same types if they have different wire format.
   enum {
     kCordType = 19,
     kStringPieceType = 20,

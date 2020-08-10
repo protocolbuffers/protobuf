@@ -219,7 +219,7 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
     // Library is too old for headers.
     [NSException raise:NSInternalInconsistencyException
                 format:@"Linked to ProtocolBuffer runtime version %d,"
-                       @" but code compiled needing atleast %d!",
+                       @" but code compiled needing at least %d!",
                        GOOGLE_PROTOBUF_OBJC_VERSION, objcRuntimeVersion];
   }
   if (objcRuntimeVersion < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {

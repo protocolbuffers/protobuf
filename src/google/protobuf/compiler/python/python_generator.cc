@@ -1067,7 +1067,7 @@ void Generator::FixContainingTypeInDescriptor(
 }
 
 // Prints statements setting the message_type and enum_type fields in the
-// Python descriptor objects we've already output in ths file.  We must
+// Python descriptor objects we've already output in the file.  We must
 // do this in a separate step due to circular references (otherwise, we'd
 // just set everything in the initial assignment statements).
 void Generator::FixForeignFieldsInDescriptors() const {

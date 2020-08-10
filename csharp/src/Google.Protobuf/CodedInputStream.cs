@@ -652,7 +652,7 @@ namespace Google.Protobuf
 
         /// <summary>
         /// Called when buffer is empty to read more bytes from the
-        /// input.  If <paramref name="mustSucceed"/> is true, RefillBuffer() gurantees that
+        /// input.  If <paramref name="mustSucceed"/> is true, RefillBuffer() guarantees that
         /// either there will be at least one byte in the buffer when it returns
         /// or it will throw an exception.  If <paramref name="mustSucceed"/> is false,
         /// RefillBuffer() returns false if no more bytes were available.

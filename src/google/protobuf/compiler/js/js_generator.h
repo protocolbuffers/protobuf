@@ -125,10 +125,10 @@ struct GeneratorOptions {
   std::string extension;
   // Create a separate output file for each input file?
   bool one_output_file_per_input_file;
-  // If true, we should append annotations as commen on the last line for
+  // If true, we should append annotations as comments on the last line for
   // generated .js file. Annotations used by tools like https://kythe.io
   // to provide cross-references between .js and .proto files. Annotations
-  // are enced as base64 proto of GeneratedCodeInfo message (see
+  // are encoded as base64 proto of GeneratedCodeInfo message (see
   // descriptor.proto).
   bool annotate_code;
 };

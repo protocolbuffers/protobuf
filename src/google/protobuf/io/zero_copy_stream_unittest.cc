@@ -112,7 +112,7 @@ class IoTest : public testing::Test {
   // that it matches the string.
   void ReadString(ZeroCopyInputStream* input, const std::string& str);
   // Writes some text to the output stream in a particular order.  Returns
-  // the number of bytes written, incase the caller needs that to set up an
+  // the number of bytes written, in case the caller needs that to set up an
   // input stream.
   int WriteStuff(ZeroCopyOutputStream* output);
   // Reads text from an input stream and expects it to match what
