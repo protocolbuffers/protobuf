@@ -154,7 +154,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Alternate encodings (JSON, XML, HTML) for Java protobufs](http://code.google.com/p/protobuf-java-format/)
 * [Another JSON encoder/decoder for Java](https://github.com/sijuv/protobuf-codec)
 * [Editor for serialized protobufs](http://code.google.com/p/protobufeditor/)
-* [Intellij IDEA plugin](http://github.com/nnmatveev/idea-plugin-protobuf)
+* [IntelliJ IDEA plugin](http://github.com/jvolkman/intellij-protobuf-editor)
 * [TextMate syntax highlighting](http://github.com/michaeledgar/protobuf-tmbundle)
 * [Oracle PL SQL plugin](http://code.google.com/p/protocol-buffer-plsql/)
 * [Eclipse editor for protobuf (from Google)](http://code.google.com/p/protobuf-dt/)
