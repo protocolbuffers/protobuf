@@ -29,7 +29,7 @@ else()
 endif()
 
 # The Intel compiler isn't able to deal with noinline member functions of
-# template classses defined in headers.  As such it spams the output with
+# template classes defined in headers.  As such it spams the output with
 #   warning #2196: routine is both "inline" and "noinline"
 # This silences that warning.
 if (CMAKE_CXX_COMPILER_ID MATCHES Intel)

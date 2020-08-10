@@ -401,7 +401,7 @@ def _CheckDurationValid(seconds, nanos):
 
 def _RoundTowardZero(value, divider):
   """Truncates the remainder part after division."""
-  # For some languanges, the sign of the remainder is implementation
+  # For some languages, the sign of the remainder is implementation
   # dependent if any of the operands is negative. Here we enforce
   # "rounded toward zero" semantics. For example, for (-5) / 2 an
   # implementation may give -3 as the result with the remainder being

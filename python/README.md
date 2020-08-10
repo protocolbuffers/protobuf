@@ -22,7 +22,7 @@ package.
 Development Warning
 ===================
 
-The pure python performance is slow. For better preformance please
+The pure python performance is slow. For better performance please
 use python c++ implementation.
 
 Installation

@@ -68,7 +68,7 @@ how to use them.
 
 Most users should follow the instructions above to use protobuf Java runtime.
 If you are contributing code to protobuf or want to use a protobuf version
-that hasn't been officially released yet, you can folllow the instructions
+that hasn't been officially released yet, you can follow the instructions
 below to build protobuf from source code.
 
 ### Build from Source - With Maven

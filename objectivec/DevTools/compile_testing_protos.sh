@@ -95,7 +95,7 @@ cd "${SRCROOT}/.."
 # -----------------------------------------------------------------------------
 RUN_PROTOC=no
 
-# Check to if all the output files exist (incase a new one got added).
+# Check to if all the output files exist (in case a new one got added).
 
 for PROTO_FILE in "${CORE_PROTO_FILES[@]}" "${OBJC_TEST_PROTO_FILES[@]}"; do
   DIR=${PROTO_FILE%/*}

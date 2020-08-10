@@ -421,7 +421,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
       "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n");
   if (includes_oneof) {
     // The generated code for oneof's uses direct ivar access, suppress the
-    // warning incase developer turn that on in the context they compile the
+    // warning in case developer turn that on in the context they compile the
     // generated code.
     printer->Print(
         "#pragma clang diagnostic ignored \"-Wdirect-ivar-access\"\n");
