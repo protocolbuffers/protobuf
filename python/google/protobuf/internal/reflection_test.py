@@ -2791,7 +2791,7 @@ class SerializationTest(unittest.TestCase):
 
     serialized = proto.SerializeToString()
 
-    # The empty message should be parseable with all of the fields
+    # The empty message should be parsable with all of the fields
     # unknown.
     proto2 = unittest_pb2.TestEmptyMessage()
 
@@ -2804,7 +2804,7 @@ class SerializationTest(unittest.TestCase):
     proto = unittest_pb2.TestAllTypes()
     proto.optional_int64 = 0x0fffffffffffffff
     serialized = proto.SerializeToString()
-    # The empty message should be parseable with all of the fields
+    # The empty message should be parsable with all of the fields
     # unknown.
     proto2 = unittest_pb2.TestEmptyMessage()
     # Parsing this message should succeed.

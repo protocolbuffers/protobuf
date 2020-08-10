@@ -160,7 +160,7 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
 
   CodeGeneratorRequest request;
   if (!request.ParseFromFileDescriptor(STDIN_FILENO)) {
-    std::cerr << argv[0] << ": protoc sent unparseable request to plugin."
+    std::cerr << argv[0] << ": protoc sent unparsable request to plugin."
               << std::endl;
     return 1;
   }

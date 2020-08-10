@@ -181,7 +181,7 @@ namespace Google.Protobuf
         /// is included with the base64 data from the <see cref="Any.Value"/> property of the message.
         /// </para>
         /// <para>The value returned by this method is only designed to be used for diagnostic
-        /// purposes. It may not be parseable by <see cref="JsonParser"/>, and may not be parseable
+        /// purposes. It may not be parsable by <see cref="JsonParser"/>, and may not be parsable
         /// by other Protocol Buffer implementations.</para>
         /// </remarks>
         /// <param name="message">The message to format for diagnostic purposes.</param>
