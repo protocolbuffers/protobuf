@@ -718,7 +718,7 @@ TEST_F(TextFormatTest, CompactRepeatedFieldPrinter) {
       text);
 }
 
-// Print strings into multiple line, with indention. Use this to test
+// Print strings into multiple line, with indentation. Use this to test
 // BaseTextGenerator::Indent and BaseTextGenerator::Outdent.
 class MultilineStringPrinter : public TextFormat::FastFieldValuePrinter {
  public:
@@ -2031,7 +2031,7 @@ TEST(TextFormatUnknownFieldTest, TestUnknownField) {
                              "  }\n"
                              ">",
                              &proto));
-  // Unmatched delimeters for message body
+  // Unmatched delimiters for message body
   EXPECT_FALSE(parser.ParseFromString("unknown_message: {>", &proto));
   // Unknown extension
   EXPECT_TRUE(

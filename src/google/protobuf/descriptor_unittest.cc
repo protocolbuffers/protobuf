@@ -479,7 +479,7 @@ TEST_F(FileDescriptorTest, FindExtensionByNumber) {
 
 
 TEST_F(FileDescriptorTest, BuildAgain) {
-  // Test that if te call BuildFile again on the same input we get the same
+  // Test that if we call BuildFile again on the same input we get the same
   // FileDescriptor back.
   FileDescriptorProto file;
   foo_file_->CopyTo(&file);

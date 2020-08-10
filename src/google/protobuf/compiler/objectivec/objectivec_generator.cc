@@ -123,7 +123,7 @@ bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& 
       // Any number of files can be listed for a framework, just separate them
       // with commas.
       //
-      // There can be multiple lines listing the same frameworkName incase it
+      // There can be multiple lines listing the same frameworkName in case it
       // has a lot of proto files included in it; having multiple lines makes
       // things easier to read. If a proto file is not configured in the
       // mappings file, it will use the default framework name if one was passed
