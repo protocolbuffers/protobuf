@@ -28,10 +28,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Setuptools extension for generating Python protobuf code.
+"""Setuptools/distutils extension for generating Python protobuf code.
 
 This extension uses a prebuilt 'protoc' binary to generate Python types for
-protobuf sources.
+protobuf sources. By default, it will use a system-installed protoc binary, but
+a custom protoc can be specified by flag.
 
 This command should usually be run before the 'build' command, so that the
 generated sources are treated the same way as the rest of the Python
@@ -40,8 +41,8 @@ sources.
 Options:
 
     source_dir:
-        Sets the .proto file root path. This will be used to find proto files, and
-        to resolve imports.
+        Sets the .proto file root path. This will be used to find proto files,
+        and to resolve imports.
 
         The default behavior is to generate sources for all .proto files found
         under `source_dirs`, recursively. This can be controlled with options
@@ -84,6 +85,7 @@ Options:
         search `source_dir` recursively. This option controls the recursive
         search; if it is False, only .proto files immediately under `source_dir`
         will be used to generate sources.
+
 """
 
 __author__ = 'dlj@google.com (David L. Jones)'
@@ -110,13 +112,16 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Software Development :: Code Generators",
     ],
-    description='This is a distutils extension to generate Python code for .proto files using an installed protoc binary.',
+    description=('This is a distutils extension to generate Python code for '
+                 '.proto files using an installed protoc binary.'),
     url='https://github.com/protocolbuffers/protobuf/',
     entry_points={
         'distutils.commands': [
-            'generate_py_protobufs = protobuf_distutils.generate_py_protos:generate_py_protobufs',
+            ('generate_py_protobufs = '
+             'protobuf_distutils.generate_py_protobufs:generate_py_protobufs'),
         ],
     },
 )
