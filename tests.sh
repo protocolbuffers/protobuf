@@ -740,29 +740,10 @@ build_php8.0_mixed() {
   popd
 }
 
-build_php8.0_zts_c() {
-  IS_64BIT=$1
-  use_php_zts 8.0
-  php/tests/test.sh
-  pushd conformance
-  if [ "$IS_64BIT" = "true" ]
-  then
-    make test_php_c
-  else
-    make test_php_c_32
-  fi
-  popd
-}
-
-build_php8.0_zts_c_64() {
-  build_php8.0_zts_c true
-}
-
 build_php8.0_all() {
   build_php8.0
   build_php8.0_c_64
   build_php8.0_mixed
-  build_php8.0_zts_c_64
 }
 
 build_php_all_32() {
