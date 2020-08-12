@@ -57,12 +57,18 @@ $ python setup.py install
 
 - `source_dir`:
 
-  Sets the .proto file root path. This will be used to find proto files, and
-  to resolve imports.
+  This is the directory holding .proto files to be processed.
 
-  The default behavior is to generate sources for all .proto files found
-  under `source_dirs`, recursively. This can be controlled with options
-  below.
+  The default behavior is to generate sources for all .proto files found under
+  `source_dir`, recursively. This behavior can be controlled with options below.
+
+- `proto_root_path`:
+
+  This is the root path for resolving imports in source .proto files.
+
+  The default is the shortest prefix of `source_dir` among:
+
+      [source_dir] + self.extra_proto_paths
 
 - `extra_proto_paths`:
 

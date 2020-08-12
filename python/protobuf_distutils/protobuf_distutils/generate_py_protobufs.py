@@ -55,6 +55,7 @@ class generate_py_protobufs(Command):
     def initialize_options(self):
         """Sets the defaults for the command options."""
         self.source_dir = None
+        self.proto_root_path = None
         self.extra_proto_paths = []
         self.output_dir = '.'
         self.proto_files = None
@@ -74,25 +75,69 @@ class generate_py_protobufs(Command):
             self.output_dir = '.'
         self.ensure_dirname('output_dir')
 
+        # SUBTLE: if 'source_dir' is a subdirectory of any entry in
+        # 'extra_proto_paths', then in general, the shortest --proto_path prefix
+        # (and the longest relative .proto filenames) must be used for
+        # correctness. For example, consider:
+        #
+        #     source_dir = 'a/b/c'
+        #     extra_proto_paths = ['a/b', 'x/y']
+        #
+        # In this case, we must ensure that a/b/c/d/foo.proto resolves
+        # canonically as c/d/foo.proto, not just d/foo.proto. Otherwise, this
+        # import:
+        #
+        #     import "c/d/foo.proto";
+        #
+        # would result in different FileDescriptor.name keys from "d/foo.proto".
+        # That will cause all the definitions in the file to be flagged as
+        # duplicates, with an error similar to:
+        #
+        #     c/d/foo.proto: "packagename.MessageName" is already defined in file "d/foo.proto"
+        #
+        # For paths in self.proto_files, we transform them to be relative to
+        # self.proto_root_path, which may be different from self.source_dir.
+        #
+        # Although the order of --proto_paths is significant, shadowed filenames
+        # are errors: if 'a/b/c.proto' resolves to different files under two
+        # different --proto_path arguments, then the path is rejected as an
+        # error. (Implementation note: this is enforced in protoc's
+        # DiskSourceTree class.)
+
+        if self.proto_root_path is None:
+            self.proto_root_path = os.path.normpath(self.source_dir)
+            for root_candidate in self.extra_proto_paths:
+                root_candidate = os.path.normpath(root_candidate)
+                if self.proto_root_path.startswith(root_candidate):
+                    self.proto_root_path = root_candidate
+            if self.proto_root_path != self.source_dir:
+                self.announce('using computed proto_root_path: ' + self.proto_root_path, level=2)
+
+        if not self.source_dir.startswith(self.proto_root_path):
+            raise DistutilsOptionError('source_dir ' + self.source_dir +
+                                       ' is not under proto_root_path ' + self.proto_root_path)
+
         if self.proto_files is None:
             files = glob.glob(os.path.join(self.source_dir, '*.proto'))
             if self.recurse:
                 files.extend(glob.glob(os.path.join(self.source_dir, '**', '*.proto')))
-            self.proto_files = [f.partition(self.source_dir + os.path.sep)[-1] for f in files]
+            self.proto_files = [f.partition(self.proto_root_path + os.path.sep)[-1] for f in files]
             if not self.proto_files:
                 raise DistutilsOptionError('no .proto files were found under ' + self.source_dir)
-                
+
         self.ensure_string_list('proto_files')
 
         if self.protoc is None:
             self.protoc = spawn.find_executable('protoc')
 
     def run(self):
+        # All proto file paths were adjusted in finalize_options to be relative
+        # to self.proto_root_path.
+        proto_paths = ['--proto_path=' + self.proto_root_path]
+        proto_paths.extend(['--proto_path=' + x for x in self.extra_proto_paths])
+
         # Run protoc. It was already resolved, so don't try to resolve
         # through PATH.
-        proto_paths = ['--proto_path=' + self.source_dir]
-        for extra in self.extra_proto_paths:
-            proto_paths.append('--proto_path=' + extra)
         spawn.spawn(
             [self.protoc,
              '--python_out=' + self.output_dir,

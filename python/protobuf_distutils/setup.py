@@ -41,12 +41,17 @@ sources.
 Options:
 
     source_dir:
-        Sets the .proto file root path. This will be used to find proto files,
-        and to resolve imports.
+        This is the directory holding .proto files to be processed.
 
         The default behavior is to generate sources for all .proto files found
-        under `source_dirs`, recursively. This can be controlled with options
-        below.
+        under `source_dir`, recursively. This behavior can be controlled with
+        options below.
+
+    proto_root_path:
+        This is the root path for resolving imports in source .proto files.
+
+        The default is the shortest prefix of `source_dir` among:
+            [source_dir] + self.extra_proto_paths
 
     extra_proto_paths:
         Specifies additional paths that should be used to find imports, in
@@ -59,13 +64,13 @@ Options:
     output_dir:
         Specifies where generated code should be placed.
 
-        Typically, this should be the project root package. The generated files
-        will be placed under `output_dir` according to the relative source paths
-        under `source_dir`.
+        Typically, this should be the root of the package that should hold the
+        generated files.
 
-        For example, the source file:
+        The generated files will be named according to the relative source paths
+        under `source_dir`. For example, this source .proto file:
             ${source_dir}/subdir/message.proto
-        will be generated as this Python file:
+        will correspond to this generated Python file:
             ${output_dir}/subdir/message_pb2.py
 
     proto_files:
@@ -73,7 +78,8 @@ Options:
         searching for all .proto files under `source_path`.
 
         These paths are relative to `source_dir`. For example, to generate code
-        for just ${source_dir}/subdir/message.proto:
+        for just ${source_dir}/subdir/message.proto, specify
+        ['subdir/message.proto'].
 
     protoc:
         By default, the protoc binary (the Protobuf compiler) is found by
