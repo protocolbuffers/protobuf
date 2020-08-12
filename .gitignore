@@ -137,8 +137,10 @@ conformance/*.class
 
 # php test output
 composer.lock
+php/tests/.phpunit.result.cache
 php/tests/generated/
 php/tests/old_protoc
+php/tests/phpunit-9.phar
 php/tests/protobuf/
 php/tests/core
 php/tests/vgcore*

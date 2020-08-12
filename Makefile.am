@@ -915,23 +915,23 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/UInt64Value.php                             \
   php/src/Google/Protobuf/Value.php                                   \
   php/src/phpdoc.dist.xml                                             \
-  php/tests/array_test.php                                            \
+  php/tests/ArrayTest.php                                             \
   php/tests/autoload.php                                              \
   php/tests/bootstrap_phpunit.php                                     \
   php/tests/compatibility_test.sh                                     \
   php/tests/compile_extension.sh                                      \
-  php/tests/descriptors_test.php                                      \
-  php/tests/encode_decode_test.php                                    \
+  php/tests/DescriptorsTest.php                                       \
+  php/tests/EncodeDecodeTest.php                                      \
   php/tests/gdb_test.sh                                               \
   php/tests/generate_protos.sh                                        \
-  php/tests/generated_class_test.php                                  \
-  php/tests/generated_phpdoc_test.php                                 \
-  php/tests/generated_service_test.php                                \
-  php/tests/map_field_test.php                                        \
+  php/tests/GeneratedClassTest.php                                    \
+  php/tests/GeneratedPhpdocTest.php                                   \
+  php/tests/GeneratedServiceTest.php                                  \
+  php/tests/MapFieldTest.php                                          \
   php/tests/memory_leak_test.php                                      \
   php/tests/multirequest.php                                          \
   php/tests/multirequest.sh                                           \
-  php/tests/php_implementation_test.php                               \
+  php/tests/PhpImplementationTest.php                                 \
   php/tests/proto/empty/echo.proto                                    \
   php/tests/proto/test.proto                                          \
   php/tests/proto/test_descriptors.proto                              \
@@ -955,8 +955,8 @@ php_EXTRA_DIST=                                                       \
   php/tests/test_util.php                                             \
   php/tests/undefined_test.php                                        \
   php/tests/valgrind.supp                                             \
-  php/tests/well_known_test.php                                       \
-  php/tests/wrapper_type_setters_test.php
+  php/tests/WellKnownTest.php                                         \
+  php/tests/WrapperTypeSettersTest.php
 
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
