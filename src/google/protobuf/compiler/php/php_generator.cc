@@ -636,12 +636,6 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
         "name", field->name(),
         "initial_value", initial_value);
   }
-
-  if (is_descriptor) {
-    printer->Print(
-        "private $has_^name^ = false;\n",
-        "name", field->name());
-  }
 }
 
 void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
@@ -797,13 +791,6 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "name", field->name());
   }
 
-  // Set has bit for proto2 only.
-  if (is_descriptor) {
-    printer->Print(
-        "$this->has_^field_name^ = true;\n",
-        "field_name", field->name());
-  }
-
   printer->Print("\nreturn $this;\n");
 
   Outdent(printer);
@@ -822,17 +809,6 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "{\n"
         "    $this->writeWrapperValue(\"^field_name^\", $var);\n"
         "    return $this;"
-        "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "field_name", field->name());
-  }
-
-  // Generate has method for proto2 only.
-  if (is_descriptor) {
-    printer->Print(
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    return $this->has_^field_name^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "field_name", field->name());
