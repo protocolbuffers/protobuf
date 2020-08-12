@@ -826,17 +826,6 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "field_name", field->name());
   }
-
-  // Generate has method for proto2 only.
-  if (is_descriptor) {
-    printer->Print(
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    return $this->has_^field_name^;\n"
-        "}\n\n",
-        "camel_name", UnderscoresToCamelCase(field->name(), true),
-        "field_name", field->name());
-  }
 }
 
 void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {

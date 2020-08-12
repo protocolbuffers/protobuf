@@ -228,10 +228,5 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasLocation()
-    {
-        return $this->has_location;
-    }
-
 }
 

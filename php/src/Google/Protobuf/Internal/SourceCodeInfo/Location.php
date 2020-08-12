@@ -93,12 +93,12 @@ class Location extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string leading_comments = 3;</code>
      */
-    protected $leading_comments = '';
+    protected $leading_comments = null;
     private $has_leading_comments = false;
     /**
      * Generated from protobuf field <code>optional string trailing_comments = 4;</code>
      */
-    protected $trailing_comments = '';
+    protected $trailing_comments = null;
     private $has_trailing_comments = false;
     /**
      * Generated from protobuf field <code>repeated string leading_detached_comments = 6;</code>
@@ -253,11 +253,6 @@ class Location extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasPath()
-    {
-        return $this->has_path;
-    }
-
     /**
      * Always has exactly three or four elements: start line, start column,
      * end line (optional, otherwise assumed same as start line), end column.
@@ -291,11 +286,6 @@ class Location extends \Google\Protobuf\Internal\Message
         $this->has_span = true;
 
         return $this;
-    }
-
-    public function hasSpan()
-    {
-        return $this->has_span;
     }
 
     /**
@@ -341,7 +331,17 @@ class Location extends \Google\Protobuf\Internal\Message
      */
     public function getLeadingComments()
     {
-        return $this->leading_comments;
+        return isset($this->leading_comments) ? $this->leading_comments : '';
+    }
+
+    public function hasLeadingComments()
+    {
+        return isset($this->leading_comments);
+    }
+
+    public function clearLeadingComments()
+    {
+        unset($this->leading_comments);
     }
 
     /**
@@ -395,18 +395,23 @@ class Location extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasLeadingComments()
-    {
-        return $this->has_leading_comments;
-    }
-
     /**
      * Generated from protobuf field <code>optional string trailing_comments = 4;</code>
      * @return string
      */
     public function getTrailingComments()
     {
-        return $this->trailing_comments;
+        return isset($this->trailing_comments) ? $this->trailing_comments : '';
+    }
+
+    public function hasTrailingComments()
+    {
+        return isset($this->trailing_comments);
+    }
+
+    public function clearTrailingComments()
+    {
+        unset($this->trailing_comments);
     }
 
     /**
@@ -421,11 +426,6 @@ class Location extends \Google\Protobuf\Internal\Message
         $this->has_trailing_comments = true;
 
         return $this;
-    }
-
-    public function hasTrailingComments()
-    {
-        return $this->has_trailing_comments;
     }
 
     /**
@@ -449,11 +449,6 @@ class Location extends \Google\Protobuf\Internal\Message
         $this->has_leading_detached_comments = true;
 
         return $this;
-    }
-
-    public function hasLeadingDetachedComments()
-    {
-        return $this->has_leading_detached_comments;
     }
 
 }

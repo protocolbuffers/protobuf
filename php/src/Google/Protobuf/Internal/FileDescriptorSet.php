@@ -61,10 +61,5 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasFile()
-    {
-        return $this->has_file;
-    }
-
 }
 

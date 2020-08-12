@@ -24,12 +24,12 @@ class NamePart extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>required string name_part = 1;</code>
      */
-    protected $name_part = '';
+    protected $name_part = null;
     private $has_name_part = false;
     /**
      * Generated from protobuf field <code>required bool is_extension = 2;</code>
      */
-    protected $is_extension = false;
+    protected $is_extension = null;
     private $has_is_extension = false;
 
     /**
@@ -53,7 +53,17 @@ class NamePart extends \Google\Protobuf\Internal\Message
      */
     public function getNamePart()
     {
-        return $this->name_part;
+        return isset($this->name_part) ? $this->name_part : '';
+    }
+
+    public function hasNamePart()
+    {
+        return isset($this->name_part);
+    }
+
+    public function clearNamePart()
+    {
+        unset($this->name_part);
     }
 
     /**
@@ -70,18 +80,23 @@ class NamePart extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasNamePart()
-    {
-        return $this->has_name_part;
-    }
-
     /**
      * Generated from protobuf field <code>required bool is_extension = 2;</code>
      * @return bool
      */
     public function getIsExtension()
     {
-        return $this->is_extension;
+        return isset($this->is_extension) ? $this->is_extension : false;
+    }
+
+    public function hasIsExtension()
+    {
+        return isset($this->is_extension);
+    }
+
+    public function clearIsExtension()
+    {
+        unset($this->is_extension);
     }
 
     /**
@@ -96,11 +111,6 @@ class NamePart extends \Google\Protobuf\Internal\Message
         $this->has_is_extension = true;
 
         return $this;
-    }
-
-    public function hasIsExtension()
-    {
-        return $this->has_is_extension;
     }
 
 }

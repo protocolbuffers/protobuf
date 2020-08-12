@@ -65,10 +65,5 @@ class ExtensionRangeOptions extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasUninterpretedOption()
-    {
-        return $this->has_uninterpreted_option;
-    }
-
 }
 

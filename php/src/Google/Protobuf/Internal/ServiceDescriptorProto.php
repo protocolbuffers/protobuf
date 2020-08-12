@@ -20,7 +20,7 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    protected $name = '';
+    protected $name = null;
     private $has_name = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.MethodDescriptorProto method = 2;</code>
@@ -55,7 +55,17 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getName()
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : '';
+    }
+
+    public function hasName()
+    {
+        return isset($this->name);
+    }
+
+    public function clearName()
+    {
+        unset($this->name);
     }
 
     /**
@@ -70,11 +80,6 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_name = true;
 
         return $this;
-    }
-
-    public function hasName()
-    {
-        return $this->has_name;
     }
 
     /**
@@ -100,18 +105,23 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasMethod()
-    {
-        return $this->has_method;
-    }
-
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ServiceOptions options = 3;</code>
      * @return \Google\Protobuf\Internal\ServiceOptions
      */
     public function getOptions()
     {
-        return $this->options;
+        return isset($this->options) ? $this->options : null;
+    }
+
+    public function hasOptions()
+    {
+        return isset($this->options);
+    }
+
+    public function clearOptions()
+    {
+        unset($this->options);
     }
 
     /**
@@ -126,11 +136,6 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_options = true;
 
         return $this;
-    }
-
-    public function hasOptions()
-    {
-        return $this->has_options;
     }
 
 }

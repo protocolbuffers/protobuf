@@ -22,14 +22,14 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    protected $name = '';
+    protected $name = null;
     private $has_name = false;
     /**
      * e.g. "foo", "foo.bar", etc.
      *
      * Generated from protobuf field <code>optional string package = 2;</code>
      */
-    protected $package = '';
+    protected $package = null;
     private $has_package = false;
     /**
      * Names of files imported by this file.
@@ -96,7 +96,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string syntax = 12;</code>
      */
-    protected $syntax = '';
+    protected $syntax = null;
     private $has_syntax = false;
 
     /**
@@ -145,7 +145,17 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getName()
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : '';
+    }
+
+    public function hasName()
+    {
+        return isset($this->name);
+    }
+
+    public function clearName()
+    {
+        unset($this->name);
     }
 
     /**
@@ -164,11 +174,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasName()
-    {
-        return $this->has_name;
-    }
-
     /**
      * e.g. "foo", "foo.bar", etc.
      *
@@ -177,7 +182,17 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getPackage()
     {
-        return $this->package;
+        return isset($this->package) ? $this->package : '';
+    }
+
+    public function hasPackage()
+    {
+        return isset($this->package);
+    }
+
+    public function clearPackage()
+    {
+        unset($this->package);
     }
 
     /**
@@ -194,11 +209,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_package = true;
 
         return $this;
-    }
-
-    public function hasPackage()
-    {
-        return $this->has_package;
     }
 
     /**
@@ -228,11 +238,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasDependency()
-    {
-        return $this->has_dependency;
-    }
-
     /**
      * Indexes of the public imported files in the dependency list above.
      *
@@ -258,11 +263,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_public_dependency = true;
 
         return $this;
-    }
-
-    public function hasPublicDependency()
-    {
-        return $this->has_public_dependency;
     }
 
     /**
@@ -294,11 +294,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasWeakDependency()
-    {
-        return $this->has_weak_dependency;
-    }
-
     /**
      * All top-level definitions in this file.
      *
@@ -326,11 +321,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasMessageType()
-    {
-        return $this->has_message_type;
-    }
-
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
@@ -352,11 +342,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_enum_type = true;
 
         return $this;
-    }
-
-    public function hasEnumType()
-    {
-        return $this->has_enum_type;
     }
 
     /**
@@ -382,11 +367,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasService()
-    {
-        return $this->has_service;
-    }
-
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
@@ -410,18 +390,23 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasExtension()
-    {
-        return $this->has_extension;
-    }
-
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions options = 8;</code>
      * @return \Google\Protobuf\Internal\FileOptions
      */
     public function getOptions()
     {
-        return $this->options;
+        return isset($this->options) ? $this->options : null;
+    }
+
+    public function hasOptions()
+    {
+        return isset($this->options);
+    }
+
+    public function clearOptions()
+    {
+        unset($this->options);
     }
 
     /**
@@ -438,11 +423,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasOptions()
-    {
-        return $this->has_options;
-    }
-
     /**
      * This field contains optional information about the original source code.
      * You may safely remove this entire field without harming runtime
@@ -454,7 +434,17 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getSourceCodeInfo()
     {
-        return $this->source_code_info;
+        return isset($this->source_code_info) ? $this->source_code_info : null;
+    }
+
+    public function hasSourceCodeInfo()
+    {
+        return isset($this->source_code_info);
+    }
+
+    public function clearSourceCodeInfo()
+    {
+        unset($this->source_code_info);
     }
 
     /**
@@ -476,11 +466,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasSourceCodeInfo()
-    {
-        return $this->has_source_code_info;
-    }
-
     /**
      * The syntax of the proto file.
      * The supported values are "proto2" and "proto3".
@@ -490,7 +475,17 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getSyntax()
     {
-        return $this->syntax;
+        return isset($this->syntax) ? $this->syntax : '';
+    }
+
+    public function hasSyntax()
+    {
+        return isset($this->syntax);
+    }
+
+    public function clearSyntax()
+    {
+        unset($this->syntax);
     }
 
     /**
@@ -508,11 +503,6 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_syntax = true;
 
         return $this;
-    }
-
-    public function hasSyntax()
-    {
-        return $this->has_syntax;
     }
 
 }

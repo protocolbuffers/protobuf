@@ -20,7 +20,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    protected $name = '';
+    protected $name = null;
     private $has_name = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto field = 2;</code>
@@ -102,7 +102,17 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getName()
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : '';
+    }
+
+    public function hasName()
+    {
+        return isset($this->name);
+    }
+
+    public function clearName()
+    {
+        unset($this->name);
     }
 
     /**
@@ -117,11 +127,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_name = true;
 
         return $this;
-    }
-
-    public function hasName()
-    {
-        return $this->has_name;
     }
 
     /**
@@ -147,11 +152,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasField()
-    {
-        return $this->has_field;
-    }
-
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 6;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
@@ -173,11 +173,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_extension = true;
 
         return $this;
-    }
-
-    public function hasExtension()
-    {
-        return $this->has_extension;
     }
 
     /**
@@ -203,11 +198,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasNestedType()
-    {
-        return $this->has_nested_type;
-    }
-
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 4;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
@@ -229,11 +219,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_enum_type = true;
 
         return $this;
-    }
-
-    public function hasEnumType()
-    {
-        return $this->has_enum_type;
     }
 
     /**
@@ -259,11 +244,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasExtensionRange()
-    {
-        return $this->has_extension_range;
-    }
-
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
@@ -287,18 +267,23 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasOneofDecl()
-    {
-        return $this->has_oneof_decl;
-    }
-
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MessageOptions options = 7;</code>
      * @return \Google\Protobuf\Internal\MessageOptions
      */
     public function getOptions()
     {
-        return $this->options;
+        return isset($this->options) ? $this->options : null;
+    }
+
+    public function hasOptions()
+    {
+        return isset($this->options);
+    }
+
+    public function clearOptions()
+    {
+        unset($this->options);
     }
 
     /**
@@ -313,11 +298,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_options = true;
 
         return $this;
-    }
-
-    public function hasOptions()
-    {
-        return $this->has_options;
     }
 
     /**
@@ -341,11 +321,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_reserved_range = true;
 
         return $this;
-    }
-
-    public function hasReservedRange()
-    {
-        return $this->has_reserved_range;
     }
 
     /**
@@ -375,11 +350,6 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $this->has_reserved_name = true;
 
         return $this;
-    }
-
-    public function hasReservedName()
-    {
-        return $this->has_reserved_name;
     }
 
 }

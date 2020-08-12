@@ -73,10 +73,5 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
         return $this;
     }
 
-    public function hasAnnotation()
-    {
-        return $this->has_annotation;
-    }
-
 }
 
