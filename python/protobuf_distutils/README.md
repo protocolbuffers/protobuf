@@ -75,19 +75,20 @@ $ python setup.py install
   addition to `source_dir`.
 
   This option can be used to specify the path to other protobuf sources,
-  which are separately converted into Python sources.  No Python code will
-  be generated for .proto files under these paths.
+  which are imported by files under `source_dir`.  No Python code will
+  be generated for .proto files under `extra_proto_paths`.
 
 - `output_dir`:
 
   Specifies where generated code should be placed.
 
-  Typically, this should be the project root package. The generated files
-  will be placed under `output_dir` according to the relative source paths
-  under `source_dir`.
+  Typically, this should be the root package that generated Python modules
+  should be below.
 
-  For example, the source file `${source_dir}/subdir/message.proto`
-  will be generated as the Python file `${output_dir}/subdir/message_pb2.py`.
+  The generated files will be placed under `output_dir` according to the
+  relative source paths under `proto_root_path`. For example, the source file
+  `${proto_root_path}/subdir/message.proto` will be generated as the Python
+  module `${output_dir}/subdir/message_pb2.py`.
 
 - `proto_files`:
 
