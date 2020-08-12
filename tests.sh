@@ -701,6 +701,51 @@ build_php7.4_zts_c() {
   popd
 }
 
+build_php8.0() {
+  use_php 8.0
+  pushd php
+  rm -rf vendor
+  composer update
+  composer test
+  popd
+  (cd conformance && make test_php)
+}
+
+build_php8.0_c() {
+  IS_64BIT=$1
+  use_php 8.0
+  php/tests/test.sh
+  pushd conformance
+  if [ "$IS_64BIT" = "true" ]
+  then
+    make test_php_c
+  else
+    make test_php_c_32
+  fi
+  popd
+}
+
+build_php8.0_c_64() {
+  build_php8.0_c true
+}
+
+build_php8.0_mixed() {
+  use_php 8.0
+  pushd php
+  rm -rf vendor
+  composer update
+  tests/compile_extension.sh
+  tests/generate_protos.sh
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
+build_php8.0_all() {
+  build_php8.0
+  build_php8.0_c_64
+  build_php8.0_mixed
+}
+
 build_php_all_32() {
   build_php5.5
   build_php5.6

@@ -95,10 +95,10 @@ static void Message_dtor(zend_object* obj) {
  *
  * Helper function to look up a field given a member name (as a string).
  */
-static const upb_fielddef *get_field(Message *msg, zval *member) {
+static const upb_fielddef *get_field(Message *msg, PROTO_STR *member) {
   const upb_msgdef *m = msg->desc->msgdef;
   const upb_fielddef *f =
-      upb_msgdef_ntof(m, Z_STRVAL_P(member), Z_STRLEN_P(member));
+      upb_msgdef_ntof(m, PROTO_STRVAL_P(member), PROTO_STRLEN_P(member));
 
   if (!f) {
     zend_throw_exception_ex(NULL, 0, "No such property %s.",
@@ -126,9 +126,10 @@ static const upb_fielddef *get_field(Message *msg, zval *member) {
  *       return isset($this->optional_int32);
  *   }
  */
-static int Message_has_property(zval *obj, zval *member, int has_set_exists,
+static int Message_has_property(PROTO_VAL *obj, PROTO_STR *member,
+                                int has_set_exists,
                                 void **cache_slot) {
-  Message* intern = (Message*)Z_OBJ_P(obj);
+  Message* intern = PROTO_MSG_P(obj);
   const upb_fielddef *f = get_field(intern, member);
 
   if (!f) return 0;
@@ -161,8 +162,9 @@ static int Message_has_property(zval *obj, zval *member, int has_set_exists,
  *       unset($this->optional_int32);
  *   }
  */
-static void Message_unset_property(zval *obj, zval *member, void **cache_slot) {
-  Message* intern = (Message*)Z_OBJ_P(obj);
+static void Message_unset_property(PROTO_VAL *obj, PROTO_STR *member,
+                                   void **cache_slot) {
+  Message* intern = PROTO_MSG_P(obj);
   const upb_fielddef *f = get_field(intern, member);
 
   if (!f) return;
@@ -196,9 +198,9 @@ static void Message_unset_property(zval *obj, zval *member, void **cache_slot) {
  * We lookup the field and return the scalar, RepeatedField, or MapField for
  * this field.
  */
-static zval *Message_read_property(zval *obj, zval *member, int type,
-                                   void **cache_slot, zval *rv) {
-  Message* intern = (Message*)Z_OBJ_P(obj);
+static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
+                                   int type, void **cache_slot, zval *rv) {
+  Message* intern = PROTO_MSG_P(obj);
   const upb_fielddef *f = get_field(intern, member);
   upb_arena *arena = Arena_Get(&intern->arena);
 
@@ -240,29 +242,41 @@ static zval *Message_read_property(zval *obj, zval *member, int type,
  * The C extension version of checkInt32() doesn't actually check anything, so
  * we perform all checking and conversion in this function.
  */
-static void Message_write_property(zval *obj, zval *member, zval *val,
-                                   void **cache_slot) {
-  Message* intern = (Message*)Z_OBJ_P(obj);
+static PROTO_RETURN_VAL Message_write_property(
+    PROTO_VAL *obj, PROTO_STR *member, zval *val, void **cache_slot) {
+  Message* intern = PROTO_MSG_P(obj);
   const upb_fielddef *f = get_field(intern, member);
   upb_arena *arena = Arena_Get(&intern->arena);
   upb_msgval msgval;
 
-  if (!f) return;
+  if (!f) goto error;
 
   if (upb_fielddef_ismap(f)) {
     msgval.map_val = MapField_GetUpbMap(val, f, arena);
-    if (!msgval.map_val) return;
+    if (!msgval.map_val) goto error;
   } else if (upb_fielddef_isseq(f)) {
     msgval.array_val = RepeatedField_GetUpbArray(val, f, arena);
-    if (!msgval.array_val) return;
+    if (!msgval.array_val) goto error;
   } else {
     upb_fieldtype_t type = upb_fielddef_type(f);
     const Descriptor *subdesc = Descriptor_GetFromFieldDef(f);
     bool ok = Convert_PhpToUpb(val, &msgval, type, subdesc, arena);
-    if (!ok) return;
+    if (!ok) goto error;
   }
 
   upb_msg_set(intern->msg, f, msgval, arena);
+#if PHP_VERSION_ID < 704000
+  return;
+#else
+  return val;
+#endif
+
+error:
+#if PHP_VERSION_ID < 704000
+  return;
+#else
+  return &EG(error_zval);
+#endif
 }
 
 /**
@@ -272,7 +286,8 @@ static void Message_write_property(zval *obj, zval *member, zval *val,
  * reference to our internal properties. We don't support this, so we return
  * NULL.
  */
-static zval *Message_get_property_ptr_ptr(zval *object, zval *member, int type,
+static zval *Message_get_property_ptr_ptr(PROTO_VAL *object, PROTO_STR *member,
+                                          int type,
                                           void **cache_slot) {
   return NULL;  // We do not have a properties table.
 }
@@ -283,7 +298,7 @@ static zval *Message_get_property_ptr_ptr(zval *object, zval *member, int type,
  * Object handler for the get_properties event in PHP. This returns a HashTable
  * of our internal properties. We don't support this, so we return NULL.
  */
-static HashTable *Message_get_properties(zval *object) {
+static HashTable *Message_get_properties(PROTO_VAL *object) {
   return NULL;  // We don't offer direct references to our properties.
 }
 
@@ -870,20 +885,36 @@ PHP_METHOD(Message, writeOneof) {
   upb_msg_set(intern->msg, f, msgval, arena);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_void, 0, 0, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFrom, 0, 0, 1)
+  ZEND_ARG_INFO(0, data)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_read, 0, 0, 1)
+  ZEND_ARG_INFO(0, field)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_write, 0, 0, 2)
+  ZEND_ARG_INFO(0, field)
+  ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
 static zend_function_entry Message_methods[] = {
-  PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, discardUnknownFields, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, serializeToJsonString, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, mergeFromJsonString, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, readWrapperValue, NULL, ZEND_ACC_PROTECTED)
-  PHP_ME(Message, writeWrapperValue, NULL, ZEND_ACC_PROTECTED)
-  PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
-  PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
-  PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PROTECTED)
-  PHP_ME(Message, __construct, NULL, ZEND_ACC_PROTECTED)
+  PHP_ME(Message, clear,                 arginfo_void,      ZEND_ACC_PUBLIC)
+  PHP_ME(Message, discardUnknownFields,  arginfo_void,      ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToString,     arginfo_void,      ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFromString,       arginfo_mergeFrom, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToJsonString, arginfo_void,      ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFromJsonString,   arginfo_mergeFrom, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFrom,             arginfo_mergeFrom, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, readWrapperValue,      arginfo_read,      ZEND_ACC_PROTECTED)
+  PHP_ME(Message, writeWrapperValue,     arginfo_write,     ZEND_ACC_PROTECTED)
+  PHP_ME(Message, readOneof,             arginfo_read,      ZEND_ACC_PROTECTED)
+  PHP_ME(Message, writeOneof,            arginfo_write,     ZEND_ACC_PROTECTED)
+  PHP_ME(Message, whichOneof,            arginfo_read,      ZEND_ACC_PROTECTED)
+  PHP_ME(Message, __construct,           arginfo_void,      ZEND_ACC_PROTECTED)
   ZEND_FE_END
 };
 
