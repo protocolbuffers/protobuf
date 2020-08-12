@@ -66,9 +66,8 @@ $ python setup.py install
 
   This is the root path for resolving imports in source .proto files.
 
-  The default is the shortest prefix of `source_dir` among:
-
-      [source_dir] + self.extra_proto_paths
+  The default is the shortest prefix of `source_dir` among `[source_dir] +
+  self.extra_proto_paths`.
 
 - `extra_proto_paths`:
 
@@ -92,11 +91,12 @@ $ python setup.py install
 
 - `proto_files`:
 
-  Specific .proto files can be specified for generating code, instead of
+  A list of strings, specific .proto file paths for generating code, instead of
   searching for all .proto files under `source_path`.
 
   These paths are relative to `source_dir`. For example, to generate code
-  for just ${source_dir}/subdir/message.proto:
+  for just `${source_dir}/subdir/message.proto`, specify
+  `['subdir/message.proto']`.
 
 - `protoc`:
 
