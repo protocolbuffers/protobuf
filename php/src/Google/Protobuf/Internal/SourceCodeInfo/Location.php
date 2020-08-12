@@ -93,12 +93,12 @@ class Location extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string leading_comments = 3;</code>
      */
-    protected $leading_comments = '';
+    protected $leading_comments = null;
     private $has_leading_comments = false;
     /**
      * Generated from protobuf field <code>optional string trailing_comments = 4;</code>
      */
-    protected $trailing_comments = '';
+    protected $trailing_comments = null;
     private $has_trailing_comments = false;
     /**
      * Generated from protobuf field <code>repeated string leading_detached_comments = 6;</code>
@@ -341,7 +341,17 @@ class Location extends \Google\Protobuf\Internal\Message
      */
     public function getLeadingComments()
     {
-        return $this->leading_comments;
+        return isset($this->leading_comments) ? $this->leading_comments : '';
+    }
+
+    public function hasLeadingComments()
+    {
+        return isset($this->leading_comments);
+    }
+
+    public function clearLeadingComments()
+    {
+        unset($this->leading_comments);
     }
 
     /**
@@ -406,7 +416,17 @@ class Location extends \Google\Protobuf\Internal\Message
      */
     public function getTrailingComments()
     {
-        return $this->trailing_comments;
+        return isset($this->trailing_comments) ? $this->trailing_comments : '';
+    }
+
+    public function hasTrailingComments()
+    {
+        return isset($this->trailing_comments);
+    }
+
+    public function clearTrailingComments()
+    {
+        unset($this->trailing_comments);
     }
 
     /**

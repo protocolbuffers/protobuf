@@ -28,7 +28,7 @@ class Annotation extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string source_file = 2;</code>
      */
-    protected $source_file = '';
+    protected $source_file = null;
     private $has_source_file = false;
     /**
      * Identifies the starting offset in bytes in the generated code
@@ -36,7 +36,7 @@ class Annotation extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 begin = 3;</code>
      */
-    protected $begin = 0;
+    protected $begin = null;
     private $has_begin = false;
     /**
      * Identifies the ending offset in bytes in the generated code that
@@ -45,7 +45,7 @@ class Annotation extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 end = 4;</code>
      */
-    protected $end = 0;
+    protected $end = null;
     private $has_end = false;
 
     /**
@@ -115,7 +115,17 @@ class Annotation extends \Google\Protobuf\Internal\Message
      */
     public function getSourceFile()
     {
-        return $this->source_file;
+        return isset($this->source_file) ? $this->source_file : '';
+    }
+
+    public function hasSourceFile()
+    {
+        return isset($this->source_file);
+    }
+
+    public function clearSourceFile()
+    {
+        unset($this->source_file);
     }
 
     /**
@@ -148,7 +158,17 @@ class Annotation extends \Google\Protobuf\Internal\Message
      */
     public function getBegin()
     {
-        return $this->begin;
+        return isset($this->begin) ? $this->begin : 0;
+    }
+
+    public function hasBegin()
+    {
+        return isset($this->begin);
+    }
+
+    public function clearBegin()
+    {
+        unset($this->begin);
     }
 
     /**
@@ -183,7 +203,17 @@ class Annotation extends \Google\Protobuf\Internal\Message
      */
     public function getEnd()
     {
-        return $this->end;
+        return isset($this->end) ? $this->end : 0;
+    }
+
+    public function hasEnd()
+    {
+        return isset($this->end);
+    }
+
+    public function clearEnd()
+    {
+        unset($this->end);
     }
 
     /**

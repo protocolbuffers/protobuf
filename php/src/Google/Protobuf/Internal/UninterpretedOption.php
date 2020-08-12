@@ -33,32 +33,32 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string identifier_value = 3;</code>
      */
-    protected $identifier_value = '';
+    protected $identifier_value = null;
     private $has_identifier_value = false;
     /**
      * Generated from protobuf field <code>optional uint64 positive_int_value = 4;</code>
      */
-    protected $positive_int_value = 0;
+    protected $positive_int_value = null;
     private $has_positive_int_value = false;
     /**
      * Generated from protobuf field <code>optional int64 negative_int_value = 5;</code>
      */
-    protected $negative_int_value = 0;
+    protected $negative_int_value = null;
     private $has_negative_int_value = false;
     /**
      * Generated from protobuf field <code>optional double double_value = 6;</code>
      */
-    protected $double_value = 0.0;
+    protected $double_value = null;
     private $has_double_value = false;
     /**
      * Generated from protobuf field <code>optional bytes string_value = 7;</code>
      */
-    protected $string_value = '';
+    protected $string_value = null;
     private $has_string_value = false;
     /**
      * Generated from protobuf field <code>optional string aggregate_value = 8;</code>
      */
-    protected $aggregate_value = '';
+    protected $aggregate_value = null;
     private $has_aggregate_value = false;
 
     /**
@@ -120,7 +120,17 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function getIdentifierValue()
     {
-        return $this->identifier_value;
+        return isset($this->identifier_value) ? $this->identifier_value : '';
+    }
+
+    public function hasIdentifierValue()
+    {
+        return isset($this->identifier_value);
+    }
+
+    public function clearIdentifierValue()
+    {
+        unset($this->identifier_value);
     }
 
     /**
@@ -151,7 +161,17 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function getPositiveIntValue()
     {
-        return $this->positive_int_value;
+        return isset($this->positive_int_value) ? $this->positive_int_value : 0;
+    }
+
+    public function hasPositiveIntValue()
+    {
+        return isset($this->positive_int_value);
+    }
+
+    public function clearPositiveIntValue()
+    {
+        unset($this->positive_int_value);
     }
 
     /**
@@ -179,7 +199,17 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function getNegativeIntValue()
     {
-        return $this->negative_int_value;
+        return isset($this->negative_int_value) ? $this->negative_int_value : 0;
+    }
+
+    public function hasNegativeIntValue()
+    {
+        return isset($this->negative_int_value);
+    }
+
+    public function clearNegativeIntValue()
+    {
+        unset($this->negative_int_value);
     }
 
     /**
@@ -207,7 +237,17 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function getDoubleValue()
     {
-        return $this->double_value;
+        return isset($this->double_value) ? $this->double_value : 0.0;
+    }
+
+    public function hasDoubleValue()
+    {
+        return isset($this->double_value);
+    }
+
+    public function clearDoubleValue()
+    {
+        unset($this->double_value);
     }
 
     /**
@@ -235,7 +275,17 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function getStringValue()
     {
-        return $this->string_value;
+        return isset($this->string_value) ? $this->string_value : '';
+    }
+
+    public function hasStringValue()
+    {
+        return isset($this->string_value);
+    }
+
+    public function clearStringValue()
+    {
+        unset($this->string_value);
     }
 
     /**
@@ -263,7 +313,17 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      */
     public function getAggregateValue()
     {
-        return $this->aggregate_value;
+        return isset($this->aggregate_value) ? $this->aggregate_value : '';
+    }
+
+    public function hasAggregateValue()
+    {
+        return isset($this->aggregate_value);
+    }
+
+    public function clearAggregateValue()
+    {
+        unset($this->aggregate_value);
     }
 
     /**

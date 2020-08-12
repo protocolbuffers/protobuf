@@ -23,7 +23,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string java_package = 1;</code>
      */
-    protected $java_package = '';
+    protected $java_package = null;
     private $has_java_package = false;
     /**
      * If set, all the classes from the .proto file are wrapped in a single
@@ -34,7 +34,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string java_outer_classname = 8;</code>
      */
-    protected $java_outer_classname = '';
+    protected $java_outer_classname = null;
     private $has_java_outer_classname = false;
     /**
      * If set true, then the Java code generator will generate a separate .java
@@ -46,14 +46,14 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
      */
-    protected $java_multiple_files = false;
+    protected $java_multiple_files = null;
     private $has_java_multiple_files = false;
     /**
      * This option does nothing.
      *
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
      */
-    protected $java_generate_equals_and_hash = false;
+    protected $java_generate_equals_and_hash = null;
     private $has_java_generate_equals_and_hash = false;
     /**
      * If set true, then the Java2 code generator will generate code that
@@ -65,12 +65,12 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_string_check_utf8 = 27 [default = false];</code>
      */
-    protected $java_string_check_utf8 = false;
+    protected $java_string_check_utf8 = null;
     private $has_java_string_check_utf8 = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];</code>
      */
-    protected $optimize_for = 0;
+    protected $optimize_for = null;
     private $has_optimize_for = false;
     /**
      * Sets the Go package where structs generated from this .proto will be
@@ -81,7 +81,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string go_package = 11;</code>
      */
-    protected $go_package = '';
+    protected $go_package = null;
     private $has_go_package = false;
     /**
      * Should generic services be generated in each language?  "Generic" services
@@ -96,22 +96,22 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool cc_generic_services = 16 [default = false];</code>
      */
-    protected $cc_generic_services = false;
+    protected $cc_generic_services = null;
     private $has_cc_generic_services = false;
     /**
      * Generated from protobuf field <code>optional bool java_generic_services = 17 [default = false];</code>
      */
-    protected $java_generic_services = false;
+    protected $java_generic_services = null;
     private $has_java_generic_services = false;
     /**
      * Generated from protobuf field <code>optional bool py_generic_services = 18 [default = false];</code>
      */
-    protected $py_generic_services = false;
+    protected $py_generic_services = null;
     private $has_py_generic_services = false;
     /**
      * Generated from protobuf field <code>optional bool php_generic_services = 42 [default = false];</code>
      */
-    protected $php_generic_services = false;
+    protected $php_generic_services = null;
     private $has_php_generic_services = false;
     /**
      * Is this file deprecated?
@@ -121,7 +121,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 23 [default = false];</code>
      */
-    protected $deprecated = false;
+    protected $deprecated = null;
     private $has_deprecated = false;
     /**
      * Enables the use of arenas for the proto messages in this file. This applies
@@ -129,7 +129,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = true];</code>
      */
-    protected $cc_enable_arenas = false;
+    protected $cc_enable_arenas = null;
     private $has_cc_enable_arenas = false;
     /**
      * Sets the objective c class prefix which is prepended to all objective c
@@ -137,14 +137,14 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string objc_class_prefix = 36;</code>
      */
-    protected $objc_class_prefix = '';
+    protected $objc_class_prefix = null;
     private $has_objc_class_prefix = false;
     /**
      * Namespace for generated classes; defaults to the package.
      *
      * Generated from protobuf field <code>optional string csharp_namespace = 37;</code>
      */
-    protected $csharp_namespace = '';
+    protected $csharp_namespace = null;
     private $has_csharp_namespace = false;
     /**
      * By default Swift generators will take the proto package and CamelCase it
@@ -154,7 +154,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string swift_prefix = 39;</code>
      */
-    protected $swift_prefix = '';
+    protected $swift_prefix = null;
     private $has_swift_prefix = false;
     /**
      * Sets the php class prefix which is prepended to all php generated classes
@@ -162,7 +162,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string php_class_prefix = 40;</code>
      */
-    protected $php_class_prefix = '';
+    protected $php_class_prefix = null;
     private $has_php_class_prefix = false;
     /**
      * Use this option to change the namespace of php generated classes. Default
@@ -171,7 +171,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string php_namespace = 41;</code>
      */
-    protected $php_namespace = '';
+    protected $php_namespace = null;
     private $has_php_namespace = false;
     /**
      * Use this option to change the namespace of php generated metadata classes.
@@ -180,7 +180,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string php_metadata_namespace = 44;</code>
      */
-    protected $php_metadata_namespace = '';
+    protected $php_metadata_namespace = null;
     private $has_php_metadata_namespace = false;
     /**
      * Use this option to change the package of ruby generated classes. Default
@@ -189,7 +189,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string ruby_package = 45;</code>
      */
-    protected $ruby_package = '';
+    protected $ruby_package = null;
     private $has_ruby_package = false;
     /**
      * The parser stores options it doesn't recognize here.
@@ -307,7 +307,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getJavaPackage()
     {
-        return $this->java_package;
+        return isset($this->java_package) ? $this->java_package : '';
+    }
+
+    public function hasJavaPackage()
+    {
+        return isset($this->java_package);
+    }
+
+    public function clearJavaPackage()
+    {
+        unset($this->java_package);
     }
 
     /**
@@ -346,7 +356,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getJavaOuterClassname()
     {
-        return $this->java_outer_classname;
+        return isset($this->java_outer_classname) ? $this->java_outer_classname : '';
+    }
+
+    public function hasJavaOuterClassname()
+    {
+        return isset($this->java_outer_classname);
+    }
+
+    public function clearJavaOuterClassname()
+    {
+        unset($this->java_outer_classname);
     }
 
     /**
@@ -387,7 +407,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getJavaMultipleFiles()
     {
-        return $this->java_multiple_files;
+        return isset($this->java_multiple_files) ? $this->java_multiple_files : false;
+    }
+
+    public function hasJavaMultipleFiles()
+    {
+        return isset($this->java_multiple_files);
+    }
+
+    public function clearJavaMultipleFiles()
+    {
+        unset($this->java_multiple_files);
     }
 
     /**
@@ -424,7 +454,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getJavaGenerateEqualsAndHash()
     {
-        return $this->java_generate_equals_and_hash;
+        return isset($this->java_generate_equals_and_hash) ? $this->java_generate_equals_and_hash : false;
+    }
+
+    public function hasJavaGenerateEqualsAndHash()
+    {
+        return isset($this->java_generate_equals_and_hash);
+    }
+
+    public function clearJavaGenerateEqualsAndHash()
+    {
+        unset($this->java_generate_equals_and_hash);
     }
 
     /**
@@ -461,7 +501,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getJavaStringCheckUtf8()
     {
-        return $this->java_string_check_utf8;
+        return isset($this->java_string_check_utf8) ? $this->java_string_check_utf8 : false;
+    }
+
+    public function hasJavaStringCheckUtf8()
+    {
+        return isset($this->java_string_check_utf8);
+    }
+
+    public function clearJavaStringCheckUtf8()
+    {
+        unset($this->java_string_check_utf8);
     }
 
     /**
@@ -496,7 +546,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getOptimizeFor()
     {
-        return $this->optimize_for;
+        return isset($this->optimize_for) ? $this->optimize_for : 0;
+    }
+
+    public function hasOptimizeFor()
+    {
+        return isset($this->optimize_for);
+    }
+
+    public function clearOptimizeFor()
+    {
+        unset($this->optimize_for);
     }
 
     /**
@@ -506,7 +566,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setOptimizeFor($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FileOptions_OptimizeMode::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FileOptions\OptimizeMode::class);
         $this->optimize_for = $var;
         $this->has_optimize_for = true;
 
@@ -530,7 +590,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getGoPackage()
     {
-        return $this->go_package;
+        return isset($this->go_package) ? $this->go_package : '';
+    }
+
+    public function hasGoPackage()
+    {
+        return isset($this->go_package);
+    }
+
+    public function clearGoPackage()
+    {
+        unset($this->go_package);
     }
 
     /**
@@ -574,7 +644,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getCcGenericServices()
     {
-        return $this->cc_generic_services;
+        return isset($this->cc_generic_services) ? $this->cc_generic_services : false;
+    }
+
+    public function hasCcGenericServices()
+    {
+        return isset($this->cc_generic_services);
+    }
+
+    public function clearCcGenericServices()
+    {
+        unset($this->cc_generic_services);
     }
 
     /**
@@ -612,7 +692,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getJavaGenericServices()
     {
-        return $this->java_generic_services;
+        return isset($this->java_generic_services) ? $this->java_generic_services : false;
+    }
+
+    public function hasJavaGenericServices()
+    {
+        return isset($this->java_generic_services);
+    }
+
+    public function clearJavaGenericServices()
+    {
+        unset($this->java_generic_services);
     }
 
     /**
@@ -640,7 +730,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getPyGenericServices()
     {
-        return $this->py_generic_services;
+        return isset($this->py_generic_services) ? $this->py_generic_services : false;
+    }
+
+    public function hasPyGenericServices()
+    {
+        return isset($this->py_generic_services);
+    }
+
+    public function clearPyGenericServices()
+    {
+        unset($this->py_generic_services);
     }
 
     /**
@@ -668,7 +768,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getPhpGenericServices()
     {
-        return $this->php_generic_services;
+        return isset($this->php_generic_services) ? $this->php_generic_services : false;
+    }
+
+    public function hasPhpGenericServices()
+    {
+        return isset($this->php_generic_services);
+    }
+
+    public function clearPhpGenericServices()
+    {
+        unset($this->php_generic_services);
     }
 
     /**
@@ -701,7 +811,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getDeprecated()
     {
-        return $this->deprecated;
+        return isset($this->deprecated) ? $this->deprecated : false;
+    }
+
+    public function hasDeprecated()
+    {
+        return isset($this->deprecated);
+    }
+
+    public function clearDeprecated()
+    {
+        unset($this->deprecated);
     }
 
     /**
@@ -737,7 +857,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getCcEnableArenas()
     {
-        return $this->cc_enable_arenas;
+        return isset($this->cc_enable_arenas) ? $this->cc_enable_arenas : false;
+    }
+
+    public function hasCcEnableArenas()
+    {
+        return isset($this->cc_enable_arenas);
+    }
+
+    public function clearCcEnableArenas()
+    {
+        unset($this->cc_enable_arenas);
     }
 
     /**
@@ -771,7 +901,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getObjcClassPrefix()
     {
-        return $this->objc_class_prefix;
+        return isset($this->objc_class_prefix) ? $this->objc_class_prefix : '';
+    }
+
+    public function hasObjcClassPrefix()
+    {
+        return isset($this->objc_class_prefix);
+    }
+
+    public function clearObjcClassPrefix()
+    {
+        unset($this->objc_class_prefix);
     }
 
     /**
@@ -804,7 +944,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getCsharpNamespace()
     {
-        return $this->csharp_namespace;
+        return isset($this->csharp_namespace) ? $this->csharp_namespace : '';
+    }
+
+    public function hasCsharpNamespace()
+    {
+        return isset($this->csharp_namespace);
+    }
+
+    public function clearCsharpNamespace()
+    {
+        unset($this->csharp_namespace);
     }
 
     /**
@@ -839,7 +989,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getSwiftPrefix()
     {
-        return $this->swift_prefix;
+        return isset($this->swift_prefix) ? $this->swift_prefix : '';
+    }
+
+    public function hasSwiftPrefix()
+    {
+        return isset($this->swift_prefix);
+    }
+
+    public function clearSwiftPrefix()
+    {
+        unset($this->swift_prefix);
     }
 
     /**
@@ -875,7 +1035,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getPhpClassPrefix()
     {
-        return $this->php_class_prefix;
+        return isset($this->php_class_prefix) ? $this->php_class_prefix : '';
+    }
+
+    public function hasPhpClassPrefix()
+    {
+        return isset($this->php_class_prefix);
+    }
+
+    public function clearPhpClassPrefix()
+    {
+        unset($this->php_class_prefix);
     }
 
     /**
@@ -910,7 +1080,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getPhpNamespace()
     {
-        return $this->php_namespace;
+        return isset($this->php_namespace) ? $this->php_namespace : '';
+    }
+
+    public function hasPhpNamespace()
+    {
+        return isset($this->php_namespace);
+    }
+
+    public function clearPhpNamespace()
+    {
+        unset($this->php_namespace);
     }
 
     /**
@@ -946,7 +1126,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getPhpMetadataNamespace()
     {
-        return $this->php_metadata_namespace;
+        return isset($this->php_metadata_namespace) ? $this->php_metadata_namespace : '';
+    }
+
+    public function hasPhpMetadataNamespace()
+    {
+        return isset($this->php_metadata_namespace);
+    }
+
+    public function clearPhpMetadataNamespace()
+    {
+        unset($this->php_metadata_namespace);
     }
 
     /**
@@ -982,7 +1172,17 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function getRubyPackage()
     {
-        return $this->ruby_package;
+        return isset($this->ruby_package) ? $this->ruby_package : '';
+    }
+
+    public function hasRubyPackage()
+    {
+        return isset($this->ruby_package);
+    }
+
+    public function clearRubyPackage()
+    {
+        unset($this->ruby_package);
     }
 
     /**

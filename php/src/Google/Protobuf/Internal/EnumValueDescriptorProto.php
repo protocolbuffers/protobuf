@@ -20,12 +20,12 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    protected $name = '';
+    protected $name = null;
     private $has_name = false;
     /**
      * Generated from protobuf field <code>optional int32 number = 2;</code>
      */
-    protected $number = 0;
+    protected $number = null;
     private $has_number = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
@@ -55,7 +55,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getName()
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : '';
+    }
+
+    public function hasName()
+    {
+        return isset($this->name);
+    }
+
+    public function clearName()
+    {
+        unset($this->name);
     }
 
     /**
@@ -83,7 +93,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getNumber()
     {
-        return $this->number;
+        return isset($this->number) ? $this->number : 0;
+    }
+
+    public function hasNumber()
+    {
+        return isset($this->number);
+    }
+
+    public function clearNumber()
+    {
+        unset($this->number);
     }
 
     /**
@@ -111,7 +131,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getOptions()
     {
-        return $this->options;
+        return isset($this->options) ? $this->options : null;
+    }
+
+    public function hasOptions()
+    {
+        return isset($this->options);
+    }
+
+    public function clearOptions()
+    {
+        unset($this->options);
     }
 
     /**

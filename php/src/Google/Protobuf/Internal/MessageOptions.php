@@ -34,7 +34,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool message_set_wire_format = 1 [default = false];</code>
      */
-    protected $message_set_wire_format = false;
+    protected $message_set_wire_format = null;
     private $has_message_set_wire_format = false;
     /**
      * Disables the generation of the standard "descriptor()" accessor, which can
@@ -43,7 +43,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
      */
-    protected $no_standard_descriptor_accessor = false;
+    protected $no_standard_descriptor_accessor = null;
     private $has_no_standard_descriptor_accessor = false;
     /**
      * Is this message deprecated?
@@ -53,7 +53,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
-    protected $deprecated = false;
+    protected $deprecated = null;
     private $has_deprecated = false;
     /**
      * Whether the message is an automatically generated map entry type for the
@@ -77,7 +77,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool map_entry = 7;</code>
      */
-    protected $map_entry = false;
+    protected $map_entry = null;
     private $has_map_entry = false;
     /**
      * The parser stores options it doesn't recognize here. See above.
@@ -168,7 +168,17 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      */
     public function getMessageSetWireFormat()
     {
-        return $this->message_set_wire_format;
+        return isset($this->message_set_wire_format) ? $this->message_set_wire_format : false;
+    }
+
+    public function hasMessageSetWireFormat()
+    {
+        return isset($this->message_set_wire_format);
+    }
+
+    public function clearMessageSetWireFormat()
+    {
+        unset($this->message_set_wire_format);
     }
 
     /**
@@ -216,7 +226,17 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      */
     public function getNoStandardDescriptorAccessor()
     {
-        return $this->no_standard_descriptor_accessor;
+        return isset($this->no_standard_descriptor_accessor) ? $this->no_standard_descriptor_accessor : false;
+    }
+
+    public function hasNoStandardDescriptorAccessor()
+    {
+        return isset($this->no_standard_descriptor_accessor);
+    }
+
+    public function clearNoStandardDescriptorAccessor()
+    {
+        unset($this->no_standard_descriptor_accessor);
     }
 
     /**
@@ -253,7 +273,17 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      */
     public function getDeprecated()
     {
-        return $this->deprecated;
+        return isset($this->deprecated) ? $this->deprecated : false;
+    }
+
+    public function hasDeprecated()
+    {
+        return isset($this->deprecated);
+    }
+
+    public function clearDeprecated()
+    {
+        unset($this->deprecated);
     }
 
     /**
@@ -305,7 +335,17 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      */
     public function getMapEntry()
     {
-        return $this->map_entry;
+        return isset($this->map_entry) ? $this->map_entry : false;
+    }
+
+    public function hasMapEntry()
+    {
+        return isset($this->map_entry);
+    }
+
+    public function clearMapEntry()
+    {
+        unset($this->map_entry);
     }
 
     /**

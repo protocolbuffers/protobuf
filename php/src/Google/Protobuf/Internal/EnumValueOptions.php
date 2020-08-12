@@ -23,7 +23,7 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 1 [default = false];</code>
      */
-    protected $deprecated = false;
+    protected $deprecated = null;
     private $has_deprecated = false;
     /**
      * The parser stores options it doesn't recognize here. See above.
@@ -64,7 +64,17 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      */
     public function getDeprecated()
     {
-        return $this->deprecated;
+        return isset($this->deprecated) ? $this->deprecated : false;
+    }
+
+    public function hasDeprecated()
+    {
+        return isset($this->deprecated);
+    }
+
+    public function clearDeprecated()
+    {
+        unset($this->deprecated);
     }
 
     /**
