@@ -40,6 +40,7 @@
 // Forward decls.
 struct DescriptorPool;
 struct Descriptor;
+union TypeInfo;
 struct FileDescriptor;
 struct FieldDescriptor;
 struct EnumDescriptor;
@@ -53,6 +54,7 @@ struct Builder;
 
 typedef struct DescriptorPool DescriptorPool;
 typedef struct Descriptor Descriptor;
+typedef union TypeInfo TypeInfo;
 typedef struct FileDescriptor FileDescriptor;
 typedef struct FieldDescriptor FieldDescriptor;
 typedef struct OneofDescriptor OneofDescriptor;
@@ -116,6 +118,11 @@ struct Descriptor {
   const upb_msgdef* msgdef;
   VALUE klass;
   VALUE descriptor_pool;
+};
+
+union TypeInfo {
+  const Descriptor* message_type;
+  const upb_enumdef* enum_type;
 };
 
 struct FileDescriptor {
@@ -547,6 +554,8 @@ VALUE Message_decode(VALUE klass, VALUE data);
 VALUE Message_encode(VALUE klass, VALUE msg_rb);
 VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass);
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
+upb_msg* Message_GetUpbMessage(VALUE value, const Descriptor* desc,
+                               const char* name, upb_arena* arena);
 
 VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);

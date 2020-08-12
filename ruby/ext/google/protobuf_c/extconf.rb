@@ -14,7 +14,7 @@ if RUBY_PLATFORM =~ /linux/
   $LDFLAGS += " -Wl,-wrap,memcpy"
 end
 
-$objs = ["protobuf.o", "defs.o", "storage.o", "message.o",
+$objs = ["protobuf.o", "convert.o", "defs.o", "storage.o", "message.o",
          "repeated_field.o", "map.o", "encode_decode.o", "ruby-upb.o",
          "wrap_memcpy.o"]
 
