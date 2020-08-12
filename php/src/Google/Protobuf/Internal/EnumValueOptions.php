@@ -24,14 +24,12 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool deprecated = 1 [default = false];</code>
      */
     protected $deprecated = null;
-    private $has_deprecated = false;
     /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
-    private $has_uninterpreted_option = false;
 
     /**
      * Constructor.
@@ -91,7 +89,6 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
-        $this->has_deprecated = true;
 
         return $this;
     }
@@ -118,7 +115,6 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
-        $this->has_uninterpreted_option = true;
 
         return $this;
     }

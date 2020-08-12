@@ -21,17 +21,14 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
     protected $name = null;
-    private $has_name = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumValueDescriptorProto value = 2;</code>
      */
     private $value;
-    private $has_value = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumOptions options = 3;</code>
      */
     protected $options = null;
-    private $has_options = false;
     /**
      * Range of reserved numeric values. Reserved numeric values may not be used
      * by enum values in the same enum declaration. Reserved ranges may not
@@ -40,7 +37,6 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;</code>
      */
     private $reserved_range;
-    private $has_reserved_range = false;
     /**
      * Reserved enum value names, which may not be reused. A given name may only
      * be reserved once.
@@ -48,7 +44,6 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated string reserved_name = 5;</code>
      */
     private $reserved_name;
-    private $has_reserved_name = false;
 
     /**
      * Constructor.
@@ -101,7 +96,6 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
     }
@@ -124,7 +118,6 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumValueDescriptorProto::class);
         $this->value = $arr;
-        $this->has_value = true;
 
         return $this;
     }
@@ -157,7 +150,6 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\EnumOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
     }
@@ -188,7 +180,6 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto\EnumReservedRange::class);
         $this->reserved_range = $arr;
-        $this->has_reserved_range = true;
 
         return $this;
     }
@@ -217,7 +208,6 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->reserved_name = $arr;
-        $this->has_reserved_name = true;
 
         return $this;
     }

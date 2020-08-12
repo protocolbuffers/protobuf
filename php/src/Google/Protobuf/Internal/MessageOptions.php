@@ -35,7 +35,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool message_set_wire_format = 1 [default = false];</code>
      */
     protected $message_set_wire_format = null;
-    private $has_message_set_wire_format = false;
     /**
      * Disables the generation of the standard "descriptor()" accessor, which can
      * conflict with a field of the same name.  This is meant to make migration
@@ -44,7 +43,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
      */
     protected $no_standard_descriptor_accessor = null;
-    private $has_no_standard_descriptor_accessor = false;
     /**
      * Is this message deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
@@ -54,7 +52,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
     protected $deprecated = null;
-    private $has_deprecated = false;
     /**
      * Whether the message is an automatically generated map entry type for the
      * maps field.
@@ -78,14 +75,12 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool map_entry = 7;</code>
      */
     protected $map_entry = null;
-    private $has_map_entry = false;
     /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
-    private $has_uninterpreted_option = false;
 
     /**
      * Constructor.
@@ -206,7 +201,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->message_set_wire_format = $var;
-        $this->has_message_set_wire_format = true;
 
         return $this;
     }
@@ -247,7 +241,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->no_standard_descriptor_accessor = $var;
-        $this->has_no_standard_descriptor_accessor = true;
 
         return $this;
     }
@@ -290,7 +283,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
-        $this->has_deprecated = true;
 
         return $this;
     }
@@ -361,7 +353,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->map_entry = $var;
-        $this->has_map_entry = true;
 
         return $this;
     }
@@ -388,7 +379,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
-        $this->has_uninterpreted_option = true;
 
         return $this;
     }

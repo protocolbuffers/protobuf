@@ -64,7 +64,6 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
      */
     private $location;
-    private $has_location = false;
 
     /**
      * Constructor.
@@ -223,7 +222,6 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\SourceCodeInfo\Location::class);
         $this->location = $arr;
-        $this->has_location = true;
 
         return $this;
     }

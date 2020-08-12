@@ -21,7 +21,6 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
     protected $name = null;
-    private $has_name = false;
     /**
      * Input and output type names.  These are resolved in the same way as
      * FieldDescriptorProto.type_name, but must refer to a message type.
@@ -29,31 +28,26 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string input_type = 2;</code>
      */
     protected $input_type = null;
-    private $has_input_type = false;
     /**
      * Generated from protobuf field <code>optional string output_type = 3;</code>
      */
     protected $output_type = null;
-    private $has_output_type = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions options = 4;</code>
      */
     protected $options = null;
-    private $has_options = false;
     /**
      * Identifies if client streams multiple client messages
      *
      * Generated from protobuf field <code>optional bool client_streaming = 5 [default = false];</code>
      */
     protected $client_streaming = null;
-    private $has_client_streaming = false;
     /**
      * Identifies if server streams multiple server messages
      *
      * Generated from protobuf field <code>optional bool server_streaming = 6 [default = false];</code>
      */
     protected $server_streaming = null;
-    private $has_server_streaming = false;
 
     /**
      * Constructor.
@@ -106,7 +100,6 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
     }
@@ -145,7 +138,6 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->input_type = $var;
-        $this->has_input_type = true;
 
         return $this;
     }
@@ -178,7 +170,6 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->output_type = $var;
-        $this->has_output_type = true;
 
         return $this;
     }
@@ -211,7 +202,6 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MethodOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
     }
@@ -248,7 +238,6 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->client_streaming = $var;
-        $this->has_client_streaming = true;
 
         return $this;
     }
@@ -285,7 +274,6 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->server_streaming = $var;
-        $this->has_server_streaming = true;
 
         return $this;
     }

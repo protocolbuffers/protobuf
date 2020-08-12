@@ -21,17 +21,14 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
     protected $name = null;
-    private $has_name = false;
     /**
      * Generated from protobuf field <code>optional int32 number = 2;</code>
      */
     protected $number = null;
-    private $has_number = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
      */
     protected $options = null;
-    private $has_options = false;
 
     /**
      * Constructor.
@@ -77,7 +74,6 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
     }
@@ -110,7 +106,6 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->number = $var;
-        $this->has_number = true;
 
         return $this;
     }
@@ -143,7 +138,6 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\EnumValueOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
     }

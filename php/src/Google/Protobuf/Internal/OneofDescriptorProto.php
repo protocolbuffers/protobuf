@@ -21,12 +21,10 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
     protected $name = null;
-    private $has_name = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.OneofOptions options = 2;</code>
      */
     protected $options = null;
-    private $has_options = false;
 
     /**
      * Constructor.
@@ -71,7 +69,6 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
     }
@@ -104,7 +101,6 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\OneofOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
     }

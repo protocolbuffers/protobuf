@@ -26,7 +26,6 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption.NamePart name = 2;</code>
      */
     private $name;
-    private $has_name = false;
     /**
      * The value of the uninterpreted option, in whatever type the tokenizer
      * identified it as during parsing. Exactly one of these should be set.
@@ -34,32 +33,26 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string identifier_value = 3;</code>
      */
     protected $identifier_value = null;
-    private $has_identifier_value = false;
     /**
      * Generated from protobuf field <code>optional uint64 positive_int_value = 4;</code>
      */
     protected $positive_int_value = null;
-    private $has_positive_int_value = false;
     /**
      * Generated from protobuf field <code>optional int64 negative_int_value = 5;</code>
      */
     protected $negative_int_value = null;
-    private $has_negative_int_value = false;
     /**
      * Generated from protobuf field <code>optional double double_value = 6;</code>
      */
     protected $double_value = null;
-    private $has_double_value = false;
     /**
      * Generated from protobuf field <code>optional bytes string_value = 7;</code>
      */
     protected $string_value = null;
-    private $has_string_value = false;
     /**
      * Generated from protobuf field <code>optional string aggregate_value = 8;</code>
      */
     protected $aggregate_value = null;
-    private $has_aggregate_value = false;
 
     /**
      * Constructor.
@@ -101,7 +94,6 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption\NamePart::class);
         $this->name = $arr;
-        $this->has_name = true;
 
         return $this;
     }
@@ -140,7 +132,6 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->identifier_value = $var;
-        $this->has_identifier_value = true;
 
         return $this;
     }
@@ -173,7 +164,6 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkUint64($var);
         $this->positive_int_value = $var;
-        $this->has_positive_int_value = true;
 
         return $this;
     }
@@ -206,7 +196,6 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt64($var);
         $this->negative_int_value = $var;
-        $this->has_negative_int_value = true;
 
         return $this;
     }
@@ -239,7 +228,6 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkDouble($var);
         $this->double_value = $var;
-        $this->has_double_value = true;
 
         return $this;
     }
@@ -272,7 +260,6 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, False);
         $this->string_value = $var;
-        $this->has_string_value = true;
 
         return $this;
     }
@@ -305,7 +292,6 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->aggregate_value = $var;
-        $this->has_aggregate_value = true;
 
         return $this;
     }

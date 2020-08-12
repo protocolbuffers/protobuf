@@ -27,14 +27,12 @@ class EnumReservedRange extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional int32 start = 1;</code>
      */
     protected $start = null;
-    private $has_start = false;
     /**
      * Inclusive.
      *
      * Generated from protobuf field <code>optional int32 end = 2;</code>
      */
     protected $end = null;
-    private $has_end = false;
 
     /**
      * Constructor.
@@ -85,7 +83,6 @@ class EnumReservedRange extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->start = $var;
-        $this->has_start = true;
 
         return $this;
     }
@@ -122,7 +119,6 @@ class EnumReservedRange extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->end = $var;
-        $this->has_end = true;
 
         return $this;
     }

@@ -22,14 +22,12 @@ class Annotation extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      */
     private $path;
-    private $has_path = false;
     /**
      * Identifies the filesystem path to the original source .proto.
      *
      * Generated from protobuf field <code>optional string source_file = 2;</code>
      */
     protected $source_file = null;
-    private $has_source_file = false;
     /**
      * Identifies the starting offset in bytes in the generated code
      * that relates to the identified object.
@@ -37,7 +35,6 @@ class Annotation extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional int32 begin = 3;</code>
      */
     protected $begin = null;
-    private $has_begin = false;
     /**
      * Identifies the ending offset in bytes in the generated code that
      * relates to the identified offset. The end offset should be one past
@@ -46,7 +43,6 @@ class Annotation extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional int32 end = 4;</code>
      */
     protected $end = null;
-    private $has_end = false;
 
     /**
      * Constructor.
@@ -97,7 +93,6 @@ class Annotation extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
         $this->path = $arr;
-        $this->has_path = true;
 
         return $this;
     }
@@ -134,7 +129,6 @@ class Annotation extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->source_file = $var;
-        $this->has_source_file = true;
 
         return $this;
     }
@@ -173,7 +167,6 @@ class Annotation extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->begin = $var;
-        $this->has_begin = true;
 
         return $this;
     }
@@ -214,7 +207,6 @@ class Annotation extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->end = $var;
-        $this->has_end = true;
 
         return $this;
     }

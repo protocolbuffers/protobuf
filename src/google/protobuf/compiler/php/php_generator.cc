@@ -636,12 +636,6 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
         "name", field->name(),
         "initial_value", initial_value);
   }
-
-  if (is_descriptor) {
-    printer->Print(
-        "private $has_^name^ = false;\n",
-        "name", field->name());
-  }
 }
 
 void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
@@ -795,13 +789,6 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     printer->Print(
         "$this->^name^ = $var;\n",
         "name", field->name());
-  }
-
-  // Set has bit for proto2 only.
-  if (is_descriptor) {
-    printer->Print(
-        "$this->has_^field_name^ = true;\n",
-        "field_name", field->name());
   }
 
   printer->Print("\nreturn $this;\n");

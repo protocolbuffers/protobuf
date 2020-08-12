@@ -21,17 +21,14 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
     protected $name = null;
-    private $has_name = false;
     /**
      * Generated from protobuf field <code>optional int32 number = 3;</code>
      */
     protected $number = null;
-    private $has_number = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Label label = 4;</code>
      */
     protected $label = null;
-    private $has_label = false;
     /**
      * If type_name is set, this need not be set.  If both this and type_name
      * are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
@@ -39,7 +36,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Type type = 5;</code>
      */
     protected $type = null;
-    private $has_type = false;
     /**
      * For message and enum types, this is the name of the type.  If the name
      * starts with a '.', it is fully-qualified.  Otherwise, C++-like scoping
@@ -50,7 +46,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string type_name = 6;</code>
      */
     protected $type_name = null;
-    private $has_type_name = false;
     /**
      * For extensions, this is the name of the type being extended.  It is
      * resolved in the same manner as type_name.
@@ -58,7 +53,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string extendee = 2;</code>
      */
     protected $extendee = null;
-    private $has_extendee = false;
     /**
      * For numeric types, contains the original text representation of the value.
      * For booleans, "true" or "false".
@@ -69,7 +63,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string default_value = 7;</code>
      */
     protected $default_value = null;
-    private $has_default_value = false;
     /**
      * If set, gives the index of a oneof in the containing type's oneof_decl
      * list.  This field is a member of that oneof.
@@ -77,7 +70,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional int32 oneof_index = 9;</code>
      */
     protected $oneof_index = null;
-    private $has_oneof_index = false;
     /**
      * JSON name of this field. The value is set by protocol compiler. If the
      * user has set a "json_name" option on this field, that option's value
@@ -87,12 +79,10 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string json_name = 10;</code>
      */
     protected $json_name = null;
-    private $has_json_name = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions options = 8;</code>
      */
     protected $options = null;
-    private $has_options = false;
     /**
      * If true, this is a proto3 "optional". When a proto3 field is optional, it
      * tracks presence regardless of field type.
@@ -116,7 +106,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool proto3_optional = 17;</code>
      */
     protected $proto3_optional = null;
-    private $has_proto3_optional = false;
 
     /**
      * Constructor.
@@ -208,7 +197,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
     }
@@ -241,7 +229,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->number = $var;
-        $this->has_number = true;
 
         return $this;
     }
@@ -274,7 +261,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto\Label::class);
         $this->label = $var;
-        $this->has_label = true;
 
         return $this;
     }
@@ -313,7 +299,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto\Type::class);
         $this->type = $var;
-        $this->has_type = true;
 
         return $this;
     }
@@ -358,7 +343,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->type_name = $var;
-        $this->has_type_name = true;
 
         return $this;
     }
@@ -397,7 +381,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->extendee = $var;
-        $this->has_extendee = true;
 
         return $this;
     }
@@ -442,7 +425,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->default_value = $var;
-        $this->has_default_value = true;
 
         return $this;
     }
@@ -481,7 +463,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->oneof_index = $var;
-        $this->has_oneof_index = true;
 
         return $this;
     }
@@ -524,7 +505,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->json_name = $var;
-        $this->has_json_name = true;
 
         return $this;
     }
@@ -557,7 +537,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FieldOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
     }
@@ -628,7 +607,6 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->proto3_optional = $var;
-        $this->has_proto3_optional = true;
 
         return $this;
     }

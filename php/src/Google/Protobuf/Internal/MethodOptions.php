@@ -24,19 +24,16 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool deprecated = 33 [default = false];</code>
      */
     protected $deprecated = null;
-    private $has_deprecated = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
      */
     protected $idempotency_level = null;
-    private $has_idempotency_level = false;
     /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
-    private $has_uninterpreted_option = false;
 
     /**
      * Constructor.
@@ -97,7 +94,6 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
-        $this->has_deprecated = true;
 
         return $this;
     }
@@ -130,7 +126,6 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\MethodOptions\IdempotencyLevel::class);
         $this->idempotency_level = $var;
-        $this->has_idempotency_level = true;
 
         return $this;
     }
@@ -157,7 +152,6 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
-        $this->has_uninterpreted_option = true;
 
         return $this;
     }

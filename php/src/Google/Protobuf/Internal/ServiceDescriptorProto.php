@@ -21,17 +21,14 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
     protected $name = null;
-    private $has_name = false;
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.MethodDescriptorProto method = 2;</code>
      */
     private $method;
-    private $has_method = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ServiceOptions options = 3;</code>
      */
     protected $options = null;
-    private $has_options = false;
 
     /**
      * Constructor.
@@ -77,7 +74,6 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
     }
@@ -100,7 +96,6 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\MethodDescriptorProto::class);
         $this->method = $arr;
-        $this->has_method = true;
 
         return $this;
     }
@@ -133,7 +128,6 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\ServiceOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
     }

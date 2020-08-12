@@ -24,7 +24,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
      */
     protected $ctype = null;
-    private $has_ctype = false;
     /**
      * The packed option can be enabled for repeated primitive fields to enable
      * a more efficient representation on the wire. Rather than repeatedly
@@ -35,7 +34,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool packed = 2;</code>
      */
     protected $packed = null;
-    private $has_packed = false;
     /**
      * The jstype option determines the JavaScript type used for values of the
      * field.  The option is permitted only for 64 bit integral and fixed types
@@ -51,7 +49,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
      */
     protected $jstype = null;
-    private $has_jstype = false;
     /**
      * Should this field be parsed lazily?  Lazy applies only to message-type
      * fields.  It means that when the outer message is initially parsed, the
@@ -81,7 +78,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
      */
     protected $lazy = null;
-    private $has_lazy = false;
     /**
      * Is this field deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
@@ -91,21 +87,18 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
     protected $deprecated = null;
-    private $has_deprecated = false;
     /**
      * For Google-internal migration only. Do not use.
      *
      * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
      */
     protected $weak = null;
-    private $has_weak = false;
     /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
-    private $has_uninterpreted_option = false;
 
     /**
      * Constructor.
@@ -214,7 +207,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions\CType::class);
         $this->ctype = $var;
-        $this->has_ctype = true;
 
         return $this;
     }
@@ -259,7 +251,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->packed = $var;
-        $this->has_packed = true;
 
         return $this;
     }
@@ -314,7 +305,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions\JSType::class);
         $this->jstype = $var;
-        $this->has_jstype = true;
 
         return $this;
     }
@@ -397,7 +387,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->lazy = $var;
-        $this->has_lazy = true;
 
         return $this;
     }
@@ -440,7 +429,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
-        $this->has_deprecated = true;
 
         return $this;
     }
@@ -477,7 +465,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->weak = $var;
-        $this->has_weak = true;
 
         return $this;
     }
@@ -504,7 +491,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
-        $this->has_uninterpreted_option = true;
 
         return $this;
     }

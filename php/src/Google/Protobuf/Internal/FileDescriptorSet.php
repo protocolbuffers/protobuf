@@ -22,7 +22,6 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
      */
     private $file;
-    private $has_file = false;
 
     /**
      * Constructor.
@@ -56,7 +55,6 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FileDescriptorProto::class);
         $this->file = $arr;
-        $this->has_file = true;
 
         return $this;
     }

@@ -21,19 +21,16 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional int32 start = 1;</code>
      */
     protected $start = null;
-    private $has_start = false;
     /**
      * Exclusive.
      *
      * Generated from protobuf field <code>optional int32 end = 2;</code>
      */
     protected $end = null;
-    private $has_end = false;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ExtensionRangeOptions options = 3;</code>
      */
     protected $options = null;
-    private $has_options = false;
 
     /**
      * Constructor.
@@ -85,7 +82,6 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->start = $var;
-        $this->has_start = true;
 
         return $this;
     }
@@ -122,7 +118,6 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->end = $var;
-        $this->has_end = true;
 
         return $this;
     }
@@ -155,7 +150,6 @@ class ExtensionRange extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\ExtensionRangeOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
     }
