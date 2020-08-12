@@ -1842,7 +1842,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       std::cout << version_info_ << std::endl;
     }
     std::cout << "libprotoc " << internal::VersionString(PROTOBUF_VERSION)
-              << std::endl;
+              << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
   } else if (name == "--disallow_services") {
