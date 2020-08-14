@@ -854,7 +854,7 @@ void Reflection::ClearField(Message* message,
         }
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (!schema_.HasHasbits()) {
+          if (schema_.HasBitIndex(field) == -1) {
             // Proto3 does not have has-bits and we need to set a message field
             // to nullptr in order to indicate its un-presence.
             if (GetArena(message) == nullptr) {
@@ -2048,6 +2048,7 @@ void Reflection::ClearBit(Message* message,
     return;
   }
   const uint32 index = schema_.HasBitIndex(field);
+  if (index == -1) return;
   MutableHasBits(message)[index / 32] &=
       ~(static_cast<uint32>(1) << (index % 32));
 }
