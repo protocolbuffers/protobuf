@@ -854,7 +854,7 @@ void Reflection::ClearField(Message* message,
         }
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (schema_.HasBitIndex() == -1) {
+          if (schema_.HasBitIndex(field) == -1) {
             // Proto3 does not have has-bits and we need to set a message field
             // to nullptr in order to indicate its un-presence.
             if (GetArena(message) == nullptr) {
