@@ -110,6 +110,15 @@ def UpdateCpp():
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
+    if RC_VERSION != -1:
+      line = re.sub(
+          r'^#define GOOGLE_PROTOBUF_VERSION_SUFFIX .*$',
+          '#define GOOGLE_PROTOBUF_VERSION_SUFFIX %s' % RC_VERSION,
+          line)
+      line = re.sub(
+          r'^#define PROTOBUF_VERSION_SUFFIX .*$',
+          '#define PROTOBUF_VERSION_SUFFIX %s' % RC_VERSION,
+          line)
     if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
@@ -134,6 +143,11 @@ def UpdateCpp():
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
+    if RC_VERSION != -1:
+      line = re.sub(
+          r'^#define PROTOBUF_VERSION_SUFFIX .*$',
+          '#define PROTOBUF_VERSION_SUFFIX %s' % RC_VERSION,
+          line)
     if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
