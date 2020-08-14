@@ -69,7 +69,7 @@ const zval *get_generated_pool();
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
 #endif
 
-#define PHP_PROTOBUF_VERSION "3.13.0RC3"
+#define PHP_PROTOBUF_VERSION "3.13.0"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
