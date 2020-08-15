@@ -210,6 +210,8 @@ if (MSVC)
   )
   # Allow big object
   add_definitions(/bigobj)
+  # Assume all files utf-8
+  add_definitions(/utf-8)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
