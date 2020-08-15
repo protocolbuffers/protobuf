@@ -143,6 +143,13 @@ class Timestamp(object):
     Raises:
       ValueError: On parsing problems.
     """
+    try:
+      # Throwing a descriptive error for a bytes value.
+      if isinstance(value, bytes):
+        raise ValueError('Please supply a string value, not a value of type "bytes"')
+    except NameError:
+      pass
+
     timezone_offset = value.find('Z')
     if timezone_offset == -1:
       timezone_offset = value.find('+')
