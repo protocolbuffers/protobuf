@@ -304,7 +304,7 @@ void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
 const char *GPBMessageEncodingForSelector(SEL selector, BOOL instanceSel);
 
 // Helper for text format name encoding.
-// decodeData is the data describing the sepecial decodes.
+// decodeData is the data describing the special decodes.
 // key and inputString are the input that needs decoding.
 NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
                                   NSString *inputString);

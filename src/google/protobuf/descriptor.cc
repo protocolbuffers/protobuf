@@ -2723,7 +2723,7 @@ void FieldDescriptor::DebugString(
   if (has_json_name_) {
     if (!bracketed) {
       bracketed = true;
-      contents->append("[");
+      contents->append(" [");
     } else {
       contents->append(", ");
     }
@@ -4883,6 +4883,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                    DescriptorPool::ErrorCollector::DEFAULT_VALUE,
                    "Messages can't have default values.");
           result->has_default_value_ = false;
+          result->default_generated_instance_ = nullptr;
           break;
       }
 
@@ -4929,6 +4930,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
           result->default_value_string_ = &internal::GetEmptyString();
           break;
         case FieldDescriptor::CPPTYPE_MESSAGE:
+          result->default_generated_instance_ = nullptr;
           break;
       }
     }

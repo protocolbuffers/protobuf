@@ -29,12 +29,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
+#include <string>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_file.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -93,8 +93,11 @@ bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& 
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
-      SplitStringUsing(options[i].second, ";",
-                       &generation_options.expected_prefixes_suppressions);
+      for (StringPiece split_piece : Split(
+               options[i].second, ";", true)) {
+        generation_options.expected_prefixes_suppressions.push_back(
+            std::string(split_piece));
+      }
     } else if (options[i].first == "generate_for_named_framework") {
       // The name of the framework that protos are being generated for. This
       // will cause the #import statements to be framework based using this
@@ -120,7 +123,7 @@ bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& 
       // Any number of files can be listed for a framework, just separate them
       // with commas.
       //
-      // There can be multiple lines listing the same frameworkName incase it
+      // There can be multiple lines listing the same frameworkName in case it
       // has a lot of proto files included in it; having multiple lines makes
       // things easier to read. If a proto file is not configured in the
       // mappings file, it will use the default framework name if one was passed

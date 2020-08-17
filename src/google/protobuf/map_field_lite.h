@@ -85,7 +85,7 @@ class MapFieldLite {
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is NULL.
   EntryType* NewEntry() const {
-    return Arena::CreateMessage<EntryType>(map_.arena_);
+    return Arena::CreateMessage<EntryType>(map_.arena());
   }
   // Used in the implementation of serializing enum value type. Caller should
   // take the ownership iff arena_ is NULL.

@@ -326,6 +326,42 @@ class EncodeDecodeTest extends TestBase
 
     }
 
+    public function testEncodeDecodeOptional()
+    {
+      $m = new TestMessage();
+      $this->assertFalse($m->hasTrueOptionalInt32());
+      $data = $m->serializeToString();
+      $this->assertSame("", $data);
+
+      $m->setTrueOptionalInt32(0);
+      $this->assertTrue($m->hasTrueOptionalInt32());
+      $data = $m->serializeToString();
+      $this->assertNotSame("", $data);
+
+      $m2 = new TestMessage();
+      $m2->mergeFromString($data);
+      $this->assertTrue($m2->hasTrueOptionalInt32());
+      $this->assertSame(0, $m2->getTrueOptionalInt32());
+    }
+
+    public function testJsonEncodeDecodeOptional()
+    {
+      $m = new TestMessage();
+      $this->assertFalse($m->hasTrueOptionalInt32());
+      $data = $m->serializeToJsonString();
+      $this->assertSame("{}", $data);
+
+      $m->setTrueOptionalInt32(0);
+      $this->assertTrue($m->hasTrueOptionalInt32());
+      $data = $m->serializeToJsonString();
+      $this->assertNotSame("{}", $data);
+
+      $m2 = new TestMessage();
+      $m2->mergeFromJsonString($data);
+      $this->assertTrue($m2->hasTrueOptionalInt32());
+      $this->assertSame(0, $m2->getTrueOptionalInt32());
+    }
+
     public function testJsonEncodeDecodeOneof()
     {
         $m = new TestMessage();

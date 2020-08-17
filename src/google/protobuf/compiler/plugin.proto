@@ -173,6 +173,11 @@ message CodeGeneratorResponse {
 
     // The file contents.
     optional string content = 15;
+
+    // Information describing the file content being inserted. If an insertion
+    // point is used, this information will be appropriately offset and inserted
+    // into the code generation metadata for the generated files.
+    optional GeneratedCodeInfo generated_code_info = 16;
   }
   repeated File file = 15;
 }

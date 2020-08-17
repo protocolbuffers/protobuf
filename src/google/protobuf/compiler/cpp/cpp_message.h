@@ -82,16 +82,8 @@ class MessageGenerator {
 
   // Source file stuff.
 
-  // Generate extra fields
-  void GenerateExtraDefaultFields(io::Printer* printer);
-
   // Generates code that creates default instances for fields.
   void GenerateFieldDefaultInstances(io::Printer* printer);
-
-  // Generates code that initializes the message's default instance.  This
-  // is separate from allocating because all default instances must be
-  // allocated before any can be initialized.
-  void GenerateDefaultInstanceInitializer(io::Printer* printer);
 
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* printer);
@@ -142,6 +134,7 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizes(io::Printer* printer);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer);
   void GenerateSerializeWithCachedSizesBody(io::Printer* printer);
+  void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* printer);
   void GenerateByteSize(io::Printer* printer);
   void GenerateMergeFrom(io::Printer* printer);
   void GenerateClassSpecificMergeFrom(io::Printer* printer);

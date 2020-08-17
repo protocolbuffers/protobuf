@@ -163,12 +163,9 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   // SpaceUsedInMapEntry: Return bytes used by value in MapEntry, excluding
   // those already calculate in sizeof(MapField).
   static inline size_t SpaceUsedInMapEntryLong(const Type* value);
-  // Assign default value to given instance.
-  static inline void AssignDefaultValue(Type** value);
   // Return default instance if value is not initialized when calling const
   // reference accessor.
-  static inline const Type& DefaultIfNotInitialized(const Type* value,
-                                                    const Type* default_value);
+  static inline const Type& DefaultIfNotInitialized(const Type* value);
   // Check if all required fields have values set.
   static inline bool IsInitialized(Type* value);
 };
@@ -206,9 +203,8 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
                              TypeOnMemory* to, Arena* arena);                 \
     static inline void Clear(TypeOnMemory* value, Arena* arena);              \
     static inline size_t SpaceUsedInMapEntryLong(const TypeOnMemory& value);  \
-    static inline void AssignDefaultValue(TypeOnMemory* value);               \
     static inline const MapEntryAccessorType& DefaultIfNotInitialized(        \
-        const TypeOnMemory& value, const TypeOnMemory& default_value);        \
+        const TypeOnMemory& value);                                           \
     static inline bool IsInitialized(const TypeOnMemory& value);              \
     static void DeleteNoArena(TypeOnMemory& value);                           \
     static inline void Initialize(TypeOnMemory* value, Arena* arena);         \
@@ -526,12 +522,6 @@ void MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::DeleteNoArena(
 }
 
 template <typename Type>
-inline void MapTypeHandler<WireFormatLite::TYPE_MESSAGE,
-                           Type>::AssignDefaultValue(Type** value) {
-  *value = const_cast<Type*>(Type::internal_default_instance());
-}
-
-template <typename Type>
 inline void MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Initialize(
     Type** x, Arena* /* arena */) {
   *x = NULL;
@@ -551,8 +541,8 @@ inline Type* MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::EnsureMutable(
 template <typename Type>
 inline const Type&
 MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::DefaultIfNotInitialized(
-    const Type* value, const Type* default_value) {
-  return value != NULL ? *value : *default_value;
+    const Type* value) {
+  return value != NULL ? *value : *Type::internal_default_instance();
 }
 
 template <typename Type>
@@ -594,10 +584,6 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
   }                                                                           \
   template <typename Type>                                                    \
   inline void                                                                 \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::AssignDefaultValue( \
-      TypeOnMemory* /* value */) {}                                           \
-  template <typename Type>                                                    \
-  inline void                                                                 \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Initialize(         \
       TypeOnMemory* value, Arena* /* arena */) {                              \
     value->UnsafeSetDefault(&internal::GetEmptyStringAlreadyInited());        \
@@ -612,9 +598,8 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
   template <typename Type>                                                    \
   inline const typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,      \
                                        Type>::MapEntryAccessorType&           \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::                    \
-      DefaultIfNotInitialized(const TypeOnMemory& value,                      \
-                              const TypeOnMemory& /* default_value */) {      \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType,                            \
+                 Type>::DefaultIfNotInitialized(const TypeOnMemory& value) {  \
     return value.Get();                                                       \
   }                                                                           \
   template <typename Type>                                                    \
@@ -627,63 +612,58 @@ STRING_OR_BYTES_HANDLER_FUNCTIONS(STRING)
 STRING_OR_BYTES_HANDLER_FUNCTIONS(BYTES)
 #undef STRING_OR_BYTES_HANDLER_FUNCTIONS
 
-#define PRIMITIVE_HANDLER_FUNCTIONS(FieldType)                                \
-  template <typename Type>                                                    \
-  inline const typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,      \
-                                       Type>::MapEntryAccessorType&           \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType,                            \
-                 Type>::GetExternalReference(const TypeOnMemory& value) {     \
-    return value;                                                             \
-  }                                                                           \
-  template <typename Type>                                                    \
-  inline size_t MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::      \
-      SpaceUsedInMapEntryLong(const TypeOnMemory& /* value */) {              \
-    return 0;                                                                 \
-  }                                                                           \
-  template <typename Type>                                                    \
-  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Clear(  \
-      TypeOnMemory* value, Arena* /* arena */) {                              \
-    *value = 0;                                                               \
-  }                                                                           \
-  template <typename Type>                                                    \
-  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Merge(  \
-      const MapEntryAccessorType& from, TypeOnMemory* to,                     \
-      Arena* /* arena */) {                                                   \
-    *to = from;                                                               \
-  }                                                                           \
-  template <typename Type>                                                    \
-  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType,                \
-                             Type>::DeleteNoArena(TypeOnMemory& /* x */) {}   \
-  template <typename Type>                                                    \
-  inline void                                                                 \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::AssignDefaultValue( \
-      TypeOnMemory* /* value */) {}                                           \
-  template <typename Type>                                                    \
-  inline void                                                                 \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Initialize(         \
-      TypeOnMemory* value, Arena* /* arena */) {                              \
-    *value = 0;                                                               \
-  }                                                                           \
-  template <typename Type>                                                    \
-  inline typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,            \
-                                 Type>::MapEntryAccessorType*                 \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::EnsureMutable(      \
-      TypeOnMemory* value, Arena* /* arena */) {                              \
-    return value;                                                             \
-  }                                                                           \
-  template <typename Type>                                                    \
-  inline const typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,      \
-                                       Type>::MapEntryAccessorType&           \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::                    \
-      DefaultIfNotInitialized(const TypeOnMemory& value,                      \
-                              const TypeOnMemory& /* default_value */) {      \
-    return value;                                                             \
-  }                                                                           \
-  template <typename Type>                                                    \
-  inline bool                                                                 \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::IsInitialized(      \
-      const TypeOnMemory& /* value */) {                                      \
-    return true;                                                              \
+#define PRIMITIVE_HANDLER_FUNCTIONS(FieldType)                               \
+  template <typename Type>                                                   \
+  inline const typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,     \
+                                       Type>::MapEntryAccessorType&          \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType,                           \
+                 Type>::GetExternalReference(const TypeOnMemory& value) {    \
+    return value;                                                            \
+  }                                                                          \
+  template <typename Type>                                                   \
+  inline size_t MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::     \
+      SpaceUsedInMapEntryLong(const TypeOnMemory& /* value */) {             \
+    return 0;                                                                \
+  }                                                                          \
+  template <typename Type>                                                   \
+  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Clear( \
+      TypeOnMemory* value, Arena* /* arena */) {                             \
+    *value = 0;                                                              \
+  }                                                                          \
+  template <typename Type>                                                   \
+  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Merge( \
+      const MapEntryAccessorType& from, TypeOnMemory* to,                    \
+      Arena* /* arena */) {                                                  \
+    *to = from;                                                              \
+  }                                                                          \
+  template <typename Type>                                                   \
+  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType,               \
+                             Type>::DeleteNoArena(TypeOnMemory& /* x */) {}  \
+  template <typename Type>                                                   \
+  inline void                                                                \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Initialize(        \
+      TypeOnMemory* value, Arena* /* arena */) {                             \
+    *value = 0;                                                              \
+  }                                                                          \
+  template <typename Type>                                                   \
+  inline typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,           \
+                                 Type>::MapEntryAccessorType*                \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::EnsureMutable(     \
+      TypeOnMemory* value, Arena* /* arena */) {                             \
+    return value;                                                            \
+  }                                                                          \
+  template <typename Type>                                                   \
+  inline const typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,     \
+                                       Type>::MapEntryAccessorType&          \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType,                           \
+                 Type>::DefaultIfNotInitialized(const TypeOnMemory& value) { \
+    return value;                                                            \
+  }                                                                          \
+  template <typename Type>                                                   \
+  inline bool                                                                \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::IsInitialized(     \
+      const TypeOnMemory& /* value */) {                                     \
+    return true;                                                             \
   }
 PRIMITIVE_HANDLER_FUNCTIONS(INT64)
 PRIMITIVE_HANDLER_FUNCTIONS(UINT64)

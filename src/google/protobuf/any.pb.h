@@ -102,7 +102,6 @@ class PROTOBUF_EXPORT Any PROTOBUF_FINAL :
   }
   static const Any& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Any* internal_default_instance() {
     return reinterpret_cast<const Any*>(
                &_Any_default_instance_);

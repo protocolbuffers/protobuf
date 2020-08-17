@@ -63,7 +63,7 @@ namespace Google.Protobuf.Reflection
         internal static OneofAccessor ForSyntheticOneof(OneofDescriptor descriptor)
         {
             // Note: descriptor.Fields will be null when this method is called, because we haven't
-            // cross-linked yet. But by the time the delgates are called by user code, all will be
+            // cross-linked yet. But by the time the delegates are called by user code, all will be
             // well. (That's why we capture the descriptor itself rather than a field.)
             return new OneofAccessor(descriptor,
                 message => descriptor.Fields[0].Accessor.HasValue(message) ? descriptor.Fields[0].FieldNumber : 0,

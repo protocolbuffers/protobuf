@@ -172,7 +172,6 @@ class PROTOBUF_EXPORT Struct PROTOBUF_FINAL :
   }
   static const Struct& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Struct* internal_default_instance() {
     return reinterpret_cast<const Struct*>(
                &_Struct_default_instance_);
@@ -332,7 +331,6 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
     KIND_NOT_SET = 0,
   };
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Value* internal_default_instance() {
     return reinterpret_cast<const Value*>(
                &_Value_default_instance_);
@@ -577,7 +575,6 @@ class PROTOBUF_EXPORT ListValue PROTOBUF_FINAL :
   }
   static const ListValue& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const ListValue* internal_default_instance() {
     return reinterpret_cast<const ListValue*>(
                &_ListValue_default_instance_);
@@ -977,7 +974,7 @@ inline PROTOBUF_NAMESPACE_ID::Struct* Value::release_struct_value() {
 inline const PROTOBUF_NAMESPACE_ID::Struct& Value::_internal_struct_value() const {
   return _internal_has_struct_value()
       ? *kind_.struct_value_
-      : *reinterpret_cast< PROTOBUF_NAMESPACE_ID::Struct*>(&PROTOBUF_NAMESPACE_ID::_Struct_default_instance_);
+      : reinterpret_cast< PROTOBUF_NAMESPACE_ID::Struct&>(PROTOBUF_NAMESPACE_ID::_Struct_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::Struct& Value::struct_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.struct_value)
@@ -1050,7 +1047,7 @@ inline PROTOBUF_NAMESPACE_ID::ListValue* Value::release_list_value() {
 inline const PROTOBUF_NAMESPACE_ID::ListValue& Value::_internal_list_value() const {
   return _internal_has_list_value()
       ? *kind_.list_value_
-      : *reinterpret_cast< PROTOBUF_NAMESPACE_ID::ListValue*>(&PROTOBUF_NAMESPACE_ID::_ListValue_default_instance_);
+      : reinterpret_cast< PROTOBUF_NAMESPACE_ID::ListValue&>(PROTOBUF_NAMESPACE_ID::_ListValue_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::ListValue& Value::list_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.list_value)

@@ -86,6 +86,16 @@ class GeneratorResponseContext : public GeneratorContext {
     return new io::StringOutputStream(file->mutable_content());
   }
 
+  virtual io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
+      const std::string& filename, const std::string& insertion_point,
+      const google::protobuf::GeneratedCodeInfo& info) {
+    CodeGeneratorResponse::File* file = response_->add_file();
+    file->set_name(filename);
+    file->set_insertion_point(insertion_point);
+    *file->mutable_generated_code_info() = info;
+    return new io::StringOutputStream(file->mutable_content());
+  }
+
   void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
     *output = parsed_files_;
   }

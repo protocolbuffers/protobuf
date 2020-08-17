@@ -155,7 +155,6 @@ class PROTOC_EXPORT Version PROTOBUF_FINAL :
   }
   static const Version& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Version* internal_default_instance() {
     return reinterpret_cast<const Version*>(
                &_Version_default_instance_);
@@ -356,7 +355,6 @@ class PROTOC_EXPORT CodeGeneratorRequest PROTOBUF_FINAL :
   }
   static const CodeGeneratorRequest& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const CodeGeneratorRequest* internal_default_instance() {
     return reinterpret_cast<const CodeGeneratorRequest*>(
                &_CodeGeneratorRequest_default_instance_);
@@ -578,7 +576,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File PROTOBUF_FINAL :
   }
   static const CodeGeneratorResponse_File& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const CodeGeneratorResponse_File* internal_default_instance() {
     return reinterpret_cast<const CodeGeneratorResponse_File*>(
                &_CodeGeneratorResponse_File_default_instance_);
@@ -658,6 +655,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File PROTOBUF_FINAL :
     kNameFieldNumber = 1,
     kInsertionPointFieldNumber = 2,
     kContentFieldNumber = 15,
+    kGeneratedCodeInfoFieldNumber = 16,
   };
   // optional string name = 1;
   bool has_name() const;
@@ -719,6 +717,24 @@ class PROTOC_EXPORT CodeGeneratorResponse_File PROTOBUF_FINAL :
   std::string* _internal_mutable_content();
   public:
 
+  // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
+  bool has_generated_code_info() const;
+  private:
+  bool _internal_has_generated_code_info() const;
+  public:
+  void clear_generated_code_info();
+  const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& generated_code_info() const;
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* release_generated_code_info();
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* mutable_generated_code_info();
+  void set_allocated_generated_code_info(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info);
+  private:
+  const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& _internal_generated_code_info() const;
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* _internal_mutable_generated_code_info();
+  public:
+  void unsafe_arena_set_allocated_generated_code_info(
+      PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info);
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* unsafe_arena_release_generated_code_info();
+
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
   class _Internal;
@@ -731,6 +747,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr insertion_point_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr content_;
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info_;
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
 // -------------------------------------------------------------------
@@ -778,7 +795,6 @@ class PROTOC_EXPORT CodeGeneratorResponse PROTOBUF_FINAL :
   }
   static const CodeGeneratorResponse& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const CodeGeneratorResponse* internal_default_instance() {
     return reinterpret_cast<const CodeGeneratorResponse*>(
                &_CodeGeneratorResponse_default_instance_);
@@ -1328,8 +1344,8 @@ inline void CodeGeneratorRequest::clear_compiler_version() {
 }
 inline const PROTOBUF_NAMESPACE_ID::compiler::Version& CodeGeneratorRequest::_internal_compiler_version() const {
   const PROTOBUF_NAMESPACE_ID::compiler::Version* p = compiler_version_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::compiler::Version*>(
-      &PROTOBUF_NAMESPACE_ID::compiler::_Version_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::compiler::Version&>(
+      PROTOBUF_NAMESPACE_ID::compiler::_Version_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::compiler::Version& CodeGeneratorRequest::compiler_version() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
@@ -1620,6 +1636,85 @@ inline void CodeGeneratorResponse_File::set_allocated_content(std::string* conte
   content_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), content,
       GetArena());
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
+}
+
+// optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
+inline bool CodeGeneratorResponse_File::_internal_has_generated_code_info() const {
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  PROTOBUF_ASSUME(!value || generated_code_info_ != nullptr);
+  return value;
+}
+inline bool CodeGeneratorResponse_File::has_generated_code_info() const {
+  return _internal_has_generated_code_info();
+}
+inline const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& CodeGeneratorResponse_File::_internal_generated_code_info() const {
+  const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* p = generated_code_info_;
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo&>(
+      PROTOBUF_NAMESPACE_ID::_GeneratedCodeInfo_default_instance_);
+}
+inline const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& CodeGeneratorResponse_File::generated_code_info() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
+  return _internal_generated_code_info();
+}
+inline void CodeGeneratorResponse_File::unsafe_arena_set_allocated_generated_code_info(
+    PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info) {
+  if (GetArena() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(generated_code_info_);
+  }
+  generated_code_info_ = generated_code_info;
+  if (generated_code_info) {
+    _has_bits_[0] |= 0x00000008u;
+  } else {
+    _has_bits_[0] &= ~0x00000008u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
+}
+inline PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* CodeGeneratorResponse_File::release_generated_code_info() {
+  _has_bits_[0] &= ~0x00000008u;
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* temp = generated_code_info_;
+  generated_code_info_ = nullptr;
+  if (GetArena() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+  return temp;
+}
+inline PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* CodeGeneratorResponse_File::unsafe_arena_release_generated_code_info() {
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
+  _has_bits_[0] &= ~0x00000008u;
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* temp = generated_code_info_;
+  generated_code_info_ = nullptr;
+  return temp;
+}
+inline PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
+  _has_bits_[0] |= 0x00000008u;
+  if (generated_code_info_ == nullptr) {
+    auto* p = CreateMaybeMessage<PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo>(GetArena());
+    generated_code_info_ = p;
+  }
+  return generated_code_info_;
+}
+inline PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* CodeGeneratorResponse_File::mutable_generated_code_info() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
+  return _internal_mutable_generated_code_info();
+}
+inline void CodeGeneratorResponse_File::set_allocated_generated_code_info(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(generated_code_info_);
+  }
+  if (generated_code_info) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+      reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(generated_code_info)->GetArena();
+    if (message_arena != submessage_arena) {
+      generated_code_info = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, generated_code_info, submessage_arena);
+    }
+    _has_bits_[0] |= 0x00000008u;
+  } else {
+    _has_bits_[0] &= ~0x00000008u;
+  }
+  generated_code_info_ = generated_code_info;
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
 }
 
 // -------------------------------------------------------------------

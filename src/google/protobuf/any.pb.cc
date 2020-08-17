@@ -28,7 +28,6 @@ static void InitDefaultsscc_info_Any_google_2fprotobuf_2fany_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Any();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Any::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Any_google_2fprotobuf_2fany_2eproto =
@@ -82,8 +81,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void Any::InitAsDefaultInstance() {
-}
 bool Any::GetAnyFieldDescriptors(
     const ::PROTOBUF_NAMESPACE_ID::Message& message,
     const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** type_url_field,

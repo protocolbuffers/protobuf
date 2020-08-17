@@ -170,6 +170,9 @@ class CelMapReflectionFriend;  // field_backed_map_impl.cc
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
 }
+namespace util {
+class MessageDifferencer;
+}
 
 
 namespace internal {
@@ -361,6 +364,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   inline explicit Message(Arena* arena) : MessageLite(arena) {}
 
+
+ protected:
+  static size_t GetInvariantPerBuild(size_t salt);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Message);
@@ -945,6 +951,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class ::PROTOBUF_NAMESPACE_ID::AssignDescriptorsHelper;
   friend class DynamicMessageFactory;
   friend class python::MapReflectionFriend;
+  friend class util::MessageDifferencer;
 #define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
   friend class expr::CelMapReflectionFriend;
   friend class internal::MapFieldReflectionTest;
@@ -1019,6 +1026,8 @@ class PROTOBUF_EXPORT Reflection final {
   inline Type* MutableRaw(Message* message, const FieldDescriptor* field) const;
   template <typename Type>
   const Type& DefaultRaw(const FieldDescriptor* field) const;
+
+  const Message* GetDefaultMessageInstance(const FieldDescriptor* field) const;
 
   inline const uint32* GetHasBits(const Message& message) const;
   inline uint32* MutableHasBits(Message* message) const;

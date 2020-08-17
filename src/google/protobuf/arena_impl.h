@@ -329,7 +329,6 @@ class PROTOBUF_EXPORT ArenaImpl {
 
   Block* NewBlock(Block* last_block, size_t min_bytes);
 
-  SerialArena* GetSerialArena();
   PROTOBUF_ALWAYS_INLINE bool GetSerialArenaFast(SerialArena** arena) {
     if (GetSerialArenaFromThreadCache(arena)) return true;
 

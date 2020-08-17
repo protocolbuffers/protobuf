@@ -100,6 +100,13 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // If true, accepts repeated key/value pair for a map proto field.
     bool use_legacy_json_map_format;
 
+    // If true, disable implicitly creating message list.
+    bool disable_implicit_message_list;
+
+    // If true, suppress the error of implicitly creating message list when it
+    // is disabled.
+    bool suppress_implicit_message_list_error;
+
     Options()
         : struct_integers_as_strings(false),
           ignore_unknown_fields(false),
@@ -107,7 +114,9 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
           use_lower_camel_for_enums(false),
           case_insensitive_enum_parsing(false),
           ignore_null_value_map_entry(false),
-          use_legacy_json_map_format(false) {}
+          use_legacy_json_map_format(false),
+          disable_implicit_message_list(false),
+          suppress_implicit_message_list_error(false) {}
 
     // Default instance of Options with all options set to defaults.
     static const Options& Defaults() {

@@ -59,10 +59,10 @@ AnyMetadata::AnyMetadata(UrlType* type_url, ValueType* value)
 void AnyMetadata::InternalPackFrom(const MessageLite& message,
                                    StringPiece type_url_prefix,
                                    StringPiece type_name) {
-  type_url_->SetNoArena(&::google::protobuf::internal::GetEmptyString(),
-                        GetTypeUrl(type_name, type_url_prefix));
-  message.SerializeToString(value_->MutableNoArena(
-      &::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+  type_url_->Set(&::google::protobuf::internal::GetEmptyString(),
+                 GetTypeUrl(type_name, type_url_prefix), nullptr);
+  message.SerializeToString(value_->Mutable(
+      &::google::protobuf::internal::GetEmptyStringAlreadyInited(), nullptr));
 }
 
 bool AnyMetadata::InternalUnpackTo(StringPiece type_name,
@@ -70,31 +70,11 @@ bool AnyMetadata::InternalUnpackTo(StringPiece type_name,
   if (!InternalIs(type_name)) {
     return false;
   }
-  return message->ParseFromString(value_->GetNoArena());
+  return message->ParseFromString(value_->Get());
 }
-
-namespace {
-
-// The type URL could be stored in either an ArenaStringPtr or a
-// StringPieceField, so we provide these helpers to get a string_view from
-// either type. We use a template function as a way to avoid depending on
-// StringPieceField.
-
-template <typename T>
-StringPiece Get(const T* ptr) {
-  return ptr->Get();
-}
-
-template <>
-// NOLINTNEXTLINE: clang-diagnostic-unused-function
-StringPiece Get(const ArenaStringPtr* ptr) {
-  return ptr->GetNoArena();
-}
-
-}  // namespace
 
 bool AnyMetadata::InternalIs(StringPiece type_name) const {
-  StringPiece type_url = Get(type_url_);
+  StringPiece type_url = type_url_->Get();
   return type_url.size() >= type_name.size() + 1 &&
          type_url[type_url.size() - type_name.size() - 1] == '/' &&
          HasSuffixString(type_url, type_name);

@@ -28,7 +28,6 @@ static void InitDefaultsscc_info_Duration_google_2fprotobuf_2fduration_2eproto()
     new (ptr) PROTOBUF_NAMESPACE_ID::Duration();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Duration::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Duration_google_2fprotobuf_2fduration_2eproto =
@@ -82,8 +81,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void Duration::InitAsDefaultInstance() {
-}
 class Duration::_Internal {
  public:
 };

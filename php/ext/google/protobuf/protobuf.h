@@ -43,6 +43,34 @@ const zval *get_generated_pool();
 #define GC_DELREF(h) --GC_REFCOUNT(h)
 #endif
 
+// Since php 7.4, the write_property() object handler now returns the assigned
+// value (after possible type coercions) rather than void.
+// https://github.com/php/php-src/blob/PHP-7.4.0/UPGRADING.INTERNALS#L171-L173
+#if PHP_VERSION_ID < 70400
+#define PROTO_RETURN_VAL void
+#else
+#define PROTO_RETURN_VAL zval*
+#endif
+
+// Sine php 8.0, the Object Handlers API was changed to receive zend_object*
+// instead of zval* and zend_string* instead of zval* for property names.
+// https://github.com/php/php-src/blob/php-8.0.0beta1/UPGRADING.INTERNALS#L37-L39
+#if PHP_VERSION_ID < 80000
+#define PROTO_VAL zval 
+#define PROTO_STR zval
+#define PROTO_MSG_P(obj) (Message*)Z_OBJ_P(obj)
+#define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
+#define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
+#else
+#define PROTO_VAL zend_object
+#define PROTO_STR zend_string
+#define PROTO_MSG_P(obj) (Message*)(obj)
+#define PROTO_STRVAL_P(obj) ZSTR_VAL(obj)
+#define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
+#endif
+
+#define PHP_PROTOBUF_VERSION "3.13.0"
+
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
 //  * upb_msg* -> Message

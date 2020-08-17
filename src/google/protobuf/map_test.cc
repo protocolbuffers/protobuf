@@ -982,13 +982,10 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
 
 TEST_F(MapImplTest, SpaceUsed) {
   constexpr size_t kMinCap = 8;
-  constexpr size_t kInnerMapOverhead = sizeof(size_t) * 4 + sizeof(void*) * 2;
 
   Map<int32, int32> m;
-  // To check the current overhead of an empty map.
-  // Ideally this should be zero.
-  EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
-            sizeof(void*) * kMinCap + kInnerMapOverhead);
+  // An newly constructed map should have no space used.
+  EXPECT_EQ(m.SpaceUsedExcludingSelfLong(), 0);
 
   size_t capacity = kMinCap;
   for (int i = 0; i < 100; ++i) {
@@ -998,7 +995,7 @@ TEST_F(MapImplTest, SpaceUsed) {
       capacity *= 2;
     }
     EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
-              sizeof(void*) * capacity + kInnerMapOverhead +
+              sizeof(void*) * capacity +
                   m.size() * sizeof(std::pair<std::pair<int32, int32>, void*>));
   }
 
@@ -1007,7 +1004,7 @@ TEST_F(MapImplTest, SpaceUsed) {
   std::string str = "Some arbitrarily large string";
   m2[str] = 1;
   EXPECT_EQ(m2.SpaceUsedExcludingSelfLong(),
-            sizeof(void*) * kMinCap + kInnerMapOverhead +
+            sizeof(void*) * kMinCap +
                 sizeof(std::pair<std::pair<std::string, int32>, void*>) +
                 internal::StringSpaceUsedExcludingSelfLong(str));
 
@@ -1015,7 +1012,7 @@ TEST_F(MapImplTest, SpaceUsed) {
   Map<int32, TestAllTypes> m3;
   m3[0].set_optional_string(str);
   EXPECT_EQ(m3.SpaceUsedExcludingSelfLong(),
-            sizeof(void*) * kMinCap + kInnerMapOverhead +
+            sizeof(void*) * kMinCap +
                 sizeof(std::pair<std::pair<int32, TestAllTypes>, void*>) +
                 m3[0].SpaceUsedLong() - sizeof(m3[0]));
 }
