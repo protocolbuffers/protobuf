@@ -1,4 +1,7 @@
 
+#include "convert.h"
+
+#include "message.h"
 #include "protobuf.h"
 
 static upb_strview Convert_StrDup(VALUE str, upb_arena *arena) {
@@ -78,12 +81,11 @@ unknownval:
   rb_raise(rb_eRangeError, "Unknown symbol value for enum field '%s'.", name);
 }
 
-upb_msgval Convert_RubyToUpb(VALUE value, const char* name,
-                             upb_fieldtype_t type, TypeInfo info,
+upb_msgval Convert_RubyToUpb(VALUE value, const char* name, TypeInfo type_info,
                              upb_arena* arena) {
   upb_msgval ret;
 
-  switch (type) {
+  switch (type_info.type) {
     case UPB_TYPE_FLOAT:
       if (!is_ruby_num(value)) {
         rb_raise(cTypeError, "Expected number type for float field '%s' (given %s).",
@@ -148,17 +150,17 @@ upb_msgval Convert_RubyToUpb(VALUE value, const char* name,
     }
     case UPB_TYPE_MESSAGE:
       ret.msg_val =
-          Message_GetUpbMessage(value, info.message_type, name, arena);
+          Message_GetUpbMessage(value, type_info.def.msgdef, name, arena);
       break;
     case UPB_TYPE_ENUM:
-      ret.int32_val = Convert_ToEnum(value, name, info.enum_type);
+      ret.int32_val = Convert_ToEnum(value, name, type_info.def.enumdef);
       break;
     case UPB_TYPE_INT32:
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT32:
     case UPB_TYPE_UINT64:
-      Convert_CheckInt(name, type, value);
-      switch (type) {
+      Convert_CheckInt(name, type_info.type, value);
+      switch (type_info.type) {
       case UPB_TYPE_INT32:
         ret.int32_val = NUM2INT(value);
         break;
@@ -182,9 +184,8 @@ upb_msgval Convert_RubyToUpb(VALUE value, const char* name,
   return ret;
 }
 
-VALUE Convert_UpbToRuby(upb_msgval upb_val, upb_fieldtype_t type,
-                        TypeInfo type_info, VALUE arena) {
-  switch (type) {
+VALUE Convert_UpbToRuby(upb_msgval upb_val, TypeInfo type_info, VALUE arena) {
+  switch (type_info.type) {
     case UPB_TYPE_FLOAT:
       return DBL2NUM(upb_val.float_val);
     case UPB_TYPE_DOUBLE:
@@ -201,7 +202,7 @@ VALUE Convert_UpbToRuby(upb_msgval upb_val, upb_fieldtype_t type,
       return ULL2NUM(upb_val.int64_val);
     case UPB_TYPE_ENUM: {
       const char* name =
-          upb_enumdef_iton(type_info.enum_type, upb_val.int32_val);
+          upb_enumdef_iton(type_info.def.enumdef, upb_val.int32_val);
       if (name) {
         return ID2SYM(rb_intern(name));
       } else {
@@ -211,21 +212,11 @@ VALUE Convert_UpbToRuby(upb_msgval upb_val, upb_fieldtype_t type,
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
       return rb_str_new(upb_val.str_val.data, upb_val.str_val.size);
-    case UPB_TYPE_MESSAGE: {
-      VALUE val = DEREF(memory, VALUE);
-
-      // Lazily expand wrapper type if necessary.
-      int type = TYPE(val);
-      if (type != T_DATA && type != T_NIL) {
-        // This must be a wrapper type.
-        val = ruby_wrapper_type(type_class, val);
-        DEREF(memory, VALUE) = val;
-      }
-
-      return val;
-    }
+    case UPB_TYPE_MESSAGE:
+      return Message_GetRubyWrapper((upb_msg*)upb_val.msg_val,
+                                    type_info.def.msgdef, arena);
     default:
       rb_raise(rb_eRuntimeError, "Convert_UpbToRuby(): Unexpected type %d",
-               (int)type);
+               (int)type_info.type);
   }
 }

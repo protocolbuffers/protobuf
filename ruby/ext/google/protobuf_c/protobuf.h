@@ -121,8 +121,11 @@ struct Descriptor {
 };
 
 union TypeInfo {
-  const Descriptor* message_type;
-  const upb_enumdef* enum_type;
+  upb_fieldtype_t type;
+  union {
+    const Descriptor* msgdef;  // When type == UPB_TYPE_MESSAGE
+    const upb_enumdef* enumdef;    // When type == UPB_TYPE_ENUM
+  } def;
 };
 
 struct FileDescriptor {
@@ -203,6 +206,8 @@ VALUE DescriptorPool_lookup(VALUE _self, VALUE name);
 VALUE DescriptorPool_generated_pool(VALUE _self);
 
 extern VALUE generated_pool;
+
+TypeInfo TypeInfo_get(const upb_fielddef *f);
 
 void Descriptor_mark(void* _self);
 void Descriptor_free(void* _self);
@@ -405,116 +410,31 @@ const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  upb_fieldtype_t field_type;
-  VALUE field_type_class;
-  void* elements;
-  int size;
-  int capacity;
+  upb_array *array;
+  TypeInfo type_info;
+  VALUE type_class;  // To GC-root the msgdef/enumdef in type_info.
+  VALUE arena;       // To GC-root the upb_array.
 } RepeatedField;
 
-void RepeatedField_mark(void* self);
-void RepeatedField_free(void* self);
-VALUE RepeatedField_alloc(VALUE klass);
-VALUE RepeatedField_init(int argc, VALUE* argv, VALUE self);
 void RepeatedField_register(VALUE module);
+void validate_type_class(upb_fieldtype_t type, VALUE klass);
 
 extern const rb_data_type_t RepeatedField_type;
 extern VALUE cRepeatedField;
-
-RepeatedField* ruby_to_RepeatedField(VALUE value);
-upb_array* RepeatedField_from_value(VALUE value, const upb_fielddef* field);
-
-VALUE RepeatedField_new_this_type(VALUE _self);
-VALUE RepeatedField_each(VALUE _self);
-VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self);
-void* RepeatedField_index_native(VALUE _self, int index);
-int RepeatedField_size(VALUE _self);
-VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val);
-void RepeatedField_reserve(RepeatedField* self, int new_size);
-VALUE RepeatedField_push(VALUE _self, VALUE val);
-void RepeatedField_push_native(VALUE _self, void* data);
-VALUE RepeatedField_pop_one(VALUE _self);
-VALUE RepeatedField_insert(int argc, VALUE* argv, VALUE _self);
-VALUE RepeatedField_replace(VALUE _self, VALUE list);
-VALUE RepeatedField_clear(VALUE _self);
-VALUE RepeatedField_length(VALUE _self);
-VALUE RepeatedField_dup(VALUE _self);
-VALUE RepeatedField_deep_copy(VALUE _self);
-VALUE RepeatedField_to_ary(VALUE _self);
-VALUE RepeatedField_eq(VALUE _self, VALUE _other);
-VALUE RepeatedField_hash(VALUE _self);
-VALUE RepeatedField_inspect(VALUE _self);
-VALUE RepeatedField_plus(VALUE _self, VALUE list);
-
-// Defined in repeated_field.c; also used by Map.
-void validate_type_class(upb_fieldtype_t type, VALUE klass);
 
 // -----------------------------------------------------------------------------
 // Map container type.
 // -----------------------------------------------------------------------------
 
 typedef struct {
+  upb_map *map;
   upb_fieldtype_t key_type;
-  upb_fieldtype_t value_type;
+  TypeInfo value_type_info;
   VALUE value_type_class;
-  VALUE parse_frame;
-  upb_strtable table;
+  VALUE arena;
 } Map;
 
-void Map_mark(void* self);
-void Map_free(void* self);
-VALUE Map_alloc(VALUE klass);
-VALUE Map_init(int argc, VALUE* argv, VALUE self);
-void Map_register(VALUE module);
-VALUE Map_set_frame(VALUE self, VALUE val);
-
-extern const rb_data_type_t Map_type;
 extern VALUE cMap;
-
-Map* ruby_to_Map(VALUE value);
-upb_map* Map_from_value(VALUE value, const upb_fielddef* field);
-
-VALUE Map_new_this_type(VALUE _self);
-VALUE Map_each(VALUE _self);
-VALUE Map_keys(VALUE _self);
-VALUE Map_values(VALUE _self);
-VALUE Map_index(VALUE _self, VALUE key);
-VALUE Map_index_set(VALUE _self, VALUE key, VALUE value);
-VALUE Map_has_key(VALUE _self, VALUE key);
-VALUE Map_delete(VALUE _self, VALUE key);
-VALUE Map_clear(VALUE _self);
-VALUE Map_length(VALUE _self);
-VALUE Map_dup(VALUE _self);
-VALUE Map_deep_copy(VALUE _self);
-VALUE Map_eq(VALUE _self, VALUE _other);
-VALUE Map_hash(VALUE _self);
-VALUE Map_to_h(VALUE _self);
-VALUE Map_inspect(VALUE _self);
-VALUE Map_merge(VALUE _self, VALUE hashmap);
-VALUE Map_merge_into_self(VALUE _self, VALUE hashmap);
-
-typedef struct {
-  Map* self;
-  upb_strtable_iter it;
-} Map_iter;
-
-void Map_begin(VALUE _self, Map_iter* iter);
-void Map_next(Map_iter* iter);
-bool Map_done(Map_iter* iter);
-VALUE Map_iter_key(Map_iter* iter);
-VALUE Map_iter_value(Map_iter* iter);
-
-// -----------------------------------------------------------------------------
-// Message layout / storage.
-// -----------------------------------------------------------------------------
-
-#define ONEOF_CASE_MASK 0x80000000
-
-void layout_dup(MessageLayout* layout, void* to, void* from);
-void layout_deep_copy(MessageLayout* layout, void* to, void* from);
-VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2);
-VALUE layout_hash(MessageLayout* layout, void* storage);
-VALUE layout_inspect(MessageLayout* layout, void* storage);
 
 bool is_wrapper_type_field(const upb_fielddef* field);
 VALUE ruby_wrapper_type(VALUE type_class, VALUE value);
@@ -554,8 +474,6 @@ VALUE Message_decode(VALUE klass, VALUE data);
 VALUE Message_encode(VALUE klass, VALUE msg_rb);
 VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass);
 VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
-upb_msg* Message_GetUpbMessage(VALUE value, const Descriptor* desc,
-                               const char* name, upb_arena* arena);
 
 VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);

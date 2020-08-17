@@ -40,14 +40,13 @@
 // UPB_TYPE_MESSAGE, then |desc| must be the Descriptor for this message type.
 // If type is string, message, or bytes, then |arena| will be used to copy
 // string data or fuse this arena to the given message's arena.
-upb_msgval Convert_RubyToUpb(VALUE ruby_val, upb_fieldtype_t type,
+upb_msgval Convert_RubyToUpb(VALUE ruby_val, const char *name,
                              TypeInfo type_info, upb_arena *arena);
 
-// Converts |upb_val| to a Ruby zval according to |type|. This may involve
+// Converts |upb_val| to a Ruby VALUE according to |type_info|. This may involve
 // creating a Ruby wrapper object. If type == UPB_TYPE_MESSAGE, then |desc| must
 // be the Descriptor for this message type. Any newly created wrapper object
 // will reference |arena|.
-VALUE Convert_UpbToRuby(upb_msgval upb_val, upb_fieldtype_t type,
-                        TypeInfo type_info, VALUE arena);
+VALUE Convert_UpbToRuby(upb_msgval upb_val, TypeInfo type_info, VALUE arena);
 
 #endif  // RUBY_PROTOBUF_CONVERT_H_

@@ -1105,9 +1105,7 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   }
 
   msgval = upb_msg_get(msg->msg, self->fielddef);
-  return Convert_UpbToRuby(msgval, upb_fielddef_type(self->fielddef),
-                           Descriptor_from_fielddef(self->fielddef),
-                           msg->arena);
+  return Convert_UpbToRuby(msgval, TypeInfo_get(self->fielddef), msg->arena);
 }
 
 /*
@@ -1170,8 +1168,8 @@ VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
     rb_raise(cTypeError, "set method called on wrong message type");
   }
 
-  msgval = Convert_RubyToUpb(value, upb_fielddef_type(self->fielddef),
-                             Descriptor_from_fielddef(self->fielddef), arena);
+  msgval = Convert_RubyToUpb(value, upb_fielddef_name(self->fielddef),
+                             TypeInfo_get(self->fielddef), arena);
   upb_msg_set(msg->msg, self->fielddef, msgval, arena);
   return Qnil;
 }
