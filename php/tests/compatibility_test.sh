@@ -103,7 +103,7 @@ composer install
 # TODO(teboring): Temporarily disable encode_decode_test.php. In 3.13.0-rc1,
 # repeated primitive field encoding is changed to packed, which is a bug fix.
 # However, this fails the compatibility test which hard coded old encoding.
-# Will reenable the test after making a release. After the version bump, the
+# Will re-enable the test after making a release. After the version bump, the
 # compatibility test will use the updated test code.
 tests=( array_test.php generated_class_test.php map_field_test.php well_known_test.php )
 sed -i.bak '/php_implementation_test.php/d' phpunit.xml
