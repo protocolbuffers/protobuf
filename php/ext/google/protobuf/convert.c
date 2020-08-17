@@ -92,20 +92,55 @@ PHP_METHOD(Util, checkRepeatedField) {
   RETURN_ZVAL(val, 1, 0);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_checkPrimitive, 0, 0, 1)
+  ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_checkMessage, 0, 0, 2)
+  ZEND_ARG_INFO(0, value)
+  ZEND_ARG_INFO(0, class)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_checkMapField, 0, 0, 3)
+  ZEND_ARG_INFO(0, value)
+  ZEND_ARG_INFO(0, key_type)
+  ZEND_ARG_INFO(0, value_type)
+  ZEND_ARG_INFO(0, value_class)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_checkRepeatedField, 0, 0, 2)
+  ZEND_ARG_INFO(0, value)
+  ZEND_ARG_INFO(0, type)
+  ZEND_ARG_INFO(0, class)
+ZEND_END_ARG_INFO()
+
 static zend_function_entry util_methods[] = {
-  PHP_ME(Util, checkInt32,  NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkUint32, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkInt64,  NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkUint64, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkEnum,   NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkFloat,  NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkDouble, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkBool,   NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkString, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkBytes,  NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkMessage, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkMapField, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkRepeatedField, NULL, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkInt32,  arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkUint32, arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkInt64,  arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkUint64, arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkEnum,   arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkFloat,  arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkDouble, arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkBool,   arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkString, arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkBytes,  arginfo_checkPrimitive,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkMessage, arginfo_checkMessage,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkMapField, arginfo_checkMapField,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkRepeatedField, arginfo_checkRepeatedField,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 

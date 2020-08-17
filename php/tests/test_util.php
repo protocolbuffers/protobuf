@@ -338,38 +338,24 @@ class TestUtil
             "800101" .
             "8A01020821" .
 
-            "F801D6FFFFFFFFFFFFFFFF01" .
-            "F801CCFFFFFFFFFFFFFFFF01" .
-            "8002D5FFFFFFFFFFFFFFFF01" .
-            "8002CBFFFFFFFFFFFFFFFF01" .
-            "88022A" .
-            "880234" .
-            "90022B" .
-            "900235" .
-            "980257" .
-            "98026B" .
-            "A00259" .
-            "A0026D" .
-            "AD022E000000" .
-            "AD0238000000" .
-            "B1022F00000000000000" .
-            "B1023900000000000000" .
-            "BD02D2FFFFFF" .
-            "BD02C8FFFFFF" .
-            "C102D1FFFFFFFFFFFFFF" .
-            "C102C7FFFFFFFFFFFFFF" .
-            "CD020000C03F" .
-            "CD0200002040" .
-            "D1029A9999999999F93F" .
-            "D102CDCCCCCCCCCC0440" .
-            "D80201" .
-            "D80200" .
+            "FA0114D6FFFFFFFFFFFFFFFF01CCFFFFFFFFFFFFFFFF01" .
+            "820214D5FFFFFFFFFFFFFFFF01CBFFFFFFFFFFFFFFFF01" .
+            "8A02022A34" .
+            "9202022B35" .
+            "9A0202576B" .
+            "A20202596D" .
+            "AA02082E00000038000000" .
+            "B202102F000000000000003900000000000000" .
+            "BA0208D2FFFFFFC8FFFFFF" .
+            "C20210D1FFFFFFFFFFFFFFC7FFFFFFFFFFFFFF" .
+            "CA02080000C03F00002040" .
+            "D202109A9999999999F93FCDCCCCCCCCCC0440" .
+            "DA02020100" .
             "E2020161" .
             "E2020163" .
             "EA020462626262" .
             "EA020464646464" .
-            "F00200" .
-            "F00201" .
+            "F202020001" .
             "FA02020822" .
             "FA02020823" .
 

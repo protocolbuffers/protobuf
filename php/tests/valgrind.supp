@@ -1,0 +1,12 @@
+{
+   PHP_Equal_Val
+   Memcheck:Cond
+   fun:zend_string_equal_val
+}
+
+{
+   PHP_ScanDir_Tail
+   Memcheck:Cond
+   obj:/usr/bin/php7.3
+   fun:__scandir64_tail
+}

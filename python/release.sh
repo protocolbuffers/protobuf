@@ -11,7 +11,10 @@ function run_install_test() {
   local PYTHON=$2
   local PYPI=$3
 
-  virtualenv --no-site-packages -p `which $PYTHON` test-venv
+  # Setuptools 45.0 removed support for Python 2, so to test with Python 2 we
+  # pass --no-setuptools here and then install an older setuptools version
+  # below.
+  virtualenv -p `which $PYTHON` --no-setuptools test-venv
 
   # Intentionally put a broken protoc in the path to make sure installation
   # doesn't require protoc installed.
@@ -19,6 +22,7 @@ function run_install_test() {
   chmod +x test-venv/bin/protoc
 
   source test-venv/bin/activate
+  pip install "setuptools<45"
   pip install -i ${PYPI} protobuf==${VERSION} --no-cache-dir
   deactivate
   rm -fr test-venv
