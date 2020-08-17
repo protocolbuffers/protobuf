@@ -286,6 +286,15 @@ class TextFormat::Parser::ParserImpl {
     // Consume fields until we cannot do so anymore.
     while (true) {
       if (LookingAtType(io::Tokenizer::TYPE_END)) {
+        // Ensures recursion limit properly unwinded, but only for success
+        // cases. This implicitly avoids the check when `Parse` returns false
+        // via `DO(...)`.
+        GOOGLE_DCHECK(had_errors_ || recursion_limit_ == initial_recursion_limit_)
+            << "Recursion limit at end of parse should be "
+            << initial_recursion_limit_ << ", but was " << recursion_limit_
+            << ". Difference of " << initial_recursion_limit_ - recursion_limit_
+            << " stack frames not accounted for stack unwind.";
+
         return !had_errors_;
       }
 
@@ -832,10 +841,19 @@ class TextFormat::Parser::ParserImpl {
   }
 
   bool SkipFieldValue() {
+    if (--recursion_limit_ < 0) {
+      ReportError(
+          StrCat("Message is too deep, the parser exceeded the "
+                       "configured recursion limit of ",
+                       initial_recursion_limit_, "."));
+      return false;
+    }
+
     if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
       while (LookingAtType(io::Tokenizer::TYPE_STRING)) {
         tokenizer_.Next();
       }
+      ++recursion_limit_;
       return true;
     }
     if (TryConsume("[")) {
@@ -850,6 +868,7 @@ class TextFormat::Parser::ParserImpl {
         }
         DO(Consume(","));
       }
+      ++recursion_limit_;
       return true;
     }
     // Possible field values other than string:
@@ -879,6 +898,7 @@ class TextFormat::Parser::ParserImpl {
         !LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
       std::string text = tokenizer_.current().text;
       ReportError("Cannot skip field value, unexpected token: " + text);
+      ++recursion_limit_;
       return false;
     }
     // Combination of '-' and TYPE_IDENTIFIER may result in an invalid field
@@ -893,10 +913,12 @@ class TextFormat::Parser::ParserImpl {
       if (text != "inf" &&
           text != "infinity" && text != "nan") {
         ReportError("Invalid float number: " + text);
+        ++recursion_limit_;
         return false;
       }
     }
     tokenizer_.Next();
+    ++recursion_limit_;
     return true;
   }
 
@@ -1432,7 +1454,7 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
   return MergeUsingImpl(input, output, &parser);
 }
 
-bool TextFormat::Parser::ParseFromString(const std::string& input,
+bool TextFormat::Parser::ParseFromString(ConstStringParam input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
@@ -1497,7 +1519,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
   return Parser().Merge(input, output);
 }
 
-/* static */ bool TextFormat::ParseFromString(const std::string& input,
+/* static */ bool TextFormat::ParseFromString(ConstStringParam input,
                                               Message* output) {
   return Parser().ParseFromString(input, output);
 }
@@ -1525,9 +1547,9 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
 
 // Some compilers do not support ref-qualifiers even in C++11 mode.
 // Disable the optimization for now and revisit it later.
-#if 0   // LANG_CXX11
+#if 0  // LANG_CXX11
   std::string Consume() && { return std::move(output_); }
-#else   // !LANG_CXX11
+#else  // !LANG_CXX11
   const std::string& Get() { return output_; }
 #endif  // LANG_CXX11
 

@@ -268,13 +268,6 @@ void CollectMapInfo(const Options& options, const Descriptor* descriptor,
       "TYPE_" + ToUpper(DeclaredTypeMethodName(key->type()));
   vars["val_wire_type"] =
       "TYPE_" + ToUpper(DeclaredTypeMethodName(val->type()));
-  if (descriptor->file()->syntax() != FileDescriptor::SYNTAX_PROTO3 &&
-      val->type() == FieldDescriptor::TYPE_ENUM) {
-    const EnumValueDescriptor* default_value = val->default_value_enum();
-    vars["default_enum_value"] = Int32ToString(default_value->number());
-  } else {
-    vars["default_enum_value"] = "0";
-  }
 }
 
 // Does the given field have a private (internal helper only) has_$name$()
@@ -321,6 +314,17 @@ bool ShouldMarkNewAsFinal(const Descriptor* descriptor,
   const std::string name = ClassName(descriptor, true);
   return exclusions.find(name) == exclusions.end() ||
          options.opensource_runtime;
+}
+
+// Returns true to make the message serialize in order, decided by the following
+// factors in the order of precedence.
+// --options().message_set_wire_format() == true
+// --the message is in the allowlist (true)
+// --GOOGLE_PROTOBUF_SHUFFLE_SERIALIZE is defined (false)
+// --a ranage of message names that are allowed to stay in order (true)
+bool ShouldSerializeInOrder(const Descriptor* descriptor,
+                            const Options& options) {
+  return true;
 }
 
 bool TableDrivenParsingEnabled(const Descriptor* descriptor,
@@ -591,7 +595,7 @@ MessageGenerator::MessageGenerator(
   // Compute optimized field order to be used for layout and initialization
   // purposes.
   for (auto field : FieldRange(descriptor_)) {
-    if (!IsFieldUsed(field, options_)) {
+    if (IsFieldStripped(field, options_)) {
       continue;
     }
 
@@ -631,16 +635,7 @@ MessageGenerator::MessageGenerator(
 MessageGenerator::~MessageGenerator() = default;
 
 size_t MessageGenerator::HasBitsSize() const {
-  size_t sizeof_has_bits = (max_has_bit_index_ + 31) / 32 * 4;
-  if (sizeof_has_bits == 0) {
-    // Zero-size arrays aren't technically allowed, and MSVC in particular
-    // doesn't like them.  We still need to declare these arrays to make
-    // other code compile.  Since this is an uncommon case, we'll just declare
-    // them with size 1 and waste some space.  Oh well.
-    sizeof_has_bits = 4;
-  }
-
-  return sizeof_has_bits;
+  return (max_has_bit_index_ + 31) / 32;
 }
 
 int MessageGenerator::HasBitIndex(const FieldDescriptor* field) const {
@@ -689,7 +684,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
                         optimized_order_.end());
   for (auto field : FieldRange(descriptor_)) {
     if (!field->real_containing_oneof() && !field->options().weak() &&
-        IsFieldUsed(field, options_)) {
+        !IsFieldStripped(field, options_)) {
       continue;
     }
     ordered_fields.push_back(field);
@@ -718,8 +713,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
     if (field->is_repeated()) {
       format("$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
-             IsFieldUsed(field, options_) ? ";" : " {__builtin_trap();}");
-      if (IsFieldUsed(field, options_)) {
+             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+      if (!IsFieldStripped(field, options_)) {
         format(
             "private:\n"
             "int ${1$_internal_$name$_size$}$() const;\n"
@@ -728,15 +723,15 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
       }
     } else if (HasHasMethod(field)) {
       format("$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
-             IsFieldUsed(field, options_) ? ";" : " {__builtin_trap();}");
-      if (IsFieldUsed(field, options_)) {
+             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+      if (!IsFieldStripped(field, options_)) {
         format(
             "private:\n"
             "bool _internal_has_$name$() const;\n"
             "public:\n");
       }
     } else if (HasPrivateHasMethod(field)) {
-      if (IsFieldUsed(field, options_)) {
+      if (!IsFieldStripped(field, options_)) {
         format(
             "private:\n"
             "bool ${1$_internal_has_$name$$}$() const;\n"
@@ -745,7 +740,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
       }
     }
     format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
-           IsFieldUsed(field, options_) ? ";" : "{__builtin_trap();}");
+           !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
@@ -780,7 +775,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
 void MessageGenerator::GenerateSingularFieldHasBits(
     const FieldDescriptor* field, Formatter format) {
-  if (!IsFieldUsed(field, options_)) {
+  if (IsFieldStripped(field, options_)) {
     format(
         "inline bool $classname$::has_$name$() const { "
         "__builtin_trap(); }\n");
@@ -861,7 +856,7 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* printer) {
 
 void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                                   const Formatter& format) {
-  if (!IsFieldUsed(field, options_)) {
+  if (IsFieldStripped(field, options_)) {
     if (HasHasMethod(field)) {
       format(
           "inline bool $classname$::has_$name$() const { "
@@ -906,7 +901,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
 
 void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                                           bool is_inline, Formatter format) {
-  if (!IsFieldUsed(field, options_)) {
+  if (IsFieldStripped(field, options_)) {
     format("void $classname$::clear_$name$() { __builtin_trap(); }\n");
     return;
   }
@@ -952,7 +947,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
   for (auto field : FieldRange(descriptor_)) {
     PrintFieldComment(format, field);
 
-    if (!IsFieldUsed(field, options_)) {
+    if (IsFieldStripped(field, options_)) {
       continue;
     }
 
@@ -964,7 +959,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
-      if (!IsFieldUsed(field, options_)) {
+      if (IsFieldStripped(field, options_)) {
         format(
             "inline int $classname$::$name$_size() const { "
             "__builtin_trap(); }\n");
@@ -998,7 +993,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
     }
 
     // Generate type-specific accessors.
-    if (IsFieldUsed(field, options_)) {
+    if (!IsFieldStripped(field, options_)) {
       field_generators_.get(field).GenerateInlineAccessorDefinitions(printer);
     }
 
@@ -1026,14 +1021,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
         "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
-        "    $default_enum_value$ > {\n"
+        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> {\n"
         "public:\n"
         "  typedef ::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
         "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
-        "    $default_enum_value$ > SuperType;\n"
+        "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
+        "SuperType;\n"
         "  $classname$();\n"
         "  explicit $classname$(::$proto_ns$::Arena* arena);\n"
         "  void MergeFrom(const $classname$& other);\n"
@@ -1122,13 +1116,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format(" public:\n");
   format.Indent();
 
-  if (SupportsArenas(descriptor_)) {
-    format("inline $classname$() : $classname$(nullptr) {}\n");
-  } else {
-    format("$classname$();\n");
-  }
-
   format(
+      "inline $classname$() : $classname$(nullptr) {}\n"
       "virtual ~$classname$();\n"
       "\n"
       "$classname$(const $classname$& from);\n"
@@ -1224,7 +1213,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   // TODO(gerbens) make this private, while still granting other protos access.
   format(
-      "static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY\n"
       "static inline const $classname$* internal_default_instance() {\n"
       "  return reinterpret_cast<const $classname$*>(\n"
       "             &_$classname$_default_instance_);\n"
@@ -1244,7 +1232,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "  _any_metadata_.PackFrom(message);\n"
           "}\n"
           "void PackFrom(const ::$proto_ns$::Message& message,\n"
-          "              const std::string& type_url_prefix) {\n"
+          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
+          "type_url_prefix) {\n"
           "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
           "}\n"
           "bool UnpackTo(::$proto_ns$::Message* message) const {\n"
@@ -1264,7 +1253,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
           "::value>::type>\n"
           "void PackFrom(const T& message,\n"
-          "              const std::string& type_url_prefix) {\n"
+          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
+          "type_url_prefix) {\n"
           "  _any_metadata_.PackFrom<T>(message, type_url_prefix);"
           "}\n"
           "template <typename T, class = typename std::enable_if<"
@@ -1281,7 +1271,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "}\n"
           "template <typename T>\n"
           "void PackFrom(const T& message,\n"
-          "              const std::string& type_url_prefix) {\n"
+          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
+          "type_url_prefix) {\n"
           "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
           "}\n"
           "template <typename T>\n"
@@ -1293,7 +1284,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "template<typename T> bool Is() const {\n"
         "  return _any_metadata_.Is<T>();\n"
         "}\n"
-        "static bool ParseAnyTypeUrl(const string& type_url,\n"
+        "static bool ParseAnyTypeUrl(::PROTOBUF_NAMESPACE_ID::ConstStringParam "
+        "type_url,\n"
         "                            std::string* full_type_name);\n");
   }
 
@@ -1303,30 +1295,20 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format(
       "friend void swap($classname$& a, $classname$& b) {\n"
       "  a.Swap(&b);\n"
+      "}\n"
+      "inline void Swap($classname$* other) {\n"
+      "  if (other == this) return;\n"
+      "  if (GetArena() == other->GetArena()) {\n"
+      "    InternalSwap(other);\n"
+      "  } else {\n"
+      "    ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);\n"
+      "  }\n"
+      "}\n"
+      "void UnsafeArenaSwap($classname$* other) {\n"
+      "  if (other == this) return;\n"
+      "  $DCHK$(GetArena() == other->GetArena());\n"
+      "  InternalSwap(other);\n"
       "}\n");
-
-  if (SupportsArenas(descriptor_)) {
-    format(
-        "inline void Swap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  if (GetArena() == other->GetArena()) {\n"
-        "    InternalSwap(other);\n"
-        "  } else {\n"
-        "    ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);\n"
-        "  }\n"
-        "}\n"
-        "void UnsafeArenaSwap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  $DCHK$(GetArena() == other->GetArena());\n"
-        "  InternalSwap(other);\n"
-        "}\n");
-  } else {
-    format(
-        "inline void Swap($classname$* other) {\n"
-        "  if (other == this) return;\n"
-        "  InternalSwap(other);\n"
-        "}\n");
-  }
 
   format(
       "\n"
@@ -1400,17 +1382,15 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       options_.opensource_runtime ? "::PROTOBUF_NAMESPACE_ID::StringPiece"
                                   : "::StringPiece");
 
-  if (SupportsArenas(descriptor_)) {
-    format(
-        // TODO(gerbens) Make this private! Currently people are deriving from
-        // protos to give access to this constructor, breaking the invariants
-        // we rely on.
-        "protected:\n"
-        "explicit $classname$(::$proto_ns$::Arena* arena);\n"
-        "private:\n"
-        "static void ArenaDtor(void* object);\n"
-        "inline void RegisterArenaDtor(::$proto_ns$::Arena* arena);\n");
-  }
+  format(
+      // TODO(gerbens) Make this private! Currently people are deriving from
+      // protos to give access to this constructor, breaking the invariants
+      // we rely on.
+      "protected:\n"
+      "explicit $classname$(::$proto_ns$::Arena* arena);\n"
+      "private:\n"
+      "static void ArenaDtor(void* object);\n"
+      "inline void RegisterArenaDtor(::$proto_ns$::Arena* arena);\n");
 
   format(
       "public:\n"
@@ -1515,10 +1495,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   const size_t sizeof_has_bits = HasBitsSize();
   const std::string has_bits_decl =
-      sizeof_has_bits == 0
-          ? ""
-          : StrCat("::$proto_ns$::internal::HasBits<",
-                         sizeof_has_bits / 4, "> _has_bits_;\n");
+      sizeof_has_bits == 0 ? ""
+                           : StrCat("::$proto_ns$::internal::HasBits<",
+                                          sizeof_has_bits, "> _has_bits_;\n");
 
   // To minimize padding, data members are divided into three sections:
   // (1) members assumed to align to 8 bytes
@@ -1534,13 +1513,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "\n");
   }
 
-  if (SupportsArenas(descriptor_)) {
-    format(
-        "template <typename T> friend class "
-        "::$proto_ns$::Arena::InternalHelper;\n"
-        "typedef void InternalArenaConstructable_;\n"
-        "typedef void DestructorSkippable_;\n");
-  }
+  format(
+      "template <typename T> friend class "
+      "::$proto_ns$::Arena::InternalHelper;\n"
+      "typedef void InternalArenaConstructable_;\n"
+      "typedef void DestructorSkippable_;\n");
 
   if (!has_bit_indices_.empty()) {
     // _has_bits_ is frequently accessed, so to reduce code size and improve
@@ -1572,14 +1549,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         camel_oneof_name);
     format.Indent();
     for (auto field : FieldRange(oneof)) {
-      if (IsFieldUsed(field, options_)) {
+      if (!IsFieldStripped(field, options_)) {
         field_generators_.get(field).GeneratePrivateMembers(printer);
       }
     }
     format.Outdent();
     format("} $1$_;\n", oneof->name());
     for (auto field : FieldRange(oneof)) {
-      if (IsFieldUsed(field, options_)) {
+      if (!IsFieldStripped(field, options_)) {
         field_generators_.get(field).GenerateStaticMembers(printer);
       }
     }
@@ -1634,30 +1611,6 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* printer) {
         "_oneof_case_[$oneof_index$]);\n"
         "}\n",
         oneof);
-  }
-}
-
-void MessageGenerator::GenerateExtraDefaultFields(io::Printer* printer) {
-  // Generate oneof default instance and weak field instances for reflection
-  // usage.
-  Formatter format(printer, variables_);
-  for (auto oneof : OneOfRange(descriptor_)) {
-    for (auto field : FieldRange(oneof)) {
-      if (!IsFieldUsed(field, options_)) {
-        continue;
-      }
-      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-          (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-           EffectiveStringCType(field, options_) != FieldOptions::STRING)) {
-        format("const ");
-      }
-      field_generators_.get(field).GeneratePrivateMembers(printer);
-    }
-  }
-  for (auto field : FieldRange(descriptor_)) {
-    if (field->options().weak() && IsFieldUsed(field, options_)) {
-      format("  const ::$proto_ns$::Message* $1$_;\n", FieldName(field));
-    }
   }
 }
 
@@ -1952,66 +1905,6 @@ void MessageGenerator::GenerateFieldDefaultInstances(io::Printer* printer) {
   }
 }
 
-void MessageGenerator::GenerateDefaultInstanceInitializer(
-    io::Printer* printer) {
-  Formatter format(printer, variables_);
-
-  // The default instance needs all of its embedded message pointers
-  // cross-linked to other default instances.  We can't do this initialization
-  // in the constructor because some other default instances may not have been
-  // constructed yet at that time.
-  // TODO(kenton):  Maybe all message fields (even for non-default messages)
-  //   should be initialized to point at default instances rather than NULL?
-  for (auto field : FieldRange(descriptor_)) {
-    if (!IsFieldUsed(field, options_)) {
-      continue;
-    }
-    Formatter::SaveState saver(&format);
-
-    if (!field->is_repeated() && !IsLazy(field, options_) &&
-        field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        (!field->real_containing_oneof() ||
-         HasDescriptorMethods(descriptor_->file(), options_))) {
-      std::string name;
-      if (field->real_containing_oneof() || field->options().weak()) {
-        name = "_" + classname_ + "_default_instance_.";
-      } else {
-        name =
-            "_" + classname_ + "_default_instance_._instance.get_mutable()->";
-      }
-      name += FieldName(field);
-      format.Set("name", name);
-      if (IsWeak(field, options_)) {
-        format(
-            "$package_ns$::$name$_ = reinterpret_cast<const "
-            "::$proto_ns$::Message*>(&$1$);\n"
-            "if ($package_ns$::$name$_ == nullptr) {\n"
-            "  $package_ns$::$name$_ = "
-            "::$proto_ns$::Empty::internal_default_instance();\n"
-            "}\n",
-            QualifiedDefaultInstanceName(field->message_type(),
-                                         options_));  // 1
-        continue;
-      }
-      if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
-        format(
-            "$package_ns$::$name$_ = reinterpret_cast<$1$*>(\n"
-            "    $2$);\n",
-            FieldMessageTypeName(field, options_),
-            QualifiedDefaultInstancePtr(field->message_type(), options_));
-      } else {
-        format(
-            "$package_ns$::$name$_ = const_cast< $1$*>(\n"
-            "    $1$::internal_default_instance());\n",
-            FieldMessageTypeName(field, options_));
-      }
-    } else if (field->real_containing_oneof() &&
-               HasDescriptorMethods(descriptor_->file(), options_)) {
-      field_generators_.get(field).GenerateConstructorCode(printer);
-    }
-  }
-}
-
 void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   Formatter format(printer, variables_);
   if (IsMapEntryMessage(descriptor_)) {
@@ -2037,14 +1930,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     return;
   }
 
-  // TODO(gerbens) Remove this function. With a little bit of cleanup and
-  // refactoring this is superfluous.
-  format("void $classname$::InitAsDefaultInstance() {\n");
-  format.Indent();
-  GenerateDefaultInstanceInitializer(printer);
-  format.Outdent();
-  format("}\n");
-
   if (IsAnyMessage(descriptor_, options_)) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
@@ -2057,8 +1942,9 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
           "}\n");
     }
     format(
-        "bool $classname$::ParseAnyTypeUrl(const string& type_url,\n"
-        "                                  std::string* full_type_name) {\n"
+        "bool $classname$::ParseAnyTypeUrl(\n"
+        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url,\n"
+        "    std::string* full_type_name) {\n"
         "  return ::$proto_ns$::internal::ParseAnyTypeUrl(type_url,\n"
         "                                             full_type_name);\n"
         "}\n"
@@ -2075,7 +1961,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   }
   for (auto field : FieldRange(descriptor_)) {
     field_generators_.get(field).GenerateInternalAccessorDeclarations(printer);
-    if (!IsFieldUsed(field, options_)) {
+    if (IsFieldStripped(field, options_)) {
       continue;
     }
     if (HasHasbit(field)) {
@@ -2101,14 +1987,14 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   format.Outdent();
   format("};\n\n");
   for (auto field : FieldRange(descriptor_)) {
-    if (IsFieldUsed(field, options_)) {
+    if (!IsFieldStripped(field, options_)) {
       field_generators_.get(field).GenerateInternalAccessorDefinitions(printer);
     }
   }
 
   // Generate non-inline field definitions.
   for (auto field : FieldRange(descriptor_)) {
-    if (!IsFieldUsed(field, options_)) {
+    if (IsFieldStripped(field, options_)) {
       continue;
     }
     field_generators_.get(field).GenerateNonInlineAccessorDefinitions(printer);
@@ -2413,13 +2299,16 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
                          descriptor_->real_oneof_decl_count();
   size_t entries = offsets;
   for (auto field : FieldRange(descriptor_)) {
-    if (!IsFieldUsed(field, options_)) {
+    if (IsFieldStripped(field, options_)) {
       format("~0u,  // stripped\n");
       continue;
     }
-    if (field->real_containing_oneof() || field->options().weak()) {
-      format("offsetof($classtype$DefaultTypeInternal, $1$_)",
-             FieldName(field));
+    // TODO(sbenza): We should not have an entry in the offset table for fields
+    // that do not use them.
+    if (field->options().weak() || field->real_containing_oneof()) {
+      // Mark the field to prevent unintentional access through reflection.
+      // Don't use the top bit because that is for unused fields.
+      format("::$proto_ns$::internal::kInvalidFieldOffsetTag");
     } else {
       format("PROTOBUF_FIELD_OFFSET($classtype$, $1$_)", FieldName(field));
     }
@@ -2429,7 +2318,11 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
       format(" | $1$", tag);
     }
 
-    format(",\n");
+    if (!IsFieldUsed(field, options_)) {
+      format(" | 0x80000000u, // unused\n");
+    } else {
+      format(",\n");
+    }
   }
 
   int count = 0;
@@ -2483,9 +2376,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* printer) {
 
   format("void $classname$::SharedDtor() {\n");
   format.Indent();
-  if (SupportsArenas(descriptor_)) {
-    format("$DCHK$(GetArena() == nullptr);\n");
-  }
+  format("$DCHK$(GetArena() == nullptr);\n");
   // Write the destructors for each field except oneof members.
   // optimized_order_ does not contain oneof fields.
   for (auto field : optimized_order_) {
@@ -2541,7 +2432,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* printer) {
   // and returns false for oneof fields.
   for (auto oneof : OneOfRange(descriptor_)) {
     for (auto field : FieldRange(oneof)) {
-      if (IsFieldUsed(field, options_) &&
+      if (!IsFieldStripped(field, options_) &&
           field_generators_.get(field).GenerateArenaDestructorCode(printer)) {
         need_registration = true;
       }
@@ -2644,7 +2535,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
 
   // Initialize member variables with arena constructor.
   for (auto field : optimized_order_) {
-    GOOGLE_DCHECK(IsFieldUsed(field, options_));
+    GOOGLE_DCHECK(!IsFieldStripped(field, options_));
     bool has_arena_constructor = field->is_repeated();
     if (!field->real_containing_oneof() &&
         (IsLazy(field, options_) || IsStringPiece(field, options_))) {
@@ -2671,24 +2562,14 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     initializer_null += ", _weak_field_map_(nullptr)";
   }
 
-  if (SupportsArenas(descriptor_)) {
-    format(
-        "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
-        "  : $1$ {\n"
-        "  SharedCtor();\n"
-        "  RegisterArenaDtor(arena);\n"
-        "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
-        "}\n",
-        initializer_with_arena);
-  } else {
-    format(
-        "$classname$::$classname$()\n"
-        "  : $1$ {\n"
-        "  SharedCtor();\n"
-        "  // @@protoc_insertion_point(constructor:$full_name$)\n"
-        "}\n",
-        initializer_null);
-  }
+  format(
+      "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
+      "  : $1$ {\n"
+      "  SharedCtor();\n"
+      "  RegisterArenaDtor(arena);\n"
+      "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
+      "}\n",
+      initializer_with_arena);
 
   std::map<std::string, std::string> vars;
   SetUnknkownFieldsVariable(descriptor_, options_, &vars);
@@ -2760,7 +2641,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
       for (auto field : FieldRange(oneof)) {
         format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
         format.Indent();
-        if (IsFieldUsed(field, options_)) {
+        if (!IsFieldStripped(field, options_)) {
           field_generators_.get(field).GenerateMergingCode(printer);
         }
         format("break;\n");
@@ -2799,9 +2680,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
   GenerateSharedDestructorCode(printer);
 
   // Generate the arena-specific destructor code.
-  if (SupportsArenas(descriptor_)) {
-    GenerateArenaDestructorCode(printer);
-  }
+  GenerateArenaDestructorCode(printer);
 
   // Generate SetCachedSize.
   format(
@@ -2824,9 +2703,8 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* printer) {
       "template<> "
       "PROTOBUF_NOINLINE "
       "$classtype$* Arena::CreateMaybeMessage< $classtype$ >(Arena* arena) {\n"
-      "  return Arena::$1$Internal< $classtype$ >(arena);\n"
-      "}\n",
-      MessageCreateFunction(descriptor_));
+      "  return Arena::CreateMessageInternal< $classtype$ >(arena);\n"
+      "}\n");
 }
 
 void MessageGenerator::GenerateClear(io::Printer* printer) {
@@ -3018,7 +2896,7 @@ void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
       format.Indent();
       // We clear only allocated objects in oneofs
-      if (!IsStringOrMessage(field) || !IsFieldUsed(field, options_)) {
+      if (!IsStringOrMessage(field) || IsFieldStripped(field, options_)) {
         format("// No need to clear\n");
       } else {
         field_generators_.get(field).GenerateClearingCode(printer);
@@ -3065,7 +2943,7 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
         "metadata_);\n");
 
     if (!has_bit_indices_.empty()) {
-      for (int i = 0; i < HasBitsSize() / 4; ++i) {
+      for (int i = 0; i < HasBitsSize(); ++i) {
         format("swap(_has_bits_[$1$], other->_has_bits_[$1$]);\n", i);
       }
     }
@@ -3307,7 +3185,7 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
     for (auto field : FieldRange(oneof)) {
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
       format.Indent();
-      if (IsFieldUsed(field, options_)) {
+      if (!IsFieldStripped(field, options_)) {
         field_generators_.get(field).GenerateMergingCode(printer);
       }
       format("break;\n");
@@ -3527,7 +3405,25 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(
 
   format("// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n");
 
+  if (!ShouldSerializeInOrder(descriptor_, options_)) {
+    format.Outdent();
+    format("#ifdef NDEBUG\n");
+    format.Indent();
+  }
+
   GenerateSerializeWithCachedSizesBody(printer);
+
+  if (!ShouldSerializeInOrder(descriptor_, options_)) {
+    format.Outdent();
+    format("#else  // NDEBUG\n");
+    format.Indent();
+
+    GenerateSerializeWithCachedSizesBodyShuffled(printer);
+
+    format.Outdent();
+    format("#endif  // !NDEBUG\n");
+    format.Indent();
+  }
 
   format("// @@protoc_insertion_point(serialize_to_array_end:$full_name$)\n");
 
@@ -3643,11 +3539,14 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
           (i < descriptor_->field_count() &&
            ordered_fields[i]->number() < sorted_extensions[j]->start)) {
         const FieldDescriptor* field = ordered_fields[i++];
-        if (!IsFieldUsed(field, options_)) {
+        if (IsFieldStripped(field, options_)) {
           continue;
         }
         if (field->options().weak()) {
-          last_weak_field = field;
+          if (last_weak_field == nullptr ||
+              last_weak_field->number() < field->number()) {
+            last_weak_field = field;
+          }
           PrintFieldComment(format, field);
         } else {
           if (last_weak_field != nullptr) {
@@ -3669,6 +3568,115 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
       e.Emit(last_weak_field);
     }
   }
+
+  std::map<std::string, std::string> vars;
+  SetUnknkownFieldsVariable(descriptor_, options_, &vars);
+  format.AddMap(vars);
+  format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
+  format.Indent();
+  if (UseUnknownFieldSet(descriptor_->file(), options_)) {
+    format(
+        "target = "
+        "::$proto_ns$::internal::WireFormat::"
+        "InternalSerializeUnknownFieldsToArray(\n"
+        "    $unknown_fields$, target, stream);\n");
+  } else {
+    format(
+        "target = stream->WriteRaw($unknown_fields$.data(),\n"
+        "    static_cast<int>($unknown_fields$.size()), target);\n");
+  }
+  format.Outdent();
+  format("}\n");
+}
+
+void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
+    io::Printer* printer) {
+  Formatter format(printer, variables_);
+
+  std::vector<const FieldDescriptor*> ordered_fields =
+      SortFieldsByNumber(descriptor_);
+  ordered_fields.erase(
+      std::remove_if(ordered_fields.begin(), ordered_fields.end(),
+                     [this](const FieldDescriptor* f) {
+                       return !IsFieldUsed(f, options_);
+                     }),
+      ordered_fields.end());
+
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  sorted_extensions.reserve(descriptor_->extension_range_count());
+  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
+    sorted_extensions.push_back(descriptor_->extension_range(i));
+  }
+  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
+            ExtensionRangeSorter());
+
+  int num_fields = ordered_fields.size() + sorted_extensions.size();
+  constexpr int kLargePrime = 1000003;
+  GOOGLE_CHECK_LT(num_fields, kLargePrime)
+      << "Prime offset must be greater than the number of fields to ensure "
+         "those are coprime.";
+
+  if (num_weak_fields_) {
+    format(
+        "::$proto_ns$::internal::WeakFieldMap::FieldWriter field_writer("
+        "_weak_field_map_);\n");
+  }
+
+  format(
+      "static const int kStart = GetInvariantPerBuild($1$UL) % $2$;\n"
+      "bool first_pass = true;\n"
+      "for (int i = kStart; i != kStart || first_pass; i = ((i + $3$) % $2$)) "
+      "{\n",
+      0,
+      num_fields, kLargePrime);
+
+  format.Indent();
+  format("switch(i) {\n");
+  format.Indent();
+
+  bool first_pass_set = false;
+  int index = 0;
+  for (const auto* f : ordered_fields) {
+    format("case $1$: {\n", index++);
+    format.Indent();
+
+    if (!first_pass_set) {
+      first_pass_set = true;
+      format("first_pass = false;\n");
+    }
+
+    GenerateSerializeOneField(printer, f, -1);
+
+    format("break;\n");
+    format.Outdent();
+    format("}\n");
+  }
+
+  for (const auto* r : sorted_extensions) {
+    format("case $1$: {\n", index++);
+    format.Indent();
+
+    if (!first_pass_set) {
+      first_pass_set = true;
+      format("first_pass = false;\n");
+    }
+
+    GenerateSerializeOneExtensionRange(printer, r);
+
+    format("break;\n");
+    format.Outdent();
+    format("}\n");
+  }
+
+  format(
+      "default: {\n"
+      "  $DCHK$(false) << \"Unexpected index: \" << i;\n"
+      "}\n");
+  format.Outdent();
+  format("}\n");
+
+  format.Outdent();
+  format("}\n");
 
   std::map<std::string, std::string> vars;
   SetUnknkownFieldsVariable(descriptor_, options_, &vars);
@@ -3911,7 +3919,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
       PrintFieldComment(format, field);
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
       format.Indent();
-      if (IsFieldUsed(field, options_)) {
+      if (!IsFieldStripped(field, options_)) {
         field_generators_.get(field).GenerateByteSize(printer);
       }
       format("break;\n");
@@ -4039,7 +4047,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
       format("case k$1$: {\n", UnderscoresToCamelCase(field->name(), true));
       format.Indent();
 
-      if (IsFieldUsed(field, options_) &&
+      if (!IsFieldStripped(field, options_) &&
           field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
           !ShouldIgnoreRequiredFieldCheck(field, options_) &&
           scc_analyzer_->HasRequiredFields(field->message_type())) {

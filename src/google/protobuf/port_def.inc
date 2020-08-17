@@ -444,6 +444,10 @@
 #undef NO
 #pragma push_macro("DEBUG")
 #undef DEBUG
+#pragma push_macro("TRUE")
+#undef TRUE
+#pragma push_macro("FALSE")
+#undef FALSE
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
 #if defined(__clang__)

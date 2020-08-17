@@ -603,7 +603,6 @@ bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
 // efficient SSE code.
 template <bool ZigZag, bool SignExtended, typename T>
 static size_t VarintSize(const T* data, const int n) {
-#if __cplusplus >= 201103L
   static_assert(sizeof(T) == 4, "This routine only works for 32 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert(
@@ -615,7 +614,6 @@ static size_t VarintSize(const T* data, const int n) {
       "Cannot SignExtended unsigned types");
   static_assert(!(SignExtended && ZigZag),
                 "Cannot SignExtended and ZigZag on the same type");
-#endif
   uint32 sum = n;
   uint32 msb_sum = 0;
   for (int i = 0; i < n; i++) {
@@ -640,12 +638,10 @@ static size_t VarintSize(const T* data, const int n) {
 
 template <bool ZigZag, typename T>
 static size_t VarintSize64(const T* data, const int n) {
-#if __cplusplus >= 201103L
   static_assert(sizeof(T) == 8, "This routine only works for 64 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert(!ZigZag || !std::is_unsigned<T>::value,
                 "Cannot ZigZag encode unsigned types");
-#endif
   uint64 sum = n;
   for (int i = 0; i < n; i++) {
     uint64 x = data[i];

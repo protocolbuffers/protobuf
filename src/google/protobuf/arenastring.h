@@ -229,7 +229,6 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Clears content, assuming that the current value is not the empty string
   // default.
   inline void ClearNonDefaultToEmpty() { ptr_->clear(); }
-  inline void ClearNonDefaultToEmptyNoArena() { ptr_->clear(); }
 
   // Clears content, but keeps allocated string if arena != NULL, to avoid the
   // overhead of heap operations. After this returns, the content (as seen by
@@ -257,90 +256,10 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     ptr_ = const_cast< ::std::string*>(default_value);
   }
 
-  // The 'NoArena' variants of methods below assume arena == NULL and are
-  // optimized to provide very little overhead relative to a raw string pointer
-  // (while still being in-memory compatible with other code that assumes
-  // ArenaStringPtr). Note the invariant that a class instance that has only
-  // ever been mutated by NoArena methods must *only* be in the String state
-  // (i.e., tag bits are not used), *NEVER* ArenaString. This allows all
-  // tagged-pointer manipulations to be avoided.
-  inline void SetNoArena(const ::std::string* default_value,
-                         const ::std::string& value) {
-    if (ptr_ == default_value) {
-      CreateInstanceNoArena(&value);
-    } else {
-      *ptr_ = value;
-    }
-  }
-
-  void SetNoArena(const ::std::string* default_value, ::std::string&& value) {
-    if (IsDefault(default_value)) {
-      ptr_ = new ::std::string(std::move(value));
-    } else {
-      *ptr_ = std::move(value);
-    }
-  }
-
-  void AssignWithDefault(const ::std::string* default_value,
-                         ArenaStringPtr value);
-
-  inline const ::std::string& GetNoArena() const { return *ptr_; }
-
-  inline ::std::string* MutableNoArena(const ::std::string* default_value) {
-    if (ptr_ == default_value) {
-      CreateInstanceNoArena(default_value);
-    }
-    return ptr_;
-  }
-
-  inline ::std::string* ReleaseNoArena(const ::std::string* default_value) {
-    if (ptr_ == default_value) {
-      return NULL;
-    } else {
-      return ReleaseNonDefaultNoArena(default_value);
-    }
-  }
-
-  inline ::std::string* ReleaseNonDefaultNoArena(
-      const ::std::string* default_value) {
-    GOOGLE_DCHECK(!IsDefault(default_value));
-    ::std::string* released = ptr_;
-    ptr_ = const_cast< ::std::string*>(default_value);
-    return released;
-  }
-
-  inline void SetAllocatedNoArena(const ::std::string* default_value,
-                                  ::std::string* value) {
-    if (ptr_ != default_value) {
-      delete ptr_;
-    }
-    if (value != NULL) {
-      ptr_ = value;
-    } else {
-      ptr_ = const_cast< ::std::string*>(default_value);
-    }
-  }
-
+  // Destroy the string. Assumes `arena == nullptr`.
   inline void DestroyNoArena(const ::std::string* default_value) {
     if (ptr_ != default_value) {
       delete ptr_;
-    }
-  }
-
-  inline void ClearToEmptyNoArena(const ::std::string* default_value) {
-    if (ptr_ == default_value) {
-      // Nothing: already equal to default (which is the empty string).
-    } else {
-      ptr_->clear();
-    }
-  }
-
-  inline void ClearToDefaultNoArena(const ::std::string* default_value) {
-    if (ptr_ == default_value) {
-      // Nothing: already set to default.
-    } else {
-      // Reuse existing allocated instance.
-      *ptr_ = *default_value;
     }
   }
 
@@ -378,22 +297,6 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     ptr_ = new ::std::string(*initial_value);
   }
 };
-
-}  // namespace internal
-}  // namespace protobuf
-
-namespace protobuf {
-namespace internal {
-
-inline void ArenaStringPtr::AssignWithDefault(
-    const ::std::string* default_value, ArenaStringPtr value) {
-  const ::std::string* me = *UnsafeRawStringPointer();
-  const ::std::string* other = *value.UnsafeRawStringPointer();
-  // If the pointers are the same then do nothing.
-  if (me != other) {
-    SetNoArena(default_value, value.GetNoArena());
-  }
-}
 
 }  // namespace internal
 }  // namespace protobuf

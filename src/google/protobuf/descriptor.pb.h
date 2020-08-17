@@ -373,7 +373,6 @@ class PROTOBUF_EXPORT FileDescriptorSet PROTOBUF_FINAL :
   }
   static const FileDescriptorSet& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const FileDescriptorSet* internal_default_instance() {
     return reinterpret_cast<const FileDescriptorSet*>(
                &_FileDescriptorSet_default_instance_);
@@ -526,7 +525,6 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
   }
   static const FileDescriptorProto& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const FileDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const FileDescriptorProto*>(
                &_FileDescriptorProto_default_instance_);
@@ -920,7 +918,6 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
   }
   static const DescriptorProto_ExtensionRange& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const DescriptorProto_ExtensionRange* internal_default_instance() {
     return reinterpret_cast<const DescriptorProto_ExtensionRange*>(
                &_DescriptorProto_ExtensionRange_default_instance_);
@@ -1104,7 +1101,6 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange PROTOBUF_FINAL :
   }
   static const DescriptorProto_ReservedRange& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const DescriptorProto_ReservedRange* internal_default_instance() {
     return reinterpret_cast<const DescriptorProto_ReservedRange*>(
                &_DescriptorProto_ReservedRange_default_instance_);
@@ -1268,7 +1264,6 @@ class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
   }
   static const DescriptorProto& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const DescriptorProto* internal_default_instance() {
     return reinterpret_cast<const DescriptorProto*>(
                &_DescriptorProto_default_instance_);
@@ -1613,7 +1608,6 @@ class PROTOBUF_EXPORT ExtensionRangeOptions PROTOBUF_FINAL :
   }
   static const ExtensionRangeOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const ExtensionRangeOptions* internal_default_instance() {
     return reinterpret_cast<const ExtensionRangeOptions*>(
                &_ExtensionRangeOptions_default_instance_);
@@ -1769,7 +1763,6 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
   }
   static const FieldDescriptorProto& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const FieldDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const FieldDescriptorProto*>(
                &_FieldDescriptorProto_default_instance_);
@@ -2202,7 +2195,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
   }
   static const OneofDescriptorProto& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const OneofDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const OneofDescriptorProto*>(
                &_OneofDescriptorProto_default_instance_);
@@ -2378,7 +2370,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange PROTOBUF_FINAL :
   }
   static const EnumDescriptorProto_EnumReservedRange& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const EnumDescriptorProto_EnumReservedRange* internal_default_instance() {
     return reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(
                &_EnumDescriptorProto_EnumReservedRange_default_instance_);
@@ -2542,7 +2533,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
   }
   static const EnumDescriptorProto& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const EnumDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const EnumDescriptorProto*>(
                &_EnumDescriptorProto_default_instance_);
@@ -2786,7 +2776,6 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
   }
   static const EnumValueDescriptorProto& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const EnumValueDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const EnumValueDescriptorProto*>(
                &_EnumValueDescriptorProto_default_instance_);
@@ -2977,7 +2966,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
   }
   static const ServiceDescriptorProto& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const ServiceDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const ServiceDescriptorProto*>(
                &_ServiceDescriptorProto_default_instance_);
@@ -3173,7 +3161,6 @@ class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
   }
   static const MethodDescriptorProto& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const MethodDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const MethodDescriptorProto*>(
                &_MethodDescriptorProto_default_instance_);
@@ -3423,7 +3410,6 @@ class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
   }
   static const FileOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const FileOptions* internal_default_instance() {
     return reinterpret_cast<const FileOptions*>(
                &_FileOptions_default_instance_);
@@ -3982,7 +3968,6 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
   }
   static const MessageOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const MessageOptions* internal_default_instance() {
     return reinterpret_cast<const MessageOptions*>(
                &_MessageOptions_default_instance_);
@@ -4199,7 +4184,6 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
   }
   static const FieldOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const FieldOptions* internal_default_instance() {
     return reinterpret_cast<const FieldOptions*>(
                &_FieldOptions_default_instance_);
@@ -4510,7 +4494,6 @@ class PROTOBUF_EXPORT OneofOptions PROTOBUF_FINAL :
   }
   static const OneofOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const OneofOptions* internal_default_instance() {
     return reinterpret_cast<const OneofOptions*>(
                &_OneofOptions_default_instance_);
@@ -4666,7 +4649,6 @@ class PROTOBUF_EXPORT EnumOptions PROTOBUF_FINAL :
   }
   static const EnumOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const EnumOptions* internal_default_instance() {
     return reinterpret_cast<const EnumOptions*>(
                &_EnumOptions_default_instance_);
@@ -4853,7 +4835,6 @@ class PROTOBUF_EXPORT EnumValueOptions PROTOBUF_FINAL :
   }
   static const EnumValueOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const EnumValueOptions* internal_default_instance() {
     return reinterpret_cast<const EnumValueOptions*>(
                &_EnumValueOptions_default_instance_);
@@ -5025,7 +5006,6 @@ class PROTOBUF_EXPORT ServiceOptions PROTOBUF_FINAL :
   }
   static const ServiceOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const ServiceOptions* internal_default_instance() {
     return reinterpret_cast<const ServiceOptions*>(
                &_ServiceOptions_default_instance_);
@@ -5197,7 +5177,6 @@ class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
   }
   static const MethodOptions& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const MethodOptions* internal_default_instance() {
     return reinterpret_cast<const MethodOptions*>(
                &_MethodOptions_default_instance_);
@@ -5416,7 +5395,6 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart PROTOBUF_FINAL :
   }
   static const UninterpretedOption_NamePart& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const UninterpretedOption_NamePart* internal_default_instance() {
     return reinterpret_cast<const UninterpretedOption_NamePart*>(
                &_UninterpretedOption_NamePart_default_instance_);
@@ -5590,7 +5568,6 @@ class PROTOBUF_EXPORT UninterpretedOption PROTOBUF_FINAL :
   }
   static const UninterpretedOption& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const UninterpretedOption* internal_default_instance() {
     return reinterpret_cast<const UninterpretedOption*>(
                &_UninterpretedOption_default_instance_);
@@ -5857,7 +5834,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location PROTOBUF_FINAL :
   }
   static const SourceCodeInfo_Location& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const SourceCodeInfo_Location* internal_default_instance() {
     return reinterpret_cast<const SourceCodeInfo_Location*>(
                &_SourceCodeInfo_Location_default_instance_);
@@ -6111,7 +6087,6 @@ class PROTOBUF_EXPORT SourceCodeInfo PROTOBUF_FINAL :
   }
   static const SourceCodeInfo& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const SourceCodeInfo* internal_default_instance() {
     return reinterpret_cast<const SourceCodeInfo*>(
                &_SourceCodeInfo_default_instance_);
@@ -6266,7 +6241,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation PROTOBUF_FINAL :
   }
   static const GeneratedCodeInfo_Annotation& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const GeneratedCodeInfo_Annotation* internal_default_instance() {
     return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
                &_GeneratedCodeInfo_Annotation_default_instance_);
@@ -6477,7 +6451,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo PROTOBUF_FINAL :
   }
   static const GeneratedCodeInfo& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const GeneratedCodeInfo* internal_default_instance() {
     return reinterpret_cast<const GeneratedCodeInfo*>(
                &_GeneratedCodeInfo_default_instance_);
@@ -7128,8 +7101,8 @@ inline void FileDescriptorProto::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::FileOptions& FileDescriptorProto::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::FileOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::FileOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_FileOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::FileOptions&>(
+      PROTOBUF_NAMESPACE_ID::_FileOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::FileOptions& FileDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.options)
@@ -7211,8 +7184,8 @@ inline void FileDescriptorProto::clear_source_code_info() {
 }
 inline const PROTOBUF_NAMESPACE_ID::SourceCodeInfo& FileDescriptorProto::_internal_source_code_info() const {
   const PROTOBUF_NAMESPACE_ID::SourceCodeInfo* p = source_code_info_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::SourceCodeInfo*>(
-      &PROTOBUF_NAMESPACE_ID::_SourceCodeInfo_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::SourceCodeInfo&>(
+      PROTOBUF_NAMESPACE_ID::_SourceCodeInfo_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::SourceCodeInfo& FileDescriptorProto::source_code_info() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.source_code_info)
@@ -7428,8 +7401,8 @@ inline void DescriptorProto_ExtensionRange::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions& DescriptorProto_ExtensionRange::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_ExtensionRangeOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions&>(
+      PROTOBUF_NAMESPACE_ID::_ExtensionRangeOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions& DescriptorProto_ExtensionRange::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.ExtensionRange.options)
@@ -7883,8 +7856,8 @@ inline void DescriptorProto::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::MessageOptions& DescriptorProto::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::MessageOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::MessageOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_MessageOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::MessageOptions&>(
+      PROTOBUF_NAMESPACE_ID::_MessageOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::MessageOptions& DescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.options)
@@ -8610,8 +8583,8 @@ inline void FieldDescriptorProto::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::FieldOptions& FieldDescriptorProto::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::FieldOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::FieldOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_FieldOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::FieldOptions&>(
+      PROTOBUF_NAMESPACE_ID::_FieldOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::FieldOptions& FieldDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.options)
@@ -8799,8 +8772,8 @@ inline void OneofDescriptorProto::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::OneofOptions& OneofDescriptorProto::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::OneofOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::OneofOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_OneofOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::OneofOptions&>(
+      PROTOBUF_NAMESPACE_ID::_OneofOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::OneofOptions& OneofDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.options)
@@ -9059,8 +9032,8 @@ inline void EnumDescriptorProto::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::EnumOptions& EnumDescriptorProto::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::EnumOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::EnumOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_EnumOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::EnumOptions&>(
+      PROTOBUF_NAMESPACE_ID::_EnumOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::EnumOptions& EnumDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.options)
@@ -9361,8 +9334,8 @@ inline void EnumValueDescriptorProto::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::EnumValueOptions& EnumValueDescriptorProto::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::EnumValueOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::EnumValueOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_EnumValueOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::EnumValueOptions&>(
+      PROTOBUF_NAMESPACE_ID::_EnumValueOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::EnumValueOptions& EnumValueDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueDescriptorProto.options)
@@ -9561,8 +9534,8 @@ inline void ServiceDescriptorProto::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::ServiceOptions& ServiceDescriptorProto::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::ServiceOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::ServiceOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_ServiceOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::ServiceOptions&>(
+      PROTOBUF_NAMESPACE_ID::_ServiceOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::ServiceOptions& ServiceDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.options)
@@ -9870,8 +9843,8 @@ inline void MethodDescriptorProto::clear_options() {
 }
 inline const PROTOBUF_NAMESPACE_ID::MethodOptions& MethodDescriptorProto::_internal_options() const {
   const PROTOBUF_NAMESPACE_ID::MethodOptions* p = options_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::MethodOptions*>(
-      &PROTOBUF_NAMESPACE_ID::_MethodOptions_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::MethodOptions&>(
+      PROTOBUF_NAMESPACE_ID::_MethodOptions_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::MethodOptions& MethodDescriptorProto::options() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.options)

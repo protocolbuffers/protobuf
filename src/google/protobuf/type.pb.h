@@ -215,7 +215,6 @@ class PROTOBUF_EXPORT Type PROTOBUF_FINAL :
   }
   static const Type& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Type* internal_default_instance() {
     return reinterpret_cast<const Type*>(
                &_Type_default_instance_);
@@ -456,7 +455,6 @@ class PROTOBUF_EXPORT Field PROTOBUF_FINAL :
   }
   static const Field& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Field* internal_default_instance() {
     return reinterpret_cast<const Field*>(
                &_Field_default_instance_);
@@ -827,7 +825,6 @@ class PROTOBUF_EXPORT Enum PROTOBUF_FINAL :
   }
   static const Enum& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Enum* internal_default_instance() {
     return reinterpret_cast<const Enum*>(
                &_Enum_default_instance_);
@@ -1042,7 +1039,6 @@ class PROTOBUF_EXPORT EnumValue PROTOBUF_FINAL :
   }
   static const EnumValue& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const EnumValue* internal_default_instance() {
     return reinterpret_cast<const EnumValue*>(
                &_EnumValue_default_instance_);
@@ -1217,7 +1213,6 @@ class PROTOBUF_EXPORT Option PROTOBUF_FINAL :
   }
   static const Option& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Option* internal_default_instance() {
     return reinterpret_cast<const Option*>(
                &_Option_default_instance_);
@@ -1577,8 +1572,8 @@ inline bool Type::has_source_context() const {
 }
 inline const PROTOBUF_NAMESPACE_ID::SourceContext& Type::_internal_source_context() const {
   const PROTOBUF_NAMESPACE_ID::SourceContext* p = source_context_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      &PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::SourceContext&>(
+      PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::SourceContext& Type::source_context() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Type.source_context)
@@ -2209,8 +2204,8 @@ inline bool Enum::has_source_context() const {
 }
 inline const PROTOBUF_NAMESPACE_ID::SourceContext& Enum::_internal_source_context() const {
   const PROTOBUF_NAMESPACE_ID::SourceContext* p = source_context_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      &PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::SourceContext&>(
+      PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::SourceContext& Enum::source_context() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.source_context)
@@ -2497,8 +2492,8 @@ inline bool Option::has_value() const {
 }
 inline const PROTOBUF_NAMESPACE_ID::Any& Option::_internal_value() const {
   const PROTOBUF_NAMESPACE_ID::Any* p = value_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::Any*>(
-      &PROTOBUF_NAMESPACE_ID::_Any_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::Any&>(
+      PROTOBUF_NAMESPACE_ID::_Any_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::Any& Option::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Option.value)

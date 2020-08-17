@@ -28,7 +28,6 @@ static void InitDefaultsscc_info_Empty_google_2fprotobuf_2fempty_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Empty();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Empty::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Empty_google_2fprotobuf_2fempty_2eproto =
@@ -55,10 +54,10 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 
 const char descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\033google/protobuf/empty.proto\022\017google.pr"
-  "otobuf\"\007\n\005EmptyBv\n\023com.google.protobufB\n"
-  "EmptyProtoP\001Z\'github.com/golang/protobuf"
-  "/ptypes/empty\370\001\001\242\002\003GPB\252\002\036Google.Protobuf"
-  ".WellKnownTypesb\006proto3"
+  "otobuf\"\007\n\005EmptyB}\n\023com.google.protobufB\n"
+  "EmptyProtoP\001Z.google.golang.org/protobuf"
+  "/types/known/emptypb\370\001\001\242\002\003GPB\252\002\036Google.P"
+  "rotobuf.WellKnownTypesb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fempty_2eproto_deps[1] = {
 };
@@ -67,7 +66,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_goo
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fempty_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fempty_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto, "google/protobuf/empty.proto", 183,
+  false, false, descriptor_table_protodef_google_2fprotobuf_2fempty_2eproto, "google/protobuf/empty.proto", 190,
   &descriptor_table_google_2fprotobuf_2fempty_2eproto_once, descriptor_table_google_2fprotobuf_2fempty_2eproto_sccs, descriptor_table_google_2fprotobuf_2fempty_2eproto_deps, 1, 0,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fempty_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fempty_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fempty_2eproto, file_level_service_descriptors_google_2fprotobuf_2fempty_2eproto,
@@ -79,8 +78,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void Empty::InitAsDefaultInstance() {
-}
 class Empty::_Internal {
  public:
 };
