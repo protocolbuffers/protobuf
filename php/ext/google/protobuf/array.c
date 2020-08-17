@@ -94,11 +94,12 @@ static void RepeatedField_destructor(zend_object* obj) {
   zend_object_std_dtor(&intern->std);
 }
 
-static HashTable *RepeatedField_GetProperties(zval *object TSRMLS_DC) {
+static HashTable *RepeatedField_GetProperties(PROTO_VAL *object) {
   return NULL;  // We do not have a properties table.
 }
 
-static zval *RepeatedField_GetPropertyPtrPtr(zval *object, zval *member,
+static zval *RepeatedField_GetPropertyPtrPtr(PROTO_VAL *object,
+                                             PROTO_STR *member,
                                              int type, void **cache_slot) {
   return NULL;  // We don't offer direct references to our properties.
 }
@@ -392,6 +393,15 @@ PHP_METHOD(RepeatedField, getIterator) {
   RETURN_ZVAL(&ret, 0, 1);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_construct, 0, 0, 1)
+  ZEND_ARG_INFO(0, type)
+  ZEND_ARG_INFO(0, class)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_append, 0, 0, 1)
+  ZEND_ARG_INFO(0, newval)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
@@ -405,8 +415,8 @@ ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry repeated_field_methods[] = {
-  PHP_ME(RepeatedField, __construct,  NULL,              ZEND_ACC_PUBLIC)
-  PHP_ME(RepeatedField, append,       NULL,              ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, __construct,  arginfo_construct, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, append,       arginfo_append,    ZEND_ACC_PUBLIC)
   PHP_ME(RepeatedField, offsetExists, arginfo_offsetGet, ZEND_ACC_PUBLIC)
   PHP_ME(RepeatedField, offsetGet,    arginfo_offsetGet, ZEND_ACC_PUBLIC)
   PHP_ME(RepeatedField, offsetSet,    arginfo_offsetSet, ZEND_ACC_PUBLIC)
