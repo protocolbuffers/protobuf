@@ -28,7 +28,6 @@ static void InitDefaultsscc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto
     new (ptr) PROTOBUF_NAMESPACE_ID::Timestamp();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Timestamp::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto =
@@ -82,8 +81,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void Timestamp::InitAsDefaultInstance() {
-}
 class Timestamp::_Internal {
  public:
 };

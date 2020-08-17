@@ -28,7 +28,6 @@ static void InitDefaultsscc_info_Empty_google_2fprotobuf_2fempty_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Empty();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Empty::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Empty_google_2fprotobuf_2fempty_2eproto =
@@ -79,8 +78,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void Empty::InitAsDefaultInstance() {
-}
 class Empty::_Internal {
  public:
 };

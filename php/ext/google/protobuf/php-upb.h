@@ -173,6 +173,11 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #else
 #define UPB_INFINITY (1.0 / 0.0)
 #endif
+#ifdef NAN
+#define UPB_NAN NAN
+#else
+#define UPB_NAN (0.0 / 0.0)
+#endif
 /*
 ** upb_decode: parsing into a upb_msg using a upb_msglayout.
 */
@@ -208,7 +213,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 ** store pointers or integers of at least 32 bits (upb isn't really useful on
 ** systems where sizeof(void*) < 4).
 **
-** The table must be homogenous (all values of the same type).  In debug
+** The table must be homogeneous (all values of the same type).  In debug
 ** mode, we check this on insert and lookup.
 */
 
@@ -799,15 +804,6 @@ UPB_INLINE bool upb_strtable_remove(upb_strtable *t, const char *key,
  * invalidate iterators. */
 bool upb_inttable_replace(upb_inttable *t, uintptr_t key, upb_value val);
 
-/* Handy routines for treating an inttable like a stack.  May not be mixed with
- * other insert/remove calls. */
-bool upb_inttable_push2(upb_inttable *t, upb_value val, upb_alloc *a);
-upb_value upb_inttable_pop(upb_inttable *t);
-
-UPB_INLINE bool upb_inttable_push(upb_inttable *t, upb_value val) {
-  return upb_inttable_push2(t, val, &upb_alloc_global);
-}
-
 /* Convenience routines for inttables with pointer keys. */
 bool upb_inttable_insertptr2(upb_inttable *t, const void *key, upb_value val,
                              upb_alloc *a);
@@ -1072,7 +1068,7 @@ UPB_INLINE uint32_t _upb_getoneofcase(const void *msg, size_t case_ofs) {
 
 UPB_INLINE size_t _upb_oneofcase_ofs(const upb_msglayout_field *f) {
   UPB_ASSERT(f->presence < 0);
-  return ~(int64_t)f->presence;
+  return ~(ptrdiff_t)f->presence;
 }
 
 UPB_INLINE uint32_t *_upb_oneofcase_field(upb_msg *msg,
@@ -3831,7 +3827,7 @@ extern "C" {
 #endif
 
 enum {
-  /* When set, emits 0/default values.  TOOD(haberman): proto3 only? */
+  /* When set, emits 0/default values.  TODO(haberman): proto3 only? */
   UPB_JSONENC_EMITDEFAULTS = 1,
 
   /* When set, use normal (snake_caes) field names instead of JSON (camelCase)
@@ -3879,6 +3875,7 @@ size_t upb_json_encode(const upb_msg *msg, const upb_msgdef *m,
 #undef UPB_ASSERT_DEBUGVAR
 #undef UPB_UNREACHABLE
 #undef UPB_INFINITY
+#undef UPB_NAN
 #undef UPB_MSVC_VSNPRINTF
 #undef _upb_snprintf
 #undef _upb_vsnprintf

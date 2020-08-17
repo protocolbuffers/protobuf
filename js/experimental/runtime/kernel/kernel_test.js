@@ -699,7 +699,7 @@ describe('Bytes access', () => {
     expect(accessor.getBytesWithDefault(1)).toEqual(simpleByteString);
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor = Kernel.fromArrayBuffer(
         createArrayBuffer(0x0A, 0x01, 0x00, 0x0A, 0x01, 0x01));
     expect(accessor.getBytesWithDefault(1)).toEqual(simpleByteString);
@@ -801,7 +801,7 @@ describe('Fixed32 access', () => {
     expect(accessor.getFixed32WithDefault(1)).toEqual(1);
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor = Kernel.fromArrayBuffer(createArrayBuffer(
         0x0D, 0x01, 0x00, 0x80, 0x00, 0x0D, 0x02, 0x00, 0x00, 0x00));
     expect(accessor.getFixed32WithDefault(1)).toEqual(2);
@@ -909,7 +909,7 @@ describe('Fixed64 access', () => {
     expect(accessor.getFixed64WithDefault(1)).toEqual(Int64.fromInt(1));
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor = Kernel.fromArrayBuffer(createArrayBuffer(
         0x09, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x02, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00));
@@ -1008,7 +1008,7 @@ describe('Float access', () => {
     expect(accessor.getFloatWithDefault(1)).toEqual(1);
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor = Kernel.fromArrayBuffer(createArrayBuffer(
         0x0D, 0x00, 0x00, 0x80, 0x3F, 0x0D, 0x00, 0x00, 0x80, 0xBF));
     expect(accessor.getFloatWithDefault(1)).toEqual(-1);
@@ -1110,7 +1110,7 @@ describe('Int32 access', () => {
     expect(accessor.getInt32WithDefault(1)).toEqual(1);
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor =
         Kernel.fromArrayBuffer(createArrayBuffer(0x08, 0x01, 0x08, 0x02));
     expect(accessor.getInt32WithDefault(1)).toEqual(2);
@@ -1207,7 +1207,7 @@ describe('Int64 access', () => {
     expect(accessor.getInt64WithDefault(1)).toEqual(Int64.fromInt(1));
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor =
         Kernel.fromArrayBuffer(createArrayBuffer(0x08, 0x01, 0x08, 0x02));
     expect(accessor.getInt64WithDefault(1)).toEqual(Int64.fromInt(2));
@@ -1306,7 +1306,7 @@ describe('Sfixed32 access', () => {
     expect(accessor.getSfixed32WithDefault(1)).toEqual(1);
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor = Kernel.fromArrayBuffer(createArrayBuffer(
         0x0D, 0x01, 0x00, 0x80, 0x00, 0x0D, 0x02, 0x00, 0x00, 0x00));
     expect(accessor.getSfixed32WithDefault(1)).toEqual(2);
@@ -1404,7 +1404,7 @@ describe('Sfixed64 access', () => {
     expect(accessor.getSfixed64WithDefault(1)).toEqual(Int64.fromInt(1));
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor = Kernel.fromArrayBuffer(createArrayBuffer(
         0x09, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09, 0x02, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00));
@@ -1502,7 +1502,7 @@ describe('Sint32 access', () => {
     expect(accessor.getSint32WithDefault(1)).toEqual(1);
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor =
         Kernel.fromArrayBuffer(createArrayBuffer(0x08, 0x03, 0x08, 0x02));
     expect(accessor.getSint32WithDefault(1)).toEqual(1);
@@ -1599,7 +1599,7 @@ describe('SInt64 access', () => {
     expect(accessor.getSint64WithDefault(1)).toEqual(Int64.fromInt(1));
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor =
         Kernel.fromArrayBuffer(createArrayBuffer(0x08, 0x01, 0x08, 0x02));
     expect(accessor.getSint64WithDefault(1)).toEqual(Int64.fromInt(1));
@@ -1698,7 +1698,7 @@ describe('String access', () => {
     expect(accessor.getStringWithDefault(1)).toEqual('a');
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor = Kernel.fromArrayBuffer(
         createArrayBuffer(0x0A, 0x01, 0x60, 0x0A, 0x01, 0x61));
     expect(accessor.getStringWithDefault(1)).toEqual('a');
@@ -1789,7 +1789,7 @@ describe('Uint32 access', () => {
     expect(accessor.getUint32WithDefault(1)).toEqual(1);
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor =
         Kernel.fromArrayBuffer(createArrayBuffer(0x08, 0x01, 0x08, 0x02));
     expect(accessor.getUint32WithDefault(1)).toEqual(2);
@@ -1896,7 +1896,7 @@ describe('Uint64 access', () => {
     expect(accessor.getUint64WithDefault(1)).toEqual(Int64.fromInt(1));
   });
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor =
         Kernel.fromArrayBuffer(createArrayBuffer(0x08, 0x01, 0x08, 0x02));
     expect(accessor.getUint64WithDefault(1)).toEqual(Int64.fromInt(2));
@@ -1996,7 +1996,7 @@ describe('Double access', () => {
   });
 
 
-  it('decodes value from wire with multple values being present', () => {
+  it('decodes value from wire with multiple values being present', () => {
     const accessor = Kernel.fromArrayBuffer(createArrayBuffer(
         0x09, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x3F, 0x09, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0xF0, 0xBF));

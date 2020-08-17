@@ -52,6 +52,7 @@ namespace io {
 class ZeroCopyOutputStream;
 }
 class FileDescriptor;
+class GeneratedCodeInfo;
 
 namespace compiler {
 class AccessInfoMap;
@@ -155,6 +156,15 @@ class PROTOC_EXPORT GeneratorContext {
   // WARNING:  This feature is currently EXPERIMENTAL and is subject to change.
   virtual io::ZeroCopyOutputStream* OpenForInsert(
       const std::string& filename, const std::string& insertion_point);
+
+  // Similar to OpenForInsert, but if `info` is non-empty, will open (or create)
+  // filename.pb.meta and insert info at the appropriate place with the
+  // necessary shifts. The default implementation ignores `info`.
+  //
+  // WARNING:  This feature will be REMOVED in the near future.
+  virtual io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
+      const std::string& filename, const std::string& insertion_point,
+      const google::protobuf::GeneratedCodeInfo& info);
 
   // Returns a vector of FileDescriptors for all the files being compiled
   // in this run.  Useful for languages, such as Go, that treat files

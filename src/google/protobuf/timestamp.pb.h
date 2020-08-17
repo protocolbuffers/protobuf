@@ -102,7 +102,6 @@ class PROTOBUF_EXPORT Timestamp PROTOBUF_FINAL :
   }
   static const Timestamp& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Timestamp* internal_default_instance() {
     return reinterpret_cast<const Timestamp*>(
                &_Timestamp_default_instance_);

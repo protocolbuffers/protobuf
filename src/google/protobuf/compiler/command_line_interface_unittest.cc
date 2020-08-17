@@ -1192,8 +1192,8 @@ TEST_F(CommandLineInterfaceTest, InsertWithAnnotationFixup) {
   Run("protocol_compiler "
       "--test_out=TestParameter:$tmpdir "
       "--plug_out=TestPluginParameter:$tmpdir "
-      "--test_out=insert=test_generator,test_plugin:$tmpdir "
-      "--plug_out=insert=test_generator,test_plugin:$tmpdir "
+      "--test_out=insert_endlines=test_generator,test_plugin:$tmpdir "
+      "--plug_out=insert_endlines=test_generator,test_plugin:$tmpdir "
       "--proto_path=$tmpdir foo.proto");
 
   ExpectNoErrors();
@@ -2564,20 +2564,22 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   enum Type { TEXT, BINARY };
   enum ReturnCode { SUCCESS, ERROR };
 
-  bool Run(const std::string& command) {
+  bool Run(const std::string& command, bool specify_proto_files = true) {
     std::vector<std::string> args;
     args.push_back("protoc");
     SplitStringUsing(command, " ", &args);
-    switch (GetParam()) {
-      case PROTO_PATH:
-        args.push_back("--proto_path=" + TestUtil::TestSourceDir());
-        break;
-      case DESCRIPTOR_SET_IN:
-        args.push_back(StrCat("--descriptor_set_in=",
-                                    unittest_proto_descriptor_set_filename_));
-        break;
-      default:
-        ADD_FAILURE() << "unexpected EncodeDecodeTestMode: " << GetParam();
+    if (specify_proto_files) {
+      switch (GetParam()) {
+        case PROTO_PATH:
+          args.push_back("--proto_path=" + TestUtil::TestSourceDir());
+          break;
+        case DESCRIPTOR_SET_IN:
+          args.push_back(StrCat("--descriptor_set_in=",
+                                      unittest_proto_descriptor_set_filename_));
+          break;
+        default:
+          ADD_FAILURE() << "unexpected EncodeDecodeTestMode: " << GetParam();
+      }
     }
 
     std::unique_ptr<const char*[]> argv(new const char*[args.size()]);
@@ -2659,9 +2661,12 @@ TEST_P(EncodeDecodeTest, Encode) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "net/proto2/internal/"
       "testdata/text_format_unittest_data_oneof_implemented.txt"));
-  EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
-          " --encode=protobuf_unittest.TestAllTypes"));
+  std::string args;
+  if (GetParam() != DESCRIPTOR_SET_IN) {
+    args.append(
+        TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto"));
+  }
+  EXPECT_TRUE(Run(args + " --encode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
       "net/proto2/internal/testdata/golden_message_oneof_implemented"));
   ExpectStderrMatchesText("");
@@ -2697,7 +2702,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
   message.SerializeToString(&data);
 
   RedirectStdinFromText(data);
-  EXPECT_TRUE(Run("--decode_raw"));
+  EXPECT_TRUE(Run("--decode_raw", /*specify_proto_files=*/false));
   ExpectStdoutMatchesText(
       "1: 123\n"
       "14: \"foo\"\n");

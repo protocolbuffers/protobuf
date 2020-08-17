@@ -28,7 +28,6 @@ static void InitDefaultsscc_info_SourceContext_google_2fprotobuf_2fsource_5fcont
     new (ptr) PROTOBUF_NAMESPACE_ID::SourceContext();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::SourceContext::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto =
@@ -81,8 +80,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void SourceContext::InitAsDefaultInstance() {
-}
 class SourceContext::_Internal {
  public:
 };

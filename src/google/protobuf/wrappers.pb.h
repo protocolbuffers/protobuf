@@ -134,7 +134,6 @@ class PROTOBUF_EXPORT DoubleValue PROTOBUF_FINAL :
   }
   static const DoubleValue& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const DoubleValue* internal_default_instance() {
     return reinterpret_cast<const DoubleValue*>(
                &_DoubleValue_default_instance_);
@@ -271,7 +270,6 @@ class PROTOBUF_EXPORT FloatValue PROTOBUF_FINAL :
   }
   static const FloatValue& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const FloatValue* internal_default_instance() {
     return reinterpret_cast<const FloatValue*>(
                &_FloatValue_default_instance_);
@@ -408,7 +406,6 @@ class PROTOBUF_EXPORT Int64Value PROTOBUF_FINAL :
   }
   static const Int64Value& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Int64Value* internal_default_instance() {
     return reinterpret_cast<const Int64Value*>(
                &_Int64Value_default_instance_);
@@ -545,7 +542,6 @@ class PROTOBUF_EXPORT UInt64Value PROTOBUF_FINAL :
   }
   static const UInt64Value& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const UInt64Value* internal_default_instance() {
     return reinterpret_cast<const UInt64Value*>(
                &_UInt64Value_default_instance_);
@@ -682,7 +678,6 @@ class PROTOBUF_EXPORT Int32Value PROTOBUF_FINAL :
   }
   static const Int32Value& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Int32Value* internal_default_instance() {
     return reinterpret_cast<const Int32Value*>(
                &_Int32Value_default_instance_);
@@ -819,7 +814,6 @@ class PROTOBUF_EXPORT UInt32Value PROTOBUF_FINAL :
   }
   static const UInt32Value& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const UInt32Value* internal_default_instance() {
     return reinterpret_cast<const UInt32Value*>(
                &_UInt32Value_default_instance_);
@@ -956,7 +950,6 @@ class PROTOBUF_EXPORT BoolValue PROTOBUF_FINAL :
   }
   static const BoolValue& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const BoolValue* internal_default_instance() {
     return reinterpret_cast<const BoolValue*>(
                &_BoolValue_default_instance_);
@@ -1093,7 +1086,6 @@ class PROTOBUF_EXPORT StringValue PROTOBUF_FINAL :
   }
   static const StringValue& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const StringValue* internal_default_instance() {
     return reinterpret_cast<const StringValue*>(
                &_StringValue_default_instance_);
@@ -1237,7 +1229,6 @@ class PROTOBUF_EXPORT BytesValue PROTOBUF_FINAL :
   }
   static const BytesValue& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const BytesValue* internal_default_instance() {
     return reinterpret_cast<const BytesValue*>(
                &_BytesValue_default_instance_);

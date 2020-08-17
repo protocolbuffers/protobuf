@@ -1166,7 +1166,6 @@ TEST(ArenaTest, MessageLiteOnArena) {
 }
 #endif  // PROTOBUF_RTTI
 
-
 // RepeatedField should support non-POD types, and invoke constructors and
 // destructors appropriately, because it's used this way by lots of other code
 // (even if this was not its original intent).

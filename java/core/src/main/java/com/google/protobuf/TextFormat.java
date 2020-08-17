@@ -1661,7 +1661,7 @@ public final class TextFormat {
         throws IOException {
       // Read the entire input to a String then parse that.
 
-      // If StreamTokenizer were not quite so crippled, or if there were a kind
+      // If StreamTokenizer was not so limited, or if there were a kind
       // of Reader that could read in chunks that match some particular regex,
       // or if we wanted to write a custom Reader to tokenize our stream, then
       // we would not have to read to one big String.  Alas, none of these is

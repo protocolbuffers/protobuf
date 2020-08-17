@@ -60,7 +60,7 @@ namespace Google.Protobuf.Buffers
         }
 
         /// <summary>
-        /// Userful for testing writing to buffer writer with a lot of small segments.
+        /// Useful for testing writing to buffer writer with a lot of small segments.
         /// If set, it limits the max number of bytes by which the buffer grows by at once.
         /// </summary>
         public int? MaxGrowBy { get; set; }

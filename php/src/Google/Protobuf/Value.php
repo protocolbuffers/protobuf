@@ -57,6 +57,11 @@ class Value extends \Google\Protobuf\Internal\Message
         return $this->readOneof(1);
     }
 
+    public function hasNullValue()
+    {
+        return $this->hasOneof(1);
+    }
+
     /**
      * Represents a null value.
      *
@@ -81,6 +86,11 @@ class Value extends \Google\Protobuf\Internal\Message
     public function getNumberValue()
     {
         return $this->readOneof(2);
+    }
+
+    public function hasNumberValue()
+    {
+        return $this->hasOneof(2);
     }
 
     /**
@@ -109,6 +119,11 @@ class Value extends \Google\Protobuf\Internal\Message
         return $this->readOneof(3);
     }
 
+    public function hasStringValue()
+    {
+        return $this->hasOneof(3);
+    }
+
     /**
      * Represents a string value.
      *
@@ -133,6 +148,11 @@ class Value extends \Google\Protobuf\Internal\Message
     public function getBoolValue()
     {
         return $this->readOneof(4);
+    }
+
+    public function hasBoolValue()
+    {
+        return $this->hasOneof(4);
     }
 
     /**
@@ -161,6 +181,11 @@ class Value extends \Google\Protobuf\Internal\Message
         return $this->readOneof(5);
     }
 
+    public function hasStructValue()
+    {
+        return $this->hasOneof(5);
+    }
+
     /**
      * Represents a structured value.
      *
@@ -185,6 +210,11 @@ class Value extends \Google\Protobuf\Internal\Message
     public function getListValue()
     {
         return $this->readOneof(6);
+    }
+
+    public function hasListValue()
+    {
+        return $this->hasOneof(6);
     }
 
     /**

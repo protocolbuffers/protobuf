@@ -182,7 +182,7 @@ class MapAllocator {
 
  private:
   using DestructorSkippable_ = void;
-  Arena* const arena_;
+  Arena* arena_;
 };
 
 template <typename T>
@@ -279,6 +279,9 @@ template <typename T,
 size_t MapValueSpaceUsedExcludingSelfLong(const T& message) {
   return message.SpaceUsedLong() - sizeof(T);
 }
+
+constexpr size_t kGlobalEmptyTableSize = 1;
+PROTOBUF_EXPORT extern void* const kGlobalEmptyTable[kGlobalEmptyTableSize];
 
 // Space used for the table, trees, and nodes.
 // Does not include the indirect space used. Eg the data of a std::string.
@@ -377,24 +380,22 @@ class Map {
   using size_type = size_t;
   using hasher = typename internal::TransparentSupport<Key>::hash;
 
-  Map() : arena_(nullptr) { Init(); }
-  explicit Map(Arena* arena) : arena_(arena) { Init(); }
+  Map() : elements_(nullptr) {}
+  explicit Map(Arena* arena) : elements_(arena) {}
 
-  Map(const Map& other) : arena_(nullptr) {
-    Init();
-    insert(other.begin(), other.end());
-  }
+  Map(const Map& other) : Map() { insert(other.begin(), other.end()); }
 
   Map(Map&& other) noexcept : Map() {
-    if (other.arena_) {
+    if (other.arena() != nullptr) {
       *this = other;
     } else {
       swap(other);
     }
   }
+
   Map& operator=(Map&& other) noexcept {
     if (this != &other) {
-      if (arena_ != other.arena_) {
+      if (arena() != other.arena()) {
         *this = other;
       } else {
         swap(other);
@@ -404,21 +405,13 @@ class Map {
   }
 
   template <class InputIt>
-  Map(const InputIt& first, const InputIt& last) : arena_(nullptr) {
-    Init();
+  Map(const InputIt& first, const InputIt& last) : Map() {
     insert(first, last);
   }
 
-  ~Map() {
-    if (arena_ == nullptr) {
-      clear();
-      delete elements_;
-    }
-  }
+  ~Map() {}
 
  private:
-  void Init() { elements_ = Arena::CreateMessage<InnerMap>(arena_, 0); }
-
   using Allocator = internal::MapAllocator<void*>;
 
   // InnerMap is a generic hash-based map.  It doesn't contain any
@@ -455,20 +448,18 @@ class Map {
   //    otherwise. This avoids unncessary copies of string keys, for example.
   class InnerMap : private hasher {
    public:
-    explicit InnerMap(size_type n) : InnerMap(nullptr, n) {}
-    InnerMap(Arena* arena, size_type n)
+    explicit InnerMap(Arena* arena)
         : hasher(),
           num_elements_(0),
+          num_buckets_(internal::kGlobalEmptyTableSize),
           seed_(Seed()),
-          table_(nullptr),
-          alloc_(arena) {
-      n = TableSize(n);
-      table_ = CreateEmptyTable(n);
-      num_buckets_ = index_of_first_non_null_ = n;
-    }
+          index_of_first_non_null_(num_buckets_),
+          table_(const_cast<void**>(internal::kGlobalEmptyTable)),
+          alloc_(arena) {}
 
     ~InnerMap() {
-      if (table_ != nullptr) {
+      if (alloc_.arena() == nullptr &&
+          num_buckets_ != internal::kGlobalEmptyTableSize) {
         clear();
         Dealloc<void*>(table_, num_buckets_);
       }
@@ -627,6 +618,17 @@ class Map {
     using iterator = iterator_base<value_type>;
     using const_iterator = iterator_base<const value_type>;
 
+    Arena* arena() const { return alloc_.arena(); }
+
+    void Swap(InnerMap* other) {
+      std::swap(num_elements_, other->num_elements_);
+      std::swap(num_buckets_, other->num_buckets_);
+      std::swap(seed_, other->seed_);
+      std::swap(index_of_first_non_null_, other->index_of_first_non_null_);
+      std::swap(table_, other->table_);
+      std::swap(alloc_, other->alloc_);
+    }
+
     iterator begin() { return iterator(this); }
     iterator end() { return iterator(); }
     const_iterator begin() const { return const_iterator(this); }
@@ -674,6 +676,11 @@ class Map {
     template <typename K>
     iterator find(const K& k) {
       return iterator(FindHelper(k).first);
+    }
+
+    template <typename K>
+    const_iterator find(const K& k) const {
+      return FindHelper(k).first;
     }
 
     // Insert the key into the map, if not present. In that case, the value will
@@ -895,6 +902,14 @@ class Map {
 
     // Resize to the given number of buckets.
     void Resize(size_t new_num_buckets) {
+      if (num_buckets_ == internal::kGlobalEmptyTableSize) {
+        // This is the global empty array.
+        // Just overwrite with a new one. No need to transfer or free anything.
+        num_buckets_ = index_of_first_non_null_ = kMinTableSize;
+        table_ = CreateEmptyTable(num_buckets_);
+        return;
+      }
+
       GOOGLE_DCHECK_GE(new_num_buckets, kMinTableSize);
       void** const old_table = table_;
       const size_type old_table_size = num_buckets_;
@@ -1057,7 +1072,7 @@ class Map {
 #if defined(__x86_64__) && defined(__GNUC__) && \
     !defined(GOOGLE_PROTOBUF_NO_RDTSC)
       uint32 hi, lo;
-      asm("rdtsc" : "=a"(lo), "=d"(hi));
+      asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
       s += ((static_cast<uint64>(hi) << 32) | lo);
 #endif
       return s;
@@ -1155,23 +1170,19 @@ class Map {
     InnerIt it_;
   };
 
-  iterator begin() { return iterator(elements_->begin()); }
-  iterator end() { return iterator(elements_->end()); }
-  const_iterator begin() const {
-    return const_iterator(iterator(elements_->begin()));
-  }
-  const_iterator end() const {
-    return const_iterator(iterator(elements_->end()));
-  }
+  iterator begin() { return iterator(elements_.begin()); }
+  iterator end() { return iterator(elements_.end()); }
+  const_iterator begin() const { return const_iterator(elements_.begin()); }
+  const_iterator end() const { return const_iterator(elements_.end()); }
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
 
   // Capacity
-  size_type size() const { return elements_->size(); }
+  size_type size() const { return elements_.size(); }
   bool empty() const { return size() == 0; }
 
   // Element access
-  T& operator[](const key_type& key) { return (*elements_)[key].second; }
+  T& operator[](const key_type& key) { return elements_[key].second; }
 
   template <typename K = key_type>
   const T& at(const key_arg<K>& key) const {
@@ -1195,11 +1206,11 @@ class Map {
 
   template <typename K = key_type>
   const_iterator find(const key_arg<K>& key) const {
-    return const_iterator(iterator(elements_->find(key)));
+    return const_iterator(elements_.find(key));
   }
   template <typename K = key_type>
   iterator find(const key_arg<K>& key) {
-    return iterator(elements_->find(key));
+    return iterator(elements_.find(key));
   }
 
   template <typename K = key_type>
@@ -1233,7 +1244,7 @@ class Map {
   // insert
   std::pair<iterator, bool> insert(const value_type& value) {
     std::pair<typename InnerMap::iterator, bool> p =
-        elements_->insert(value.first);
+        elements_.insert(value.first);
     if (p.second) {
       p.first->second = value.second;
     }
@@ -1265,7 +1276,7 @@ class Map {
   }
   iterator erase(iterator pos) {
     iterator i = pos++;
-    elements_->erase(i.it_);
+    elements_.erase(i.it_);
     return pos;
   }
   void erase(iterator first, iterator last) {
@@ -1273,7 +1284,7 @@ class Map {
       first = erase(first);
     }
   }
-  void clear() { elements_->clear(); }
+  void clear() { elements_.clear(); }
 
   // Assign
   Map& operator=(const Map& other) {
@@ -1285,8 +1296,8 @@ class Map {
   }
 
   void swap(Map& other) {
-    if (arena_ == other.arena_) {
-      std::swap(elements_, other.elements_);
+    if (arena() == other.arena()) {
+      elements_.Swap(&other.elements_);
     } else {
       // TODO(zuguang): optimize this. The temporary copy can be allocated
       // in the same arena as the other message, and the "other = copy" can
@@ -1299,16 +1310,16 @@ class Map {
 
   // Access to hasher.  Currently this returns a copy, but it may
   // be modified to return a const reference in the future.
-  hasher hash_function() const { return elements_->hash_function(); }
+  hasher hash_function() const { return elements_.hash_function(); }
 
   size_t SpaceUsedExcludingSelfLong() const {
-    return sizeof(InnerMap) + elements_->SpaceUsedInternal() +
-           internal::SpaceUsedInValues(this);
+    if (empty()) return 0;
+    return elements_.SpaceUsedInternal() + internal::SpaceUsedInValues(this);
   }
 
  private:
-  Arena* arena_;
-  InnerMap* elements_;
+  Arena* arena() const { return elements_.arena(); }
+  InnerMap elements_;
 
   friend class Arena;
   using InternalArenaConstructable_ = void;

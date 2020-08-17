@@ -1388,7 +1388,7 @@ class ParseLoopGenerator {
 
     std::vector<const FieldDescriptor*> ordered_fields;
     for (auto field : FieldRange(descriptor)) {
-      if (IsFieldUsed(field, options_)) {
+      if (!IsFieldStripped(field, options_)) {
         ordered_fields.push_back(field);
       }
     }
@@ -1615,9 +1615,13 @@ class ParseLoopGenerator {
             }
           } else if (IsWeak(field, options_)) {
             format_(
-                "ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($1$,"
-                " _$classname$_default_instance_.$2$_), ptr);\n",
-                field->number(), FieldName(field));
+                "{\n"
+                "  auto* default_ = &reinterpret_cast<const Message&>($1$);\n"
+                "  ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($2$,"
+                " default_), ptr);\n"
+                "}\n",
+                QualifiedDefaultInstanceName(field->message_type(), options_),
+                field->number());
           } else {
             format_("ptr = ctx->ParseMessage(_internal_$1$_$2$(), ptr);\n",
                     field->is_repeated() ? "add" : "mutable", FieldName(field));

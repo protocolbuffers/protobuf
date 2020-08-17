@@ -150,7 +150,7 @@ class PROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   int64_t ByteCount() const override;
 
  private:
-  static const int kMinimumSize = 16;
+  static constexpr size_t kMinimumSize = 16;
 
   std::string* target_;
 

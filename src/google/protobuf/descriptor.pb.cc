@@ -157,7 +157,6 @@ static void InitDefaultsscc_info_DescriptorProto_google_2fprotobuf_2fdescriptor_
     new (ptr) PROTOBUF_NAMESPACE_ID::DescriptorProto();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::DescriptorProto::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<6> scc_info_DescriptorProto_google_2fprotobuf_2fdescriptor_2eproto =
@@ -177,7 +176,6 @@ static void InitDefaultsscc_info_DescriptorProto_ExtensionRange_google_2fprotobu
     new (ptr) PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_DescriptorProto_ExtensionRange_google_2fprotobuf_2fdescriptor_2eproto =
@@ -192,7 +190,6 @@ static void InitDefaultsscc_info_DescriptorProto_ReservedRange_google_2fprotobuf
     new (ptr) PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DescriptorProto_ReservedRange_google_2fprotobuf_2fdescriptor_2eproto =
@@ -206,7 +203,6 @@ static void InitDefaultsscc_info_EnumDescriptorProto_google_2fprotobuf_2fdescrip
     new (ptr) PROTOBUF_NAMESPACE_ID::EnumDescriptorProto();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::EnumDescriptorProto::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_EnumDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto =
@@ -223,7 +219,6 @@ static void InitDefaultsscc_info_EnumDescriptorProto_EnumReservedRange_google_2f
     new (ptr) PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_EnumDescriptorProto_EnumReservedRange_google_2fprotobuf_2fdescriptor_2eproto =
@@ -237,7 +232,6 @@ static void InitDefaultsscc_info_EnumOptions_google_2fprotobuf_2fdescriptor_2epr
     new (ptr) PROTOBUF_NAMESPACE_ID::EnumOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::EnumOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EnumOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -252,7 +246,6 @@ static void InitDefaultsscc_info_EnumValueDescriptorProto_google_2fprotobuf_2fde
     new (ptr) PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EnumValueDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto =
@@ -267,7 +260,6 @@ static void InitDefaultsscc_info_EnumValueOptions_google_2fprotobuf_2fdescriptor
     new (ptr) PROTOBUF_NAMESPACE_ID::EnumValueOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::EnumValueOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EnumValueOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -282,7 +274,6 @@ static void InitDefaultsscc_info_ExtensionRangeOptions_google_2fprotobuf_2fdescr
     new (ptr) PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ExtensionRangeOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -297,7 +288,6 @@ static void InitDefaultsscc_info_FieldDescriptorProto_google_2fprotobuf_2fdescri
     new (ptr) PROTOBUF_NAMESPACE_ID::FieldDescriptorProto();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::FieldDescriptorProto::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_FieldDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto =
@@ -312,7 +302,6 @@ static void InitDefaultsscc_info_FieldOptions_google_2fprotobuf_2fdescriptor_2ep
     new (ptr) PROTOBUF_NAMESPACE_ID::FieldOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::FieldOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_FieldOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -327,7 +316,6 @@ static void InitDefaultsscc_info_FileDescriptorProto_google_2fprotobuf_2fdescrip
     new (ptr) PROTOBUF_NAMESPACE_ID::FileDescriptorProto();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::FileDescriptorProto::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<6> scc_info_FileDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto =
@@ -347,7 +335,6 @@ static void InitDefaultsscc_info_FileDescriptorSet_google_2fprotobuf_2fdescripto
     new (ptr) PROTOBUF_NAMESPACE_ID::FileDescriptorSet();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::FileDescriptorSet::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_FileDescriptorSet_google_2fprotobuf_2fdescriptor_2eproto =
@@ -362,7 +349,6 @@ static void InitDefaultsscc_info_FileOptions_google_2fprotobuf_2fdescriptor_2epr
     new (ptr) PROTOBUF_NAMESPACE_ID::FileOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::FileOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_FileOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -377,7 +363,6 @@ static void InitDefaultsscc_info_GeneratedCodeInfo_google_2fprotobuf_2fdescripto
     new (ptr) PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_GeneratedCodeInfo_google_2fprotobuf_2fdescriptor_2eproto =
@@ -392,7 +377,6 @@ static void InitDefaultsscc_info_GeneratedCodeInfo_Annotation_google_2fprotobuf_
     new (ptr) PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_GeneratedCodeInfo_Annotation_google_2fprotobuf_2fdescriptor_2eproto =
@@ -406,7 +390,6 @@ static void InitDefaultsscc_info_MessageOptions_google_2fprotobuf_2fdescriptor_2
     new (ptr) PROTOBUF_NAMESPACE_ID::MessageOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::MessageOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_MessageOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -421,7 +404,6 @@ static void InitDefaultsscc_info_MethodDescriptorProto_google_2fprotobuf_2fdescr
     new (ptr) PROTOBUF_NAMESPACE_ID::MethodDescriptorProto();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::MethodDescriptorProto::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_MethodDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto =
@@ -436,7 +418,6 @@ static void InitDefaultsscc_info_MethodOptions_google_2fprotobuf_2fdescriptor_2e
     new (ptr) PROTOBUF_NAMESPACE_ID::MethodOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::MethodOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_MethodOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -451,7 +432,6 @@ static void InitDefaultsscc_info_OneofDescriptorProto_google_2fprotobuf_2fdescri
     new (ptr) PROTOBUF_NAMESPACE_ID::OneofDescriptorProto();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::OneofDescriptorProto::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_OneofDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto =
@@ -466,7 +446,6 @@ static void InitDefaultsscc_info_OneofOptions_google_2fprotobuf_2fdescriptor_2ep
     new (ptr) PROTOBUF_NAMESPACE_ID::OneofOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::OneofOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_OneofOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -481,7 +460,6 @@ static void InitDefaultsscc_info_ServiceDescriptorProto_google_2fprotobuf_2fdesc
     new (ptr) PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_ServiceDescriptorProto_google_2fprotobuf_2fdescriptor_2eproto =
@@ -497,7 +475,6 @@ static void InitDefaultsscc_info_ServiceOptions_google_2fprotobuf_2fdescriptor_2
     new (ptr) PROTOBUF_NAMESPACE_ID::ServiceOptions();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::ServiceOptions::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_ServiceOptions_google_2fprotobuf_2fdescriptor_2eproto =
@@ -512,7 +489,6 @@ static void InitDefaultsscc_info_SourceCodeInfo_google_2fprotobuf_2fdescriptor_2
     new (ptr) PROTOBUF_NAMESPACE_ID::SourceCodeInfo();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::SourceCodeInfo::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_SourceCodeInfo_google_2fprotobuf_2fdescriptor_2eproto =
@@ -527,7 +503,6 @@ static void InitDefaultsscc_info_SourceCodeInfo_Location_google_2fprotobuf_2fdes
     new (ptr) PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SourceCodeInfo_Location_google_2fprotobuf_2fdescriptor_2eproto =
@@ -541,7 +516,6 @@ static void InitDefaultsscc_info_UninterpretedOption_google_2fprotobuf_2fdescrip
     new (ptr) PROTOBUF_NAMESPACE_ID::UninterpretedOption();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::UninterpretedOption::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_UninterpretedOption_google_2fprotobuf_2fdescriptor_2eproto =
@@ -556,7 +530,6 @@ static void InitDefaultsscc_info_UninterpretedOption_NamePart_google_2fprotobuf_
     new (ptr) PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_UninterpretedOption_NamePart_google_2fprotobuf_2fdescriptor_2eproto =
@@ -1374,8 +1347,6 @@ constexpr int MethodOptions::IdempotencyLevel_ARRAYSIZE;
 
 // ===================================================================
 
-void FileDescriptorSet::InitAsDefaultInstance() {
-}
 class FileDescriptorSet::_Internal {
  public:
 };
@@ -1578,12 +1549,6 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
 
 // ===================================================================
 
-void FileDescriptorProto::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_FileDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::FileOptions*>(
-      PROTOBUF_NAMESPACE_ID::FileOptions::internal_default_instance());
-  PROTOBUF_NAMESPACE_ID::_FileDescriptorProto_default_instance_._instance.get_mutable()->source_code_info_ = const_cast< PROTOBUF_NAMESPACE_ID::SourceCodeInfo*>(
-      PROTOBUF_NAMESPACE_ID::SourceCodeInfo::internal_default_instance());
-}
 class FileDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<FileDescriptorProto>()._has_bits_);
@@ -2243,10 +2208,6 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
 
 // ===================================================================
 
-void DescriptorProto_ExtensionRange::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_DescriptorProto_ExtensionRange_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions*>(
-      PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions::internal_default_instance());
-}
 class DescriptorProto_ExtensionRange::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto_ExtensionRange>()._has_bits_);
@@ -2548,8 +2509,6 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 
 // ===================================================================
 
-void DescriptorProto_ReservedRange::InitAsDefaultInstance() {
-}
 class DescriptorProto_ReservedRange::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto_ReservedRange>()._has_bits_);
@@ -2804,10 +2763,6 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
 
 // ===================================================================
 
-void DescriptorProto::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_DescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::MessageOptions*>(
-      PROTOBUF_NAMESPACE_ID::MessageOptions::internal_default_instance());
-}
 class DescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto>()._has_bits_);
@@ -3355,8 +3310,6 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
 
 // ===================================================================
 
-void ExtensionRangeOptions::InitAsDefaultInstance() {
-}
 class ExtensionRangeOptions::_Internal {
  public:
 };
@@ -3580,10 +3533,6 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
 
 // ===================================================================
 
-void FieldDescriptorProto::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_FieldDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::FieldOptions*>(
-      PROTOBUF_NAMESPACE_ID::FieldOptions::internal_default_instance());
-}
 class FieldDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<FieldDescriptorProto>()._has_bits_);
@@ -4213,10 +4162,6 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
 
 // ===================================================================
 
-void OneofDescriptorProto::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_OneofDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::OneofOptions*>(
-      PROTOBUF_NAMESPACE_ID::OneofOptions::internal_default_instance());
-}
 class OneofDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<OneofDescriptorProto>()._has_bits_);
@@ -4495,8 +4440,6 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
 
 // ===================================================================
 
-void EnumDescriptorProto_EnumReservedRange::InitAsDefaultInstance() {
-}
 class EnumDescriptorProto_EnumReservedRange::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumDescriptorProto_EnumReservedRange>()._has_bits_);
@@ -4751,10 +4694,6 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
 
 // ===================================================================
 
-void EnumDescriptorProto::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_EnumDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::EnumOptions*>(
-      PROTOBUF_NAMESPACE_ID::EnumOptions::internal_default_instance());
-}
 class EnumDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumDescriptorProto>()._has_bits_);
@@ -5137,10 +5076,6 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
 
 // ===================================================================
 
-void EnumValueDescriptorProto::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_EnumValueDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::EnumValueOptions*>(
-      PROTOBUF_NAMESPACE_ID::EnumValueOptions::internal_default_instance());
-}
 class EnumValueDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumValueDescriptorProto>()._has_bits_);
@@ -5456,10 +5391,6 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
 
 // ===================================================================
 
-void ServiceDescriptorProto::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_ServiceDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::ServiceOptions*>(
-      PROTOBUF_NAMESPACE_ID::ServiceOptions::internal_default_instance());
-}
 class ServiceDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<ServiceDescriptorProto>()._has_bits_);
@@ -5771,10 +5702,6 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
 
 // ===================================================================
 
-void MethodDescriptorProto::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_MethodDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< PROTOBUF_NAMESPACE_ID::MethodOptions*>(
-      PROTOBUF_NAMESPACE_ID::MethodOptions::internal_default_instance());
-}
 class MethodDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<MethodDescriptorProto>()._has_bits_);
@@ -6207,8 +6134,6 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
 
 // ===================================================================
 
-void FileOptions::InitAsDefaultInstance() {
-}
 class FileOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<FileOptions>()._has_bits_);
@@ -7194,8 +7119,6 @@ void FileOptions::InternalSwap(FileOptions* other) {
 
 // ===================================================================
 
-void MessageOptions::InitAsDefaultInstance() {
-}
 class MessageOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<MessageOptions>()._has_bits_);
@@ -7548,8 +7471,6 @@ void MessageOptions::InternalSwap(MessageOptions* other) {
 
 // ===================================================================
 
-void FieldOptions::InitAsDefaultInstance() {
-}
 class FieldOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<FieldOptions>()._has_bits_);
@@ -7967,8 +7888,6 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
 
 // ===================================================================
 
-void OneofOptions::InitAsDefaultInstance() {
-}
 class OneofOptions::_Internal {
  public:
 };
@@ -8192,8 +8111,6 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
 
 // ===================================================================
 
-void EnumOptions::InitAsDefaultInstance() {
-}
 class EnumOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumOptions>()._has_bits_);
@@ -8496,8 +8413,6 @@ void EnumOptions::InternalSwap(EnumOptions* other) {
 
 // ===================================================================
 
-void EnumValueOptions::InitAsDefaultInstance() {
-}
 class EnumValueOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumValueOptions>()._has_bits_);
@@ -8758,8 +8673,6 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
 
 // ===================================================================
 
-void ServiceOptions::InitAsDefaultInstance() {
-}
 class ServiceOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<ServiceOptions>()._has_bits_);
@@ -9020,8 +8933,6 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
 
 // ===================================================================
 
-void MethodOptions::InitAsDefaultInstance() {
-}
 class MethodOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<MethodOptions>()._has_bits_);
@@ -9333,8 +9244,6 @@ void MethodOptions::InternalSwap(MethodOptions* other) {
 
 // ===================================================================
 
-void UninterpretedOption_NamePart::InitAsDefaultInstance() {
-}
 class UninterpretedOption_NamePart::_Internal {
  public:
   using HasBits = decltype(std::declval<UninterpretedOption_NamePart>()._has_bits_);
@@ -9612,8 +9521,6 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* ot
 
 // ===================================================================
 
-void UninterpretedOption::InitAsDefaultInstance() {
-}
 class UninterpretedOption::_Internal {
  public:
   using HasBits = decltype(std::declval<UninterpretedOption>()._has_bits_);
@@ -10057,8 +9964,6 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
 
 // ===================================================================
 
-void SourceCodeInfo_Location::InitAsDefaultInstance() {
-}
 class SourceCodeInfo_Location::_Internal {
  public:
   using HasBits = decltype(std::declval<SourceCodeInfo_Location>()._has_bits_);
@@ -10451,8 +10356,6 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
 
 // ===================================================================
 
-void SourceCodeInfo::InitAsDefaultInstance() {
-}
 class SourceCodeInfo::_Internal {
  public:
 };
@@ -10654,8 +10557,6 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
 
 // ===================================================================
 
-void GeneratedCodeInfo_Annotation::InitAsDefaultInstance() {
-}
 class GeneratedCodeInfo_Annotation::_Internal {
  public:
   using HasBits = decltype(std::declval<GeneratedCodeInfo_Annotation>()._has_bits_);
@@ -10995,8 +10896,6 @@ void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* ot
 
 // ===================================================================
 
-void GeneratedCodeInfo::InitAsDefaultInstance() {
-}
 class GeneratedCodeInfo::_Internal {
  public:
 };

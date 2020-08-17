@@ -28,7 +28,6 @@ static void InitDefaultsscc_info_FieldMask_google_2fprotobuf_2ffield_5fmask_2epr
     new (ptr) PROTOBUF_NAMESPACE_ID::FieldMask();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::FieldMask::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FieldMask_google_2fprotobuf_2ffield_5fmask_2eproto =
@@ -81,8 +80,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void FieldMask::InitAsDefaultInstance() {
-}
 class FieldMask::_Internal {
  public:
 };

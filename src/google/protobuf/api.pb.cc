@@ -40,7 +40,6 @@ static void InitDefaultsscc_info_Api_google_2fprotobuf_2fapi_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Api();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Api::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<4> scc_info_Api_google_2fprotobuf_2fapi_2eproto =
@@ -58,7 +57,6 @@ static void InitDefaultsscc_info_Method_google_2fprotobuf_2fapi_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Method();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Method::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Method_google_2fprotobuf_2fapi_2eproto =
@@ -73,7 +71,6 @@ static void InitDefaultsscc_info_Mixin_google_2fprotobuf_2fapi_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Mixin();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Mixin::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Mixin_google_2fprotobuf_2fapi_2eproto =
@@ -172,10 +169,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void Api::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_Api_default_instance_._instance.get_mutable()->source_context_ = const_cast< PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      PROTOBUF_NAMESPACE_ID::SourceContext::internal_default_instance());
-}
 class Api::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::SourceContext& source_context(const Api* msg);
@@ -601,8 +594,6 @@ void Api::InternalSwap(Api* other) {
 
 // ===================================================================
 
-void Method::InitAsDefaultInstance() {
-}
 class Method::_Internal {
  public:
 };
@@ -1002,8 +993,6 @@ void Method::InternalSwap(Method* other) {
 
 // ===================================================================
 
-void Mixin::InitAsDefaultInstance() {
-}
 class Mixin::_Internal {
  public:
 };

@@ -60,7 +60,6 @@ static void InitDefaultsscc_info_BoolValue_google_2fprotobuf_2fwrappers_2eproto(
     new (ptr) PROTOBUF_NAMESPACE_ID::BoolValue();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::BoolValue::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_BoolValue_google_2fprotobuf_2fwrappers_2eproto =
@@ -74,7 +73,6 @@ static void InitDefaultsscc_info_BytesValue_google_2fprotobuf_2fwrappers_2eproto
     new (ptr) PROTOBUF_NAMESPACE_ID::BytesValue();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::BytesValue::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_BytesValue_google_2fprotobuf_2fwrappers_2eproto =
@@ -88,7 +86,6 @@ static void InitDefaultsscc_info_DoubleValue_google_2fprotobuf_2fwrappers_2eprot
     new (ptr) PROTOBUF_NAMESPACE_ID::DoubleValue();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::DoubleValue::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DoubleValue_google_2fprotobuf_2fwrappers_2eproto =
@@ -102,7 +99,6 @@ static void InitDefaultsscc_info_FloatValue_google_2fprotobuf_2fwrappers_2eproto
     new (ptr) PROTOBUF_NAMESPACE_ID::FloatValue();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::FloatValue::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FloatValue_google_2fprotobuf_2fwrappers_2eproto =
@@ -116,7 +112,6 @@ static void InitDefaultsscc_info_Int32Value_google_2fprotobuf_2fwrappers_2eproto
     new (ptr) PROTOBUF_NAMESPACE_ID::Int32Value();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Int32Value::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Int32Value_google_2fprotobuf_2fwrappers_2eproto =
@@ -130,7 +125,6 @@ static void InitDefaultsscc_info_Int64Value_google_2fprotobuf_2fwrappers_2eproto
     new (ptr) PROTOBUF_NAMESPACE_ID::Int64Value();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Int64Value::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Int64Value_google_2fprotobuf_2fwrappers_2eproto =
@@ -144,7 +138,6 @@ static void InitDefaultsscc_info_StringValue_google_2fprotobuf_2fwrappers_2eprot
     new (ptr) PROTOBUF_NAMESPACE_ID::StringValue();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::StringValue::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_StringValue_google_2fprotobuf_2fwrappers_2eproto =
@@ -158,7 +151,6 @@ static void InitDefaultsscc_info_UInt32Value_google_2fprotobuf_2fwrappers_2eprot
     new (ptr) PROTOBUF_NAMESPACE_ID::UInt32Value();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::UInt32Value::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_UInt32Value_google_2fprotobuf_2fwrappers_2eproto =
@@ -172,7 +164,6 @@ static void InitDefaultsscc_info_UInt64Value_google_2fprotobuf_2fwrappers_2eprot
     new (ptr) PROTOBUF_NAMESPACE_ID::UInt64Value();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::UInt64Value::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_UInt64Value_google_2fprotobuf_2fwrappers_2eproto =
@@ -303,8 +294,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void DoubleValue::InitAsDefaultInstance() {
-}
 class DoubleValue::_Internal {
  public:
 };
@@ -498,8 +487,6 @@ void DoubleValue::InternalSwap(DoubleValue* other) {
 
 // ===================================================================
 
-void FloatValue::InitAsDefaultInstance() {
-}
 class FloatValue::_Internal {
  public:
 };
@@ -693,8 +680,6 @@ void FloatValue::InternalSwap(FloatValue* other) {
 
 // ===================================================================
 
-void Int64Value::InitAsDefaultInstance() {
-}
 class Int64Value::_Internal {
  public:
 };
@@ -890,8 +875,6 @@ void Int64Value::InternalSwap(Int64Value* other) {
 
 // ===================================================================
 
-void UInt64Value::InitAsDefaultInstance() {
-}
 class UInt64Value::_Internal {
  public:
 };
@@ -1087,8 +1070,6 @@ void UInt64Value::InternalSwap(UInt64Value* other) {
 
 // ===================================================================
 
-void Int32Value::InitAsDefaultInstance() {
-}
 class Int32Value::_Internal {
  public:
 };
@@ -1284,8 +1265,6 @@ void Int32Value::InternalSwap(Int32Value* other) {
 
 // ===================================================================
 
-void UInt32Value::InitAsDefaultInstance() {
-}
 class UInt32Value::_Internal {
  public:
 };
@@ -1481,8 +1460,6 @@ void UInt32Value::InternalSwap(UInt32Value* other) {
 
 // ===================================================================
 
-void BoolValue::InitAsDefaultInstance() {
-}
 class BoolValue::_Internal {
  public:
 };
@@ -1676,8 +1653,6 @@ void BoolValue::InternalSwap(BoolValue* other) {
 
 // ===================================================================
 
-void StringValue::InitAsDefaultInstance() {
-}
 class StringValue::_Internal {
  public:
 };
@@ -1885,8 +1860,6 @@ void StringValue::InternalSwap(StringValue* other) {
 
 // ===================================================================
 
-void BytesValue::InitAsDefaultInstance() {
-}
 class BytesValue::_Internal {
  public:
 };

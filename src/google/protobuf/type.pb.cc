@@ -49,7 +49,6 @@ static void InitDefaultsscc_info_Enum_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Enum();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Enum::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Enum_google_2fprotobuf_2ftype_2eproto =
@@ -66,7 +65,6 @@ static void InitDefaultsscc_info_EnumValue_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::EnumValue();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::EnumValue::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EnumValue_google_2fprotobuf_2ftype_2eproto =
@@ -81,7 +79,6 @@ static void InitDefaultsscc_info_Field_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Field();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Field::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Field_google_2fprotobuf_2ftype_2eproto =
@@ -96,7 +93,6 @@ static void InitDefaultsscc_info_Option_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Option();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Option::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Option_google_2fprotobuf_2ftype_2eproto =
@@ -111,7 +107,6 @@ static void InitDefaultsscc_info_Type_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Type();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Type::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Type_google_2fprotobuf_2ftype_2eproto =
@@ -354,10 +349,6 @@ bool Syntax_IsValid(int value) {
 
 // ===================================================================
 
-void Type::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_Type_default_instance_._instance.get_mutable()->source_context_ = const_cast< PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      PROTOBUF_NAMESPACE_ID::SourceContext::internal_default_instance());
-}
 class Type::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::SourceContext& source_context(const Type* msg);
@@ -747,8 +738,6 @@ void Type::InternalSwap(Type* other) {
 
 // ===================================================================
 
-void Field::InitAsDefaultInstance() {
-}
 class Field::_Internal {
  public:
 };
@@ -1232,10 +1221,6 @@ void Field::InternalSwap(Field* other) {
 
 // ===================================================================
 
-void Enum::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_Enum_default_instance_._instance.get_mutable()->source_context_ = const_cast< PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      PROTOBUF_NAMESPACE_ID::SourceContext::internal_default_instance());
-}
 class Enum::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::SourceContext& source_context(const Enum* msg);
@@ -1588,8 +1573,6 @@ void Enum::InternalSwap(Enum* other) {
 
 // ===================================================================
 
-void EnumValue::InitAsDefaultInstance() {
-}
 class EnumValue::_Internal {
  public:
 };
@@ -1856,10 +1839,6 @@ void EnumValue::InternalSwap(EnumValue* other) {
 
 // ===================================================================
 
-void Option::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_Option_default_instance_._instance.get_mutable()->value_ = const_cast< PROTOBUF_NAMESPACE_ID::Any*>(
-      PROTOBUF_NAMESPACE_ID::Any::internal_default_instance());
-}
 class Option::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::Any& value(const Option* msg);

@@ -206,8 +206,7 @@ class MapEntryImpl : public Base {
     return KeyTypeHandler::GetExternalReference(key_);
   }
   virtual inline const ValueMapEntryAccessorType& value() const {
-    return ValueTypeHandler::DefaultIfNotInitialized(
-        value_, Derived::internal_default_instance()->value_);
+    return ValueTypeHandler::DefaultIfNotInitialized(value_);
   }
   inline KeyMapEntryAccessorType* mutable_key() {
     set_has_key();
@@ -321,12 +320,6 @@ class MapEntryImpl : public Base {
     ValueTypeHandler::Clear(&value_, Base::GetArena());
     clear_has_key();
     clear_has_value();
-  }
-
-  static void InitAsDefaultInstance() {
-    Derived* d = const_cast<Derived*>(Derived::internal_default_instance());
-    KeyTypeHandler::AssignDefaultValue(&d->key_);
-    ValueTypeHandler::AssignDefaultValue(&d->value_);
   }
 
   // Parsing using MergePartialFromCodedStream, above, is not as
