@@ -137,19 +137,24 @@ conformance/*.class
 
 # php test output
 composer.lock
+php/tests/.phpunit.result.cache
 php/tests/generated/
 php/tests/old_protoc
+php/tests/phpunit-9.phar
 php/tests/protobuf/
 php/tests/core
 php/tests/vgcore*
 php/tests/multirequest.result
 php/tests/nohup.out
+php/tests/.phpunit.result.cache
+php/tests/phpunit-*
 php/ext/google/protobuf/.libs/
 php/ext/google/protobuf/Makefile.fragments
 php/ext/google/protobuf/Makefile.global
 php/ext/google/protobuf/Makefile.objects
 php/ext/google/protobuf/acinclude.m4
 php/ext/google/protobuf/build/
+php/ext/google/protobuf/bundled_php.c
 php/ext/google/protobuf/config.h
 php/ext/google/protobuf/config.h.in~
 php/ext/google/protobuf/config.nice
