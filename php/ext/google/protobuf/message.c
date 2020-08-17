@@ -382,6 +382,20 @@ PHP_METHOD(Message, __construct) {
 }
 
 /**
+ * Throw an exception if serialize(...) is called on a Message instead
+ * of segfaulting.
+ */
+PHP_METHOD(Message, __sleep) {
+	zend_throw_exception_ex(NULL, 0,
+                            "PHP serialization is forbidden on protobuf messages");
+}
+
+PHP_METHOD(Message, __wakeup) {
+        zend_throw_exception_ex(NULL, 0,
+                            "PHP serialization is forbidden on protobuf messages");
+}
+
+/**
  * Message::discardUnknownFields()
  *
  * Discards any unknown fields for this message or any submessages.
@@ -814,6 +828,8 @@ static zend_function_entry Message_methods[] = {
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, __construct, NULL, ZEND_ACC_PROTECTED)
+  PHP_ME(Message, __sleep, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
+  PHP_ME(Message, __wakeup, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_FINAL)
   ZEND_FE_END
 };
 
