@@ -1478,8 +1478,20 @@ public class TextFormatTest extends TestCase {
       // With overwrite forbidden, same behavior.
       // TODO(b/29122459): Expect parse exception here.
       TestMap.Builder builder = TestMap.newBuilder();
-      defaultParser.merge(text, builder);
+      parserWithOverwriteForbidden.merge(text, builder);
       TestMap map = builder.build();
+      assertEquals(2, map.getInt32ToInt32Field().size());
+      assertEquals(30, map.getInt32ToInt32Field().get(1).intValue());
+    }
+
+    {
+      // With overwrite forbidden and a dynamic message, same behavior.
+      // TODO(b/29122459): Expect parse exception here.
+      Message.Builder builder = DynamicMessage.newBuilder(TestMap.getDescriptor());
+      parserWithOverwriteForbidden.merge(text, builder);
+      TestMap map =
+          TestMap.parseFrom(
+              builder.build().toByteString(), ExtensionRegistryLite.getEmptyRegistry());
       assertEquals(2, map.getInt32ToInt32Field().size());
       assertEquals(30, map.getInt32ToInt32Field().get(1).intValue());
     }

@@ -74,11 +74,6 @@ def TruncateToFourByteFloat(original):
 
 def ToShortestFloat(original):
   """Returns the shortest float that has same value in wire."""
-  # Return the original value if it is not truncated. This may happen
-  # if someone mixes this code with an old protobuf runtime.
-  # TODO(jieluo): Remove it after maybe 2022.
-  if TruncateToFourByteFloat(original) != original:
-    return original
   # All 4 byte floats have between 6 and 9 significant digits, so we
   # start with 6 as the lower bound.
   # It has to be iterative because use '.9g' directly can not get rid

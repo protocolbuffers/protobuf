@@ -980,6 +980,43 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
   EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }
 
+TEST_F(MapImplTest, SpaceUsed) {
+  constexpr size_t kMinCap = 8;
+
+  Map<int32, int32> m;
+  // An newly constructed map should have no space used.
+  EXPECT_EQ(m.SpaceUsedExcludingSelfLong(), 0);
+
+  size_t capacity = kMinCap;
+  for (int i = 0; i < 100; ++i) {
+    m[i];
+    static constexpr double kMaxLoadFactor = .75;
+    if (m.size() >= capacity * kMaxLoadFactor) {
+      capacity *= 2;
+    }
+    EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
+              sizeof(void*) * capacity +
+                  m.size() * sizeof(std::pair<std::pair<int32, int32>, void*>));
+  }
+
+  // Test string, and non-scalar keys.
+  Map<std::string, int32> m2;
+  std::string str = "Some arbitrarily large string";
+  m2[str] = 1;
+  EXPECT_EQ(m2.SpaceUsedExcludingSelfLong(),
+            sizeof(void*) * kMinCap +
+                sizeof(std::pair<std::pair<std::string, int32>, void*>) +
+                internal::StringSpaceUsedExcludingSelfLong(str));
+
+  // Test messages, and non-scalar values.
+  Map<int32, TestAllTypes> m3;
+  m3[0].set_optional_string(str);
+  EXPECT_EQ(m3.SpaceUsedExcludingSelfLong(),
+            sizeof(void*) * kMinCap +
+                sizeof(std::pair<std::pair<int32, TestAllTypes>, void*>) +
+                m3[0].SpaceUsedLong() - sizeof(m3[0]));
+}
+
 // Attempts to verify that a map with keys a and b has a random ordering. This
 // function returns true if it succeeds in observing both possible orderings.
 bool MapOrderingIsRandom(int a, int b) {
@@ -2505,6 +2542,27 @@ TEST(GeneratedMapFieldTest, IsInitialized) {
   (*map_message.mutable_map_field())[0].set_b(0);
   (*map_message.mutable_map_field())[0].set_c(0);
   EXPECT_TRUE(map_message.IsInitialized());
+}
+
+TEST(GeneratedMapFieldTest, SpaceUsed) {
+  unittest::TestRequiredMessageMap map_message;
+  const size_t initial = map_message.SpaceUsed();
+  const size_t space_used_message = unittest::TestRequired().SpaceUsed();
+
+  auto& m = *map_message.mutable_map_field();
+  constexpr int kNumValues = 100;
+  for (int i = 0; i < kNumValues; ++i) {
+    m[i];
+  }
+
+  // The exact value will depend on internal state, like collisions,
+  // so we can't predict it. But we can predict a lower bound.
+  size_t lower_bound =
+      initial + kNumValues * (space_used_message + sizeof(int32) +
+                              /* Node::next */ sizeof(void*) +
+                              /* table entry */ sizeof(void*));
+
+  EXPECT_LE(lower_bound, map_message.SpaceUsed());
 }
 
 TEST(GeneratedMapFieldTest, MessagesMustMerge) {

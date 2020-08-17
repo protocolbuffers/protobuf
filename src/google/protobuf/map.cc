@@ -28,21 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto3";
+#include <google/protobuf/map.h>
 
-package google.protobuf;
+namespace google {
+namespace protobuf {
+namespace internal {
 
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
-option java_package = "com.google.protobuf";
-option java_outer_classname = "SourceContextProto";
-option java_multiple_files = true;
-option objc_class_prefix = "GPB";
-option go_package = "google.golang.org/protobuf/types/known/sourcecontextpb";
+void* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {nullptr};
 
-// `SourceContext` represents information about the source of a
-// protobuf element, like the file in which it is defined.
-message SourceContext {
-  // The path-qualified name of the .proto file that contained the associated
-  // protobuf element.  For example: `"google/protobuf/source_context.proto"`.
-  string file_name = 1;
-}
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google

@@ -102,7 +102,6 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
   }
   static const SourceContext& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const SourceContext* internal_default_instance() {
     return reinterpret_cast<const SourceContext*>(
                &_SourceContext_default_instance_);

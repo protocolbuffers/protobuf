@@ -102,7 +102,6 @@ class PROTOBUF_EXPORT FieldMask PROTOBUF_FINAL :
   }
   static const FieldMask& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const FieldMask* internal_default_instance() {
     return reinterpret_cast<const FieldMask*>(
                &_FieldMask_default_instance_);

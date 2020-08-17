@@ -212,6 +212,12 @@ struct ReflectionSchema {
            OffsetValue(offsets_[field->index()], field->type());
   }
 
+  // Returns true if the field's accessor is called by any external code (aka,
+  // non proto library code).
+  bool IsFieldUsed(const FieldDescriptor* field) const {
+    return true;
+  }
+
   bool IsFieldStripped(const FieldDescriptor* field) const {
     return false;
   }
@@ -242,6 +248,7 @@ struct ReflectionSchema {
   // We tag offset values to provide additional data about fields (such as
   // inlined).
   static uint32 OffsetValue(uint32 v, FieldDescriptor::Type type) {
+    v &= 0x7FFFFFFFu;
     if (type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
       return v & ~1u;
@@ -294,6 +301,13 @@ struct PROTOBUF_EXPORT DescriptorTable {
   int num_messages;
   const EnumDescriptor** file_level_enum_descriptors;
   const ServiceDescriptor** file_level_service_descriptors;
+};
+
+enum {
+  // Tag used on offsets for fields that don't have a real offset.
+  // For example, weak message fields go into the WeakFieldMap and not in an
+  // actual field.
+  kInvalidFieldOffsetTag = 0x40000000u,
 };
 
 // AssignDescriptors() pulls the compiled FileDescriptor from the DescriptorPool

@@ -1402,8 +1402,10 @@ final class MessageSchema<T> implements Schema<T> {
     if (!isOneofPresent(other, number, pos)) {
       return;
     }
-
-    Object mine = UnsafeUtil.getObject(message, offset);
+    Object mine = null;
+    if (isOneofPresent(message, number, pos)) {
+      mine = UnsafeUtil.getObject(message, offset);
+    }
     Object theirs = UnsafeUtil.getObject(other, offset);
     if (mine != null && theirs != null) {
       Object merged = Internal.mergeMessage(mine, theirs);
