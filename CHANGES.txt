@@ -33,7 +33,13 @@ Unreleased Changes
   * Update go_package options to reference google.golang.org/protobuf module.
 
 
-2020-07-14 version 3.13.0-rc1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2020-07-14 version 3.13.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  PHP:
+  * The C extension is completely rewritten. The new C extension has significantly
+    better parsing performance and fixes a handful of conformance issues. It will
+    also make it easier to add support for more features like proto2 and proto3 presence.
+  * The new C extension does not support PHP 5.x. PHP 5.x users can still use pure-PHP.
 
   C++:
   * Removed deprecated unsafe arena string accessors
@@ -85,6 +91,11 @@ Unreleased Changes
     it is recommended to regenerate your generated code to achieve the best
     performance (the legacy generated code will still work, but might incur
     a slight performance penalty).
+
+2020-07-28 version 3.12.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+This release contains no significant changes, but exists because 3.12.3 was
+mistakenly tagged at the wrong commit.
 
 2020-06-01 version 3.12.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
