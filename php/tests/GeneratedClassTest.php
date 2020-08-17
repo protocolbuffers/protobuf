@@ -72,6 +72,28 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test optional int32 field.
+    #########################################################
+
+    public function testOptionalInt32Field()
+    {
+        $m = new TestMessage();
+
+        $this->assertFalse($m->hasTrueOptionalInt32());
+        $this->assertSame(0, $m->getTrueOptionalInt32());
+
+        // Set integer.
+        $m->setTrueOptionalInt32(MAX_INT32);
+        $this->assertTrue($m->hasTrueOptionalInt32());
+        $this->assertSame(MAX_INT32, $m->getTrueOptionalInt32());
+
+        // Clear integer.
+        $m->clearTrueOptionalInt32();
+        $this->assertFalse($m->hasTrueOptionalInt32());
+        $this->assertSame(0, $m->getTrueOptionalInt32());
+    }
+
+    #########################################################
     # Test uint32 field.
     #########################################################
 

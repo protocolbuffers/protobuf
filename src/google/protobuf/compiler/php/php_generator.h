@@ -55,6 +55,11 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
                    const std::string& parameter,
                    GeneratorContext* generator_context,
                    std::string* error) const override;
+
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL;
+  }
+
  private:
   bool Generate(
       const FileDescriptor* file,
