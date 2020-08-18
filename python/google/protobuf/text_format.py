@@ -46,19 +46,19 @@ __author__ = 'kenton@google.com (Kenton Varda)'
 import encodings.raw_unicode_escape  # pylint: disable=unused-import
 import encodings.unicode_escape  # pylint: disable=unused-import
 import io
+import math
 import re
-
 import six
 
-if six.PY3:
-  long = int  # pylint: disable=redefined-builtin,invalid-name
-
-# pylint: disable=g-import-not-at-top
 from google.protobuf.internal import decoder
 from google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import text_encoding
 
+if six.PY3:
+  long = int  # pylint: disable=redefined-builtin,invalid-name
+
+# pylint: disable=g-import-not-at-top
 __all__ = ['MessageToString', 'Parse', 'PrintMessage', 'PrintField',
            'PrintFieldValue', 'Merge', 'MessageToBytes']
 
@@ -630,7 +630,10 @@ class _Printer(object):
       if self.float_format is not None:
         out.write('{1:{0}}'.format(self.float_format, value))
       else:
-        out.write(str(type_checkers.ToShortestFloat(value)))
+        if math.isnan(value):
+          out.write(str(value))
+        else:
+          out.write(str(type_checkers.ToShortestFloat(value)))
     elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_DOUBLE and
           self.double_format is not None):
       out.write('{1:{0}}'.format(self.double_format, value))

@@ -46,19 +46,21 @@ void AnyMetadata::PackFrom(const Message& message) {
 }
 
 void AnyMetadata::PackFrom(const Message& message,
-                           const std::string& type_url_prefix) {
-  type_url_->SetNoArena(
+                           StringPiece type_url_prefix) {
+  type_url_->Set(
       &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
-      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix));
-  message.SerializeToString(value_->MutableNoArena(
-      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited()));
+      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix),
+      nullptr);
+  message.SerializeToString(value_->Mutable(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      nullptr));
 }
 
 bool AnyMetadata::UnpackTo(Message* message) const {
   if (!InternalIs(message->GetDescriptor()->full_name())) {
     return false;
   }
-  return message->ParseFromString(value_->GetNoArena());
+  return message->ParseFromString(value_->Get());
 }
 
 bool GetAnyFieldDescriptors(const Message& message,

@@ -42,7 +42,6 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/map_unittest.pb.h>
@@ -58,6 +57,7 @@
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/substitute.h>
 
 
@@ -1409,9 +1409,8 @@ class TextFormatParserTest : public testing::Test {
     parser_.RecordErrorsTo(&error_collector);
     EXPECT_EQ(expected_result, parser_.ParseFromString(input, proto))
         << input << " -> " << proto->DebugString();
-    EXPECT_EQ(
-        StrCat(line) + ":" + StrCat(col) + ": " + message + "\n",
-        error_collector.text_);
+    EXPECT_EQ(StrCat(line, ":", col, ": ", message, "\n"),
+              error_collector.text_);
     parser_.RecordErrorsTo(nullptr);
   }
 
@@ -1920,18 +1919,43 @@ TEST_F(TextFormatParserTest, SetRecursionLimit) {
   ExpectSuccessAndTree(input, &message, nullptr);
 }
 
-TEST_F(TextFormatParserTest, SetRecursionLimitUnknownField) {
+TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldValue) {
+  const char* format = "[$0]";
+  std::string input = "\"test_value\"";
+  for (int i = 0; i < 99; ++i) input = strings::Substitute(format, input);
+  std::string not_deep_input = StrCat("unknown_nested_array: ", input);
+
+  parser_.AllowUnknownField(true);
+  parser_.SetRecursionLimit(100);
+
+  unittest::NestedTestAllTypes message;
+  ExpectSuccessAndTree(not_deep_input, &message, nullptr);
+
+  input = strings::Substitute(format, input);
+  std::string deep_input = StrCat("unknown_nested_array: ", input);
+  ExpectMessage(
+      deep_input,
+      "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "
+      "field named \"unknown_nested_array\".\n1:123: Message is too deep, the "
+      "parser exceeded the configured recursion limit of 100.",
+      1, 21, &message, false);
+
+  parser_.SetRecursionLimit(101);
+  ExpectSuccessAndTree(deep_input, &message, nullptr);
+}
+
+TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
   const char* format = "unknown_child: { $0 }";
   std::string input;
   for (int i = 0; i < 100; ++i) input = strings::Substitute(format, input);
 
   parser_.AllowUnknownField(true);
+  parser_.SetRecursionLimit(100);
 
   unittest::NestedTestAllTypes message;
   ExpectSuccessAndTree(input, &message, nullptr);
 
   input = strings::Substitute(format, input);
-  parser_.SetRecursionLimit(100);
   ExpectMessage(
       input,
       "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "

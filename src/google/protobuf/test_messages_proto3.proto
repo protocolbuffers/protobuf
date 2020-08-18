@@ -203,6 +203,7 @@ message TestAllTypesProto3 {
     float oneof_float = 117;
     double oneof_double = 118;
     NestedEnum oneof_enum = 119;
+    google.protobuf.NullValue oneof_null_value = 120;
   }
 
   // Well-known types
@@ -232,6 +233,7 @@ message TestAllTypesProto3 {
   google.protobuf.Struct optional_struct = 304;
   google.protobuf.Any optional_any = 305;
   google.protobuf.Value optional_value = 306;
+  google.protobuf.NullValue optional_null_value = 307;
 
   repeated google.protobuf.Duration repeated_duration = 311;
   repeated google.protobuf.Timestamp repeated_timestamp = 312;

@@ -102,7 +102,6 @@ class PROTOBUF_EXPORT Any PROTOBUF_FINAL :
   }
   static const Any& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Any* internal_default_instance() {
     return reinterpret_cast<const Any*>(
                &_Any_default_instance_);
@@ -116,7 +115,7 @@ class PROTOBUF_EXPORT Any PROTOBUF_FINAL :
     _any_metadata_.PackFrom(message);
   }
   void PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message,
-                const std::string& type_url_prefix) {
+                ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url_prefix) {
     _any_metadata_.PackFrom(message, type_url_prefix);
   }
   bool UnpackTo(::PROTOBUF_NAMESPACE_ID::Message* message) const {
@@ -132,7 +131,7 @@ class PROTOBUF_EXPORT Any PROTOBUF_FINAL :
   }
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   void PackFrom(const T& message,
-                const std::string& type_url_prefix) {
+                ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url_prefix) {
     _any_metadata_.PackFrom<T>(message, type_url_prefix);}
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool UnpackTo(T* message) const {
@@ -141,7 +140,7 @@ class PROTOBUF_EXPORT Any PROTOBUF_FINAL :
   template<typename T> bool Is() const {
     return _any_metadata_.Is<T>();
   }
-  static bool ParseAnyTypeUrl(const string& type_url,
+  static bool ParseAnyTypeUrl(::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url,
                               std::string* full_type_name);
   friend void swap(Any& a, Any& b) {
     a.Swap(&b);

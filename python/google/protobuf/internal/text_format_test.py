@@ -142,6 +142,8 @@ class TextFormatMessageToStringTests(TextFormatBase):
     message.repeated_float.append(1.234e10)
     message.repeated_float.append(1.2345e10)
     message.repeated_float.append(1.23456e10)
+    message.repeated_float.append(float('NaN'))
+    message.repeated_float.append(float('inf'))
     message.repeated_double.append(0.0)
     message.repeated_double.append(0.8)
     message.repeated_double.append(1.0)
@@ -190,6 +192,8 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'repeated_float: 12340000000\n'
         'repeated_float: 12345000000\n'
         'repeated_float: 12345600000\n'
+        'repeated_float: nan\n'
+        'repeated_float: inf\n'
         'repeated_double: 0\n'
         'repeated_double: 0.8\n'
         'repeated_double: 1\n'

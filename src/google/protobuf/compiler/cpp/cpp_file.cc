@@ -441,12 +441,11 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
       "  ::$proto_ns$::internal::ExplicitlyConstructed<$2$> _instance;\n",
       DefaultInstanceType(generator->descriptor_, options_),
       generator->classname_);
-  format.Indent();
-  generator->GenerateExtraDefaultFields(printer);
-  format.Outdent();
   format("} $1$;\n", DefaultInstanceName(generator->descriptor_, options_));
+
   if (options_.lite_implicit_weak_fields) {
-    format("$1$DefaultTypeInternal* $2$ = &$3$;\n", generator->classname_,
+    format("$1$* $2$ = &$3$;\n",
+           DefaultInstanceType(generator->descriptor_, options_),
            DefaultInstancePtr(generator->descriptor_, options_),
            DefaultInstanceName(generator->descriptor_, options_));
   }
@@ -942,8 +941,6 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc,
     if (scc_analyzer_.GetSCC(message_generators_[i]->descriptor_) != scc) {
       continue;
     }
-    // TODO(gerbens) This requires this function to be friend. Remove
-    // the need for this.
     message_generators_[i]->GenerateFieldDefaultInstances(printer);
     format(
         "{\n"
@@ -960,17 +957,6 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc,
           "\n");
     }
     format("}\n");
-  }
-
-  // TODO(gerbens) make default instances be the same as normal instances.
-  // Default instances differ from normal instances because they have cross
-  // linked message fields.
-  for (int i = 0; i < message_generators_.size(); i++) {
-    if (scc_analyzer_.GetSCC(message_generators_[i]->descriptor_) != scc) {
-      continue;
-    }
-    format("$1$::InitAsDefaultInstance();\n",
-           QualifiedClassName(message_generators_[i]->descriptor_, options_));
   }
   format.Outdent();
   format("}\n\n");

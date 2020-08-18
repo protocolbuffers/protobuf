@@ -162,6 +162,10 @@ size_t Message::SpaceUsedLong() const {
   return GetReflection()->SpaceUsedLong(*this);
 }
 
+size_t Message::GetInvariantPerBuild(size_t salt) {
+  return salt;
+}
+
 // =============================================================================
 // MessageFactory
 

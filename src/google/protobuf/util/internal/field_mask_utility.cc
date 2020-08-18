@@ -31,6 +31,7 @@
 #include <google/protobuf/util/internal/field_mask_utility.h>
 
 #include <google/protobuf/util/internal/utility.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status_macros.h>
 
@@ -107,7 +108,7 @@ std::string ConvertFieldMaskPath(const StringPiece path,
 }
 
 util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
-                                           PathSinkCallback path_sink) {
+                                         PathSinkCallback path_sink) {
   std::stack<std::string> prefix;
   int length = paths.length();
   int previous_position = 0;
