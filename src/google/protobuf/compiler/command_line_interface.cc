@@ -1531,7 +1531,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
   }
 
   // Check error cases that span multiple flag values.
-  bool missing_proto_definitions;
+  bool missing_proto_definitions = false;
   switch (mode_) {
     case MODE_COMPILE:
       missing_proto_definitions = input_files_.empty();
@@ -1555,6 +1555,9 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     case MODE_PRINT:
       missing_proto_definitions =
           input_files_.empty() && descriptor_set_in_names_.empty();
+      break;
+    default:
+      GOOGLE_LOG(FATAL) << "Unexpected mode: " << mode_;
   }
   if (missing_proto_definitions) {
     std::cerr << "Missing input file." << std::endl;
