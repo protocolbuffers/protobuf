@@ -1567,15 +1567,13 @@ class GeneratedClassTest extends TestBase
         /* var_dump($m); */
     }
 
+    /**
+     * @expectedException Exception
+     */
     public function testNoSegfaultWhenPhpSerialize()
     {
-	$this->expectException(Exception::class);
-
         $m = new TestMessage();
-
-        // Set string.
         $m->setOptionalString('abc');
-        $this->assertSame('abc', $m->getOptionalString());
 
 	serialize($m);
     }
