@@ -102,7 +102,6 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
   }
   static const Duration& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Duration* internal_default_instance() {
     return reinterpret_cast<const Duration*>(
                &_Duration_default_instance_);

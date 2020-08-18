@@ -42,6 +42,7 @@
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
@@ -587,6 +588,38 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
 
   if (field == nullptr) return this;
 
+  // Legacy JSON map is a list of key value pairs. Starts a map entry object.
+  if (options_.use_legacy_json_map_format && name.empty()) {
+    Push(name, IsAny(*field) ? Item::ANY : Item::MESSAGE, false, false);
+    return this;
+  }
+
+  if (IsMap(*field)) {
+    // Begin a map. A map is triggered by a StartObject() call if the current
+    // field has a map type.
+    // A map type is always repeated, hence set is_list to true.
+    // Render
+    // "<name>": [
+    Push(name, Item::MAP, false, true);
+    return this;
+  }
+
+  if (options_.disable_implicit_message_list) {
+    // If the incoming object is repeated, the top-level object on stack should
+    // be list. Report an error otherwise.
+    if (IsRepeated(*field) && !current_->is_list()) {
+      IncrementInvalidDepth();
+
+      if (!options_.suppress_implicit_message_list_error) {
+        InvalidValue(
+            field->name(),
+            "Starting an object in a repeated field but the parent object "
+            "is not a list");
+      }
+      return this;
+    }
+  }
+
   if (IsStruct(*field)) {
     // Start a struct object.
     // Render
@@ -607,22 +640,6 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     Push(name, Item::MESSAGE, false, false);
     Push("struct_value", Item::MESSAGE, true, false);
     Push("fields", Item::MAP, true, true);
-    return this;
-  }
-
-  // Legacy JSON map is a list of key value pairs. Starts a map entry object.
-  if (options_.use_legacy_json_map_format && name.empty()) {
-    Push(name, IsAny(*field) ? Item::ANY : Item::MESSAGE, false, false);
-    return this;
-  }
-
-  if (IsMap(*field)) {
-    // Begin a map. A map is triggered by a StartObject() call if the current
-    // field has a map type.
-    // A map type is always repeated, hence set is_list to true.
-    // Render
-    // "<name>": [
-    Push(name, Item::MAP, false, true);
     return this;
   }
 

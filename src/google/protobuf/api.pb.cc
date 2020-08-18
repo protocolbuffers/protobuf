@@ -40,7 +40,6 @@ static void InitDefaultsscc_info_Api_google_2fprotobuf_2fapi_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Api();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Api::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<4> scc_info_Api_google_2fprotobuf_2fapi_2eproto =
@@ -58,7 +57,6 @@ static void InitDefaultsscc_info_Method_google_2fprotobuf_2fapi_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Method();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Method::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Method_google_2fprotobuf_2fapi_2eproto =
@@ -73,7 +71,6 @@ static void InitDefaultsscc_info_Mixin_google_2fprotobuf_2fapi_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Mixin();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Mixin::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Mixin_google_2fprotobuf_2fapi_2eproto =
@@ -144,10 +141,10 @@ const char descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto[] PROTOBUF_
   "esponse_streaming\030\005 \001(\010\022(\n\007options\030\006 \003(\013"
   "2\027.google.protobuf.Option\022\'\n\006syntax\030\007 \001("
   "\0162\027.google.protobuf.Syntax\"#\n\005Mixin\022\014\n\004n"
-  "ame\030\001 \001(\t\022\014\n\004root\030\002 \001(\tBu\n\023com.google.pr"
-  "otobufB\010ApiProtoP\001Z+google.golang.org/ge"
-  "nproto/protobuf/api;api\242\002\003GPB\252\002\036Google.P"
-  "rotobuf.WellKnownTypesb\006proto3"
+  "ame\030\001 \001(\t\022\014\n\004root\030\002 \001(\tBv\n\023com.google.pr"
+  "otobufB\010ApiProtoP\001Z,google.golang.org/pr"
+  "otobuf/types/known/apipb\242\002\003GPB\252\002\036Google."
+  "Protobuf.WellKnownTypesb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fapi_2eproto_deps[2] = {
   &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
@@ -160,7 +157,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_goo
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fapi_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto, "google/protobuf/api.proto", 750,
+  false, false, descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto, "google/protobuf/api.proto", 751,
   &descriptor_table_google_2fprotobuf_2fapi_2eproto_once, descriptor_table_google_2fprotobuf_2fapi_2eproto_sccs, descriptor_table_google_2fprotobuf_2fapi_2eproto_deps, 3, 2,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fapi_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fapi_2eproto, 3, file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto, file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto,
@@ -172,10 +169,6 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void Api::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_Api_default_instance_._instance.get_mutable()->source_context_ = const_cast< PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      PROTOBUF_NAMESPACE_ID::SourceContext::internal_default_instance());
-}
 class Api::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::SourceContext& source_context(const Api* msg);
@@ -601,8 +594,6 @@ void Api::InternalSwap(Api* other) {
 
 // ===================================================================
 
-void Method::InitAsDefaultInstance() {
-}
 class Method::_Internal {
  public:
 };
@@ -1002,8 +993,6 @@ void Method::InternalSwap(Method* other) {
 
 // ===================================================================
 
-void Mixin::InitAsDefaultInstance() {
-}
 class Mixin::_Internal {
  public:
 };

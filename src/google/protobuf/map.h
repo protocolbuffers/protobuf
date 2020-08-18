@@ -76,12 +76,12 @@ struct is_proto_enum;
 namespace internal {
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type, int default_enum_value>
+          WireFormatLite::FieldType value_wire_type>
 class MapFieldLite;
 
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type, int default_enum_value>
+          WireFormatLite::FieldType value_wire_type>
 class MapField;
 
 template <typename Key, typename T>
@@ -133,8 +133,7 @@ class MapAllocator {
     }
   }
 
-#if __cplusplus >= 201103L && !defined(GOOGLE_PROTOBUF_OS_APPLE) && \
-    !defined(GOOGLE_PROTOBUF_OS_NACL) &&                            \
+#if !defined(GOOGLE_PROTOBUF_OS_APPLE) && !defined(GOOGLE_PROTOBUF_OS_NACL) && \
     !defined(GOOGLE_PROTOBUF_OS_EMSCRIPTEN)
   template <class NodeType, class... Args>
   void construct(NodeType* p, Args&&... args) {
@@ -183,7 +182,7 @@ class MapAllocator {
 
  private:
   using DestructorSkippable_ = void;
-  Arena* const arena_;
+  Arena* arena_;
 };
 
 template <typename T>
@@ -252,6 +251,79 @@ struct TransparentSupport<std::string> {
 };
 #endif  // defined(__cpp_lib_string_view)
 
+template <typename Key>
+using TreeForMap =
+    std::map<KeyForTree<Key>, void*, typename TransparentSupport<Key>::less,
+             MapAllocator<std::pair<const KeyForTree<Key>, void*>>>;
+
+inline bool TableEntryIsEmpty(void* const* table, size_t b) {
+  return table[b] == nullptr;
+}
+inline bool TableEntryIsNonEmptyList(void* const* table, size_t b) {
+  return table[b] != nullptr && table[b] != table[b ^ 1];
+}
+inline bool TableEntryIsTree(void* const* table, size_t b) {
+  return !TableEntryIsEmpty(table, b) && !TableEntryIsNonEmptyList(table, b);
+}
+inline bool TableEntryIsList(void* const* table, size_t b) {
+  return !TableEntryIsTree(table, b);
+}
+
+// This captures all numeric types.
+inline size_t MapValueSpaceUsedExcludingSelfLong(bool) { return 0; }
+inline size_t MapValueSpaceUsedExcludingSelfLong(const std::string& str) {
+  return StringSpaceUsedExcludingSelfLong(str);
+}
+template <typename T,
+          typename = decltype(std::declval<const T&>().SpaceUsedLong())>
+size_t MapValueSpaceUsedExcludingSelfLong(const T& message) {
+  return message.SpaceUsedLong() - sizeof(T);
+}
+
+constexpr size_t kGlobalEmptyTableSize = 1;
+PROTOBUF_EXPORT extern void* const kGlobalEmptyTable[kGlobalEmptyTableSize];
+
+// Space used for the table, trees, and nodes.
+// Does not include the indirect space used. Eg the data of a std::string.
+template <typename Key>
+PROTOBUF_NOINLINE size_t SpaceUsedInTable(void** table, size_t num_buckets,
+                                          size_t num_elements,
+                                          size_t sizeof_node) {
+  size_t size = 0;
+  // The size of the table.
+  size += sizeof(void*) * num_buckets;
+  // All the nodes.
+  size += sizeof_node * num_elements;
+  // For each tree, count the overhead of the those nodes.
+  // Two buckets at a time because we only care about trees.
+  for (size_t b = 0; b < num_buckets; b += 2) {
+    if (internal::TableEntryIsTree(table, b)) {
+      using Tree = TreeForMap<Key>;
+      Tree* tree = static_cast<Tree*>(table[b]);
+      // Estimated cost of the red-black tree nodes, 3 pointers plus a
+      // bool (plus alignment, so 4 pointers).
+      size += tree->size() *
+              (sizeof(typename Tree::value_type) + sizeof(void*) * 4);
+    }
+  }
+  return size;
+}
+
+template <typename Map,
+          typename = typename std::enable_if<
+              !std::is_scalar<typename Map::key_type>::value ||
+              !std::is_scalar<typename Map::mapped_type>::value>::type>
+size_t SpaceUsedInValues(const Map* map) {
+  size_t size = 0;
+  for (const auto& v : *map) {
+    size += internal::MapValueSpaceUsedExcludingSelfLong(v.first) +
+            internal::MapValueSpaceUsedExcludingSelfLong(v.second);
+  }
+  return size;
+}
+
+inline size_t SpaceUsedInValues(const void*) { return 0; }
+
 }  // namespace internal
 
 // This is the class for Map's internal value_type. Instead of using
@@ -308,25 +380,22 @@ class Map {
   using size_type = size_t;
   using hasher = typename internal::TransparentSupport<Key>::hash;
 
-  Map() : arena_(nullptr), default_enum_value_(0) { Init(); }
-  explicit Map(Arena* arena) : arena_(arena), default_enum_value_(0) { Init(); }
+  Map() : elements_(nullptr) {}
+  explicit Map(Arena* arena) : elements_(arena) {}
 
-  Map(const Map& other)
-      : arena_(nullptr), default_enum_value_(other.default_enum_value_) {
-    Init();
-    insert(other.begin(), other.end());
-  }
+  Map(const Map& other) : Map() { insert(other.begin(), other.end()); }
 
   Map(Map&& other) noexcept : Map() {
-    if (other.arena_) {
+    if (other.arena() != nullptr) {
       *this = other;
     } else {
       swap(other);
     }
   }
+
   Map& operator=(Map&& other) noexcept {
     if (this != &other) {
-      if (arena_ != other.arena_) {
+      if (arena() != other.arena()) {
         *this = other;
       } else {
         swap(other);
@@ -336,22 +405,13 @@ class Map {
   }
 
   template <class InputIt>
-  Map(const InputIt& first, const InputIt& last)
-      : arena_(nullptr), default_enum_value_(0) {
-    Init();
+  Map(const InputIt& first, const InputIt& last) : Map() {
     insert(first, last);
   }
 
-  ~Map() {
-    if (arena_ == nullptr) {
-      clear();
-      delete elements_;
-    }
-  }
+  ~Map() {}
 
  private:
-  void Init() { elements_ = Arena::CreateMessage<InnerMap>(arena_, 0); }
-
   using Allocator = internal::MapAllocator<void*>;
 
   // InnerMap is a generic hash-based map.  It doesn't contain any
@@ -388,20 +448,18 @@ class Map {
   //    otherwise. This avoids unnecessary copies of string keys, for example.
   class InnerMap : private hasher {
    public:
-    explicit InnerMap(size_type n) : InnerMap(nullptr, n) {}
-    InnerMap(Arena* arena, size_type n)
+    explicit InnerMap(Arena* arena)
         : hasher(),
           num_elements_(0),
+          num_buckets_(internal::kGlobalEmptyTableSize),
           seed_(Seed()),
-          table_(nullptr),
-          alloc_(arena) {
-      n = TableSize(n);
-      table_ = CreateEmptyTable(n);
-      num_buckets_ = index_of_first_non_null_ = n;
-    }
+          index_of_first_non_null_(num_buckets_),
+          table_(const_cast<void**>(internal::kGlobalEmptyTable)),
+          alloc_(arena) {}
 
     ~InnerMap() {
-      if (table_ != nullptr) {
+      if (alloc_.arena() == nullptr &&
+          num_buckets_ != internal::kGlobalEmptyTableSize) {
         clear();
         Dealloc<void*>(table_, num_buckets_);
       }
@@ -421,11 +479,7 @@ class Map {
     // The value is a void* pointing to Node. We use void* instead of Node* to
     // avoid code bloat. That way there is only one instantiation of the tree
     // class per key type.
-    using TreeAllocator = typename Allocator::template rebind<
-        std::pair<const internal::KeyForTree<Key>, void*>>::other;
-    using Tree = std::map<internal::KeyForTree<Key>, void*,
-                          typename internal::TransparentSupport<Key>::less,
-                          TreeAllocator>;
+    using Tree = internal::TreeForMap<Key>;
     using TreeIterator = typename Tree::iterator;
 
     static Node* NodeFromTreeIterator(TreeIterator it) {
@@ -564,6 +618,17 @@ class Map {
     using iterator = iterator_base<value_type>;
     using const_iterator = iterator_base<const value_type>;
 
+    Arena* arena() const { return alloc_.arena(); }
+
+    void Swap(InnerMap* other) {
+      std::swap(num_elements_, other->num_elements_);
+      std::swap(num_buckets_, other->num_buckets_);
+      std::swap(seed_, other->seed_);
+      std::swap(index_of_first_non_null_, other->index_of_first_non_null_);
+      std::swap(table_, other->table_);
+      std::swap(alloc_, other->alloc_);
+    }
+
     iterator begin() { return iterator(this); }
     iterator end() { return iterator(); }
     const_iterator begin() const { return const_iterator(this); }
@@ -611,6 +676,11 @@ class Map {
     template <typename K>
     iterator find(const K& k) {
       return iterator(FindHelper(k).first);
+    }
+
+    template <typename K>
+    const_iterator find(const K& k) const {
+      return FindHelper(k).first;
     }
 
     // Insert the key into the map, if not present. In that case, the value will
@@ -673,6 +743,11 @@ class Map {
           ++index_of_first_non_null_;
         }
       }
+    }
+
+    size_t SpaceUsedInternal() const {
+      return internal::SpaceUsedInTable<Key>(table_, num_buckets_,
+                                             num_elements_, sizeof(Node));
     }
 
    private:
@@ -827,6 +902,14 @@ class Map {
 
     // Resize to the given number of buckets.
     void Resize(size_t new_num_buckets) {
+      if (num_buckets_ == internal::kGlobalEmptyTableSize) {
+        // This is the global empty array.
+        // Just overwrite with a new one. No need to transfer or free anything.
+        num_buckets_ = index_of_first_non_null_ = kMinTableSize;
+        table_ = CreateEmptyTable(num_buckets_);
+        return;
+      }
+
       GOOGLE_DCHECK_GE(new_num_buckets, kMinTableSize);
       void** const old_table = table_;
       const size_type old_table_size = num_buckets_;
@@ -835,9 +918,9 @@ class Map {
       const size_type start = index_of_first_non_null_;
       index_of_first_non_null_ = num_buckets_;
       for (size_type i = start; i < old_table_size; i++) {
-        if (TableEntryIsNonEmptyList(old_table, i)) {
+        if (internal::TableEntryIsNonEmptyList(old_table, i)) {
           TransferList(old_table, i);
-        } else if (TableEntryIsTree(old_table, i)) {
+        } else if (internal::TableEntryIsTree(old_table, i)) {
           TransferTree(old_table, i++);
         }
       }
@@ -873,29 +956,16 @@ class Map {
     }
 
     bool TableEntryIsEmpty(size_type b) const {
-      return TableEntryIsEmpty(table_, b);
+      return internal::TableEntryIsEmpty(table_, b);
     }
     bool TableEntryIsNonEmptyList(size_type b) const {
-      return TableEntryIsNonEmptyList(table_, b);
+      return internal::TableEntryIsNonEmptyList(table_, b);
     }
     bool TableEntryIsTree(size_type b) const {
-      return TableEntryIsTree(table_, b);
+      return internal::TableEntryIsTree(table_, b);
     }
     bool TableEntryIsList(size_type b) const {
-      return TableEntryIsList(table_, b);
-    }
-    static bool TableEntryIsEmpty(void* const* table, size_type b) {
-      return table[b] == nullptr;
-    }
-    static bool TableEntryIsNonEmptyList(void* const* table, size_type b) {
-      return table[b] != nullptr && table[b] != table[b ^ 1];
-    }
-    static bool TableEntryIsTree(void* const* table, size_type b) {
-      return !TableEntryIsEmpty(table, b) &&
-             !TableEntryIsNonEmptyList(table, b);
-    }
-    static bool TableEntryIsList(void* const* table, size_type b) {
-      return !TableEntryIsTree(table, b);
+      return internal::TableEntryIsList(table_, b);
     }
 
     void TreeConvert(size_type b) {
@@ -1002,7 +1072,7 @@ class Map {
 #if defined(__x86_64__) && defined(__GNUC__) && \
     !defined(GOOGLE_PROTOBUF_NO_RDTSC)
       uint32 hi, lo;
-      asm("rdtsc" : "=a"(lo), "=d"(hi));
+      asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
       s += ((static_cast<uint64>(hi) << 32) | lo);
 #endif
       return s;
@@ -1100,23 +1170,19 @@ class Map {
     InnerIt it_;
   };
 
-  iterator begin() { return iterator(elements_->begin()); }
-  iterator end() { return iterator(elements_->end()); }
-  const_iterator begin() const {
-    return const_iterator(iterator(elements_->begin()));
-  }
-  const_iterator end() const {
-    return const_iterator(iterator(elements_->end()));
-  }
+  iterator begin() { return iterator(elements_.begin()); }
+  iterator end() { return iterator(elements_.end()); }
+  const_iterator begin() const { return const_iterator(elements_.begin()); }
+  const_iterator end() const { return const_iterator(elements_.end()); }
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
 
   // Capacity
-  size_type size() const { return elements_->size(); }
+  size_type size() const { return elements_.size(); }
   bool empty() const { return size() == 0; }
 
   // Element access
-  T& operator[](const key_type& key) { return (*elements_)[key].second; }
+  T& operator[](const key_type& key) { return elements_[key].second; }
 
   template <typename K = key_type>
   const T& at(const key_arg<K>& key) const {
@@ -1140,11 +1206,11 @@ class Map {
 
   template <typename K = key_type>
   const_iterator find(const key_arg<K>& key) const {
-    return const_iterator(iterator(elements_->find(key)));
+    return const_iterator(elements_.find(key));
   }
   template <typename K = key_type>
   iterator find(const key_arg<K>& key) {
-    return iterator(elements_->find(key));
+    return iterator(elements_.find(key));
   }
 
   template <typename K = key_type>
@@ -1178,7 +1244,7 @@ class Map {
   // insert
   std::pair<iterator, bool> insert(const value_type& value) {
     std::pair<typename InnerMap::iterator, bool> p =
-        elements_->insert(value.first);
+        elements_.insert(value.first);
     if (p.second) {
       p.first->second = value.second;
     }
@@ -1210,7 +1276,7 @@ class Map {
   }
   iterator erase(iterator pos) {
     iterator i = pos++;
-    elements_->erase(i.it_);
+    elements_.erase(i.it_);
     return pos;
   }
   void erase(iterator first, iterator last) {
@@ -1218,7 +1284,7 @@ class Map {
       first = erase(first);
     }
   }
-  void clear() { elements_->clear(); }
+  void clear() { elements_.clear(); }
 
   // Assign
   Map& operator=(const Map& other) {
@@ -1230,9 +1296,8 @@ class Map {
   }
 
   void swap(Map& other) {
-    if (arena_ == other.arena_) {
-      std::swap(default_enum_value_, other.default_enum_value_);
-      std::swap(elements_, other.elements_);
+    if (arena() == other.arena()) {
+      elements_.Swap(&other.elements_);
     } else {
       // TODO(zuguang): optimize this. The temporary copy can be allocated
       // in the same arena as the other message, and the "other = copy" can
@@ -1245,25 +1310,23 @@ class Map {
 
   // Access to hasher.  Currently this returns a copy, but it may
   // be modified to return a const reference in the future.
-  hasher hash_function() const { return elements_->hash_function(); }
+  hasher hash_function() const { return elements_.hash_function(); }
 
- private:
-  // Set default enum value only for proto2 map field whose value is enum type.
-  void SetDefaultEnumValue(int default_enum_value) {
-    default_enum_value_ = default_enum_value;
+  size_t SpaceUsedExcludingSelfLong() const {
+    if (empty()) return 0;
+    return elements_.SpaceUsedInternal() + internal::SpaceUsedInValues(this);
   }
 
-  Arena* arena_;
-  int default_enum_value_;
-  InnerMap* elements_;
+ private:
+  Arena* arena() const { return elements_.arena(); }
+  InnerMap elements_;
 
   friend class Arena;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
   template <typename Derived, typename K, typename V,
             internal::WireFormatLite::FieldType key_wire_type,
-            internal::WireFormatLite::FieldType value_wire_type,
-            int default_enum_value>
+            internal::WireFormatLite::FieldType value_wire_type>
   friend class internal::MapFieldLite;
 };
 

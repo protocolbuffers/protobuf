@@ -264,6 +264,53 @@ class PROTOBUF_EXPORT MapKey {
   int type_;
 };
 
+}  // namespace protobuf
+}  // namespace google
+namespace std {
+template <>
+struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
+  size_t operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key) const {
+    switch (map_key.type()) {
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_DOUBLE:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_FLOAT:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_ENUM:
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(FATAL) << "Unsupported";
+        break;
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
+        return hash<std::string>()(map_key.GetStringValue());
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64: {
+        auto value = map_key.GetInt64Value();
+        return hash<decltype(value)>()(value);
+      }
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32: {
+        auto value = map_key.GetInt32Value();
+        return hash<decltype(value)>()(map_key.GetInt32Value());
+      }
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64: {
+        auto value = map_key.GetUInt64Value();
+        return hash<decltype(value)>()(map_key.GetUInt64Value());
+      }
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32: {
+        auto value = map_key.GetUInt32Value();
+        return hash<decltype(value)>()(map_key.GetUInt32Value());
+      }
+      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL: {
+        return hash<bool>()(map_key.GetBoolValue());
+      }
+    }
+    GOOGLE_LOG(FATAL) << "Can't get here.";
+    return 0;
+  }
+  bool operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key1,
+                  const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key2) const {
+    return map_key1 < map_key2;
+  }
+};
+}  // namespace std
+
+namespace google {
+namespace protobuf {
 namespace internal {
 
 class ContendedMapCleanTest;
@@ -425,7 +472,7 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 // directly.
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value = 0>
+          WireFormatLite::FieldType kValueFieldType>
 class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
@@ -436,8 +483,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   typedef Derived EntryType;
 
   // Define abbreviation for parent MapFieldLite
-  typedef MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType,
-                       default_enum_value>
+  typedef MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType>
       MapFieldLiteType;
 
   // Enum needs to be handled differently from other types because it has
@@ -522,10 +568,9 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,
-          WireFormatLite::FieldType value_wire_type, int default_enum_value>
+          WireFormatLite::FieldType value_wire_type>
 bool AllAreInitialized(
-    const MapField<Derived, Key, T, key_wire_type, value_wire_type,
-                   default_enum_value>& field) {
+    const MapField<Derived, Key, T, key_wire_type, value_wire_type>& field) {
   const auto& t = field.GetMap();
   for (typename Map<Key, T>::const_iterator it = t.begin(); it != t.end();
        ++it) {
@@ -536,12 +581,10 @@ bool AllAreInitialized(
 
 template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-struct MapEntryToMapField<MapEntry<T, Key, Value, kKeyFieldType,
-                                   kValueFieldType, default_enum_value>> {
-  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType,
-                   default_enum_value>
-      MapFieldType;
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntryToMapField<
+    MapEntry<T, Key, Value, kKeyFieldType, kValueFieldType>> {
+  typedef MapField<T, Key, Value, kKeyFieldType, kValueFieldType> MapFieldType;
 };
 
 class PROTOBUF_EXPORT DynamicMapField
@@ -675,8 +718,7 @@ class PROTOBUF_EXPORT MapValueRef {
  private:
   template <typename Derived, typename K, typename V,
             internal::WireFormatLite::FieldType key_wire_type,
-            internal::WireFormatLite::FieldType value_wire_type,
-            int default_enum_value>
+            internal::WireFormatLite::FieldType value_wire_type>
   friend class internal::MapField;
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
@@ -778,8 +820,7 @@ class PROTOBUF_EXPORT MapIterator {
   friend class internal::DynamicMapField;
   template <typename Derived, typename Key, typename T,
             internal::WireFormatLite::FieldType kKeyFieldType,
-            internal::WireFormatLite::FieldType kValueFieldType,
-            int default_enum_value>
+            internal::WireFormatLite::FieldType kValueFieldType>
   friend class internal::MapField;
 
   // reinterpret_cast from heap-allocated Map<...>::iterator*. MapIterator owns
@@ -797,48 +838,6 @@ class PROTOBUF_EXPORT MapIterator {
 }  // namespace protobuf
 }  // namespace google
 
-namespace std {
-template <>
-struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
-  size_t operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key) const {
-    switch (map_key.type()) {
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_DOUBLE:
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_FLOAT:
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_ENUM:
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_MESSAGE:
-        GOOGLE_LOG(FATAL) << "Unsupported";
-        break;
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_STRING:
-        return hash<std::string>()(map_key.GetStringValue());
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT64: {
-        auto value = map_key.GetInt64Value();
-        return hash<decltype(value)>()(value);
-      }
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_INT32: {
-        auto value = map_key.GetInt32Value();
-        return hash<decltype(value)>()(map_key.GetInt32Value());
-      }
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT64: {
-        auto value = map_key.GetUInt64Value();
-        return hash<decltype(value)>()(map_key.GetUInt64Value());
-      }
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_UINT32: {
-        auto value = map_key.GetUInt32Value();
-        return hash<decltype(value)>()(map_key.GetUInt32Value());
-      }
-      case ::PROTOBUF_NAMESPACE_ID::FieldDescriptor::CPPTYPE_BOOL: {
-        return hash<bool>()(map_key.GetBoolValue());
-      }
-    }
-    GOOGLE_LOG(FATAL) << "Can't get here.";
-    return 0;
-  }
-  bool operator()(const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key1,
-                  const ::PROTOBUF_NAMESPACE_ID::MapKey& map_key2) const {
-    return map_key1 < map_key2;
-  }
-};
-}  // namespace std
 #include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_H__

@@ -810,8 +810,8 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
     const google::protobuf::Field* field, StringPiece field_name,
     ObjectWriter* ow) const {
   // Temporary buffers of different types.
-  uint32 buffer32;
-  uint64 buffer64;
+  uint32 buffer32 = 0;
+  uint64 buffer64 = 0;
   std::string strbuffer;
   switch (field->kind()) {
     case google::protobuf::Field::TYPE_BOOL: {

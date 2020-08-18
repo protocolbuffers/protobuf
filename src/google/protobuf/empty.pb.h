@@ -102,7 +102,6 @@ class PROTOBUF_EXPORT Empty PROTOBUF_FINAL :
   }
   static const Empty& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Empty* internal_default_instance() {
     return reinterpret_cast<const Empty*>(
                &_Empty_default_instance_);

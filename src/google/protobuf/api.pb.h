@@ -112,7 +112,6 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
   }
   static const Api& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Api* internal_default_instance() {
     return reinterpret_cast<const Api*>(
                &_Api_default_instance_);
@@ -365,7 +364,6 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
   }
   static const Method& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Method* internal_default_instance() {
     return reinterpret_cast<const Method*>(
                &_Method_default_instance_);
@@ -598,7 +596,6 @@ class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
   }
   static const Mixin& default_instance();
 
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
   static inline const Mixin* internal_default_instance() {
     return reinterpret_cast<const Mixin*>(
                &_Mixin_default_instance_);
@@ -941,8 +938,8 @@ inline bool Api::has_source_context() const {
 }
 inline const PROTOBUF_NAMESPACE_ID::SourceContext& Api::_internal_source_context() const {
   const PROTOBUF_NAMESPACE_ID::SourceContext* p = source_context_;
-  return p != nullptr ? *p : *reinterpret_cast<const PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      &PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_);
+  return p != nullptr ? *p : reinterpret_cast<const PROTOBUF_NAMESPACE_ID::SourceContext&>(
+      PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_);
 }
 inline const PROTOBUF_NAMESPACE_ID::SourceContext& Api::source_context() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)

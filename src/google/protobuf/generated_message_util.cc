@@ -65,7 +65,7 @@ void DestroyMessage(const void* message) {
   static_cast<const MessageLite*>(message)->~MessageLite();
 }
 void DestroyString(const void* s) {
-  static_cast<const std::string*>(s)->~string();
+  static_cast<const std::string*>(s)->~basic_string();
 }
 
 ExplicitlyConstructed<std::string> fixed_address_empty_string;

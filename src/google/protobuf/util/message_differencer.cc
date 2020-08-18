@@ -47,6 +47,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/map_field.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -916,6 +917,76 @@ bool MessageDifferencer::IsMatch(
   return match;
 }
 
+bool MessageDifferencer::CompareMapFieldByMapReflection(
+    const Message& message1, const Message& message2,
+    const FieldDescriptor* map_field) {
+  const Reflection* reflection1 = message1.GetReflection();
+  const Reflection* reflection2 = message2.GetReflection();
+  const int count1 = reflection1->MapSize(message1, map_field);
+  const int count2 = reflection2->MapSize(message2, map_field);
+  const bool treated_as_subset = IsTreatedAsSubset(map_field);
+  if (count1 != count2 && !treated_as_subset) {
+    return false;
+  }
+  if (count1 > count2) {
+    return false;
+  }
+  const FieldDescriptor* val_des = map_field->message_type()->map_value();
+  switch (val_des->cpp_type()) {
+#define HANDLE_TYPE(CPPTYPE, METHOD, COMPAREMETHOD)                         \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                                \
+    for (MapIterator it = reflection1->MapBegin(                            \
+             const_cast<Message*>(&message1), map_field);                   \
+         it !=                                                              \
+         reflection1->MapEnd(const_cast<Message*>(&message1), map_field);   \
+         ++it) {                                                            \
+      if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) { \
+        return false;                                                       \
+      }                                                                     \
+      MapValueRef value2;                                                   \
+      reflection2->InsertOrLookupMapValue(const_cast<Message*>(&message2),  \
+                                          map_field, it.GetKey(), &value2); \
+      if (!default_field_comparator_.Compare##COMPAREMETHOD(                \
+              *val_des, it.GetValueRef().Get##METHOD(),                     \
+              value2.Get##METHOD())) {                                      \
+        return false;                                                       \
+      }                                                                     \
+    }                                                                       \
+    break;                                                                  \
+  }
+    HANDLE_TYPE(INT32, Int32Value, Int32);
+    HANDLE_TYPE(INT64, Int64Value, Int64);
+    HANDLE_TYPE(UINT32, UInt32Value, UInt32);
+    HANDLE_TYPE(UINT64, UInt64Value, UInt64);
+    HANDLE_TYPE(DOUBLE, DoubleValue, Double);
+    HANDLE_TYPE(FLOAT, FloatValue, Float);
+    HANDLE_TYPE(BOOL, BoolValue, Bool);
+    HANDLE_TYPE(STRING, StringValue, String);
+    HANDLE_TYPE(ENUM, EnumValue, Int32);
+#undef HANDLE_TYPE
+    case FieldDescriptor::CPPTYPE_MESSAGE: {
+      for (MapIterator it = reflection1->MapBegin(
+               const_cast<Message*>(&message1), map_field);
+           it !=
+           reflection1->MapEnd(const_cast<Message*>(&message1), map_field);
+           ++it) {
+        if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
+          return false;
+        }
+        MapValueRef value2;
+        reflection2->InsertOrLookupMapValue(const_cast<Message*>(&message2),
+                                            map_field, it.GetKey(), &value2);
+        if (!Compare(it.GetValueRef().GetMessageValue(),
+                     value2.GetMessageValue())) {
+          return false;
+        }
+      }
+      break;
+    }
+  }
+  return true;
+}
+
 bool MessageDifferencer::CompareRepeatedField(
     const Message& message1, const Message& message2,
     const FieldDescriptor* repeated_field,
@@ -923,6 +994,25 @@ bool MessageDifferencer::CompareRepeatedField(
   // the input FieldDescriptor is guaranteed to be repeated field.
   const Reflection* reflection1 = message1.GetReflection();
   const Reflection* reflection2 = message2.GetReflection();
+
+  // When both map fields are on map, do not sync to repeated field.
+  // TODO(jieluo): Add support for reporter
+  if (repeated_field->is_map() && reporter_ == nullptr &&
+      field_comparator_ == nullptr) {
+    const FieldDescriptor* key_des = repeated_field->message_type()->map_key();
+    const FieldDescriptor* val_des =
+        repeated_field->message_type()->map_value();
+    const internal::MapFieldBase* map_field1 =
+        reflection1->GetMapData(message1, repeated_field);
+    const internal::MapFieldBase* map_field2 =
+        reflection2->GetMapData(message2, repeated_field);
+    if (map_field1->IsMapValid() && map_field2->IsMapValid() &&
+        ignored_fields_.find(key_des) == ignored_fields_.end() &&
+        ignored_fields_.find(val_des) == ignored_fields_.end()) {
+      return CompareMapFieldByMapReflection(message1, message2, repeated_field);
+    }
+  }
+
   const int count1 = reflection1->FieldSize(message1, repeated_field);
   const int count2 = reflection2->FieldSize(message2, repeated_field);
   const bool treated_as_subset = IsTreatedAsSubset(repeated_field);
