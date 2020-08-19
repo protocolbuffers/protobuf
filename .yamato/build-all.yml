@@ -1,0 +1,5 @@
+name: Build protobuf - all
+dependencies:
+    - .yamato/build-linux-x64.yml
+    - .yamato/build-macos-all.yml
+    - .yamato/build-windows-x64.yml

@@ -1,0 +1,16 @@
+name: Build protobuf - CentOS 7 x64 with Clang9
+
+agent:
+  type: Unity::VM
+  image: cds-ops/ubuntu-18.04-agent:latest
+  flavor: b1.small
+
+artifacts:
+  build_linux:
+    paths:
+      - builds/**
+
+# After building, recursively copy .h and .inc files from the source to the destination, then rename the folder.
+# This is a superset of what make does, but only a couple of extra test files are included.
+commands:
+- mono bee/bee.exe linux_x64_clang

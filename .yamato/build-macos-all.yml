@@ -1,0 +1,14 @@
+name: Build protobuf - macOS 10.12 x64 - macOS 11.0 arm64
+
+agent:
+  type: Unity::VM::osx
+  image: platform-foundation/mac-bokken:latest
+  flavor: b1.medium
+
+artifacts:
+  builds_mac:
+    paths:
+      - builds/**
+
+commands:
+- mono bee/bee.exe mac_arm64 mac_x64

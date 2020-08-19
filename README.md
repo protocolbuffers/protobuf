@@ -82,3 +82,8 @@ The complete documentation for Protocol Buffers is available via the
 web at:
 
 https://developers.google.com/protocol-buffers/
+
+Differences in This Fork of Protocol Buffers added by **[Unity](https://unity.com/)**
+-------------------------------------------------------------
+
+The main motivation of the fork is to wrap the C++ namespace with a `unity` namespace to prevent conflicts with other packages that use Protocol Buffers. Additionally, scripts and build tools were added to build on Unity's internal build system for various platforms.

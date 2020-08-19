@@ -1,0 +1,20 @@
+name: Build protobuf - Windows 10 x64
+
+agent:
+  type: Unity::VM
+  image: desktop/desktop-vs2019:latest
+  flavor: b1.medium
+
+artifacts:
+  build_win:
+    paths:
+      - builds/**
+
+commands:
+  - |
+    cd cmake
+    BuildProtobufOnYamatoWithCMake.bat
+  - |
+    xcopy cmake\install\bin builds\bin\win64 /s /i
+    xcopy cmake\install\lib builds\lib\win64 /s /i
+    xcopy cmake\install_debug\lib\*.lib builds\lib\win64 /s /i
