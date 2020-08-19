@@ -101,6 +101,9 @@ def UpdateConfigure():
 def UpdateCpp():
   cpp_version = '%d%03d%03d' % (
     NEW_VERSION_INFO[0], NEW_VERSION_INFO[1], NEW_VERSION_INFO[2])
+  version_suffix = ''
+  if RC_VERSION != -1:
+    version_suffix = '-rc%s' % RC_VERSION
   def RewriteCommon(line):
     line = re.sub(
       r'^#define GOOGLE_PROTOBUF_VERSION .*$',
@@ -110,15 +113,14 @@ def UpdateCpp():
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
-    if RC_VERSION != -1:
-      line = re.sub(
-          r'^#define GOOGLE_PROTOBUF_VERSION_SUFFIX .*$',
-          '#define GOOGLE_PROTOBUF_VERSION_SUFFIX %s' % RC_VERSION,
-          line)
-      line = re.sub(
-          r'^#define PROTOBUF_VERSION_SUFFIX .*$',
-          '#define PROTOBUF_VERSION_SUFFIX %s' % RC_VERSION,
-          line)
+    line = re.sub(
+        r'^#define GOOGLE_PROTOBUF_VERSION_SUFFIX .*$',
+        '#define GOOGLE_PROTOBUF_VERSION_SUFFIX "%s"' % version_suffix,
+        line)
+    line = re.sub(
+        r'^#define PROTOBUF_VERSION_SUFFIX .*$',
+        '#define PROTOBUF_VERSION_SUFFIX "%s"' % version_suffix,
+        line)
     if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
@@ -137,17 +139,16 @@ def UpdateCpp():
         'static const int kMinHeaderVersionForProtoc = %s;' % cpp_version,
         line)
     return line
-  
+
   def RewritePortDef(line):
     line = re.sub(
       r'^#define PROTOBUF_VERSION .*$',
       '#define PROTOBUF_VERSION %s' % cpp_version,
       line)
-    if RC_VERSION != -1:
-      line = re.sub(
-          r'^#define PROTOBUF_VERSION_SUFFIX .*$',
-          '#define PROTOBUF_VERSION_SUFFIX %s' % RC_VERSION,
-          line)
+    line = re.sub(
+        r'^#define PROTOBUF_VERSION_SUFFIX .*$',
+        '#define PROTOBUF_VERSION_SUFFIX "%s"' % version_suffix,
+        line)
     if NEW_VERSION_INFO[2] == 0:
       line = re.sub(
         r'^#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC .*$',
