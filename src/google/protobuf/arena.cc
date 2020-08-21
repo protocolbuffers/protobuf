@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cassert>
 #include <limits>
 
 #include <google/protobuf/stubs/mutex.h>
@@ -120,6 +121,7 @@ ArenaImpl::Block* ArenaImpl::NewBlock(Block* last_block, size_t min_bytes) {
   size = std::max(size, kBlockHeaderSize + min_bytes);
 
   void* mem = options_.block_alloc(size);
+  assert(mem != nullptr && "Memory allocation failed!!");
   Block* b = new (mem) Block(size, last_block);
   space_allocated_.fetch_add(size, std::memory_order_relaxed);
   return b;
