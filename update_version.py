@@ -317,7 +317,7 @@ def UpdatePhp():
           FindAndClone(root, 'date'),
           FindAndClone(root, 'time'),
           FindAndClone(root, 'license'),
-          FindAndClone(root, 'notes')
+          CreateNode('notes', 3, []),
         ])
       changelog.appendChild(release)
       changelog.appendChild(document.createTextNode('\n '))
