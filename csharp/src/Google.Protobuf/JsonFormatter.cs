@@ -679,7 +679,7 @@ namespace Google.Protobuf
                 {
                     keyText = (bool) pair.Key ? "true" : "false";
                 }
-                else if (pair.Key is int || pair.Key is uint | pair.Key is long || pair.Key is ulong)
+                else if (pair.Key is int || pair.Key is uint || pair.Key is long || pair.Key is ulong)
                 {
                     keyText = ((IFormattable) pair.Key).ToString("d", CultureInfo.InvariantCulture);
                 }
