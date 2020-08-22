@@ -85,7 +85,7 @@ namespace Google.Protobuf
         /// byte array slice. If more bytes are written than fit in the array,
         /// OutOfSpaceException will be thrown.
         /// </summary>
-        private CodedOutputStream(byte[] buffer, int offset, int length)
+        public CodedOutputStream(byte[] buffer, int offset, int length)
         {
             this.output = null;
             this.buffer = ProtoPreconditions.CheckNotNull(buffer, nameof(buffer));
