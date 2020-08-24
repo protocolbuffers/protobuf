@@ -258,7 +258,7 @@ jspb.utils.splitFloat64 = function(value) {
   // Compute the least significant exponent needed to represent the magnitude of
   // the value by repeadly dividing/multiplying by 2 until the magnitude
   // crosses 2. While tempting to use log math to find the exponent, at the
-  // bounadaries of precision, the result can be off by one.
+  // boundaries of precision, the result can be off by one.
   var maxDoubleExponent = 1023;
   var minDoubleExponent = -1022;
   var x = value;

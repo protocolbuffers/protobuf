@@ -104,7 +104,7 @@ class DiskSourceTree;    // importer.h
 //   2. protoc --proto_path=src foo.proto (virtual path relative to src)
 //
 // If a file path can be interpreted both as a physical file path and as a
-// relative virtual path, the physical file path takes precendence.
+// relative virtual path, the physical file path takes precedence.
 //
 // For a full description of the command-line syntax, invoke it with --help.
 class PROTOC_EXPORT CommandLineInterface {

@@ -933,26 +933,25 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
   }
   const FieldDescriptor* val_des = map_field->message_type()->map_value();
   switch (val_des->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, METHOD, COMPAREMETHOD)                         \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                                \
-    for (MapIterator it = reflection1->MapBegin(                            \
-             const_cast<Message*>(&message1), map_field);                   \
-         it !=                                                              \
-         reflection1->MapEnd(const_cast<Message*>(&message1), map_field);   \
-         ++it) {                                                            \
-      if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) { \
-        return false;                                                       \
-      }                                                                     \
-      MapValueRef value2;                                                   \
-      reflection2->InsertOrLookupMapValue(const_cast<Message*>(&message2),  \
-                                          map_field, it.GetKey(), &value2); \
-      if (!default_field_comparator_.Compare##COMPAREMETHOD(                \
-              *val_des, it.GetValueRef().Get##METHOD(),                     \
-              value2.Get##METHOD())) {                                      \
-        return false;                                                       \
-      }                                                                     \
-    }                                                                       \
-    break;                                                                  \
+#define HANDLE_TYPE(CPPTYPE, METHOD, COMPAREMETHOD)                           \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE: {                                  \
+    for (MapIterator it = reflection1->MapBegin(                              \
+             const_cast<Message*>(&message1), map_field);                     \
+         it !=                                                                \
+         reflection1->MapEnd(const_cast<Message*>(&message1), map_field);     \
+         ++it) {                                                              \
+      if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {   \
+        return false;                                                         \
+      }                                                                       \
+      MapValueConstRef value2;                                                \
+      reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2); \
+      if (!default_field_comparator_.Compare##COMPAREMETHOD(                  \
+              *val_des, it.GetValueRef().Get##METHOD(),                       \
+              value2.Get##METHOD())) {                                        \
+        return false;                                                         \
+      }                                                                       \
+    }                                                                         \
+    break;                                                                    \
   }
     HANDLE_TYPE(INT32, Int32Value, Int32);
     HANDLE_TYPE(INT64, Int64Value, Int64);
@@ -973,9 +972,8 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
         if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
           return false;
         }
-        MapValueRef value2;
-        reflection2->InsertOrLookupMapValue(const_cast<Message*>(&message2),
-                                            map_field, it.GetKey(), &value2);
+        MapValueConstRef value2;
+        reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2);
         if (!Compare(it.GetValueRef().GetMessageValue(),
                      value2.GetMessageValue())) {
           return false;
@@ -1220,7 +1218,8 @@ bool MessageDifferencer::IsTreatedAsSet(const FieldDescriptor* field) {
       repeated_field_comparisons_.end()) {
     return repeated_field_comparisons_[field] == AS_SET;
   }
-  return repeated_field_comparison_ == AS_SET;
+  return GetMapKeyComparator(field) == nullptr &&
+         repeated_field_comparison_ == AS_SET;
 }
 
 bool MessageDifferencer::IsTreatedAsSmartSet(const FieldDescriptor* field) {
@@ -1229,7 +1228,8 @@ bool MessageDifferencer::IsTreatedAsSmartSet(const FieldDescriptor* field) {
       repeated_field_comparisons_.end()) {
     return repeated_field_comparisons_[field] == AS_SMART_SET;
   }
-  return repeated_field_comparison_ == AS_SMART_SET;
+  return GetMapKeyComparator(field) == nullptr &&
+         repeated_field_comparison_ == AS_SMART_SET;
 }
 
 bool MessageDifferencer::IsTreatedAsSmartList(const FieldDescriptor* field) {
@@ -1238,7 +1238,8 @@ bool MessageDifferencer::IsTreatedAsSmartList(const FieldDescriptor* field) {
       repeated_field_comparisons_.end()) {
     return repeated_field_comparisons_[field] == AS_SMART_LIST;
   }
-  return repeated_field_comparison_ == AS_SMART_LIST;
+  return GetMapKeyComparator(field) == nullptr &&
+         repeated_field_comparison_ == AS_SMART_LIST;
 }
 
 bool MessageDifferencer::IsTreatedAsSubset(const FieldDescriptor* field) {
@@ -1616,7 +1617,7 @@ int MaximumMatcher::FindMaximumMatch(bool early_return) {
     }
   }
   // Backfill match_list1_ as we only filled match_list2_ when finding
-  // argumenting pathes.
+  // argumenting paths.
   for (int i = 0; i < count2_; ++i) {
     if ((*match_list2_)[i] != -1) {
       (*match_list1_)[(*match_list2_)[i]] = i;

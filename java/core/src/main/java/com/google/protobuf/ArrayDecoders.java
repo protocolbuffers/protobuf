@@ -39,7 +39,7 @@ import java.io.IOException;
  * Helper functions to decode protobuf wire format from a byte array.
  *
  * <p>Note that these functions don't do boundary check on the byte array but instead rely on Java
- * VM to check it. That means parsing rountines utilizing these functions must catch
+ * VM to check it. That means parsing routines utilizing these functions must catch
  * IndexOutOfBoundsException and convert it to protobuf's InvalidProtocolBufferException when
  * crossing protobuf public API boundaries.
  */
@@ -51,7 +51,7 @@ final class ArrayDecoders {
    * multiple values and let the function set the return value in this Registers instance instead.
    *
    * <p>TODO(xiaofeng): This could be merged into CodedInputStream or CodedInputStreamReader which
-   * is already being passed through all the parsing rountines.
+   * is already being passed through all the parsing routines.
    */
   static final class Registers {
     public int int1;

@@ -318,7 +318,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
   // Abstract base class from which all IgnoreCriteria derive.
   // By adding IgnoreCriteria more complex ignore logic can be implemented.
-  // IgnoreCriteria are registed with AddIgnoreCriteria. For each compared
+  // IgnoreCriteria are registered with AddIgnoreCriteria. For each compared
   // field IsIgnored is called on each added IgnoreCriteria until one returns
   // true or all return false.
   // IsIgnored is called for fields where at least one side has a value.

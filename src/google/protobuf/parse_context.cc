@@ -180,7 +180,7 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(const char* ptr,
       if (PROTOBUF_PREDICT_FALSE(overrun != 0)) return {nullptr, true};
       GOOGLE_DCHECK(limit_ > 0);
       limit_end_ = buffer_end_;
-      // Distinquish ending on a pushed limit or ending on end-of-stream.
+      // Distinguish ending on a pushed limit or ending on end-of-stream.
       SetEndOfStream();
       return {ptr, true};
     }
