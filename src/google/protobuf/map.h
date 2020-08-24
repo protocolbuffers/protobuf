@@ -445,7 +445,7 @@ class Map {
   // 9. Except for erase(iterator), any non-const method can reorder iterators.
   // 10. InnerMap uses KeyForTree<Key> when using the Tree representation, which
   //    is either `Key`, if Key is a scalar, or `reference_wrapper<const Key>`
-  //    otherwise. This avoids unncessary copies of string keys, for example.
+  //    otherwise. This avoids unnecessary copies of string keys, for example.
   class InnerMap : private hasher {
    public:
     explicit InnerMap(Arena* arena)

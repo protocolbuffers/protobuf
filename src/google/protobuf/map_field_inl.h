@@ -237,6 +237,23 @@ bool MapField<Derived, Key, T, kKeyFieldType,
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
+bool MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::LookupMapValue(
+    const MapKey& map_key, MapValueConstRef* val) const {
+  const Map<Key, T>& map = GetMap();
+  const Key& key = UnwrapMapKey<Key>(map_key);
+  typename Map<Key, T>::const_iterator iter = map.find(key);
+  if (map.end() == iter) {
+    return false;
+  }
+  // Key is already in the map. Make sure (*map)[key] is not called.
+  // [] may reorder the map and iterators.
+  val->SetValue(&(iter->second));
+  return true;
+}
+
+template <typename Derived, typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
 bool MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::DeleteMapValue(
     const MapKey& map_key) {
   const Key& key = UnwrapMapKey<Key>(map_key);

@@ -960,7 +960,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // buffers to ensure there is no error as of yet.
   uint8* FlushAndResetBuffer(uint8*);
 
-  // The following functions mimick the old CodedOutputStream behavior as close
+  // The following functions mimic the old CodedOutputStream behavior as close
   // as possible. They flush the current state to the stream, behave as
   // the old CodedOutputStream and then return to normal operation.
   bool Skip(int count, uint8** pp);
@@ -1159,7 +1159,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // This is identical to WriteVarint32(), but optimized for writing tags.
   // In particular, if the input is a compile-time constant, this method
   // compiles down to a couple instructions.
-  // Always inline because otherwise the aformentioned optimization can't work,
+  // Always inline because otherwise the aforementioned optimization can't work,
   // but GCC by default doesn't want to inline this.
   void WriteTag(uint32 value);
   // Like WriteTag()  but writing directly to the target array.

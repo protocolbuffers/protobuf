@@ -1,4 +1,45 @@
-2020-07-14 version 3.13.0-rc1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+Unreleased Changes
+
+  Protocol Compiler
+  * The proto compiler no longer requires a .proto filename when it is not
+    generating code.
+
+  C++
+  * Arenas are now unconditionally enabled. cc_enable_arenas no longer has
+    any effect.
+  * Fix a memory corruption bug in reflection when mixing optional and
+    non-optional fields.
+  * Make SpaceUsed() calculation more thorough for map fields.
+  * Add stack overflow protection for text format with unknown field values.
+  * FieldPath::FollowAll() now returns a bool to signal if an out-of-bounds
+    error was encountered.
+  * Performance improvements for Map.
+  * Minor formatting fix when dumping a descriptor to .proto format with
+    DebugString.
+  * UBSAN fix in RepeatedField (#2073).
+  * When running under ASAN, skip a test that makes huge allocations.
+  * Fixed a crash that could happen when creating more than 256 extensions in
+    a single message.
+
+  Java
+  * Bugfix in mergeFrom() when a oneof has multiple message fields.
+
+  Python
+  * Print google.protobuf.NullValue as null instead of "NULL_VALUE" when it is
+    used outside WKT Value/Struct.
+  * Fix bug occurring when attempting to deep copy an enum type in python 3.
+
+  Go:
+  * Update go_package options to reference google.golang.org/protobuf module.
+
+
+2020-07-14 version 3.13.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  PHP:
+  * The C extension is completely rewritten. The new C extension has significantly
+    better parsing performance and fixes a handful of conformance issues. It will
+    also make it easier to add support for more features like proto2 and proto3 presence.
+  * The new C extension does not support PHP 5.x. PHP 5.x users can still use pure-PHP.
 
   C++:
   * Removed deprecated unsafe arena string accessors
@@ -50,6 +91,11 @@
     it is recommended to regenerate your generated code to achieve the best
     performance (the legacy generated code will still work, but might incur
     a slight performance penalty).
+
+2020-07-28 version 3.12.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+This release contains no significant changes, but exists because 3.12.3 was
+mistakenly tagged at the wrong commit.
 
 2020-06-01 version 3.12.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 

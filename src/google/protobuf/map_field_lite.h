@@ -50,7 +50,7 @@ namespace protobuf {
 namespace internal {
 
 // This class provides access to map field using generated api. It is used for
-// internal generated message implentation only. Users should never use this
+// internal generated message implementation only. Users should never use this
 // directly.
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType key_wire_type,

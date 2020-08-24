@@ -6133,7 +6133,7 @@ void DescriptorBuilder::ValidateFieldOptions(
 
   // json_name option is not allowed on extension fields. Note that the
   // json_name field in FieldDescriptorProto is always populated by protoc
-  // when it sends descriptor data to plugins (caculated from field name if
+  // when it sends descriptor data to plugins (calculated from field name if
   // the option is not explicitly set) so we can't rely on its presence to
   // determine whether the json_name option is set on the field. Here we
   // compare it against the default calculated json_name value and consider

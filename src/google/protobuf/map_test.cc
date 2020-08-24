@@ -234,9 +234,10 @@ TEST_F(MapImplTest, UsageErrors) {
                "  Actual   : int64");
 
   MapValueRef value;
-  EXPECT_DEATH(value.SetFloatValue(0.1),
-               "Protocol Buffer map usage error:\n"
-               "MapValueRef::type MapValueRef is not initialized.");
+  EXPECT_DEATH(
+      value.SetFloatValue(0.1),
+      "Protocol Buffer map usage error:\n"
+      "MapValue[Const]*Ref::type MapValue[Const]*Ref is not initialized.");
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
@@ -3216,9 +3217,9 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
   // repeated field to calculate ByteSizeLong but use map to serialize the real
   // data, thus the ByteSizeLong may bigger than real serialized size. A crash
-  // might be happen at SerializeToString(). Or an "unexpect end group" warning
-  // was raised at parse back if user use SerializeWithCachedSizes() which
-  // avoids size check at serialize.
+  // might be happen at SerializeToString(). Or an "unexpected end group"
+  // warning was raised at parse back if user use SerializeWithCachedSizes()
+  // which avoids size check at serialize.
   std::string serialized_data;
   dynamic_message->SerializeToString(&serialized_data);
   EXPECT_EQ(serialized_data, expected_serialized_data);
