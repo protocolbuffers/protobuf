@@ -1884,6 +1884,15 @@ bool Reflection::InsertOrLookupMapValue(Message* message,
       ->InsertOrLookupMapValue(key, val);
 }
 
+bool Reflection::LookupMapValue(const Message& message,
+                                const FieldDescriptor* field, const MapKey& key,
+                                MapValueConstRef* val) const {
+  USAGE_CHECK(IsMapFieldInApi(field), "LookupMapValue",
+              "Field is not a map field.");
+  val->SetType(field->message_type()->FindFieldByName("value")->cpp_type());
+  return GetRaw<MapFieldBase>(message, field).LookupMapValue(key, val);
+}
+
 bool Reflection::DeleteMapValue(Message* message, const FieldDescriptor* field,
                                 const MapKey& key) const {
   USAGE_CHECK(IsMapFieldInApi(field), "DeleteMapValue",

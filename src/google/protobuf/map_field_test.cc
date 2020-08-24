@@ -77,6 +77,10 @@ class MapFieldBaseStub : public MapFieldBase {
                               MapValueRef* val) override {
     return false;
   }
+  bool LookupMapValue(const MapKey& map_key,
+                      MapValueConstRef* val) const override {
+    return false;
+  }
   bool DeleteMapValue(const MapKey& map_key) override { return false; }
   bool EqualIterator(const MapIterator& a,
                      const MapIterator& b) const override {
