@@ -1059,7 +1059,7 @@ class MessageTest(unittest.TestCase):
     self.assertIsInstance(m.optional_string, six.text_type)
 
   def testLongValuedSlice(self, message_module):
-    """It should be possible to use long-valued indices in slices
+    """It should be possible to use long-valued indices in slices.
 
     This didn't used to work in the v2 C++ implementation.
     """

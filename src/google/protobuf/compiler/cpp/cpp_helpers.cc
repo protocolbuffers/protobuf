@@ -1415,9 +1415,7 @@ class ParseLoopGenerator {
       format_.Set("has_bits", "_has_bits_");
     }
 
-    if (descriptor->file()->options().cc_enable_arenas()) {
-      format_("$p_ns$::Arena* arena = GetArena(); (void)arena;\n");
-    }
+    format_("$p_ns$::Arena* arena = GetArena(); (void)arena;\n");
     GenerateParseLoop(descriptor, ordered_fields);
     format_.Outdent();
     format_("success:\n");
@@ -1469,8 +1467,7 @@ class ParseLoopGenerator {
       // Open source doesn't support other ctypes;
       ctype = field->options().ctype();
     }
-    if (field->file()->options().cc_enable_arenas() && !field->is_repeated() &&
-        !options_.opensource_runtime &&
+    if (!field->is_repeated() && !options_.opensource_runtime &&
         GetOptimizeFor(field->file(), options_) != FileOptions::LITE_RUNTIME &&
         // For now only use arena string for strings with empty defaults.
         field->default_value_string().empty() &&
