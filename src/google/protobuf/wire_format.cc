@@ -67,7 +67,7 @@ namespace internal {
 static size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
                                      const MapKey& value);
 static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
-                                          const MapValueRef& value);
+                                          const MapValueConstRef& value);
 
 // ===================================================================
 
@@ -1099,7 +1099,7 @@ static uint8* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
 }
 
 static uint8* SerializeMapValueRefWithCachedSizes(
-    const FieldDescriptor* field, const MapValueRef& value, uint8* target,
+    const FieldDescriptor* field, const MapValueConstRef& value, uint8* target,
     io::EpsCopyOutputStream* stream) {
   target = stream->EnsureSpace(target);
   switch (field->type()) {
@@ -1184,7 +1184,8 @@ class MapKeySorter {
 
 static uint8* InternalSerializeMapEntry(const FieldDescriptor* field,
                                         const MapKey& key,
-                                        const MapValueRef& value, uint8* target,
+                                        const MapValueConstRef& value,
+                                        uint8* target,
                                         io::EpsCopyOutputStream* stream) {
   const FieldDescriptor* key_field = field->message_type()->field(0);
   const FieldDescriptor* value_field = field->message_type()->field(1);
@@ -1237,9 +1238,8 @@ uint8* WireFormat::InternalSerializeField(const FieldDescriptor* field,
             MapKeySorter::SortKey(message, message_reflection, field);
         for (std::vector<MapKey>::iterator it = sorted_key_list.begin();
              it != sorted_key_list.end(); ++it) {
-          MapValueRef map_value;
-          message_reflection->InsertOrLookupMapValue(
-              const_cast<Message*>(&message), field, *it, &map_value);
+          MapValueConstRef map_value;
+          message_reflection->LookupMapValue(message, field, *it, &map_value);
           target =
               InternalSerializeMapEntry(field, *it, map_value, target, stream);
         }
@@ -1566,7 +1566,7 @@ static size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
 }
 
 static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
-                                          const MapValueRef& value) {
+                                          const MapValueConstRef& value) {
   switch (field->type()) {
     case FieldDescriptor::TYPE_GROUP:
       GOOGLE_LOG(FATAL) << "Unsupported";
