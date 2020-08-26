@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package google.protobuf.well_known_types;
+
+/*
+ * A decimal number represented by a string.
+ *
+ * The string format must match this syntax:
+ * number    = [ "+" | "-" ] float .
+ * number    = "nan" | "+inf" | "-inf" .
+ * float     = digits [ "." digits ] [ exponent ] .
+ * float     = "." digits [ exponent ] .
+ * exponent  = "e" [ "+" | "-" ] digits .
+ * digits    = digit { digit } .
+ * digit     = "0" ... "9" .
+ *
+ *
+ * TODO: add documentation about which value range is representable
+ * by all protobuf languages.
+ */
+message DecimalString {
+  string value = 1;
+}
+
+message Decimal64 {
+  // matches IEEE 754-2008 decimal64
+
+  // interpreting the values:
+  // both significand and exponent within allowed range of IEEE decimal64,
+  // exponent in range -> the value is significand * 10^exponent. significand
+  // exactly [-10^17, 10^17], exponent is 0 (i.e. not present) -> +/-Infinity
+  // significand out of range OR exponent out of range -> NaN
+
+  // Allowed range is [-10^17, 10^17]. Exceeding these bounds is an error.
+  // A significand of exactly -10^17/10^17 represent +/- Infinity.
+  sint64 significand = 1;
+
+  // Allowed range is [-383, 384].
+  sint32 exponent = 2;
+}
+
+message Decimal128 {
+  // matches IEEE 754-2008 decimal128
+
+  // interpreting the values:
+  // both significand and exponent within allowed range of IEEE decimal128,
+  // exponent in range -> the value is sign * significand * 10^exponent.
+  // significand exactly 10^34, exponent is 0 (i.e. not present) -> +/-Infinity
+  // significand out of range OR exponent out of range OR sign out of range ->
+  // NaN
+
+  sint32 sign = 1;  // -1 for negative, +1 for positive, 0 for zero. If sign is zero, the significand must also be zero.
+
+  // low and high 64 bits of the significand
+  // allowed range is [0, 10^34]. Exceeding these bounds is an error.
+  // A significand of exactly 10^34 represents +/- Infinity (based on sign)
+  uint64 significand_low = 2;
+  uint64 significand_high = 3;
+
+  // Allowed range is [-6143,+6144].
+  sint32 exponent = 4;
+}
+
+message Decimal64Version2 {
+  // matches IEEE 754-2008 decimal64
+  // Allowed range is (-10^17, 10^17). Exceeding these bounds is an error.
+  sint64 significand = 1;
+
+  // TODO: should we use oneof? the issue is that if special_value is used, both
+  // significand and exponent are supposed to be 0 (not just the exponent), at
+  // which point there's not that much value in having a oneof.
+
+  // Interpretation.  If none of these are set then it will be
+  // interpreted as if "exponent = 0".
+  oneof mode {
+    sint32 exponent = 2;  // Allowed range is [-383, 384].
+
+    // if special_value is set, both significand and exponent must be zero (not
+    // present)
+    SpecialEncoding special_value = 3;
+  }
+}
+
+message Decimal128Version2 {
+  // matches IEEE 754-2008 decimal128
+
+  bool negative =
+      1;  // true for negative numbers, false for positive numbers and zero
+
+  // low and high 64 bits of the significand
+  // allowed range is [0, 10^34). Exceeding these bounds is an error.
+  uint64 significand_low = 2;
+  uint64 significand_high = 3;
+
+  // Interpretation.  If none of these are set then it will be
+  // interpreted as if "exponent = 0"
+  oneof mode {
+    // Must be zero when special_value is set
+    sint32 exponent = 4;  // Allowed range is [-6143,+6144] -- TBD
+
+    // if special_value is set, all of significand, negative and exponent must
+    // have their default value (not present)
+    SpecialEncoding special_value = 5;
+  }
+}
+
+enum SpecialEncoding {
+  SPECIAL_VALUE_UNSPECIFIED = 0;
+  NAN = 1;
+  POSITIVE_INFINITY = 2;
+  NEGATIVE_INFINITY = 3;
+}
