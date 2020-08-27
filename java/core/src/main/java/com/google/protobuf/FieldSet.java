@@ -1078,8 +1078,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
 
         // Wrap the contents in a new list so that the caller cannot change
         // the list's contents after setting it.
-        final List newList = new ArrayList();
-        newList.addAll((List) value);
+        final List newList = new ArrayList((List) value);
         for (final Object element : newList) {
           verifyType(descriptor.getLiteType(), element);
           hasNestedBuilders = hasNestedBuilders || element instanceof MessageLite.Builder;
