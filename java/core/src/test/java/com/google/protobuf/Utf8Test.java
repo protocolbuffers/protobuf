@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
@@ -124,7 +126,7 @@ public class Utf8Test extends TestCase {
   }
 
   private static void assertEncoding(String message) {
-    byte[] expected = message.getBytes(Internal.UTF_8);
+    byte[] expected = message.getBytes(UTF_8);
     byte[] output = encodeToByteArray(message, expected.length, safeProcessor);
     assertTrue("encodeUtf8[ARRAY]", Arrays.equals(expected, output));
 

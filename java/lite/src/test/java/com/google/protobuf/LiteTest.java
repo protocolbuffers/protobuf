@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
@@ -1632,7 +1633,7 @@ public class LiteTest extends TestCase {
   public void testMergeFromStream_invalidBytes() throws Exception {
     TestAllTypesLite.Builder builder = TestAllTypesLite.newBuilder().setDefaultBool(true);
     try {
-      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(Internal.UTF_8)));
+      builder.mergeFrom(CodedInputStream.newInstance("Invalid bytes".getBytes(UTF_8)));
       fail();
     } catch (InvalidProtocolBufferException expected) {
     }

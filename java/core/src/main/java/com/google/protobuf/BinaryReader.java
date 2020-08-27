@@ -38,6 +38,7 @@ import static com.google.protobuf.WireFormat.WIRETYPE_FIXED64;
 import static com.google.protobuf.WireFormat.WIRETYPE_LENGTH_DELIMITED;
 import static com.google.protobuf.WireFormat.WIRETYPE_START_GROUP;
 import static com.google.protobuf.WireFormat.WIRETYPE_VARINT;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -226,7 +227,7 @@ abstract class BinaryReader implements Reader {
       if (requireUtf8 && !Utf8.isValidUtf8(buffer, pos, pos + size)) {
         throw InvalidProtocolBufferException.invalidUtf8();
       }
-      String result = new String(buffer, pos, size, Internal.UTF_8);
+      String result = new String(buffer, pos, size, UTF_8);
       pos += size;
       return result;
     }

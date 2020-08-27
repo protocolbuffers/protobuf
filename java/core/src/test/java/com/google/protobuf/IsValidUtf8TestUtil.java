@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -267,8 +268,8 @@ final class IsValidUtf8TestUtil {
       }
       ByteString bs = factory.newByteString(bytes);
       boolean isRoundTrippable = bs.isValidUtf8();
-      String s = new String(bytes, Internal.UTF_8);
-      byte[] bytesReencoded = s.getBytes(Internal.UTF_8);
+      String s = new String(bytes, UTF_8);
+      byte[] bytesReencoded = s.getBytes(UTF_8);
       boolean bytesEqual = Arrays.equals(bytes, bytesReencoded);
 
       if (bytesEqual != isRoundTrippable) {
@@ -358,12 +359,12 @@ final class IsValidUtf8TestUtil {
   static void testBytesUsingByteBuffers(
       ByteStringFactory factory, int numBytes, long expectedCount, long start, long lim) {
     CharsetDecoder decoder =
-        Internal.UTF_8
+        UTF_8
             .newDecoder()
             .onMalformedInput(CodingErrorAction.REPLACE)
             .onUnmappableCharacter(CodingErrorAction.REPLACE);
     CharsetEncoder encoder =
-        Internal.UTF_8
+        UTF_8
             .newEncoder()
             .onMalformedInput(CodingErrorAction.REPLACE)
             .onUnmappableCharacter(CodingErrorAction.REPLACE);

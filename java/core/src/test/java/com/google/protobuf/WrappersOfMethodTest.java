@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.protobuf.wrapperstest.WrappersTestProto.TopLevelMessage;
 import junit.framework.TestCase;
 
@@ -45,7 +47,7 @@ public class WrappersOfMethodTest extends TestCase {
     builder.setFieldUint64(UInt64Value.of(23333333333333L));
     builder.setFieldBool(BoolValue.of(true));
     builder.setFieldString(StringValue.of("23333"));
-    builder.setFieldBytes(BytesValue.of(ByteString.wrap("233".getBytes(Internal.UTF_8))));
+    builder.setFieldBytes(BytesValue.of(ByteString.wrap("233".getBytes(UTF_8))));
 
     TopLevelMessage message = builder.build();
     assertTrue(2.333 == message.getFieldDouble().getValue());

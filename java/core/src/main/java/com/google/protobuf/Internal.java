@@ -30,10 +30,11 @@
 
 package com.google.protobuf;
 
-import java.io.IOException;
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
@@ -54,9 +55,6 @@ import java.util.Set;
 public final class Internal {
 
   private Internal() {}
-
-  static final Charset UTF_8 = Charset.forName("UTF-8");
-  static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   /** Throws an appropriate {@link NullPointerException} if the given objects is {@code null}. */
   static <T> T checkNotNull(T obj) {

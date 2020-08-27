@@ -35,6 +35,7 @@ import static com.google.protobuf.WireFormat.FIXED64_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT32_SIZE;
 import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import static java.lang.Math.max;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.protobuf.Utf8.UnpairedSurrogateException;
 import java.io.IOException;
@@ -842,7 +843,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       length = Utf8.encodedLength(value);
     } catch (UnpairedSurrogateException e) {
       // TODO(dweis): Consider using nio Charset methods instead.
-      final byte[] bytes = value.getBytes(Internal.UTF_8);
+      final byte[] bytes = value.getBytes(UTF_8);
       length = bytes.length;
     }
 
@@ -989,8 +990,7 @@ public abstract class CodedOutputStream extends ByteOutput {
     // Unfortunately there does not appear to be any way to tell Java to encode
     // UTF-8 directly into our buffer, so we have to let it create its own byte
     // array and then copy.
-    // TODO(dweis): Consider using nio Charset methods instead.
-    final byte[] bytes = value.getBytes(Internal.UTF_8);
+    final byte[] bytes = value.getBytes(UTF_8);
     try {
       writeUInt32NoTag(bytes.length);
       writeLazy(bytes, 0, bytes.length);

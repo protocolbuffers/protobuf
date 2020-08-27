@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -55,7 +56,6 @@ import junit.framework.TestCase;
  * @author carlanton@google.com (Carl Haverl)
  */
 public class LiteralByteStringTest extends TestCase {
-  protected static final String UTF_8 = "UTF-8";
 
   protected String classUnderTest;
   protected byte[] referenceBytes;
@@ -417,23 +417,23 @@ public class LiteralByteStringTest extends TestCase {
 
   public void testToString() throws UnsupportedEncodingException {
     String testString = "I love unicode \u1234\u5678 characters";
-    ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
-    String roundTripString = unicode.toString(UTF_8);
+    ByteString unicode = ByteString.wrap(testString.getBytes(UTF_8));
+    String roundTripString = unicode.toString(UTF_8.name());
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
 
   public void testCharsetToString() {
     String testString = "I love unicode \u1234\u5678 characters";
-    ByteString unicode = ByteString.wrap(testString.getBytes(Internal.UTF_8));
-    String roundTripString = unicode.toString(Internal.UTF_8);
+    ByteString unicode = ByteString.wrap(testString.getBytes(UTF_8));
+    String roundTripString = unicode.toString(UTF_8);
     assertEquals(classUnderTest + " unicode must match", testString, roundTripString);
   }
 
   public void testToString_returnsCanonicalEmptyString() {
     assertSame(
         classUnderTest + " must be the same string references",
-        ByteString.EMPTY.toString(Internal.UTF_8),
-        ByteString.wrap(new byte[] {}).toString(Internal.UTF_8));
+        ByteString.EMPTY.toString(UTF_8),
+        ByteString.wrap(new byte[] {}).toString(UTF_8));
   }
 
   public void testToString_raisesException() {

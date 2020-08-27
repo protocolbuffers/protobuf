@@ -67,6 +67,7 @@ import static com.google.protobuf.ArrayDecoders.decodeVarint32List;
 import static com.google.protobuf.ArrayDecoders.decodeVarint64;
 import static com.google.protobuf.ArrayDecoders.decodeVarint64List;
 import static com.google.protobuf.ArrayDecoders.skipField;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.protobuf.ArrayDecoders.Registers;
 import com.google.protobuf.ByteString.CodedBuilder;
@@ -4765,7 +4766,7 @@ final class MessageSchema<T> implements Schema<T> {
                 && !Utf8.isValidUtf8(data, position, position + length)) {
               throw InvalidProtocolBufferException.invalidUtf8();
             }
-            final String value = new String(data, position, length, Internal.UTF_8);
+            final String value = new String(data, position, length, UTF_8);
             unsafe.putObject(message, fieldOffset, value);
             position += length;
           }

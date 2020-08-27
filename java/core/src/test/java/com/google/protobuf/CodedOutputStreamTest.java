@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.protobuf.CodedOutputStream.OutOfSpaceException;
 import protobuf_unittest.UnittestProto.SparseEnumMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -398,7 +400,7 @@ public class CodedOutputStreamTest extends TestCase {
 
     // Write some some bytes (more than the buffer can hold) and verify that totalWritten
     // is correct.
-    byte[] value = "abcde".getBytes(Internal.UTF_8);
+    byte[] value = "abcde".getBytes(UTF_8);
     for (int i = 0; i < 1024; ++i) {
       coder.stream().writeRawBytes(value, 0, value.length);
     }
@@ -476,7 +478,7 @@ public class CodedOutputStreamTest extends TestCase {
   }
 
   public void testWriteByteBuffer() throws Exception {
-    byte[] value = "abcde".getBytes(Internal.UTF_8);
+    byte[] value = "abcde".getBytes(UTF_8);
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
     CodedOutputStream codedStream = CodedOutputStream.newInstance(outputStream);
     ByteBuffer byteBuffer = ByteBuffer.wrap(value, 0, 1);
@@ -517,7 +519,7 @@ public class CodedOutputStreamTest extends TestCase {
     for (int pos = 0; pos < source.length(); pos += 2) {
       String substr = source.substring(pos, pos + 2);
       expectedBytesStream.write(2);
-      expectedBytesStream.write(substr.getBytes(Internal.UTF_8));
+      expectedBytesStream.write(substr.getBytes(UTF_8));
     }
     final byte[] expectedBytes = expectedBytesStream.toByteArray();
 

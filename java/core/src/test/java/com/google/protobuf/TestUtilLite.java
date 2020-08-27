@@ -119,6 +119,7 @@ import static com.google.protobuf.UnittestLite.repeatedStringExtensionLite;
 import static com.google.protobuf.UnittestLite.repeatedStringPieceExtensionLite;
 import static com.google.protobuf.UnittestLite.repeatedUint32ExtensionLite;
 import static com.google.protobuf.UnittestLite.repeatedUint64ExtensionLite;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.protobuf.UnittestImportLite.ImportEnumLite;
 import com.google.protobuf.UnittestImportLite.ImportMessageLite;
@@ -143,7 +144,7 @@ public final class TestUtilLite {
 
   /** Helper to convert a String to ByteString. */
   static ByteString toBytes(String str) {
-    return ByteString.copyFrom(str.getBytes(Internal.UTF_8));
+    return ByteString.copyFrom(str.getBytes(UTF_8));
   }
 
   /**

@@ -208,6 +208,7 @@ import static protobuf_unittest.UnittestProto.repeatedStringExtension;
 import static protobuf_unittest.UnittestProto.repeatedStringPieceExtension;
 import static protobuf_unittest.UnittestProto.repeatedUint32Extension;
 import static protobuf_unittest.UnittestProto.repeatedUint64Extension;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import com.google.protobuf.UnittestImportLite.ImportEnumLite;
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
@@ -261,7 +262,7 @@ public final class TestUtil {
 
   /** Helper to convert a String to ByteString. */
   static ByteString toBytes(String str) {
-    return ByteString.copyFrom(str.getBytes(Internal.UTF_8));
+    return ByteString.copyFrom(str.getBytes(UTF_8));
   }
 
   // BEGIN FULL-RUNTIME

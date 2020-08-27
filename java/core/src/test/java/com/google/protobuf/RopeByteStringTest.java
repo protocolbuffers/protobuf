@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -132,7 +134,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
         classUnderTest + " from string must have the expected type",
         classUnderTest,
         getActualClassName(unicode));
-    String roundTripString = unicode.toString(UTF_8);
+    String roundTripString = unicode.toString(UTF_8.name());
     assertEquals(classUnderTest + " unicode bytes must match", testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);
     assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
@@ -161,7 +163,7 @@ public class RopeByteStringTest extends LiteralByteStringTest {
         classUnderTest + " from string must have the expected type",
         classUnderTest,
         getActualClassName(unicode));
-    String roundTripString = unicode.toString(Internal.UTF_8);
+    String roundTripString = unicode.toString(UTF_8);
     assertEquals(classUnderTest + " unicode bytes must match", testString, roundTripString);
     ByteString flatString = ByteString.copyFromUtf8(testString);
     assertEquals(classUnderTest + " string must equal the flat string", flatString, unicode);
@@ -177,8 +179,8 @@ public class RopeByteStringTest extends LiteralByteStringTest {
         RopeByteString.newInstanceForTest(ByteString.EMPTY, ByteString.EMPTY);
     assertSame(
         classUnderTest + " must be the same string references",
-        ByteString.EMPTY.toString(Internal.UTF_8),
-        ropeByteString.toString(Internal.UTF_8));
+        ByteString.EMPTY.toString(UTF_8),
+        ropeByteString.toString(UTF_8));
   }
 
   @Override

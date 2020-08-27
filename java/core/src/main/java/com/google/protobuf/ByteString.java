@@ -33,6 +33,7 @@ package com.google.protobuf;
 import static com.google.protobuf.TextFormatEscaper.escapeBytes;
 import static java.lang.Integer.toHexString;
 import static java.lang.System.identityHashCode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -459,7 +460,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new {@code ByteString}
    */
   public static ByteString copyFromUtf8(String text) {
-    return new LiteralByteString(text.getBytes(Internal.UTF_8));
+    return new LiteralByteString(text.getBytes(UTF_8));
   }
 
   // =================================================================
@@ -817,7 +818,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return new string using UTF-8 encoding
    */
   public final String toStringUtf8() {
-    return toString(Internal.UTF_8);
+    return toString(UTF_8);
   }
 
   /**
