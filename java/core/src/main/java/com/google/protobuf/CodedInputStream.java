@@ -1504,7 +1504,10 @@ public abstract class CodedInputStream {
         // TODO(anuraaga): It might be possible to share the optimized loop with
         // readStringRequireUtf8 by implementing Java replacement logic there.
         // The same as readBytes' logic
-        byte[] bytes = new byte[size];
+        byte[] bytes =
+            UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                ? UnsafeUtil.allocateUninitializedArray(size)
+                : new byte[size];
         UnsafeUtil.copyMemory(pos, bytes, 0, size);
         String result = new String(bytes, UTF_8);
         pos += size;
@@ -1621,7 +1624,10 @@ public abstract class CodedInputStream {
           return ByteString.wrap(result);
         } else {
           // Use UnsafeUtil to copy the memory to bytes instead of using ByteBuffer ways.
-          byte[] bytes = new byte[size];
+          byte[] bytes =
+              UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                  ? UnsafeUtil.allocateUninitializedArray(size)
+                  : new byte[size];
           UnsafeUtil.copyMemory(pos, bytes, 0, size);
           pos += size;
           return ByteString.wrap(bytes);
@@ -1655,7 +1661,10 @@ public abstract class CodedInputStream {
           return result;
         } else {
           // The same as readBytes' logic
-          byte[] bytes = new byte[size];
+          byte[] bytes =
+              UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                  ? UnsafeUtil.allocateUninitializedArray(size)
+                  : new byte[size];
           UnsafeUtil.copyMemory(pos, bytes, 0, size);
           pos += size;
           return ByteBuffer.wrap(bytes);
@@ -1954,7 +1963,10 @@ public abstract class CodedInputStream {
     @Override
     public byte[] readRawBytes(final int length) throws IOException {
       if (length >= 0 && length <= remaining()) {
-        byte[] bytes = new byte[length];
+        byte[] bytes =
+            UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                ? UnsafeUtil.allocateUninitializedArray(length)
+                : new byte[length];
         slice(pos, pos + length).get(bytes);
         pos += length;
         return bytes;
@@ -3348,14 +3360,20 @@ public abstract class CodedInputStream {
     public String readString() throws IOException {
       final int size = readRawVarint32();
       if (size > 0 && size <= currentByteBufferLimit - currentByteBufferPos) {
-        byte[] bytes = new byte[size];
+        byte[] bytes =
+            UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                ? UnsafeUtil.allocateUninitializedArray(size)
+                : new byte[size];
         UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
         String result = new String(bytes, UTF_8);
         currentByteBufferPos += size;
         return result;
       } else if (size > 0 && size <= remaining()) {
         // TODO(yilunchong): To use an underlying bytes[] instead of allocating a new bytes[]
-        byte[] bytes = new byte[size];
+        byte[] bytes =
+            UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                ? UnsafeUtil.allocateUninitializedArray(size)
+                : new byte[size];
         readRawBytesTo(bytes, 0, size);
         String result = new String(bytes, UTF_8);
         return result;
@@ -3476,14 +3494,19 @@ public abstract class CodedInputStream {
           currentByteBufferPos += size;
           return result;
         } else {
-          byte[] bytes;
-          bytes = new byte[size];
+          byte[] bytes =
+              UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                  ? UnsafeUtil.allocateUninitializedArray(size)
+                  : new byte[size];
           UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
           currentByteBufferPos += size;
           return ByteString.wrap(bytes);
         }
       } else if (size > 0 && size <= remaining()) {
-        byte[] temp = new byte[size];
+        byte[] temp =
+            UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                ? UnsafeUtil.allocateUninitializedArray(size)
+                : new byte[size];
         readRawBytesTo(temp, 0, size);
         return ByteString.wrap(temp);
       }
@@ -3512,13 +3535,19 @@ public abstract class CodedInputStream {
               (int) (currentByteBufferPos - currentAddress - size),
               (int) (currentByteBufferPos - currentAddress));
         } else {
-          byte[] bytes = new byte[size];
+          byte[] bytes =
+              UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                  ? UnsafeUtil.allocateUninitializedArray(size)
+                  : new byte[size];
           UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, size);
           currentByteBufferPos += size;
           return ByteBuffer.wrap(bytes);
         }
       } else if (size > 0 && size <= remaining()) {
-        byte[] temp = new byte[size];
+        byte[] temp =
+            UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                ? UnsafeUtil.allocateUninitializedArray(size)
+                : new byte[size];
         readRawBytesTo(temp, 0, size);
         return ByteBuffer.wrap(temp);
       }
@@ -3793,13 +3822,19 @@ public abstract class CodedInputStream {
     @Override
     public byte[] readRawBytes(final int length) throws IOException {
       if (length >= 0 && length <= currentRemaining()) {
-        byte[] bytes = new byte[length];
+        byte[] bytes =
+            UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                ? UnsafeUtil.allocateUninitializedArray(length)
+                : new byte[length];
         UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, length);
         currentByteBufferPos += length;
         return bytes;
       }
       if (length >= 0 && length <= remaining()) {
-        byte[] bytes = new byte[length];
+        byte[] bytes =
+            UnsafeUtil.hasUnsafeAllocateArrayOperation()
+                ? UnsafeUtil.allocateUninitializedArray(length)
+                : new byte[length];
         readRawBytesTo(bytes, 0, length);
         return bytes;
       }
