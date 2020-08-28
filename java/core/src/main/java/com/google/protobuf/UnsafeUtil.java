@@ -31,10 +31,13 @@
 package com.google.protobuf;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +46,8 @@ import java.util.logging.Logger;
 final class UnsafeUtil {
   private static final Logger logger = Logger.getLogger(UnsafeUtil.class.getName());
   private static final sun.misc.Unsafe UNSAFE = getUnsafe();
+  private static final Object INTERNAL_UNSAFE = getInternalUnsafe();
+  private static final Method ALLOCATE_ARRAY_METHOD = getAllocateArrayMethod();
   private static final Class<?> MEMORY_CLASS = Android.getMemoryClass();
   private static final boolean IS_ANDROID_64 = determineAndroidSupportByAddressSize(long.class);
   private static final boolean IS_ANDROID_32 = determineAndroidSupportByAddressSize(int.class);
@@ -90,6 +95,10 @@ final class UnsafeUtil {
 
   static boolean hasUnsafeByteBufferOperations() {
     return HAS_UNSAFE_BYTEBUFFER_OPERATIONS;
+  }
+
+  static boolean hasUnsafeAllocateArrayOperation() {
+    return ALLOCATE_ARRAY_METHOD != null;
   }
 
   static boolean isAndroid64() {
@@ -251,6 +260,10 @@ final class UnsafeUtil {
     System.arraycopy(src, (int) srcIndex, target, (int) targetIndex, (int) length);
   }
 
+  static byte[] allocateUninitializedArray(int size) {
+    return MEMORY_ACCESSOR.allocateUninitializedArray(size);
+  }
+
   static byte getByte(long address) {
     return MEMORY_ACCESSOR.getByte(address);
   }
@@ -315,6 +328,60 @@ final class UnsafeUtil {
     return unsafe;
   }
 
+  static Object getInternalUnsafe() {
+    Object internalUnsafe = null;
+    try {
+      internalUnsafe =
+          AccessController.doPrivileged(
+              new PrivilegedExceptionAction<Object>() {
+                @Override
+                public Object run() throws Exception {
+                  Class<?> k =
+                      getClassLoader(UnsafeUtil.class).loadClass("jdk.internal.misc.Unsafe");
+                  Method m = k.getDeclaredMethod("getUnsafe");
+                  return m.invoke(null);
+                }
+              });
+    } catch (Throwable e) {
+      // Catching Throwable for Java 8.
+    }
+    return internalUnsafe;
+  }
+
+  static Method getAllocateArrayMethod() {
+    if (INTERNAL_UNSAFE == null) {
+      return null;
+    }
+    Method allocateArrayMethod = null;
+    try {
+      allocateArrayMethod =
+          AccessController.doPrivileged(
+              new PrivilegedExceptionAction<Method>() {
+                @Override
+                public Method run() throws Exception {
+                  return INTERNAL_UNSAFE.getClass().getDeclaredMethod(
+                      "allocateUninitializedArray", Class.class, int.class);
+                }
+              });
+    } catch (Throwable e) {
+      // Catching Throwable for Java 8.
+    }
+    return allocateArrayMethod;
+  }
+
+  private static ClassLoader getClassLoader(final Class<?> clazz) {
+    if (System.getSecurityManager() == null) {
+      return clazz.getClassLoader();
+    } else {
+      return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+        @Override
+        public ClassLoader run() {
+          return clazz.getClassLoader();
+        }
+      });
+    }
+  }
+
   /** Get a {@link MemoryAccessor} appropriate for the platform, or null if not supported. */
   private static MemoryAccessor getMemoryAccessor() {
     if (UNSAFE == null) {
@@ -330,7 +397,7 @@ final class UnsafeUtil {
       }
     }
 
-    return new JvmMemoryAccessor(UNSAFE);
+    return new JvmMemoryAccessor(UNSAFE, INTERNAL_UNSAFE, ALLOCATE_ARRAY_METHOD);
   }
 
   /** Indicates whether or not unsafe array operations are supported on this platform. */
@@ -611,12 +678,19 @@ final class UnsafeUtil {
     public abstract void copyMemory(long srcOffset, byte[] target, long targetIndex, long length);
 
     public abstract void copyMemory(byte[] src, long srcIndex, long targetOffset, long length);
+
+    public abstract byte[] allocateUninitializedArray(int size);
   }
 
   private static final class JvmMemoryAccessor extends MemoryAccessor {
 
-    JvmMemoryAccessor(sun.misc.Unsafe unsafe) {
+    Object internalUnsafe;
+    Method allocateArrayMethod;
+
+    JvmMemoryAccessor(sun.misc.Unsafe unsafe, Object internalUnsafe, Method allocateArrayMethod) {
       super(unsafe);
+      this.internalUnsafe =  internalUnsafe;
+      this.allocateArrayMethod = allocateArrayMethod;
     }
 
     @Override
@@ -697,6 +771,17 @@ final class UnsafeUtil {
     @Override
     public void copyMemory(byte[] src, long srcIndex, long targetOffset, long length) {
       unsafe.copyMemory(src, BYTE_ARRAY_BASE_OFFSET + srcIndex, null, targetOffset, length);
+    }
+
+    @Override
+    public byte[] allocateUninitializedArray(int size) {
+      try {
+        return (byte[]) allocateArrayMethod.invoke(internalUnsafe, byte.class, size);
+      } catch (IllegalAccessException e) {
+        throw new RuntimeException(e);
+      } catch (InvocationTargetException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     @Override
@@ -804,6 +889,11 @@ final class UnsafeUtil {
 
     @Override
     public void copyMemory(byte[] src, long srcIndex, long targetOffset, long length) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] allocateUninitializedArray(int size) {
       throw new UnsupportedOperationException();
     }
 
@@ -924,6 +1014,11 @@ final class UnsafeUtil {
 
     @Override
     public void copyMemory(byte[] src, long srcIndex, long targetOffset, long length) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public byte[] allocateUninitializedArray(int size) {
       throw new UnsupportedOperationException();
     }
 
