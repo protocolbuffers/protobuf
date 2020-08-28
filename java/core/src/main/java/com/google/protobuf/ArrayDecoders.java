@@ -34,6 +34,7 @@ import static com.google.protobuf.MessageSchema.getMutableUnknownFields;
 
 import com.google.protobuf.Internal.ProtobufList;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Helper functions to decode protobuf wire format from a byte array.
@@ -64,10 +65,7 @@ final class ArrayDecoders {
     }
 
     Registers(ExtensionRegistryLite extensionRegistry) {
-      if (extensionRegistry == null) {
-        throw new NullPointerException();
-      }
-      this.extensionRegistry = extensionRegistry;
+      this.extensionRegistry = Objects.requireNonNull(extensionRegistry);
     }
   }
 

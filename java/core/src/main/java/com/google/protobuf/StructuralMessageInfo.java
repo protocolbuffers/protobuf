@@ -30,11 +30,10 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Information for the layout of a protobuf message class. This describes all of the fields
@@ -64,7 +63,7 @@ final class StructuralMessageInfo implements MessageInfo {
     this.messageSetWireFormat = messageSetWireFormat;
     this.checkInitialized = checkInitialized;
     this.fields = fields;
-    this.defaultInstance = (MessageLite) checkNotNull(defaultInstance, "defaultInstance");
+    this.defaultInstance = (MessageLite) Objects.requireNonNull(defaultInstance, "defaultInstance");
   }
 
   /** Gets the syntax for the message (e.g. PROTO2, PROTO3). */
@@ -129,7 +128,7 @@ final class StructuralMessageInfo implements MessageInfo {
     }
 
     public void withSyntax(ProtoSyntax syntax) {
-      this.syntax = checkNotNull(syntax, "syntax");
+      this.syntax = Objects.requireNonNull(syntax, "syntax");
     }
 
     public void withMessageSetWireFormat(boolean messageSetWireFormat) {

@@ -30,10 +30,9 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
-
 import com.google.protobuf.Internal.EnumVerifier;
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 /** Information for a single field in a protobuf message class. */
 @ExperimentalApi
@@ -64,8 +63,8 @@ final class FieldInfo implements Comparable<FieldInfo> {
   public static FieldInfo forField(
       Field field, int fieldNumber, FieldType fieldType, boolean enforceUtf8) {
     checkFieldNumber(fieldNumber);
-    checkNotNull(field, "field");
-    checkNotNull(fieldType, "fieldType");
+    Objects.requireNonNull(field, "field");
+    Objects.requireNonNull(fieldType, "fieldType");
     if (fieldType == FieldType.MESSAGE_LIST || fieldType == FieldType.GROUP_LIST) {
       throw new IllegalStateException("Shouldn't be called for repeated message fields.");
     }
@@ -89,8 +88,8 @@ final class FieldInfo implements Comparable<FieldInfo> {
   public static FieldInfo forPackedField(
       Field field, int fieldNumber, FieldType fieldType, Field cachedSizeField) {
     checkFieldNumber(fieldNumber);
-    checkNotNull(field, "field");
-    checkNotNull(fieldType, "fieldType");
+    Objects.requireNonNull(field, "field");
+    Objects.requireNonNull(fieldType, "fieldType");
     if (fieldType == FieldType.MESSAGE_LIST || fieldType == FieldType.GROUP_LIST) {
       throw new IllegalStateException("Shouldn't be called for repeated message fields.");
     }
@@ -114,9 +113,9 @@ final class FieldInfo implements Comparable<FieldInfo> {
   public static FieldInfo forRepeatedMessageField(
       Field field, int fieldNumber, FieldType fieldType, Class<?> messageClass) {
     checkFieldNumber(fieldNumber);
-    checkNotNull(field, "field");
-    checkNotNull(fieldType, "fieldType");
-    checkNotNull(messageClass, "messageClass");
+    Objects.requireNonNull(field, "field");
+    Objects.requireNonNull(fieldType, "fieldType");
+    Objects.requireNonNull(messageClass, "messageClass");
     return new FieldInfo(
         field,
         fieldNumber,
@@ -136,7 +135,7 @@ final class FieldInfo implements Comparable<FieldInfo> {
   public static FieldInfo forFieldWithEnumVerifier(
       Field field, int fieldNumber, FieldType fieldType, EnumVerifier enumVerifier) {
     checkFieldNumber(fieldNumber);
-    checkNotNull(field, "field");
+    Objects.requireNonNull(field, "field");
     return new FieldInfo(
         field,
         fieldNumber,
@@ -160,7 +159,7 @@ final class FieldInfo implements Comparable<FieldInfo> {
       EnumVerifier enumVerifier,
       Field cachedSizeField) {
     checkFieldNumber(fieldNumber);
-    checkNotNull(field, "field");
+    Objects.requireNonNull(field, "field");
     return new FieldInfo(
         field,
         fieldNumber,
@@ -187,9 +186,9 @@ final class FieldInfo implements Comparable<FieldInfo> {
       boolean enforceUtf8,
       EnumVerifier enumVerifier) {
     checkFieldNumber(fieldNumber);
-    checkNotNull(field, "field");
-    checkNotNull(fieldType, "fieldType");
-    checkNotNull(presenceField, "presenceField");
+    Objects.requireNonNull(field, "field");
+    Objects.requireNonNull(fieldType, "fieldType");
+    Objects.requireNonNull(presenceField, "presenceField");
     if (presenceField != null && !isExactlyOneBitSet(presenceMask)) {
       throw new IllegalArgumentException(
           "presenceMask must have exactly one bit set: " + presenceMask);
@@ -230,9 +229,9 @@ final class FieldInfo implements Comparable<FieldInfo> {
       boolean enforceUtf8,
       EnumVerifier enumVerifier) {
     checkFieldNumber(fieldNumber);
-    checkNotNull(fieldType, "fieldType");
-    checkNotNull(oneof, "oneof");
-    checkNotNull(oneofStoredType, "oneofStoredType");
+    Objects.requireNonNull(fieldType, "fieldType");
+    Objects.requireNonNull(oneof, "oneof");
+    Objects.requireNonNull(oneofStoredType, "oneofStoredType");
     if (!fieldType.isScalar()) {
       throw new IllegalArgumentException(
           "Oneof is only supported for scalar fields. Field "
@@ -272,9 +271,9 @@ final class FieldInfo implements Comparable<FieldInfo> {
       boolean enforceUtf8,
       EnumVerifier enumVerifier) {
     checkFieldNumber(fieldNumber);
-    checkNotNull(field, "field");
-    checkNotNull(fieldType, "fieldType");
-    checkNotNull(presenceField, "presenceField");
+    Objects.requireNonNull(field, "field");
+    Objects.requireNonNull(fieldType, "fieldType");
+    Objects.requireNonNull(presenceField, "presenceField");
     if (presenceField != null && !isExactlyOneBitSet(presenceMask)) {
       throw new IllegalArgumentException(
           "presenceMask must have exactly one bit set: " + presenceMask);
@@ -297,9 +296,9 @@ final class FieldInfo implements Comparable<FieldInfo> {
 
   public static FieldInfo forMapField(
       Field field, int fieldNumber, Object mapDefaultEntry, EnumVerifier enumVerifier) {
-    checkNotNull(mapDefaultEntry, "mapDefaultEntry");
+    Objects.requireNonNull(mapDefaultEntry, "mapDefaultEntry");
     checkFieldNumber(fieldNumber);
-    checkNotNull(field, "field");
+    Objects.requireNonNull(field, "field");
     return new FieldInfo(
         field,
         fieldNumber,
@@ -489,7 +488,7 @@ final class FieldInfo implements Comparable<FieldInfo> {
 
     /** Specifies proto2 presence information. This should not be called for oneof fields. */
     public Builder withPresence(Field presenceField, int presenceMask) {
-      this.presenceField = checkNotNull(presenceField, "presenceField");
+      this.presenceField = Objects.requireNonNull(presenceField, "presenceField");
       this.presenceMask = presenceMask;
       return this;
     }

@@ -30,11 +30,10 @@
 
 package com.google.protobuf;
 
-import static com.google.protobuf.Internal.checkNotNull;
-
 import com.google.protobuf.Internal.IntList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.RandomAccess;
 
 /**
@@ -237,7 +236,7 @@ final class IntArrayList extends AbstractProtobufList<Integer>
   public boolean addAll(Collection<? extends Integer> collection) {
     ensureIsMutable();
 
-    checkNotNull(collection);
+    Objects.requireNonNull(collection);
 
     // We specialize when adding another IntArrayList to avoid boxing elements.
     if (!(collection instanceof IntArrayList)) {

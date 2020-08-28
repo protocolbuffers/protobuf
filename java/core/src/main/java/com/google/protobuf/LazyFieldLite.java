@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * LazyFieldLite encapsulates the logic of lazily parsing message fields. It stores the message in a
@@ -116,9 +117,8 @@ public class LazyFieldLite {
 
   /** Constructs a LazyFieldLite with bytes that will be parsed lazily. */
   public LazyFieldLite(ExtensionRegistryLite extensionRegistry, ByteString bytes) {
-    checkArguments(extensionRegistry, bytes);
-    this.extensionRegistry = extensionRegistry;
-    this.delayedBytes = bytes;
+    this.extensionRegistry = Objects.requireNonNull(extensionRegistry, "found null ExtensionRegistry");
+    this.delayedBytes = Objects.requireNonNull(bytes, "found null ByteString");
   }
 
   /** Constructs a LazyFieldLite with no contents, and no ability to parse extensions. */
@@ -340,9 +340,8 @@ public class LazyFieldLite {
 
   /** Sets this field with bytes to delay-parse. */
   public void setByteString(ByteString bytes, ExtensionRegistryLite extensionRegistry) {
-    checkArguments(extensionRegistry, bytes);
-    this.delayedBytes = bytes;
-    this.extensionRegistry = extensionRegistry;
+    this.delayedBytes = Objects.requireNonNull(bytes, "found null ByteString");
+    this.extensionRegistry = Objects.requireNonNull(extensionRegistry, "found null ExtensionRegistry");
     this.value = null;
     this.memoizedBytes = null;
   }
@@ -427,15 +426,6 @@ public class LazyFieldLite {
         this.value = defaultInstance;
         this.memoizedBytes = ByteString.EMPTY;
       }
-    }
-  }
-
-  private static void checkArguments(ExtensionRegistryLite extensionRegistry, ByteString bytes) {
-    if (extensionRegistry == null) {
-      throw new NullPointerException("found null ExtensionRegistry");
-    }
-    if (bytes == null) {
-      throw new NullPointerException("found null ByteString");
     }
   }
 }
