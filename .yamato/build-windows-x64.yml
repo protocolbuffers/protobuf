@@ -1,8 +1,8 @@
-name: Build protobuf - Windows 10 x64
+name: Build protobuf - Windows 10 x64 with VS 2017
 
 agent:
   type: Unity::VM
-  image: desktop/desktop-vs2019:latest
+  image: desktop/desktop-vs2017:latest
   flavor: b1.medium
 
 artifacts:
