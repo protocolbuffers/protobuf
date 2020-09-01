@@ -214,15 +214,15 @@ struct ReflectionSchema {
 
   // Returns true if the field's accessor is called by any external code (aka,
   // non proto library code).
-  bool IsFieldUsed(const FieldDescriptor* field) const {
+  bool IsFieldUsed(const FieldDescriptor* /* field */) const {
     return true;
   }
 
-  bool IsFieldStripped(const FieldDescriptor* field) const {
+  bool IsFieldStripped(const FieldDescriptor* /* field */) const {
     return false;
   }
 
-  bool IsMessageStripped(const Descriptor* descriptor) const {
+  bool IsMessageStripped(const Descriptor* /* descriptor */) const {
     return false;
   }
 
