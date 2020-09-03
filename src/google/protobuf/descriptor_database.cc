@@ -628,7 +628,7 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
                                                          Value value) {
   // We push `value` into the array first. This is important because the AddXXX
   // functions below will expect it to be there.
-  all_values_.push_back({value.first, value.second, nullptr});
+  all_values_.push_back({value.first, value.second, {}});
 
   if (!ValidateSymbolName(file.package())) {
     GOOGLE_LOG(ERROR) << "Invalid package name: " << file.package();
