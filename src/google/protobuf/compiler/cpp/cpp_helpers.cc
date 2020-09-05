@@ -1415,7 +1415,6 @@ class ParseLoopGenerator {
       format_.Set("has_bits", "_has_bits_");
     }
 
-    format_("$p_ns$::Arena* arena = GetArena(); (void)arena;\n");
     GenerateParseLoop(descriptor, ordered_fields);
     format_.Outdent();
     format_("success:\n");
