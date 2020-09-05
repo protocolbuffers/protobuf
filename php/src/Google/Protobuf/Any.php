@@ -251,7 +251,7 @@ class Any extends \Google\Protobuf\Internal\Message
      * targeted message type. If failed, an error will be thrown. Otherwise,
      * the method will create a message of the targeted type and fill it with
      * the decoded value in Any.
-     * @return unpacked message
+     * @return Message unpacked message
      * @throws \Exception Type url needs to be type.googleapis.com/fully-qualified.
      * @throws \Exception Class hasn't been added to descriptor pool.
      * @throws \Exception cannot decode data in value field.
@@ -270,7 +270,7 @@ class Any extends \Google\Protobuf\Internal\Message
 
         // Create message according to fully qualified name.
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
-        $desc = $pool->getDescriptorByProtoName( ".".$fully_qualifed_name);
+        $desc = $pool->getDescriptorByProtoName($fully_qualifed_name);
         if (is_null($desc)) {
             throw new \Exception("Class ".$fully_qualifed_name
                                      ." hasn't been added to descriptor pool");
@@ -303,8 +303,7 @@ class Any extends \Google\Protobuf\Internal\Message
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName(get_class($msg));
         $fully_qualifed_name = $desc->getFullName();
-        $this->type_url = GPBUtil::TYPE_URL_PREFIX.substr(
-            $fully_qualifed_name, 1, strlen($fully_qualifed_name));
+        $this->type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualifed_name;
     }
 
     /**
@@ -317,8 +316,7 @@ class Any extends \Google\Protobuf\Internal\Message
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName($klass);
         $fully_qualifed_name = $desc->getFullName();
-        $type_url = GPBUtil::TYPE_URL_PREFIX.substr(
-            $fully_qualifed_name, 1, strlen($fully_qualifed_name));
+        $type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualifed_name;
         return $this->type_url === $type_url;
     }
 }

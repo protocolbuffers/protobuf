@@ -1,11 +1,44 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// LINT: ALLOW_GROUPS
+
 syntax = "proto2";
+
+package benchmarks.google_message3;
 
 import "datasets/google_message3/benchmark_message3_2.proto";
 import "datasets/google_message3/benchmark_message3_3.proto";
 import "datasets/google_message3/benchmark_message3_5.proto";
 import "datasets/google_message3/benchmark_message3_7.proto";
 import "datasets/google_message3/benchmark_message3_8.proto";
-package benchmarks.google_message3;
 
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf.benchmarks";
@@ -100,15 +133,13 @@ message Message36876 {
     optional int32 field37047 = 115;
     optional int32 field37048 = 157;
   }
-  repeated group Message36878 = 168 {
-  }
+  repeated group Message36878 = 168 {}
   repeated group Message36879 = 55 {
     required string field37050 = 56;
     optional int32 field37051 = 69;
   }
   repeated .benchmarks.google_message3.UnusedEmptyMessage field36984 = 78;
-  optional group Message36880 = 137 {
-  }
+  optional group Message36880 = 137 {}
   optional uint64 field36986 = 59;
   optional bytes field36987 = 121;
   optional .benchmarks.google_message3.UnusedEmptyMessage field36988 = 2;
@@ -124,11 +155,9 @@ message Message36876 {
   optional int32 field36998 = 47;
   optional int32 field36999 = 48;
   optional .benchmarks.google_message3.UnusedEmptyMessage field37000 = 68;
-  repeated group Message36881 = 23 {
-  }
+  repeated group Message36881 = 23 {}
   optional .benchmarks.google_message3.Message4144 field37002 = 125;
-  repeated group Message36882 = 35 {
-  }
+  repeated group Message36882 = 35 {}
   optional .benchmarks.google_message3.UnusedEmptyMessage field37004 = 49;
   optional .benchmarks.google_message3.Message18921 field37005 = 52;
   optional .benchmarks.google_message3.Message36858 field37006 = 46;
@@ -141,20 +170,15 @@ message Message36876 {
   optional .benchmarks.google_message3.Message0 field37013 = 143;
   optional .benchmarks.google_message3.UnusedEmptyMessage field37014 = 53;
   optional .benchmarks.google_message3.Message36869 field37015 = 15;
-  optional group Message36883 = 3 {
-  }
-  repeated group Message36884 = 16 {
-  }
-  repeated group Message36885 = 27 {
-  }
-  optional group Message36886 = 32 {
-  }
+  optional group Message36883 = 3 {}
+  repeated group Message36884 = 16 {}
+  repeated group Message36885 = 27 {}
+  optional group Message36886 = 32 {}
   repeated .benchmarks.google_message3.UnusedEnum field37020 = 71;
   repeated int32 field37021 = 70;
   optional .benchmarks.google_message3.UnusedEmptyMessage field37022 = 66;
   optional .benchmarks.google_message3.Message13090 field37023 = 67;
-  optional group Message36887 = 62 {
-  }
+  optional group Message36887 = 62 {}
   repeated .benchmarks.google_message3.Message10155 field37025 = 50;
   repeated .benchmarks.google_message3.Message11874 field37026 = 151;
   optional string field37027 = 12;
@@ -202,8 +226,7 @@ message Message36876 {
     optional int32 field37118 = 160;
     repeated string field37119 = 161;
   }
-  repeated group Message36910 = 119 {
-  }
+  repeated group Message36910 = 119 {}
   optional group Message36911 = 126 {
     optional .benchmarks.google_message3.UnusedEmptyMessage field37121 = 127;
     optional .benchmarks.google_message3.Message35538 field37122 = 130;
@@ -217,11 +240,9 @@ message Message36876 {
   optional .benchmarks.google_message3.UnusedEmptyMessage field37042 = 155;
 }
 
-message Message1328 {
-}
+message Message1328 {}
 
-message Message6850 {
-}
+message Message6850 {}
 
 message Message6863 {
   optional .benchmarks.google_message3.Enum6858 field6931 = 1;
@@ -259,8 +280,7 @@ message Message6863 {
   optional bool field6963 = 34;
 }
 
-message Message6871 {
-}
+message Message6871 {}
 
 message Message7547 {
   required bytes field7549 = 1;
@@ -282,8 +302,7 @@ message Message7648 {
   optional bool field7680 = 12;
 }
 
-message Message7865 {
-}
+message Message7865 {}
 
 message Message7928 {
   optional string field7940 = 1;
@@ -1277,4 +1296,3 @@ message Message16945 {
     optional .benchmarks.google_message3.Message16945 field17025 = 22068132;
   }
 }
-

@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/compiler/cpp/cpp_map_field.h>
+
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
@@ -80,13 +81,6 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   } else {
     (*variables)["lite"] = "Lite";
   }
-
-  if (!IsProto3Field(descriptor) && val->type() == FieldDescriptor::TYPE_ENUM) {
-    const EnumValueDescriptor* default_value = val->default_value_enum();
-    (*variables)["default_enum_value"] = Int32ToString(default_value->number());
-  } else {
-    (*variables)["default_enum_value"] = "0";
-  }
 }
 
 MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
@@ -104,8 +98,8 @@ void MapFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
       "    $map_classname$,\n"
       "    $key_cpp$, $val_cpp$,\n"
       "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
-      "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$,\n"
-      "    $default_enum_value$ > $name$_;\n");
+      "    ::$proto_ns$::internal::WireFormatLite::$val_wire_type$> "
+      "$name$_;\n");
 }
 
 void MapFieldGenerator::GenerateAccessorDeclarations(

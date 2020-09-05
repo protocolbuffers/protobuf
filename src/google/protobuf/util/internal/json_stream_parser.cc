@@ -82,8 +82,28 @@ inline bool IsAlphanumeric(char c) {
 
 // Indicates a character may not be part of an unquoted key.
 inline bool IsKeySeparator(char c) {
-  return (ascii_isspace(c) || c == '"' || c == '\'' || c == '{' || c == '}' ||
-          c == '[' || c == ']' || c == ':' || c == ',');
+  return (ascii_isspace(c) || c == '"' || c == '\'' || c == '{' ||
+          c == '}' || c == '[' || c == ']' || c == ':' || c == ',');
+}
+
+inline void ReplaceInvalidCodePoints(StringPiece str,
+                                     const std::string& replacement,
+                                     std::string* dst) {
+  while (!str.empty()) {
+    int n_valid_bytes = internal::UTF8SpnStructurallyValid(str);
+    StringPiece valid_part = str.substr(0, n_valid_bytes);
+    StrAppend(dst, valid_part);
+
+    if (n_valid_bytes == str.size()) {
+      break;
+    }
+
+    // Append replacement value.
+    StrAppend(dst, replacement);
+
+    // Move past valid bytes + one invalid byte.
+    str.remove_prefix(n_valid_bytes + 1);
+  }
 }
 
 static bool ConsumeKey(StringPiece* input, StringPiece* key) {
@@ -132,6 +152,7 @@ JsonStreamParser::JsonStreamParser(ObjectWriter* ow)
       string_open_(0),
       chunk_storage_(),
       coerce_to_utf8_(false),
+      utf8_replacement_character_(" "),
       allow_empty_null_(false),
       allow_permissive_key_naming_(false),
       loose_float_number_conversion_(false),
@@ -180,15 +201,20 @@ util::Status JsonStreamParser::FinishParse() {
     return util::Status();
   }
 
-  // Storage for UTF8-coerced string.
-  std::unique_ptr<char[]> utf8;
-  if (coerce_to_utf8_) {
-    utf8.reset(new char[leftover_.size()]);
-    char* coerced = internal::UTF8CoerceToStructurallyValid(leftover_, utf8.get(), ' ');
-    p_ = json_ = StringPiece(coerced, leftover_.size());
+  // Lifetime needs to last until RunParser returns, so keep this variable
+  // outside of the coerce_to_utf8 block.
+  std::unique_ptr<std::string> scratch;
+
+  bool is_valid_utf8 = internal::IsStructurallyValidUTF8(leftover_);
+  if (coerce_to_utf8_ && !is_valid_utf8) {
+    scratch.reset(new std::string);
+    scratch->reserve(leftover_.size() * utf8_replacement_character_.size());
+    ReplaceInvalidCodePoints(leftover_, utf8_replacement_character_,
+                             scratch.get());
+    p_ = json_ = *scratch;
   } else {
     p_ = json_ = leftover_;
-    if (!internal::IsStructurallyValidUTF8(leftover_)) {
+    if (!is_valid_utf8) {
       return ReportFailure("Encountered non UTF-8 code points.");
     }
   }

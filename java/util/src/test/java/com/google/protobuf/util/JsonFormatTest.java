@@ -30,6 +30,7 @@
 
 package com.google.protobuf.util;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.Any;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.ByteString;
@@ -1783,5 +1784,17 @@ public class JsonFormatTest extends TestCase {
 
     TestMap emptyMap = TestMap.getDefaultInstance();
     assertEquals("{\n}", toSortedJsonString(emptyMap));
+  }
+
+  public void testPrintingEnumsAsIntsChainedAfterIncludingDefaultValueFields() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalBool(false).build();
+
+    assertEquals(
+        "{\n" + "  \"optionalBool\": false\n" + "}",
+        JsonFormat.printer()
+            .includingDefaultValueFields(
+                ImmutableSet.of(message.getDescriptorForType().findFieldByName("optional_bool")))
+            .printingEnumsAsInts()
+            .print(message));
   }
 }

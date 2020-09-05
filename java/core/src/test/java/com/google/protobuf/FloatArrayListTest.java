@@ -139,6 +139,68 @@ public class FloatArrayListTest extends TestCase {
     }
   }
 
+  public void testIndexOf_nullElement() {
+    assertEquals(-1, TERTIARY_LIST.indexOf(null));
+  }
+
+  public void testIndexOf_incompatibleElementType() {
+    assertEquals(-1, TERTIARY_LIST.indexOf(new Object()));
+  }
+
+  public void testIndexOf_notInList() {
+    assertEquals(-1, UNARY_LIST.indexOf(2F));
+  }
+
+  public void testIndexOf_notInListWithDuplicates() {
+    FloatArrayList listWithDupes = newImmutableFloatArrayList(1F, 1F);
+    assertEquals(-1, listWithDupes.indexOf(2F));
+  }
+
+  public void testIndexOf_inList() {
+    assertEquals(1, TERTIARY_LIST.indexOf(2F));
+  }
+
+  public void testIndexOf_inListWithDuplicates_matchAtHead() {
+    FloatArrayList listWithDupes = newImmutableFloatArrayList(1F, 1F, 2F);
+    assertEquals(0, listWithDupes.indexOf(1F));
+  }
+
+  public void testIndexOf_inListWithDuplicates_matchMidList() {
+    FloatArrayList listWithDupes = newImmutableFloatArrayList(2F, 1F, 1F, 2F);
+    assertEquals(1, listWithDupes.indexOf(1F));
+  }
+
+  public void testContains_nullElement() {
+    assertEquals(false, TERTIARY_LIST.contains(null));
+  }
+
+  public void testContains_incompatibleElementType() {
+    assertEquals(false, TERTIARY_LIST.contains(new Object()));
+  }
+
+  public void testContains_notInList() {
+    assertEquals(false, UNARY_LIST.contains(2F));
+  }
+
+  public void testContains_notInListWithDuplicates() {
+    FloatArrayList listWithDupes = newImmutableFloatArrayList(1F, 1F);
+    assertEquals(false, listWithDupes.contains(2F));
+  }
+
+  public void testContains_inList() {
+    assertEquals(true, TERTIARY_LIST.contains(2F));
+  }
+
+  public void testContains_inListWithDuplicates_matchAtHead() {
+    FloatArrayList listWithDupes = newImmutableFloatArrayList(1F, 1F, 2F);
+    assertEquals(true, listWithDupes.contains(1F));
+  }
+
+  public void testContains_inListWithDuplicates_matchMidList() {
+    FloatArrayList listWithDupes = newImmutableFloatArrayList(2F, 1F, 1F, 2F);
+    assertEquals(true, listWithDupes.contains(1F));
+  }
+
   public void testSize() {
     assertEquals(0, FloatArrayList.emptyList().size());
     assertEquals(1, UNARY_LIST.size());

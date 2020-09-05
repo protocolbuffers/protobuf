@@ -33,12 +33,13 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_STRUTIL_H__
 #define GOOGLE_PROTOBUF_STUBS_STRUTIL_H__
 
-#include <stdlib.h>
-#include <vector>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringpiece.h>
+#include <stdlib.h>
 
+#include <cstring>
 #include <google/protobuf/port_def.inc>
+#include <vector>
 
 namespace google {
 namespace protobuf {
@@ -112,10 +113,9 @@ inline int hex_digit_to_int(char c) {
 //    prefix string if the prefix matches, otherwise the original
 //    string.
 // ----------------------------------------------------------------------
-inline bool HasPrefixString(const string& str,
-                            const string& prefix) {
+inline bool HasPrefixString(StringPiece str, StringPiece prefix) {
   return str.size() >= prefix.size() &&
-         str.compare(0, prefix.size(), prefix) == 0;
+         memcmp(str.data(), prefix.data(), prefix.size()) == 0;
 }
 
 inline string StripPrefixString(const string& str, const string& prefix) {
@@ -134,10 +134,10 @@ inline string StripPrefixString(const string& str, const string& prefix) {
 //    suffix string if the suffix matches, otherwise the original
 //    string.
 // ----------------------------------------------------------------------
-inline bool HasSuffixString(const string& str,
-                            const string& suffix) {
+inline bool HasSuffixString(StringPiece str, StringPiece suffix) {
   return str.size() >= suffix.size() &&
-         str.compare(str.size() - suffix.size(), suffix.size(), suffix) == 0;
+         memcmp(str.data() + str.size() - suffix.size(), suffix.data(),
+                suffix.size()) == 0;
 }
 
 inline string StripSuffixString(const string& str, const string& suffix) {
@@ -188,6 +188,8 @@ inline void UpperString(string * s) {
   }
 }
 
+inline void ToUpper(string* s) { UpperString(s); }
+
 inline string ToUpper(const string& s) {
   string out = s;
   UpperString(&out);
@@ -211,7 +213,7 @@ PROTOBUF_EXPORT string StringReplace(const string& s, const string& oldsub,
 //    to 'result'.  If there are consecutive delimiters, this function skips
 //    over all of them.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
+PROTOBUF_EXPORT void SplitStringUsing(StringPiece full, const char* delim,
                                       std::vector<string>* res);
 
 // Split a string using one or more byte delimiters, presented
@@ -222,16 +224,15 @@ PROTOBUF_EXPORT void SplitStringUsing(const string& full, const char* delim,
 //
 // If "full" is the empty string, yields an empty string as the only value.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void SplitStringAllowEmpty(const string& full,
-                                           const char* delim,
+PROTOBUF_EXPORT void SplitStringAllowEmpty(StringPiece full, const char* delim,
                                            std::vector<string>* result);
 
 // ----------------------------------------------------------------------
 // Split()
 //    Split a string using a character delimiter.
 // ----------------------------------------------------------------------
-inline std::vector<string> Split(
-    const string& full, const char* delim, bool skip_empty = true) {
+inline std::vector<string> Split(StringPiece full, const char* delim,
+                                 bool skip_empty = true) {
   std::vector<string> result;
   if (skip_empty) {
     SplitStringUsing(full, delim, &result);

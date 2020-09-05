@@ -141,6 +141,26 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
   }
 
   @Override
+  public int indexOf(Object element) {
+    if (!(element instanceof Double)) {
+      return -1;
+    }
+    double unboxedElement = (Double) element;
+    int numElems = size();
+    for (int i = 0; i < numElems; i++) {
+      if (array[i] == unboxedElement) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  @Override
+  public boolean contains(Object element) {
+    return indexOf(element) != -1;
+  }
+
+  @Override
   public int size() {
     return size;
   }

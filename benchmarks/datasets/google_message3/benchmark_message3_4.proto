@@ -1,16 +1,48 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// LINT: ALLOW_GROUPS
+
 syntax = "proto2";
+
+package benchmarks.google_message3;
 
 import "datasets/google_message3/benchmark_message3_5.proto";
 import "datasets/google_message3/benchmark_message3_6.proto";
 import "datasets/google_message3/benchmark_message3_7.proto";
 import "datasets/google_message3/benchmark_message3_8.proto";
-package benchmarks.google_message3;
 
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf.benchmarks";
 
-message Message24346 {
-}
+message Message24346 {}
 
 message Message24401 {
   optional .benchmarks.google_message3.Message24400 field24679 = 1;
@@ -189,12 +221,9 @@ message Message13083 {
   optional float field13099 = 45;
   optional uint64 field13100 = 46;
   optional float field13101 = 47;
-  optional group Message13085 = 16 {
-  }
-  repeated group Message13086 = 23 {
-  }
-  repeated group Message13087 = 29 {
-  }
+  optional group Message13085 = 16 {}
+  repeated group Message13086 = 23 {}
+  repeated group Message13087 = 29 {}
   optional .benchmarks.google_message3.UnusedEmptyMessage field13105 = 43;
 }
 
@@ -262,12 +291,10 @@ message Message16816 {
   optional float field16826 = 1;
   optional .benchmarks.google_message3.Enum16819 field16827 = 2;
   optional float field16828 = 3;
-  repeated group Message16817 = 4 {
-  }
+  repeated group Message16817 = 4 {}
   optional bool field16830 = 7;
   optional bool field16831 = 8;
-  repeated group Message16818 = 12 {
-  }
+  repeated group Message16818 = 12 {}
   optional string field16833 = 10;
   optional bool field16834 = 13;
   optional bool field16835 = 14;
@@ -308,11 +335,9 @@ message Message1374 {
   optional string field1376 = 2;
 }
 
-message Message18943 {
-}
+message Message18943 {}
 
-message Message18944 {
-}
+message Message18944 {}
 
 message Message18856 {
   optional string field18857 = 1;
@@ -436,8 +461,7 @@ message Message8475 {
   optional int64 field8482 = 2;
 }
 
-message Message12559 {
-}
+message Message12559 {}
 
 message Message12817 {
   optional int32 field12826 = 1;
@@ -488,4 +512,3 @@ message Message24317 {
   repeated string field24473 = 27;
   optional bool field24474 = 40;
 }
-

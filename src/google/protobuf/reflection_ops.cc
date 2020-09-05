@@ -85,7 +85,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
                           google::protobuf::MessageFactory::generated_factory());
 
   std::vector<const FieldDescriptor*> fields;
-  from_reflection->ListFields(from, &fields);
+  from_reflection->ListFieldsOmitStripped(from, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
 
@@ -125,8 +125,16 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
 #undef HANDLE_TYPE
 
           case FieldDescriptor::CPPTYPE_MESSAGE:
-            to_reflection->AddMessage(to, field)->MergeFrom(
-                from_reflection->GetRepeatedMessage(from, field, j));
+            const Message& from_child =
+                from_reflection->GetRepeatedMessage(from, field, j);
+            if (from_reflection == to_reflection) {
+              to_reflection
+                  ->AddMessage(to, field,
+                               from_child.GetReflection()->GetMessageFactory())
+                  ->MergeFrom(from_child);
+            } else {
+              to_reflection->AddMessage(to, field)->MergeFrom(from_child);
+            }
             break;
         }
       }
@@ -150,8 +158,15 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
 #undef HANDLE_TYPE
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          to_reflection->MutableMessage(to, field)->MergeFrom(
-              from_reflection->GetMessage(from, field));
+          const Message& from_child = from_reflection->GetMessage(from, field);
+          if (from_reflection == to_reflection) {
+            to_reflection
+                ->MutableMessage(
+                    to, field, from_child.GetReflection()->GetMessageFactory())
+                ->MergeFrom(from_child);
+          } else {
+            to_reflection->MutableMessage(to, field)->MergeFrom(from_child);
+          }
           break;
       }
     }
@@ -165,7 +180,7 @@ void ReflectionOps::Clear(Message* message) {
   const Reflection* reflection = GetReflectionOrDie(*message);
 
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(*message, &fields);
+  reflection->ListFieldsOmitStripped(*message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     reflection->ClearField(message, fields[i]);
   }
@@ -173,22 +188,89 @@ void ReflectionOps::Clear(Message* message) {
   reflection->MutableUnknownFields(message)->Clear();
 }
 
+bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
+                                  bool check_descendants) {
+  const Descriptor* descriptor = message.GetDescriptor();
+  const Reflection* reflection = GetReflectionOrDie(message);
+  if (const int field_count = descriptor->field_count()) {
+    const FieldDescriptor* begin = descriptor->field(0);
+    const FieldDescriptor* end = begin + field_count;
+    GOOGLE_DCHECK_EQ(descriptor->field(field_count - 1), end - 1);
+
+    if (check_fields) {
+      // Check required fields of this message.
+      for (const FieldDescriptor* field = begin; field != end; ++field) {
+        if (field->is_required() && !reflection->HasField(message, field)) {
+          return false;
+        }
+      }
+    }
+
+    if (check_descendants) {
+      for (const FieldDescriptor* field = begin; field != end; ++field) {
+        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          const Descriptor* message_type = field->message_type();
+          if (PROTOBUF_PREDICT_FALSE(message_type->options().map_entry())) {
+            if (message_type->field(1)->cpp_type() ==
+                FieldDescriptor::CPPTYPE_MESSAGE) {
+              const MapFieldBase* map_field =
+                  reflection->GetMapData(message, field);
+              if (map_field->IsMapValid()) {
+                MapIterator it(const_cast<Message*>(&message), field);
+                MapIterator end(const_cast<Message*>(&message), field);
+                for (map_field->MapBegin(&it), map_field->MapEnd(&end);
+                     it != end; ++it) {
+                  if (!it.GetValueRef().GetMessageValue().IsInitialized()) {
+                    return false;
+                  }
+                }
+              }
+            }
+          } else if (field->is_repeated()) {
+            const int size = reflection->FieldSize(message, field);
+            for (int j = 0; j < size; j++) {
+              if (!reflection->GetRepeatedMessage(message, field, j)
+                       .IsInitialized()) {
+                return false;
+              }
+            }
+          } else if (reflection->HasField(message, field)) {
+            if (!reflection->GetMessage(message, field).IsInitialized()) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+  }
+  if (check_descendants && reflection->HasExtensionSet(message) &&
+      !reflection->GetExtensionSet(message).IsInitialized()) {
+    return false;
+  }
+  return true;
+}
+
 bool ReflectionOps::IsInitialized(const Message& message) {
   const Descriptor* descriptor = message.GetDescriptor();
   const Reflection* reflection = GetReflectionOrDie(message);
 
   // Check required fields of this message.
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    if (descriptor->field(i)->is_required()) {
-      if (!reflection->HasField(message, descriptor->field(i))) {
-        return false;
+  {
+    const int field_count = descriptor->field_count();
+    for (int i = 0; i < field_count; i++) {
+      if (descriptor->field(i)->is_required()) {
+        if (!reflection->HasField(message, descriptor->field(i))) {
+          return false;
+        }
       }
     }
   }
 
   // Check that sub-messages are initialized.
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(message, &fields);
+  // Should be safe to skip stripped fields because required fields are not
+  // stripped.
+  reflection->ListFieldsOmitStripped(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -306,17 +388,20 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
   const Reflection* reflection = GetReflectionOrDie(message);
 
   // Check required fields of this message.
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    if (descriptor->field(i)->is_required()) {
-      if (!reflection->HasField(message, descriptor->field(i))) {
-        errors->push_back(prefix + descriptor->field(i)->name());
+  {
+    const int field_count = descriptor->field_count();
+    for (int i = 0; i < field_count; i++) {
+      if (descriptor->field(i)->is_required()) {
+        if (!reflection->HasField(message, descriptor->field(i))) {
+          errors->push_back(prefix + descriptor->field(i)->name());
+        }
       }
     }
   }
 
   // Check sub-messages.
   std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(message, &fields);
+  reflection->ListFieldsOmitStripped(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -337,6 +422,21 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
       }
     }
   }
+}
+
+void GenericSwap(Message* m1, Message* m2) {
+  Arena* m2_arena = m2->GetArena();
+  GOOGLE_DCHECK(m1->GetArena() != m2_arena);
+
+  // Copy semantics in this case. We try to improve efficiency by placing the
+  // temporary on |m2|'s arena so that messages are copied twice rather than
+  // three times.
+  Message* tmp = m2->New(m2_arena);
+  std::unique_ptr<Message> tmp_deleter(m2_arena == nullptr ? tmp : nullptr);
+  tmp->CheckTypeAndMergeFrom(*m1);
+  m1->Clear();
+  m1->CheckTypeAndMergeFrom(*m2);
+  m2->GetReflection()->Swap(tmp, m2);
 }
 
 }  // namespace internal

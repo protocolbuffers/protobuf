@@ -496,11 +496,14 @@ void create_layout(Descriptor* desc) {
   const upb_msgdef *msgdef = desc->msgdef;
   MessageLayout* layout = ALLOC(MessageLayout);
   int nfields = upb_msgdef_numfields(msgdef);
-  int noneofs = upb_msgdef_numoneofs(msgdef);
+  int noneofs = upb_msgdef_numrealoneofs(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   size_t off = 0;
   size_t hasbit = 0;
+  int i;
+
+  (void)i;
 
   layout->empty_template = NULL;
   layout->desc = desc;
@@ -513,11 +516,22 @@ void create_layout(Descriptor* desc) {
     layout->oneofs = ALLOC_N(MessageOneof, noneofs);
   }
 
+#ifndef NDEBUG
+  for (i = 0; i < nfields; i++) {
+    layout->fields[i].offset = -1;
+  }
+
+  for (i = 0; i < noneofs; i++) {
+    layout->oneofs[i].offset = -1;
+  }
+#endif
+
   for (upb_msg_field_begin(&it, msgdef);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_haspresence(field)) {
+    if (upb_fielddef_haspresence(field) &&
+        !upb_fielddef_realcontainingoneof(field)) {
       layout->fields[upb_fielddef_index(field)].hasbit = hasbit++;
     } else {
       layout->fields[upb_fielddef_index(field)].hasbit =
@@ -540,7 +554,7 @@ void create_layout(Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_containingoneof(field) || !upb_fielddef_isseq(field) ||
+    if (upb_fielddef_realcontainingoneof(field) || !upb_fielddef_isseq(field) ||
         upb_fielddef_ismap(field)) {
       continue;
     }
@@ -555,7 +569,7 @@ void create_layout(Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_containingoneof(field) || !upb_fielddef_isseq(field) ||
+    if (upb_fielddef_realcontainingoneof(field) || !upb_fielddef_isseq(field) ||
         !upb_fielddef_ismap(field)) {
       continue;
     }
@@ -572,7 +586,7 @@ void create_layout(Descriptor* desc) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    if (upb_fielddef_containingoneof(field) || !is_value_field(field) ||
+    if (upb_fielddef_realcontainingoneof(field) || !is_value_field(field) ||
         upb_fielddef_isseq(field)) {
       continue;
     }
@@ -589,7 +603,7 @@ void create_layout(Descriptor* desc) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     size_t field_size;
 
-    if (upb_fielddef_containingoneof(field) || is_value_field(field)) {
+    if (upb_fielddef_realcontainingoneof(field) || is_value_field(field)) {
       continue;
     }
 
@@ -624,6 +638,10 @@ void create_layout(Descriptor* desc) {
     // Always allocate NATIVE_SLOT_MAX_SIZE bytes, but share the slot between
     // all fields.
     size_t field_size = NATIVE_SLOT_MAX_SIZE;
+
+    if (upb_oneofdef_issynthetic(oneof)) continue;
+    assert(upb_oneofdef_index(oneof) < noneofs);
+
     // Align the offset.
     off = align_up_to(off, field_size);
     // Assign all fields in the oneof this same offset.
@@ -643,6 +661,8 @@ void create_layout(Descriptor* desc) {
        upb_msg_oneof_next(&oit)) {
     const upb_oneofdef* oneof = upb_msg_iter_oneof(&oit);
     size_t field_size = sizeof(uint32_t);
+    if (upb_oneofdef_issynthetic(oneof)) continue;
+    assert(upb_oneofdef_index(oneof) < noneofs);
     // Align the offset.
     off = (off + field_size - 1) & ~(field_size - 1);
     layout->oneofs[upb_oneofdef_index(oneof)].case_offset = off;
@@ -651,6 +671,16 @@ void create_layout(Descriptor* desc) {
 
   layout->size = off;
   layout->msgdef = msgdef;
+
+#ifndef NDEBUG
+  for (i = 0; i < nfields; i++) {
+    assert(layout->fields[i].offset != -1);
+  }
+
+  for (i = 0; i < noneofs; i++) {
+    assert(layout->oneofs[i].offset != -1);
+  }
+#endif
 
   // Create the empty message template.
   layout->empty_template = ALLOC_N(char, layout->size);
@@ -725,10 +755,7 @@ static bool slot_is_hasbit_set(MessageLayout* layout,
                             const void* storage,
                             const upb_fielddef* field) {
   size_t hasbit = layout->fields[upb_fielddef_index(field)].hasbit;
-  if (hasbit == MESSAGE_FIELD_NO_HASBIT) {
-    return false;
-  }
-
+  assert(field_contains_hasbit(layout, field));
   return DEREF_OFFSET(
       (uint8_t*)storage, hasbit / 8, char) & (1 << (hasbit % 8));
 }
@@ -736,15 +763,21 @@ static bool slot_is_hasbit_set(MessageLayout* layout,
 VALUE layout_has(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field) {
-  assert(field_contains_hasbit(layout, field));
-  return slot_is_hasbit_set(layout, storage, field) ? Qtrue : Qfalse;
+  const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
+  assert(upb_fielddef_haspresence(field));
+  if (oneof) {
+    uint32_t oneof_case = slot_read_oneof_case(layout, storage, oneof);
+    return oneof_case == upb_fielddef_number(field) ? Qtrue : Qfalse;
+  } else {
+    return slot_is_hasbit_set(layout, storage, field) ? Qtrue : Qfalse;
+  }
 }
 
 void layout_clear(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field) {
   void* memory = slot_memory(layout, storage, field);
-  const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+  const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
   if (field_contains_hasbit(layout, field)) {
     slot_clear_hasbit(layout, storage, field);
@@ -837,7 +870,7 @@ VALUE layout_get(MessageLayout* layout,
                  const void* storage,
                  const upb_fielddef* field) {
   void* memory = slot_memory(layout, storage, field);
-  const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+  const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
   bool field_set;
   if (field_contains_hasbit(layout, field)) {
     field_set = slot_is_hasbit_set(layout, storage, field);
@@ -910,7 +943,7 @@ void layout_set(MessageLayout* layout,
                 const upb_fielddef* field,
                 VALUE val) {
   void* memory = slot_memory(layout, storage, field);
-  const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+  const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
   if (oneof) {
     uint32_t* oneof_case = slot_oneof_case(layout, storage, oneof);
@@ -953,7 +986,16 @@ void layout_set(MessageLayout* layout,
 
   if (layout->fields[upb_fielddef_index(field)].hasbit !=
       MESSAGE_FIELD_NO_HASBIT) {
-    slot_set_hasbit(layout, storage, field);
+    if (val == Qnil) {
+      // No other field type has a hasbit and allows nil assignment.
+      if (upb_fielddef_type(field) != UPB_TYPE_MESSAGE) {
+        fprintf(stderr, "field: %s\n", upb_fielddef_fullname(field));
+      }
+      assert(upb_fielddef_type(field) == UPB_TYPE_MESSAGE);
+      slot_clear_hasbit(layout, storage, field);
+    } else {
+      slot_set_hasbit(layout, storage, field);
+    }
   }
 }
 
@@ -972,7 +1014,7 @@ void layout_init(MessageLayout* layout, void* storage) {
 
 void layout_mark(MessageLayout* layout, void* storage) {
   VALUE* values = (VALUE*)CHARPTR_AT(storage, layout->value_offset);
-  int noneofs = upb_msgdef_numoneofs(layout->msgdef);
+  int noneofs = upb_msgdef_numrealoneofs(layout->msgdef);
   int i;
 
   for (i = 0; i < layout->value_count; i++) {
@@ -994,7 +1036,7 @@ void layout_dup(MessageLayout* layout, void* to, void* from) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
     void* to_memory = slot_memory(layout, to, field);
     void* from_memory = slot_memory(layout, from, field);
@@ -1028,7 +1070,7 @@ void layout_deep_copy(MessageLayout* layout, void* to, void* from) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
     void* to_memory = slot_memory(layout, to, field);
     void* from_memory = slot_memory(layout, from, field);
@@ -1068,7 +1110,7 @@ VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    const upb_oneofdef* oneof = upb_fielddef_containingoneof(field);
+    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
 
     void* msg1_memory = slot_memory(layout, msg1, field);
     void* msg2_memory = slot_memory(layout, msg2, field);
@@ -1095,9 +1137,16 @@ VALUE layout_eq(MessageLayout* layout, void* msg1, void* msg2) {
         return Qfalse;
       }
     } else {
-      if (slot_is_hasbit_set(layout, msg1, field) !=
-              slot_is_hasbit_set(layout, msg2, field) ||
-          !native_slot_eq(upb_fielddef_type(field),
+      if (field_contains_hasbit(layout, field) &&
+          slot_is_hasbit_set(layout, msg1, field) !=
+              slot_is_hasbit_set(layout, msg2, field)) {
+        // TODO(haberman): I don't think we should actually care about hasbits
+        // here: an unset default should be able to equal a set default. But we
+        // can address this later (will also have to make sure defaults are
+        // being properly set when hasbit is clear).
+        return Qfalse;
+      }
+      if (!native_slot_eq(upb_fielddef_type(field),
                           field_type_class(layout, field), msg1_memory,
                           msg2_memory)) {
         return Qfalse;

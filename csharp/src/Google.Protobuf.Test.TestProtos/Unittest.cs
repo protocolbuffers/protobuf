@@ -1120,7 +1120,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// This proto includes every type of field in both singular and repeated
   /// forms.
   /// </summary>
-  public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
+  public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -1165,16 +1169,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       optionalString_ = other.optionalString_;
       optionalBytes_ = other.optionalBytes_;
       optionalGroup_ = other.HasOptionalGroup ? other.optionalGroup_.Clone() : null;
-      optionalNestedMessage_ = other.HasOptionalNestedMessage ? other.optionalNestedMessage_.Clone() : null;
-      optionalForeignMessage_ = other.HasOptionalForeignMessage ? other.optionalForeignMessage_.Clone() : null;
-      optionalImportMessage_ = other.HasOptionalImportMessage ? other.optionalImportMessage_.Clone() : null;
+      optionalNestedMessage_ = other.optionalNestedMessage_ != null ? other.optionalNestedMessage_.Clone() : null;
+      optionalForeignMessage_ = other.optionalForeignMessage_ != null ? other.optionalForeignMessage_.Clone() : null;
+      optionalImportMessage_ = other.optionalImportMessage_ != null ? other.optionalImportMessage_.Clone() : null;
       optionalNestedEnum_ = other.optionalNestedEnum_;
       optionalForeignEnum_ = other.optionalForeignEnum_;
       optionalImportEnum_ = other.optionalImportEnum_;
       optionalStringPiece_ = other.optionalStringPiece_;
       optionalCord_ = other.optionalCord_;
-      optionalPublicImportMessage_ = other.HasOptionalPublicImportMessage ? other.optionalPublicImportMessage_.Clone() : null;
-      optionalLazyMessage_ = other.HasOptionalLazyMessage ? other.optionalLazyMessage_.Clone() : null;
+      optionalPublicImportMessage_ = other.optionalPublicImportMessage_ != null ? other.optionalPublicImportMessage_.Clone() : null;
+      optionalLazyMessage_ = other.optionalLazyMessage_ != null ? other.optionalLazyMessage_.Clone() : null;
       repeatedInt32_ = other.repeatedInt32_.Clone();
       repeatedInt64_ = other.repeatedInt64_.Clone();
       repeatedUint32_ = other.repeatedUint32_.Clone();
@@ -1635,16 +1639,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         optionalNestedMessage_ = value;
       }
     }
-    /// <summary>Gets whether the optional_nested_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalNestedMessage {
-      get { return optionalNestedMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_nested_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalNestedMessage() {
-      optionalNestedMessage_ = null;
-    }
 
     /// <summary>Field number for the "optional_foreign_message" field.</summary>
     public const int OptionalForeignMessageFieldNumber = 19;
@@ -1656,16 +1650,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         optionalForeignMessage_ = value;
       }
     }
-    /// <summary>Gets whether the optional_foreign_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalForeignMessage {
-      get { return optionalForeignMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_foreign_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalForeignMessage() {
-      optionalForeignMessage_ = null;
-    }
 
     /// <summary>Field number for the "optional_import_message" field.</summary>
     public const int OptionalImportMessageFieldNumber = 20;
@@ -1676,16 +1660,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         optionalImportMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_import_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalImportMessage {
-      get { return optionalImportMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_import_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalImportMessage() {
-      optionalImportMessage_ = null;
     }
 
     /// <summary>Field number for the "optional_nested_enum" field.</summary>
@@ -1819,16 +1793,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         optionalPublicImportMessage_ = value;
       }
     }
-    /// <summary>Gets whether the optional_public_import_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalPublicImportMessage {
-      get { return optionalPublicImportMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_public_import_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalPublicImportMessage() {
-      optionalPublicImportMessage_ = null;
-    }
 
     /// <summary>Field number for the "optional_lazy_message" field.</summary>
     public const int OptionalLazyMessageFieldNumber = 27;
@@ -1839,16 +1803,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         optionalLazyMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_lazy_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalLazyMessage {
-      get { return optionalLazyMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_lazy_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalLazyMessage() {
-      optionalLazyMessage_ = null;
     }
 
     /// <summary>Field number for the "repeated_int32" field.</summary>
@@ -2610,22 +2564,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int OneofNestedMessageFieldNumber = 112;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage OneofNestedMessage {
-      get { return HasOneofNestedMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
       set {
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.OneofNestedMessage;
-      }
-    }
-    /// <summary>Gets whether the "oneof_nested_message" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOneofNestedMessage {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_nested_message" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofNestedMessage() {
-      if (HasOneofNestedMessage) {
-        ClearOneofField();
       }
     }
 
@@ -2807,16 +2749,16 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasOptionalString) hash ^= OptionalString.GetHashCode();
       if (HasOptionalBytes) hash ^= OptionalBytes.GetHashCode();
       if (HasOptionalGroup) hash ^= OptionalGroup.GetHashCode();
-      if (HasOptionalNestedMessage) hash ^= OptionalNestedMessage.GetHashCode();
-      if (HasOptionalForeignMessage) hash ^= OptionalForeignMessage.GetHashCode();
-      if (HasOptionalImportMessage) hash ^= OptionalImportMessage.GetHashCode();
+      if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
+      if (optionalForeignMessage_ != null) hash ^= OptionalForeignMessage.GetHashCode();
+      if (optionalImportMessage_ != null) hash ^= OptionalImportMessage.GetHashCode();
       if (HasOptionalNestedEnum) hash ^= OptionalNestedEnum.GetHashCode();
       if (HasOptionalForeignEnum) hash ^= OptionalForeignEnum.GetHashCode();
       if (HasOptionalImportEnum) hash ^= OptionalImportEnum.GetHashCode();
       if (HasOptionalStringPiece) hash ^= OptionalStringPiece.GetHashCode();
       if (HasOptionalCord) hash ^= OptionalCord.GetHashCode();
-      if (HasOptionalPublicImportMessage) hash ^= OptionalPublicImportMessage.GetHashCode();
-      if (HasOptionalLazyMessage) hash ^= OptionalLazyMessage.GetHashCode();
+      if (optionalPublicImportMessage_ != null) hash ^= OptionalPublicImportMessage.GetHashCode();
+      if (optionalLazyMessage_ != null) hash ^= OptionalLazyMessage.GetHashCode();
       hash ^= repeatedInt32_.GetHashCode();
       hash ^= repeatedInt64_.GetHashCode();
       hash ^= repeatedUint32_.GetHashCode();
@@ -2863,7 +2805,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasDefaultStringPiece) hash ^= DefaultStringPiece.GetHashCode();
       if (HasDefaultCord) hash ^= DefaultCord.GetHashCode();
       if (HasOneofUint32) hash ^= OneofUint32.GetHashCode();
-      if (HasOneofNestedMessage) hash ^= OneofNestedMessage.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) hash ^= OneofNestedMessage.GetHashCode();
       if (HasOneofString) hash ^= OneofString.GetHashCode();
       if (HasOneofBytes) hash ^= OneofBytes.GetHashCode();
       hash ^= (int) oneofFieldCase_;
@@ -2880,6 +2822,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasOptionalInt32) {
         output.WriteRawTag(8);
         output.WriteInt32(OptionalInt32);
@@ -2945,15 +2890,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteGroup(OptionalGroup);
         output.WriteRawTag(132, 1);
       }
-      if (HasOptionalNestedMessage) {
+      if (optionalNestedMessage_ != null) {
         output.WriteRawTag(146, 1);
         output.WriteMessage(OptionalNestedMessage);
       }
-      if (HasOptionalForeignMessage) {
+      if (optionalForeignMessage_ != null) {
         output.WriteRawTag(154, 1);
         output.WriteMessage(OptionalForeignMessage);
       }
-      if (HasOptionalImportMessage) {
+      if (optionalImportMessage_ != null) {
         output.WriteRawTag(162, 1);
         output.WriteMessage(OptionalImportMessage);
       }
@@ -2977,11 +2922,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(202, 1);
         output.WriteString(OptionalCord);
       }
-      if (HasOptionalPublicImportMessage) {
+      if (optionalPublicImportMessage_ != null) {
         output.WriteRawTag(210, 1);
         output.WriteMessage(OptionalPublicImportMessage);
       }
-      if (HasOptionalLazyMessage) {
+      if (optionalLazyMessage_ != null) {
         output.WriteRawTag(218, 1);
         output.WriteMessage(OptionalLazyMessage);
       }
@@ -3094,7 +3039,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(248, 6);
         output.WriteUInt32(OneofUint32);
       }
-      if (HasOneofNestedMessage) {
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
         output.WriteRawTag(130, 7);
         output.WriteMessage(OneofNestedMessage);
       }
@@ -3109,7 +3054,243 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasOptionalInt32) {
+        output.WriteRawTag(8);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (HasOptionalInt64) {
+        output.WriteRawTag(16);
+        output.WriteInt64(OptionalInt64);
+      }
+      if (HasOptionalUint32) {
+        output.WriteRawTag(24);
+        output.WriteUInt32(OptionalUint32);
+      }
+      if (HasOptionalUint64) {
+        output.WriteRawTag(32);
+        output.WriteUInt64(OptionalUint64);
+      }
+      if (HasOptionalSint32) {
+        output.WriteRawTag(40);
+        output.WriteSInt32(OptionalSint32);
+      }
+      if (HasOptionalSint64) {
+        output.WriteRawTag(48);
+        output.WriteSInt64(OptionalSint64);
+      }
+      if (HasOptionalFixed32) {
+        output.WriteRawTag(61);
+        output.WriteFixed32(OptionalFixed32);
+      }
+      if (HasOptionalFixed64) {
+        output.WriteRawTag(65);
+        output.WriteFixed64(OptionalFixed64);
+      }
+      if (HasOptionalSfixed32) {
+        output.WriteRawTag(77);
+        output.WriteSFixed32(OptionalSfixed32);
+      }
+      if (HasOptionalSfixed64) {
+        output.WriteRawTag(81);
+        output.WriteSFixed64(OptionalSfixed64);
+      }
+      if (HasOptionalFloat) {
+        output.WriteRawTag(93);
+        output.WriteFloat(OptionalFloat);
+      }
+      if (HasOptionalDouble) {
+        output.WriteRawTag(97);
+        output.WriteDouble(OptionalDouble);
+      }
+      if (HasOptionalBool) {
+        output.WriteRawTag(104);
+        output.WriteBool(OptionalBool);
+      }
+      if (HasOptionalString) {
+        output.WriteRawTag(114);
+        output.WriteString(OptionalString);
+      }
+      if (HasOptionalBytes) {
+        output.WriteRawTag(122);
+        output.WriteBytes(OptionalBytes);
+      }
+      if (HasOptionalGroup) {
+        output.WriteRawTag(131, 1);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(132, 1);
+      }
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(146, 1);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (optionalForeignMessage_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(OptionalForeignMessage);
+      }
+      if (optionalImportMessage_ != null) {
+        output.WriteRawTag(162, 1);
+        output.WriteMessage(OptionalImportMessage);
+      }
+      if (HasOptionalNestedEnum) {
+        output.WriteRawTag(168, 1);
+        output.WriteEnum((int) OptionalNestedEnum);
+      }
+      if (HasOptionalForeignEnum) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) OptionalForeignEnum);
+      }
+      if (HasOptionalImportEnum) {
+        output.WriteRawTag(184, 1);
+        output.WriteEnum((int) OptionalImportEnum);
+      }
+      if (HasOptionalStringPiece) {
+        output.WriteRawTag(194, 1);
+        output.WriteString(OptionalStringPiece);
+      }
+      if (HasOptionalCord) {
+        output.WriteRawTag(202, 1);
+        output.WriteString(OptionalCord);
+      }
+      if (optionalPublicImportMessage_ != null) {
+        output.WriteRawTag(210, 1);
+        output.WriteMessage(OptionalPublicImportMessage);
+      }
+      if (optionalLazyMessage_ != null) {
+        output.WriteRawTag(218, 1);
+        output.WriteMessage(OptionalLazyMessage);
+      }
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      repeatedInt64_.WriteTo(ref output, _repeated_repeatedInt64_codec);
+      repeatedUint32_.WriteTo(ref output, _repeated_repeatedUint32_codec);
+      repeatedUint64_.WriteTo(ref output, _repeated_repeatedUint64_codec);
+      repeatedSint32_.WriteTo(ref output, _repeated_repeatedSint32_codec);
+      repeatedSint64_.WriteTo(ref output, _repeated_repeatedSint64_codec);
+      repeatedFixed32_.WriteTo(ref output, _repeated_repeatedFixed32_codec);
+      repeatedFixed64_.WriteTo(ref output, _repeated_repeatedFixed64_codec);
+      repeatedSfixed32_.WriteTo(ref output, _repeated_repeatedSfixed32_codec);
+      repeatedSfixed64_.WriteTo(ref output, _repeated_repeatedSfixed64_codec);
+      repeatedFloat_.WriteTo(ref output, _repeated_repeatedFloat_codec);
+      repeatedDouble_.WriteTo(ref output, _repeated_repeatedDouble_codec);
+      repeatedBool_.WriteTo(ref output, _repeated_repeatedBool_codec);
+      repeatedString_.WriteTo(ref output, _repeated_repeatedString_codec);
+      repeatedBytes_.WriteTo(ref output, _repeated_repeatedBytes_codec);
+      repeatedGroup_.WriteTo(ref output, _repeated_repeatedGroup_codec);
+      repeatedNestedMessage_.WriteTo(ref output, _repeated_repeatedNestedMessage_codec);
+      repeatedForeignMessage_.WriteTo(ref output, _repeated_repeatedForeignMessage_codec);
+      repeatedImportMessage_.WriteTo(ref output, _repeated_repeatedImportMessage_codec);
+      repeatedNestedEnum_.WriteTo(ref output, _repeated_repeatedNestedEnum_codec);
+      repeatedForeignEnum_.WriteTo(ref output, _repeated_repeatedForeignEnum_codec);
+      repeatedImportEnum_.WriteTo(ref output, _repeated_repeatedImportEnum_codec);
+      repeatedStringPiece_.WriteTo(ref output, _repeated_repeatedStringPiece_codec);
+      repeatedCord_.WriteTo(ref output, _repeated_repeatedCord_codec);
+      repeatedLazyMessage_.WriteTo(ref output, _repeated_repeatedLazyMessage_codec);
+      if (HasDefaultInt32) {
+        output.WriteRawTag(232, 3);
+        output.WriteInt32(DefaultInt32);
+      }
+      if (HasDefaultInt64) {
+        output.WriteRawTag(240, 3);
+        output.WriteInt64(DefaultInt64);
+      }
+      if (HasDefaultUint32) {
+        output.WriteRawTag(248, 3);
+        output.WriteUInt32(DefaultUint32);
+      }
+      if (HasDefaultUint64) {
+        output.WriteRawTag(128, 4);
+        output.WriteUInt64(DefaultUint64);
+      }
+      if (HasDefaultSint32) {
+        output.WriteRawTag(136, 4);
+        output.WriteSInt32(DefaultSint32);
+      }
+      if (HasDefaultSint64) {
+        output.WriteRawTag(144, 4);
+        output.WriteSInt64(DefaultSint64);
+      }
+      if (HasDefaultFixed32) {
+        output.WriteRawTag(157, 4);
+        output.WriteFixed32(DefaultFixed32);
+      }
+      if (HasDefaultFixed64) {
+        output.WriteRawTag(161, 4);
+        output.WriteFixed64(DefaultFixed64);
+      }
+      if (HasDefaultSfixed32) {
+        output.WriteRawTag(173, 4);
+        output.WriteSFixed32(DefaultSfixed32);
+      }
+      if (HasDefaultSfixed64) {
+        output.WriteRawTag(177, 4);
+        output.WriteSFixed64(DefaultSfixed64);
+      }
+      if (HasDefaultFloat) {
+        output.WriteRawTag(189, 4);
+        output.WriteFloat(DefaultFloat);
+      }
+      if (HasDefaultDouble) {
+        output.WriteRawTag(193, 4);
+        output.WriteDouble(DefaultDouble);
+      }
+      if (HasDefaultBool) {
+        output.WriteRawTag(200, 4);
+        output.WriteBool(DefaultBool);
+      }
+      if (HasDefaultString) {
+        output.WriteRawTag(210, 4);
+        output.WriteString(DefaultString);
+      }
+      if (HasDefaultBytes) {
+        output.WriteRawTag(218, 4);
+        output.WriteBytes(DefaultBytes);
+      }
+      if (HasDefaultNestedEnum) {
+        output.WriteRawTag(136, 5);
+        output.WriteEnum((int) DefaultNestedEnum);
+      }
+      if (HasDefaultForeignEnum) {
+        output.WriteRawTag(144, 5);
+        output.WriteEnum((int) DefaultForeignEnum);
+      }
+      if (HasDefaultImportEnum) {
+        output.WriteRawTag(152, 5);
+        output.WriteEnum((int) DefaultImportEnum);
+      }
+      if (HasDefaultStringPiece) {
+        output.WriteRawTag(162, 5);
+        output.WriteString(DefaultStringPiece);
+      }
+      if (HasDefaultCord) {
+        output.WriteRawTag(170, 5);
+        output.WriteString(DefaultCord);
+      }
+      if (HasOneofUint32) {
+        output.WriteRawTag(248, 6);
+        output.WriteUInt32(OneofUint32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+        output.WriteRawTag(130, 7);
+        output.WriteMessage(OneofNestedMessage);
+      }
+      if (HasOneofString) {
+        output.WriteRawTag(138, 7);
+        output.WriteString(OneofString);
+      }
+      if (HasOneofBytes) {
+        output.WriteRawTag(146, 7);
+        output.WriteBytes(OneofBytes);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -3162,13 +3343,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasOptionalGroup) {
         size += 4 + pb::CodedOutputStream.ComputeGroupSize(OptionalGroup);
       }
-      if (HasOptionalNestedMessage) {
+      if (optionalNestedMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalNestedMessage);
       }
-      if (HasOptionalForeignMessage) {
+      if (optionalForeignMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalForeignMessage);
       }
-      if (HasOptionalImportMessage) {
+      if (optionalImportMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalImportMessage);
       }
       if (HasOptionalNestedEnum) {
@@ -3186,10 +3367,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasOptionalCord) {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(OptionalCord);
       }
-      if (HasOptionalPublicImportMessage) {
+      if (optionalPublicImportMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalPublicImportMessage);
       }
-      if (HasOptionalLazyMessage) {
+      if (optionalLazyMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalLazyMessage);
       }
       size += repeatedInt32_.CalculateSize(_repeated_repeatedInt32_codec);
@@ -3280,7 +3461,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasOneofUint32) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(OneofUint32);
       }
-      if (HasOneofNestedMessage) {
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OneofNestedMessage);
       }
       if (HasOneofString) {
@@ -3351,20 +3532,20 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
         OptionalGroup.MergeFrom(other.OptionalGroup);
       }
-      if (other.HasOptionalNestedMessage) {
-        if (!HasOptionalNestedMessage) {
+      if (other.optionalNestedMessage_ != null) {
+        if (optionalNestedMessage_ == null) {
           OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
         }
         OptionalNestedMessage.MergeFrom(other.OptionalNestedMessage);
       }
-      if (other.HasOptionalForeignMessage) {
-        if (!HasOptionalForeignMessage) {
+      if (other.optionalForeignMessage_ != null) {
+        if (optionalForeignMessage_ == null) {
           OptionalForeignMessage = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
         }
         OptionalForeignMessage.MergeFrom(other.OptionalForeignMessage);
       }
-      if (other.HasOptionalImportMessage) {
-        if (!HasOptionalImportMessage) {
+      if (other.optionalImportMessage_ != null) {
+        if (optionalImportMessage_ == null) {
           OptionalImportMessage = new global::Google.Protobuf.TestProtos.Proto2.ImportMessage();
         }
         OptionalImportMessage.MergeFrom(other.OptionalImportMessage);
@@ -3384,14 +3565,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other.HasOptionalCord) {
         OptionalCord = other.OptionalCord;
       }
-      if (other.HasOptionalPublicImportMessage) {
-        if (!HasOptionalPublicImportMessage) {
+      if (other.optionalPublicImportMessage_ != null) {
+        if (optionalPublicImportMessage_ == null) {
           OptionalPublicImportMessage = new global::Google.Protobuf.TestProtos.Proto2.PublicImportMessage();
         }
         OptionalPublicImportMessage.MergeFrom(other.OptionalPublicImportMessage);
       }
-      if (other.HasOptionalLazyMessage) {
-        if (!HasOptionalLazyMessage) {
+      if (other.optionalLazyMessage_ != null) {
+        if (optionalLazyMessage_ == null) {
           OptionalLazyMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
         }
         OptionalLazyMessage.MergeFrom(other.OptionalLazyMessage);
@@ -3504,6 +3685,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -3578,21 +3762,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 146: {
-            if (!HasOptionalNestedMessage) {
+            if (optionalNestedMessage_ == null) {
               OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
             }
             input.ReadMessage(OptionalNestedMessage);
             break;
           }
           case 154: {
-            if (!HasOptionalForeignMessage) {
+            if (optionalForeignMessage_ == null) {
               OptionalForeignMessage = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
             }
             input.ReadMessage(OptionalForeignMessage);
             break;
           }
           case 162: {
-            if (!HasOptionalImportMessage) {
+            if (optionalImportMessage_ == null) {
               OptionalImportMessage = new global::Google.Protobuf.TestProtos.Proto2.ImportMessage();
             }
             input.ReadMessage(OptionalImportMessage);
@@ -3619,14 +3803,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 210: {
-            if (!HasOptionalPublicImportMessage) {
+            if (optionalPublicImportMessage_ == null) {
               OptionalPublicImportMessage = new global::Google.Protobuf.TestProtos.Proto2.PublicImportMessage();
             }
             input.ReadMessage(OptionalPublicImportMessage);
             break;
           }
           case 218: {
-            if (!HasOptionalLazyMessage) {
+            if (optionalLazyMessage_ == null) {
               OptionalLazyMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
             }
             input.ReadMessage(OptionalLazyMessage);
@@ -3834,7 +4018,360 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
           case 898: {
             global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
-            if (HasOneofNestedMessage) {
+            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
+              subBuilder.MergeFrom(OneofNestedMessage);
+            }
+            input.ReadMessage(subBuilder);
+            OneofNestedMessage = subBuilder;
+            break;
+          }
+          case 906: {
+            OneofString = input.ReadString();
+            break;
+          }
+          case 914: {
+            OneofBytes = input.ReadBytes();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            OptionalInt64 = input.ReadInt64();
+            break;
+          }
+          case 24: {
+            OptionalUint32 = input.ReadUInt32();
+            break;
+          }
+          case 32: {
+            OptionalUint64 = input.ReadUInt64();
+            break;
+          }
+          case 40: {
+            OptionalSint32 = input.ReadSInt32();
+            break;
+          }
+          case 48: {
+            OptionalSint64 = input.ReadSInt64();
+            break;
+          }
+          case 61: {
+            OptionalFixed32 = input.ReadFixed32();
+            break;
+          }
+          case 65: {
+            OptionalFixed64 = input.ReadFixed64();
+            break;
+          }
+          case 77: {
+            OptionalSfixed32 = input.ReadSFixed32();
+            break;
+          }
+          case 81: {
+            OptionalSfixed64 = input.ReadSFixed64();
+            break;
+          }
+          case 93: {
+            OptionalFloat = input.ReadFloat();
+            break;
+          }
+          case 97: {
+            OptionalDouble = input.ReadDouble();
+            break;
+          }
+          case 104: {
+            OptionalBool = input.ReadBool();
+            break;
+          }
+          case 114: {
+            OptionalString = input.ReadString();
+            break;
+          }
+          case 122: {
+            OptionalBytes = input.ReadBytes();
+            break;
+          }
+          case 131: {
+            if (!HasOptionalGroup) {
+              OptionalGroup = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.OptionalGroup();
+            }
+            input.ReadGroup(OptionalGroup);
+            break;
+          }
+          case 146: {
+            if (optionalNestedMessage_ == null) {
+              OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalNestedMessage);
+            break;
+          }
+          case 154: {
+            if (optionalForeignMessage_ == null) {
+              OptionalForeignMessage = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
+            }
+            input.ReadMessage(OptionalForeignMessage);
+            break;
+          }
+          case 162: {
+            if (optionalImportMessage_ == null) {
+              OptionalImportMessage = new global::Google.Protobuf.TestProtos.Proto2.ImportMessage();
+            }
+            input.ReadMessage(OptionalImportMessage);
+            break;
+          }
+          case 168: {
+            OptionalNestedEnum = (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum) input.ReadEnum();
+            break;
+          }
+          case 176: {
+            OptionalForeignEnum = (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) input.ReadEnum();
+            break;
+          }
+          case 184: {
+            OptionalImportEnum = (global::Google.Protobuf.TestProtos.Proto2.ImportEnum) input.ReadEnum();
+            break;
+          }
+          case 194: {
+            OptionalStringPiece = input.ReadString();
+            break;
+          }
+          case 202: {
+            OptionalCord = input.ReadString();
+            break;
+          }
+          case 210: {
+            if (optionalPublicImportMessage_ == null) {
+              OptionalPublicImportMessage = new global::Google.Protobuf.TestProtos.Proto2.PublicImportMessage();
+            }
+            input.ReadMessage(OptionalPublicImportMessage);
+            break;
+          }
+          case 218: {
+            if (optionalLazyMessage_ == null) {
+              OptionalLazyMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalLazyMessage);
+            break;
+          }
+          case 250:
+          case 248: {
+            repeatedInt32_.AddEntriesFrom(ref input, _repeated_repeatedInt32_codec);
+            break;
+          }
+          case 258:
+          case 256: {
+            repeatedInt64_.AddEntriesFrom(ref input, _repeated_repeatedInt64_codec);
+            break;
+          }
+          case 266:
+          case 264: {
+            repeatedUint32_.AddEntriesFrom(ref input, _repeated_repeatedUint32_codec);
+            break;
+          }
+          case 274:
+          case 272: {
+            repeatedUint64_.AddEntriesFrom(ref input, _repeated_repeatedUint64_codec);
+            break;
+          }
+          case 282:
+          case 280: {
+            repeatedSint32_.AddEntriesFrom(ref input, _repeated_repeatedSint32_codec);
+            break;
+          }
+          case 290:
+          case 288: {
+            repeatedSint64_.AddEntriesFrom(ref input, _repeated_repeatedSint64_codec);
+            break;
+          }
+          case 298:
+          case 301: {
+            repeatedFixed32_.AddEntriesFrom(ref input, _repeated_repeatedFixed32_codec);
+            break;
+          }
+          case 306:
+          case 305: {
+            repeatedFixed64_.AddEntriesFrom(ref input, _repeated_repeatedFixed64_codec);
+            break;
+          }
+          case 314:
+          case 317: {
+            repeatedSfixed32_.AddEntriesFrom(ref input, _repeated_repeatedSfixed32_codec);
+            break;
+          }
+          case 322:
+          case 321: {
+            repeatedSfixed64_.AddEntriesFrom(ref input, _repeated_repeatedSfixed64_codec);
+            break;
+          }
+          case 330:
+          case 333: {
+            repeatedFloat_.AddEntriesFrom(ref input, _repeated_repeatedFloat_codec);
+            break;
+          }
+          case 338:
+          case 337: {
+            repeatedDouble_.AddEntriesFrom(ref input, _repeated_repeatedDouble_codec);
+            break;
+          }
+          case 346:
+          case 344: {
+            repeatedBool_.AddEntriesFrom(ref input, _repeated_repeatedBool_codec);
+            break;
+          }
+          case 354: {
+            repeatedString_.AddEntriesFrom(ref input, _repeated_repeatedString_codec);
+            break;
+          }
+          case 362: {
+            repeatedBytes_.AddEntriesFrom(ref input, _repeated_repeatedBytes_codec);
+            break;
+          }
+          case 371: {
+            repeatedGroup_.AddEntriesFrom(ref input, _repeated_repeatedGroup_codec);
+            break;
+          }
+          case 386: {
+            repeatedNestedMessage_.AddEntriesFrom(ref input, _repeated_repeatedNestedMessage_codec);
+            break;
+          }
+          case 394: {
+            repeatedForeignMessage_.AddEntriesFrom(ref input, _repeated_repeatedForeignMessage_codec);
+            break;
+          }
+          case 402: {
+            repeatedImportMessage_.AddEntriesFrom(ref input, _repeated_repeatedImportMessage_codec);
+            break;
+          }
+          case 410:
+          case 408: {
+            repeatedNestedEnum_.AddEntriesFrom(ref input, _repeated_repeatedNestedEnum_codec);
+            break;
+          }
+          case 418:
+          case 416: {
+            repeatedForeignEnum_.AddEntriesFrom(ref input, _repeated_repeatedForeignEnum_codec);
+            break;
+          }
+          case 426:
+          case 424: {
+            repeatedImportEnum_.AddEntriesFrom(ref input, _repeated_repeatedImportEnum_codec);
+            break;
+          }
+          case 434: {
+            repeatedStringPiece_.AddEntriesFrom(ref input, _repeated_repeatedStringPiece_codec);
+            break;
+          }
+          case 442: {
+            repeatedCord_.AddEntriesFrom(ref input, _repeated_repeatedCord_codec);
+            break;
+          }
+          case 458: {
+            repeatedLazyMessage_.AddEntriesFrom(ref input, _repeated_repeatedLazyMessage_codec);
+            break;
+          }
+          case 488: {
+            DefaultInt32 = input.ReadInt32();
+            break;
+          }
+          case 496: {
+            DefaultInt64 = input.ReadInt64();
+            break;
+          }
+          case 504: {
+            DefaultUint32 = input.ReadUInt32();
+            break;
+          }
+          case 512: {
+            DefaultUint64 = input.ReadUInt64();
+            break;
+          }
+          case 520: {
+            DefaultSint32 = input.ReadSInt32();
+            break;
+          }
+          case 528: {
+            DefaultSint64 = input.ReadSInt64();
+            break;
+          }
+          case 541: {
+            DefaultFixed32 = input.ReadFixed32();
+            break;
+          }
+          case 545: {
+            DefaultFixed64 = input.ReadFixed64();
+            break;
+          }
+          case 557: {
+            DefaultSfixed32 = input.ReadSFixed32();
+            break;
+          }
+          case 561: {
+            DefaultSfixed64 = input.ReadSFixed64();
+            break;
+          }
+          case 573: {
+            DefaultFloat = input.ReadFloat();
+            break;
+          }
+          case 577: {
+            DefaultDouble = input.ReadDouble();
+            break;
+          }
+          case 584: {
+            DefaultBool = input.ReadBool();
+            break;
+          }
+          case 594: {
+            DefaultString = input.ReadString();
+            break;
+          }
+          case 602: {
+            DefaultBytes = input.ReadBytes();
+            break;
+          }
+          case 648: {
+            DefaultNestedEnum = (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum) input.ReadEnum();
+            break;
+          }
+          case 656: {
+            DefaultForeignEnum = (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) input.ReadEnum();
+            break;
+          }
+          case 664: {
+            DefaultImportEnum = (global::Google.Protobuf.TestProtos.Proto2.ImportEnum) input.ReadEnum();
+            break;
+          }
+          case 674: {
+            DefaultStringPiece = input.ReadString();
+            break;
+          }
+          case 682: {
+            DefaultCord = input.ReadString();
+            break;
+          }
+          case 888: {
+            OneofUint32 = input.ReadUInt32();
+            break;
+          }
+          case 898: {
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
+            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
               subBuilder.MergeFrom(OneofNestedMessage);
             }
             input.ReadMessage(subBuilder);
@@ -3852,6 +4389,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
@@ -3867,7 +4405,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -3966,6 +4508,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasBb) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -3973,7 +4518,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasBb) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Bb);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -4000,6 +4559,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -4012,11 +4574,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                Bb = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
-      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup> {
+      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -4110,6 +4695,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(136, 1);
             output.WriteInt32(A);
@@ -4117,7 +4705,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(136, 1);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -4144,6 +4746,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -4158,11 +4763,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 132:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 136: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
-      public sealed partial class RepeatedGroup : pb::IMessage<RepeatedGroup> {
+      public sealed partial class RepeatedGroup : pb::IMessage<RepeatedGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<RepeatedGroup> _parser = new pb::MessageParser<RepeatedGroup>(() => new RepeatedGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -4256,6 +4886,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(248, 2);
             output.WriteInt32(A);
@@ -4263,7 +4896,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(248, 2);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -4290,6 +4937,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -4304,7 +4954,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 372:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 376: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -4314,9 +4985,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   }
 
   /// <summary>
-  /// This proto includes a recusively nested message.
+  /// This proto includes a recursively nested message.
   /// </summary>
-  public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes> {
+  public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<NestedTestAllTypes> _parser = new pb::MessageParser<NestedTestAllTypes>(() => new NestedTestAllTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4341,8 +5016,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public NestedTestAllTypes(NestedTestAllTypes other) : this() {
-      child_ = other.HasChild ? other.child_.Clone() : null;
-      payload_ = other.HasPayload ? other.payload_.Clone() : null;
+      child_ = other.child_ != null ? other.child_.Clone() : null;
+      payload_ = other.payload_ != null ? other.payload_.Clone() : null;
       repeatedChild_ = other.repeatedChild_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -4362,16 +5037,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         child_ = value;
       }
     }
-    /// <summary>Gets whether the child field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasChild {
-      get { return child_ != null; }
-    }
-    /// <summary>Clears the value of the child field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearChild() {
-      child_ = null;
-    }
 
     /// <summary>Field number for the "payload" field.</summary>
     public const int PayloadFieldNumber = 2;
@@ -4382,16 +5047,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         payload_ = value;
       }
-    }
-    /// <summary>Gets whether the payload field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasPayload {
-      get { return payload_ != null; }
-    }
-    /// <summary>Clears the value of the payload field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearPayload() {
-      payload_ = null;
     }
 
     /// <summary>Field number for the "repeated_child" field.</summary>
@@ -4426,8 +5081,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasChild) hash ^= Child.GetHashCode();
-      if (HasPayload) hash ^= Payload.GetHashCode();
+      if (child_ != null) hash ^= Child.GetHashCode();
+      if (payload_ != null) hash ^= Payload.GetHashCode();
       hash ^= repeatedChild_.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -4442,11 +5097,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasChild) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (child_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Child);
       }
-      if (HasPayload) {
+      if (payload_ != null) {
         output.WriteRawTag(18);
         output.WriteMessage(Payload);
       }
@@ -4454,15 +5112,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (child_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Child);
+      }
+      if (payload_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(Payload);
+      }
+      repeatedChild_.WriteTo(ref output, _repeated_repeatedChild_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasChild) {
+      if (child_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Child);
       }
-      if (HasPayload) {
+      if (payload_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Payload);
       }
       size += repeatedChild_.CalculateSize(_repeated_repeatedChild_codec);
@@ -4477,14 +5154,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasChild) {
-        if (!HasChild) {
+      if (other.child_ != null) {
+        if (child_ == null) {
           Child = new global::Google.Protobuf.TestProtos.Proto2.NestedTestAllTypes();
         }
         Child.MergeFrom(other.Child);
       }
-      if (other.HasPayload) {
-        if (!HasPayload) {
+      if (other.payload_ != null) {
+        if (payload_ == null) {
           Payload = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
         }
         Payload.MergeFrom(other.Payload);
@@ -4495,6 +5172,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -4502,14 +5182,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasChild) {
+            if (child_ == null) {
               Child = new global::Google.Protobuf.TestProtos.Proto2.NestedTestAllTypes();
             }
             input.ReadMessage(Child);
             break;
           }
           case 18: {
-            if (!HasPayload) {
+            if (payload_ == null) {
               Payload = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             input.ReadMessage(Payload);
@@ -4521,11 +5201,48 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (child_ == null) {
+              Child = new global::Google.Protobuf.TestProtos.Proto2.NestedTestAllTypes();
+            }
+            input.ReadMessage(Child);
+            break;
+          }
+          case 18: {
+            if (payload_ == null) {
+              Payload = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+            }
+            input.ReadMessage(Payload);
+            break;
+          }
+          case 26: {
+            repeatedChild_.AddEntriesFrom(ref input, _repeated_repeatedChild_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields> {
+  public sealed partial class TestDeprecatedFields : pb::IMessage<TestDeprecatedFields>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestDeprecatedFields> _parser = new pb::MessageParser<TestDeprecatedFields>(() => new TestDeprecatedFields());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -4676,6 +5393,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasDeprecatedInt32) {
         output.WriteRawTag(8);
         output.WriteInt32(DeprecatedInt32);
@@ -4687,7 +5407,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasDeprecatedInt32) {
+        output.WriteRawTag(8);
+        output.WriteInt32(DeprecatedInt32);
+      }
+      if (HasDeprecatedInt32InOneof) {
+        output.WriteRawTag(16);
+        output.WriteInt32(DeprecatedInt32InOneof);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -4723,6 +5461,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -4739,12 +5480,39 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            DeprecatedInt32 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            DeprecatedInt32InOneof = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
   [global::System.ObsoleteAttribute]
-  public sealed partial class TestDeprecatedMessage : pb::IMessage<TestDeprecatedMessage> {
+  public sealed partial class TestDeprecatedMessage : pb::IMessage<TestDeprecatedMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestDeprecatedMessage> _parser = new pb::MessageParser<TestDeprecatedMessage>(() => new TestDeprecatedMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4809,10 +5577,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -4833,6 +5614,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -4841,7 +5625,22 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
@@ -4849,7 +5648,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Define these after TestAllTypes to make sure the compiler can handle
   /// that.
   /// </summary>
-  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
+  public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -4970,6 +5773,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasC) {
         output.WriteRawTag(8);
         output.WriteInt32(C);
@@ -4981,7 +5787,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasC) {
+        output.WriteRawTag(8);
+        output.WriteInt32(C);
+      }
+      if (HasD) {
+        output.WriteRawTag(16);
+        output.WriteInt32(D);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5014,6 +5838,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -5030,11 +5857,38 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            C = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            D = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields> {
+  public sealed partial class TestReservedFields : pb::IMessage<TestReservedFields>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestReservedFields> _parser = new pb::MessageParser<TestReservedFields>(() => new TestReservedFields());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5099,10 +5953,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5123,6 +5990,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -5131,11 +6001,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestAllExtensions : pb::IExtendableMessage<TestAllExtensions> {
+  public sealed partial class TestAllExtensions : pb::IExtendableMessage<TestAllExtensions>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestAllExtensions> _parser = new pb::MessageParser<TestAllExtensions>(() => new TestAllExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestAllExtensions> _extensions;
@@ -5209,13 +6098,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5240,6 +6145,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -5250,7 +6158,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+        }
+      }
+    }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestAllExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -5276,7 +6201,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class OptionalGroup_extension : pb::IMessage<OptionalGroup_extension> {
+  public sealed partial class OptionalGroup_extension : pb::IMessage<OptionalGroup_extension>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<OptionalGroup_extension> _parser = new pb::MessageParser<OptionalGroup_extension>(() => new OptionalGroup_extension());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -5370,6 +6299,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(136, 1);
         output.WriteInt32(A);
@@ -5377,7 +6309,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(136, 1);
+        output.WriteInt32(A);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5404,6 +6350,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -5418,11 +6367,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          case 132:
+            return;
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 136: {
+            A = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class RepeatedGroup_extension : pb::IMessage<RepeatedGroup_extension> {
+  public sealed partial class RepeatedGroup_extension : pb::IMessage<RepeatedGroup_extension>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<RepeatedGroup_extension> _parser = new pb::MessageParser<RepeatedGroup_extension>(() => new RepeatedGroup_extension());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -5516,6 +6490,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(248, 2);
         output.WriteInt32(A);
@@ -5523,7 +6500,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(248, 2);
+        output.WriteInt32(A);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5550,6 +6541,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -5564,11 +6558,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          case 372:
+            return;
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 376: {
+            A = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestGroup : pb::IMessage<TestGroup> {
+  public sealed partial class TestGroup : pb::IMessage<TestGroup>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestGroup> _parser = new pb::MessageParser<TestGroup>(() => new TestGroup());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -5686,6 +6705,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasOptionalGroup) {
         output.WriteRawTag(131, 1);
         output.WriteGroup(OptionalGroup);
@@ -5698,7 +6720,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasOptionalGroup) {
+        output.WriteRawTag(131, 1);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(132, 1);
+      }
+      if (HasOptionalForeignEnum) {
+        output.WriteRawTag(176, 1);
+        output.WriteEnum((int) OptionalForeignEnum);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -5734,6 +6775,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -5753,13 +6797,43 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 131: {
+            if (!HasOptionalGroup) {
+              OptionalGroup = new global::Google.Protobuf.TestProtos.Proto2.TestGroup.Types.OptionalGroup();
+            }
+            input.ReadGroup(OptionalGroup);
+            break;
+          }
+          case 176: {
+            OptionalForeignEnum = (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestGroup message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup> {
+      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -5853,6 +6927,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(136, 1);
             output.WriteInt32(A);
@@ -5860,7 +6937,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(136, 1);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -5887,6 +6978,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -5901,7 +6995,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 132:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 136: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -5910,7 +7025,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestGroupExtension : pb::IExtendableMessage<TestGroupExtension> {
+  public sealed partial class TestGroupExtension : pb::IExtendableMessage<TestGroupExtension>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestGroupExtension> _parser = new pb::MessageParser<TestGroupExtension>(() => new TestGroupExtension());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestGroupExtension> _extensions;
@@ -5984,13 +7103,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -6015,6 +7150,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -6025,7 +7163,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+        }
+      }
+    }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestGroupExtension, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -6051,7 +7206,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestNestedExtension : pb::IMessage<TestNestedExtension> {
+  public sealed partial class TestNestedExtension : pb::IMessage<TestNestedExtension>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestNestedExtension> _parser = new pb::MessageParser<TestNestedExtension>(() => new TestNestedExtension());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6116,10 +7275,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -6140,6 +7312,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -6148,13 +7323,32 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestNestedExtension message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class OptionalGroup_extension : pb::IMessage<OptionalGroup_extension> {
+      public sealed partial class OptionalGroup_extension : pb::IMessage<OptionalGroup_extension>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<OptionalGroup_extension> _parser = new pb::MessageParser<OptionalGroup_extension>(() => new OptionalGroup_extension());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -6248,6 +7442,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(136, 1);
             output.WriteInt32(A);
@@ -6255,7 +7452,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(136, 1);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -6282,6 +7493,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -6296,7 +7510,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 132:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 136: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -6335,7 +7570,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// required filed because the code output is basically identical to
   /// optional fields for all types.
   /// </summary>
-  public sealed partial class TestRequired : pb::IMessage<TestRequired> {
+  public sealed partial class TestRequired : pb::IMessage<TestRequired>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestRequired> _parser = new pb::MessageParser<TestRequired>(() => new TestRequired());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -7299,6 +8538,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -7434,7 +8676,149 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(8);
+        output.WriteInt32(A);
+      }
+      if (HasDummy2) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Dummy2);
+      }
+      if (HasB) {
+        output.WriteRawTag(24);
+        output.WriteInt32(B);
+      }
+      if (HasDummy4) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Dummy4);
+      }
+      if (HasDummy5) {
+        output.WriteRawTag(40);
+        output.WriteInt32(Dummy5);
+      }
+      if (HasDummy6) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Dummy6);
+      }
+      if (HasDummy7) {
+        output.WriteRawTag(56);
+        output.WriteInt32(Dummy7);
+      }
+      if (HasDummy8) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Dummy8);
+      }
+      if (HasDummy9) {
+        output.WriteRawTag(72);
+        output.WriteInt32(Dummy9);
+      }
+      if (HasDummy10) {
+        output.WriteRawTag(80);
+        output.WriteInt32(Dummy10);
+      }
+      if (HasDummy11) {
+        output.WriteRawTag(88);
+        output.WriteInt32(Dummy11);
+      }
+      if (HasDummy12) {
+        output.WriteRawTag(96);
+        output.WriteInt32(Dummy12);
+      }
+      if (HasDummy13) {
+        output.WriteRawTag(104);
+        output.WriteInt32(Dummy13);
+      }
+      if (HasDummy14) {
+        output.WriteRawTag(112);
+        output.WriteInt32(Dummy14);
+      }
+      if (HasDummy15) {
+        output.WriteRawTag(120);
+        output.WriteInt32(Dummy15);
+      }
+      if (HasDummy16) {
+        output.WriteRawTag(128, 1);
+        output.WriteInt32(Dummy16);
+      }
+      if (HasDummy17) {
+        output.WriteRawTag(136, 1);
+        output.WriteInt32(Dummy17);
+      }
+      if (HasDummy18) {
+        output.WriteRawTag(144, 1);
+        output.WriteInt32(Dummy18);
+      }
+      if (HasDummy19) {
+        output.WriteRawTag(152, 1);
+        output.WriteInt32(Dummy19);
+      }
+      if (HasDummy20) {
+        output.WriteRawTag(160, 1);
+        output.WriteInt32(Dummy20);
+      }
+      if (HasDummy21) {
+        output.WriteRawTag(168, 1);
+        output.WriteInt32(Dummy21);
+      }
+      if (HasDummy22) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt32(Dummy22);
+      }
+      if (HasDummy23) {
+        output.WriteRawTag(184, 1);
+        output.WriteInt32(Dummy23);
+      }
+      if (HasDummy24) {
+        output.WriteRawTag(192, 1);
+        output.WriteInt32(Dummy24);
+      }
+      if (HasDummy25) {
+        output.WriteRawTag(200, 1);
+        output.WriteInt32(Dummy25);
+      }
+      if (HasDummy26) {
+        output.WriteRawTag(208, 1);
+        output.WriteInt32(Dummy26);
+      }
+      if (HasDummy27) {
+        output.WriteRawTag(216, 1);
+        output.WriteInt32(Dummy27);
+      }
+      if (HasDummy28) {
+        output.WriteRawTag(224, 1);
+        output.WriteInt32(Dummy28);
+      }
+      if (HasDummy29) {
+        output.WriteRawTag(232, 1);
+        output.WriteInt32(Dummy29);
+      }
+      if (HasDummy30) {
+        output.WriteRawTag(240, 1);
+        output.WriteInt32(Dummy30);
+      }
+      if (HasDummy31) {
+        output.WriteRawTag(248, 1);
+        output.WriteInt32(Dummy31);
+      }
+      if (HasDummy32) {
+        output.WriteRawTag(128, 2);
+        output.WriteInt32(Dummy32);
+      }
+      if (HasC) {
+        output.WriteRawTag(136, 2);
+        output.WriteInt32(C);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -7653,6 +9037,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -7793,7 +9180,154 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            A = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Dummy2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            B = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Dummy4 = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            Dummy5 = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Dummy6 = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            Dummy7 = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            Dummy8 = input.ReadInt32();
+            break;
+          }
+          case 72: {
+            Dummy9 = input.ReadInt32();
+            break;
+          }
+          case 80: {
+            Dummy10 = input.ReadInt32();
+            break;
+          }
+          case 88: {
+            Dummy11 = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            Dummy12 = input.ReadInt32();
+            break;
+          }
+          case 104: {
+            Dummy13 = input.ReadInt32();
+            break;
+          }
+          case 112: {
+            Dummy14 = input.ReadInt32();
+            break;
+          }
+          case 120: {
+            Dummy15 = input.ReadInt32();
+            break;
+          }
+          case 128: {
+            Dummy16 = input.ReadInt32();
+            break;
+          }
+          case 136: {
+            Dummy17 = input.ReadInt32();
+            break;
+          }
+          case 144: {
+            Dummy18 = input.ReadInt32();
+            break;
+          }
+          case 152: {
+            Dummy19 = input.ReadInt32();
+            break;
+          }
+          case 160: {
+            Dummy20 = input.ReadInt32();
+            break;
+          }
+          case 168: {
+            Dummy21 = input.ReadInt32();
+            break;
+          }
+          case 176: {
+            Dummy22 = input.ReadInt32();
+            break;
+          }
+          case 184: {
+            Dummy23 = input.ReadInt32();
+            break;
+          }
+          case 192: {
+            Dummy24 = input.ReadInt32();
+            break;
+          }
+          case 200: {
+            Dummy25 = input.ReadInt32();
+            break;
+          }
+          case 208: {
+            Dummy26 = input.ReadInt32();
+            break;
+          }
+          case 216: {
+            Dummy27 = input.ReadInt32();
+            break;
+          }
+          case 224: {
+            Dummy28 = input.ReadInt32();
+            break;
+          }
+          case 232: {
+            Dummy29 = input.ReadInt32();
+            break;
+          }
+          case 240: {
+            Dummy30 = input.ReadInt32();
+            break;
+          }
+          case 248: {
+            Dummy31 = input.ReadInt32();
+            break;
+          }
+          case 256: {
+            Dummy32 = input.ReadInt32();
+            break;
+          }
+          case 264: {
+            C = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     #region Extensions
     /// <summary>Container for extensions for other messages declared in the TestRequired message type.</summary>
@@ -7808,7 +9342,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestRequiredForeign : pb::IMessage<TestRequiredForeign> {
+  public sealed partial class TestRequiredForeign : pb::IMessage<TestRequiredForeign>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestRequiredForeign> _parser = new pb::MessageParser<TestRequiredForeign>(() => new TestRequiredForeign());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -7835,7 +9373,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestRequiredForeign(TestRequiredForeign other) : this() {
       _hasBits0 = other._hasBits0;
-      optionalMessage_ = other.HasOptionalMessage ? other.optionalMessage_.Clone() : null;
+      optionalMessage_ = other.optionalMessage_ != null ? other.optionalMessage_.Clone() : null;
       repeatedMessage_ = other.repeatedMessage_.Clone();
       dummy_ = other.dummy_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -7855,16 +9393,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         optionalMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalMessage {
-      get { return optionalMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalMessage() {
-      optionalMessage_ = null;
     }
 
     /// <summary>Field number for the "repeated_message" field.</summary>
@@ -7923,7 +9451,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasOptionalMessage) hash ^= OptionalMessage.GetHashCode();
+      if (optionalMessage_ != null) hash ^= OptionalMessage.GetHashCode();
       hash ^= repeatedMessage_.GetHashCode();
       if (HasDummy) hash ^= Dummy.GetHashCode();
       if (_unknownFields != null) {
@@ -7939,7 +9467,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasOptionalMessage) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (optionalMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(OptionalMessage);
       }
@@ -7951,12 +9482,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (optionalMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(OptionalMessage);
+      }
+      repeatedMessage_.WriteTo(ref output, _repeated_repeatedMessage_codec);
+      if (HasDummy) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Dummy);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasOptionalMessage) {
+      if (optionalMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(OptionalMessage);
       }
       size += repeatedMessage_.CalculateSize(_repeated_repeatedMessage_codec);
@@ -7974,8 +9524,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasOptionalMessage) {
-        if (!HasOptionalMessage) {
+      if (other.optionalMessage_ != null) {
+        if (optionalMessage_ == null) {
           OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
         }
         OptionalMessage.MergeFrom(other.OptionalMessage);
@@ -7989,6 +9539,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -7996,7 +9549,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasOptionalMessage) {
+            if (optionalMessage_ == null) {
               OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
             }
             input.ReadMessage(OptionalMessage);
@@ -8012,11 +9565,45 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (optionalMessage_ == null) {
+              OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
+            }
+            input.ReadMessage(OptionalMessage);
+            break;
+          }
+          case 18: {
+            repeatedMessage_.AddEntriesFrom(ref input, _repeated_repeatedMessage_codec);
+            break;
+          }
+          case 24: {
+            Dummy = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestRequiredMessage : pb::IMessage<TestRequiredMessage> {
+  public sealed partial class TestRequiredMessage : pb::IMessage<TestRequiredMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestRequiredMessage> _parser = new pb::MessageParser<TestRequiredMessage>(() => new TestRequiredMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8041,9 +9628,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestRequiredMessage(TestRequiredMessage other) : this() {
-      optionalMessage_ = other.HasOptionalMessage ? other.optionalMessage_.Clone() : null;
+      optionalMessage_ = other.optionalMessage_ != null ? other.optionalMessage_.Clone() : null;
       repeatedMessage_ = other.repeatedMessage_.Clone();
-      requiredMessage_ = other.HasRequiredMessage ? other.requiredMessage_.Clone() : null;
+      requiredMessage_ = other.requiredMessage_ != null ? other.requiredMessage_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -8061,16 +9648,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         optionalMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalMessage {
-      get { return optionalMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalMessage() {
-      optionalMessage_ = null;
     }
 
     /// <summary>Field number for the "repeated_message" field.</summary>
@@ -8092,16 +9669,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         requiredMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the required_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasRequiredMessage {
-      get { return requiredMessage_ != null; }
-    }
-    /// <summary>Clears the value of the required_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearRequiredMessage() {
-      requiredMessage_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8126,9 +9693,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasOptionalMessage) hash ^= OptionalMessage.GetHashCode();
+      if (optionalMessage_ != null) hash ^= OptionalMessage.GetHashCode();
       hash ^= repeatedMessage_.GetHashCode();
-      if (HasRequiredMessage) hash ^= RequiredMessage.GetHashCode();
+      if (requiredMessage_ != null) hash ^= RequiredMessage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -8142,28 +9709,50 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasOptionalMessage) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (optionalMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(OptionalMessage);
       }
       repeatedMessage_.WriteTo(output, _repeated_repeatedMessage_codec);
-      if (HasRequiredMessage) {
+      if (requiredMessage_ != null) {
         output.WriteRawTag(26);
         output.WriteMessage(RequiredMessage);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (optionalMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(OptionalMessage);
+      }
+      repeatedMessage_.WriteTo(ref output, _repeated_repeatedMessage_codec);
+      if (requiredMessage_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(RequiredMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasOptionalMessage) {
+      if (optionalMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(OptionalMessage);
       }
       size += repeatedMessage_.CalculateSize(_repeated_repeatedMessage_codec);
-      if (HasRequiredMessage) {
+      if (requiredMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(RequiredMessage);
       }
       if (_unknownFields != null) {
@@ -8177,15 +9766,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasOptionalMessage) {
-        if (!HasOptionalMessage) {
+      if (other.optionalMessage_ != null) {
+        if (optionalMessage_ == null) {
           OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
         }
         OptionalMessage.MergeFrom(other.OptionalMessage);
       }
       repeatedMessage_.Add(other.repeatedMessage_);
-      if (other.HasRequiredMessage) {
-        if (!HasRequiredMessage) {
+      if (other.requiredMessage_ != null) {
+        if (requiredMessage_ == null) {
           RequiredMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
         }
         RequiredMessage.MergeFrom(other.RequiredMessage);
@@ -8195,6 +9784,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -8202,7 +9794,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasOptionalMessage) {
+            if (optionalMessage_ == null) {
               OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
             }
             input.ReadMessage(OptionalMessage);
@@ -8213,7 +9805,39 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 26: {
-            if (!HasRequiredMessage) {
+            if (requiredMessage_ == null) {
+              RequiredMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
+            }
+            input.ReadMessage(RequiredMessage);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (optionalMessage_ == null) {
+              OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
+            }
+            input.ReadMessage(OptionalMessage);
+            break;
+          }
+          case 18: {
+            repeatedMessage_.AddEntriesFrom(ref input, _repeated_repeatedMessage_codec);
+            break;
+          }
+          case 26: {
+            if (requiredMessage_ == null) {
               RequiredMessage = new global::Google.Protobuf.TestProtos.Proto2.TestRequired();
             }
             input.ReadMessage(RequiredMessage);
@@ -8222,13 +9846,18 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
   }
 
   /// <summary>
   /// Test that we can use NestedMessage from outside TestAllTypes.
   /// </summary>
-  public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested> {
+  public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestForeignNested> _parser = new pb::MessageParser<TestForeignNested>(() => new TestForeignNested());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8253,7 +9882,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestForeignNested(TestForeignNested other) : this() {
-      foreignNested_ = other.HasForeignNested ? other.foreignNested_.Clone() : null;
+      foreignNested_ = other.foreignNested_ != null ? other.foreignNested_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -8271,16 +9900,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         foreignNested_ = value;
       }
-    }
-    /// <summary>Gets whether the foreign_nested field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasForeignNested {
-      get { return foreignNested_ != null; }
-    }
-    /// <summary>Clears the value of the foreign_nested field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearForeignNested() {
-      foreignNested_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8303,7 +9922,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasForeignNested) hash ^= ForeignNested.GetHashCode();
+      if (foreignNested_ != null) hash ^= ForeignNested.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -8317,19 +9936,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasForeignNested) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (foreignNested_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(ForeignNested);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (foreignNested_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(ForeignNested);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasForeignNested) {
+      if (foreignNested_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(ForeignNested);
       }
       if (_unknownFields != null) {
@@ -8343,8 +9979,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasForeignNested) {
-        if (!HasForeignNested) {
+      if (other.foreignNested_ != null) {
+        if (foreignNested_ == null) {
           ForeignNested = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
         }
         ForeignNested.MergeFrom(other.ForeignNested);
@@ -8354,6 +9990,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -8361,7 +10000,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasForeignNested) {
+            if (foreignNested_ == null) {
+              ForeignNested = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
+            }
+            input.ReadMessage(ForeignNested);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (foreignNested_ == null) {
               ForeignNested = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
             }
             input.ReadMessage(ForeignNested);
@@ -8370,13 +10030,18 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
   }
 
   /// <summary>
   /// TestEmptyMessage is used to test unknown field support.
   /// </summary>
-  public sealed partial class TestEmptyMessage : pb::IMessage<TestEmptyMessage> {
+  public sealed partial class TestEmptyMessage : pb::IMessage<TestEmptyMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestEmptyMessage> _parser = new pb::MessageParser<TestEmptyMessage>(() => new TestEmptyMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -8441,10 +10106,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -8465,6 +10143,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -8473,7 +10154,22 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
@@ -8481,7 +10177,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Like above, but declare all field numbers as potential extensions.  No
   /// actual extensions should ever be defined for this type.
   /// </summary>
-  public sealed partial class TestEmptyMessageWithExtensions : pb::IExtendableMessage<TestEmptyMessageWithExtensions> {
+  public sealed partial class TestEmptyMessageWithExtensions : pb::IExtendableMessage<TestEmptyMessageWithExtensions>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestEmptyMessageWithExtensions> _parser = new pb::MessageParser<TestEmptyMessageWithExtensions>(() => new TestEmptyMessageWithExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestEmptyMessageWithExtensions> _extensions;
@@ -8555,13 +10255,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -8586,6 +10302,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -8596,7 +10315,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+        }
+      }
+    }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestEmptyMessageWithExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -8622,7 +10358,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestMultipleExtensionRanges : pb::IExtendableMessage<TestMultipleExtensionRanges> {
+  public sealed partial class TestMultipleExtensionRanges : pb::IExtendableMessage<TestMultipleExtensionRanges>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestMultipleExtensionRanges> _parser = new pb::MessageParser<TestMultipleExtensionRanges>(() => new TestMultipleExtensionRanges());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestMultipleExtensionRanges> _extensions;
@@ -8696,13 +10436,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -8727,6 +10483,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -8737,7 +10496,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+        }
+      }
+    }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestMultipleExtensionRanges, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -8766,7 +10542,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Test that really large tag numbers don't break anything.
   /// </summary>
-  public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber> {
+  public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestReallyLargeTagNumber> _parser = new pb::MessageParser<TestReallyLargeTagNumber>(() => new TestReallyLargeTagNumber());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -8891,6 +10671,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -8902,7 +10685,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(8);
+        output.WriteInt32(A);
+      }
+      if (HasBb) {
+        output.WriteRawTag(248, 255, 255, 255, 7);
+        output.WriteInt32(Bb);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -8935,6 +10736,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -8951,11 +10755,38 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            A = input.ReadInt32();
+            break;
+          }
+          case 2147483640: {
+            Bb = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage> {
+  public sealed partial class TestRecursiveMessage : pb::IMessage<TestRecursiveMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestRecursiveMessage> _parser = new pb::MessageParser<TestRecursiveMessage>(() => new TestRecursiveMessage());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -8982,7 +10813,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestRecursiveMessage(TestRecursiveMessage other) : this() {
       _hasBits0 = other._hasBits0;
-      a_ = other.HasA ? other.a_.Clone() : null;
+      a_ = other.a_ != null ? other.a_.Clone() : null;
       i_ = other.i_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -9001,16 +10832,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         a_ = value;
       }
-    }
-    /// <summary>Gets whether the a field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasA {
-      get { return a_ != null; }
-    }
-    /// <summary>Clears the value of the a field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearA() {
-      a_ = null;
     }
 
     /// <summary>Field number for the "i" field.</summary>
@@ -9058,7 +10879,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasA) hash ^= A.GetHashCode();
+      if (a_ != null) hash ^= A.GetHashCode();
       if (HasI) hash ^= I.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -9073,7 +10894,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasA) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
       }
@@ -9084,12 +10908,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (a_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(A);
+      }
+      if (HasI) {
+        output.WriteRawTag(16);
+        output.WriteInt32(I);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasA) {
+      if (a_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(A);
       }
       if (HasI) {
@@ -9106,8 +10948,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasA) {
-        if (!HasA) {
+      if (other.a_ != null) {
+        if (a_ == null) {
           A = new global::Google.Protobuf.TestProtos.Proto2.TestRecursiveMessage();
         }
         A.MergeFrom(other.A);
@@ -9120,6 +10962,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -9127,7 +10972,32 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasA) {
+            if (a_ == null) {
+              A = new global::Google.Protobuf.TestProtos.Proto2.TestRecursiveMessage();
+            }
+            input.ReadMessage(A);
+            break;
+          }
+          case 16: {
+            I = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (a_ == null) {
               A = new global::Google.Protobuf.TestProtos.Proto2.TestRecursiveMessage();
             }
             input.ReadMessage(A);
@@ -9140,13 +11010,18 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
   }
 
   /// <summary>
   /// Test that mutual recursion works.
   /// </summary>
-  public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA> {
+  public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestMutualRecursionA> _parser = new pb::MessageParser<TestMutualRecursionA>(() => new TestMutualRecursionA());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9171,7 +11046,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestMutualRecursionA(TestMutualRecursionA other) : this() {
-      bb_ = other.HasBb ? other.bb_.Clone() : null;
+      bb_ = other.bb_ != null ? other.bb_.Clone() : null;
       subGroup_ = other.HasSubGroup ? other.subGroup_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -9190,16 +11065,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         bb_ = value;
       }
-    }
-    /// <summary>Gets whether the bb field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasBb {
-      get { return bb_ != null; }
-    }
-    /// <summary>Clears the value of the bb field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearBb() {
-      bb_ = null;
     }
 
     /// <summary>Field number for the "subgroup" field.</summary>
@@ -9244,7 +11109,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasBb) hash ^= Bb.GetHashCode();
+      if (bb_ != null) hash ^= Bb.GetHashCode();
       if (HasSubGroup) hash ^= SubGroup.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -9259,7 +11124,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasBb) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (bb_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Bb);
       }
@@ -9271,12 +11139,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (bb_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Bb);
+      }
+      if (HasSubGroup) {
+        output.WriteRawTag(19);
+        output.WriteGroup(SubGroup);
+        output.WriteRawTag(20);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasBb) {
+      if (bb_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Bb);
       }
       if (HasSubGroup) {
@@ -9293,8 +11180,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasBb) {
-        if (!HasBb) {
+      if (other.bb_ != null) {
+        if (bb_ == null) {
           Bb = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionB();
         }
         Bb.MergeFrom(other.Bb);
@@ -9310,6 +11197,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -9317,7 +11207,35 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasBb) {
+            if (bb_ == null) {
+              Bb = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionB();
+            }
+            input.ReadMessage(Bb);
+            break;
+          }
+          case 19: {
+            if (!HasSubGroup) {
+              SubGroup = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA.Types.SubGroup();
+            }
+            input.ReadGroup(SubGroup);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (bb_ == null) {
               Bb = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionB();
             }
             input.ReadMessage(Bb);
@@ -9333,12 +11251,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestMutualRecursionA message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class SubMessage : pb::IMessage<SubMessage> {
+      public sealed partial class SubMessage : pb::IMessage<SubMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<SubMessage> _parser = new pb::MessageParser<SubMessage>(() => new SubMessage());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9363,7 +11286,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public SubMessage(SubMessage other) : this() {
-          b_ = other.HasB ? other.b_.Clone() : null;
+          b_ = other.b_ != null ? other.b_.Clone() : null;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -9381,16 +11304,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           set {
             b_ = value;
           }
-        }
-        /// <summary>Gets whether the b field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool HasB {
-          get { return b_ != null; }
-        }
-        /// <summary>Clears the value of the b field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearB() {
-          b_ = null;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9413,7 +11326,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override int GetHashCode() {
           int hash = 1;
-          if (HasB) hash ^= B.GetHashCode();
+          if (b_ != null) hash ^= B.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -9427,19 +11340,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          if (HasB) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
+          if (b_ != null) {
             output.WriteRawTag(10);
             output.WriteMessage(B);
           }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (b_ != null) {
+            output.WriteRawTag(10);
+            output.WriteMessage(B);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
-          if (HasB) {
+          if (b_ != null) {
             size += 1 + pb::CodedOutputStream.ComputeMessageSize(B);
           }
           if (_unknownFields != null) {
@@ -9453,8 +11383,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (other == null) {
             return;
           }
-          if (other.HasB) {
-            if (!HasB) {
+          if (other.b_ != null) {
+            if (b_ == null) {
               B = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionB();
             }
             B.MergeFrom(other.B);
@@ -9464,6 +11394,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -9471,7 +11404,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 10: {
-                if (!HasB) {
+                if (b_ == null) {
+                  B = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionB();
+                }
+                input.ReadMessage(B);
+                break;
+              }
+            }
+          }
+        #endif
+        }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 10: {
+                if (b_ == null) {
                   B = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionB();
                 }
                 input.ReadMessage(B);
@@ -9480,10 +11434,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             }
           }
         }
+        #endif
 
       }
 
-      public sealed partial class SubGroup : pb::IMessage<SubGroup> {
+      public sealed partial class SubGroup : pb::IMessage<SubGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<SubGroup> _parser = new pb::MessageParser<SubGroup>(() => new SubGroup());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9508,8 +11467,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public SubGroup(SubGroup other) : this() {
-          subMessage_ = other.HasSubMessage ? other.subMessage_.Clone() : null;
-          notInThisScc_ = other.HasNotInThisScc ? other.notInThisScc_.Clone() : null;
+          subMessage_ = other.subMessage_ != null ? other.subMessage_.Clone() : null;
+          notInThisScc_ = other.notInThisScc_ != null ? other.notInThisScc_.Clone() : null;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -9531,16 +11490,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             subMessage_ = value;
           }
         }
-        /// <summary>Gets whether the sub_message field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool HasSubMessage {
-          get { return subMessage_ != null; }
-        }
-        /// <summary>Clears the value of the sub_message field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearSubMessage() {
-          subMessage_ = null;
-        }
 
         /// <summary>Field number for the "not_in_this_scc" field.</summary>
         public const int NotInThisSccFieldNumber = 4;
@@ -9551,16 +11500,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           set {
             notInThisScc_ = value;
           }
-        }
-        /// <summary>Gets whether the not_in_this_scc field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool HasNotInThisScc {
-          get { return notInThisScc_ != null; }
-        }
-        /// <summary>Clears the value of the not_in_this_scc field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearNotInThisScc() {
-          notInThisScc_ = null;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9584,8 +11523,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override int GetHashCode() {
           int hash = 1;
-          if (HasSubMessage) hash ^= SubMessage.GetHashCode();
-          if (HasNotInThisScc) hash ^= NotInThisScc.GetHashCode();
+          if (subMessage_ != null) hash ^= SubMessage.GetHashCode();
+          if (notInThisScc_ != null) hash ^= NotInThisScc.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -9599,26 +11538,47 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          if (HasSubMessage) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
+          if (subMessage_ != null) {
             output.WriteRawTag(26);
             output.WriteMessage(SubMessage);
           }
-          if (HasNotInThisScc) {
+          if (notInThisScc_ != null) {
             output.WriteRawTag(34);
             output.WriteMessage(NotInThisScc);
           }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (subMessage_ != null) {
+            output.WriteRawTag(26);
+            output.WriteMessage(SubMessage);
+          }
+          if (notInThisScc_ != null) {
+            output.WriteRawTag(34);
+            output.WriteMessage(NotInThisScc);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
-          if (HasSubMessage) {
+          if (subMessage_ != null) {
             size += 1 + pb::CodedOutputStream.ComputeMessageSize(SubMessage);
           }
-          if (HasNotInThisScc) {
+          if (notInThisScc_ != null) {
             size += 1 + pb::CodedOutputStream.ComputeMessageSize(NotInThisScc);
           }
           if (_unknownFields != null) {
@@ -9632,14 +11592,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (other == null) {
             return;
           }
-          if (other.HasSubMessage) {
-            if (!HasSubMessage) {
+          if (other.subMessage_ != null) {
+            if (subMessage_ == null) {
               SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA.Types.SubMessage();
             }
             SubMessage.MergeFrom(other.SubMessage);
           }
-          if (other.HasNotInThisScc) {
-            if (!HasNotInThisScc) {
+          if (other.notInThisScc_ != null) {
+            if (notInThisScc_ == null) {
               NotInThisScc = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             NotInThisScc.MergeFrom(other.NotInThisScc);
@@ -9649,6 +11609,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -9658,14 +11621,44 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 26: {
-                if (!HasSubMessage) {
+                if (subMessage_ == null) {
                   SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA.Types.SubMessage();
                 }
                 input.ReadMessage(SubMessage);
                 break;
               }
               case 34: {
-                if (!HasNotInThisScc) {
+                if (notInThisScc_ == null) {
+                  NotInThisScc = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+                }
+                input.ReadMessage(NotInThisScc);
+                break;
+              }
+            }
+          }
+        #endif
+        }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 20:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 26: {
+                if (subMessage_ == null) {
+                  SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA.Types.SubMessage();
+                }
+                input.ReadMessage(SubMessage);
+                break;
+              }
+              case 34: {
+                if (notInThisScc_ == null) {
                   NotInThisScc = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
                 }
                 input.ReadMessage(NotInThisScc);
@@ -9674,6 +11667,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             }
           }
         }
+        #endif
 
       }
 
@@ -9682,7 +11676,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB> {
+  public sealed partial class TestMutualRecursionB : pb::IMessage<TestMutualRecursionB>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestMutualRecursionB> _parser = new pb::MessageParser<TestMutualRecursionB>(() => new TestMutualRecursionB());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -9709,7 +11707,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestMutualRecursionB(TestMutualRecursionB other) : this() {
       _hasBits0 = other._hasBits0;
-      a_ = other.HasA ? other.a_.Clone() : null;
+      a_ = other.a_ != null ? other.a_.Clone() : null;
       optionalInt32_ = other.optionalInt32_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -9728,16 +11726,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         a_ = value;
       }
-    }
-    /// <summary>Gets whether the a field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasA {
-      get { return a_ != null; }
-    }
-    /// <summary>Clears the value of the a field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearA() {
-      a_ = null;
     }
 
     /// <summary>Field number for the "optional_int32" field.</summary>
@@ -9785,7 +11773,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasA) hash ^= A.GetHashCode();
+      if (a_ != null) hash ^= A.GetHashCode();
       if (HasOptionalInt32) hash ^= OptionalInt32.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -9800,7 +11788,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasA) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
       }
@@ -9811,12 +11802,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (a_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(A);
+      }
+      if (HasOptionalInt32) {
+        output.WriteRawTag(16);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasA) {
+      if (a_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(A);
       }
       if (HasOptionalInt32) {
@@ -9833,8 +11842,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasA) {
-        if (!HasA) {
+      if (other.a_ != null) {
+        if (a_ == null) {
           A = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA();
         }
         A.MergeFrom(other.A);
@@ -9847,6 +11856,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -9854,7 +11866,32 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasA) {
+            if (a_ == null) {
+              A = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA();
+            }
+            input.ReadMessage(A);
+            break;
+          }
+          case 16: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (a_ == null) {
               A = new global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA();
             }
             input.ReadMessage(A);
@@ -9867,10 +11904,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
   }
 
-  public sealed partial class TestIsInitialized : pb::IMessage<TestIsInitialized> {
+  public sealed partial class TestIsInitialized : pb::IMessage<TestIsInitialized>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestIsInitialized> _parser = new pb::MessageParser<TestIsInitialized>(() => new TestIsInitialized());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9895,7 +11937,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestIsInitialized(TestIsInitialized other) : this() {
-      subMessage_ = other.HasSubMessage ? other.subMessage_.Clone() : null;
+      subMessage_ = other.subMessage_ != null ? other.subMessage_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -9913,16 +11955,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         subMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the sub_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasSubMessage {
-      get { return subMessage_ != null; }
-    }
-    /// <summary>Clears the value of the sub_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearSubMessage() {
-      subMessage_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -9945,7 +11977,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasSubMessage) hash ^= SubMessage.GetHashCode();
+      if (subMessage_ != null) hash ^= SubMessage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -9959,19 +11991,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasSubMessage) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (subMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(SubMessage);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (subMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(SubMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasSubMessage) {
+      if (subMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SubMessage);
       }
       if (_unknownFields != null) {
@@ -9985,8 +12034,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasSubMessage) {
-        if (!HasSubMessage) {
+      if (other.subMessage_ != null) {
+        if (subMessage_ == null) {
           SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestIsInitialized.Types.SubMessage();
         }
         SubMessage.MergeFrom(other.SubMessage);
@@ -9996,6 +12045,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -10003,7 +12055,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasSubMessage) {
+            if (subMessage_ == null) {
+              SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestIsInitialized.Types.SubMessage();
+            }
+            input.ReadMessage(SubMessage);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (subMessage_ == null) {
               SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestIsInitialized.Types.SubMessage();
             }
             input.ReadMessage(SubMessage);
@@ -10012,12 +12085,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestIsInitialized message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class SubMessage : pb::IMessage<SubMessage> {
+      public sealed partial class SubMessage : pb::IMessage<SubMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<SubMessage> _parser = new pb::MessageParser<SubMessage>(() => new SubMessage());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10106,6 +12184,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasSubGroup) {
             output.WriteRawTag(11);
             output.WriteGroup(SubGroup);
@@ -10114,7 +12195,22 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasSubGroup) {
+            output.WriteRawTag(11);
+            output.WriteGroup(SubGroup);
+            output.WriteRawTag(12);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -10144,6 +12240,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -10159,13 +12258,39 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 11: {
+                if (!HasSubGroup) {
+                  SubGroup = new global::Google.Protobuf.TestProtos.Proto2.TestIsInitialized.Types.SubMessage.Types.SubGroup();
+                }
+                input.ReadGroup(SubGroup);
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
         #region Nested types
         /// <summary>Container for nested types declared in the SubMessage message type.</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static partial class Types {
-          public sealed partial class SubGroup : pb::IMessage<SubGroup> {
+          public sealed partial class SubGroup : pb::IMessage<SubGroup>
+          #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              , pb::IBufferMessage
+          #endif
+          {
             private static readonly pb::MessageParser<SubGroup> _parser = new pb::MessageParser<SubGroup>(() => new SubGroup());
             private pb::UnknownFieldSet _unknownFields;
             private int _hasBits0;
@@ -10259,6 +12384,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              output.WriteRawMessage(this);
+            #else
               if (HasI) {
                 output.WriteRawTag(16);
                 output.WriteInt32(I);
@@ -10266,7 +12394,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               if (_unknownFields != null) {
                 _unknownFields.WriteTo(output);
               }
+            #endif
             }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+              if (HasI) {
+                output.WriteRawTag(16);
+                output.WriteInt32(I);
+              }
+              if (_unknownFields != null) {
+                _unknownFields.WriteTo(ref output);
+              }
+            }
+            #endif
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public int CalculateSize() {
@@ -10293,6 +12435,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void MergeFrom(pb::CodedInputStream input) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              input.ReadRawMessage(this);
+            #else
               uint tag;
               while ((tag = input.ReadTag()) != 0) {
                 switch(tag) {
@@ -10307,7 +12452,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                   }
                 }
               }
+            #endif
             }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+              uint tag;
+              while ((tag = input.ReadTag()) != 0) {
+                switch(tag) {
+                  case 12:
+                    return;
+                  default:
+                    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                    break;
+                  case 16: {
+                    I = input.ReadInt32();
+                    break;
+                  }
+                }
+              }
+            }
+            #endif
 
           }
 
@@ -10327,7 +12493,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// to compile with proto1, this will emit an error; so we only include it
   /// in protobuf_unittest_proto.
   /// </summary>
-  public sealed partial class TestDupFieldNumber : pb::IMessage<TestDupFieldNumber> {
+  public sealed partial class TestDupFieldNumber : pb::IMessage<TestDupFieldNumber>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestDupFieldNumber> _parser = new pb::MessageParser<TestDupFieldNumber>(() => new TestDupFieldNumber());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -10472,6 +12642,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -10489,7 +12662,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(8);
+        output.WriteInt32(A);
+      }
+      if (HasFoo) {
+        output.WriteRawTag(19);
+        output.WriteGroup(Foo);
+        output.WriteRawTag(20);
+      }
+      if (HasBar) {
+        output.WriteRawTag(27);
+        output.WriteGroup(Bar);
+        output.WriteRawTag(28);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -10534,6 +12731,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -10560,13 +12760,50 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            A = input.ReadInt32();
+            break;
+          }
+          case 19: {
+            if (!HasFoo) {
+              Foo = new global::Google.Protobuf.TestProtos.Proto2.TestDupFieldNumber.Types.Foo();
+            }
+            input.ReadGroup(Foo);
+            break;
+          }
+          case 27: {
+            if (!HasBar) {
+              Bar = new global::Google.Protobuf.TestProtos.Proto2.TestDupFieldNumber.Types.Bar();
+            }
+            input.ReadGroup(Bar);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestDupFieldNumber message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class Foo : pb::IMessage<Foo> {
+      public sealed partial class Foo : pb::IMessage<Foo>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<Foo> _parser = new pb::MessageParser<Foo>(() => new Foo());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -10660,6 +12897,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(8);
             output.WriteInt32(A);
@@ -10667,7 +12907,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(8);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -10694,6 +12948,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -10708,11 +12965,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 20:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
-      public sealed partial class Bar : pb::IMessage<Bar> {
+      public sealed partial class Bar : pb::IMessage<Bar>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<Bar> _parser = new pb::MessageParser<Bar>(() => new Bar());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -10806,6 +13088,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(8);
             output.WriteInt32(A);
@@ -10813,7 +13098,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(8);
+            output.WriteInt32(A);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -10840,6 +13139,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -10854,7 +13156,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 28:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                A = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -10866,7 +13189,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>
   /// Additional messages for testing lazy fields.
   /// </summary>
-  public sealed partial class TestEagerMessage : pb::IMessage<TestEagerMessage> {
+  public sealed partial class TestEagerMessage : pb::IMessage<TestEagerMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestEagerMessage> _parser = new pb::MessageParser<TestEagerMessage>(() => new TestEagerMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10891,7 +13218,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestEagerMessage(TestEagerMessage other) : this() {
-      subMessage_ = other.HasSubMessage ? other.subMessage_.Clone() : null;
+      subMessage_ = other.subMessage_ != null ? other.subMessage_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -10909,16 +13236,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         subMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the sub_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasSubMessage {
-      get { return subMessage_ != null; }
-    }
-    /// <summary>Clears the value of the sub_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearSubMessage() {
-      subMessage_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10941,7 +13258,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasSubMessage) hash ^= SubMessage.GetHashCode();
+      if (subMessage_ != null) hash ^= SubMessage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -10955,19 +13272,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasSubMessage) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (subMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(SubMessage);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (subMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(SubMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasSubMessage) {
+      if (subMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SubMessage);
       }
       if (_unknownFields != null) {
@@ -10981,8 +13315,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasSubMessage) {
-        if (!HasSubMessage) {
+      if (other.subMessage_ != null) {
+        if (subMessage_ == null) {
           SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
         }
         SubMessage.MergeFrom(other.SubMessage);
@@ -10992,6 +13326,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -10999,7 +13336,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasSubMessage) {
+            if (subMessage_ == null) {
+              SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+            }
+            input.ReadMessage(SubMessage);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (subMessage_ == null) {
               SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             input.ReadMessage(SubMessage);
@@ -11008,10 +13366,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
   }
 
-  public sealed partial class TestLazyMessage : pb::IMessage<TestLazyMessage> {
+  public sealed partial class TestLazyMessage : pb::IMessage<TestLazyMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestLazyMessage> _parser = new pb::MessageParser<TestLazyMessage>(() => new TestLazyMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11036,7 +13399,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestLazyMessage(TestLazyMessage other) : this() {
-      subMessage_ = other.HasSubMessage ? other.subMessage_.Clone() : null;
+      subMessage_ = other.subMessage_ != null ? other.subMessage_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -11054,16 +13417,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         subMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the sub_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasSubMessage {
-      get { return subMessage_ != null; }
-    }
-    /// <summary>Clears the value of the sub_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearSubMessage() {
-      subMessage_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11086,7 +13439,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasSubMessage) hash ^= SubMessage.GetHashCode();
+      if (subMessage_ != null) hash ^= SubMessage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -11100,19 +13453,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasSubMessage) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (subMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(SubMessage);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (subMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(SubMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasSubMessage) {
+      if (subMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(SubMessage);
       }
       if (_unknownFields != null) {
@@ -11126,8 +13496,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasSubMessage) {
-        if (!HasSubMessage) {
+      if (other.subMessage_ != null) {
+        if (subMessage_ == null) {
           SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
         }
         SubMessage.MergeFrom(other.SubMessage);
@@ -11137,6 +13507,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -11144,7 +13517,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasSubMessage) {
+            if (subMessage_ == null) {
+              SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+            }
+            input.ReadMessage(SubMessage);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (subMessage_ == null) {
               SubMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             input.ReadMessage(SubMessage);
@@ -11153,13 +13547,18 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
   }
 
   /// <summary>
   /// Needed for a Python test.
   /// </summary>
-  public sealed partial class TestNestedMessageHasBits : pb::IMessage<TestNestedMessageHasBits> {
+  public sealed partial class TestNestedMessageHasBits : pb::IMessage<TestNestedMessageHasBits>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestNestedMessageHasBits> _parser = new pb::MessageParser<TestNestedMessageHasBits>(() => new TestNestedMessageHasBits());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11184,7 +13583,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestNestedMessageHasBits(TestNestedMessageHasBits other) : this() {
-      optionalNestedMessage_ = other.HasOptionalNestedMessage ? other.optionalNestedMessage_.Clone() : null;
+      optionalNestedMessage_ = other.optionalNestedMessage_ != null ? other.optionalNestedMessage_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -11202,16 +13601,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         optionalNestedMessage_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_nested_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalNestedMessage {
-      get { return optionalNestedMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_nested_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalNestedMessage() {
-      optionalNestedMessage_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11234,7 +13623,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasOptionalNestedMessage) hash ^= OptionalNestedMessage.GetHashCode();
+      if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -11248,19 +13637,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasOptionalNestedMessage) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (optionalNestedMessage_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(OptionalNestedMessage);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasOptionalNestedMessage) {
+      if (optionalNestedMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(OptionalNestedMessage);
       }
       if (_unknownFields != null) {
@@ -11274,8 +13680,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasOptionalNestedMessage) {
-        if (!HasOptionalNestedMessage) {
+      if (other.optionalNestedMessage_ != null) {
+        if (optionalNestedMessage_ == null) {
           OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestNestedMessageHasBits.Types.NestedMessage();
         }
         OptionalNestedMessage.MergeFrom(other.OptionalNestedMessage);
@@ -11285,6 +13691,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -11292,7 +13701,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            if (!HasOptionalNestedMessage) {
+            if (optionalNestedMessage_ == null) {
+              OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestNestedMessageHasBits.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalNestedMessage);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (optionalNestedMessage_ == null) {
               OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestNestedMessageHasBits.Types.NestedMessage();
             }
             input.ReadMessage(OptionalNestedMessage);
@@ -11301,12 +13731,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestNestedMessageHasBits message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -11397,12 +13832,27 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           nestedmessageRepeatedInt32_.WriteTo(output, _repeated_nestedmessageRepeatedInt32_codec);
           nestedmessageRepeatedForeignmessage_.WriteTo(output, _repeated_nestedmessageRepeatedForeignmessage_codec);
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          nestedmessageRepeatedInt32_.WriteTo(ref output, _repeated_nestedmessageRepeatedInt32_codec);
+          nestedmessageRepeatedForeignmessage_.WriteTo(ref output, _repeated_nestedmessageRepeatedForeignmessage_codec);
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -11427,6 +13877,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -11444,7 +13897,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 10:
+              case 8: {
+                nestedmessageRepeatedInt32_.AddEntriesFrom(ref input, _repeated_nestedmessageRepeatedInt32_codec);
+                break;
+              }
+              case 18: {
+                nestedmessageRepeatedForeignmessage_.AddEntriesFrom(ref input, _repeated_nestedmessageRepeatedForeignmessage_codec);
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -11457,7 +13934,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Test message with CamelCase field names.  This violates Protocol Buffer
   /// standard style.
   /// </summary>
-  public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames> {
+  public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestCamelCaseFieldNames> _parser = new pb::MessageParser<TestCamelCaseFieldNames>(() => new TestCamelCaseFieldNames());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -11487,7 +13968,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       primitiveField_ = other.primitiveField_;
       stringField_ = other.stringField_;
       enumField_ = other.enumField_;
-      messageField_ = other.HasMessageField ? other.messageField_.Clone() : null;
+      messageField_ = other.messageField_ != null ? other.messageField_.Clone() : null;
       stringPieceField_ = other.stringPieceField_;
       cordField_ = other.cordField_;
       repeatedPrimitiveField_ = other.repeatedPrimitiveField_.Clone();
@@ -11584,16 +14065,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         messageField_ = value;
       }
-    }
-    /// <summary>Gets whether the MessageField field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasMessageField {
-      get { return messageField_ != null; }
-    }
-    /// <summary>Clears the value of the MessageField field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearMessageField() {
-      messageField_ = null;
     }
 
     /// <summary>Field number for the "StringPieceField" field.</summary>
@@ -11736,7 +14207,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasPrimitiveField) hash ^= PrimitiveField.GetHashCode();
       if (HasStringField) hash ^= StringField.GetHashCode();
       if (HasEnumField) hash ^= EnumField.GetHashCode();
-      if (HasMessageField) hash ^= MessageField.GetHashCode();
+      if (messageField_ != null) hash ^= MessageField.GetHashCode();
       if (HasStringPieceField) hash ^= StringPieceField.GetHashCode();
       if (HasCordField) hash ^= CordField.GetHashCode();
       hash ^= repeatedPrimitiveField_.GetHashCode();
@@ -11758,6 +14229,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasPrimitiveField) {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveField);
@@ -11770,7 +14244,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(24);
         output.WriteEnum((int) EnumField);
       }
-      if (HasMessageField) {
+      if (messageField_ != null) {
         output.WriteRawTag(34);
         output.WriteMessage(MessageField);
       }
@@ -11791,7 +14265,47 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasPrimitiveField) {
+        output.WriteRawTag(8);
+        output.WriteInt32(PrimitiveField);
+      }
+      if (HasStringField) {
+        output.WriteRawTag(18);
+        output.WriteString(StringField);
+      }
+      if (HasEnumField) {
+        output.WriteRawTag(24);
+        output.WriteEnum((int) EnumField);
+      }
+      if (messageField_ != null) {
+        output.WriteRawTag(34);
+        output.WriteMessage(MessageField);
+      }
+      if (HasStringPieceField) {
+        output.WriteRawTag(42);
+        output.WriteString(StringPieceField);
+      }
+      if (HasCordField) {
+        output.WriteRawTag(50);
+        output.WriteString(CordField);
+      }
+      repeatedPrimitiveField_.WriteTo(ref output, _repeated_repeatedPrimitiveField_codec);
+      repeatedStringField_.WriteTo(ref output, _repeated_repeatedStringField_codec);
+      repeatedEnumField_.WriteTo(ref output, _repeated_repeatedEnumField_codec);
+      repeatedMessageField_.WriteTo(ref output, _repeated_repeatedMessageField_codec);
+      repeatedStringPieceField_.WriteTo(ref output, _repeated_repeatedStringPieceField_codec);
+      repeatedCordField_.WriteTo(ref output, _repeated_repeatedCordField_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -11805,7 +14319,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasEnumField) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumField);
       }
-      if (HasMessageField) {
+      if (messageField_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(MessageField);
       }
       if (HasStringPieceField) {
@@ -11840,8 +14354,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other.HasEnumField) {
         EnumField = other.EnumField;
       }
-      if (other.HasMessageField) {
-        if (!HasMessageField) {
+      if (other.messageField_ != null) {
+        if (messageField_ == null) {
           MessageField = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
         }
         MessageField.MergeFrom(other.MessageField);
@@ -11863,6 +14377,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -11882,7 +14399,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 34: {
-            if (!HasMessageField) {
+            if (messageField_ == null) {
               MessageField = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
             }
             input.ReadMessage(MessageField);
@@ -11924,7 +14441,75 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            PrimitiveField = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            StringField = input.ReadString();
+            break;
+          }
+          case 24: {
+            EnumField = (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) input.ReadEnum();
+            break;
+          }
+          case 34: {
+            if (messageField_ == null) {
+              MessageField = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
+            }
+            input.ReadMessage(MessageField);
+            break;
+          }
+          case 42: {
+            StringPieceField = input.ReadString();
+            break;
+          }
+          case 50: {
+            CordField = input.ReadString();
+            break;
+          }
+          case 58:
+          case 56: {
+            repeatedPrimitiveField_.AddEntriesFrom(ref input, _repeated_repeatedPrimitiveField_codec);
+            break;
+          }
+          case 66: {
+            repeatedStringField_.AddEntriesFrom(ref input, _repeated_repeatedStringField_codec);
+            break;
+          }
+          case 74:
+          case 72: {
+            repeatedEnumField_.AddEntriesFrom(ref input, _repeated_repeatedEnumField_codec);
+            break;
+          }
+          case 82: {
+            repeatedMessageField_.AddEntriesFrom(ref input, _repeated_repeatedMessageField_codec);
+            break;
+          }
+          case 90: {
+            repeatedStringPieceField_.AddEntriesFrom(ref input, _repeated_repeatedStringPieceField_codec);
+            break;
+          }
+          case 98: {
+            repeatedCordField_.AddEntriesFrom(ref input, _repeated_repeatedCordField_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
@@ -11932,7 +14517,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// We list fields out of order, to ensure that we're using field number and not
   /// field index to determine serialization order.
   /// </summary>
-  public sealed partial class TestFieldOrderings : pb::IExtendableMessage<TestFieldOrderings> {
+  public sealed partial class TestFieldOrderings : pb::IExtendableMessage<TestFieldOrderings>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestFieldOrderings> _extensions;
@@ -11964,7 +14553,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       myString_ = other.myString_;
       myInt_ = other.myInt_;
       myFloat_ = other.myFloat_;
-      optionalNestedMessage_ = other.HasOptionalNestedMessage ? other.optionalNestedMessage_.Clone() : null;
+      optionalNestedMessage_ = other.optionalNestedMessage_ != null ? other.optionalNestedMessage_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
       _extensions = pb::ExtensionSet.Clone(other._extensions);
     }
@@ -12055,16 +14644,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         optionalNestedMessage_ = value;
       }
     }
-    /// <summary>Gets whether the optional_nested_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalNestedMessage {
-      get { return optionalNestedMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_nested_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalNestedMessage() {
-      optionalNestedMessage_ = null;
-    }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
@@ -12095,7 +14674,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasMyString) hash ^= MyString.GetHashCode();
       if (HasMyInt) hash ^= MyInt.GetHashCode();
       if (HasMyFloat) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(MyFloat);
-      if (HasOptionalNestedMessage) hash ^= OptionalNestedMessage.GetHashCode();
+      if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
       if (_extensions != null) {
         hash ^= _extensions.GetHashCode();
       }
@@ -12112,6 +14691,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasMyInt) {
         output.WriteRawTag(8);
         output.WriteInt64(MyInt);
@@ -12124,7 +14706,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(173, 6);
         output.WriteFloat(MyFloat);
       }
-      if (HasOptionalNestedMessage) {
+      if (optionalNestedMessage_ != null) {
         output.WriteRawTag(194, 12);
         output.WriteMessage(OptionalNestedMessage);
       }
@@ -12134,7 +14716,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasMyInt) {
+        output.WriteRawTag(8);
+        output.WriteInt64(MyInt);
+      }
+      if (HasMyString) {
+        output.WriteRawTag(90);
+        output.WriteString(MyString);
+      }
+      if (HasMyFloat) {
+        output.WriteRawTag(173, 6);
+        output.WriteFloat(MyFloat);
+      }
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(194, 12);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -12148,7 +14759,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasMyFloat) {
         size += 2 + 4;
       }
-      if (HasOptionalNestedMessage) {
+      if (optionalNestedMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalNestedMessage);
       }
       if (_extensions != null) {
@@ -12174,8 +14785,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other.HasMyFloat) {
         MyFloat = other.MyFloat;
       }
-      if (other.HasOptionalNestedMessage) {
-        if (!HasOptionalNestedMessage) {
+      if (other.optionalNestedMessage_ != null) {
+        if (optionalNestedMessage_ == null) {
           OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestFieldOrderings.Types.NestedMessage();
         }
         OptionalNestedMessage.MergeFrom(other.OptionalNestedMessage);
@@ -12186,6 +14797,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -12207,7 +14821,42 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 1602: {
-            if (!HasOptionalNestedMessage) {
+            if (optionalNestedMessage_ == null) {
+              OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestFieldOrderings.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalNestedMessage);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 8: {
+            MyInt = input.ReadInt64();
+            break;
+          }
+          case 90: {
+            MyString = input.ReadString();
+            break;
+          }
+          case 813: {
+            MyFloat = input.ReadFloat();
+            break;
+          }
+          case 1602: {
+            if (optionalNestedMessage_ == null) {
               OptionalNestedMessage = new global::Google.Protobuf.TestProtos.Proto2.TestFieldOrderings.Types.NestedMessage();
             }
             input.ReadMessage(OptionalNestedMessage);
@@ -12216,6 +14865,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestFieldOrderings, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -12243,7 +14893,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Container for nested types declared in the TestFieldOrderings message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -12369,6 +15023,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasBb) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -12380,7 +15037,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasBb) {
+            output.WriteRawTag(8);
+            output.WriteInt32(Bb);
+          }
+          if (HasOo) {
+            output.WriteRawTag(16);
+            output.WriteInt64(Oo);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -12413,6 +15088,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -12429,7 +15107,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                Bb = input.ReadInt32();
+                break;
+              }
+              case 16: {
+                Oo = input.ReadInt64();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -12438,7 +15139,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestExtensionOrderings1 : pb::IMessage<TestExtensionOrderings1> {
+  public sealed partial class TestExtensionOrderings1 : pb::IMessage<TestExtensionOrderings1>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestExtensionOrderings1> _parser = new pb::MessageParser<TestExtensionOrderings1>(() => new TestExtensionOrderings1());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12529,6 +15234,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasMyString) {
         output.WriteRawTag(10);
         output.WriteString(MyString);
@@ -12536,7 +15244,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasMyString) {
+        output.WriteRawTag(10);
+        output.WriteString(MyString);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -12563,6 +15285,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -12575,7 +15300,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            MyString = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     #region Extensions
     /// <summary>Container for extensions for other messages declared in the TestExtensionOrderings1 message type.</summary>
@@ -12588,7 +15332,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestExtensionOrderings2 : pb::IMessage<TestExtensionOrderings2> {
+  public sealed partial class TestExtensionOrderings2 : pb::IMessage<TestExtensionOrderings2>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestExtensionOrderings2> _parser = new pb::MessageParser<TestExtensionOrderings2>(() => new TestExtensionOrderings2());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12679,6 +15427,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasMyString) {
         output.WriteRawTag(10);
         output.WriteString(MyString);
@@ -12686,7 +15437,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasMyString) {
+        output.WriteRawTag(10);
+        output.WriteString(MyString);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -12713,6 +15478,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -12725,13 +15493,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            MyString = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestExtensionOrderings2 message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class TestExtensionOrderings3 : pb::IMessage<TestExtensionOrderings3> {
+      public sealed partial class TestExtensionOrderings3 : pb::IMessage<TestExtensionOrderings3>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<TestExtensionOrderings3> _parser = new pb::MessageParser<TestExtensionOrderings3>(() => new TestExtensionOrderings3());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -12822,6 +15613,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasMyString) {
             output.WriteRawTag(10);
             output.WriteString(MyString);
@@ -12829,7 +15623,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasMyString) {
+            output.WriteRawTag(10);
+            output.WriteString(MyString);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -12856,6 +15664,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -12868,7 +15679,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 10: {
+                MyString = input.ReadString();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
         #region Extensions
         /// <summary>Container for extensions for other messages declared in the TestExtensionOrderings3 message type.</summary>
@@ -12895,7 +15725,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestExtremeDefaultValues : pb::IMessage<TestExtremeDefaultValues> {
+  public sealed partial class TestExtremeDefaultValues : pb::IMessage<TestExtremeDefaultValues>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestExtremeDefaultValues> _parser = new pb::MessageParser<TestExtremeDefaultValues>(() => new TestExtremeDefaultValues());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -13707,6 +16541,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasEscapedBytes) {
         output.WriteRawTag(10);
         output.WriteBytes(EscapedBytes);
@@ -13818,7 +16655,125 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasEscapedBytes) {
+        output.WriteRawTag(10);
+        output.WriteBytes(EscapedBytes);
+      }
+      if (HasLargeUint32) {
+        output.WriteRawTag(16);
+        output.WriteUInt32(LargeUint32);
+      }
+      if (HasLargeUint64) {
+        output.WriteRawTag(24);
+        output.WriteUInt64(LargeUint64);
+      }
+      if (HasSmallInt32) {
+        output.WriteRawTag(32);
+        output.WriteInt32(SmallInt32);
+      }
+      if (HasSmallInt64) {
+        output.WriteRawTag(40);
+        output.WriteInt64(SmallInt64);
+      }
+      if (HasUtf8String) {
+        output.WriteRawTag(50);
+        output.WriteString(Utf8String);
+      }
+      if (HasZeroFloat) {
+        output.WriteRawTag(61);
+        output.WriteFloat(ZeroFloat);
+      }
+      if (HasOneFloat) {
+        output.WriteRawTag(69);
+        output.WriteFloat(OneFloat);
+      }
+      if (HasSmallFloat) {
+        output.WriteRawTag(77);
+        output.WriteFloat(SmallFloat);
+      }
+      if (HasNegativeOneFloat) {
+        output.WriteRawTag(85);
+        output.WriteFloat(NegativeOneFloat);
+      }
+      if (HasNegativeFloat) {
+        output.WriteRawTag(93);
+        output.WriteFloat(NegativeFloat);
+      }
+      if (HasLargeFloat) {
+        output.WriteRawTag(101);
+        output.WriteFloat(LargeFloat);
+      }
+      if (HasSmallNegativeFloat) {
+        output.WriteRawTag(109);
+        output.WriteFloat(SmallNegativeFloat);
+      }
+      if (HasInfDouble) {
+        output.WriteRawTag(113);
+        output.WriteDouble(InfDouble);
+      }
+      if (HasNegInfDouble) {
+        output.WriteRawTag(121);
+        output.WriteDouble(NegInfDouble);
+      }
+      if (HasNanDouble) {
+        output.WriteRawTag(129, 1);
+        output.WriteDouble(NanDouble);
+      }
+      if (HasInfFloat) {
+        output.WriteRawTag(141, 1);
+        output.WriteFloat(InfFloat);
+      }
+      if (HasNegInfFloat) {
+        output.WriteRawTag(149, 1);
+        output.WriteFloat(NegInfFloat);
+      }
+      if (HasNanFloat) {
+        output.WriteRawTag(157, 1);
+        output.WriteFloat(NanFloat);
+      }
+      if (HasCppTrigraph) {
+        output.WriteRawTag(162, 1);
+        output.WriteString(CppTrigraph);
+      }
+      if (HasReallySmallInt32) {
+        output.WriteRawTag(168, 1);
+        output.WriteInt32(ReallySmallInt32);
+      }
+      if (HasReallySmallInt64) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt64(ReallySmallInt64);
+      }
+      if (HasStringWithZero) {
+        output.WriteRawTag(186, 1);
+        output.WriteString(StringWithZero);
+      }
+      if (HasBytesWithZero) {
+        output.WriteRawTag(194, 1);
+        output.WriteBytes(BytesWithZero);
+      }
+      if (HasStringPieceWithZero) {
+        output.WriteRawTag(202, 1);
+        output.WriteString(StringPieceWithZero);
+      }
+      if (HasCordWithZero) {
+        output.WriteRawTag(210, 1);
+        output.WriteString(CordWithZero);
+      }
+      if (HasReplacementString) {
+        output.WriteRawTag(218, 1);
+        output.WriteString(ReplacementString);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14001,6 +16956,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -14117,11 +17075,138 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            EscapedBytes = input.ReadBytes();
+            break;
+          }
+          case 16: {
+            LargeUint32 = input.ReadUInt32();
+            break;
+          }
+          case 24: {
+            LargeUint64 = input.ReadUInt64();
+            break;
+          }
+          case 32: {
+            SmallInt32 = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            SmallInt64 = input.ReadInt64();
+            break;
+          }
+          case 50: {
+            Utf8String = input.ReadString();
+            break;
+          }
+          case 61: {
+            ZeroFloat = input.ReadFloat();
+            break;
+          }
+          case 69: {
+            OneFloat = input.ReadFloat();
+            break;
+          }
+          case 77: {
+            SmallFloat = input.ReadFloat();
+            break;
+          }
+          case 85: {
+            NegativeOneFloat = input.ReadFloat();
+            break;
+          }
+          case 93: {
+            NegativeFloat = input.ReadFloat();
+            break;
+          }
+          case 101: {
+            LargeFloat = input.ReadFloat();
+            break;
+          }
+          case 109: {
+            SmallNegativeFloat = input.ReadFloat();
+            break;
+          }
+          case 113: {
+            InfDouble = input.ReadDouble();
+            break;
+          }
+          case 121: {
+            NegInfDouble = input.ReadDouble();
+            break;
+          }
+          case 129: {
+            NanDouble = input.ReadDouble();
+            break;
+          }
+          case 141: {
+            InfFloat = input.ReadFloat();
+            break;
+          }
+          case 149: {
+            NegInfFloat = input.ReadFloat();
+            break;
+          }
+          case 157: {
+            NanFloat = input.ReadFloat();
+            break;
+          }
+          case 162: {
+            CppTrigraph = input.ReadString();
+            break;
+          }
+          case 168: {
+            ReallySmallInt32 = input.ReadInt32();
+            break;
+          }
+          case 176: {
+            ReallySmallInt64 = input.ReadInt64();
+            break;
+          }
+          case 186: {
+            StringWithZero = input.ReadString();
+            break;
+          }
+          case 194: {
+            BytesWithZero = input.ReadBytes();
+            break;
+          }
+          case 202: {
+            StringPieceWithZero = input.ReadString();
+            break;
+          }
+          case 210: {
+            CordWithZero = input.ReadString();
+            break;
+          }
+          case 218: {
+            ReplacementString = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class SparseEnumMessage : pb::IMessage<SparseEnumMessage> {
+  public sealed partial class SparseEnumMessage : pb::IMessage<SparseEnumMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<SparseEnumMessage> _parser = new pb::MessageParser<SparseEnumMessage>(() => new SparseEnumMessage());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -14215,6 +17300,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasSparseEnum) {
         output.WriteRawTag(8);
         output.WriteEnum((int) SparseEnum);
@@ -14222,7 +17310,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasSparseEnum) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) SparseEnum);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14249,6 +17351,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -14261,14 +17366,37 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            SparseEnum = (global::Google.Protobuf.TestProtos.Proto2.TestSparseEnum) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
   /// <summary>
   /// Test String and Bytes: string is for valid UTF-8 strings
   /// </summary>
-  public sealed partial class OneString : pb::IMessage<OneString> {
+  public sealed partial class OneString : pb::IMessage<OneString>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<OneString> _parser = new pb::MessageParser<OneString>(() => new OneString());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14359,6 +17487,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(10);
         output.WriteString(Data);
@@ -14366,7 +17497,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(10);
+        output.WriteString(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14393,6 +17538,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -14405,11 +17553,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Data = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class MoreString : pb::IMessage<MoreString> {
+  public sealed partial class MoreString : pb::IMessage<MoreString>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<MoreString> _parser = new pb::MessageParser<MoreString>(() => new MoreString());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14487,11 +17658,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       data_.WriteTo(output, _repeated_data_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      data_.WriteTo(ref output, _repeated_data_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14514,6 +17699,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -14526,11 +17714,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            data_.AddEntriesFrom(ref input, _repeated_data_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class OneBytes : pb::IMessage<OneBytes> {
+  public sealed partial class OneBytes : pb::IMessage<OneBytes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<OneBytes> _parser = new pb::MessageParser<OneBytes>(() => new OneBytes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14621,6 +17832,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(10);
         output.WriteBytes(Data);
@@ -14628,7 +17842,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(10);
+        output.WriteBytes(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14655,6 +17883,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -14667,11 +17898,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Data = input.ReadBytes();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class MoreBytes : pb::IMessage<MoreBytes> {
+  public sealed partial class MoreBytes : pb::IMessage<MoreBytes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<MoreBytes> _parser = new pb::MessageParser<MoreBytes>(() => new MoreBytes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -14749,11 +18003,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       data_.WriteTo(output, _repeated_data_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      data_.WriteTo(ref output, _repeated_data_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14776,6 +18044,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -14788,14 +18059,37 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            data_.AddEntriesFrom(ref input, _repeated_data_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
   /// <summary>
   /// Test int32, uint32, int64, uint64, and bool are all compatible
   /// </summary>
-  public sealed partial class Int32Message : pb::IMessage<Int32Message> {
+  public sealed partial class Int32Message : pb::IMessage<Int32Message>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Int32Message> _parser = new pb::MessageParser<Int32Message>(() => new Int32Message());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -14889,6 +18183,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteInt32(Data);
@@ -14896,7 +18193,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -14923,6 +18234,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -14935,11 +18249,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Data = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class Uint32Message : pb::IMessage<Uint32Message> {
+  public sealed partial class Uint32Message : pb::IMessage<Uint32Message>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Uint32Message> _parser = new pb::MessageParser<Uint32Message>(() => new Uint32Message());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -15033,6 +18370,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteUInt32(Data);
@@ -15040,7 +18380,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteUInt32(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -15067,6 +18421,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -15079,11 +18436,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Data = input.ReadUInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class Int64Message : pb::IMessage<Int64Message> {
+  public sealed partial class Int64Message : pb::IMessage<Int64Message>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Int64Message> _parser = new pb::MessageParser<Int64Message>(() => new Int64Message());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -15177,6 +18557,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteInt64(Data);
@@ -15184,7 +18567,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteInt64(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -15211,6 +18608,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -15223,11 +18623,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Data = input.ReadInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class Uint64Message : pb::IMessage<Uint64Message> {
+  public sealed partial class Uint64Message : pb::IMessage<Uint64Message>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Uint64Message> _parser = new pb::MessageParser<Uint64Message>(() => new Uint64Message());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -15321,6 +18744,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteUInt64(Data);
@@ -15328,7 +18754,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteUInt64(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -15355,6 +18795,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -15367,11 +18810,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Data = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class BoolMessage : pb::IMessage<BoolMessage> {
+  public sealed partial class BoolMessage : pb::IMessage<BoolMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<BoolMessage> _parser = new pb::MessageParser<BoolMessage>(() => new BoolMessage());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -15465,6 +18931,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasData) {
         output.WriteRawTag(8);
         output.WriteBool(Data);
@@ -15472,7 +18941,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasData) {
+        output.WriteRawTag(8);
+        output.WriteBool(Data);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -15499,6 +18982,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -15511,17 +18997,39 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Data = input.ReadBool();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
   /// <summary>
   /// Test oneofs.
   /// </summary>
-  public sealed partial class TestOneof : pb::IMessage<TestOneof> {
+  public sealed partial class TestOneof : pb::IMessage<TestOneof>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
     private pb::UnknownFieldSet _unknownFields;
-    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestOneof> Parser { get { return _parser; } }
 
@@ -15544,7 +19052,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestOneof(TestOneof other) : this() {
-      _hasBits0 = other._hasBits0;
       switch (other.FooCase) {
         case FooOneofCase.FooInt:
           FooInt = other.FooInt;
@@ -15618,22 +19125,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooMessageFieldNumber = 3;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes FooMessage {
-      get { return HasFooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes) foo_ : null; }
+      get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes) foo_ : null; }
       set {
         foo_ = value;
         fooCase_ = value == null ? FooOneofCase.None : FooOneofCase.FooMessage;
-      }
-    }
-    /// <summary>Gets whether the "foo_message" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasFooMessage {
-      get { return fooCase_ == FooOneofCase.FooMessage; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "foo_message" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFooMessage() {
-      if (HasFooMessage) {
-        ClearFoo();
       }
     }
 
@@ -15707,7 +19202,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       int hash = 1;
       if (HasFooInt) hash ^= FooInt.GetHashCode();
       if (HasFooString) hash ^= FooString.GetHashCode();
-      if (HasFooMessage) hash ^= FooMessage.GetHashCode();
+      if (fooCase_ == FooOneofCase.FooMessage) hash ^= FooMessage.GetHashCode();
       if (HasFooGroup) hash ^= FooGroup.GetHashCode();
       hash ^= (int) fooCase_;
       if (_unknownFields != null) {
@@ -15723,6 +19218,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -15731,7 +19229,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(18);
         output.WriteString(FooString);
       }
-      if (HasFooMessage) {
+      if (fooCase_ == FooOneofCase.FooMessage) {
         output.WriteRawTag(26);
         output.WriteMessage(FooMessage);
       }
@@ -15743,7 +19241,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFooInt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
+      }
+      if (HasFooString) {
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
+      }
+      if (fooCase_ == FooOneofCase.FooMessage) {
+        output.WriteRawTag(26);
+        output.WriteMessage(FooMessage);
+      }
+      if (HasFooGroup) {
+        output.WriteRawTag(35);
+        output.WriteGroup(FooGroup);
+        output.WriteRawTag(36);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -15754,7 +19279,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasFooString) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(FooString);
       }
-      if (HasFooMessage) {
+      if (fooCase_ == FooOneofCase.FooMessage) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(FooMessage);
       }
       if (HasFooGroup) {
@@ -15797,6 +19322,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -15813,7 +19341,47 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
           case 26: {
             global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
-            if (HasFooMessage) {
+            if (fooCase_ == FooOneofCase.FooMessage) {
+              subBuilder.MergeFrom(FooMessage);
+            }
+            input.ReadMessage(subBuilder);
+            FooMessage = subBuilder;
+            break;
+          }
+          case 35: {
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup();
+            if (HasFooGroup) {
+              subBuilder.MergeFrom(FooGroup);
+            }
+            input.ReadGroup(subBuilder);
+            FooGroup = subBuilder;
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            FooInt = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FooString = input.ReadString();
+            break;
+          }
+          case 26: {
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+            if (fooCase_ == FooOneofCase.FooMessage) {
               subBuilder.MergeFrom(FooMessage);
             }
             input.ReadMessage(subBuilder);
@@ -15832,12 +19400,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestOneof message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class FooGroup : pb::IMessage<FooGroup> {
+      public sealed partial class FooGroup : pb::IMessage<FooGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<FooGroup> _parser = new pb::MessageParser<FooGroup>(() => new FooGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -15957,6 +19530,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(40);
             output.WriteInt32(A);
@@ -15968,7 +19544,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(40);
+            output.WriteInt32(A);
+          }
+          if (HasB) {
+            output.WriteRawTag(50);
+            output.WriteString(B);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -16001,6 +19595,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -16019,7 +19616,32 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 36:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 40: {
+                A = input.ReadInt32();
+                break;
+              }
+              case 50: {
+                B = input.ReadString();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -16028,7 +19650,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestOneofBackwardsCompatible : pb::IMessage<TestOneofBackwardsCompatible> {
+  public sealed partial class TestOneofBackwardsCompatible : pb::IMessage<TestOneofBackwardsCompatible>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestOneofBackwardsCompatible> _parser = new pb::MessageParser<TestOneofBackwardsCompatible>(() => new TestOneofBackwardsCompatible());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -16057,7 +19683,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       _hasBits0 = other._hasBits0;
       fooInt_ = other.fooInt_;
       fooString_ = other.fooString_;
-      fooMessage_ = other.HasFooMessage ? other.fooMessage_.Clone() : null;
+      fooMessage_ = other.fooMessage_ != null ? other.fooMessage_.Clone() : null;
       fooGroup_ = other.HasFooGroup ? other.fooGroup_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
@@ -16124,16 +19750,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         fooMessage_ = value;
       }
     }
-    /// <summary>Gets whether the foo_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasFooMessage {
-      get { return fooMessage_ != null; }
-    }
-    /// <summary>Clears the value of the foo_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFooMessage() {
-      fooMessage_ = null;
-    }
 
     /// <summary>Field number for the "foogroup" field.</summary>
     public const int FooGroupFieldNumber = 4;
@@ -16181,7 +19797,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       int hash = 1;
       if (HasFooInt) hash ^= FooInt.GetHashCode();
       if (HasFooString) hash ^= FooString.GetHashCode();
-      if (HasFooMessage) hash ^= FooMessage.GetHashCode();
+      if (fooMessage_ != null) hash ^= FooMessage.GetHashCode();
       if (HasFooGroup) hash ^= FooGroup.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -16196,6 +19812,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -16204,7 +19823,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(18);
         output.WriteString(FooString);
       }
-      if (HasFooMessage) {
+      if (fooMessage_ != null) {
         output.WriteRawTag(26);
         output.WriteMessage(FooMessage);
       }
@@ -16216,7 +19835,34 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFooInt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
+      }
+      if (HasFooString) {
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
+      }
+      if (fooMessage_ != null) {
+        output.WriteRawTag(26);
+        output.WriteMessage(FooMessage);
+      }
+      if (HasFooGroup) {
+        output.WriteRawTag(35);
+        output.WriteGroup(FooGroup);
+        output.WriteRawTag(36);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -16227,7 +19873,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasFooString) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(FooString);
       }
-      if (HasFooMessage) {
+      if (fooMessage_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(FooMessage);
       }
       if (HasFooGroup) {
@@ -16250,8 +19896,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other.HasFooString) {
         FooString = other.FooString;
       }
-      if (other.HasFooMessage) {
-        if (!HasFooMessage) {
+      if (other.fooMessage_ != null) {
+        if (fooMessage_ == null) {
           FooMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
         }
         FooMessage.MergeFrom(other.FooMessage);
@@ -16267,6 +19913,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -16282,7 +19931,43 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 26: {
-            if (!HasFooMessage) {
+            if (fooMessage_ == null) {
+              FooMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+            }
+            input.ReadMessage(FooMessage);
+            break;
+          }
+          case 35: {
+            if (!HasFooGroup) {
+              FooGroup = new global::Google.Protobuf.TestProtos.Proto2.TestOneofBackwardsCompatible.Types.FooGroup();
+            }
+            input.ReadGroup(FooGroup);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            FooInt = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FooString = input.ReadString();
+            break;
+          }
+          case 26: {
+            if (fooMessage_ == null) {
               FooMessage = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             input.ReadMessage(FooMessage);
@@ -16298,12 +19983,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestOneofBackwardsCompatible message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class FooGroup : pb::IMessage<FooGroup> {
+      public sealed partial class FooGroup : pb::IMessage<FooGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<FooGroup> _parser = new pb::MessageParser<FooGroup>(() => new FooGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -16423,6 +20113,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(40);
             output.WriteInt32(A);
@@ -16434,7 +20127,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(40);
+            output.WriteInt32(A);
+          }
+          if (HasB) {
+            output.WriteRawTag(50);
+            output.WriteString(B);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -16467,6 +20178,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -16485,7 +20199,32 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 36:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 40: {
+                A = input.ReadInt32();
+                break;
+              }
+              case 50: {
+                B = input.ReadString();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -16494,7 +20233,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestOneof2 : pb::IMessage<TestOneof2> {
+  public sealed partial class TestOneof2 : pb::IMessage<TestOneof2>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestOneof2> _parser = new pb::MessageParser<TestOneof2>(() => new TestOneof2());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -16724,22 +20467,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooMessageFieldNumber = 7;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage FooMessage {
-      get { return HasFooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage) foo_ : null; }
+      get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage) foo_ : null; }
       set {
         foo_ = value;
         fooCase_ = value == null ? FooOneofCase.None : FooOneofCase.FooMessage;
-      }
-    }
-    /// <summary>Gets whether the "foo_message" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasFooMessage {
-      get { return fooCase_ == FooOneofCase.FooMessage; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "foo_message" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFooMessage() {
-      if (HasFooMessage) {
-        ClearFoo();
       }
     }
 
@@ -16770,22 +20501,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooLazyMessageFieldNumber = 11;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage FooLazyMessage {
-      get { return HasFooLazyMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage) foo_ : null; }
+      get { return fooCase_ == FooOneofCase.FooLazyMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage) foo_ : null; }
       set {
         foo_ = value;
         fooCase_ = value == null ? FooOneofCase.None : FooOneofCase.FooLazyMessage;
-      }
-    }
-    /// <summary>Gets whether the "foo_lazy_message" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasFooLazyMessage {
-      get { return fooCase_ == FooOneofCase.FooLazyMessage; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "foo_lazy_message" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFooLazyMessage() {
-      if (HasFooLazyMessage) {
-        ClearFoo();
       }
     }
 
@@ -16934,21 +20653,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private int bazInt_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int BazInt {
-      get { if ((_hasBits0 & 16) != 0) { return bazInt_; } else { return BazIntDefaultValue; } }
+      get { if ((_hasBits0 & 1) != 0) { return bazInt_; } else { return BazIntDefaultValue; } }
       set {
-        _hasBits0 |= 16;
+        _hasBits0 |= 1;
         bazInt_ = value;
       }
     }
     /// <summary>Gets whether the "baz_int" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool HasBazInt {
-      get { return (_hasBits0 & 16) != 0; }
+      get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "baz_int" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearBazInt() {
-      _hasBits0 &= ~16;
+      _hasBits0 &= ~1;
     }
 
     /// <summary>Field number for the "baz_string" field.</summary>
@@ -17067,9 +20786,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasFooStringPiece) hash ^= FooStringPiece.GetHashCode();
       if (HasFooBytes) hash ^= FooBytes.GetHashCode();
       if (HasFooEnum) hash ^= FooEnum.GetHashCode();
-      if (HasFooMessage) hash ^= FooMessage.GetHashCode();
+      if (fooCase_ == FooOneofCase.FooMessage) hash ^= FooMessage.GetHashCode();
       if (HasFooGroup) hash ^= FooGroup.GetHashCode();
-      if (HasFooLazyMessage) hash ^= FooLazyMessage.GetHashCode();
+      if (fooCase_ == FooOneofCase.FooLazyMessage) hash ^= FooLazyMessage.GetHashCode();
       if (HasBarInt) hash ^= BarInt.GetHashCode();
       if (HasBarString) hash ^= BarString.GetHashCode();
       if (HasBarCord) hash ^= BarCord.GetHashCode();
@@ -17093,6 +20812,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -17117,7 +20839,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(48);
         output.WriteEnum((int) FooEnum);
       }
-      if (HasFooMessage) {
+      if (fooCase_ == FooOneofCase.FooMessage) {
         output.WriteRawTag(58);
         output.WriteMessage(FooMessage);
       }
@@ -17126,7 +20848,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteGroup(FooGroup);
         output.WriteRawTag(68);
       }
-      if (HasFooLazyMessage) {
+      if (fooCase_ == FooOneofCase.FooLazyMessage) {
         output.WriteRawTag(90);
         output.WriteMessage(FooLazyMessage);
       }
@@ -17165,7 +20887,86 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFooInt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
+      }
+      if (HasFooString) {
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
+      }
+      if (HasFooCord) {
+        output.WriteRawTag(26);
+        output.WriteString(FooCord);
+      }
+      if (HasFooStringPiece) {
+        output.WriteRawTag(34);
+        output.WriteString(FooStringPiece);
+      }
+      if (HasFooBytes) {
+        output.WriteRawTag(42);
+        output.WriteBytes(FooBytes);
+      }
+      if (HasFooEnum) {
+        output.WriteRawTag(48);
+        output.WriteEnum((int) FooEnum);
+      }
+      if (fooCase_ == FooOneofCase.FooMessage) {
+        output.WriteRawTag(58);
+        output.WriteMessage(FooMessage);
+      }
+      if (HasFooGroup) {
+        output.WriteRawTag(67);
+        output.WriteGroup(FooGroup);
+        output.WriteRawTag(68);
+      }
+      if (fooCase_ == FooOneofCase.FooLazyMessage) {
+        output.WriteRawTag(90);
+        output.WriteMessage(FooLazyMessage);
+      }
+      if (HasBarInt) {
+        output.WriteRawTag(96);
+        output.WriteInt32(BarInt);
+      }
+      if (HasBarString) {
+        output.WriteRawTag(106);
+        output.WriteString(BarString);
+      }
+      if (HasBarCord) {
+        output.WriteRawTag(114);
+        output.WriteString(BarCord);
+      }
+      if (HasBarStringPiece) {
+        output.WriteRawTag(122);
+        output.WriteString(BarStringPiece);
+      }
+      if (HasBarBytes) {
+        output.WriteRawTag(130, 1);
+        output.WriteBytes(BarBytes);
+      }
+      if (HasBarEnum) {
+        output.WriteRawTag(136, 1);
+        output.WriteEnum((int) BarEnum);
+      }
+      if (HasBazInt) {
+        output.WriteRawTag(144, 1);
+        output.WriteInt32(BazInt);
+      }
+      if (HasBazString) {
+        output.WriteRawTag(154, 1);
+        output.WriteString(BazString);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -17188,13 +20989,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasFooEnum) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) FooEnum);
       }
-      if (HasFooMessage) {
+      if (fooCase_ == FooOneofCase.FooMessage) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(FooMessage);
       }
       if (HasFooGroup) {
         size += 2 + pb::CodedOutputStream.ComputeGroupSize(FooGroup);
       }
-      if (HasFooLazyMessage) {
+      if (fooCase_ == FooOneofCase.FooLazyMessage) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(FooLazyMessage);
       }
       if (HasBarInt) {
@@ -17303,6 +21104,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -17336,7 +21140,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
           case 58: {
             global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
-            if (HasFooMessage) {
+            if (fooCase_ == FooOneofCase.FooMessage) {
               subBuilder.MergeFrom(FooMessage);
             }
             input.ReadMessage(subBuilder);
@@ -17354,7 +21158,106 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
           case 90: {
             global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
-            if (HasFooLazyMessage) {
+            if (fooCase_ == FooOneofCase.FooLazyMessage) {
+              subBuilder.MergeFrom(FooLazyMessage);
+            }
+            input.ReadMessage(subBuilder);
+            FooLazyMessage = subBuilder;
+            break;
+          }
+          case 96: {
+            BarInt = input.ReadInt32();
+            break;
+          }
+          case 106: {
+            BarString = input.ReadString();
+            break;
+          }
+          case 114: {
+            BarCord = input.ReadString();
+            break;
+          }
+          case 122: {
+            BarStringPiece = input.ReadString();
+            break;
+          }
+          case 130: {
+            BarBytes = input.ReadBytes();
+            break;
+          }
+          case 136: {
+            bar_ = input.ReadEnum();
+            barCase_ = BarOneofCase.BarEnum;
+            break;
+          }
+          case 144: {
+            BazInt = input.ReadInt32();
+            break;
+          }
+          case 154: {
+            BazString = input.ReadString();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            FooInt = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FooString = input.ReadString();
+            break;
+          }
+          case 26: {
+            FooCord = input.ReadString();
+            break;
+          }
+          case 34: {
+            FooStringPiece = input.ReadString();
+            break;
+          }
+          case 42: {
+            FooBytes = input.ReadBytes();
+            break;
+          }
+          case 48: {
+            foo_ = input.ReadEnum();
+            fooCase_ = FooOneofCase.FooEnum;
+            break;
+          }
+          case 58: {
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
+            if (fooCase_ == FooOneofCase.FooMessage) {
+              subBuilder.MergeFrom(FooMessage);
+            }
+            input.ReadMessage(subBuilder);
+            FooMessage = subBuilder;
+            break;
+          }
+          case 67: {
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup();
+            if (HasFooGroup) {
+              subBuilder.MergeFrom(FooGroup);
+            }
+            input.ReadGroup(subBuilder);
+            FooGroup = subBuilder;
+            break;
+          }
+          case 90: {
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
+            if (fooCase_ == FooOneofCase.FooLazyMessage) {
               subBuilder.MergeFrom(FooLazyMessage);
             }
             input.ReadMessage(subBuilder);
@@ -17397,6 +21300,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestOneof2 message type.</summary>
@@ -17408,7 +21312,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [pbr::OriginalName("BAZ")] Baz = 3,
       }
 
-      public sealed partial class FooGroup : pb::IMessage<FooGroup> {
+      public sealed partial class FooGroup : pb::IMessage<FooGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<FooGroup> _parser = new pb::MessageParser<FooGroup>(() => new FooGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -17528,6 +21436,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasA) {
             output.WriteRawTag(72);
             output.WriteInt32(A);
@@ -17539,7 +21450,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasA) {
+            output.WriteRawTag(72);
+            output.WriteInt32(A);
+          }
+          if (HasB) {
+            output.WriteRawTag(82);
+            output.WriteString(B);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -17572,6 +21501,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -17590,11 +21522,40 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 68:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 72: {
+                A = input.ReadInt32();
+                break;
+              }
+              case 82: {
+                B = input.ReadString();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -17701,6 +21662,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasQuxInt) {
             output.WriteRawTag(8);
             output.WriteInt64(QuxInt);
@@ -17709,7 +21673,22 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasQuxInt) {
+            output.WriteRawTag(8);
+            output.WriteInt64(QuxInt);
+          }
+          corgeInt_.WriteTo(ref output, _repeated_corgeInt_codec);
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -17738,6 +21717,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -17755,7 +21737,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                QuxInt = input.ReadInt64();
+                break;
+              }
+              case 18:
+              case 16: {
+                corgeInt_.AddEntriesFrom(ref input, _repeated_corgeInt_codec);
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -17764,10 +21770,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestRequiredOneof : pb::IMessage<TestRequiredOneof> {
+  public sealed partial class TestRequiredOneof : pb::IMessage<TestRequiredOneof>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestRequiredOneof> _parser = new pb::MessageParser<TestRequiredOneof>(() => new TestRequiredOneof());
     private pb::UnknownFieldSet _unknownFields;
-    private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestRequiredOneof> Parser { get { return _parser; } }
 
@@ -17790,7 +21799,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestRequiredOneof(TestRequiredOneof other) : this() {
-      _hasBits0 = other._hasBits0;
       switch (other.FooCase) {
         case FooOneofCase.FooInt:
           FooInt = other.FooInt;
@@ -17861,22 +21869,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int FooMessageFieldNumber = 3;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage FooMessage {
-      get { return HasFooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage) foo_ : null; }
+      get { return fooCase_ == FooOneofCase.FooMessage ? (global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage) foo_ : null; }
       set {
         foo_ = value;
         fooCase_ = value == null ? FooOneofCase.None : FooOneofCase.FooMessage;
-      }
-    }
-    /// <summary>Gets whether the "foo_message" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasFooMessage {
-      get { return fooCase_ == FooOneofCase.FooMessage; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "foo_message" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearFooMessage() {
-      if (HasFooMessage) {
-        ClearFoo();
       }
     }
 
@@ -17925,7 +21921,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       int hash = 1;
       if (HasFooInt) hash ^= FooInt.GetHashCode();
       if (HasFooString) hash ^= FooString.GetHashCode();
-      if (HasFooMessage) hash ^= FooMessage.GetHashCode();
+      if (fooCase_ == FooOneofCase.FooMessage) hash ^= FooMessage.GetHashCode();
       hash ^= (int) fooCase_;
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
@@ -17940,6 +21936,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -17948,14 +21947,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(18);
         output.WriteString(FooString);
       }
-      if (HasFooMessage) {
+      if (fooCase_ == FooOneofCase.FooMessage) {
         output.WriteRawTag(26);
         output.WriteMessage(FooMessage);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFooInt) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FooInt);
+      }
+      if (HasFooString) {
+        output.WriteRawTag(18);
+        output.WriteString(FooString);
+      }
+      if (fooCase_ == FooOneofCase.FooMessage) {
+        output.WriteRawTag(26);
+        output.WriteMessage(FooMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -17966,7 +21987,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasFooString) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(FooString);
       }
-      if (HasFooMessage) {
+      if (fooCase_ == FooOneofCase.FooMessage) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(FooMessage);
       }
       if (_unknownFields != null) {
@@ -18000,6 +22021,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -18016,7 +22040,38 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
           case 26: {
             global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage();
-            if (HasFooMessage) {
+            if (fooCase_ == FooOneofCase.FooMessage) {
+              subBuilder.MergeFrom(FooMessage);
+            }
+            input.ReadMessage(subBuilder);
+            FooMessage = subBuilder;
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            FooInt = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            FooString = input.ReadString();
+            break;
+          }
+          case 26: {
+            global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage();
+            if (fooCase_ == FooOneofCase.FooMessage) {
               subBuilder.MergeFrom(FooMessage);
             }
             input.ReadMessage(subBuilder);
@@ -18026,12 +22081,17 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestRequiredOneof message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -18125,6 +22185,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasRequiredDouble) {
             output.WriteRawTag(9);
             output.WriteDouble(RequiredDouble);
@@ -18132,7 +22195,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasRequiredDouble) {
+            output.WriteRawTag(9);
+            output.WriteDouble(RequiredDouble);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -18159,6 +22236,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -18171,7 +22251,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 9: {
+                RequiredDouble = input.ReadDouble();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -18180,7 +22279,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestRequiredMap : pb::IMessage<TestRequiredMap> {
+  public sealed partial class TestRequiredMap : pb::IMessage<TestRequiredMap>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestRequiredMap> _parser = new pb::MessageParser<TestRequiredMap>(() => new TestRequiredMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18258,11 +22361,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       foo_.WriteTo(output, _map_foo_codec);
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      foo_.WriteTo(ref output, _map_foo_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -18285,6 +22402,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -18297,13 +22417,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            foo_.AddEntriesFrom(ref input, _map_foo_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestRequiredMap message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -18397,6 +22540,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasRequiredInt32) {
             output.WriteRawTag(8);
             output.WriteInt32(RequiredInt32);
@@ -18404,7 +22550,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasRequiredInt32) {
+            output.WriteRawTag(8);
+            output.WriteInt32(RequiredInt32);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -18431,6 +22591,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -18443,7 +22606,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 8: {
+                RequiredInt32 = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -18452,7 +22634,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes> {
+  public sealed partial class TestPackedTypes : pb::IMessage<TestPackedTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestPackedTypes> _parser = new pb::MessageParser<TestPackedTypes>(() => new TestPackedTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -18699,6 +22885,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       packedInt32_.WriteTo(output, _repeated_packedInt32_codec);
       packedInt64_.WriteTo(output, _repeated_packedInt64_codec);
       packedUint32_.WriteTo(output, _repeated_packedUint32_codec);
@@ -18716,7 +22905,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      packedInt32_.WriteTo(ref output, _repeated_packedInt32_codec);
+      packedInt64_.WriteTo(ref output, _repeated_packedInt64_codec);
+      packedUint32_.WriteTo(ref output, _repeated_packedUint32_codec);
+      packedUint64_.WriteTo(ref output, _repeated_packedUint64_codec);
+      packedSint32_.WriteTo(ref output, _repeated_packedSint32_codec);
+      packedSint64_.WriteTo(ref output, _repeated_packedSint64_codec);
+      packedFixed32_.WriteTo(ref output, _repeated_packedFixed32_codec);
+      packedFixed64_.WriteTo(ref output, _repeated_packedFixed64_codec);
+      packedSfixed32_.WriteTo(ref output, _repeated_packedSfixed32_codec);
+      packedSfixed64_.WriteTo(ref output, _repeated_packedSfixed64_codec);
+      packedFloat_.WriteTo(ref output, _repeated_packedFloat_codec);
+      packedDouble_.WriteTo(ref output, _repeated_packedDouble_codec);
+      packedBool_.WriteTo(ref output, _repeated_packedBool_codec);
+      packedEnum_.WriteTo(ref output, _repeated_packedEnum_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -18765,6 +22978,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -18843,7 +23059,92 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 722:
+          case 720: {
+            packedInt32_.AddEntriesFrom(ref input, _repeated_packedInt32_codec);
+            break;
+          }
+          case 730:
+          case 728: {
+            packedInt64_.AddEntriesFrom(ref input, _repeated_packedInt64_codec);
+            break;
+          }
+          case 738:
+          case 736: {
+            packedUint32_.AddEntriesFrom(ref input, _repeated_packedUint32_codec);
+            break;
+          }
+          case 746:
+          case 744: {
+            packedUint64_.AddEntriesFrom(ref input, _repeated_packedUint64_codec);
+            break;
+          }
+          case 754:
+          case 752: {
+            packedSint32_.AddEntriesFrom(ref input, _repeated_packedSint32_codec);
+            break;
+          }
+          case 762:
+          case 760: {
+            packedSint64_.AddEntriesFrom(ref input, _repeated_packedSint64_codec);
+            break;
+          }
+          case 770:
+          case 773: {
+            packedFixed32_.AddEntriesFrom(ref input, _repeated_packedFixed32_codec);
+            break;
+          }
+          case 778:
+          case 777: {
+            packedFixed64_.AddEntriesFrom(ref input, _repeated_packedFixed64_codec);
+            break;
+          }
+          case 786:
+          case 789: {
+            packedSfixed32_.AddEntriesFrom(ref input, _repeated_packedSfixed32_codec);
+            break;
+          }
+          case 794:
+          case 793: {
+            packedSfixed64_.AddEntriesFrom(ref input, _repeated_packedSfixed64_codec);
+            break;
+          }
+          case 802:
+          case 805: {
+            packedFloat_.AddEntriesFrom(ref input, _repeated_packedFloat_codec);
+            break;
+          }
+          case 810:
+          case 809: {
+            packedDouble_.AddEntriesFrom(ref input, _repeated_packedDouble_codec);
+            break;
+          }
+          case 818:
+          case 816: {
+            packedBool_.AddEntriesFrom(ref input, _repeated_packedBool_codec);
+            break;
+          }
+          case 826:
+          case 824: {
+            packedEnum_.AddEntriesFrom(ref input, _repeated_packedEnum_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
@@ -18851,7 +23152,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// A message with the same fields as TestPackedTypes, but without packing. Used
   /// to test packed &lt;-> unpacked wire compatibility.
   /// </summary>
-  public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes> {
+  public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestUnpackedTypes> _parser = new pb::MessageParser<TestUnpackedTypes>(() => new TestUnpackedTypes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -19098,6 +23403,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       unpackedInt32_.WriteTo(output, _repeated_unpackedInt32_codec);
       unpackedInt64_.WriteTo(output, _repeated_unpackedInt64_codec);
       unpackedUint32_.WriteTo(output, _repeated_unpackedUint32_codec);
@@ -19115,7 +23423,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      unpackedInt32_.WriteTo(ref output, _repeated_unpackedInt32_codec);
+      unpackedInt64_.WriteTo(ref output, _repeated_unpackedInt64_codec);
+      unpackedUint32_.WriteTo(ref output, _repeated_unpackedUint32_codec);
+      unpackedUint64_.WriteTo(ref output, _repeated_unpackedUint64_codec);
+      unpackedSint32_.WriteTo(ref output, _repeated_unpackedSint32_codec);
+      unpackedSint64_.WriteTo(ref output, _repeated_unpackedSint64_codec);
+      unpackedFixed32_.WriteTo(ref output, _repeated_unpackedFixed32_codec);
+      unpackedFixed64_.WriteTo(ref output, _repeated_unpackedFixed64_codec);
+      unpackedSfixed32_.WriteTo(ref output, _repeated_unpackedSfixed32_codec);
+      unpackedSfixed64_.WriteTo(ref output, _repeated_unpackedSfixed64_codec);
+      unpackedFloat_.WriteTo(ref output, _repeated_unpackedFloat_codec);
+      unpackedDouble_.WriteTo(ref output, _repeated_unpackedDouble_codec);
+      unpackedBool_.WriteTo(ref output, _repeated_unpackedBool_codec);
+      unpackedEnum_.WriteTo(ref output, _repeated_unpackedEnum_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -19164,6 +23496,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -19242,11 +23577,100 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 722:
+          case 720: {
+            unpackedInt32_.AddEntriesFrom(ref input, _repeated_unpackedInt32_codec);
+            break;
+          }
+          case 730:
+          case 728: {
+            unpackedInt64_.AddEntriesFrom(ref input, _repeated_unpackedInt64_codec);
+            break;
+          }
+          case 738:
+          case 736: {
+            unpackedUint32_.AddEntriesFrom(ref input, _repeated_unpackedUint32_codec);
+            break;
+          }
+          case 746:
+          case 744: {
+            unpackedUint64_.AddEntriesFrom(ref input, _repeated_unpackedUint64_codec);
+            break;
+          }
+          case 754:
+          case 752: {
+            unpackedSint32_.AddEntriesFrom(ref input, _repeated_unpackedSint32_codec);
+            break;
+          }
+          case 762:
+          case 760: {
+            unpackedSint64_.AddEntriesFrom(ref input, _repeated_unpackedSint64_codec);
+            break;
+          }
+          case 770:
+          case 773: {
+            unpackedFixed32_.AddEntriesFrom(ref input, _repeated_unpackedFixed32_codec);
+            break;
+          }
+          case 778:
+          case 777: {
+            unpackedFixed64_.AddEntriesFrom(ref input, _repeated_unpackedFixed64_codec);
+            break;
+          }
+          case 786:
+          case 789: {
+            unpackedSfixed32_.AddEntriesFrom(ref input, _repeated_unpackedSfixed32_codec);
+            break;
+          }
+          case 794:
+          case 793: {
+            unpackedSfixed64_.AddEntriesFrom(ref input, _repeated_unpackedSfixed64_codec);
+            break;
+          }
+          case 802:
+          case 805: {
+            unpackedFloat_.AddEntriesFrom(ref input, _repeated_unpackedFloat_codec);
+            break;
+          }
+          case 810:
+          case 809: {
+            unpackedDouble_.AddEntriesFrom(ref input, _repeated_unpackedDouble_codec);
+            break;
+          }
+          case 818:
+          case 816: {
+            unpackedBool_.AddEntriesFrom(ref input, _repeated_unpackedBool_codec);
+            break;
+          }
+          case 826:
+          case 824: {
+            unpackedEnum_.AddEntriesFrom(ref input, _repeated_unpackedEnum_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestPackedExtensions : pb::IExtendableMessage<TestPackedExtensions> {
+  public sealed partial class TestPackedExtensions : pb::IExtendableMessage<TestPackedExtensions>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestPackedExtensions> _parser = new pb::MessageParser<TestPackedExtensions>(() => new TestPackedExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestPackedExtensions> _extensions;
@@ -19320,13 +23744,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -19351,6 +23791,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -19361,7 +23804,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+        }
+      }
+    }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestPackedExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -19387,7 +23847,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestUnpackedExtensions : pb::IExtendableMessage<TestUnpackedExtensions> {
+  public sealed partial class TestUnpackedExtensions : pb::IExtendableMessage<TestUnpackedExtensions>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestUnpackedExtensions> _parser = new pb::MessageParser<TestUnpackedExtensions>(() => new TestUnpackedExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestUnpackedExtensions> _extensions;
@@ -19461,13 +23925,29 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_extensions != null) {
         _extensions.WriteTo(output);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -19492,6 +23972,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -19502,7 +23985,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+        }
+      }
+    }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestUnpackedExtensions, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -19533,7 +24033,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// a set of extensions to TestAllExtensions dynamically, based on the fields
   /// of this message type.
   /// </summary>
-  public sealed partial class TestDynamicExtensions : pb::IMessage<TestDynamicExtensions> {
+  public sealed partial class TestDynamicExtensions : pb::IMessage<TestDynamicExtensions>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestDynamicExtensions> _parser = new pb::MessageParser<TestDynamicExtensions>(() => new TestDynamicExtensions());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -19563,8 +24067,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       scalarExtension_ = other.scalarExtension_;
       enumExtension_ = other.enumExtension_;
       dynamicEnumExtension_ = other.dynamicEnumExtension_;
-      messageExtension_ = other.HasMessageExtension ? other.messageExtension_.Clone() : null;
-      dynamicMessageExtension_ = other.HasDynamicMessageExtension ? other.dynamicMessageExtension_.Clone() : null;
+      messageExtension_ = other.messageExtension_ != null ? other.messageExtension_.Clone() : null;
+      dynamicMessageExtension_ = other.dynamicMessageExtension_ != null ? other.dynamicMessageExtension_.Clone() : null;
       repeatedExtension_ = other.repeatedExtension_.Clone();
       packedExtension_ = other.packedExtension_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
@@ -19657,16 +24161,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         messageExtension_ = value;
       }
     }
-    /// <summary>Gets whether the message_extension field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasMessageExtension {
-      get { return messageExtension_ != null; }
-    }
-    /// <summary>Clears the value of the message_extension field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearMessageExtension() {
-      messageExtension_ = null;
-    }
 
     /// <summary>Field number for the "dynamic_message_extension" field.</summary>
     public const int DynamicMessageExtensionFieldNumber = 2004;
@@ -19677,16 +24171,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         dynamicMessageExtension_ = value;
       }
-    }
-    /// <summary>Gets whether the dynamic_message_extension field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasDynamicMessageExtension {
-      get { return dynamicMessageExtension_ != null; }
-    }
-    /// <summary>Clears the value of the dynamic_message_extension field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearDynamicMessageExtension() {
-      dynamicMessageExtension_ = null;
     }
 
     /// <summary>Field number for the "repeated_extension" field.</summary>
@@ -19738,8 +24222,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasScalarExtension) hash ^= ScalarExtension.GetHashCode();
       if (HasEnumExtension) hash ^= EnumExtension.GetHashCode();
       if (HasDynamicEnumExtension) hash ^= DynamicEnumExtension.GetHashCode();
-      if (HasMessageExtension) hash ^= MessageExtension.GetHashCode();
-      if (HasDynamicMessageExtension) hash ^= DynamicMessageExtension.GetHashCode();
+      if (messageExtension_ != null) hash ^= MessageExtension.GetHashCode();
+      if (dynamicMessageExtension_ != null) hash ^= DynamicMessageExtension.GetHashCode();
       hash ^= repeatedExtension_.GetHashCode();
       hash ^= packedExtension_.GetHashCode();
       if (_unknownFields != null) {
@@ -19755,6 +24239,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasScalarExtension) {
         output.WriteRawTag(133, 125);
         output.WriteFixed32(ScalarExtension);
@@ -19767,11 +24254,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(144, 125);
         output.WriteEnum((int) DynamicEnumExtension);
       }
-      if (HasMessageExtension) {
+      if (messageExtension_ != null) {
         output.WriteRawTag(154, 125);
         output.WriteMessage(MessageExtension);
       }
-      if (HasDynamicMessageExtension) {
+      if (dynamicMessageExtension_ != null) {
         output.WriteRawTag(162, 125);
         output.WriteMessage(DynamicMessageExtension);
       }
@@ -19780,7 +24267,39 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasScalarExtension) {
+        output.WriteRawTag(133, 125);
+        output.WriteFixed32(ScalarExtension);
+      }
+      if (HasEnumExtension) {
+        output.WriteRawTag(136, 125);
+        output.WriteEnum((int) EnumExtension);
+      }
+      if (HasDynamicEnumExtension) {
+        output.WriteRawTag(144, 125);
+        output.WriteEnum((int) DynamicEnumExtension);
+      }
+      if (messageExtension_ != null) {
+        output.WriteRawTag(154, 125);
+        output.WriteMessage(MessageExtension);
+      }
+      if (dynamicMessageExtension_ != null) {
+        output.WriteRawTag(162, 125);
+        output.WriteMessage(DynamicMessageExtension);
+      }
+      repeatedExtension_.WriteTo(ref output, _repeated_repeatedExtension_codec);
+      packedExtension_.WriteTo(ref output, _repeated_packedExtension_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -19794,10 +24313,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasDynamicEnumExtension) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) DynamicEnumExtension);
       }
-      if (HasMessageExtension) {
+      if (messageExtension_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(MessageExtension);
       }
-      if (HasDynamicMessageExtension) {
+      if (dynamicMessageExtension_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(DynamicMessageExtension);
       }
       size += repeatedExtension_.CalculateSize(_repeated_repeatedExtension_codec);
@@ -19822,14 +24341,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other.HasDynamicEnumExtension) {
         DynamicEnumExtension = other.DynamicEnumExtension;
       }
-      if (other.HasMessageExtension) {
-        if (!HasMessageExtension) {
+      if (other.messageExtension_ != null) {
+        if (messageExtension_ == null) {
           MessageExtension = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
         }
         MessageExtension.MergeFrom(other.MessageExtension);
       }
-      if (other.HasDynamicMessageExtension) {
-        if (!HasDynamicMessageExtension) {
+      if (other.dynamicMessageExtension_ != null) {
+        if (dynamicMessageExtension_ == null) {
           DynamicMessageExtension = new global::Google.Protobuf.TestProtos.Proto2.TestDynamicExtensions.Types.DynamicMessageType();
         }
         DynamicMessageExtension.MergeFrom(other.DynamicMessageExtension);
@@ -19841,6 +24360,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -19860,14 +24382,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 16026: {
-            if (!HasMessageExtension) {
+            if (messageExtension_ == null) {
               MessageExtension = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
             }
             input.ReadMessage(MessageExtension);
             break;
           }
           case 16034: {
-            if (!HasDynamicMessageExtension) {
+            if (dynamicMessageExtension_ == null) {
               DynamicMessageExtension = new global::Google.Protobuf.TestProtos.Proto2.TestDynamicExtensions.Types.DynamicMessageType();
             }
             input.ReadMessage(DynamicMessageExtension);
@@ -19884,7 +24406,57 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 16005: {
+            ScalarExtension = input.ReadFixed32();
+            break;
+          }
+          case 16008: {
+            EnumExtension = (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) input.ReadEnum();
+            break;
+          }
+          case 16016: {
+            DynamicEnumExtension = (global::Google.Protobuf.TestProtos.Proto2.TestDynamicExtensions.Types.DynamicEnumType) input.ReadEnum();
+            break;
+          }
+          case 16026: {
+            if (messageExtension_ == null) {
+              MessageExtension = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
+            }
+            input.ReadMessage(MessageExtension);
+            break;
+          }
+          case 16034: {
+            if (dynamicMessageExtension_ == null) {
+              DynamicMessageExtension = new global::Google.Protobuf.TestProtos.Proto2.TestDynamicExtensions.Types.DynamicMessageType();
+            }
+            input.ReadMessage(DynamicMessageExtension);
+            break;
+          }
+          case 16042: {
+            repeatedExtension_.AddEntriesFrom(ref input, _repeated_repeatedExtension_codec);
+            break;
+          }
+          case 16050:
+          case 16048: {
+            packedExtension_.AddEntriesFrom(ref input, _repeated_packedExtension_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestDynamicExtensions message type.</summary>
@@ -19896,7 +24468,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [pbr::OriginalName("DYNAMIC_BAZ")] DynamicBaz = 2202,
       }
 
-      public sealed partial class DynamicMessageType : pb::IMessage<DynamicMessageType> {
+      public sealed partial class DynamicMessageType : pb::IMessage<DynamicMessageType>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<DynamicMessageType> _parser = new pb::MessageParser<DynamicMessageType>(() => new DynamicMessageType());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -19990,6 +24566,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasDynamicField) {
             output.WriteRawTag(160, 131, 1);
             output.WriteInt32(DynamicField);
@@ -19997,7 +24576,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasDynamicField) {
+            output.WriteRawTag(160, 131, 1);
+            output.WriteInt32(DynamicField);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -20024,6 +24617,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -20036,7 +24632,26 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 16800: {
+                DynamicField = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -20045,7 +24660,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes> {
+  public sealed partial class TestRepeatedScalarDifferentTagSizes : pb::IMessage<TestRepeatedScalarDifferentTagSizes>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestRepeatedScalarDifferentTagSizes> _parser = new pb::MessageParser<TestRepeatedScalarDifferentTagSizes>(() => new TestRepeatedScalarDifferentTagSizes());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20202,6 +24821,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       repeatedFixed32_.WriteTo(output, _repeated_repeatedFixed32_codec);
       repeatedInt32_.WriteTo(output, _repeated_repeatedInt32_codec);
       repeatedFixed64_.WriteTo(output, _repeated_repeatedFixed64_codec);
@@ -20211,7 +24833,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      repeatedFixed32_.WriteTo(ref output, _repeated_repeatedFixed32_codec);
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      repeatedFixed64_.WriteTo(ref output, _repeated_repeatedFixed64_codec);
+      repeatedInt64_.WriteTo(ref output, _repeated_repeatedInt64_codec);
+      repeatedFloat_.WriteTo(ref output, _repeated_repeatedFloat_codec);
+      repeatedUint64_.WriteTo(ref output, _repeated_repeatedUint64_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -20244,6 +24882,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -20282,7 +24923,52 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 98:
+          case 101: {
+            repeatedFixed32_.AddEntriesFrom(ref input, _repeated_repeatedFixed32_codec);
+            break;
+          }
+          case 106:
+          case 104: {
+            repeatedInt32_.AddEntriesFrom(ref input, _repeated_repeatedInt32_codec);
+            break;
+          }
+          case 16370:
+          case 16369: {
+            repeatedFixed64_.AddEntriesFrom(ref input, _repeated_repeatedFixed64_codec);
+            break;
+          }
+          case 16378:
+          case 16376: {
+            repeatedInt64_.AddEntriesFrom(ref input, _repeated_repeatedInt64_codec);
+            break;
+          }
+          case 2097138:
+          case 2097141: {
+            repeatedFloat_.AddEntriesFrom(ref input, _repeated_repeatedFloat_codec);
+            break;
+          }
+          case 2097146:
+          case 2097144: {
+            repeatedUint64_.AddEntriesFrom(ref input, _repeated_repeatedUint64_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
@@ -20290,7 +24976,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// Test that if an optional or required message/group field appears multiple
   /// times in the input, they need to be merged.
   /// </summary>
-  public sealed partial class TestParsingMerge : pb::IExtendableMessage<TestParsingMerge> {
+  public sealed partial class TestParsingMerge : pb::IExtendableMessage<TestParsingMerge>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestParsingMerge> _parser = new pb::MessageParser<TestParsingMerge>(() => new TestParsingMerge());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestParsingMerge> _extensions;
@@ -20317,8 +25007,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestParsingMerge(TestParsingMerge other) : this() {
-      requiredAllTypes_ = other.HasRequiredAllTypes ? other.requiredAllTypes_.Clone() : null;
-      optionalAllTypes_ = other.HasOptionalAllTypes ? other.optionalAllTypes_.Clone() : null;
+      requiredAllTypes_ = other.requiredAllTypes_ != null ? other.requiredAllTypes_.Clone() : null;
+      optionalAllTypes_ = other.optionalAllTypes_ != null ? other.optionalAllTypes_.Clone() : null;
       repeatedAllTypes_ = other.repeatedAllTypes_.Clone();
       optionalGroup_ = other.HasOptionalGroup ? other.optionalGroup_.Clone() : null;
       repeatedGroup_ = other.repeatedGroup_.Clone();
@@ -20341,16 +25031,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         requiredAllTypes_ = value;
       }
     }
-    /// <summary>Gets whether the required_all_types field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasRequiredAllTypes {
-      get { return requiredAllTypes_ != null; }
-    }
-    /// <summary>Clears the value of the required_all_types field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearRequiredAllTypes() {
-      requiredAllTypes_ = null;
-    }
 
     /// <summary>Field number for the "optional_all_types" field.</summary>
     public const int OptionalAllTypesFieldNumber = 2;
@@ -20361,16 +25041,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       set {
         optionalAllTypes_ = value;
       }
-    }
-    /// <summary>Gets whether the optional_all_types field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalAllTypes {
-      get { return optionalAllTypes_ != null; }
-    }
-    /// <summary>Clears the value of the optional_all_types field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalAllTypes() {
-      optionalAllTypes_ = null;
     }
 
     /// <summary>Field number for the "repeated_all_types" field.</summary>
@@ -20441,8 +25111,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (HasRequiredAllTypes) hash ^= RequiredAllTypes.GetHashCode();
-      if (HasOptionalAllTypes) hash ^= OptionalAllTypes.GetHashCode();
+      if (requiredAllTypes_ != null) hash ^= RequiredAllTypes.GetHashCode();
+      if (optionalAllTypes_ != null) hash ^= OptionalAllTypes.GetHashCode();
       hash ^= repeatedAllTypes_.GetHashCode();
       if (HasOptionalGroup) hash ^= OptionalGroup.GetHashCode();
       hash ^= repeatedGroup_.GetHashCode();
@@ -20462,11 +25132,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (HasRequiredAllTypes) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (requiredAllTypes_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(RequiredAllTypes);
       }
-      if (HasOptionalAllTypes) {
+      if (optionalAllTypes_ != null) {
         output.WriteRawTag(18);
         output.WriteMessage(OptionalAllTypes);
       }
@@ -20483,15 +25156,43 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (requiredAllTypes_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(RequiredAllTypes);
+      }
+      if (optionalAllTypes_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(OptionalAllTypes);
+      }
+      repeatedAllTypes_.WriteTo(ref output, _repeated_repeatedAllTypes_codec);
+      if (HasOptionalGroup) {
+        output.WriteRawTag(83);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(84);
+      }
+      repeatedGroup_.WriteTo(ref output, _repeated_repeatedGroup_codec);
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (HasRequiredAllTypes) {
+      if (requiredAllTypes_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(RequiredAllTypes);
       }
-      if (HasOptionalAllTypes) {
+      if (optionalAllTypes_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(OptionalAllTypes);
       }
       size += repeatedAllTypes_.CalculateSize(_repeated_repeatedAllTypes_codec);
@@ -20513,14 +25214,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      if (other.HasRequiredAllTypes) {
-        if (!HasRequiredAllTypes) {
+      if (other.requiredAllTypes_ != null) {
+        if (requiredAllTypes_ == null) {
           RequiredAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
         }
         RequiredAllTypes.MergeFrom(other.RequiredAllTypes);
       }
-      if (other.HasOptionalAllTypes) {
-        if (!HasOptionalAllTypes) {
+      if (other.optionalAllTypes_ != null) {
+        if (optionalAllTypes_ == null) {
           OptionalAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
         }
         OptionalAllTypes.MergeFrom(other.OptionalAllTypes);
@@ -20539,6 +25240,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -20548,14 +25252,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             }
             break;
           case 10: {
-            if (!HasRequiredAllTypes) {
+            if (requiredAllTypes_ == null) {
               RequiredAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             input.ReadMessage(RequiredAllTypes);
             break;
           }
           case 18: {
-            if (!HasOptionalAllTypes) {
+            if (optionalAllTypes_ == null) {
               OptionalAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             input.ReadMessage(OptionalAllTypes);
@@ -20578,7 +25282,53 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 10: {
+            if (requiredAllTypes_ == null) {
+              RequiredAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+            }
+            input.ReadMessage(RequiredAllTypes);
+            break;
+          }
+          case 18: {
+            if (optionalAllTypes_ == null) {
+              OptionalAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+            }
+            input.ReadMessage(OptionalAllTypes);
+            break;
+          }
+          case 26: {
+            repeatedAllTypes_.AddEntriesFrom(ref input, _repeated_repeatedAllTypes_codec);
+            break;
+          }
+          case 83: {
+            if (!HasOptionalGroup) {
+              OptionalGroup = new global::Google.Protobuf.TestProtos.Proto2.TestParsingMerge.Types.OptionalGroup();
+            }
+            input.ReadGroup(OptionalGroup);
+            break;
+          }
+          case 163: {
+            repeatedGroup_.AddEntriesFrom(ref input, _repeated_repeatedGroup_codec);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestParsingMerge, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -20613,7 +25363,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       /// Repeated fields in RepeatedFieldsGenerator are expected to be merged into
       /// the corresponding required/optional fields in TestParsingMerge.
       /// </summary>
-      public sealed partial class RepeatedFieldsGenerator : pb::IMessage<RepeatedFieldsGenerator> {
+      public sealed partial class RepeatedFieldsGenerator : pb::IMessage<RepeatedFieldsGenerator>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<RepeatedFieldsGenerator> _parser = new pb::MessageParser<RepeatedFieldsGenerator>(() => new RepeatedFieldsGenerator());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20769,6 +25523,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           field1_.WriteTo(output, _repeated_field1_codec);
           field2_.WriteTo(output, _repeated_field2_codec);
           field3_.WriteTo(output, _repeated_field3_codec);
@@ -20779,7 +25536,24 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          field1_.WriteTo(ref output, _repeated_field1_codec);
+          field2_.WriteTo(ref output, _repeated_field2_codec);
+          field3_.WriteTo(ref output, _repeated_field3_codec);
+          group1_.WriteTo(ref output, _repeated_group1_codec);
+          group2_.WriteTo(ref output, _repeated_group2_codec);
+          ext1_.WriteTo(ref output, _repeated_ext1_codec);
+          ext2_.WriteTo(ref output, _repeated_ext2_codec);
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -20814,6 +25588,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -20850,13 +25627,60 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 10: {
+                field1_.AddEntriesFrom(ref input, _repeated_field1_codec);
+                break;
+              }
+              case 18: {
+                field2_.AddEntriesFrom(ref input, _repeated_field2_codec);
+                break;
+              }
+              case 26: {
+                field3_.AddEntriesFrom(ref input, _repeated_field3_codec);
+                break;
+              }
+              case 83: {
+                group1_.AddEntriesFrom(ref input, _repeated_group1_codec);
+                break;
+              }
+              case 163: {
+                group2_.AddEntriesFrom(ref input, _repeated_group2_codec);
+                break;
+              }
+              case 8002: {
+                ext1_.AddEntriesFrom(ref input, _repeated_ext1_codec);
+                break;
+              }
+              case 8010: {
+                ext2_.AddEntriesFrom(ref input, _repeated_ext2_codec);
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
         #region Nested types
         /// <summary>Container for nested types declared in the RepeatedFieldsGenerator message type.</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static partial class Types {
-          public sealed partial class Group1 : pb::IMessage<Group1> {
+          public sealed partial class Group1 : pb::IMessage<Group1>
+          #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              , pb::IBufferMessage
+          #endif
+          {
             private static readonly pb::MessageParser<Group1> _parser = new pb::MessageParser<Group1>(() => new Group1());
             private pb::UnknownFieldSet _unknownFields;
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20881,7 +25705,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public Group1(Group1 other) : this() {
-              field1_ = other.HasField1 ? other.field1_.Clone() : null;
+              field1_ = other.field1_ != null ? other.field1_.Clone() : null;
               _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
             }
 
@@ -20899,16 +25723,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               set {
                 field1_ = value;
               }
-            }
-            /// <summary>Gets whether the field1 field is set</summary>
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-            public bool HasField1 {
-              get { return field1_ != null; }
-            }
-            /// <summary>Clears the value of the field1 field</summary>
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-            public void ClearField1() {
-              field1_ = null;
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -20931,7 +25745,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public override int GetHashCode() {
               int hash = 1;
-              if (HasField1) hash ^= Field1.GetHashCode();
+              if (field1_ != null) hash ^= Field1.GetHashCode();
               if (_unknownFields != null) {
                 hash ^= _unknownFields.GetHashCode();
               }
@@ -20945,19 +25759,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
-              if (HasField1) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              output.WriteRawMessage(this);
+            #else
+              if (field1_ != null) {
                 output.WriteRawTag(90);
                 output.WriteMessage(Field1);
               }
               if (_unknownFields != null) {
                 _unknownFields.WriteTo(output);
               }
+            #endif
             }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+              if (field1_ != null) {
+                output.WriteRawTag(90);
+                output.WriteMessage(Field1);
+              }
+              if (_unknownFields != null) {
+                _unknownFields.WriteTo(ref output);
+              }
+            }
+            #endif
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public int CalculateSize() {
               int size = 0;
-              if (HasField1) {
+              if (field1_ != null) {
                 size += 1 + pb::CodedOutputStream.ComputeMessageSize(Field1);
               }
               if (_unknownFields != null) {
@@ -20971,8 +25802,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               if (other == null) {
                 return;
               }
-              if (other.HasField1) {
-                if (!HasField1) {
+              if (other.field1_ != null) {
+                if (field1_ == null) {
                   Field1 = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
                 }
                 Field1.MergeFrom(other.Field1);
@@ -20982,6 +25813,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void MergeFrom(pb::CodedInputStream input) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              input.ReadRawMessage(this);
+            #else
               uint tag;
               while ((tag = input.ReadTag()) != 0) {
                 switch(tag) {
@@ -20991,7 +25825,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                     _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                     break;
                   case 90: {
-                    if (!HasField1) {
+                    if (field1_ == null) {
+                      Field1 = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+                    }
+                    input.ReadMessage(Field1);
+                    break;
+                  }
+                }
+              }
+            #endif
+            }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+              uint tag;
+              while ((tag = input.ReadTag()) != 0) {
+                switch(tag) {
+                  case 84:
+                    return;
+                  default:
+                    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                    break;
+                  case 90: {
+                    if (field1_ == null) {
                       Field1 = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
                     }
                     input.ReadMessage(Field1);
@@ -21000,10 +25857,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                 }
               }
             }
+            #endif
 
           }
 
-          public sealed partial class Group2 : pb::IMessage<Group2> {
+          public sealed partial class Group2 : pb::IMessage<Group2>
+          #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              , pb::IBufferMessage
+          #endif
+          {
             private static readonly pb::MessageParser<Group2> _parser = new pb::MessageParser<Group2>(() => new Group2());
             private pb::UnknownFieldSet _unknownFields;
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21028,7 +25890,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public Group2(Group2 other) : this() {
-              field1_ = other.HasField1 ? other.field1_.Clone() : null;
+              field1_ = other.field1_ != null ? other.field1_.Clone() : null;
               _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
             }
 
@@ -21046,16 +25908,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               set {
                 field1_ = value;
               }
-            }
-            /// <summary>Gets whether the field1 field is set</summary>
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-            public bool HasField1 {
-              get { return field1_ != null; }
-            }
-            /// <summary>Clears the value of the field1 field</summary>
-            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-            public void ClearField1() {
-              field1_ = null;
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21078,7 +25930,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public override int GetHashCode() {
               int hash = 1;
-              if (HasField1) hash ^= Field1.GetHashCode();
+              if (field1_ != null) hash ^= Field1.GetHashCode();
               if (_unknownFields != null) {
                 hash ^= _unknownFields.GetHashCode();
               }
@@ -21092,19 +25944,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
-              if (HasField1) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              output.WriteRawMessage(this);
+            #else
+              if (field1_ != null) {
                 output.WriteRawTag(170, 1);
                 output.WriteMessage(Field1);
               }
               if (_unknownFields != null) {
                 _unknownFields.WriteTo(output);
               }
+            #endif
             }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+              if (field1_ != null) {
+                output.WriteRawTag(170, 1);
+                output.WriteMessage(Field1);
+              }
+              if (_unknownFields != null) {
+                _unknownFields.WriteTo(ref output);
+              }
+            }
+            #endif
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public int CalculateSize() {
               int size = 0;
-              if (HasField1) {
+              if (field1_ != null) {
                 size += 2 + pb::CodedOutputStream.ComputeMessageSize(Field1);
               }
               if (_unknownFields != null) {
@@ -21118,8 +25987,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               if (other == null) {
                 return;
               }
-              if (other.HasField1) {
-                if (!HasField1) {
+              if (other.field1_ != null) {
+                if (field1_ == null) {
                   Field1 = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
                 }
                 Field1.MergeFrom(other.Field1);
@@ -21129,6 +25998,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void MergeFrom(pb::CodedInputStream input) {
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+              input.ReadRawMessage(this);
+            #else
               uint tag;
               while ((tag = input.ReadTag()) != 0) {
                 switch(tag) {
@@ -21138,7 +26010,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                     _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                     break;
                   case 170: {
-                    if (!HasField1) {
+                    if (field1_ == null) {
+                      Field1 = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+                    }
+                    input.ReadMessage(Field1);
+                    break;
+                  }
+                }
+              }
+            #endif
+            }
+
+            #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+            [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+            void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+              uint tag;
+              while ((tag = input.ReadTag()) != 0) {
+                switch(tag) {
+                  case 164:
+                    return;
+                  default:
+                    _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                    break;
+                  case 170: {
+                    if (field1_ == null) {
                       Field1 = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
                     }
                     input.ReadMessage(Field1);
@@ -21147,6 +26042,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                 }
               }
             }
+            #endif
 
           }
 
@@ -21155,7 +26051,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
       }
 
-      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup> {
+      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21180,7 +26080,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public OptionalGroup(OptionalGroup other) : this() {
-          optionalGroupAllTypes_ = other.HasOptionalGroupAllTypes ? other.optionalGroupAllTypes_.Clone() : null;
+          optionalGroupAllTypes_ = other.optionalGroupAllTypes_ != null ? other.optionalGroupAllTypes_.Clone() : null;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -21198,16 +26098,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           set {
             optionalGroupAllTypes_ = value;
           }
-        }
-        /// <summary>Gets whether the optional_group_all_types field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool HasOptionalGroupAllTypes {
-          get { return optionalGroupAllTypes_ != null; }
-        }
-        /// <summary>Clears the value of the optional_group_all_types field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearOptionalGroupAllTypes() {
-          optionalGroupAllTypes_ = null;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21230,7 +26120,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override int GetHashCode() {
           int hash = 1;
-          if (HasOptionalGroupAllTypes) hash ^= OptionalGroupAllTypes.GetHashCode();
+          if (optionalGroupAllTypes_ != null) hash ^= OptionalGroupAllTypes.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -21244,19 +26134,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          if (HasOptionalGroupAllTypes) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
+          if (optionalGroupAllTypes_ != null) {
             output.WriteRawTag(90);
             output.WriteMessage(OptionalGroupAllTypes);
           }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (optionalGroupAllTypes_ != null) {
+            output.WriteRawTag(90);
+            output.WriteMessage(OptionalGroupAllTypes);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
-          if (HasOptionalGroupAllTypes) {
+          if (optionalGroupAllTypes_ != null) {
             size += 1 + pb::CodedOutputStream.ComputeMessageSize(OptionalGroupAllTypes);
           }
           if (_unknownFields != null) {
@@ -21270,8 +26177,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (other == null) {
             return;
           }
-          if (other.HasOptionalGroupAllTypes) {
-            if (!HasOptionalGroupAllTypes) {
+          if (other.optionalGroupAllTypes_ != null) {
+            if (optionalGroupAllTypes_ == null) {
               OptionalGroupAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             OptionalGroupAllTypes.MergeFrom(other.OptionalGroupAllTypes);
@@ -21281,6 +26188,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -21290,7 +26200,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 90: {
-                if (!HasOptionalGroupAllTypes) {
+                if (optionalGroupAllTypes_ == null) {
+                  OptionalGroupAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+                }
+                input.ReadMessage(OptionalGroupAllTypes);
+                break;
+              }
+            }
+          }
+        #endif
+        }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 84:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 90: {
+                if (optionalGroupAllTypes_ == null) {
                   OptionalGroupAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
                 }
                 input.ReadMessage(OptionalGroupAllTypes);
@@ -21299,10 +26232,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             }
           }
         }
+        #endif
 
       }
 
-      public sealed partial class RepeatedGroup : pb::IMessage<RepeatedGroup> {
+      public sealed partial class RepeatedGroup : pb::IMessage<RepeatedGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<RepeatedGroup> _parser = new pb::MessageParser<RepeatedGroup>(() => new RepeatedGroup());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21327,7 +26265,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public RepeatedGroup(RepeatedGroup other) : this() {
-          repeatedGroupAllTypes_ = other.HasRepeatedGroupAllTypes ? other.repeatedGroupAllTypes_.Clone() : null;
+          repeatedGroupAllTypes_ = other.repeatedGroupAllTypes_ != null ? other.repeatedGroupAllTypes_.Clone() : null;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -21345,16 +26283,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           set {
             repeatedGroupAllTypes_ = value;
           }
-        }
-        /// <summary>Gets whether the repeated_group_all_types field is set</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public bool HasRepeatedGroupAllTypes {
-          get { return repeatedGroupAllTypes_ != null; }
-        }
-        /// <summary>Clears the value of the repeated_group_all_types field</summary>
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        public void ClearRepeatedGroupAllTypes() {
-          repeatedGroupAllTypes_ = null;
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21377,7 +26305,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override int GetHashCode() {
           int hash = 1;
-          if (HasRepeatedGroupAllTypes) hash ^= RepeatedGroupAllTypes.GetHashCode();
+          if (repeatedGroupAllTypes_ != null) hash ^= RepeatedGroupAllTypes.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -21391,19 +26319,36 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
-          if (HasRepeatedGroupAllTypes) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
+          if (repeatedGroupAllTypes_ != null) {
             output.WriteRawTag(170, 1);
             output.WriteMessage(RepeatedGroupAllTypes);
           }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (repeatedGroupAllTypes_ != null) {
+            output.WriteRawTag(170, 1);
+            output.WriteMessage(RepeatedGroupAllTypes);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
-          if (HasRepeatedGroupAllTypes) {
+          if (repeatedGroupAllTypes_ != null) {
             size += 2 + pb::CodedOutputStream.ComputeMessageSize(RepeatedGroupAllTypes);
           }
           if (_unknownFields != null) {
@@ -21417,8 +26362,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (other == null) {
             return;
           }
-          if (other.HasRepeatedGroupAllTypes) {
-            if (!HasRepeatedGroupAllTypes) {
+          if (other.repeatedGroupAllTypes_ != null) {
+            if (repeatedGroupAllTypes_ == null) {
               RepeatedGroupAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             }
             RepeatedGroupAllTypes.MergeFrom(other.RepeatedGroupAllTypes);
@@ -21428,6 +26373,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -21437,7 +26385,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
                 _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 break;
               case 170: {
-                if (!HasRepeatedGroupAllTypes) {
+                if (repeatedGroupAllTypes_ == null) {
+                  RepeatedGroupAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+                }
+                input.ReadMessage(RepeatedGroupAllTypes);
+                break;
+              }
+            }
+          }
+        #endif
+        }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 164:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 170: {
+                if (repeatedGroupAllTypes_ == null) {
                   RepeatedGroupAllTypes = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
                 }
                 input.ReadMessage(RepeatedGroupAllTypes);
@@ -21446,6 +26417,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             }
           }
         }
+        #endif
 
       }
 
@@ -21465,7 +26437,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage> {
+  public sealed partial class TestCommentInjectionMessage : pb::IMessage<TestCommentInjectionMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestCommentInjectionMessage> _parser = new pb::MessageParser<TestCommentInjectionMessage>(() => new TestCommentInjectionMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21559,6 +26535,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasA) {
         output.WriteRawTag(10);
         output.WriteString(A);
@@ -21566,7 +26545,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasA) {
+        output.WriteRawTag(10);
+        output.WriteString(A);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -21593,6 +26586,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -21605,14 +26601,37 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            A = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
   /// <summary>
   /// Test that RPC services work.
   /// </summary>
-  public sealed partial class FooRequest : pb::IMessage<FooRequest> {
+  public sealed partial class FooRequest : pb::IMessage<FooRequest>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<FooRequest> _parser = new pb::MessageParser<FooRequest>(() => new FooRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21677,10 +26696,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -21701,6 +26733,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -21709,11 +26744,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class FooResponse : pb::IMessage<FooResponse> {
+  public sealed partial class FooResponse : pb::IMessage<FooResponse>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<FooResponse> _parser = new pb::MessageParser<FooResponse>(() => new FooResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21778,10 +26832,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -21802,6 +26869,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -21810,11 +26880,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage> {
+  public sealed partial class FooClientMessage : pb::IMessage<FooClientMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<FooClientMessage> _parser = new pb::MessageParser<FooClientMessage>(() => new FooClientMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21879,10 +26968,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -21903,6 +27005,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -21911,11 +27016,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage> {
+  public sealed partial class FooServerMessage : pb::IMessage<FooServerMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<FooServerMessage> _parser = new pb::MessageParser<FooServerMessage>(() => new FooServerMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -21980,10 +27104,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -22004,6 +27141,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -22012,11 +27152,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class BarRequest : pb::IMessage<BarRequest> {
+  public sealed partial class BarRequest : pb::IMessage<BarRequest>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<BarRequest> _parser = new pb::MessageParser<BarRequest>(() => new BarRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22081,10 +27240,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -22105,6 +27277,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -22113,11 +27288,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class BarResponse : pb::IMessage<BarResponse> {
+  public sealed partial class BarResponse : pb::IMessage<BarResponse>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<BarResponse> _parser = new pb::MessageParser<BarResponse>(() => new BarResponse());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -22182,10 +27376,23 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -22206,6 +27413,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -22214,11 +27424,30 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestJsonName : pb::IMessage<TestJsonName> {
+  public sealed partial class TestJsonName : pb::IMessage<TestJsonName>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestJsonName> _parser = new pb::MessageParser<TestJsonName>(() => new TestJsonName());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
@@ -22447,6 +27676,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasFieldName1) {
         output.WriteRawTag(8);
         output.WriteInt32(FieldName1);
@@ -22474,7 +27706,41 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasFieldName1) {
+        output.WriteRawTag(8);
+        output.WriteInt32(FieldName1);
+      }
+      if (HasFieldName2) {
+        output.WriteRawTag(16);
+        output.WriteInt32(FieldName2);
+      }
+      if (HasFieldName3) {
+        output.WriteRawTag(24);
+        output.WriteInt32(FieldName3);
+      }
+      if (HasFieldName4) {
+        output.WriteRawTag(32);
+        output.WriteInt32(FieldName4);
+      }
+      if (HasFIELDNAME5) {
+        output.WriteRawTag(40);
+        output.WriteInt32(FIELDNAME5);
+      }
+      if (HasFieldName6) {
+        output.WriteRawTag(48);
+        output.WriteInt32(FieldName6);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -22531,6 +27797,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -22563,11 +27832,54 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            FieldName1 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            FieldName2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            FieldName3 = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            FieldName4 = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            FIELDNAME5 = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            FieldName6 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class TestHugeFieldNumbers : pb::IExtendableMessage<TestHugeFieldNumbers> {
+  public sealed partial class TestHugeFieldNumbers : pb::IExtendableMessage<TestHugeFieldNumbers>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestHugeFieldNumbers> _parser = new pb::MessageParser<TestHugeFieldNumbers>(() => new TestHugeFieldNumbers());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestHugeFieldNumbers> _extensions;
@@ -22603,7 +27915,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       optionalEnum_ = other.optionalEnum_;
       optionalString_ = other.optionalString_;
       optionalBytes_ = other.optionalBytes_;
-      optionalMessage_ = other.HasOptionalMessage ? other.optionalMessage_.Clone() : null;
+      optionalMessage_ = other.optionalMessage_ != null ? other.optionalMessage_.Clone() : null;
       optionalGroup_ = other.HasOptionalGroup ? other.optionalGroup_.Clone() : null;
       stringStringMap_ = other.stringStringMap_.Clone();
       switch (other.OneofFieldCase) {
@@ -22778,16 +28090,6 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         optionalMessage_ = value;
       }
     }
-    /// <summary>Gets whether the optional_message field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOptionalMessage {
-      get { return optionalMessage_ != null; }
-    }
-    /// <summary>Clears the value of the optional_message field</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOptionalMessage() {
-      optionalMessage_ = null;
-    }
 
     /// <summary>Field number for the "optionalgroup" field.</summary>
     public const int OptionalGroupFieldNumber = 536870008;
@@ -22847,22 +28149,10 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public const int OneofTestAllTypesFieldNumber = 536870012;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.Proto2.TestAllTypes OneofTestAllTypes {
-      get { return HasOneofTestAllTypes ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes) oneofField_ : null; }
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes ? (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes) oneofField_ : null; }
       set {
         oneofField_ = value;
         oneofFieldCase_ = value == null ? OneofFieldOneofCase.None : OneofFieldOneofCase.OneofTestAllTypes;
-      }
-    }
-    /// <summary>Gets whether the "oneof_test_all_types" field is set</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HasOneofTestAllTypes {
-      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes; }
-    }
-    /// <summary> Clears the value of the oneof if it's currently set to "oneof_test_all_types" </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void ClearOneofTestAllTypes() {
-      if (HasOneofTestAllTypes) {
-        ClearOneofField();
       }
     }
 
@@ -22977,11 +28267,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasOptionalEnum) hash ^= OptionalEnum.GetHashCode();
       if (HasOptionalString) hash ^= OptionalString.GetHashCode();
       if (HasOptionalBytes) hash ^= OptionalBytes.GetHashCode();
-      if (HasOptionalMessage) hash ^= OptionalMessage.GetHashCode();
+      if (optionalMessage_ != null) hash ^= OptionalMessage.GetHashCode();
       if (HasOptionalGroup) hash ^= OptionalGroup.GetHashCode();
       hash ^= StringStringMap.GetHashCode();
       if (HasOneofUint32) hash ^= OneofUint32.GetHashCode();
-      if (HasOneofTestAllTypes) hash ^= OneofTestAllTypes.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) hash ^= OneofTestAllTypes.GetHashCode();
       if (HasOneofString) hash ^= OneofString.GetHashCode();
       if (HasOneofBytes) hash ^= OneofBytes.GetHashCode();
       hash ^= (int) oneofFieldCase_;
@@ -23001,6 +28291,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasOptionalInt32) {
         output.WriteRawTag(128, 199, 255, 255, 15);
         output.WriteInt32(OptionalInt32);
@@ -23023,7 +28316,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(178, 199, 255, 255, 15);
         output.WriteBytes(OptionalBytes);
       }
-      if (HasOptionalMessage) {
+      if (optionalMessage_ != null) {
         output.WriteRawTag(186, 199, 255, 255, 15);
         output.WriteMessage(OptionalMessage);
       }
@@ -23037,7 +28330,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         output.WriteRawTag(216, 199, 255, 255, 15);
         output.WriteUInt32(OneofUint32);
       }
-      if (HasOneofTestAllTypes) {
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) {
         output.WriteRawTag(226, 199, 255, 255, 15);
         output.WriteMessage(OneofTestAllTypes);
       }
@@ -23055,7 +28348,68 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasOptionalInt32) {
+        output.WriteRawTag(128, 199, 255, 255, 15);
+        output.WriteInt32(OptionalInt32);
+      }
+      if (HasFixed32) {
+        output.WriteRawTag(136, 199, 255, 255, 15);
+        output.WriteInt32(Fixed32);
+      }
+      repeatedInt32_.WriteTo(ref output, _repeated_repeatedInt32_codec);
+      packedInt32_.WriteTo(ref output, _repeated_packedInt32_codec);
+      if (HasOptionalEnum) {
+        output.WriteRawTag(160, 199, 255, 255, 15);
+        output.WriteEnum((int) OptionalEnum);
+      }
+      if (HasOptionalString) {
+        output.WriteRawTag(170, 199, 255, 255, 15);
+        output.WriteString(OptionalString);
+      }
+      if (HasOptionalBytes) {
+        output.WriteRawTag(178, 199, 255, 255, 15);
+        output.WriteBytes(OptionalBytes);
+      }
+      if (optionalMessage_ != null) {
+        output.WriteRawTag(186, 199, 255, 255, 15);
+        output.WriteMessage(OptionalMessage);
+      }
+      if (HasOptionalGroup) {
+        output.WriteRawTag(195, 199, 255, 255, 15);
+        output.WriteGroup(OptionalGroup);
+        output.WriteRawTag(196, 199, 255, 255, 15);
+      }
+      stringStringMap_.WriteTo(ref output, _map_stringStringMap_codec);
+      if (HasOneofUint32) {
+        output.WriteRawTag(216, 199, 255, 255, 15);
+        output.WriteUInt32(OneofUint32);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) {
+        output.WriteRawTag(226, 199, 255, 255, 15);
+        output.WriteMessage(OneofTestAllTypes);
+      }
+      if (HasOneofString) {
+        output.WriteRawTag(234, 199, 255, 255, 15);
+        output.WriteString(OneofString);
+      }
+      if (HasOneofBytes) {
+        output.WriteRawTag(242, 199, 255, 255, 15);
+        output.WriteBytes(OneofBytes);
+      }
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -23077,7 +28431,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasOptionalBytes) {
         size += 5 + pb::CodedOutputStream.ComputeBytesSize(OptionalBytes);
       }
-      if (HasOptionalMessage) {
+      if (optionalMessage_ != null) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(OptionalMessage);
       }
       if (HasOptionalGroup) {
@@ -23087,7 +28441,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (HasOneofUint32) {
         size += 5 + pb::CodedOutputStream.ComputeUInt32Size(OneofUint32);
       }
-      if (HasOneofTestAllTypes) {
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) {
         size += 5 + pb::CodedOutputStream.ComputeMessageSize(OneofTestAllTypes);
       }
       if (HasOneofString) {
@@ -23127,8 +28481,8 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other.HasOptionalBytes) {
         OptionalBytes = other.OptionalBytes;
       }
-      if (other.HasOptionalMessage) {
-        if (!HasOptionalMessage) {
+      if (other.optionalMessage_ != null) {
+        if (optionalMessage_ == null) {
           OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
         }
         OptionalMessage.MergeFrom(other.OptionalMessage);
@@ -23164,6 +28518,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -23203,7 +28560,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 4294960058: {
-            if (!HasOptionalMessage) {
+            if (optionalMessage_ == null) {
               OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
             }
             input.ReadMessage(OptionalMessage);
@@ -23226,7 +28583,92 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
           case 4294960098: {
             global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
-            if (HasOneofTestAllTypes) {
+            if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) {
+              subBuilder.MergeFrom(OneofTestAllTypes);
+            }
+            input.ReadMessage(subBuilder);
+            OneofTestAllTypes = subBuilder;
+            break;
+          }
+          case 4294960106: {
+            OneofString = input.ReadString();
+            break;
+          }
+          case 4294960114: {
+            OneofBytes = input.ReadBytes();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 4294960000: {
+            OptionalInt32 = input.ReadInt32();
+            break;
+          }
+          case 4294960008: {
+            Fixed32 = input.ReadInt32();
+            break;
+          }
+          case 4294960018:
+          case 4294960016: {
+            repeatedInt32_.AddEntriesFrom(ref input, _repeated_repeatedInt32_codec);
+            break;
+          }
+          case 4294960026:
+          case 4294960024: {
+            packedInt32_.AddEntriesFrom(ref input, _repeated_packedInt32_codec);
+            break;
+          }
+          case 4294960032: {
+            OptionalEnum = (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) input.ReadEnum();
+            break;
+          }
+          case 4294960042: {
+            OptionalString = input.ReadString();
+            break;
+          }
+          case 4294960050: {
+            OptionalBytes = input.ReadBytes();
+            break;
+          }
+          case 4294960058: {
+            if (optionalMessage_ == null) {
+              OptionalMessage = new global::Google.Protobuf.TestProtos.Proto2.ForeignMessage();
+            }
+            input.ReadMessage(OptionalMessage);
+            break;
+          }
+          case 4294960067: {
+            if (!HasOptionalGroup) {
+              OptionalGroup = new global::Google.Protobuf.TestProtos.Proto2.TestHugeFieldNumbers.Types.OptionalGroup();
+            }
+            input.ReadGroup(OptionalGroup);
+            break;
+          }
+          case 4294960082: {
+            stringStringMap_.AddEntriesFrom(ref input, _map_stringStringMap_codec);
+            break;
+          }
+          case 4294960088: {
+            OneofUint32 = input.ReadUInt32();
+            break;
+          }
+          case 4294960098: {
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
+            if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) {
               subBuilder.MergeFrom(OneofTestAllTypes);
             }
             input.ReadMessage(subBuilder);
@@ -23244,6 +28686,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
       }
     }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestHugeFieldNumbers, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);
@@ -23271,7 +28714,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Container for nested types declared in the TestHugeFieldNumbers message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
-      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup> {
+      public sealed partial class OptionalGroup : pb::IMessage<OptionalGroup>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
         private int _hasBits0;
@@ -23365,6 +28812,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
           if (HasGroupA) {
             output.WriteRawTag(200, 199, 255, 255, 15);
             output.WriteInt32(GroupA);
@@ -23372,7 +28822,21 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (HasGroupA) {
+            output.WriteRawTag(200, 199, 255, 255, 15);
+            output.WriteInt32(GroupA);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
@@ -23399,6 +28863,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
             switch(tag) {
@@ -23413,7 +28880,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               }
             }
           }
+        #endif
         }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              case 4294960068:
+                return;
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 4294960072: {
+                GroupA = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
 
       }
 
@@ -23422,7 +28910,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  public sealed partial class TestExtensionInsideTable : pb::IExtendableMessage<TestExtensionInsideTable> {
+  public sealed partial class TestExtensionInsideTable : pb::IExtendableMessage<TestExtensionInsideTable>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<TestExtensionInsideTable> _parser = new pb::MessageParser<TestExtensionInsideTable>(() => new TestExtensionInsideTable());
     private pb::UnknownFieldSet _unknownFields;
     private pb::ExtensionSet<TestExtensionInsideTable> _extensions;
@@ -23741,6 +29233,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (HasField1) {
         output.WriteRawTag(8);
         output.WriteInt32(Field1);
@@ -23783,7 +29278,56 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasField1) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Field1);
+      }
+      if (HasField2) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Field2);
+      }
+      if (HasField3) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Field3);
+      }
+      if (HasField4) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Field4);
+      }
+      if (HasField6) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Field6);
+      }
+      if (HasField7) {
+        output.WriteRawTag(56);
+        output.WriteInt32(Field7);
+      }
+      if (HasField8) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Field8);
+      }
+      if (HasField9) {
+        output.WriteRawTag(72);
+        output.WriteInt32(Field9);
+      }
+      if (HasField10) {
+        output.WriteRawTag(80);
+        output.WriteInt32(Field10);
+      }
+      if (_extensions != null) {
+        _extensions.WriteTo(ref output);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -23862,6 +29406,9 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -23908,7 +29455,60 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            if (!pb::ExtensionSet.TryMergeFieldFrom(ref _extensions, ref input)) {
+              _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            }
+            break;
+          case 8: {
+            Field1 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Field4 = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            Field6 = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            Field7 = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            Field8 = input.ReadInt32();
+            break;
+          }
+          case 72: {
+            Field9 = input.ReadInt32();
+            break;
+          }
+          case 80: {
+            Field10 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
     public TValue GetExtension<TValue>(pb::Extension<TestExtensionInsideTable, TValue> extension) {
       return pb::ExtensionSet.Get(ref _extensions, extension);

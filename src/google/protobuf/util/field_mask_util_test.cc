@@ -31,13 +31,14 @@
 #include <google/protobuf/util/field_mask_util.h>
 
 #include <algorithm>
+#include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/field_mask.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
@@ -45,7 +46,7 @@ namespace util {
 
 class SnakeCaseCamelCaseTest : public ::testing::Test {
  protected:
-  string SnakeCaseToCamelCase(const std::string& input) {
+  std::string SnakeCaseToCamelCase(const std::string& input) {
     std::string output;
     if (FieldMaskUtil::SnakeCaseToCamelCase(input, &output)) {
       return output;
@@ -54,7 +55,7 @@ class SnakeCaseCamelCaseTest : public ::testing::Test {
     }
   }
 
-  string CamelCaseToSnakeCase(const std::string& input) {
+  std::string CamelCaseToSnakeCase(const std::string& input) {
     std::string output;
     if (FieldMaskUtil::CamelCaseToSnakeCase(input, &output)) {
       return output;
@@ -159,6 +160,20 @@ TEST(FieldMaskUtilTest, JsonStringFormat) {
   EXPECT_EQ(2, mask.paths_size());
   EXPECT_EQ("foo_bar", mask.paths(0));
   EXPECT_EQ("baz_quz", mask.paths(1));
+}
+
+TEST(FieldMaskUtilTest, FromFieldNumbers) {
+  FieldMask mask;
+  std::vector<int64> field_numbers = {
+      TestAllTypes::kOptionalInt64FieldNumber,
+      TestAllTypes::kOptionalBoolFieldNumber,
+      TestAllTypes::kRepeatedStringFieldNumber,
+  };
+  FieldMaskUtil::FromFieldNumbers<TestAllTypes>(field_numbers, &mask);
+  ASSERT_EQ(3, mask.paths_size());
+  EXPECT_EQ("optional_int64", mask.paths(0));
+  EXPECT_EQ("optional_bool", mask.paths(1));
+  EXPECT_EQ("repeated_string", mask.paths(2));
 }
 
 TEST(FieldMaskUtilTest, GetFieldDescriptors) {

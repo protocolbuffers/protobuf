@@ -148,7 +148,7 @@ JsonObjectWriter* JsonObjectWriter::RenderBytes(StringPiece name,
   std::string base64;
 
   if (use_websafe_base64_for_bytes_)
-    WebSafeBase64EscapeWithPadding(value.ToString(), &base64);
+    WebSafeBase64EscapeWithPadding(std::string(value), &base64);
   else
     Base64Escape(value, &base64);
 

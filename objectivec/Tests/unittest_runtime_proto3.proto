@@ -119,3 +119,31 @@ message Message3 {
   map<int32   , Enum    > map_int32_enum        = 87;
   map<int32   , Message3> map_int32_message     = 88;
 }
+
+message Message3Optional {
+  enum Enum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+    EXTRA_3 = 30;
+  }
+
+  optional    int32 optional_int32    =  1;
+  optional    int64 optional_int64    =  2;
+  optional   uint32 optional_uint32   =  3;
+  optional   uint64 optional_uint64   =  4;
+  optional   sint32 optional_sint32   =  5;
+  optional   sint64 optional_sint64   =  6;
+  optional  fixed32 optional_fixed32  =  7;
+  optional  fixed64 optional_fixed64  =  8;
+  optional sfixed32 optional_sfixed32 =  9;
+  optional sfixed64 optional_sfixed64 = 10;
+  optional    float optional_float    = 11;
+  optional   double optional_double   = 12;
+  optional     bool optional_bool     = 13;
+  optional   string optional_string   = 14;
+  optional    bytes optional_bytes    = 15;
+  // No 'group' in proto3.
+  optional Message3  optional_message = 18;
+  optional Enum         optional_enum = 19;
+}

@@ -270,7 +270,8 @@ std::string ToCamelCase(StringPiece input) {
       // 1) following a lowercase:   "...aB..."
       // 2) followed by a lowercase: "...ABc..."
       if (!result.empty() && is_cap &&
-          (!was_cap || (i + 1 < input.size() && ascii_islower(input[i + 1])))) {
+          (!was_cap ||
+           (i + 1 < input.size() && ascii_islower(input[i + 1])))) {
         first_word = false;
         result.push_back(input[i]);
       } else {
@@ -310,9 +311,9 @@ std::string ToSnakeCase(StringPiece input) {
       //    (e.g. "GoogleLAB" => "google_lab")
       // 4) Followed by a lowercase: "...ABc..." => "...a_bc..."
       //    (e.g. "GBike" => "g_bike")
-      if (was_not_underscore &&               //            case 1 out
-          (was_not_cap ||                     // case 2 in, case 3 out
-           (i + 1 < input.size() &&           //            case 3 out
+      if (was_not_underscore &&                     //            case 1 out
+          (was_not_cap ||                           // case 2 in, case 3 out
+           (i + 1 < input.size() &&                 //            case 3 out
             ascii_islower(input[i + 1])))) {  // case 4 in
         // We add an underscore for case 2 and case 4.
         result.push_back('_');

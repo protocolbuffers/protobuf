@@ -36,7 +36,6 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
@@ -49,6 +48,7 @@
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/casts.h>
+#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status_macros.h>
 
@@ -201,14 +201,14 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
   uint32 tag = stream_->ReadTag(), last_tag = tag + 1;
   UnknownFieldSet unknown_fields;
 
-  if (tag == end_tag && suppress_empty_object_) {
+  if (!name.empty() && tag == end_tag && suppress_empty_object_) {
     return util::Status();
   }
 
   if (include_start_and_end) {
     ow->StartObject(name);
   }
-  while (tag != end_tag) {
+  while (tag != end_tag && tag != 0) {
     if (tag != last_tag) {  // Update field only if tag is changed.
       last_tag = tag;
       field = FindAndVerifyField(type, tag);
@@ -537,6 +537,11 @@ Status ProtoStreamObjectSource::RenderStruct(const ProtoStreamObjectSource* os,
   ow->StartObject(field_name);
   while (tag != 0) {
     field = os->FindAndVerifyField(type, tag);
+    if (field == nullptr) {
+      WireFormat::SkipField(os->stream_, tag, nullptr);
+      tag = os->stream_->ReadTag();
+      continue;
+    }
     // google.protobuf.Struct has only one field that is a map. Hence we use
     // RenderMap to render that field.
     if (os->IsMap(*field)) {
@@ -647,7 +652,7 @@ Status ProtoStreamObjectSource::RenderAny(const ProtoStreamObjectSource* os,
                         resolved_type.status().message());
   }
   // nested_type cannot be null at this time.
-  const google::protobuf::Type* nested_type = resolved_type.ValueOrDie();
+  const google::protobuf::Type* nested_type = resolved_type.value();
 
   io::ArrayInputStream zero_copy_stream(value.data(), value.size());
   io::CodedInputStream in_stream(&zero_copy_stream);
@@ -805,8 +810,8 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
     const google::protobuf::Field* field, StringPiece field_name,
     ObjectWriter* ow) const {
   // Temporary buffers of different types.
-  uint32 buffer32;
-  uint64 buffer64;
+  uint32 buffer32 = 0;
+  uint64 buffer64 = 0;
   std::string strbuffer;
   switch (field->kind()) {
     case google::protobuf::Field::TYPE_BOOL: {

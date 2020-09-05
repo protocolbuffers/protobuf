@@ -149,6 +149,14 @@ class PROTOBUF_EXPORT TextFormat {
     virtual void PrintMessageStart(const Message& message, int field_index,
                                    int field_count, bool single_line_mode,
                                    BaseTextGenerator* generator) const;
+    // Allows to override the logic on how to print the content of a message.
+    // Return false to use the default printing logic. Note that it is legal for
+    // this function to print something and then return false to use the default
+    // content printing (although at that point it would behave similarly to
+    // PrintMessageStart).
+    virtual bool PrintMessageContent(const Message& message, int field_index,
+                                     int field_count, bool single_line_mode,
+                                     BaseTextGenerator* generator) const;
     virtual void PrintMessageEnd(const Message& message, int field_index,
                                  int field_count, bool single_line_mode,
                                  BaseTextGenerator* generator) const;
@@ -361,6 +369,8 @@ class PROTOBUF_EXPORT TextFormat {
     // output to the OutputStream (see text_format.cc for implementation).
     class TextGenerator;
 
+    static const char* const kDoNotParse;
+
     // Internal Print method, used for writing to the OutputStream via
     // the TextGenerator class.
     void Print(const Message& message, TextGenerator* generator) const;
@@ -391,9 +401,10 @@ class PROTOBUF_EXPORT TextFormat {
 
     // Print the fields in an UnknownFieldSet.  They are printed by tag number
     // only.  Embedded messages are heuristically identified by attempting to
-    // parse them.
+    // parse them (subject to the recursion budget).
     void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
-                            TextGenerator* generator) const;
+                            TextGenerator* generator,
+                            int recursion_budget) const;
 
     bool PrintAny(const Message& message, TextGenerator* generator) const;
 
@@ -443,7 +454,7 @@ class PROTOBUF_EXPORT TextFormat {
   // google::protobuf::MessageLite::ParseFromString().
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
-  static bool ParseFromString(const std::string& input, Message* output);
+  static bool ParseFromString(ConstStringParam input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
@@ -520,7 +531,7 @@ class PROTOBUF_EXPORT TextFormat {
     // Like TextFormat::Parse().
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
-    bool ParseFromString(const std::string& input, Message* output);
+    bool ParseFromString(ConstStringParam input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().

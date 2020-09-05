@@ -702,6 +702,11 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(oneofs));
     }
 
+    /** Get a list of this message type's real oneofs. */
+    public List<OneofDescriptor> getRealOneofs() {
+      return Collections.unmodifiableList(Arrays.asList(oneofs).subList(0, realOneofCount));
+    }
+
     /** Get a list of this message type's extensions. */
     public List<FieldDescriptor> getExtensions() {
       return Collections.unmodifiableList(Arrays.asList(extensions));
@@ -821,6 +826,7 @@ public final class Descriptors {
     private final FieldDescriptor[] fields;
     private final FieldDescriptor[] extensions;
     private final OneofDescriptor[] oneofs;
+    private final int realOneofCount;
 
     // Used to create a placeholder when the type cannot be found.
     Descriptor(final String fullname) throws DescriptorValidationException {
@@ -846,6 +852,7 @@ public final class Descriptors {
       this.fields = new FieldDescriptor[0];
       this.extensions = new FieldDescriptor[0];
       this.oneofs = new OneofDescriptor[0];
+      this.realOneofCount = 0;
 
       // Create a placeholder FileDescriptor to hold this message.
       this.file = new FileDescriptor(packageName, this);
@@ -898,6 +905,18 @@ public final class Descriptors {
           oneofDescriptor.fields[oneofDescriptor.fieldCount++] = fields[i];
         }
       }
+
+      int syntheticOneofCount = 0;
+      for (OneofDescriptor oneof : this.oneofs) {
+        if (oneof.isSynthetic()) {
+          syntheticOneofCount++;
+        } else {
+          if (syntheticOneofCount > 0) {
+            throw new DescriptorValidationException(this, "Synthetic oneofs must come last.");
+          }
+        }
+      }
+      this.realOneofCount = this.oneofs.length - syntheticOneofCount;
 
       file.pool.addSymbol(this);
     }
@@ -1065,7 +1084,7 @@ public final class Descriptors {
 
     /**
      * Does this field have the {@code [packed = true]} option or is this field packable in proto3
-     * and not explicitly setted to unpacked?
+     * and not explicitly set to unpacked?
      */
     @Override
     public boolean isPacked() {
@@ -1123,6 +1142,40 @@ public final class Descriptors {
     /** Get the field's containing oneof. */
     public OneofDescriptor getContainingOneof() {
       return containingOneof;
+    }
+
+    /** Get the field's containing oneof, only if non-synthetic. */
+    public OneofDescriptor getRealContainingOneof() {
+      return containingOneof != null && !containingOneof.isSynthetic() ? containingOneof : null;
+    }
+
+    /**
+     * Returns true if this field was syntactically written with "optional" in the .proto file.
+     * Excludes singular proto3 fields that do not have a label.
+     */
+    public boolean hasOptionalKeyword() {
+      return isProto3Optional
+          || (file.getSyntax() == Syntax.PROTO2 && isOptional() && getContainingOneof() == null);
+    }
+
+    /**
+     * Returns true if this field tracks presence, ie. does the field distinguish between "unset"
+     * and "present with default value."
+     *
+     * <p>This includes required, optional, and oneof fields. It excludes maps, repeated fields, and
+     * singular proto3 fields without "optional".
+     *
+     * <p>For fields where hasPresence() == true, the return value of msg.hasField() is semantically
+     * meaningful.
+     */
+    boolean hasPresence() {
+      if (isRepeated()) {
+        return false;
+      }
+      return getType() == Type.MESSAGE
+          || getType() == Type.GROUP
+          || getContainingOneof() != null
+          || file.getSyntax() == Syntax.PROTO2;
     }
 
     /**
@@ -1203,6 +1256,7 @@ public final class Descriptors {
     private final String jsonName;
     private final FileDescriptor file;
     private final Descriptor extensionScope;
+    private final boolean isProto3Optional;
 
     // Possibly initialized during cross-linking.
     private Type type;
@@ -1326,6 +1380,8 @@ public final class Descriptors {
       if (proto.hasType()) {
         type = Type.valueOf(proto.getType());
       }
+
+      isProto3Optional = proto.getProto3Optional();
 
       if (getNumber() <= 0) {
         throw new DescriptorValidationException(this, "Field numbers must be positive integers.");
@@ -2625,6 +2681,10 @@ public final class Descriptors {
 
     public OneofOptions getOptions() {
       return proto.getOptions();
+    }
+
+    public boolean isSynthetic() {
+      return fields.length == 1 && fields[0].isProto3Optional;
     }
 
     /** Get a list of this message type's fields. */

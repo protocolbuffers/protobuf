@@ -101,8 +101,8 @@ namespace Google.Protobuf
         /// <paramref name="output"/>
         /// </summary>
         /// <param name="fieldNumber">The unknown field number.</param>
-        /// <param name="output">The CodedOutputStream to write to.</param>
-        internal void WriteTo(int fieldNumber, CodedOutputStream output)
+        /// <param name="output">The write context to write to.</param>
+        internal void WriteTo(int fieldNumber, ref WriteContext output)
         {
             if (varintList != null)
             {
@@ -141,7 +141,7 @@ namespace Google.Protobuf
                 foreach (UnknownFieldSet value in groupList)
                 {
                     output.WriteTag(fieldNumber, WireFormat.WireType.StartGroup);
-                    value.WriteTo(output);
+                    value.WriteTo(ref output);
                     output.WriteTag(fieldNumber, WireFormat.WireType.EndGroup);
                 }
             }
@@ -209,13 +209,13 @@ namespace Google.Protobuf
         /// <summary>
         /// Returns a new list containing all of the given specified values from
         /// both the <paramref name="current"/> and <paramref name="extras"/> lists.
-        /// If <paramref name="current" /> is null and <paramref name="extras"/> is empty,
+        /// If <paramref name="current" /> is null and <paramref name="extras"/> is null or empty,
         /// null is returned. Otherwise, either a new list is created (if <paramref name="current" />
         /// is null) or the elements of <paramref name="extras"/> are added to <paramref name="current" />.
         /// </summary>
         private static List<T> AddAll<T>(List<T> current, IList<T> extras)
         {
-            if (extras.Count == 0)
+            if (extras == null || extras.Count == 0)
             {
                 return current;
             }

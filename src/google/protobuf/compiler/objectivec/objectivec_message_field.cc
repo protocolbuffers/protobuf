@@ -46,13 +46,13 @@ namespace {
 void SetMessageVariables(const FieldDescriptor* descriptor,
                          std::map<string, string>* variables) {
   const string& message_type = ClassName(descriptor->message_type());
+  const string& containing_class = ClassName(descriptor->containing_type());
   (*variables)["type"] = message_type;
-  (*variables)["containing_class"] = ClassName(descriptor->containing_type());
+  (*variables)["containing_class"] = containing_class;
   (*variables)["storage_type"] = message_type;
   (*variables)["group_or_message"] =
       (descriptor->type() == FieldDescriptor::TYPE_GROUP) ? "Group" : "Message";
-
-  (*variables)["dataTypeSpecific_value"] = "GPBStringifySymbol(" + message_type + ")";
+  (*variables)["dataTypeSpecific_value"] = ObjCClass(message_type);
 }
 
 }  // namespace
@@ -72,14 +72,9 @@ void MessageFieldGenerator::DetermineForwardDeclarations(
   fwd_decls->insert("@class " + variable("storage_type"));
 }
 
-bool MessageFieldGenerator::WantsHasProperty(void) const {
-  if (descriptor_->containing_oneof() != NULL) {
-    // If in a oneof, it uses the oneofcase instead of a has bit.
-    return false;
-  }
-  // In both proto2 & proto3, message fields have a has* property to tell
-  // when it is a non default value.
-  return true;
+void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
+    std::set<string>* fwd_decls) const {
+  fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 
 RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
@@ -100,6 +95,10 @@ void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
   fwd_decls->insert("@class " + variable("storage_type"));
 }
 
+void RepeatedMessageFieldGenerator::DetermineObjectiveCClassDefinitions(
+    std::set<string>* fwd_decls) const {
+  fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
+}
 
 }  // namespace objectivec
 }  // namespace compiler

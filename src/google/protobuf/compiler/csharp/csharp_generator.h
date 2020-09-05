@@ -50,11 +50,14 @@ namespace csharp {
 // CodeGenerator with the CommandLineInterface in your main() function.
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
-  virtual bool Generate(
-      const FileDescriptor* file,
-      const string& parameter,
-      GeneratorContext* generator_context,
-      string* error) const;
+  Generator();
+  ~Generator();
+  bool Generate(
+    const FileDescriptor* file,
+    const string& parameter,
+    GeneratorContext* generator_context,
+    string* error) const override;
+  uint64_t GetSupportedFeatures() const override;
 };
 
 }  // namespace csharp

@@ -340,33 +340,33 @@ bool ExtensionSet::FindExtension(int wire_type, uint32 field,
   return true;
 }
 
-const char* ExtensionSet::ParseField(
-    uint64 tag, const char* ptr, const Message* containing_type,
-    internal::InternalMetadataWithArena* metadata,
-    internal::ParseContext* ctx) {
+const char* ExtensionSet::ParseField(uint64 tag, const char* ptr,
+                                     const Message* containing_type,
+                                     internal::InternalMetadata* metadata,
+                                     internal::ParseContext* ctx) {
   int number = tag >> 3;
   bool was_packed_on_wire;
   ExtensionInfo extension;
   if (!FindExtension(tag & 7, number, containing_type, ctx, &extension,
                      &was_packed_on_wire)) {
-    return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
+    return UnknownFieldParse(
+        tag, metadata->mutable_unknown_fields<UnknownFieldSet>(), ptr, ctx);
   }
-  return ParseFieldWithExtensionInfo(number, was_packed_on_wire, extension,
-                                     metadata, ptr, ctx);
+  return ParseFieldWithExtensionInfo<UnknownFieldSet>(
+      number, was_packed_on_wire, extension, metadata, ptr, ctx);
 }
 
 const char* ExtensionSet::ParseFieldMaybeLazily(
     uint64 tag, const char* ptr, const Message* containing_type,
-    internal::InternalMetadataWithArena* metadata,
-    internal::ParseContext* ctx) {
+    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
   return ParseField(tag, ptr, containing_type, metadata, ctx);
 }
 
 const char* ExtensionSet::ParseMessageSetItem(
     const char* ptr, const Message* containing_type,
-    internal::InternalMetadataWithArena* metadata,
-    internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
+    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl<Message, UnknownFieldSet>(ptr, containing_type,
+                                                           metadata, ctx);
 }
 
 bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,

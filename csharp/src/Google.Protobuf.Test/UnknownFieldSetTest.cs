@@ -161,10 +161,10 @@ namespace Google.Protobuf
             MessageParser discardingParser2 = retainingParser2.WithDiscardUnknownFields(true);
 
             // Test parse from byte[]
-            assertFull(retainingParser1.ParseFrom(data));
-            assertFull(retainingParser2.ParseFrom(data));
-            assertEmpty(discardingParser1.ParseFrom(data));
-            assertEmpty(discardingParser2.ParseFrom(data));
+            MessageParsingHelpers.AssertReadingMessage(retainingParser1, data, m => assertFull(m));
+            MessageParsingHelpers.AssertReadingMessage(retainingParser2, data, m => assertFull(m));
+            MessageParsingHelpers.AssertReadingMessage(discardingParser1, data, m => assertEmpty(m));
+            MessageParsingHelpers.AssertReadingMessage(discardingParser2, data, m => assertEmpty(m));
 
             // Test parse from byte[] with offset
             assertFull(retainingParser1.ParseFrom(data, 0, data.Length));

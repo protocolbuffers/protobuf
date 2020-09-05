@@ -30,10 +30,12 @@
 
 package com.google.protobuf.util;
 
+import static com.google.common.truth.Truth.assertThat;
+
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.FieldMask;
 import protobuf_unittest.UnittestProto.NestedTestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypes;
-
 import junit.framework.TestCase;
 
 /** Unit tests for {@link FieldMaskUtil}. */
@@ -172,6 +174,38 @@ public class FieldMaskUtilTest extends TestCase {
     assertEquals("bar_baz", mask.getPaths(1));
   }
 
+  public void testFromStringList() throws Exception {
+    FieldMask mask =
+        FieldMaskUtil.fromStringList(
+            NestedTestAllTypes.class, ImmutableList.of("payload.repeated_nested_message", "child"));
+    assertThat(mask)
+        .isEqualTo(
+            FieldMask.newBuilder()
+                .addPaths("payload.repeated_nested_message")
+                .addPaths("child")
+                .build());
+
+    mask =
+        FieldMaskUtil.fromStringList(
+            NestedTestAllTypes.getDescriptor(),
+            ImmutableList.of("payload.repeated_nested_message", "child"));
+    assertThat(mask)
+        .isEqualTo(
+            FieldMask.newBuilder()
+                .addPaths("payload.repeated_nested_message")
+                .addPaths("child")
+                .build());
+
+    mask =
+        FieldMaskUtil.fromStringList(ImmutableList.of("payload.repeated_nested_message", "child"));
+    assertThat(mask)
+        .isEqualTo(
+            FieldMask.newBuilder()
+                .addPaths("payload.repeated_nested_message")
+                .addPaths("child")
+                .build());
+  }
+
   public void testUnion() throws Exception {
     // Only test a simple case here and expect
     // {@link FieldMaskTreeTest#testAddFieldPath} to cover all scenarios.
@@ -188,6 +222,24 @@ public class FieldMaskUtilTest extends TestCase {
     FieldMask mask4 = FieldMaskUtil.fromString("bar");
     FieldMask result = FieldMaskUtil.union(mask1, mask2, mask3, mask4);
     assertEquals("bar,foo", FieldMaskUtil.toString(result));
+  }
+
+  public void testSubstract() throws Exception {
+    // Only test a simple case here and expect
+    // {@link FieldMaskTreeTest#testRemoveFieldPath} to cover all scenarios.
+    FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz");
+    FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar");
+    FieldMask result = FieldMaskUtil.subtract(mask1, mask2);
+    assertEquals("foo", FieldMaskUtil.toString(result));
+  }
+
+  public void testSubstract_usingVarArgs() throws Exception {
+    FieldMask mask1 = FieldMaskUtil.fromString("foo,bar.baz,bar.quz.bar");
+    FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar.baz.quz");
+    FieldMask mask3 = FieldMaskUtil.fromString("bar.quz");
+    FieldMask mask4 = FieldMaskUtil.fromString("foo,bar.baz");
+    FieldMask result = FieldMaskUtil.subtract(mask1, mask2, mask3, mask4);
+    assertEquals("bar", FieldMaskUtil.toString(result));
   }
 
   public void testIntersection() throws Exception {

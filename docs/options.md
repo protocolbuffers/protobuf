@@ -224,3 +224,27 @@ with info about your project (name and website) so we can add an entry for you.
 1. Wire since and until
    * Website: https://square.github.io/wire/
    * Extensions: 1076, 1077
+
+1. Bazel, Failure Details
+   * Website: https://github.com/bazelbuild/bazel
+   * Extensions: 1078
+
+1. grpc-graphql-gateway
+   * Website: https://github.com/ysugimoto/grpc-graphql-gateway
+   * Extensions: 1079
+
+1. Cloudstate
+   * Website: https://cloudstate.io
+   * Extensions: 1080-1084
+
+1. SummaFT protoc-plugins
+   * Website: https://summaft.com/
+   * Extensions: 1085
+
+1. ADLINK EdgeSDK
+   * Website: https://www.adlinktech.com/en/Edge-SDK-IoT
+   * Extensions: 1086
+
+1. Wire wire_package
+   * Website: https://square.github.io/wire/
+   * Extensions: 1087

@@ -44,9 +44,28 @@ namespace compiler {
 namespace php {
 
 class PROTOC_EXPORT Generator : public CodeGenerator {
+ public:
   virtual bool Generate(
       const FileDescriptor* file,
       const string& parameter,
+      GeneratorContext* generator_context,
+      string* error) const override;
+
+  bool GenerateAll(const std::vector<const FileDescriptor*>& files,
+                   const std::string& parameter,
+                   GeneratorContext* generator_context,
+                   std::string* error) const override;
+
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL;
+  }
+
+ private:
+  bool Generate(
+      const FileDescriptor* file,
+      bool is_descriptor,
+      bool aggregate_metadata,
+      const std::set<string>& aggregate_metadata_prefixes,
       GeneratorContext* generator_context,
       string* error) const;
 };

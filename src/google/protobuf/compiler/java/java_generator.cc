@@ -58,6 +58,10 @@ namespace java {
 JavaGenerator::JavaGenerator() {}
 JavaGenerator::~JavaGenerator() {}
 
+uint64_t JavaGenerator::GetSupportedFeatures() const {
+  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
+}
+
 bool JavaGenerator::Generate(const FileDescriptor* file,
                              const std::string& parameter,
                              GeneratorContext* context,

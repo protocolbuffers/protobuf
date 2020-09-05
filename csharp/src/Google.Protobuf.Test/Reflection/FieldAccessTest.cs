@@ -38,6 +38,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 using static Google.Protobuf.TestProtos.Proto2.UnittestExtensions;
+using ProtobufUnittest;
 
 namespace Google.Protobuf.Reflection
 {
@@ -97,7 +98,48 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
-        public void HasValue_Proto3()
+        public void HasValue_Proto3_Message()
+        {
+            var message = new TestAllTypes();
+            var accessor = ((IMessage) message).Descriptor.Fields[TestProtos.TestAllTypes.SingleForeignMessageFieldNumber].Accessor;
+            Assert.False(accessor.HasValue(message));
+            message.SingleForeignMessage = new ForeignMessage();
+            Assert.True(accessor.HasValue(message));
+            message.SingleForeignMessage = null;
+            Assert.False(accessor.HasValue(message));
+        }
+
+        [Test]
+        public void HasValue_Proto3_Oneof()
+        {
+            TestAllTypes message = new TestAllTypes();
+            var accessor = ((IMessage) message).Descriptor.Fields[TestProtos.TestAllTypes.OneofStringFieldNumber].Accessor;
+            Assert.False(accessor.HasValue(message));
+            // Even though it's the default value, we still have a value.
+            message.OneofString = "";
+            Assert.True(accessor.HasValue(message));
+            message.OneofString = "hello";
+            Assert.True(accessor.HasValue(message));
+            message.OneofUint32 = 10;
+            Assert.False(accessor.HasValue(message));
+        }
+
+        [Test]
+        public void HasValue_Proto3_Primitive_Optional()
+        {
+            var message = new TestProto3Optional();
+            var accessor = ((IMessage) message).Descriptor.Fields[TestProto3Optional.OptionalInt64FieldNumber].Accessor;
+            Assert.IsFalse(accessor.HasValue(message));
+            message.OptionalInt64 = 5L;
+            Assert.IsTrue(accessor.HasValue(message));
+            message.ClearOptionalInt64();
+            Assert.IsFalse(accessor.HasValue(message));
+            message.OptionalInt64 = 0L;
+            Assert.IsTrue(accessor.HasValue(message));
+        }
+
+        [Test]
+        public void HasValue_Proto3_Primitive_NotOptional()
         {
             IMessage message = SampleMessages.CreateFullTestAllTypes();
             var fields = message.Descriptor.Fields;
@@ -105,19 +147,61 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
-        public void HasValue()
+        public void HasValue_Proto3_Repeated()
         {
-            IMessage message = new Proto2.TestAllTypes();
-            var fields = message.Descriptor.Fields;
-            var accessor = fields[Proto2.TestAllTypes.OptionalBoolFieldNumber].Accessor;
+            var message = new TestAllTypes();
+            var accessor = ((IMessage) message).Descriptor.Fields[TestProtos.TestAllTypes.RepeatedBoolFieldNumber].Accessor;
+            Assert.Throws<InvalidOperationException>(() => accessor.HasValue(message));
+        }
 
+        [Test]
+        public void HasValue_Proto2_Primitive()
+        {
+            var message = new Proto2.TestAllTypes();
+            var accessor = ((IMessage) message).Descriptor.Fields[Proto2.TestAllTypes.OptionalInt64FieldNumber].Accessor;
+
+            Assert.IsFalse(accessor.HasValue(message));
+            message.OptionalInt64 = 5L;
+            Assert.IsTrue(accessor.HasValue(message));
+            message.ClearOptionalInt64();
+            Assert.IsFalse(accessor.HasValue(message));
+            message.OptionalInt64 = 0L;
+            Assert.IsTrue(accessor.HasValue(message));
+        }
+
+        [Test]
+        public void HasValue_Proto2_Message()
+        {
+            var message = new Proto2.TestAllTypes();
+            var field = ((IMessage) message).Descriptor.Fields[Proto2.TestAllTypes.OptionalForeignMessageFieldNumber];
+            Assert.False(field.Accessor.HasValue(message));
+            message.OptionalForeignMessage = new Proto2.ForeignMessage();
+            Assert.True(field.Accessor.HasValue(message));
+            message.OptionalForeignMessage = null;
+            Assert.False(field.Accessor.HasValue(message));
+        }
+
+        [Test]
+        public void HasValue_Proto2_Oneof()
+        {
+            var message = new Proto2.TestAllTypes();
+            var accessor = ((IMessage) message).Descriptor.Fields[Proto2.TestAllTypes.OneofStringFieldNumber].Accessor;
             Assert.False(accessor.HasValue(message));
-
-            accessor.SetValue(message, true);
+            // Even though it's the default value, we still have a value.
+            message.OneofString = "";
             Assert.True(accessor.HasValue(message));
-
-            accessor.Clear(message);
+            message.OneofString = "hello";
+            Assert.True(accessor.HasValue(message));
+            message.OneofUint32 = 10;
             Assert.False(accessor.HasValue(message));
+        }
+
+        [Test]
+        public void HasValue_Proto2_Repeated()
+        {
+            var message = new Proto2.TestAllTypes();
+            var accessor = ((IMessage) message).Descriptor.Fields[Proto2.TestAllTypes.RepeatedBoolFieldNumber].Accessor;
+            Assert.Throws<InvalidOperationException>(() => accessor.HasValue(message));
         }
 
         [Test]
@@ -226,6 +310,63 @@ namespace Google.Protobuf.Reflection
         }
 
         [Test]
+        public void Clear_Proto3Optional()
+        {
+            TestProto3Optional message = new TestProto3Optional
+            {
+                OptionalInt32 = 0,
+                OptionalNestedMessage = new TestProto3Optional.Types.NestedMessage()
+            };
+            var primitiveField = TestProto3Optional.Descriptor.Fields[TestProto3Optional.OptionalInt32FieldNumber];
+            var messageField = TestProto3Optional.Descriptor.Fields[TestProto3Optional.OptionalNestedMessageFieldNumber];
+
+            Assert.True(message.HasOptionalInt32);
+            Assert.NotNull(message.OptionalNestedMessage);
+
+            primitiveField.Accessor.Clear(message);
+            messageField.Accessor.Clear(message);
+
+            Assert.False(message.HasOptionalInt32);
+            Assert.Null(message.OptionalNestedMessage);
+        }
+
+        [Test]
+        public void Clear_Proto3_Oneof()
+        {
+            var message = new TestAllTypes();
+            var accessor = ((IMessage) message).Descriptor.Fields[TestProtos.TestAllTypes.OneofUint32FieldNumber].Accessor;
+
+            // The field accessor Clear method only affects a oneof if the current case is the one being cleared.
+            message.OneofString = "hello";
+            Assert.AreEqual(TestProtos.TestAllTypes.OneofFieldOneofCase.OneofString, message.OneofFieldCase);
+            accessor.Clear(message);
+            Assert.AreEqual(TestProtos.TestAllTypes.OneofFieldOneofCase.OneofString, message.OneofFieldCase);
+
+            message.OneofUint32 = 100;
+            Assert.AreEqual(TestProtos.TestAllTypes.OneofFieldOneofCase.OneofUint32, message.OneofFieldCase);
+            accessor.Clear(message);
+            Assert.AreEqual(TestProtos.TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+        }
+
+        [Test]
+        public void Clear_Proto2_Oneof()
+        {
+            var message = new Proto2.TestAllTypes();
+            var accessor = ((IMessage) message).Descriptor.Fields[Proto2.TestAllTypes.OneofUint32FieldNumber].Accessor;
+
+            // The field accessor Clear method only affects a oneof if the current case is the one being cleared.
+            message.OneofString = "hello";
+            Assert.AreEqual(Proto2.TestAllTypes.OneofFieldOneofCase.OneofString, message.OneofFieldCase);
+            accessor.Clear(message);
+            Assert.AreEqual(Proto2.TestAllTypes.OneofFieldOneofCase.OneofString, message.OneofFieldCase);
+
+            message.OneofUint32 = 100;
+            Assert.AreEqual(Proto2.TestAllTypes.OneofFieldOneofCase.OneofUint32, message.OneofFieldCase);
+            accessor.Clear(message);
+            Assert.AreEqual(Proto2.TestAllTypes.OneofFieldOneofCase.None, message.OneofFieldCase);
+        }
+
+        [Test]
         public void FieldDescriptor_ByName()
         {
             var descriptor = TestProtos.TestAllTypes.Descriptor;
@@ -263,6 +404,33 @@ namespace Google.Protobuf.Reflection
 
             message.ClearExtension(RepeatedBoolExtension);
             Assert.IsNull(message.GetExtension(RepeatedBoolExtension));
+        }
+
+        [Test]
+        public void HasPresence()
+        {
+            // Proto3
+            var fields = TestProtos.TestAllTypes.Descriptor.Fields;
+            Assert.IsFalse(fields[TestProtos.TestAllTypes.SingleBoolFieldNumber].HasPresence);
+            Assert.IsTrue(fields[TestProtos.TestAllTypes.OneofBytesFieldNumber].HasPresence);
+            Assert.IsTrue(fields[TestProtos.TestAllTypes.SingleForeignMessageFieldNumber].HasPresence);
+            Assert.IsFalse(fields[TestProtos.TestAllTypes.RepeatedBoolFieldNumber].HasPresence);
+
+            fields = TestMap.Descriptor.Fields;
+            Assert.IsFalse(fields[TestMap.MapBoolBoolFieldNumber].HasPresence);
+
+            fields = TestProto3Optional.Descriptor.Fields;
+            Assert.IsTrue(fields[TestProto3Optional.OptionalBoolFieldNumber].HasPresence);
+
+            // Proto2
+            fields = Proto2.TestAllTypes.Descriptor.Fields;
+            Assert.IsTrue(fields[Proto2.TestAllTypes.OptionalBoolFieldNumber].HasPresence);
+            Assert.IsTrue(fields[Proto2.TestAllTypes.OneofBytesFieldNumber].HasPresence);
+            Assert.IsTrue(fields[Proto2.TestAllTypes.OptionalForeignMessageFieldNumber].HasPresence);
+            Assert.IsFalse(fields[Proto2.TestAllTypes.RepeatedBoolFieldNumber].HasPresence);
+
+            fields = Proto2.TestRequired.Descriptor.Fields;
+            Assert.IsTrue(fields[Proto2.TestRequired.AFieldNumber].HasPresence);
         }
     }
 }

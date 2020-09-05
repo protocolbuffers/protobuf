@@ -48,6 +48,13 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+Generator::Generator() {}
+Generator::~Generator() {}
+
+uint64_t Generator::GetSupportedFeatures() const {
+  return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
+}
+
 void GenerateFile(const FileDescriptor* file, io::Printer* printer,
                   const Options* options) {
   ReflectionClassGenerator reflectionClassGenerator(file, options);

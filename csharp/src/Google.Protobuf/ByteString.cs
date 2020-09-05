@@ -34,6 +34,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Security;
 using System.Text;
 #if !NET35
 using System.Threading;
@@ -115,7 +116,27 @@ namespace Google.Protobuf
         /// Provides read-only access to the data of this <see cref="ByteString"/>.
         /// No data is copied so this is the most efficient way of accessing.
         /// </summary>
-        public ReadOnlySpan<byte> Span => new ReadOnlySpan<byte>(bytes);
+        public ReadOnlySpan<byte> Span
+        {
+            [SecuritySafeCritical]
+            get
+            {
+                return new ReadOnlySpan<byte>(bytes);
+            }
+        }
+
+        /// <summary>
+        /// Provides read-only access to the data of this <see cref="ByteString"/>.
+        /// No data is copied so this is the most efficient way of accessing.
+        /// </summary>
+        public ReadOnlyMemory<byte> Memory
+        {
+            [SecuritySafeCritical]
+            get
+            {
+                return new ReadOnlyMemory<byte>(bytes);
+            }
+        }
 #endif
 
         /// <summary>
@@ -160,7 +181,7 @@ namespace Google.Protobuf
             int capacity = stream.CanSeek ? checked((int) (stream.Length - stream.Position)) : 0;
             var memoryStream = new MemoryStream(capacity);
             stream.CopyTo(memoryStream);
-#if NETSTANDARD1_0 || NETSTANDARD2_0
+#if NETSTANDARD1_1 || NETSTANDARD2_0
             byte[] bytes = memoryStream.ToArray();
 #else
             // Avoid an extra copy if we can.
@@ -186,7 +207,7 @@ namespace Google.Protobuf
             // We have to specify the buffer size here, as there's no overload accepting the cancellation token
             // alone. But it's documented to use 81920 by default if not specified.
             await stream.CopyToAsync(memoryStream, 81920, cancellationToken);
-#if NETSTANDARD1_0 || NETSTANDARD2_0
+#if NETSTANDARD1_1 || NETSTANDARD2_0
             byte[] bytes = memoryStream.ToArray();
 #else
             // Avoid an extra copy if we can.
@@ -248,7 +269,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Retuns the byte at the given index.
+        /// Returns the byte at the given index.
         /// </summary>
         public byte this[int index]
         {

@@ -57,15 +57,19 @@ class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
   ObjectiveCGenerator& operator=(const ObjectiveCGenerator&) = delete;
 
   // implements CodeGenerator ----------------------------------------
-  bool HasGenerateAll() const;
+  bool HasGenerateAll() const override;
   bool Generate(const FileDescriptor* file,
                 const string& parameter,
                 GeneratorContext* context,
-                string* error) const;
+                string* error) const override;
   bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                    const string& parameter,
                    GeneratorContext* context,
-                   string* error) const;
+                   string* error) const override;
+
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL;
+  }
 };
 
 }  // namespace objectivec

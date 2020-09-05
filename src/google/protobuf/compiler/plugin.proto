@@ -50,7 +50,7 @@ package google.protobuf.compiler;
 option java_package = "com.google.protobuf.compiler";
 option java_outer_classname = "PluginProtos";
 
-option go_package = "github.com/golang/protobuf/protoc-gen-go/plugin;plugin_go";
+option go_package = "google.golang.org/protobuf/types/pluginpb";
 
 import "google/protobuf/descriptor.proto";
 
@@ -106,6 +106,16 @@ message CodeGeneratorResponse {
   // unparseable -- should be reported by writing a message to stderr and
   // exiting with a non-zero status code.
   optional string error = 1;
+
+  // A bitmask of supported features that the code generator supports.
+  // This is a bitwise "or" of values from the Feature enum.
+  optional uint64 supported_features = 2;
+
+  // Sync with code_generator.h.
+  enum Feature {
+    FEATURE_NONE = 0;
+    FEATURE_PROTO3_OPTIONAL = 1;
+  }
 
   // Represents a single generated file.
   message File {
@@ -163,6 +173,11 @@ message CodeGeneratorResponse {
 
     // The file contents.
     optional string content = 15;
+
+    // Information describing the file content being inserted. If an insertion
+    // point is used, this information will be appropriately offset and inserted
+    // into the code generation metadata for the generated files.
+    optional GeneratedCodeInfo generated_code_info = 16;
   }
   repeated File file = 15;
 }

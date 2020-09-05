@@ -40,6 +40,8 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.TextFormat.Parser.SingularOverwritePolicy;
+import com.google.protobuf.testing.proto.TestProto3Optional;
+import com.google.protobuf.testing.proto.TestProto3Optional.NestedEnum;
 import any_test.AnyTestProto.TestAny;
 import map_test.MapTestProto.TestMap;
 import protobuf_unittest.UnittestMset.TestMessageSetExtension1;
@@ -317,6 +319,24 @@ public class TextFormatTest extends TestCase {
             .build();
 
     assertEquals(canonicalExoticText, message.toString());
+  }
+
+  public void testRoundtripProto3Optional() throws Exception {
+    Message message =
+        TestProto3Optional.newBuilder()
+            .setOptionalInt32(1)
+            .setOptionalInt64(2)
+            .setOptionalNestedEnum(NestedEnum.BAZ)
+            .build();
+    TestProto3Optional.Builder message2 = TestProto3Optional.newBuilder();
+    TextFormat.merge(message.toString(), message2);
+
+    assertTrue(message2.hasOptionalInt32());
+    assertTrue(message2.hasOptionalInt64());
+    assertTrue(message2.hasOptionalNestedEnum());
+    assertEquals(1, message2.getOptionalInt32());
+    assertEquals(2, message2.getOptionalInt64());
+    assertEquals(NestedEnum.BAZ, message2.getOptionalNestedEnum());
   }
 
   public void testPrintMessageSet() throws Exception {
@@ -1384,6 +1404,27 @@ public class TextFormatTest extends TestCase {
     }
   }
 
+  public void testMapDuplicateKeys() throws Exception {
+    String input =
+        "int32_to_int32_field: {\n"
+            + "  key: 1\n"
+            + "  value: 1\n"
+            + "}\n"
+            + "int32_to_int32_field: {\n"
+            + "  key: -2147483647\n"
+            + "  value: 5\n"
+            + "}\n"
+            + "int32_to_int32_field: {\n"
+            + "  key: 1\n"
+            + "  value: -1\n"
+            + "}\n";
+    TestMap msg = TextFormat.parse(input, TestMap.class);
+    int i1 = msg.getInt32ToInt32Field().get(1);
+    TestMap msg2 = TextFormat.parse(msg.toString(), TestMap.class);
+    int i2 = msg2.getInt32ToInt32Field().get(1);
+    assertEquals(i1, i2);
+  }
+
   public void testMapShortForm() throws Exception {
     String text =
         "string_to_int32_field [{ key: 'x' value: 10 }, { key: 'y' value: 20 }]\n"
@@ -1437,8 +1478,20 @@ public class TextFormatTest extends TestCase {
       // With overwrite forbidden, same behavior.
       // TODO(b/29122459): Expect parse exception here.
       TestMap.Builder builder = TestMap.newBuilder();
-      defaultParser.merge(text, builder);
+      parserWithOverwriteForbidden.merge(text, builder);
       TestMap map = builder.build();
+      assertEquals(2, map.getInt32ToInt32Field().size());
+      assertEquals(30, map.getInt32ToInt32Field().get(1).intValue());
+    }
+
+    {
+      // With overwrite forbidden and a dynamic message, same behavior.
+      // TODO(b/29122459): Expect parse exception here.
+      Message.Builder builder = DynamicMessage.newBuilder(TestMap.getDescriptor());
+      parserWithOverwriteForbidden.merge(text, builder);
+      TestMap map =
+          TestMap.parseFrom(
+              builder.build().toByteString(), ExtensionRegistryLite.getEmptyRegistry());
       assertEquals(2, map.getInt32ToInt32Field().size());
       assertEquals(30, map.getInt32ToInt32Field().get(1).intValue());
     }
@@ -1535,5 +1588,43 @@ public class TextFormatTest extends TestCase {
               "Tree/descriptor/fieldname did not contain index %d, line %d column %d expected",
               index, line, column));
     }
+  }
+
+  public void testSortMapFields() throws Exception {
+    TestMap message =
+        TestMap.newBuilder()
+            .putStringToInt32Field("cherry", 30)
+            .putStringToInt32Field("banana", 20)
+            .putStringToInt32Field("apple", 10)
+            .putInt32ToStringField(30, "cherry")
+            .putInt32ToStringField(20, "banana")
+            .putInt32ToStringField(10, "apple")
+            .build();
+    String text =
+        "int32_to_string_field {\n"
+            + "  key: 10\n"
+            + "  value: \"apple\"\n"
+            + "}\n"
+            + "int32_to_string_field {\n"
+            + "  key: 20\n"
+            + "  value: \"banana\"\n"
+            + "}\n"
+            + "int32_to_string_field {\n"
+            + "  key: 30\n"
+            + "  value: \"cherry\"\n"
+            + "}\n"
+            + "string_to_int32_field {\n"
+            + "  key: \"apple\"\n"
+            + "  value: 10\n"
+            + "}\n"
+            + "string_to_int32_field {\n"
+            + "  key: \"banana\"\n"
+            + "  value: 20\n"
+            + "}\n"
+            + "string_to_int32_field {\n"
+            + "  key: \"cherry\"\n"
+            + "  value: 30\n"
+            + "}\n";
+    assertEquals(text, TextFormat.printer().printToString(message));
   }
 }

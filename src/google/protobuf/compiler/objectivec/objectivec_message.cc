@@ -50,9 +50,6 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-using internal::WireFormat;
-using internal::WireFormatLite;
-
 namespace {
 struct FieldOrderingByNumber {
   inline bool operator()(const FieldDescriptor* a,
@@ -188,7 +185,7 @@ MessageGenerator::MessageGenerator(const string& root_classname,
         new ExtensionGenerator(class_name_, descriptor_->extension(i)));
   }
 
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+  for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
     OneofGenerator* generator = new OneofGenerator(descriptor_->oneof_decl(i));
     oneof_generators_.emplace_back(generator);
   }
@@ -231,6 +228,30 @@ void MessageGenerator::DetermineForwardDeclarations(std::set<string>* fwd_decls)
 
   for (const auto& generator : nested_message_generators_) {
     generator->DetermineForwardDeclarations(fwd_decls);
+  }
+}
+
+void MessageGenerator::DetermineObjectiveCClassDefinitions(std::set<string>* fwd_decls) {
+  if (!IsMapEntryMessage(descriptor_)) {
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
+      field_generators_.get(fieldDescriptor)
+          .DetermineObjectiveCClassDefinitions(fwd_decls);
+    }
+  }
+
+  for (const auto& generator : extension_generators_) {
+    generator->DetermineObjectiveCClassDefinitions(fwd_decls);
+  }
+
+  for (const auto& generator : nested_message_generators_) {
+    generator->DetermineObjectiveCClassDefinitions(fwd_decls);
+  }
+
+  const Descriptor* containing_descriptor = descriptor_->containing_type();
+  if (containing_descriptor != NULL) {
+    string containing_class = ClassName(containing_descriptor);
+    fwd_decls->insert(ObjCClassDeclaration(containing_class));
   }
 }
 
@@ -313,16 +334,17 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
   }
 
   printer->Print(
-      "$comments$$deprecated_attribute$@interface $classname$ : GPBMessage\n\n",
+      "$comments$$deprecated_attribute$GPB_FINAL @interface $classname$ : GPBMessage\n\n",
       "classname", class_name_,
       "deprecated_attribute", deprecated_attribute_,
       "comments", message_comments);
 
-  std::vector<char> seen_oneofs(descriptor_->oneof_decl_count(), 0);
+  std::vector<char> seen_oneofs(oneof_generators_.size(), 0);
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->containing_oneof() != NULL) {
-      const int oneof_index = field->containing_oneof()->index();
+    const OneofDescriptor *oneof = field->real_containing_oneof();
+    if (oneof) {
+      const int oneof_index = oneof->index();
       if (!seen_oneofs[oneof_index]) {
         seen_oneofs[oneof_index] = 1;
         oneof_generators_[oneof_index]->GeneratePublicCasePropertyDeclaration(
@@ -393,6 +415,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         SortFieldsByStorageSize(descriptor_));
 
     std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+    sorted_extensions.reserve(descriptor_->extension_range_count());
     for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
       sorted_extensions.push_back(descriptor_->extension_range(i));
     }
@@ -421,7 +444,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     field_generators_.SetOneofIndexBase(sizeof_has_storage);
     // sizeof_has_storage needs enough bits for the single fields that aren't in
     // any oneof, and then one int32 for each oneof (to store the field number).
-    sizeof_has_storage += descriptor_->oneof_decl_count();
+    sizeof_has_storage += oneof_generators_.size();
 
     printer->Print(
         "\n"
@@ -457,11 +480,11 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       field_description_type = "GPBMessageFieldDescription";
     }
     if (has_fields) {
+      printer->Indent();
+      printer->Indent();
       printer->Print(
-          "    static $field_description_type$ fields[] = {\n",
+          "static $field_description_type$ fields[] = {\n",
           "field_description_type", field_description_type);
-      printer->Indent();
-      printer->Indent();
       printer->Indent();
       for (int i = 0; i < descriptor_->field_count(); ++i) {
         const FieldGenerator& field_generator =
@@ -474,10 +497,10 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         }
       }
       printer->Outdent();
-      printer->Outdent();
-      printer->Outdent();
       printer->Print(
-          "    };\n");
+          "};\n");
+      printer->Outdent();
+      printer->Outdent();
     }
 
     std::map<string, string> vars;
@@ -492,6 +515,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     }
 
     std::vector<string> init_flags;
+    init_flags.push_back("GPBDescriptorInitializationFlag_UsesClassRefs");
+    init_flags.push_back("GPBDescriptorInitializationFlag_Proto3OptionalKnown");
     if (need_defaults) {
       init_flags.push_back("GPBDescriptorInitializationFlag_FieldsWithDefault");
     }
@@ -511,7 +536,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         "                                    fieldCount:$fields_count$\n"
         "                                   storageSize:sizeof($classname$__storage_)\n"
         "                                         flags:$init_flags$];\n");
-    if (oneof_generators_.size() != 0) {
+    if (!oneof_generators_.empty()) {
       printer->Print(
           "    static const char *oneofs[] = {\n");
       for (const auto& generator : oneof_generators_) {
@@ -542,7 +567,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    [localDescriptor setupExtraTextInfo:extraTextFormatInfo];\n"
           "#endif  // !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS\n");
     }
-    if (sorted_extensions.size() != 0) {
+    if (!sorted_extensions.empty()) {
       printer->Print(
           "    static const GPBExtensionRange ranges[] = {\n");
       for (int i = 0; i < sorted_extensions.size(); i++) {
@@ -556,14 +581,15 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "                                    count:(uint32_t)(sizeof(ranges) / sizeof(GPBExtensionRange))];\n");
     }
     if (descriptor_->containing_type() != NULL) {
-      string parent_class_name = ClassName(descriptor_->containing_type());
+      string containing_class = ClassName(descriptor_->containing_type());
+      string parent_class_ref = ObjCClass(containing_class);
       printer->Print(
-          "    [localDescriptor setupContainingMessageClassName:GPBStringifySymbol($parent_name$)];\n",
-          "parent_name", parent_class_name);
+          "    [localDescriptor setupContainingMessageClass:$parent_class_ref$];\n",
+          "parent_class_ref", parent_class_ref);
     }
     string suffix_added;
     ClassName(descriptor_, &suffix_added);
-    if (suffix_added.size() > 0) {
+    if (!suffix_added.empty()) {
       printer->Print(
           "    [localDescriptor setupMessageClassNameSuffix:@\"$suffix$\"];\n",
           "suffix", suffix_added);

@@ -59,22 +59,25 @@ class DescriptorPool
     {
         $files = new FileDescriptorSet();
         $files->mergeFromString($data);
-        $file = FileDescriptor::buildFromProto($files->getFile()[0]);
 
-        foreach ($file->getMessageType() as $desc) {
-            $this->addDescriptor($desc);
-        }
-        unset($desc);
+        foreach($files->getFile() as $file_proto) {
+            $file = FileDescriptor::buildFromProto($file_proto);
 
-        foreach ($file->getEnumType() as $desc) {
-            $this->addEnumDescriptor($desc);
-        }
-        unset($desc);
+            foreach ($file->getMessageType() as $desc) {
+                $this->addDescriptor($desc);
+            }
+            unset($desc);
 
-        foreach ($file->getMessageType() as $desc) {
-            $this->crossLink($desc);
+            foreach ($file->getEnumType() as $desc) {
+                $this->addEnumDescriptor($desc);
+            }
+            unset($desc);
+
+            foreach ($file->getMessageType() as $desc) {
+                $this->crossLink($desc);
+            }
+            unset($desc);
         }
-        unset($desc);
     }
 
     public function addMessage($name, $klass)
@@ -149,11 +152,22 @@ class DescriptorPool
             switch ($field->getType()) {
                 case GPBType::MESSAGE:
                     $proto = $field->getMessageType();
-                    $field->setMessageType(
-                        $this->getDescriptorByProtoName($proto));
+                    if ($proto[0] == '.') {
+                      $proto = substr($proto, 1);
+                    }
+                    $subdesc = $this->getDescriptorByProtoName($proto);
+                    if (is_null($subdesc)) {
+                        trigger_error(
+                            'proto not added: ' . $proto
+                            . " for " . $desc->getFullName(), E_ERROR);
+                    }
+                    $field->setMessageType($subdesc);
                     break;
                 case GPBType::ENUM:
                     $proto = $field->getEnumType();
+                    if ($proto[0] == '.') {
+                      $proto = substr($proto, 1);
+                    }
                     $field->setEnumType(
                         $this->getEnumDescriptorByProtoName($proto));
                     break;

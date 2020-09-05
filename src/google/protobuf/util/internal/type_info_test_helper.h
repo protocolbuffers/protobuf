@@ -63,7 +63,7 @@ class TypeInfoTestHelper {
   // Creates a TypeInfo object for the given set of descriptors.
   void ResetTypeInfo(const std::vector<const Descriptor*>& descriptors);
 
-  // Convinent overloads.
+  // Convenient overloads.
   void ResetTypeInfo(const Descriptor* descriptor);
   void ResetTypeInfo(const Descriptor* descriptor1,
                      const Descriptor* descriptor2);

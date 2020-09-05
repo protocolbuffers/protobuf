@@ -77,6 +77,10 @@ class MapFieldBaseStub : public MapFieldBase {
                               MapValueRef* val) override {
     return false;
   }
+  bool LookupMapValue(const MapKey& map_key,
+                      MapValueConstRef* val) const override {
+    return false;
+  }
   bool DeleteMapValue(const MapKey& map_key) override { return false; }
   bool EqualIterator(const MapIterator& a,
                      const MapIterator& b) const override {
@@ -99,7 +103,7 @@ class MapFieldBasePrimitiveTest : public ::testing::Test {
  protected:
   typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
   typedef MapField<EntryType, int32, int32, WireFormatLite::TYPE_INT32,
-                   WireFormatLite::TYPE_INT32, false>
+                   WireFormatLite::TYPE_INT32>
       MapFieldType;
 
   MapFieldBasePrimitiveTest() {
@@ -107,8 +111,8 @@ class MapFieldBasePrimitiveTest : public ::testing::Test {
     map_descriptor_ = unittest::TestMap::descriptor()
                           ->FindFieldByName("map_int32_int32")
                           ->message_type();
-    key_descriptor_ = map_descriptor_->FindFieldByName("key");
-    value_descriptor_ = map_descriptor_->FindFieldByName("value");
+    key_descriptor_ = map_descriptor_->map_key();
+    value_descriptor_ = map_descriptor_->map_value();
 
     // Build map field
     map_field_.reset(new MapFieldType);
@@ -203,7 +207,7 @@ class MapFieldStateTest : public testing::TestWithParam<State> {
  protected:
   typedef unittest::TestMap_MapInt32Int32Entry_DoNotUse EntryType;
   typedef MapField<EntryType, int32, int32, WireFormatLite::TYPE_INT32,
-                   WireFormatLite::TYPE_INT32, false>
+                   WireFormatLite::TYPE_INT32>
       MapFieldType;
   MapFieldStateTest() : state_(GetParam()) {
     // Build map field

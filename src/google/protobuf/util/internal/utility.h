@@ -82,8 +82,8 @@ PROTOBUF_EXPORT std::string GetStringOptionOrDefault(
 
 // Returns a boolean value contained in Any type.
 // TODO(skarvaje): Make these utilities dealing with Any types more generic,
-// add more error checking and move to a more public/sharable location so others
-// can use.
+// add more error checking and move to a more public/shareable location so
+// others can use.
 PROTOBUF_EXPORT bool GetBoolFromAny(const google::protobuf::Any& any);
 
 // Returns int64 value contained in Any type.

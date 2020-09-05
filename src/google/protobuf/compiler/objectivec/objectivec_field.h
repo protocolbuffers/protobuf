@@ -66,6 +66,7 @@ class FieldGenerator {
 
   // Exposed for subclasses, should always call it on the parent class also.
   virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
+  virtual void DetermineObjectiveCClassDefinitions(std::set<string>* fwd_decls) const;
 
   // Used during generation, not intended to be extended by subclasses.
   void GenerateFieldDescription(
@@ -95,7 +96,7 @@ class FieldGenerator {
   FieldGenerator(const FieldDescriptor* descriptor, const Options& options);
 
   virtual void FinishInitialization(void);
-  virtual bool WantsHasProperty(void) const = 0;
+  bool WantsHasProperty(void) const;
 
   const FieldDescriptor* descriptor_;
   std::map<string, string> variables_;
@@ -118,7 +119,6 @@ class SingleFieldGenerator : public FieldGenerator {
  protected:
   SingleFieldGenerator(const FieldDescriptor* descriptor,
                        const Options& options);
-  virtual bool WantsHasProperty(void) const;
 };
 
 // Subclass with common support for when the field ends up as an ObjC Object.
@@ -155,7 +155,6 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
   RepeatedFieldGenerator(const FieldDescriptor* descriptor,
                          const Options& options);
   virtual void FinishInitialization(void);
-  virtual bool WantsHasProperty(void) const;
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.

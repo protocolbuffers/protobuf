@@ -40,6 +40,7 @@ import gc
 import operator
 import six
 import struct
+import warnings
 
 try:
   import unittest2 as unittest  #PY26
@@ -68,6 +69,9 @@ from google.protobuf.internal import _parameterized
 
 if not six.PY2:
   long = int  # pylint: disable=redefined-builtin,invalid-name
+
+
+warnings.simplefilter('error', DeprecationWarning)
 
 
 class _MiniDecoder(object):
@@ -1433,12 +1437,16 @@ class Proto2ReflectionTest(unittest.TestCase):
         label=FieldDescriptor.LABEL_OPTIONAL, default_value=0,
         containing_type=None, message_type=None, enum_type=None,
         is_extension=False, extension_scope=None,
-        options=descriptor_pb2.FieldOptions())
+        options=descriptor_pb2.FieldOptions(),
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
     mydescriptor = descriptor.Descriptor(
         name='MyProto', full_name='MyProto', filename='ignored',
         containing_type=None, nested_types=[], enum_types=[],
         fields=[foo_field_descriptor], extensions=[],
-        options=descriptor_pb2.MessageOptions())
+        options=descriptor_pb2.MessageOptions(),
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
     class MyProtoClass(six.with_metaclass(reflection.GeneratedProtocolMessageType, message.Message)):
       DESCRIPTOR = mydescriptor
     myproto_instance = MyProtoClass()
@@ -2805,7 +2813,7 @@ class SerializationTest(unittest.TestCase):
         proto2.MergeFromString(serialized))
 
   def _CheckRaises(self, exc_class, callable_obj, exception):
-    """This method checks if the excpetion type and message are as expected."""
+    """This method checks if the exception type and message are as expected."""
     try:
       callable_obj()
     except exc_class as ex:
@@ -3168,22 +3176,34 @@ class ClassAPITest(unittest.TestCase):
       'C++ implementation requires a call to MakeDescriptor()')
   @testing_refleaks.SkipReferenceLeakChecker('MakeClass is not repeatable')
   def testMakeClassWithNestedDescriptor(self):
-    leaf_desc = descriptor.Descriptor('leaf', 'package.parent.child.leaf', '',
-                                      containing_type=None, fields=[],
-                                      nested_types=[], enum_types=[],
-                                      extensions=[])
-    child_desc = descriptor.Descriptor('child', 'package.parent.child', '',
-                                       containing_type=None, fields=[],
-                                       nested_types=[leaf_desc], enum_types=[],
-                                       extensions=[])
-    sibling_desc = descriptor.Descriptor('sibling', 'package.parent.sibling',
-                                         '', containing_type=None, fields=[],
-                                         nested_types=[], enum_types=[],
-                                         extensions=[])
-    parent_desc = descriptor.Descriptor('parent', 'package.parent', '',
-                                        containing_type=None, fields=[],
-                                        nested_types=[child_desc, sibling_desc],
-                                        enum_types=[], extensions=[])
+    leaf_desc = descriptor.Descriptor(
+        'leaf', 'package.parent.child.leaf', '',
+        containing_type=None, fields=[],
+        nested_types=[], enum_types=[],
+        extensions=[],
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
+    child_desc = descriptor.Descriptor(
+        'child', 'package.parent.child', '',
+        containing_type=None, fields=[],
+        nested_types=[leaf_desc], enum_types=[],
+        extensions=[],
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
+    sibling_desc = descriptor.Descriptor(
+        'sibling', 'package.parent.sibling',
+        '', containing_type=None, fields=[],
+        nested_types=[], enum_types=[],
+        extensions=[],
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
+    parent_desc = descriptor.Descriptor(
+        'parent', 'package.parent', '',
+        containing_type=None, fields=[],
+        nested_types=[child_desc, sibling_desc],
+        enum_types=[], extensions=[],
+        # pylint: disable=protected-access
+        create_key=descriptor._internal_create_key)
     reflection.MakeClass(parent_desc)
 
   def _GetSerializedFileDescriptor(self, name):
@@ -3247,7 +3267,7 @@ class ClassAPITest(unittest.TestCase):
   # conflicting message descriptors.
   def testParsingFlatClassWithExplicitClassDeclaration(self):
     """Test that the generated class can parse a flat message."""
-    # TODO(xiaofeng): This test fails with cpp implemetnation in the call
+    # TODO(xiaofeng): This test fails with cpp implementation in the call
     # of six.with_metaclass(). The other two callsites of with_metaclass
     # in this file are both excluded from cpp test, so it might be expected
     # to fail. Need someone more familiar with the python code to take a
@@ -3305,4 +3325,3 @@ class ClassAPITest(unittest.TestCase):
 
 if __name__ == '__main__':
   unittest.main()
-

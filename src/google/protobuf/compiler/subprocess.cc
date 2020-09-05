@@ -255,8 +255,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   child_handle_ = NULL;
 
   if (exit_code != 0) {
-    *error =
-        strings::Substitute("Plugin failed with status code $0.", exit_code);
+    *error = strings::Substitute("Plugin failed with status code $0.", exit_code);
     return false;
   }
 
@@ -274,7 +273,7 @@ std::string Subprocess::Win32ErrorMessage(DWORD error_code) {
   // WTF?
   FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
                      FORMAT_MESSAGE_IGNORE_INSERTS,
-                 NULL, error_code, 0,
+                 NULL, error_code, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
                  (LPSTR)&message,  // NOT A BUG!
                  0, NULL);
 

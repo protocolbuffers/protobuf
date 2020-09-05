@@ -49,6 +49,7 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
+#include <google/protobuf/stubs/casts.h>
 
 // Do UTF-8 validation on string type in Debug build only
 #ifndef NDEBUG
@@ -155,9 +156,9 @@ class PROTOBUF_EXPORT WireFormatLite {
   }
 
   // Number of bits in a tag which identify the wire type.
-  static const int kTagTypeBits = 3;
+  static constexpr int kTagTypeBits = 3;
   // Mask for those bits.
-  static const uint32 kTagTypeMask = (1 << kTagTypeBits) - 1;
+  static constexpr uint32 kTagTypeMask = (1 << kTagTypeBits) - 1;
 
   // Helper functions for encoding and decoding tags.  (Inlined below and in
   // _inl.h)
@@ -209,9 +210,9 @@ class PROTOBUF_EXPORT WireFormatLite {
   //       required string message = 3;
   //     }
   //   }
-  static const int kMessageSetItemNumber = 1;
-  static const int kMessageSetTypeIdNumber = 2;
-  static const int kMessageSetMessageNumber = 3;
+  static constexpr int kMessageSetItemNumber = 1;
+  static constexpr int kMessageSetTypeIdNumber = 2;
+  static constexpr int kMessageSetMessageNumber = 3;
   static const int kMessageSetItemStartTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
       kMessageSetItemNumber, WireFormatLite::WIRETYPE_START_GROUP);
   static const int kMessageSetItemEndTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
@@ -684,13 +685,13 @@ class PROTOBUF_EXPORT WireFormatLite {
   static size_t EnumSize(const RepeatedField<int>& value);
 
   // These types always have the same size.
-  static const size_t kFixed32Size = 4;
-  static const size_t kFixed64Size = 8;
-  static const size_t kSFixed32Size = 4;
-  static const size_t kSFixed64Size = 8;
-  static const size_t kFloatSize = 4;
-  static const size_t kDoubleSize = 8;
-  static const size_t kBoolSize = 1;
+  static constexpr size_t kFixed32Size = 4;
+  static constexpr size_t kFixed64Size = 8;
+  static constexpr size_t kSFixed32Size = 4;
+  static constexpr size_t kSFixed64Size = 8;
+  static constexpr size_t kFloatSize = 4;
+  static constexpr size_t kDoubleSize = 8;
+  static constexpr size_t kBoolSize = 1;
 
   static inline size_t StringSize(const std::string& value);
   static inline size_t BytesSize(const std::string& value);
@@ -806,39 +807,19 @@ inline size_t WireFormatLite::TagSize(int field_number,
 }
 
 inline uint32 WireFormatLite::EncodeFloat(float value) {
-  union {
-    float f;
-    uint32 i;
-  };
-  f = value;
-  return i;
+  return bit_cast<uint32>(value);
 }
 
 inline float WireFormatLite::DecodeFloat(uint32 value) {
-  union {
-    float f;
-    uint32 i;
-  };
-  i = value;
-  return f;
+  return bit_cast<float>(value);
 }
 
 inline uint64 WireFormatLite::EncodeDouble(double value) {
-  union {
-    double f;
-    uint64 i;
-  };
-  f = value;
-  return i;
+  return bit_cast<uint64>(value);
 }
 
 inline double WireFormatLite::DecodeDouble(uint64 value) {
-  union {
-    double f;
-    uint64 i;
-  };
-  i = value;
-  return f;
+  return bit_cast<double>(value);
 }
 
 // ZigZag Transform:  Encodes signed integers so that they can be

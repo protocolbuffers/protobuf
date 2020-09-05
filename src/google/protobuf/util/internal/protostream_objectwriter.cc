@@ -35,7 +35,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
@@ -43,6 +42,8 @@
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/status.h>
+#include <google/protobuf/stubs/time.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/statusor.h>
 
@@ -334,7 +335,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
       invalid_ = true;
       return;
     }
-    type_url_ = s.ValueOrDie();
+    type_url_ = s.value();
   }
   // Resolve the type url, and report an error if we failed to resolve it.
   StatusOr<const google::protobuf::Type*> resolved_type =
@@ -345,7 +346,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
     return;
   }
   // At this point, type is never null.
-  const google::protobuf::Type* type = resolved_type.ValueOrDie();
+  const google::protobuf::Type* type = resolved_type.value();
 
   well_known_type_render_ = FindTypeRenderer(type_url_);
   if (well_known_type_render_ != nullptr ||
@@ -480,6 +481,7 @@ bool ProtoStreamObjectWriter::Item::InsertMapKeyIfNotPresent(
   return InsertIfNotPresent(map_keys_.get(), std::string(map_key));
 }
 
+
 ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     StringPiece name) {
   if (invalid_depth() > 0) {
@@ -583,7 +585,40 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
   }
 
   const google::protobuf::Field* field = BeginNamed(name, false);
+
   if (field == nullptr) return this;
+
+  // Legacy JSON map is a list of key value pairs. Starts a map entry object.
+  if (options_.use_legacy_json_map_format && name.empty()) {
+    Push(name, IsAny(*field) ? Item::ANY : Item::MESSAGE, false, false);
+    return this;
+  }
+
+  if (IsMap(*field)) {
+    // Begin a map. A map is triggered by a StartObject() call if the current
+    // field has a map type.
+    // A map type is always repeated, hence set is_list to true.
+    // Render
+    // "<name>": [
+    Push(name, Item::MAP, false, true);
+    return this;
+  }
+
+  if (options_.disable_implicit_message_list) {
+    // If the incoming object is repeated, the top-level object on stack should
+    // be list. Report an error otherwise.
+    if (IsRepeated(*field) && !current_->is_list()) {
+      IncrementInvalidDepth();
+
+      if (!options_.suppress_implicit_message_list_error) {
+        InvalidValue(
+            field->name(),
+            "Starting an object in a repeated field but the parent object "
+            "is not a list");
+      }
+      return this;
+    }
+  }
 
   if (IsStruct(*field)) {
     // Start a struct object.
@@ -605,22 +640,6 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     Push(name, Item::MESSAGE, false, false);
     Push("struct_value", Item::MESSAGE, true, false);
     Push("fields", Item::MAP, true, true);
-    return this;
-  }
-
-  // Legacy JSON map is a list of key value pairs. Starts a map entry object.
-  if (options_.use_legacy_json_map_format && name.empty()) {
-    Push(name, IsAny(*field) ? Item::ANY : Item::MESSAGE, false, false);
-    return this;
-  }
-
-  if (IsMap(*field)) {
-    // Begin a map. A map is triggered by a StartObject() call if the current
-    // field has a map type.
-    // A map type is always repeated, hence set is_list to true.
-    // Render
-    // "<name>": [
-    Push(name, Item::MAP, false, true);
     return this;
   }
 
@@ -647,6 +666,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndObject() {
 
   return this;
 }
+
 
 ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
     StringPiece name) {
@@ -796,6 +816,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
 
   // name is not empty
   const google::protobuf::Field* field = Lookup(name);
+
   if (field == nullptr) {
     IncrementInvalidDepth();
     return this;
@@ -893,7 +914,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
-              DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
+              DataPiece(SimpleDtoa(int_value.value()), true));
           return Status();
         }
       }
@@ -906,7 +927,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
-              DataPiece(SimpleDtoa(int_value.ValueOrDie()), true));
+              DataPiece(SimpleDtoa(int_value.value()), true));
           return Status();
         }
       }
@@ -920,8 +941,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         StatusOr<int64> int_value = data.ToInt64();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
-              "string_value",
-              DataPiece(StrCat(int_value.ValueOrDie()), true));
+              "string_value", DataPiece(StrCat(int_value.value()), true));
           return Status();
         }
       }
@@ -935,8 +955,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         StatusOr<uint64> int_value = data.ToUint64();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
-              "string_value",
-              DataPiece(StrCat(int_value.ValueOrDie()), true));
+              "string_value", DataPiece(StrCat(int_value.value()), true));
           return Status();
         }
       }
@@ -949,7 +968,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         if (float_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
-              DataPiece(SimpleDtoa(float_value.ValueOrDie()), true));
+              DataPiece(SimpleDtoa(float_value.value()), true));
           return Status();
         }
       }
@@ -962,7 +981,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
         if (double_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
-              DataPiece(SimpleDtoa(double_value.ValueOrDie()), true));
+              DataPiece(SimpleDtoa(double_value.value()), true));
           return Status();
         }
       }
@@ -1217,7 +1236,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
 // Map of functions that are responsible for rendering well known type
 // represented by the key.
 std::unordered_map<std::string, ProtoStreamObjectWriter::TypeRenderer>*
-    ProtoStreamObjectWriter::renderers_ = NULL;
+    ProtoStreamObjectWriter::renderers_ = nullptr;
 PROTOBUF_NAMESPACE_ID::internal::once_flag writer_renderers_init_;
 
 void ProtoStreamObjectWriter::InitRendererMap() {
@@ -1272,7 +1291,7 @@ void ProtoStreamObjectWriter::InitRendererMap() {
 
 void ProtoStreamObjectWriter::DeleteRendererMap() {
   delete ProtoStreamObjectWriter::renderers_;
-  renderers_ = NULL;
+  renderers_ = nullptr;
 }
 
 ProtoStreamObjectWriter::TypeRenderer*
@@ -1296,9 +1315,9 @@ bool ProtoStreamObjectWriter::ValidMapKey(StringPiece unnormalized_name) {
   return true;
 }
 
-void ProtoStreamObjectWriter::Push(StringPiece name,
-                                   Item::ItemType item_type,
-                                   bool is_placeholder, bool is_list) {
+void ProtoStreamObjectWriter::Push(
+    StringPiece name, Item::ItemType item_type, bool is_placeholder,
+    bool is_list) {
   is_list ? ProtoWriter::StartList(name) : ProtoWriter::StartObject(name);
 
   // invalid_depth == 0 means it is a successful StartObject or StartList.

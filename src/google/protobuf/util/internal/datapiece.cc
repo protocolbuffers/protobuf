@@ -37,6 +37,7 @@
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/utility.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathutil.h>
 
@@ -173,7 +174,7 @@ StatusOr<double> DataPiece::ToDouble() const {
     if (str_ == "-Infinity") return -std::numeric_limits<double>::infinity();
     if (str_ == "NaN") return std::numeric_limits<double>::quiet_NaN();
     StatusOr<double> value = StringToNumber<double>(safe_strtod);
-    if (value.ok() && !std::isfinite(value.ValueOrDie())) {
+    if (value.ok() && !std::isfinite(value.value())) {
       // safe_strtod converts out-of-range values to +inf/-inf, but we want
       // to report them as errors.
       return InvalidArgument(StrCat("\"", str_, "\""));
@@ -289,7 +290,7 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     StatusOr<int32> int_value = ToInt32();
     if (int_value.ok()) {
       if (const google::protobuf::EnumValue* enum_value =
-              FindEnumValueByNumberOrNull(enum_type, int_value.ValueOrDie())) {
+              FindEnumValueByNumberOrNull(enum_type, int_value.value())) {
         return enum_value->number();
       }
     }
@@ -317,7 +318,9 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     // If ignore_unknown_enum_values is true an unknown enum value is ignored.
     if (ignore_unknown_enum_values) {
       *is_unknown_enum_value = true;
-      return enum_type->enumvalue(0).number();
+      if (enum_type->enumvalue_size() > 0) {
+        return enum_type->enumvalue(0).number();
+      }
     }
   } else {
     // We don't need to check whether the value is actually declared in the
@@ -382,9 +385,8 @@ bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {
   if (Base64Unescape(src, dest)) {
     if (use_strict_base64_decoding_) {
       std::string encoded;
-      Base64Escape(
-          reinterpret_cast<const unsigned char*>(dest->data()), dest->length(),
-          &encoded, false);
+      Base64Escape(reinterpret_cast<const unsigned char*>(dest->data()),
+                         dest->length(), &encoded, false);
       StringPiece src_no_padding = StringPiece(src).substr(
           0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());

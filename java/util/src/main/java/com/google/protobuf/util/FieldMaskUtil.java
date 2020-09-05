@@ -34,6 +34,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.primitives.Ints;
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
@@ -49,7 +50,7 @@ import java.util.List;
 /**
  * Utility helper functions to work with {@link com.google.protobuf.FieldMask}.
  */
-public class FieldMaskUtil {
+public final class FieldMaskUtil {
   private static final String FIELD_PATH_SEPARATOR = ",";
   private static final String FIELD_PATH_SEPARATOR_REGEX = ",";
   private static final String FIELD_SEPARATOR_REGEX = "\\.";
@@ -83,7 +84,7 @@ public class FieldMaskUtil {
    */
   public static FieldMask fromString(String value) {
     // TODO(xiaofeng): Consider using com.google.common.base.Splitter here instead.
-    return fromStringList(null, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
+    return fromStringList(Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
 
   /**
@@ -103,14 +104,36 @@ public class FieldMaskUtil {
    */
   // TODO(xiaofeng): Consider renaming fromStrings()
   public static FieldMask fromStringList(Class<? extends Message> type, Iterable<String> paths) {
+    return fromStringList(Internal.getDefaultInstance(type).getDescriptorForType(), paths);
+  }
+
+  /**
+   * Constructs a FieldMask for a list of field paths in a certain type.
+   *
+   * @throws IllegalArgumentException if any of the field path is not valid.
+   */
+  public static FieldMask fromStringList(Descriptor descriptor, Iterable<String> paths) {
+    return fromStringList(Optional.of(descriptor), paths);
+  }
+
+  /**
+   * Constructs a FieldMask for a list of field paths in a certain type. Does not validate the given
+   * paths.
+   */
+  public static FieldMask fromStringList(Iterable<String> paths) {
+    return fromStringList(Optional.<Descriptor>absent(), paths);
+  }
+
+  private static FieldMask fromStringList(Optional<Descriptor> descriptor, Iterable<String> paths) {
     FieldMask.Builder builder = FieldMask.newBuilder();
     for (String path : paths) {
       if (path.isEmpty()) {
         // Ignore empty field paths.
         continue;
       }
-      if (type != null && !isValid(type, path)) {
-        throw new IllegalArgumentException(path + " is not a valid path for " + type);
+      if (descriptor.isPresent() && !isValid(descriptor.get(), path)) {
+        throw new IllegalArgumentException(
+            path + " is not a valid path for " + descriptor.get().getFullName());
       }
       builder.addPaths(path);
     }
@@ -249,6 +272,16 @@ public class FieldMaskUtil {
     FieldMaskTree maskTree = new FieldMaskTree(firstMask).mergeFromFieldMask(secondMask);
     for (FieldMask mask : otherMasks) {
       maskTree.mergeFromFieldMask(mask);
+    }
+    return maskTree.toFieldMask();
+  }
+
+  /** Subtracts {@code secondMask} and {@code otherMasks} from {@code firstMask}. */
+  public static FieldMask subtract(
+      FieldMask firstMask, FieldMask secondMask, FieldMask... otherMasks) {
+    FieldMaskTree maskTree = new FieldMaskTree(firstMask).removeFromFieldMask(secondMask);
+    for (FieldMask mask : otherMasks) {
+      maskTree.removeFromFieldMask(mask);
     }
     return maskTree.toFieldMask();
   }

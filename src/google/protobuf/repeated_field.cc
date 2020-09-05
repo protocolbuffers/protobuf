@@ -55,8 +55,8 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
     return &rep_->elements[current_size_];
   }
   Rep* old_rep = rep_;
-  Arena* arena = GetArenaNoVirtual();
-  new_size = std::max(kMinRepeatedFieldAllocationSize,
+  Arena* arena = GetArena();
+  new_size = std::max(internal::kRepeatedFieldLowerClampLimit,
                       std::max(total_size_ * 2, new_size));
   GOOGLE_CHECK_LE(new_size, (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
                          sizeof(old_rep->elements[0]))

@@ -59,11 +59,12 @@ ArenaImpl::ThreadCache& ArenaImpl::thread_cache() {
 }
 #elif defined(PROTOBUF_USE_DLLS)
 ArenaImpl::ThreadCache& ArenaImpl::thread_cache() {
-  static GOOGLE_THREAD_LOCAL ThreadCache thread_cache_ = {-1, NULL};
+  static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_ = {-1, NULL};
   return thread_cache_;
 }
 #else
-GOOGLE_THREAD_LOCAL ArenaImpl::ThreadCache ArenaImpl::thread_cache_ = {-1, NULL};
+PROTOBUF_THREAD_LOCAL ArenaImpl::ThreadCache ArenaImpl::thread_cache_ = {-1,
+                                                                         NULL};
 #endif
 
 void ArenaImpl::Init() {
@@ -165,27 +166,19 @@ void ArenaImpl::AddCleanup(void* elem, void (*cleanup)(void*)) {
 
 PROTOBUF_NOINLINE
 void* ArenaImpl::AllocateAlignedFallback(size_t n) {
-  return GetSerialArena()->AllocateAligned(n);
+  return GetSerialArenaFallback(&thread_cache())->AllocateAligned(n);
 }
 
 PROTOBUF_NOINLINE
 void* ArenaImpl::AllocateAlignedAndAddCleanupFallback(size_t n,
                                                       void (*cleanup)(void*)) {
-  return GetSerialArena()->AllocateAlignedAndAddCleanup(n, cleanup);
+  return GetSerialArenaFallback(
+      &thread_cache())->AllocateAlignedAndAddCleanup(n, cleanup);
 }
 
 PROTOBUF_NOINLINE
 void ArenaImpl::AddCleanupFallback(void* elem, void (*cleanup)(void*)) {
-  GetSerialArena()->AddCleanup(elem, cleanup);
-}
-
-ArenaImpl::SerialArena* ArenaImpl::GetSerialArena() {
-  SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-    return arena;
-  } else {
-    return GetSerialArenaFallback(&thread_cache());
-  }
+  GetSerialArenaFallback(&thread_cache())->AddCleanup(elem, cleanup);
 }
 
 PROTOBUF_NOINLINE

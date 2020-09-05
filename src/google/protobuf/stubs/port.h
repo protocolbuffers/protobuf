@@ -117,6 +117,8 @@
 namespace google {
 namespace protobuf {
 
+using ConstStringParam = const std::string &;
+
 typedef unsigned int uint;
 
 typedef int8_t int8;
@@ -223,12 +225,6 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
         && (__clang_major__ == 3 && __clang_minor__ == 8) \
         && (__clang_patchlevel__ < 275480))
 # define GOOGLE_PROTOBUF_USE_PORTABLE_LOG2
-#endif
-
-#if defined(_MSC_VER)
-#define GOOGLE_THREAD_LOCAL __declspec(thread)
-#else
-#define GOOGLE_THREAD_LOCAL __thread
 #endif
 
 // The following guarantees declaration of the byte swap functions.
