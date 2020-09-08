@@ -1054,6 +1054,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             "       s->data(), static_cast<int>(s->size()), "
             "::$proto_ns$::internal::"
             "WireFormatLite::PARSE, \"$1$\");\n"
+            "#else\n"
+            "    (void) s;\n"
             "#endif\n"
             "    return true;\n"
             " }\n",
@@ -1081,6 +1083,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             "       s->data(), static_cast<int>(s->size()), "
             "::$proto_ns$::internal::"
             "WireFormatLite::PARSE, \"$1$\");\n"
+            "#else\n"
+            "    (void) s;\n"
             "#endif\n"
             "    return true;\n"
             " }\n",
