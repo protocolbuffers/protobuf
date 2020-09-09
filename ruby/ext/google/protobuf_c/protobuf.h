@@ -455,25 +455,6 @@ upb_arena *Arena_get(VALUE arena);
 extern rb_data_type_t Message_type;
 
 VALUE build_class_from_descriptor(VALUE descriptor);
-void* Message_data(void* msg);
-void Message_mark(void* self);
-void Message_free(void* self);
-VALUE Message_alloc(VALUE klass);
-VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self);
-VALUE Message_initialize(int argc, VALUE* argv, VALUE _self);
-VALUE Message_dup(VALUE _self);
-VALUE Message_deep_copy(VALUE _self);
-VALUE Message_eq(VALUE _self, VALUE _other);
-VALUE Message_hash(VALUE _self);
-VALUE Message_inspect(VALUE _self);
-VALUE Message_to_h(VALUE _self);
-VALUE Message_index(VALUE _self, VALUE field_name);
-VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value);
-VALUE Message_descriptor(VALUE klass);
-VALUE Message_decode(VALUE klass, VALUE data);
-VALUE Message_encode(VALUE klass, VALUE msg_rb);
-VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass);
-VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
 
 VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);

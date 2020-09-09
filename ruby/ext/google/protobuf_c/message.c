@@ -28,8 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "protobuf.h"
+#include "message.h"
+
 #include "convert.h"
+#include "map.h"
+#include "protobuf.h"
+
+static VALUE initialize_rb_class_with_no_args(VALUE klass) {
+    return rb_funcall(klass, rb_intern("new"), 0);
+}
 
 // -----------------------------------------------------------------------------
 // Class/module creation from msgdefs and enumdefs, respectively.
@@ -610,6 +617,7 @@ VALUE Message_hash(VALUE _self) {
 
   return INT2FIX(h);
 }
+#endif
 
 /*
  * call-seq:
@@ -635,7 +643,12 @@ VALUE Message_inspect(VALUE _self) {
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE field_val = layout_get(layout, storage, field);
+    // OPT: this would be more efficient if we didn't create Ruby objects for
+    // the whole tree. But to maintain backward-compatibility, we would need to
+    // make sure we are printing all values in the same way that #inspect
+    // would.
+    VALUE field_val = return Convert_UpbToRuby(upb_msg_get(self->msg, f),
+                                               TypeInfo_get(f), self->arena);
 
     if (!first) {
       str = rb_str_cat2(str, ", ");
@@ -653,68 +666,85 @@ VALUE Message_inspect(VALUE _self) {
   return str;
 }
 
+static VALUE RepeatedField_CreateArray(const upb_array* arr,
+                                       const upb_fielddef* f) {
+  int size = upb_array_size(arr);
+  VALUE ary = rb_ary_new2(size);
+  int i;
+
+  for (i = 0; i < size; i++) {
+    upb_msgval msgval = upb_array_get(arr, i);
+    VALUE val;
+
+    if (upb_fielddef_issubmsg(f)) {
+      val = Message_CreateHash(msgval.msg_val, upb_fielddef_msgsubdef(f));
+    } else {
+      val = Convert_UpbToRuby(msgval, TypeInfo_get(f), Qnil);
+    }
+
+    rb_ary_push(ary, val);
+  }
+
+  return ary;
+}
+
+VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
+  VALUE hash = rb_hash_new();
+  upb_msg_field_iter it;
+  bool is_proto2;
+
+  // We currently have a few behaviors that are specific to proto2.
+  // This is unfortunate, we should key behaviors off field attributes (like
+  // whether a field has presence), not proto2 vs. proto3. We should see if we
+  // can change this without breaking users.
+  is_proto2 = upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2;
+
+  for (upb_msg_field_begin(&it, m); !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    const upb_fielddef* field = upb_msg_iter_field(&it);
+    upb_msgval msgval;
+    VALUE msg_value;
+    VALUE msg_key;
+
+    // Do not include fields that are not present (oneof or optional fields).
+    if (is_proto2 && upb_fielddef_haspresence(field) &&
+        !upb_msg_has(msg, field)) {
+      continue;
+    }
+
+    msg_key = ID2SYM(rb_intern(upb_fielddef_name(field)));
+    msgval = upb_msg_get(msg, field);
+
+    if (upb_fielddef_ismap(field)) {
+      msg_value = Map_CreateHash(msgval.map_val, field);
+    } else if (upb_fielddef_isseq(field)) {
+      if (is_proto2 && upb_array_size(msgval.array_val) == 0) {
+        continue;
+      }
+      msg_value = RepeatedField_CreateArray(msgval.array_val, field);
+    } else if (upb_fielddef_issubmsg(field)) {
+      msg_value =
+          Message_CreateHash(msgval.msg_val, upb_fielddef_msgsubdef(field));
+    } else {
+      msg_value = Convert_UpbToRuby(msgval, TypeInfo_get(field), Qnil);
+    }
+
+    rb_hash_aset(hash, msg_key, msg_value);
+  }
+}
+
 /*
  * call-seq:
  *     Message.to_h => {}
  *
  * Returns the message as a Ruby Hash object, with keys as symbols.
  */
-VALUE Message_to_h(VALUE _self) {
+static VALUE Message_to_h(VALUE _self) {
   Message* self;
-  VALUE hash = rb_hash_new();
-  upb_msg_field_iter it;
-  bool is_proto2;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
 
-  // We currently have a few behaviors that are specific to proto2.
-  // This is unfortunate, we should key behaviors off field attributes (like
-  // whether a field has presence), not proto2 vs. proto3. We should see if we
-  // can change this without breaking users.
-  is_proto2 =
-      upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2;
-
-  for (upb_msg_field_begin(&it, self->descriptor->msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE msg_value;
-    VALUE msg_key;
-
-    // Do not include fields that are not present (oneof or optional fields).
-    if (is_proto2 && upb_fielddef_haspresence(field) &&
-        !layout_has(self->descriptor->layout, Message_data(self), field)) {
-      continue;
-    }
-
-    msg_value = layout_get(self->descriptor->layout, Message_data(self), field);
-    msg_key = ID2SYM(rb_intern(upb_fielddef_name(field)));
-    if (is_map_field(field)) {
-      msg_value = Map_to_h(msg_value);
-    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      msg_value = RepeatedField_to_ary(msg_value);
-      if (is_proto2 && RARRAY_LEN(msg_value) == 0) {
-        continue;
-      }
-
-      if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
-        int i;
-        for (i = 0; i < RARRAY_LEN(msg_value); i++) {
-          VALUE elem = rb_ary_entry(msg_value, i);
-          rb_ary_store(msg_value, i, Message_to_h(elem));
-        }
-      }
-
-    } else if (msg_value != Qnil &&
-               upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
-      msg_value = Message_to_h(msg_value);
-    }
-    rb_hash_aset(hash, msg_key, msg_value);
-  }
-  return hash;
+  return Message_CreateHash(self->msg, self->descriptor->msgdef);
 }
-
-
-#endif
 
 /*
  * call-seq:
@@ -845,7 +875,7 @@ VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   msg_rb = initialize_rb_class_with_no_args(klass);
   TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
 
-  upb_status_init(&status);
+  upb_status_clear(&status);
   if (!upb_json_decode(RSTRING_PTR(data), RSTRING_LEN(data), msg->msg,
                        msg->descriptor->msgdef, pool->symtab,
                        options, Arena_get(msg->arena), &status)) {
