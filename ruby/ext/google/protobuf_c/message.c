@@ -592,6 +592,7 @@ VALUE Message_eq(VALUE _self, VALUE _other) {
   }
   return Qtrue;
 }
+#endif
 
 /*
  * call-seq:
@@ -601,9 +602,9 @@ VALUE Message_eq(VALUE _self, VALUE _other) {
  */
 VALUE Message_hash(VALUE _self) {
   Message* self;
+  upb_msg_field_iter it;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
 
-  upb_msg_field_iter it;
   st_index_t h = rb_hash_start(0);
   VALUE hash_sym = rb_intern("hash");
   for (upb_msg_field_begin(&it, layout->msgdef);
@@ -617,7 +618,6 @@ VALUE Message_hash(VALUE _self) {
 
   return INT2FIX(h);
 }
-#endif
 
 /*
  * call-seq:
@@ -629,26 +629,24 @@ VALUE Message_hash(VALUE _self) {
  */
 VALUE Message_inspect(VALUE _self) {
   Message* self;
-  VALUE str;
+  VALUE str = rb_str_new2("");
+  upb_msg_field_iter it;
+  bool first = true;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
 
   str = rb_str_new2("<");
   str = rb_str_append(str, rb_str_new2(rb_class2name(CLASS_OF(_self))));
   str = rb_str_cat2(str, ": ");
-  VALUE str = rb_str_new2("");
 
-  upb_msg_field_iter it;
-  bool first = true;
-  for (upb_msg_field_begin(&it, layout->msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
+  for (upb_msg_field_begin(&it, self->descriptor->msgdef);
+       !upb_msg_field_done(&it); upb_msg_field_next(&it)) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     // OPT: this would be more efficient if we didn't create Ruby objects for
     // the whole tree. But to maintain backward-compatibility, we would need to
     // make sure we are printing all values in the same way that #inspect
     // would.
-    VALUE field_val = return Convert_UpbToRuby(upb_msg_get(self->msg, f),
-                                               TypeInfo_get(f), self->arena);
+    VALUE field_val = Convert_UpbToRuby(upb_msg_get(self->msg, field),
+                                        TypeInfo_get(field), self->arena);
 
     if (!first) {
       str = rb_str_cat2(str, ", ");
@@ -661,7 +659,6 @@ VALUE Message_inspect(VALUE _self) {
     str = rb_str_append(str, rb_funcall(field_val, rb_intern("inspect"), 0));
   }
 
-  return str;
   str = rb_str_cat2(str, ">");
   return str;
 }
