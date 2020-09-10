@@ -83,6 +83,6 @@ static void BM_SerializeDescriptor(benchmark::State& state) {
     }
     total += size;
   }
-  state.SetBytesProcessed(state.iterations() * descriptor.size);
+  state.SetBytesProcessed(total);
 }
 BENCHMARK(BM_SerializeDescriptor);
