@@ -4252,7 +4252,20 @@ static bool ExistingFileMatchesProto(const FileDescriptor* existing_file,
         existing_file->SyntaxName(existing_file->syntax()));
   }
 
-  return existing_proto.SerializeAsString() == proto.SerializeAsString();
+  const std::string existing_proto_str = existing_proto.SerializeAsString();
+  const std::string proto_str = proto.SerializeAsString();
+  if (existing_proto_str == proto_str) {
+    return true;
+  }
+  // Second attempt. It is possible that after loading initial descriptor we've registered some
+  // extensions, and result of parsing the same .proto file will be different (initially unknown
+  // extension options was saved as unknown fields).
+  if (existing_proto.ParseFromArray(existing_proto_str.data(), existing_proto_str.length())) {
+    if (existing_proto.SerializeAsString() == proto_str) {
+      return true;
+    }
+  }
+  return false;
 }
 
 const FileDescriptor* DescriptorBuilder::BuildFile(
