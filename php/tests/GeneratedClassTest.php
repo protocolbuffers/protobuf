@@ -1530,6 +1530,148 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test equality
+    #########################################################
+
+    public function testShallowEquality()
+    {
+        $m1 = new TestMessage([
+            'optional_int32' => -42,
+            'optional_int64' => -43,
+            'optional_uint32' => 42,
+            'optional_uint64' => 43,
+            'optional_sint32' => -44,
+            'optional_sint64' => -45,
+            'optional_fixed32' => 46,
+            'optional_fixed64' => 47,
+            'optional_sfixed32' => -46,
+            'optional_sfixed64' => -47,
+            'optional_float' => 1.5,
+            'optional_double' => 1.6,
+            'optional_bool' => true,
+            'optional_string' => 'a',
+            'optional_bytes' => 'bbbb',
+            'optional_enum' => TestEnum::ONE,
+            ]);
+        $data = $m1->serializeToString();
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $this->assertTrue($m1 == $m2);
+
+        $m1->setOptionalInt32(1234);
+        $this->assertTrue($m1 != $m2);
+    }
+
+    public function testDeepEquality()
+    {
+        $m1 = new TestMessage([
+            'optional_int32' => -42,
+            'optional_int64' => -43,
+            'optional_uint32' => 42,
+            'optional_uint64' => 43,
+            'optional_sint32' => -44,
+            'optional_sint64' => -45,
+            'optional_fixed32' => 46,
+            'optional_fixed64' => 47,
+            'optional_sfixed32' => -46,
+            'optional_sfixed64' => -47,
+            'optional_float' => 1.5,
+            'optional_double' => 1.6,
+            'optional_bool' => true,
+            'optional_string' => 'a',
+            'optional_bytes' => 'bbbb',
+            'optional_enum' => TestEnum::ONE,
+            'optional_message' => new Sub([
+                'a' => 33
+            ]),
+            'repeated_int32' => [-42, -52],
+            'repeated_int64' => [-43, -53],
+            'repeated_uint32' => [42, 52],
+            'repeated_uint64' => [43, 53],
+            'repeated_sint32' => [-44, -54],
+            'repeated_sint64' => [-45, -55],
+            'repeated_fixed32' => [46, 56],
+            'repeated_fixed64' => [47, 57],
+            'repeated_sfixed32' => [-46, -56],
+            'repeated_sfixed64' => [-47, -57],
+            'repeated_float' => [1.5, 2.5],
+            'repeated_double' => [1.6, 2.6],
+            'repeated_bool' => [true, false],
+            'repeated_string' => ['a', 'c'],
+            'repeated_bytes' => ['bbbb', 'dddd'],
+            'repeated_enum' => [TestEnum::ZERO, TestEnum::ONE],
+            'repeated_message' => [new Sub(['a' => 34]),
+                                   new Sub(['a' => 35])],
+            'map_int32_int32' => [-62 => -62],
+            'map_int64_int64' => [-63 => -63],
+            'map_uint32_uint32' => [62 => 62],
+            'map_uint64_uint64' => [63 => 63],
+            'map_sint32_sint32' => [-64 => -64],
+            'map_sint64_sint64' => [-65 => -65],
+            'map_fixed32_fixed32' => [66 => 66],
+            'map_fixed64_fixed64' => [67 => 67],
+            'map_sfixed32_sfixed32' => [-68 => -68],
+            'map_sfixed64_sfixed64' => [-69 => -69],
+            'map_int32_float' => [1 => 3.5],
+            'map_int32_double' => [1 => 3.6],
+            'map_bool_bool' => [true => true],
+            'map_string_string' => ['e' => 'e'],
+            'map_int32_bytes' => [1 => 'ffff'],
+            'map_int32_enum' => [1 => TestEnum::ONE],
+            'map_int32_message' => [1 => new Sub(['a' => 36])],
+        ]);
+        $data = $m1->serializeToString();
+
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $this->assertTrue($m1 == $m2);
+
+        # Nested sub-message is checked.
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $m2->getOptionalMessage()->setA(1234);
+        $this->assertTrue($m1 != $m2);
+
+        # Repeated field element is checked.
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $m2->getRepeatedInt32()[0] = 1234;
+        $this->assertTrue($m1 != $m2);
+
+        # Repeated field length is checked.
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $m2->getRepeatedInt32()[] = 1234;
+        $this->assertTrue($m1 != $m2);
+
+        # SubMessage inside repeated field is checked.
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $m2->getRepeatedMessage()[0]->setA(1234);
+        $this->assertTrue($m1 != $m2);
+
+        # Map value is checked.
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $m2->getMapInt32Int32()[-62] = 1234;
+        $this->assertTrue($m1 != $m2);
+
+        # Map size is checked.
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $m2->getMapInt32Int32()[1234] = 1234;
+        $this->assertTrue($m1 != $m2);
+
+        # SubMessage inside map field is checked.
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $m2->getMapInt32Message()[1]->setA(1234);
+        $this->assertTrue($m1 != $m2);
+
+        # TODO: what about unknown fields?
+    }
+
+    #########################################################
     # Test no segfault when error happens
     #########################################################
 

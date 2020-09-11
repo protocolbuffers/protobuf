@@ -108,6 +108,144 @@ static const upb_fielddef *get_field(Message *msg, PROTO_STR *member) {
   return f;
 }
 
+static bool MessageEq(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m);
+
+/**
+ * ValueEq()()
+ */
+static bool ValueEq(upb_msgval val1, upb_msgval val2, upb_fieldtype_t type,
+                    const upb_msgdef *m) {
+  switch (type) {
+    case UPB_TYPE_BOOL:
+      return val1.bool_val == val2.bool_val;
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_ENUM:
+      return val1.int32_val == val2.int32_val;
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT64:
+      return val1.int64_val == val2.int64_val;
+    case UPB_TYPE_FLOAT:
+      return val1.float_val == val2.float_val;
+    case UPB_TYPE_DOUBLE:
+      return val1.double_val == val2.double_val;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      return val1.str_val.size == val2.str_val.size &&
+          memcmp(val1.str_val.data, val2.str_val.data, val1.str_val.size) == 0;
+    case UPB_TYPE_MESSAGE:
+      return MessageEq(val1.msg_val, val2.msg_val, m);
+    default:
+      return false;
+  }
+}
+
+/**
+ * MapEq()
+ */
+static bool MapEq(const upb_map *m1, const upb_map *m2,
+                  upb_fieldtype_t key_type, upb_fieldtype_t val_type,
+                  const upb_msgdef *m) {
+  size_t iter = UPB_MAP_BEGIN;
+
+  if ((m1 == NULL) != (m2 == NULL)) return false;
+  if (m1 == NULL) return true;
+  if (upb_map_size(m1) != upb_map_size(m2)) return false;
+
+  while (upb_mapiter_next(m1, &iter)) {
+    upb_msgval key = upb_mapiter_key(m1, iter);
+    upb_msgval val1 = upb_mapiter_value(m1, iter);
+    upb_msgval val2;
+
+    if (!upb_map_get(m2, key, &val2)) return false;
+    if (!ValueEq(val1, val2, val_type, m)) return false;
+  }
+
+  return true;
+}
+
+/**
+ * ArrayEq()
+ */
+static bool ArrayEq(const upb_array *a1, const upb_array *a2,
+                    upb_fieldtype_t type, const upb_msgdef *m) {
+  size_t i;
+  size_t n;
+
+  if ((a1 == NULL) != (a2 == NULL)) return false;
+  if (a1 == NULL) return true;
+
+  n = upb_array_size(a1);
+  if (n != upb_array_size(a2)) return false;
+
+  for (i = 0; i < n; i++) {
+    upb_msgval val1 = upb_array_get(a1, i);
+    upb_msgval val2 = upb_array_get(a2, i);
+    if (!ValueEq(val1, val2, type, m)) return false;
+  }
+
+  return true;
+}
+
+/**
+ * MessageEq()
+ */
+static bool MessageEq(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m) {
+  upb_msg_field_iter i;
+
+  for(upb_msg_field_begin(&i, m);
+      !upb_msg_field_done(&i);
+      upb_msg_field_next(&i)) {
+    const upb_fielddef *f = upb_msg_iter_field(&i);
+    upb_msgval val1 = upb_msg_get(m1, f);
+    upb_msgval val2 = upb_msg_get(m2, f);
+    upb_fieldtype_t type = upb_fielddef_type(f);
+    const upb_msgdef *sub_m = upb_fielddef_msgsubdef(f);
+
+    if (upb_fielddef_haspresence(f)) {
+      if (upb_msg_has(m1, f) != upb_msg_has(m2, f)) {
+        return false;
+      }
+      if (!upb_msg_has(m1, f)) continue;
+    }
+
+    if (upb_fielddef_ismap(f)) {
+      const upb_fielddef *key_f = upb_msgdef_itof(sub_m, 1);
+      const upb_fielddef *val_f = upb_msgdef_itof(sub_m, 2);
+      upb_fieldtype_t key_type = upb_fielddef_type(key_f);
+      upb_fieldtype_t val_type = upb_fielddef_type(val_f);
+      const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
+      if (!MapEq(val1.map_val, val2.map_val, key_type, val_type, val_m)) {
+        return false;
+      }
+    } else if (upb_fielddef_isseq(f)) {
+      if (!ArrayEq(val1.array_val, val2.array_val, type, sub_m)) return false;
+    } else {
+      if (!ValueEq(val1, val2, type, sub_m)) return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Message_compare_objects()
+ *
+ * Object handler for comparing two message objects. Called whenever PHP code
+ * does:
+ *
+ *   $m1 == $m2
+ */
+static int Message_compare_objects(zval *m1, zval *m2) {
+  Message* intern1 = (Message*)Z_OBJ_P(m1);
+  Message* intern2 = (Message*)Z_OBJ_P(m2);
+  const upb_msgdef *m = intern1->desc->msgdef;
+
+  if (intern2->desc->msgdef != m) return 1;
+
+  return MessageEq(intern1->msg, intern2->msg, m) ? 0 : 1;
+}
+
 /**
  * Message_has_property()
  *
@@ -935,6 +1073,7 @@ void Message_ModuleInit() {
 
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = Message_dtor;
+  h->compare_objects = Message_compare_objects;
   h->read_property = Message_read_property;
   h->write_property = Message_write_property;
   h->has_property = Message_has_property;
