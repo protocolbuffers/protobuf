@@ -15,12 +15,12 @@
 UPB_NOINLINE
 static size_t encode_varint64(uint64_t val, char *buf) {
   size_t i = 0;
-  while (val) {
+  do {
     uint8_t byte = val & 0x7fU;
     val >>= 7;
     if (val) byte |= 0x80U;
     buf[i++] = byte;
-  }
+  } while (val);
   return i;
 }
 
@@ -59,6 +59,8 @@ static void encode_growbuffer(upb_encstate *e, size_t bytes) {
   e->ptr = new_buf + new_size - (e->limit - e->ptr);
   e->limit = new_buf + new_size;
   e->buf = new_buf;
+
+  e->ptr -= bytes;
 }
 
 /* Call to ensure that at least "bytes" bytes are available for writing at
@@ -67,6 +69,7 @@ UPB_FORCEINLINE
 static void encode_reserve(upb_encstate *e, size_t bytes) {
   if ((size_t)(e->ptr - e->buf) < bytes) {
     encode_growbuffer(e, bytes);
+    return;
   }
 
   e->ptr -= bytes;
