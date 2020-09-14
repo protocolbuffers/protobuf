@@ -154,15 +154,18 @@ static void encode_scalar(upb_encstate *e, const void *_field_mem,
                           const upb_msglayout *m, const upb_msglayout_field *f,
                           bool skip_zero_value) {
   const char *field_mem = _field_mem;
-#define CASE(ctype, type, wire_type, encodeval) do { \
-  ctype val = *(ctype*)field_mem; \
-  if (skip_zero_value && val == 0) { \
-    return; \
-  } \
-  encode_ ## type(e, encodeval); \
-  encode_tag(e, f->number, wire_type); \
-  return; \
-} while(0)
+  int wire_type;
+
+#define CASE(ctype, type, wtype, encodeval) \
+  {                                         \
+    ctype val = *(ctype *)field_mem;        \
+    if (skip_zero_value && val == 0) {      \
+      return;                               \
+    }                                       \
+    encode_##type(e, encodeval);            \
+    wire_type = wtype;                      \
+    break;                                  \
+  }
 
   switch (f->descriptortype) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
@@ -197,8 +200,8 @@ static void encode_scalar(upb_encstate *e, const void *_field_mem,
       }
       encode_bytes(e, view.data, view.size);
       encode_varint(e, view.size);
-      encode_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
-      return;
+      wire_type = UPB_WIRE_TYPE_DELIMITED;
+      break;
     }
     case UPB_DESCRIPTOR_TYPE_GROUP: {
       size_t size;
@@ -209,8 +212,8 @@ static void encode_scalar(upb_encstate *e, const void *_field_mem,
       }
       encode_tag(e, f->number, UPB_WIRE_TYPE_END_GROUP);
       encode_message(e, submsg, subm, &size);
-      encode_tag(e, f->number, UPB_WIRE_TYPE_START_GROUP);
-      return;
+      wire_type = UPB_WIRE_TYPE_START_GROUP;
+      break;
     }
     case UPB_DESCRIPTOR_TYPE_MESSAGE: {
       size_t size;
@@ -221,12 +224,13 @@ static void encode_scalar(upb_encstate *e, const void *_field_mem,
       }
       encode_message(e, submsg, subm, &size);
       encode_varint(e, size);
-      encode_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
-      return;
+      wire_type = UPB_WIRE_TYPE_DELIMITED;
+      break;
     }
   }
 #undef CASE
-  UPB_UNREACHABLE();
+
+  encode_tag(e, f->number, wire_type);
 }
 
 static void encode_array(upb_encstate *e, const char *field_mem,
