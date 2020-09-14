@@ -146,7 +146,6 @@ static void encode_fixedarray(upb_encstate *e, const upb_array *arr,
     }
   } else {
     encode_bytes(e, data, bytes);
-    encode_varint(e, bytes);
   }
 }
 
@@ -242,6 +241,7 @@ static void encode_array(upb_encstate *e, const char *field_mem,
                          const upb_msglayout *m, const upb_msglayout_field *f) {
   const upb_array *arr = *(const upb_array**)field_mem;
   bool packed = f->label == _UPB_LABEL_PACKED;
+  size_t pre_len = e->limit - e->ptr;
 
   if (arr == NULL || arr->len == 0) {
     return;
@@ -251,19 +251,14 @@ static void encode_array(upb_encstate *e, const char *field_mem,
   {                                                                      \
     const ctype *start = _upb_array_constptr(arr);                       \
     const ctype *ptr = start + arr->len;                                 \
-    size_t pre_len = e->limit - e->ptr;                                  \
     uint32_t tag = packed ? 0 : (f->number << 3) | UPB_WIRE_TYPE_VARINT; \
     do {                                                                 \
       ptr--;                                                             \
       encode_varint(e, encode);                                          \
       if (tag) encode_varint(e, tag);                                    \
     } while (ptr != start);                                              \
-    if (!tag) encode_varint(e, e->limit - e->ptr - pre_len);             \
   }                                                                      \
-  break;                                                                 \
-  do {                                                                   \
-    ;                                                                    \
-  } while (0)
+  break;
 
 #define TAG(wire_type) (packed ? 0 : (f->number << 3 | wire_type))
 
@@ -338,6 +333,7 @@ static void encode_array(upb_encstate *e, const char *field_mem,
 #undef VARINT_CASE
 
   if (packed) {
+    encode_varint(e, e->limit - e->ptr - pre_len);
     encode_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
   }
 }

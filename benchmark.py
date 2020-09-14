@@ -1,16 +1,36 @@
 #!/usr/bin/env python3
+"""Benchmarks the current working directory against a given baseline.
 
+This script benchmarks both size and speed. Sample output:
+"""
+
+import contextlib
 import json
-import subprocess
+import os
 import re
+import subprocess
+import sys
+import tempfile
+
+@contextlib.contextmanager
+def GitWorktree(commit):
+  tmpdir = tempfile.mkdtemp()
+  subprocess.run(['git', 'worktree', 'add', '-q', tmpdir, commit], check=True)
+  cwd = os.getcwd()
+  os.chdir(tmpdir)
+  try:
+    yield tmpdir
+  finally:
+    os.chdir(cwd)
+    subprocess.run(['git', 'worktree', 'remove', tmpdir], check=True)
 
 def Run(cmd):
   subprocess.check_call(cmd, shell=True)
 
-def RunAgainstBranch(branch, outbase, runs=12):
+def Benchmark(outbase, runs=12):
   tmpfile = "/tmp/bench-output.json"
   Run("rm -rf {}".format(tmpfile))
-  Run("git checkout {}".format(branch))
+  Run("bazel test :all")
   Run("bazel build -c opt :benchmark")
 
   Run("./bazel-bin/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={}".format(tmpfile, runs))
@@ -21,6 +41,7 @@ def RunAgainstBranch(branch, outbase, runs=12):
   with open(tmpfile) as f:
     bench_json = json.load(f)
 
+  # Translate into the format expected by benchstat.
   with open(outbase + ".txt", "w") as f:
     for run in bench_json["benchmarks"]:
       name = re.sub(r'^BM_', 'Benchmark', run["name"])
@@ -29,8 +50,21 @@ def RunAgainstBranch(branch, outbase, runs=12):
       values = (name, run["iterations"], run["cpu_time"])
       print("{} {} {} ns/op".format(*values), file=f)
 
-RunAgainstBranch("6e140c267cc9bf6a4ef89d3f9a842209d7537599", "/tmp/old")
-RunAgainstBranch("encoder", "/tmp/new")
+baseline = "master"
+
+if len(sys.argv) > 1:
+  baseline = sys.argv[1]
+
+  # Quickly verify that the baseline exists.
+  with GitWorktree(baseline):
+    pass
+
+# Benchmark our current directory first, since it's more likely to be broken.
+Benchmark("/tmp/new")
+
+# Benchmark the baseline.
+with GitWorktree(baseline):
+  Benchmark("/tmp/old")
 
 print()
 print()
