@@ -227,6 +227,8 @@ static void encode_scalar(upb_encstate *e, const void *_field_mem,
       wire_type = UPB_WIRE_TYPE_DELIMITED;
       break;
     }
+    default:
+      UPB_UNREACHABLE();
   }
 #undef CASE
 
