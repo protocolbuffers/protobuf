@@ -32,7 +32,9 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.DescriptorProtos.DescriptorProto;
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
+import com.google.protobuf.DescriptorProtos.OneofDescriptorProto;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -45,52 +47,58 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "MessageBuilderContext")
 public class RubyMessageBuilderContext extends RubyObject {
     public static void createRubyMessageBuilderContext(Ruby runtime) {
-        RubyModule protobuf = runtime.getClassFromPath("Google::Protobuf");
-        RubyClass cMessageBuilderContext = protobuf.defineClassUnder("MessageBuilderContext", runtime.getObject(), new ObjectAllocator() {
+        RubyModule internal = runtime.getClassFromPath("Google::Protobuf::Internal");
+        RubyClass cMessageBuilderContext = internal.defineClassUnder("MessageBuilderContext", runtime.getObject(), new ObjectAllocator() {
             @Override
             public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
                 return new RubyMessageBuilderContext(runtime, klazz);
             }
         });
         cMessageBuilderContext.defineAnnotatedMethods(RubyMessageBuilderContext.class);
+
+        cFieldDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::FieldDescriptor");
+        cOneofBuilderContext = (RubyClass) runtime.getClassFromPath("Google::Protobuf::Internal::OneofBuilderContext");
     }
 
-    public RubyMessageBuilderContext(Ruby ruby, RubyClass klazz) {
-        super(ruby, klazz);
+    public RubyMessageBuilderContext(Ruby runtime, RubyClass klazz) {
+        super(runtime, klazz);
     }
 
     @JRubyMethod
-    public IRubyObject initialize(ThreadContext context, IRubyObject descriptor, IRubyObject rubyBuilder) {
-        this.cFieldDescriptor = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::FieldDescriptor");
-        this.cDescriptor = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::Descriptor");
-        this.cOneofDescriptor = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::OneofDescriptor");
-        this.cOneofBuilderContext = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::Internal::OneofBuilderContext");
-        this.descriptor = (RubyDescriptor) descriptor;
-        this.builder = (RubyBuilder) rubyBuilder;
+    public IRubyObject initialize(ThreadContext context, IRubyObject fileBuilderContext, IRubyObject name) {
+        this.fileBuilderContext = (RubyFileBuilderContext) fileBuilderContext;
+        this.builder = this.fileBuilderContext.getNewMessageBuilder();
+        this.builder.setName(name.asJavaString());
+
         return this;
     }
 
     /*
      * call-seq:
-     *     MessageBuilderContext.optional(name, type, number, type_class = nil)
+     *     MessageBuilderContext.optional(name, type, number, type_class = nil,
+     *                                    options = nil)
      *
      * Defines a new optional field on this message type with the given type, tag
      * number, and type class (for message and enum fields). The type must be a Ruby
      * symbol (as accepted by FieldDescriptor#type=) and the type_class must be a
      * string, if present (as accepted by FieldDescriptor#submsg_name=).
      */
-    @JRubyMethod(required = 3, optional = 1)
+    @JRubyMethod(required = 3, optional = 2)
     public IRubyObject optional(ThreadContext context, IRubyObject[] args) {
-        Ruby runtime = context.runtime;
-        IRubyObject typeClass = runtime.getNil();
-        if (args.length > 3) typeClass = args[3];
-        msgdefAddField(context, "optional", args[0], args[1], args[2], typeClass);
-        return context.runtime.getNil();
+        addField(context, OPTIONAL, args, false);
+        return context.nil;
+    }
+
+    @JRubyMethod(required = 3, optional = 2)
+    public IRubyObject proto3_optional(ThreadContext context, IRubyObject[] args) {
+      addField(context, OPTIONAL, args, true);
+      return context.nil;
     }
 
     /*
      * call-seq:
-     *     MessageBuilderContext.required(name, type, number, type_class = nil)
+     *     MessageBuilderContext.required(name, type, number, type_class = nil,
+     *                                    options = nil)
      *
      * Defines a new required field on this message type with the given type, tag
      * number, and type class (for message and enum fields). The type must be a Ruby
@@ -101,12 +109,11 @@ public class RubyMessageBuilderContext extends RubyObject {
      * completeness. Any attempt to add a message type with required fields to a
      * pool will currently result in an error.
      */
-    @JRubyMethod(required = 3, optional = 1)
+    @JRubyMethod(required = 3, optional = 2)
     public IRubyObject required(ThreadContext context, IRubyObject[] args) {
-        IRubyObject typeClass = context.runtime.getNil();
-        if (args.length > 3) typeClass = args[3];
-        msgdefAddField(context, "required", args[0], args[1], args[2], typeClass);
-        return context.runtime.getNil();
+        if (fileBuilderContext.isProto3()) throw Utils.createTypeError(context, "Required fields are unsupported in proto3");
+        addField(context, "required", args, false);
+        return context.nil;
     }
 
     /*
@@ -120,10 +127,8 @@ public class RubyMessageBuilderContext extends RubyObject {
      */
     @JRubyMethod(required = 3, optional = 1)
     public IRubyObject repeated(ThreadContext context, IRubyObject[] args) {
-        IRubyObject typeClass = context.runtime.getNil();
-        if (args.length > 3) typeClass = args[3];
-        msgdefAddField(context, "repeated", args[0], args[1], args[2], typeClass);
-        return context.runtime.getNil();
+        addField(context, "repeated", args, false);
+        return context.nil;
     }
 
     /*
@@ -141,77 +146,110 @@ public class RubyMessageBuilderContext extends RubyObject {
     @JRubyMethod(required = 4, optional = 1)
     public IRubyObject map(ThreadContext context, IRubyObject[] args) {
         Ruby runtime = context.runtime;
+        if (!fileBuilderContext.isProto3()) throw runtime.newArgumentError("Cannot add a native map field using proto2 syntax.");
+
+        RubySymbol messageSym = runtime.newSymbol("message");
+
         IRubyObject name = args[0];
         IRubyObject keyType = args[1];
         IRubyObject valueType = args[2];
         IRubyObject number = args[3];
-        IRubyObject typeClass = args.length > 4 ? args[4] : context.runtime.getNil();
+        IRubyObject typeClass = args.length > 4 ? args[4] : context.nil;
 
         // Validate the key type. We can't accept enums, messages, or floats/doubles
         // as map keys. (We exclude these explicitly, and the field-descriptor setter
         // below then ensures that the type is one of the remaining valid options.)
-        if (keyType.equals(RubySymbol.newSymbol(runtime, "float")) ||
-                keyType.equals(RubySymbol.newSymbol(runtime, "double")) ||
-                keyType.equals(RubySymbol.newSymbol(runtime, "enum")) ||
-                keyType.equals(RubySymbol.newSymbol(runtime, "message")))
+        if (keyType.equals(runtime.newSymbol("float")) ||
+                keyType.equals(runtime.newSymbol("double")) ||
+                keyType.equals(runtime.newSymbol("enum")) ||
+                keyType.equals(messageSym))
             throw runtime.newArgumentError("Cannot add a map field with a float, double, enum, or message type.");
 
-        // Create a new message descriptor for the map entry message, and create a
-        // repeated submessage field here with that type.
-        RubyDescriptor mapentryDesc = (RubyDescriptor) cDescriptor.newInstance(context, Block.NULL_BLOCK);
-        IRubyObject mapentryDescName = RubySymbol.newSymbol(runtime, name).id2name(context);
-        mapentryDesc.setName(context, mapentryDescName);
-        mapentryDesc.setMapEntry(true);
+        DescriptorProto.Builder mapEntryBuilder = fileBuilderContext.getNewMessageBuilder();
+        mapEntryBuilder.setName(builder.getName() + "_MapEntry_" + name.asJavaString());
+        mapEntryBuilder.getOptionsBuilder().setMapEntry(true);
 
-        //optional <type> key = 1;
-        RubyFieldDescriptor keyField = (RubyFieldDescriptor) cFieldDescriptor.newInstance(context, Block.NULL_BLOCK);
-        keyField.setName(context, runtime.newString("key"));
-        keyField.setLabel(context, RubySymbol.newSymbol(runtime, "optional"));
-        keyField.setNumber(context, runtime.newFixnum(1));
-        keyField.setType(context, keyType);
-        mapentryDesc.addField(context, keyField);
+        mapEntryBuilder.addField(
+            Utils.createFieldBuilder(
+                context,
+                OPTIONAL,
+                new IRubyObject[] {
+                    runtime.newString("key"),
+                    keyType,
+                    runtime.newFixnum(1)
+                }
+            )
+        );
 
-        //optional <type> value = 2;
-        RubyFieldDescriptor valueField = (RubyFieldDescriptor) cFieldDescriptor.newInstance(context, Block.NULL_BLOCK);
-        valueField.setName(context, runtime.newString("value"));
-        valueField.setLabel(context, RubySymbol.newSymbol(runtime, "optional"));
-        valueField.setNumber(context, runtime.newFixnum(2));
-        valueField.setType(context, valueType);
-        if (! typeClass.isNil()) valueField.setSubmsgName(context, typeClass);
-        mapentryDesc.addField(context, valueField);
+        mapEntryBuilder.addField(
+            Utils.createFieldBuilder(
+                context,
+                OPTIONAL,
+                new IRubyObject[] {
+                    runtime.newString("value"),
+                    valueType,
+                    runtime.newFixnum(2),
+                    typeClass
+                }
+            )
+        );
 
-        // Add the map-entry message type to the current builder, and use the type to
-        // create the map field itself.
-        this.builder.pendingList.add(mapentryDesc);
+        IRubyObject[] addFieldArgs = {
+            name, messageSym, number, runtime.newString(mapEntryBuilder.getName())
+        };
 
-        msgdefAddField(context, "repeated", name, runtime.newSymbol("message"), number, mapentryDescName);
-        return runtime.getNil();
+        repeated(context, addFieldArgs);
+
+        return context.nil;
     }
 
+    /*
+     * call-seq:
+     *     MessageBuilderContext.oneof(name, &block) => nil
+     *
+     * Creates a new OneofDescriptor with the given name, creates a
+     * OneofBuilderContext attached to that OneofDescriptor, evaluates the given
+     * block in the context of that OneofBuilderContext with #instance_eval, and
+     * then adds the oneof to the message.
+     *
+     * This is the recommended, idiomatic way to build oneof definitions.
+     */
     @JRubyMethod
     public IRubyObject oneof(ThreadContext context, IRubyObject name, Block block) {
-        RubyOneofDescriptor oneofdef = (RubyOneofDescriptor)
-                cOneofDescriptor.newInstance(context, Block.NULL_BLOCK);
         RubyOneofBuilderContext ctx = (RubyOneofBuilderContext)
-                cOneofBuilderContext.newInstance(context, oneofdef, Block.NULL_BLOCK);
-        oneofdef.setName(context, name);
-        Binding binding = block.getBinding();
-        binding.setSelf(ctx);
-        block.yieldSpecific(context);
-        descriptor.addOneof(context, oneofdef);
-        return context.runtime.getNil();
+                cOneofBuilderContext.newInstance(
+                        context,
+                        context.runtime.newFixnum(builder.getOneofDeclCount()),
+                        this,
+                        Block.NULL_BLOCK
+                );
+
+        builder.addOneofDeclBuilder().setName(name.asJavaString());
+        ctx.instance_eval(context, block);
+
+        return context.nil;
     }
 
-    private void msgdefAddField(ThreadContext context, String label, IRubyObject name,
-                                IRubyObject type, IRubyObject number, IRubyObject typeClass) {
-        descriptor.addField(context,
-                Utils.msgdefCreateField(context, label, name, type, number, typeClass, cFieldDescriptor));
+    protected void addFieldBuilder(FieldDescriptorProto.Builder fieldBuilder) {
+        builder.addField(fieldBuilder);
     }
 
-    private RubyDescriptor descriptor;
-    private RubyBuilder builder;
-    private RubyClass cFieldDescriptor;
-    private RubyClass cOneofDescriptor;
-    private RubyClass cOneofBuilderContext;
+    private FieldDescriptorProto.Builder addField(ThreadContext context, String label, IRubyObject[] args, boolean proto3Optional) {
+        FieldDescriptorProto.Builder fieldBuilder =
+                Utils.createFieldBuilder(context, label, args);
+
+        fieldBuilder.setProto3Optional(proto3Optional);
+        builder.addField(fieldBuilder);
+
+        return fieldBuilder;
+    }
+
+    private static RubyClass cFieldDescriptor;
+    private static RubyClass cOneofBuilderContext;
+
+    private static final String OPTIONAL = "optional";
+
+    private DescriptorProto.Builder builder;
     private RubyClass cDescriptor;
+    private RubyFileBuilderContext fileBuilderContext;
 }
