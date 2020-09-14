@@ -190,7 +190,7 @@ static bool commit(upb_pb_encoder *e) {
 }
 
 /* Writes the given bytes to the buffer, handling reserve/advance. */
-static bool encode_bytes(upb_pb_encoder *e, const void *data, size_t len) {
+static bool encode_bytesval(upb_pb_encoder *e, const void *data, size_t len) {
   if (!reserve(e, len)) {
     return false;
   }
@@ -309,24 +309,24 @@ static void new_tag(upb_handlers *h, const upb_fielddef *f, upb_wiretype_t wt,
   upb_handlers_addcleanup(h, tag, upb_gfree);
 }
 
-static bool encode_tag(upb_pb_encoder *e, const tag_t *tag) {
-  return encode_bytes(e, tag->tag, tag->bytes);
+static bool encode_tagval(upb_pb_encoder *e, const tag_t *tag) {
+  return encode_bytesval(e, tag->tag, tag->bytes);
 }
 
 
 /* encoding of wire types *****************************************************/
 
-static bool encode_fixed64(upb_pb_encoder *e, uint64_t val) {
+static bool doencode_fixed64(upb_pb_encoder *e, uint64_t val) {
   /* TODO(haberman): byte-swap for big endian. */
-  return encode_bytes(e, &val, sizeof(uint64_t));
+  return encode_bytesval(e, &val, sizeof(uint64_t));
 }
 
-static bool encode_fixed32(upb_pb_encoder *e, uint32_t val) {
+static bool doencode_fixed32(upb_pb_encoder *e, uint32_t val) {
   /* TODO(haberman): byte-swap for big endian. */
-  return encode_bytes(e, &val, sizeof(uint32_t));
+  return encode_bytesval(e, &val, sizeof(uint32_t));
 }
 
-static bool encode_varint(upb_pb_encoder *e, uint64_t val) {
+static bool doencode_varint(upb_pb_encoder *e, uint64_t val) {
   if (!reserve(e, UPB_PB_VARINT_MAX_LEN)) {
     return false;
   }
@@ -370,14 +370,14 @@ static bool endmsg(void *c, const void *hd, upb_status *status) {
 }
 
 static void *encode_startdelimfield(void *c, const void *hd) {
-  bool ok = encode_tag(c, hd) && commit(c) && start_delim(c);
+  bool ok = encode_tagval(c, hd) && commit(c) && start_delim(c);
   return ok ? c : UPB_BREAK;
 }
 
 static bool encode_unknown(void *c, const void *hd, const char *buf,
                            size_t len) {
   UPB_UNUSED(hd);
-  return encode_bytes(c, buf, len) && commit(c);
+  return encode_bytesval(c, buf, len) && commit(c);
 }
 
 static bool encode_enddelimfield(void *c, const void *hd) {
@@ -386,11 +386,11 @@ static bool encode_enddelimfield(void *c, const void *hd) {
 }
 
 static void *encode_startgroup(void *c, const void *hd) {
-  return (encode_tag(c, hd) && commit(c)) ? c : UPB_BREAK;
+  return (encode_tagval(c, hd) && commit(c)) ? c : UPB_BREAK;
 }
 
 static bool encode_endgroup(void *c, const void *hd) {
-  return encode_tag(c, hd) && commit(c);
+  return encode_tagval(c, hd) && commit(c);
 }
 
 static void *encode_startstr(void *c, const void *hd, size_t size_hint) {
@@ -402,32 +402,32 @@ static size_t encode_strbuf(void *c, const void *hd, const char *buf,
                             size_t len, const upb_bufhandle *h) {
   UPB_UNUSED(hd);
   UPB_UNUSED(h);
-  return encode_bytes(c, buf, len) ? len : 0;
+  return encode_bytesval(c, buf, len) ? len : 0;
 }
 
-#define T(type, ctype, convert, encode)                                  \
-  static bool encode_scalar_##type(void *e, const void *hd, ctype val) { \
-    return encode_tag(e, hd) && encode(e, (convert)(val)) && commit(e);  \
-  }                                                                      \
-  static bool encode_packed_##type(void *e, const void *hd, ctype val) { \
-    UPB_UNUSED(hd);                                                      \
-    return encode(e, (convert)(val));                                    \
+#define T(type, ctype, convert, encode)                                    \
+  static bool encode_scalar_##type(void *e, const void *hd, ctype val) {   \
+    return encode_tagval(e, hd) && encode(e, (convert)(val)) && commit(e); \
+  }                                                                        \
+  static bool encode_packed_##type(void *e, const void *hd, ctype val) {   \
+    UPB_UNUSED(hd);                                                        \
+    return encode(e, (convert)(val));                                      \
   }
 
-T(double,   double,   dbl2uint64,   encode_fixed64)
-T(float,    float,    flt2uint32,   encode_fixed32)
-T(int64,    int64_t,  uint64_t,     encode_varint)
-T(int32,    int32_t,  int64_t,      encode_varint)
-T(fixed64,  uint64_t, uint64_t,     encode_fixed64)
-T(fixed32,  uint32_t, uint32_t,     encode_fixed32)
-T(bool,     bool,     bool,         encode_varint)
-T(uint32,   uint32_t, uint32_t,     encode_varint)
-T(uint64,   uint64_t, uint64_t,     encode_varint)
-T(enum,     int32_t,  uint32_t,     encode_varint)
-T(sfixed32, int32_t,  uint32_t,     encode_fixed32)
-T(sfixed64, int64_t,  uint64_t,     encode_fixed64)
-T(sint32,   int32_t,  upb_zzenc_32, encode_varint)
-T(sint64,   int64_t,  upb_zzenc_64, encode_varint)
+T(double,   double,   dbl2uint64,   doencode_fixed64)
+T(float,    float,    flt2uint32,   doencode_fixed32)
+T(int64,    int64_t,  uint64_t,     doencode_varint)
+T(int32,    int32_t,  int64_t,      doencode_varint)
+T(fixed64,  uint64_t, uint64_t,     doencode_fixed64)
+T(fixed32,  uint32_t, uint32_t,     doencode_fixed32)
+T(bool,     bool,     bool,         doencode_varint)
+T(uint32,   uint32_t, uint32_t,     doencode_varint)
+T(uint64,   uint64_t, uint64_t,     doencode_varint)
+T(enum,     int32_t,  uint32_t,     doencode_varint)
+T(sfixed32, int32_t,  uint32_t,     doencode_fixed32)
+T(sfixed64, int64_t,  uint64_t,     doencode_fixed64)
+T(sint32,   int32_t,  upb_zzenc_32, doencode_varint)
+T(sint64,   int64_t,  upb_zzenc_64, doencode_varint)
 
 #undef T
 

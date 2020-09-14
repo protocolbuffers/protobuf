@@ -62,3 +62,27 @@ static void BM_ParseDescriptor(benchmark::State& state) {
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_ParseDescriptor);
+
+static void BM_SerializeDescriptor(benchmark::State& state) {
+  int64_t total = 0;
+  upb_arena* arena = upb_arena_new();
+  google_protobuf_FileDescriptorProto* set =
+      google_protobuf_FileDescriptorProto_parse(descriptor.data,
+                                                descriptor.size, arena);
+  if (!set) {
+    printf("Failed to parse.\n");
+    exit(1);
+  }
+  for (auto _ : state) {
+    upb_arena* enc_arena = upb_arena_init(buf, sizeof(buf), NULL);
+    size_t size;
+    char *data = google_protobuf_FileDescriptorProto_serialize(set, enc_arena, &size);
+    if (!data) {
+      printf("Failed to serialize.\n");
+      exit(1);
+    }
+    total += size;
+  }
+  state.SetBytesProcessed(total);
+}
+BENCHMARK(BM_SerializeDescriptor);
