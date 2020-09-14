@@ -4,6 +4,7 @@
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
 require 'generated_code_pb'
+require 'google/protobuf/well_known_types'
 require 'test/unit'
 
 def hex2bin(s)

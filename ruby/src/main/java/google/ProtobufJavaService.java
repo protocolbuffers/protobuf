@@ -42,19 +42,26 @@ public class ProtobufJavaService implements BasicLibraryService {
     @Override
     public boolean basicLoad(Ruby ruby) throws IOException {
         ruby.defineModule("Google");
+
+        /*
+         * The order these happen in is important because we
+         * save a static reference to some classes and they
+         * need to exist before we try to save a reference to them
+         */
         RubyProtobuf.createProtobuf(ruby);
-        RubyDescriptor.createRubyDescriptor(ruby);
         RubyBuilder.createRubyBuilder(ruby);
-        RubyFieldDescriptor.createRubyFileDescriptor(ruby);
-        RubyMessageBuilderContext.createRubyMessageBuilderContext(ruby);
+        RubyFileDescriptor.createRubyFileDescriptor(ruby);
         RubyEnumDescriptor.createRubyEnumDescriptor(ruby);
         RubyEnumBuilderContext.createRubyEnumBuilderContext(ruby);
-        RubyDescriptorPool.createRubyDescriptorPool(ruby);
         RubyRepeatedField.createRubyRepeatedField(ruby);
-        RubyFieldDescriptor.createRubyFileDescriptor(ruby);
+        RubyFieldDescriptor.createRubyFieldDescriptor(ruby);
         RubyMap.createRubyMap(ruby);
         RubyOneofDescriptor.createRubyOneofDescriptor(ruby);
         RubyOneofBuilderContext.createRubyOneofBuilderContext(ruby);
+        RubyMessageBuilderContext.createRubyMessageBuilderContext(ruby);
+        RubyDescriptor.createRubyDescriptor(ruby);
+        RubyFileBuilderContext.createRubyFileBuilderContext(ruby);
+        RubyDescriptorPool.createRubyDescriptorPool(ruby);
         return true;
     }
 }

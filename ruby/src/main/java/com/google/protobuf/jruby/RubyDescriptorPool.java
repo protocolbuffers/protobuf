@@ -32,15 +32,20 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.DescriptorProtos;
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.DescriptorProtos.FileDescriptorProto;
+import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.DescriptorValidationException;
+import com.google.protobuf.Descriptors.EnumDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.runtime.*;
 import org.jruby.runtime.builtin.IRubyObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @JRubyClass(name = "DescriptorPool")
@@ -56,42 +61,38 @@ public class RubyDescriptorPool extends RubyObject {
 
         cDescriptorPool.defineAnnotatedMethods(RubyDescriptorPool.class);
         descriptorPool = (RubyDescriptorPool) cDescriptorPool.newInstance(runtime.getCurrentContext(), Block.NULL_BLOCK);
+        cBuilder = (RubyClass) runtime.getClassFromPath("Google::Protobuf::Internal::Builder");
+        cDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::Descriptor");
+        cEnumDescriptor = (RubyClass) runtime.getClassFromPath("Google::Protobuf::EnumDescriptor");
     }
 
-    public RubyDescriptorPool(Ruby ruby, RubyClass klazz) {
-        super(ruby, klazz);
-    }
-
-    @JRubyMethod
-    public IRubyObject initialize(ThreadContext context) {
+    public RubyDescriptorPool(Ruby runtime, RubyClass klazz) {
+        super(runtime, klazz);
+        this.fileDescriptors = new ArrayList<>();
         this.symtab = new HashMap<IRubyObject, IRubyObject>();
-        this.cBuilder = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::Builder");
-        this.builder = DescriptorProtos.FileDescriptorProto.newBuilder();
-        return this;
     }
 
     @JRubyMethod
     public IRubyObject build(ThreadContext context, Block block) {
-        RubyBuilder ctx = (RubyBuilder) cBuilder.newInstance(context, Block.NULL_BLOCK);
-        if (block.arity() == Arity.ONE_ARGUMENT) {
-            block.yield(context, ctx);
-        } else {
-            Binding binding = block.getBinding();
-            binding.setSelf(ctx);
-            block.yieldSpecific(context);
-        }
-        ctx.finalizeToPool(context, this);
-        buildFileDescriptor(context);
-        return context.runtime.getNil();
+        RubyBuilder ctx = (RubyBuilder) cBuilder.newInstance(context, this, Block.NULL_BLOCK);
+        ctx.instance_eval(context, block);
+        ctx.build(context); // Needs to be called to support the deprecated syntax
+        return context.nil;
     }
 
+    /*
+     * call-seq:
+     *     DescriptorPool.lookup(name) => descriptor
+     *
+     * Finds a Descriptor or EnumDescriptor by name and returns it, or nil if none
+     * exists with the given name.
+     *
+     * This currently lazy loads the ruby descriptor objects as they are requested.
+     * This allows us to leave the heavy lifting to the java library
+     */
     @JRubyMethod
     public IRubyObject lookup(ThreadContext context, IRubyObject name) {
-        IRubyObject descriptor = this.symtab.get(name);
-        if (descriptor == null) {
-            return context.runtime.getNil();
-        }
-        return descriptor;
+        return Helpers.nullToNil(symtab.get(name), context.nil);
     }
 
     /*
@@ -108,62 +109,59 @@ public class RubyDescriptorPool extends RubyObject {
         return descriptorPool;
     }
 
-    protected void addToSymtab(ThreadContext context, RubyDescriptor def) {
-        symtab.put(def.getName(context), def);
-        this.builder.addMessageType(def.getBuilder());
-    }
-
-    protected void addToSymtab(ThreadContext context, RubyEnumDescriptor def) {
-        symtab.put(def.getName(context), def);
-        this.builder.addEnumType(def.getBuilder());
-    }
-
-    private void buildFileDescriptor(ThreadContext context) {
-        Ruby runtime = context.runtime;
+    protected void registerFileDescriptor(ThreadContext context, FileDescriptorProto.Builder builder) {
+        final FileDescriptor fd;
         try {
-            this.builder.setSyntax("proto3");
-            final Descriptors.FileDescriptor fileDescriptor = Descriptors.FileDescriptor.buildFrom(
-                    this.builder.build(), new Descriptors.FileDescriptor[]{});
-
-            for (Descriptors.EnumDescriptor enumDescriptor : fileDescriptor.getEnumTypes()) {
-                String enumName = Utils.unescapeIdentifier(enumDescriptor.getName());
-                if (enumDescriptor.findValueByNumber(0) == null) {
-                    throw runtime.newTypeError("Enum definition " + enumName
-                            + " does not contain a value for '0'");
-                }
-                ((RubyEnumDescriptor) symtab.get(runtime.newString(enumName)))
-                        .setDescriptor(enumDescriptor);
-            }
-            for (Descriptors.Descriptor descriptor : fileDescriptor.getMessageTypes()) {
-                RubyDescriptor rubyDescriptor = ((RubyDescriptor)
-                        symtab.get(runtime.newString(Utils.unescapeIdentifier(descriptor.getName()))));
-                for (Descriptors.FieldDescriptor fieldDescriptor : descriptor.getFields()) {
-                    if (fieldDescriptor.isRequired()) {
-                        throw runtime.newTypeError("Required fields are unsupported in proto3");
-                    }
-                    RubyFieldDescriptor rubyFieldDescriptor = rubyDescriptor.lookup(fieldDescriptor.getName());
-                    rubyFieldDescriptor.setFieldDef(fieldDescriptor);
-                    if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
-                        RubyDescriptor subType = (RubyDescriptor) lookup(context,
-                                runtime.newString(Utils.unescapeIdentifier(fieldDescriptor.getMessageType().getName())));
-                        rubyFieldDescriptor.setSubType(subType);
-                    }
-                    if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.ENUM) {
-                        RubyEnumDescriptor subType = (RubyEnumDescriptor) lookup(context,
-                                runtime.newString(Utils.unescapeIdentifier(fieldDescriptor.getEnumType().getName())));
-                        rubyFieldDescriptor.setSubType(subType);
-                    }
-                }
-                rubyDescriptor.setDescriptor(descriptor);
-            }
-        } catch (Descriptors.DescriptorValidationException e) {
-            throw runtime.newRuntimeError(e.getMessage());
+            fd = FileDescriptor.buildFrom(builder.build(), existingFileDescriptors());
+        } catch (DescriptorValidationException e) {
+            throw context.runtime.newRuntimeError(e.getMessage());
         }
+
+        String packageName = fd.getPackage();
+        if (!packageName.isEmpty()) {
+            packageName = packageName + ".";
+        }
+
+        // Need to make sure enums are registered first in case anything references them
+        for (EnumDescriptor ed : fd.getEnumTypes()) registerEnumDescriptor(context, ed, packageName);
+        for (Descriptor message : fd.getMessageTypes()) registerDescriptor(context, message, packageName);
+
+        // Mark this as a loaded file
+        fileDescriptors.add(fd);
     }
 
+    private void registerDescriptor(ThreadContext context, Descriptor descriptor, String parentPath) {
+        String fullName = parentPath + descriptor.getName();
+        String fullPath = fullName + ".";
+        RubyString name = context.runtime.newString(fullName);
+
+        RubyDescriptor des = (RubyDescriptor) cDescriptor.newInstance(context, Block.NULL_BLOCK);
+        des.setName(name);
+        des.setDescriptor(context, descriptor, this);
+        symtab.put(name, des);
+
+        // Need to make sure enums are registered first in case anything references them
+        for (EnumDescriptor ed : descriptor.getEnumTypes()) registerEnumDescriptor(context, ed, fullPath);
+        for (Descriptor message : descriptor.getNestedTypes()) registerDescriptor(context, message, fullPath);
+    }
+
+    private void registerEnumDescriptor(ThreadContext context, EnumDescriptor descriptor, String parentPath) {
+        RubyString name = context.runtime.newString(parentPath + descriptor.getName());
+        RubyEnumDescriptor des = (RubyEnumDescriptor) cEnumDescriptor.newInstance(context, Block.NULL_BLOCK);
+        des.setName(name);
+        des.setDescriptor(context, descriptor);
+        symtab.put(name, des);
+    }
+
+    private FileDescriptor[] existingFileDescriptors() {
+        return fileDescriptors.toArray(new FileDescriptor[fileDescriptors.size()]);
+    }
+
+    private static RubyClass cBuilder;
+    private static RubyClass cDescriptor;
+    private static RubyClass cEnumDescriptor;
     private static RubyDescriptorPool descriptorPool;
 
-    private RubyClass cBuilder;
+    private List<FileDescriptor> fileDescriptors;
     private Map<IRubyObject, IRubyObject> symtab;
-    private DescriptorProtos.FileDescriptorProto.Builder builder;
 }

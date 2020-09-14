@@ -32,7 +32,7 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -61,7 +61,7 @@ public class RubyRepeatedField extends RubyObject {
         super(runtime, klazz);
     }
 
-    public RubyRepeatedField(Ruby runtime, RubyClass klazz, Descriptors.FieldDescriptor.Type fieldType, IRubyObject typeClass) {
+    public RubyRepeatedField(Ruby runtime, RubyClass klazz, FieldDescriptor.Type fieldType, IRubyObject typeClass) {
         this(runtime, klazz);
         this.fieldType = fieldType;
         this.storage = runtime.newArray();
@@ -77,8 +77,8 @@ public class RubyRepeatedField extends RubyObject {
             throw runtime.newArgumentError("Expected Symbol for type name");
         }
         this.fieldType = Utils.rubyToFieldType(args[0]);
-        if (fieldType == Descriptors.FieldDescriptor.Type.MESSAGE
-                || fieldType == Descriptors.FieldDescriptor.Type.ENUM) {
+        if (fieldType == FieldDescriptor.Type.MESSAGE
+                || fieldType == FieldDescriptor.Type.ENUM) {
             if (args.length < 2)
                 throw runtime.newArgumentError("Expected at least 2 arguments for message/enum");
             typeClass = args[1];
@@ -110,7 +110,7 @@ public class RubyRepeatedField extends RubyObject {
     @JRubyMethod(name = "[]=")
     public IRubyObject indexSet(ThreadContext context, IRubyObject index, IRubyObject value) {
         int arrIndex = normalizeArrayIndex(index);
-        value = Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+        value = Utils.checkType(context, fieldType, name, value, (RubyModule) typeClass);
         IRubyObject defaultValue = defaultValue(context);
         for (int i = this.storage.size(); i < arrIndex; i++) {
             this.storage.set(i, defaultValue);
@@ -138,9 +138,12 @@ public class RubyRepeatedField extends RubyObject {
                 return this.storage.eltInternal(arrIndex);
             } else if (arg instanceof RubyRange) {
                 RubyRange range = ((RubyRange) arg);
+
                 int beg = RubyNumeric.num2int(range.first(context));
-                int to = RubyNumeric.num2int(range.last(context));
-                int len = to - beg + 1;
+                int len = RubyNumeric.num2int(range.size(context));
+
+                if (len == 0) return context.runtime.newEmptyArray();
+
                 return this.storage.subseq(beg, len);
             }
         }
@@ -162,14 +165,17 @@ public class RubyRepeatedField extends RubyObject {
      *
      * Adds a new element to the repeated field.
      */
-    @JRubyMethod(name = {"push", "<<"})
-    public IRubyObject push(ThreadContext context, IRubyObject value) {
-        if (!(fieldType == Descriptors.FieldDescriptor.Type.MESSAGE &&
-            value == context.runtime.getNil())) {
-            value = Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+    @JRubyMethod(name = {"push", "<<"}, required = 1, rest = true)
+    public IRubyObject push(ThreadContext context, IRubyObject[] args) {
+        for (int i = 0; i < args.length; i++) {
+            IRubyObject val = args[i];
+            if (fieldType != FieldDescriptor.Type.MESSAGE || !val.isNil()) {
+                val = Utils.checkType(context, fieldType, name, val, (RubyModule) typeClass);
+            }
+            storage.add(val);
         }
-        this.storage.add(value);
-        return this.storage;
+
+        return this;
     }
 
     /*
@@ -193,7 +199,7 @@ public class RubyRepeatedField extends RubyObject {
         RubyArray arr = (RubyArray) list;
         checkArrayElementType(context, arr);
         this.storage = arr;
-        return this.storage;
+        return this;
     }
 
     /*
@@ -205,7 +211,7 @@ public class RubyRepeatedField extends RubyObject {
     @JRubyMethod
     public IRubyObject clear(ThreadContext context) {
         this.storage.clear();
-        return this.storage;
+        return this;
     }
 
     /*
@@ -261,7 +267,7 @@ public class RubyRepeatedField extends RubyObject {
                 throw context.runtime.newArgumentError("Attempt to append RepeatedField with different element type.");
             this.storage.addAll((RubyArray) repeatedField.toArray(context));
         }
-        return this.storage;
+        return this;
     }
 
     /*
@@ -301,7 +307,7 @@ public class RubyRepeatedField extends RubyObject {
     @JRubyMethod
     public IRubyObject each(ThreadContext context, Block block) {
         this.storage.each(context, block);
-        return this.storage;
+        return this;
     }
 
 
@@ -320,10 +326,13 @@ public class RubyRepeatedField extends RubyObject {
     @JRubyMethod
     public IRubyObject dup(ThreadContext context) {
         RubyRepeatedField dup = new RubyRepeatedField(context.runtime, metaClass, fieldType, typeClass);
-        for (int i = 0; i < this.storage.size(); i++) {
-            dup.push(context, this.storage.eltInternal(i));
-        }
+        dup.push(context, storage.toJavaArray());
         return dup;
+    }
+
+    @JRubyMethod
+    public IRubyObject inspect() {
+        return storage.inspect();
     }
 
     // Java API
@@ -335,13 +344,17 @@ public class RubyRepeatedField extends RubyObject {
         RubyRepeatedField copy = new RubyRepeatedField(context.runtime, metaClass, fieldType, typeClass);
         for (int i = 0; i < size(); i++) {
             IRubyObject value = storage.eltInternal(i);
-            if (fieldType == Descriptors.FieldDescriptor.Type.MESSAGE) {
+            if (fieldType == FieldDescriptor.Type.MESSAGE) {
                 copy.storage.add(((RubyMessage) value).deepCopy(context));
             } else {
                 copy.storage.add(value);
             }
         }
         return copy;
+    }
+
+    protected void setName(String name) {
+        this.name = name;
     }
 
     protected int size() {
@@ -390,7 +403,7 @@ public class RubyRepeatedField extends RubyObject {
 
     private void checkArrayElementType(ThreadContext context, RubyArray arr) {
         for (int i = 0; i < arr.getLength(); i++) {
-            Utils.checkType(context, fieldType, arr.eltInternal(i), (RubyModule) typeClass);
+            Utils.checkType(context, fieldType, name, arr.eltInternal(i), (RubyModule) typeClass);
         }
     }
 
@@ -403,7 +416,8 @@ public class RubyRepeatedField extends RubyObject {
         return arrIndex;
     }
 
-    private RubyArray storage;
-    private Descriptors.FieldDescriptor.Type fieldType;
+    private FieldDescriptor.Type fieldType;
     private IRubyObject typeClass;
+    private RubyArray storage;
+    private String name;
 }

@@ -32,9 +32,12 @@
 
 package com.google.protobuf.jruby;
 
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
+import org.jruby.RubyHash;
 import org.jruby.RubyModule;
+import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -45,8 +48,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "OneofBuilderContext")
 public class RubyOneofBuilderContext extends RubyObject {
     public static void createRubyOneofBuilderContext(Ruby runtime) {
-        RubyModule protobuf = runtime.getClassFromPath("Google::Protobuf");
-        RubyModule internal = protobuf.defineModuleUnder("Internal");
+        RubyModule internal = runtime.getClassFromPath("Google::Protobuf::Internal");
         RubyClass cRubyOneofBuidlerContext = internal.defineClassUnder("OneofBuilderContext", runtime.getObject(), new ObjectAllocator() {
             @Override
             public IRubyObject allocate(Ruby ruby, RubyClass rubyClass) {
@@ -60,25 +62,42 @@ public class RubyOneofBuilderContext extends RubyObject {
         super(ruby, rubyClass);
     }
 
+    /*
+     * call-seq:
+     *     OneofBuilderContext.new(oneof_index, message_builder) => context
+     *
+     * Create a new oneof builder context around the given oneof descriptor and
+     * builder context. This class is intended to serve as a DSL context to be used
+     * with #instance_eval.
+     */
     @JRubyMethod
-    public IRubyObject initialize(ThreadContext context, IRubyObject oneofdef) {
-        this.descriptor = (RubyOneofDescriptor) oneofdef;
-        this.cFieldDescriptor = (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::FieldDescriptor");
+    public IRubyObject initialize(ThreadContext context, IRubyObject index, IRubyObject messageBuilder) {
+        this.builder = (RubyMessageBuilderContext) messageBuilder;
+        this.index = RubyNumeric.num2int(index);
+
         return this;
     }
 
-    @JRubyMethod(required = 3, optional = 1)
+    /*
+     * call-seq:
+     *     OneofBuilderContext.optional(name, type, number, type_class = nil,
+     *                                  options = nil)
+     *
+     * Defines a new optional field in this oneof with the given type, tag number,
+     * and type class (for message and enum fields). The type must be a Ruby symbol
+     * (as accepted by FieldDescriptor#type=) and the type_class must be a string,
+     * if present (as accepted by FieldDescriptor#submsg_name=).
+     */
+    @JRubyMethod(required = 3, optional = 2)
     public IRubyObject optional(ThreadContext context, IRubyObject[] args) {
-        IRubyObject name = args[0];
-        IRubyObject type = args[1];
-        IRubyObject number = args[2];
-        IRubyObject typeClass = args.length > 3 ? args[3] : context.runtime.getNil();
-        RubyFieldDescriptor fieldDescriptor = Utils.msgdefCreateField(context, "optional",
-                name, type, number, typeClass, cFieldDescriptor);
-        descriptor.addField(context, fieldDescriptor);
-        return this;
+        FieldDescriptorProto.Builder fieldBuilder =
+                Utils.createFieldBuilder(context, "optional", args);
+        fieldBuilder.setOneofIndex(index);
+        builder.addFieldBuilder(fieldBuilder);
+
+        return context.nil;
     }
 
-    private RubyOneofDescriptor descriptor;
-    private RubyClass cFieldDescriptor;
+    private RubyMessageBuilderContext builder;
+    private int index;
 }
