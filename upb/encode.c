@@ -246,10 +246,10 @@ static void encode_array(upb_encstate *e, const char *field_mem,
     uint32_t tag = packed ? 0 : (f->number << 3) | UPB_WIRE_TYPE_VARINT; \
     do {                                                                 \
       ptr--;                                                             \
-      encode_varint(e, encode);                                         \
-      if (tag) encode_varint(e, tag);                                   \
+      encode_varint(e, encode);                                          \
+      if (tag) encode_varint(e, tag);                                    \
     } while (ptr != start);                                              \
-    if (!tag) encode_varint(e, e->limit - e->ptr - pre_len);            \
+    if (!tag) encode_varint(e, e->limit - e->ptr - pre_len);             \
   }                                                                      \
   break;                                                                 \
   do {                                                                   \
