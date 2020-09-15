@@ -10,7 +10,7 @@ projects' setup.py.
 
 ```shell
 $ python setup.py build
-$ python setup.py install
+$ python -m pip install .
 ```
 
 (If you want to test changes to the extension, you can use `python setup.py
@@ -50,7 +50,7 @@ and installing `example_project` (see above):
 ```shell
 $ python setup.py generate_py_protobufs
 $ python setup.py build
-$ python setup.py install
+$ python -m pip install .
 ```
 
 ## Options
