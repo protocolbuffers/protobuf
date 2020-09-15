@@ -96,7 +96,13 @@ Options:
 
 __author__ = 'dlj@google.com (David L. Jones)'
 
+from os import path
 from setuptools import setup, find_packages
+
+# Use README.md as the source for long_description.
+this_directory = path.abspath(path.dirname(__file__))
+with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    _readme = f.read()
 
 setup(
     name='protobuf_distutils',
@@ -123,6 +129,8 @@ setup(
     ],
     description=('This is a distutils extension to generate Python code for '
                  '.proto files using an installed protoc binary.'),
+    long_description=_readme,
+    long_description_content_type='text/markdown',
     url='https://github.com/protocolbuffers/protobuf/',
     entry_points={
         'distutils.commands': [
