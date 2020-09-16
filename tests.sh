@@ -442,6 +442,11 @@ build_ruby27() {
   cd ruby && bash travis-test.sh ruby-2.7.0 && cd ..
 }
 
+build_jruby() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh jruby-9.2.11.1 && cd ..
+}
+
 build_javascript() {
   internal_build_cpp
   NODE_VERSION=node-v12.16.3-darwin-x64
