@@ -66,6 +66,7 @@ public class RubyEnumBuilderContext extends RubyObject {
         this.fileBuilderContext = (RubyFileBuilderContext) fileBuilderContext;
         this.builder = this.fileBuilderContext.getNewEnumBuilder();
         this.builder.setName(name.asJavaString());
+        this.builder.getOptionsBuilder().setAllowAlias(true);
 
         return this;
     }
