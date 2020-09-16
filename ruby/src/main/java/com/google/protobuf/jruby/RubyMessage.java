@@ -291,9 +291,25 @@ public class RubyMessage extends RubyObject {
 
             if (!oneofDescriptor.isNil()) {
                 RubyOneofDescriptor rubyOneofDescriptor = (RubyOneofDescriptor) oneofDescriptor;
-                FieldDescriptor fieldDescriptor = oneofCases.get(rubyOneofDescriptor.getDescriptor());
+                OneofDescriptor ood = rubyOneofDescriptor.getDescriptor();
 
-                return fieldDescriptor == null ? context.nil : runtime.newSymbol(fieldDescriptor.getName());
+                // Check to see if we set this through ruby
+                FieldDescriptor fieldDescriptor = oneofCases.get(ood);
+
+                if (fieldDescriptor == null) {
+                    // See if we set this from decoding a message
+                    fieldDescriptor = builder.getOneofFieldDescriptor(ood);
+
+                    if (fieldDescriptor == null) {
+                        return context.nil;
+                    } else {
+                        // Cache it so we don't need to do multiple checks next time
+                        oneofCases.put(ood, fieldDescriptor);
+                        return runtime.newSymbol(fieldDescriptor.getName());
+                    }
+                } else {
+                    return runtime.newSymbol(fieldDescriptor.getName());
+                }
             }
 
             // If we find a field return its value
@@ -468,7 +484,7 @@ public class RubyMessage extends RubyObject {
         try {
             ret.builder.mergeFrom(bin);
         } catch (InvalidProtocolBufferException e) {
-            throw context.runtime.newRuntimeError(e.getMessage());
+            throw RaiseException.from(context.runtime, (RubyClass) context.runtime.getClassFromPath("Google::Protobuf::ParseError"), e.getMessage());
         }
 
         if (!ret.proto3) {

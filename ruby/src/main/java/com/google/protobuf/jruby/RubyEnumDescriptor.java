@@ -152,7 +152,13 @@ public class RubyEnumDescriptor extends RubyObject {
 
         RubyModule enumModule = RubyModule.newModule(runtime);
         for (EnumValueDescriptor value : descriptor.getValues()) {
-            enumModule.defineConstant(value.getName(), runtime.newFixnum(value.getNumber()));
+            String name = value.getName();
+            // Make sure its a valid constant name before trying to create it
+            if (Character.isUpperCase(name.codePointAt(0))) {
+                enumModule.defineConstant(name, runtime.newFixnum(value.getNumber()));
+            } else {
+                runtime.getWarnings().warn("Enum value " + name + " does not start with an uppercase letter as is required for Ruby constants.");
+            }
         }
 
         enumModule.instance_variable_set(runtime.newString(Utils.DESCRIPTOR_INSTANCE_VAR), this);
