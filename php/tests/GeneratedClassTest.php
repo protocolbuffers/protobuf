@@ -1668,6 +1668,10 @@ class GeneratedClassTest extends TestBase
         $m2->getMapInt32Message()[1]->setA(1234);
         $this->assertTrue($m1 != $m2);
 
+        $tm1 = new TestMessage(['repeated_message' => [new Sub(['a' => 1])]]);
+        $tm2 = new TestMessage(['repeated_message' => [new Sub(['a' => 2])]]);
+        $this->assertFalse($tm1->getRepeatedMessage() == $tm2->getRepeatedMessage());
+
         # TODO: what about unknown fields?
     }
 
