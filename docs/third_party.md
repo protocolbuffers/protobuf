@@ -84,6 +84,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * PHP: https://github.com/chobie/php-protocolbuffers
 * PHP: http://drslump.github.com/Protobuf-PHP
 * Prolog: http://www.swi-prolog.org/pldoc/package/protobufs.html
+* Purescript: https://github.com/xc-jp/purescript-protobuf
 * Python: https://github.com/google/protobuf (Google-official implementation)
 * Python: https://github.com/eigenein/protobuf
 * Python: https://github.com/danielgtaylor/python-betterproto
