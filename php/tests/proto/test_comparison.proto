@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package comparison;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/field_mask.proto";
+
+message TestSuite {
+  repeated TestCase test_cases = 1;
+}
+
+message TestCase {
+  string description = 1;
+  Resource original_resource = 2;
+  Resource modified_resource = 3;
+  google.protobuf.FieldMask expected_mask = 4;
+}
+
+message Resource {
+  google.protobuf.StringValue wrapper = 1;
+  Foo foo = 2;
+  repeated Foo foos = 3;
+}
+
+message Foo {
+  int64 num = 1;
+  Bar bar = 2;
+  repeated Bar bars = 3;
+}
+
+message Bar {
+  int64 num = 1;
+  google.protobuf.BoolValue nested_wrapper = 2;
+}
