@@ -15,7 +15,7 @@ import tempfile
 @contextlib.contextmanager
 def GitWorktree(commit):
   tmpdir = tempfile.mkdtemp()
-  subprocess.run(['git', 'worktree', 'add', '-q', tmpdir, commit], check=True)
+  subprocess.run(['git', 'worktree', 'add', '-q', '-d', tmpdir, commit], check=True)
   cwd = os.getcwd()
   os.chdir(tmpdir)
   try:
