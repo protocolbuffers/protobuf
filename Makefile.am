@@ -964,9 +964,13 @@ python_EXTRA_DIST=                                                           \
   python/google/__init__.py                                                  \
   python/google/protobuf/__init__.py                                         \
   python/google/protobuf/compiler/__init__.py                                \
+  python/google/protobuf/decoder.py
+    \
   python/google/protobuf/descriptor.py                                       \
   python/google/protobuf/descriptor_database.py                              \
   python/google/protobuf/descriptor_pool.py                                  \
+  python/google/protobuf/encoder.py
+    \
   python/google/protobuf/internal/__init__.py                                \
   python/google/protobuf/internal/_parameterized.py                          \
   python/google/protobuf/internal/any_test.proto                             \
