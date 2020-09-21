@@ -407,6 +407,7 @@ static const char *decode_varint64(upb_decstate *d, const char *ptr,
   }
 }
 
+UPB_FORCEINLINE
 static const char *decode_varint32(upb_decstate *d, const char *ptr,
                                    const char *limit, uint32_t *val) {
   uint64_t u64;

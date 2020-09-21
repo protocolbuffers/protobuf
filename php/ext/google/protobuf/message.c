@@ -113,8 +113,8 @@ static bool MessageEq(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m)
 /**
  * ValueEq()()
  */
-static bool ValueEq(upb_msgval val1, upb_msgval val2, upb_fieldtype_t type,
-                    const upb_msgdef *m) {
+bool ValueEq(upb_msgval val1, upb_msgval val2, upb_fieldtype_t type,
+             const upb_msgdef *m) {
   switch (type) {
     case UPB_TYPE_BOOL:
       return val1.bool_val == val2.bool_val;
@@ -138,53 +138,6 @@ static bool ValueEq(upb_msgval val1, upb_msgval val2, upb_fieldtype_t type,
     default:
       return false;
   }
-}
-
-/**
- * MapEq()
- */
-static bool MapEq(const upb_map *m1, const upb_map *m2,
-                  upb_fieldtype_t key_type, upb_fieldtype_t val_type,
-                  const upb_msgdef *m) {
-  size_t iter = UPB_MAP_BEGIN;
-
-  if ((m1 == NULL) != (m2 == NULL)) return false;
-  if (m1 == NULL) return true;
-  if (upb_map_size(m1) != upb_map_size(m2)) return false;
-
-  while (upb_mapiter_next(m1, &iter)) {
-    upb_msgval key = upb_mapiter_key(m1, iter);
-    upb_msgval val1 = upb_mapiter_value(m1, iter);
-    upb_msgval val2;
-
-    if (!upb_map_get(m2, key, &val2)) return false;
-    if (!ValueEq(val1, val2, val_type, m)) return false;
-  }
-
-  return true;
-}
-
-/**
- * ArrayEq()
- */
-static bool ArrayEq(const upb_array *a1, const upb_array *a2,
-                    upb_fieldtype_t type, const upb_msgdef *m) {
-  size_t i;
-  size_t n;
-
-  if ((a1 == NULL) != (a2 == NULL)) return false;
-  if (a1 == NULL) return true;
-
-  n = upb_array_size(a1);
-  if (n != upb_array_size(a2)) return false;
-
-  for (i = 0; i < n; i++) {
-    upb_msgval val1 = upb_array_get(a1, i);
-    upb_msgval val2 = upb_array_get(a2, i);
-    if (!ValueEq(val1, val2, type, m)) return false;
-  }
-
-  return true;
 }
 
 /**
