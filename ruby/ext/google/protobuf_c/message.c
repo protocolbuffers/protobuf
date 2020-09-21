@@ -385,17 +385,29 @@ VALUE create_submsg_from_hash(const MessageLayout* layout,
   return rb_class_new_instance(1, args, field_type_class(layout, f));
 }
 
-typedef struct {
-  upb_msg *msg;
-  const upb_msgdef *msgdef;
-  upb_arena *arena;
-} BareMessage;
+#endif
 
-int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
-  BareMessage *msg = (BareMessage*)_self;
-  char *name;
-  const upb_fielddef* f;
+void Array_InitFromValue(upb_array *arr, const upb_msgdef *m, VALUE val) {
+  VALUE ary;
+  int i;
 
+  if (TYPE(val) != T_ARRAY) {
+    rb_raise(rb_eArgError,
+             "Expected array as initializer value for repeated field '%s' (given %s).",
+             name, rb_class2name(CLASS_OF(val)));
+  }
+  ary = layout_get(self->descriptor->layout, Message_data(self), f);
+  for (i = 0; i < RARRAY_LEN(val); i++) {
+    VALUE entry = rb_ary_entry(val, i);
+    if (TYPE(entry) == T_HASH && upb_fielddef_issubmsg(f)) {
+      entry = create_submsg_from_hash(self->descriptor->layout, f, entry);
+    }
+
+    RepeatedField_push(ary, entry);
+  }
+}
+
+int Message_InitFromValue(upb_msg *msg, const upb_msgdef *m, VALUE val) {
   if (TYPE(key) == T_STRING) {
     name = RSTRING_PTR(key);
   } else if (TYPE(key) == T_SYMBOL) {
@@ -405,7 +417,7 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Expected string or symbols as hash keys when initializing proto from hash.");
   }
 
-  f = upb_msgdef_ntofz(msg->msgdef, name);
+  f = upb_msgdef_ntofz(m, name);
 
   if (f == NULL) {
     rb_raise(rb_eArgError,
@@ -417,26 +429,16 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   }
 
   if (upb_fielddef_ismap(f)) {
-    upb_map *map = upb_msg_mutable(msg->msg, f, arena);
-    Map_fromhash(val);
+    upb_map *map = upb_msg_mutable(msg->msg, f, arena).map_val;
+    const upb_fielddef *key_f = upb_fielddef_itof(m, 1);
+    const upb_fielddef *val_f = upb_fielddef_itof(m, 2);
+    upb_fieldtype_t key_type = upb_fielddef_type(key_f);
+    upb_fieldtype_t val_type = upb_fielddef_type(val_f);
+    const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
+    Map_InitFromValue(map, key_type, val_type, val_m, val);
   } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
-    VALUE ary;
-    int i;
-
-    if (TYPE(val) != T_ARRAY) {
-      rb_raise(rb_eArgError,
-               "Expected array as initializer value for repeated field '%s' (given %s).",
-               name, rb_class2name(CLASS_OF(val)));
-    }
-    ary = layout_get(self->descriptor->layout, Message_data(self), f);
-    for (i = 0; i < RARRAY_LEN(val); i++) {
-      VALUE entry = rb_ary_entry(val, i);
-      if (TYPE(entry) == T_HASH && upb_fielddef_issubmsg(f)) {
-        entry = create_submsg_from_hash(self->descriptor->layout, f, entry);
-      }
-
-      RepeatedField_push(ary, entry);
-    }
+    upb_map *map = upb_msg_mutable(msg->msg, f, arena).map_val;
+    Array_InitFromValue(map, val);
   } else {
     if (TYPE(val) == T_HASH && upb_fielddef_issubmsg(f)) {
       val = create_submsg_from_hash(self->descriptor->layout, f, val);
@@ -444,6 +446,13 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
 
     layout_set(self->descriptor->layout, Message_data(self), f, val);
   }
+}
+
+int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
+  Message *msg = (Message*)_self;
+  char *name;
+  const upb_fielddef* f;
+
   return 0;
 }
 
@@ -464,7 +473,7 @@ VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   VALUE hash_args;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
 
-  layout_init(self->descriptor->layout, Message_data(self));
+  self->msg = upb_msg_new(self->descriptor->msgdef);
 
   if (argc == 0) {
     return Qnil;
@@ -480,6 +489,8 @@ VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   rb_hash_foreach(hash_args, Message_initialize_kwarg, _self);
   return Qnil;
 }
+
+#if 0
 
 /*
  * call-seq:
