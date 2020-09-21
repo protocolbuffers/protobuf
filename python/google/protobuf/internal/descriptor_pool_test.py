@@ -1014,6 +1014,25 @@ class AddDescriptorTest(unittest.TestCase):
     self.assertEqual('TopEnum', pool.FindEnumTypeByName('TopEnum').name)
     self.assertEqual('TopService', pool.FindServiceByName('TopService').name)
 
+  def testJsonNamePassedToFieldDescriptor(self):
+    pool = descriptor_pool.DescriptorPool()
+    file_pb2 = descriptor_pb2.FileDescriptorProto(
+      name='some/file.proto',
+      package='package',
+    )
+    msg_pb2 = file_pb2.message_type.add(name='Message')
+    field_pb2 = msg_pb2.field.add(
+      name='bb',
+      number=1,
+      type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+      json_name='my_json_name',
+      label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+    )
+    pool.Add(file_pb2)
+    msg_descriptor = pool.FindMessageTypeByName('package.Message')
+    field_descriptor = msg_descriptor.fields_by_name['bb']
+    assert field_descriptor.json_name == field_pb2.json_name
+
   def testFileDescriptorOptionsWithCustomDescriptorPool(self):
     # Create a descriptor pool, and add a new FileDescriptorProto to it.
     pool = descriptor_pool.DescriptorPool()

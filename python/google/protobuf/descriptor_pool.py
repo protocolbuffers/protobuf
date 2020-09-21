@@ -1003,6 +1003,7 @@ class DescriptorPool(object):
         is_extension=is_extension,
         extension_scope=None,
         options=_OptionsOrNone(field_proto),
+        json_name=field_proto.json_name,
         file=file_desc,
         # pylint: disable=protected-access
         create_key=descriptor._internal_create_key)
