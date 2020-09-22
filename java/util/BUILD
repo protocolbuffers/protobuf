@@ -5,10 +5,6 @@ java_library(
     srcs = glob([
         "src/main/java/com/google/protobuf/util/*.java",
     ]),
-    javacopts = [
-        "-source 7",
-        "-target 7",
-    ],
     visibility = ["//visibility:public"],
     deps = [
         "//external:error_prone_annotations",

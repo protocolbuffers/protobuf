@@ -463,13 +463,14 @@ TEST_F(DiskSourceTreeTest, DiskFileToVirtualFileCanonicalization) {
             source_tree_.DiskFileToVirtualFile("../../baz", &virtual_file,
                                                &shadowing_disk_file));
 
-  // "/foo" is not mapped (it should not be misintepreted as being under ".").
+  // "/foo" is not mapped (it should not be misinterpreted as being under ".").
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
             source_tree_.DiskFileToVirtualFile("/foo", &virtual_file,
                                                &shadowing_disk_file));
 
 #ifdef WIN32
-  // "C:\foo" is not mapped (it should not be misintepreted as being under ".").
+  // "C:\foo" is not mapped (it should not be misinterpreted as being under
+  // ".").
   EXPECT_EQ(DiskSourceTree::NO_MAPPING,
             source_tree_.DiskFileToVirtualFile("C:\\foo", &virtual_file,
                                                &shadowing_disk_file));

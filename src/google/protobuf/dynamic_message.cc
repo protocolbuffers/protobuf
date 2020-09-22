@@ -292,6 +292,13 @@ class DynamicMessage : public Message {
   ~DynamicMessage();
 
   // Called on the prototype after construction to initialize message fields.
+  // Cross linking the default instances allows for fast reflection access of
+  // unset message fields. Without it we would have to go to the MessageFactory
+  // to get the prototype, which is a much more expensive operation.
+  //
+  // Generated messages do not cross-link to avoid dynamic initialization of the
+  // global instances.
+  // Instead, they keep the default instances in the FieldDescriptor objects.
   void CrossLinkPrototypes();
 
   // implements Message ----------------------------------------------

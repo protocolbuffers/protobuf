@@ -285,7 +285,7 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
           # 10.x also seems to often fail running destinations in parallel (with
-          # 32bit one include atleast)
+          # 32bit one include at least)
           -disable-concurrent-destination-testing
       )
       ;;

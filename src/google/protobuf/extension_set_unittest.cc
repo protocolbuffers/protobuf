@@ -1105,8 +1105,6 @@ TEST(ExtensionSetTest, RepeatedFields) {
     ASSERT_EQ(msg_const_iter->bb(), 1234);
   }
 
-  // Test range-based for as well, but only if compiled as C++11.
-#if __cplusplus >= 201103L
   // Test one primitive field.
   for (auto& x :
        *message.MutableRepeatedExtension(unittest::repeated_int32_extension)) {
@@ -1134,7 +1132,6 @@ TEST(ExtensionSetTest, RepeatedFields) {
            unittest::repeated_nested_message_extension)) {
     ASSERT_EQ(x.bb(), 4321);
   }
-#endif
 }
 
 // From b/12926163

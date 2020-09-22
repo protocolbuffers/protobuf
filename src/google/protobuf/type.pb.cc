@@ -49,7 +49,6 @@ static void InitDefaultsscc_info_Enum_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Enum();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Enum::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Enum_google_2fprotobuf_2ftype_2eproto =
@@ -66,7 +65,6 @@ static void InitDefaultsscc_info_EnumValue_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::EnumValue();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::EnumValue::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EnumValue_google_2fprotobuf_2ftype_2eproto =
@@ -81,7 +79,6 @@ static void InitDefaultsscc_info_Field_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Field();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Field::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Field_google_2fprotobuf_2ftype_2eproto =
@@ -96,7 +93,6 @@ static void InitDefaultsscc_info_Option_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Option();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Option::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Option_google_2fprotobuf_2ftype_2eproto =
@@ -111,7 +107,6 @@ static void InitDefaultsscc_info_Type_google_2fprotobuf_2ftype_2eproto() {
     new (ptr) PROTOBUF_NAMESPACE_ID::Type();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Type::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Type_google_2fprotobuf_2ftype_2eproto =
@@ -230,10 +225,10 @@ const char descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto[] PROTOBUF
   "\003 \003(\0132\027.google.protobuf.Option\";\n\006Option"
   "\022\014\n\004name\030\001 \001(\t\022#\n\005value\030\002 \001(\0132\024.google.p"
   "rotobuf.Any*.\n\006Syntax\022\021\n\rSYNTAX_PROTO2\020\000"
-  "\022\021\n\rSYNTAX_PROTO3\020\001B}\n\023com.google.protob"
-  "ufB\tTypeProtoP\001Z/google.golang.org/genpr"
-  "oto/protobuf/ptype;ptype\370\001\001\242\002\003GPB\252\002\036Goog"
-  "le.Protobuf.WellKnownTypesb\006proto3"
+  "\022\021\n\rSYNTAX_PROTO3\020\001B{\n\023com.google.protob"
+  "ufB\tTypeProtoP\001Z-google.golang.org/proto"
+  "buf/types/known/typepb\370\001\001\242\002\003GPB\252\002\036Google"
+  ".Protobuf.WellKnownTypesb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2ftype_2eproto_deps[2] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
@@ -248,7 +243,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_goo
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2ftype_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftype_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto, "google/protobuf/type.proto", 1594,
+  false, false, descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto, "google/protobuf/type.proto", 1592,
   &descriptor_table_google_2fprotobuf_2ftype_2eproto_once, descriptor_table_google_2fprotobuf_2ftype_2eproto_sccs, descriptor_table_google_2fprotobuf_2ftype_2eproto_deps, 5, 2,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2ftype_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2ftype_2eproto, 5, file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto, file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto,
@@ -354,10 +349,6 @@ bool Syntax_IsValid(int value) {
 
 // ===================================================================
 
-void Type::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_Type_default_instance_._instance.get_mutable()->source_context_ = const_cast< PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      PROTOBUF_NAMESPACE_ID::SourceContext::internal_default_instance());
-}
 class Type::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::SourceContext& source_context(const Type* msg);
@@ -457,7 +448,6 @@ void Type::Clear() {
 
 const char* Type::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -747,8 +737,6 @@ void Type::InternalSwap(Type* other) {
 
 // ===================================================================
 
-void Field::InitAsDefaultInstance() {
-}
 class Field::_Internal {
  public:
 };
@@ -849,7 +837,6 @@ void Field::Clear() {
 
 const char* Field::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -1232,10 +1219,6 @@ void Field::InternalSwap(Field* other) {
 
 // ===================================================================
 
-void Enum::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_Enum_default_instance_._instance.get_mutable()->source_context_ = const_cast< PROTOBUF_NAMESPACE_ID::SourceContext*>(
-      PROTOBUF_NAMESPACE_ID::SourceContext::internal_default_instance());
-}
 class Enum::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::SourceContext& source_context(const Enum* msg);
@@ -1332,7 +1315,6 @@ void Enum::Clear() {
 
 const char* Enum::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -1588,8 +1570,6 @@ void Enum::InternalSwap(Enum* other) {
 
 // ===================================================================
 
-void EnumValue::InitAsDefaultInstance() {
-}
 class EnumValue::_Internal {
  public:
 };
@@ -1660,7 +1640,6 @@ void EnumValue::Clear() {
 
 const char* EnumValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -1856,10 +1835,6 @@ void EnumValue::InternalSwap(EnumValue* other) {
 
 // ===================================================================
 
-void Option::InitAsDefaultInstance() {
-  PROTOBUF_NAMESPACE_ID::_Option_default_instance_._instance.get_mutable()->value_ = const_cast< PROTOBUF_NAMESPACE_ID::Any*>(
-      PROTOBUF_NAMESPACE_ID::Any::internal_default_instance());
-}
 class Option::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::Any& value(const Option* msg);
@@ -1946,7 +1921,6 @@ void Option::Clear() {
 
 const char* Option::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArena(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);

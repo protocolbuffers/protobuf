@@ -40,7 +40,7 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "ApiProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
-option go_package = "google.golang.org/genproto/protobuf/api;api";
+option go_package = "google.golang.org/protobuf/types/known/apipb";
 
 // Api is a light-weight descriptor for an API Interface.
 //
@@ -52,7 +52,6 @@ option go_package = "google.golang.org/genproto/protobuf/api;api";
 // this message itself. See https://cloud.google.com/apis/design/glossary for
 // detailed terminology.
 message Api {
-
   // The fully qualified name of this interface, including package name
   // followed by the interface's simple name.
   string name = 1;
@@ -99,7 +98,6 @@ message Api {
 
 // Method represents a method of an API interface.
 message Method {
-
   // The simple name of this method.
   string name = 1;
 
@@ -169,7 +167,7 @@ message Method {
 // The mixin construct implies that all methods in `AccessControl` are
 // also declared with same name and request/response types in
 // `Storage`. A documentation generator or annotation processor will
-// see the effective `Storage.GetAcl` method after inherting
+// see the effective `Storage.GetAcl` method after inheriting
 // documentation and annotations as follows:
 //
 //     service Storage {

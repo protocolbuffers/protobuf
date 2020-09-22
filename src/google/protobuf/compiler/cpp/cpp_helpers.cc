@@ -1388,7 +1388,7 @@ class ParseLoopGenerator {
 
     std::vector<const FieldDescriptor*> ordered_fields;
     for (auto field : FieldRange(descriptor)) {
-      if (IsFieldUsed(field, options_)) {
+      if (!IsFieldStripped(field, options_)) {
         ordered_fields.push_back(field);
       }
     }
@@ -1415,9 +1415,6 @@ class ParseLoopGenerator {
       format_.Set("has_bits", "_has_bits_");
     }
 
-    if (descriptor->file()->options().cc_enable_arenas()) {
-      format_("$p_ns$::Arena* arena = GetArena(); (void)arena;\n");
-    }
     GenerateParseLoop(descriptor, ordered_fields);
     format_.Outdent();
     format_("success:\n");
@@ -1469,8 +1466,7 @@ class ParseLoopGenerator {
       // Open source doesn't support other ctypes;
       ctype = field->options().ctype();
     }
-    if (field->file()->options().cc_enable_arenas() && !field->is_repeated() &&
-        !options_.opensource_runtime &&
+    if (!field->is_repeated() && !options_.opensource_runtime &&
         GetOptimizeFor(field->file(), options_) != FileOptions::LITE_RUNTIME &&
         // For now only use arena string for strings with empty defaults.
         field->default_value_string().empty() &&
@@ -1615,9 +1611,13 @@ class ParseLoopGenerator {
             }
           } else if (IsWeak(field, options_)) {
             format_(
-                "ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($1$,"
-                " _$classname$_default_instance_.$2$_), ptr);\n",
-                field->number(), FieldName(field));
+                "{\n"
+                "  auto* default_ = &reinterpret_cast<const Message&>($1$);\n"
+                "  ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($2$,"
+                " default_), ptr);\n"
+                "}\n",
+                QualifiedDefaultInstanceName(field->message_type(), options_),
+                field->number());
           } else {
             format_("ptr = ctx->ParseMessage(_internal_$1$_$2$(), ptr);\n",
                     field->is_repeated() ? "add" : "mutable", FieldName(field));

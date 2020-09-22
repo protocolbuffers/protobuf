@@ -12,6 +12,7 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream.cc
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_impl.cc
   ${protobuf_source_dir}/src/google/protobuf/io/zero_copy_stream_impl_lite.cc
+  ${protobuf_source_dir}/src/google/protobuf/map.cc
   ${protobuf_source_dir}/src/google/protobuf/message_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/parse_context.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field.cc

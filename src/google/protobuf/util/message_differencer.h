@@ -177,43 +177,33 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // For known fields, "field" is filled in and "unknown_field_number" is -1.
     // For unknown fields, "field" is NULL, "unknown_field_number" is the field
     // number, and "unknown_field_type" is its type.
-    const FieldDescriptor* field;
-    int unknown_field_number;
-    UnknownField::Type unknown_field_type;
+    const FieldDescriptor* field = nullptr;
+    int unknown_field_number = -1;
+    UnknownField::Type unknown_field_type = UnknownField::Type::TYPE_VARINT;
 
     // If this a repeated field, "index" is the index within it.  For unknown
     // fields, this is the index of the field among all unknown fields of the
     // same field number and type.
-    int index;
+    int index = -1;
 
     // If "field" is a repeated field which is being treated as a map or
     // a set (see TreatAsMap() and TreatAsSet(), below), new_index indicates
     // the index the position to which the element has moved.  If the element
     // has not moved, "new_index" will have the same value as "index".
-    int new_index;
+    int new_index = -1;
 
     // For unknown fields, these are the pointers to the UnknownFieldSet
     // containing the unknown fields. In certain cases (e.g. proto1's
     // MessageSet, or nested groups of unknown fields), these may differ from
     // the messages' internal UnknownFieldSets.
-    const UnknownFieldSet* unknown_field_set1;
-    const UnknownFieldSet* unknown_field_set2;
+    const UnknownFieldSet* unknown_field_set1 = nullptr;
+    const UnknownFieldSet* unknown_field_set2 = nullptr;
 
     // For unknown fields, these are the index of the field within the
     // UnknownFieldSets. One or the other will be -1 when
     // reporting an addition or deletion.
-    int unknown_field_index1;
-    int unknown_field_index2;
-
-    SpecificField()
-        : field(NULL),
-          unknown_field_number(-1),
-          index(-1),
-          new_index(-1),
-          unknown_field_set1(NULL),
-          unknown_field_set2(NULL),
-          unknown_field_index1(-1),
-          unknown_field_index2(-1) {}
+    int unknown_field_index1 = -1;
+    int unknown_field_index2 = -1;
   };
 
   // Abstract base class from which all MessageDifferencer
@@ -328,7 +318,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
   // Abstract base class from which all IgnoreCriteria derive.
   // By adding IgnoreCriteria more complex ignore logic can be implemented.
-  // IgnoreCriteria are registed with AddIgnoreCriteria. For each compared
+  // IgnoreCriteria are registered with AddIgnoreCriteria. For each compared
   // field IsIgnored is called on each added IgnoreCriteria until one returns
   // true or all return false.
   // IsIgnored is called for fields where at least one side has a value.
@@ -766,6 +756,11 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool CompareRepeatedField(const Message& message1, const Message& message2,
                             const FieldDescriptor* field,
                             std::vector<SpecificField>* parent_fields);
+
+  // Compare the map fields using map reflection instead of sync to repeated.
+  bool CompareMapFieldByMapReflection(const Message& message1,
+                                      const Message& message2,
+                                      const FieldDescriptor* field);
 
   // Shorthand for CompareFieldValueUsingParentFields with NULL parent_fields.
   bool CompareFieldValue(const Message& message1, const Message& message2,

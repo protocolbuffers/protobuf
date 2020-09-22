@@ -645,7 +645,7 @@ def main(args):
   opts, extra_args = parser.parse_args(args)
 
   if not extra_args:
-    parser.error('Need atleast one file to process')
+    parser.error('Need at least one file to process')
 
   result = 0
   for a_path in extra_args:

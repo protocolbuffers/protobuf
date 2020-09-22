@@ -44,7 +44,6 @@
 #include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/unittest_lazy_dependencies.pb.h>
 #include <google/protobuf/unittest_proto3_arena.pb.h>
@@ -58,6 +57,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/substitute.h>
 
 
@@ -479,7 +479,7 @@ TEST_F(FileDescriptorTest, FindExtensionByNumber) {
 
 
 TEST_F(FileDescriptorTest, BuildAgain) {
-  // Test that if te call BuildFile again on the same input we get the same
+  // Test that if we call BuildFile again on the same input we get the same
   // FileDescriptor back.
   FileDescriptorProto file;
   foo_file_->CopyTo(&file);

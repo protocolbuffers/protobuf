@@ -244,3 +244,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. ADLINK EdgeSDK
    * Website: https://www.adlinktech.com/en/Edge-SDK-IoT
    * Extensions: 1086
+
+1. Wire wire_package
+   * Website: https://square.github.io/wire/
+   * Extensions: 1087

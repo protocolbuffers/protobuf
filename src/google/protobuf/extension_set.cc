@@ -1870,28 +1870,32 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
     return;
   }
 
-  const auto old_flat_capacity = flat_capacity_;
-
+  auto new_flat_capacity = flat_capacity_;
   do {
-    flat_capacity_ = flat_capacity_ == 0 ? 1 : flat_capacity_ * 4;
-  } while (flat_capacity_ < minimum_new_capacity);
+    new_flat_capacity = new_flat_capacity == 0 ? 1 : new_flat_capacity * 4;
+  } while (new_flat_capacity < minimum_new_capacity);
 
   const KeyValue* begin = flat_begin();
   const KeyValue* end = flat_end();
-  if (flat_capacity_ > kMaximumFlatCapacity) {
-    // Switch to LargeMap
-    map_.large = Arena::Create<LargeMap>(arena_);
-    LargeMap::iterator hint = map_.large->begin();
+  AllocatedData new_map;
+  if (new_flat_capacity > kMaximumFlatCapacity) {
+    new_map.large = Arena::Create<LargeMap>(arena_);
+    LargeMap::iterator hint = new_map.large->begin();
     for (const KeyValue* it = begin; it != end; ++it) {
-      hint = map_.large->insert(hint, {it->first, it->second});
+      hint = new_map.large->insert(hint, {it->first, it->second});
     }
-    flat_size_ = 0;
   } else {
-    map_.flat = Arena::CreateArray<KeyValue>(arena_, flat_capacity_);
-    std::copy(begin, end, map_.flat);
+    new_map.flat = Arena::CreateArray<KeyValue>(arena_, new_flat_capacity);
+    std::copy(begin, end, new_map.flat);
   }
+
   if (arena_ == nullptr) {
-    DeleteFlatMap(begin, old_flat_capacity);
+    DeleteFlatMap(begin, flat_capacity_);
+  }
+  flat_capacity_ = new_flat_capacity;
+  map_ = new_map;
+  if (is_large()) {
+    flat_size_ = 0;
   }
 }
 

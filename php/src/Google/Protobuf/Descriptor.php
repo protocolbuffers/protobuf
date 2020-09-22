@@ -97,4 +97,12 @@ class Descriptor
     {
         return count($this->internal_desc->getOneofDecl());
     }
+
+    /**
+     * @return int Number of real oneofs in message
+     */
+    public function getRealOneofDeclCount()
+    {
+        return $this->internal_desc->getRealOneofDeclCount();
+    }
 }

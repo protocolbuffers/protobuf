@@ -808,8 +808,11 @@ TEST_F(TokenizerTest, ParseString) {
   Tokenizer::ParseString("'\\ud852XX'", &output);
   EXPECT_EQ("\xed\xa1\x92XX", output);
   // Malformed escape: Demons may fly out of the nose.
-  Tokenizer::ParseString("\\u0", &output);
+  Tokenizer::ParseString("'\\u0'", &output);
   EXPECT_EQ("u0", output);
+  // Beyond the range of valid UTF-32 code units.
+  Tokenizer::ParseString("'\\U00110000\\U00200000\\UFFFFFFFF'", &output);
+  EXPECT_EQ("\\U00110000\\U00200000\\Uffffffff", output);
 
   // Test invalid strings that will never be tokenized as strings.
 #ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet

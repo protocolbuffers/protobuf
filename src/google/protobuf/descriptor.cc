@@ -2723,7 +2723,7 @@ void FieldDescriptor::DebugString(
   if (has_json_name_) {
     if (!bracketed) {
       bracketed = true;
-      contents->append("[");
+      contents->append(" [");
     } else {
       contents->append(", ");
     }
@@ -4883,6 +4883,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                    DescriptorPool::ErrorCollector::DEFAULT_VALUE,
                    "Messages can't have default values.");
           result->has_default_value_ = false;
+          result->default_generated_instance_ = nullptr;
           break;
       }
 
@@ -4929,6 +4930,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
           result->default_value_string_ = &internal::GetEmptyString();
           break;
         case FieldDescriptor::CPPTYPE_MESSAGE:
+          result->default_generated_instance_ = nullptr;
           break;
       }
     }
@@ -6131,7 +6133,7 @@ void DescriptorBuilder::ValidateFieldOptions(
 
   // json_name option is not allowed on extension fields. Note that the
   // json_name field in FieldDescriptorProto is always populated by protoc
-  // when it sends descriptor data to plugins (caculated from field name if
+  // when it sends descriptor data to plugins (calculated from field name if
   // the option is not explicitly set) so we can't rely on its presence to
   // determine whether the json_name option is set on the field. Here we
   // compare it against the default calculated json_name value and consider

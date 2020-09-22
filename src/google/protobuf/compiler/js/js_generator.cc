@@ -1654,6 +1654,8 @@ void Generator::GenerateHeader(const GeneratorOptions& options,
       " * @public\n"
       " */\n"
       "// GENERATED CODE -- DO NOT EDIT!\n"
+      "/* eslint-disable */\n"
+      "// @ts-nocheck\n"
       "\n");
 }
 
@@ -2687,8 +2689,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         "\n"
         "\n",
         "index", JSFieldIndex(field), "oneofgroup",
-        (InRealOneof(field) ? (", " + JSOneofArray(options, field))
-                                   : ""));
+        (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""));
 
     if (field->is_repeated()) {
       GenerateRepeatedMessageHelperMethods(options, printer, field);
@@ -2993,8 +2994,8 @@ void Generator::GenerateRepeatedMessageHelperMethods(
       "\n"
       "\n",
       "index", JSFieldIndex(field), "oneofgroup",
-      (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""),
-      "ctor", GetMessagePath(options, field->message_type()));
+      (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""), "ctor",
+      GetMessagePath(options, field->message_type()));
 }
 
 void Generator::GenerateClassExtensionFieldInfo(const GeneratorOptions& options,
@@ -3162,6 +3163,16 @@ void Generator::GenerateClassDeserializeBinaryField(
           (field->type() == FieldDescriptor::TYPE_GROUP)
               ? (StrCat(field->number()) + ", ")
               : "");
+    } else if (field->is_packable()) {
+      printer->Print(
+          "      var values = /** @type {$fieldtype$} */ "
+          "(reader.isDelimited() "
+          "? reader.readPacked$reader$() : [reader.read$reader$()]);\n",
+          "fieldtype",
+          JSFieldTypeAnnotation(options, field, false, true,
+                                /* singular_if_not_packed */ false, BYTES_U8),
+          "reader",
+          JSBinaryReaderMethodType(field));
     } else {
       printer->Print(
           "      var value = /** @type {$fieldtype$} */ "
@@ -3173,7 +3184,13 @@ void Generator::GenerateClassDeserializeBinaryField(
           JSBinaryReadWriteMethodName(field, /* is_writer = */ false));
     }
 
-    if (field->is_repeated() && !field->is_packed()) {
+    if (field->is_packable()) {
+      printer->Print(
+          "      for (var i = 0; i < values.length; i++) {\n"
+          "        msg.add$name$(values[i]);\n"
+          "      }\n", "name",
+          JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));
+    } else if (field->is_repeated()) {
       printer->Print(
           "      msg.add$name$(value);\n", "name",
           JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));

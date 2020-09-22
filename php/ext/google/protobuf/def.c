@@ -180,8 +180,7 @@ PHP_METHOD(EnumDescriptor, getValue) {
   zend_long index;
   zval ret;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
     zend_error(E_USER_ERROR, "Expect integer for index.\n");
     return;
   }
@@ -284,8 +283,7 @@ PHP_METHOD(OneofDescriptor, getField) {
   zend_long index;
   zval ret;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
     zend_error(E_USER_ERROR, "Expect integer for index.\n");
     return;
   }
@@ -615,8 +613,7 @@ PHP_METHOD(Descriptor, getField) {
   zval ret;
   zend_long index;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
     zend_error(E_USER_ERROR, "Expect integer for index.\n");
     return;
   }
@@ -658,8 +655,7 @@ PHP_METHOD(Descriptor, getOneofDecl) {
   zend_long index;
   zval ret;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
-      FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &index) == FAILURE) {
     zend_error(E_USER_ERROR, "Expect integer for index.\n");
     return;
   }
@@ -799,8 +795,8 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
   zend_string *str;
   zval ret;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &classname,
-                            &classname_len) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &classname, &classname_len) ==
+      FAILURE) {
     return;
   }
 
@@ -828,8 +824,8 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
   zend_string *str;
   zval ret;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &classname,
-                            &classname_len) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &classname, &classname_len) ==
+      FAILURE) {
     return;
   }
 
@@ -856,8 +852,8 @@ PHP_METHOD(DescriptorPool, getDescriptorByProtoName) {
   zend_long protoname_len;
   const upb_msgdef *m;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &protoname,
-                            &protoname_len) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &protoname, &protoname_len) ==
+      FAILURE) {
     return;
   }
 

@@ -1084,7 +1084,7 @@ public final class Descriptors {
 
     /**
      * Does this field have the {@code [packed = true]} option or is this field packable in proto3
-     * and not explicitly setted to unpacked?
+     * and not explicitly set to unpacked?
      */
     @Override
     public boolean isPacked() {

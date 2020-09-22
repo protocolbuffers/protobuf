@@ -234,9 +234,10 @@ TEST_F(MapImplTest, UsageErrors) {
                "  Actual   : int64");
 
   MapValueRef value;
-  EXPECT_DEATH(value.SetFloatValue(0.1),
-               "Protocol Buffer map usage error:\n"
-               "MapValueRef::type MapValueRef is not initialized.");
+  EXPECT_DEATH(
+      value.SetFloatValue(0.1),
+      "Protocol Buffer map usage error:\n"
+      "MapValue[Const]*Ref::type MapValue[Const]*Ref is not initialized.");
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
@@ -978,6 +979,43 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
   MapIterator it2 = reflection_tester.MapEnd(&message, "map_int32_int32");
   it2 = it1;
   EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
+}
+
+TEST_F(MapImplTest, SpaceUsed) {
+  constexpr size_t kMinCap = 8;
+
+  Map<int32, int32> m;
+  // An newly constructed map should have no space used.
+  EXPECT_EQ(m.SpaceUsedExcludingSelfLong(), 0);
+
+  size_t capacity = kMinCap;
+  for (int i = 0; i < 100; ++i) {
+    m[i];
+    static constexpr double kMaxLoadFactor = .75;
+    if (m.size() >= capacity * kMaxLoadFactor) {
+      capacity *= 2;
+    }
+    EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
+              sizeof(void*) * capacity +
+                  m.size() * sizeof(std::pair<std::pair<int32, int32>, void*>));
+  }
+
+  // Test string, and non-scalar keys.
+  Map<std::string, int32> m2;
+  std::string str = "Some arbitrarily large string";
+  m2[str] = 1;
+  EXPECT_EQ(m2.SpaceUsedExcludingSelfLong(),
+            sizeof(void*) * kMinCap +
+                sizeof(std::pair<std::pair<std::string, int32>, void*>) +
+                internal::StringSpaceUsedExcludingSelfLong(str));
+
+  // Test messages, and non-scalar values.
+  Map<int32, TestAllTypes> m3;
+  m3[0].set_optional_string(str);
+  EXPECT_EQ(m3.SpaceUsedExcludingSelfLong(),
+            sizeof(void*) * kMinCap +
+                sizeof(std::pair<std::pair<int32, TestAllTypes>, void*>) +
+                m3[0].SpaceUsedLong() - sizeof(m3[0]));
 }
 
 // Attempts to verify that a map with keys a and b has a random ordering. This
@@ -2507,6 +2545,27 @@ TEST(GeneratedMapFieldTest, IsInitialized) {
   EXPECT_TRUE(map_message.IsInitialized());
 }
 
+TEST(GeneratedMapFieldTest, SpaceUsed) {
+  unittest::TestRequiredMessageMap map_message;
+  const size_t initial = map_message.SpaceUsed();
+  const size_t space_used_message = unittest::TestRequired().SpaceUsed();
+
+  auto& m = *map_message.mutable_map_field();
+  constexpr int kNumValues = 100;
+  for (int i = 0; i < kNumValues; ++i) {
+    m[i];
+  }
+
+  // The exact value will depend on internal state, like collisions,
+  // so we can't predict it. But we can predict a lower bound.
+  size_t lower_bound =
+      initial + kNumValues * (space_used_message + sizeof(int32) +
+                              /* Node::next */ sizeof(void*) +
+                              /* table entry */ sizeof(void*));
+
+  EXPECT_LE(lower_bound, map_message.SpaceUsed());
+}
+
 TEST(GeneratedMapFieldTest, MessagesMustMerge) {
   unittest::TestRequiredMessageMap map_message;
 
@@ -3158,9 +3217,9 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
   // repeated field to calculate ByteSizeLong but use map to serialize the real
   // data, thus the ByteSizeLong may bigger than real serialized size. A crash
-  // might be happen at SerializeToString(). Or an "unexpect end group" warning
-  // was raised at parse back if user use SerializeWithCachedSizes() which
-  // avoids size check at serialize.
+  // might be happen at SerializeToString(). Or an "unexpected end group"
+  // warning was raised at parse back if user use SerializeWithCachedSizes()
+  // which avoids size check at serialize.
   std::string serialized_data;
   dynamic_message->SerializeToString(&serialized_data);
   EXPECT_EQ(serialized_data, expected_serialized_data);
