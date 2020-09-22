@@ -134,15 +134,6 @@ static const int8_t delim_ops[37] = {
     OP_VARPCK_LG2(3), /* REPEATED SINT64 */
 };
 
-/* Data pertaining to the parse. */
-typedef struct {
-  const char *limit;       /* End of delimited region or end of buffer. */
-  upb_arena *arena;
-  int depth;
-  uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
-  jmp_buf err;
-} upb_decstate;
-
 typedef union {
   bool bool_val;
   uint32_t uint32_val;
