@@ -52,22 +52,23 @@ const char *upb_psf32_2bt(UPB_PARSE_PARAMS) {
 }
 
 UPB_FORCEINLINE
-static const char *fastdecode_longvarint_impl(UPB_PARSE_PARAMS, int64_t res1,
-                                              int valbytes) {
+static const char *fastdecode_longvarint_impl(UPB_PARSE_PARAMS, int valbytes) {
   char *field = (char *)data;
 
   // The algorithm relies on sign extension to set all high bits when the varint
   // continues. This way it can use "and" to aggregate in to the result.
   const int8_t *p = (const int8_t*)(ptr);
+  int64_t res1 = *p;
+  uint64_t ones = res1;  // save the useful high bit 1's in res1
+  uint64_t byte;
+  int64_t res2, res3;
+  int sign_bit;
+
   // However this requires the low bits after shifting to be 1's as well. On
   // x86_64 a shld from a single register filled with enough 1's in the high
   // bits can accomplish all this in one instruction. It so happens that res1
   // has 57 high bits of ones, which is enough for the largest shift done.
   assert(res1 >> 7 == -1);
-  uint64_t ones = res1;  // save the useful high bit 1's in res1
-  uint64_t byte;
-  int64_t res2, res3;
-  int sign_bit;
 
 #define SHLD(n) byte = ((byte << (n * 7)) | (ones >> (64 - (n * 7))))
 
@@ -155,22 +156,21 @@ done2 : {
 }
 
 UPB_NOINLINE
-static const char *fastdecode_longvarint32(UPB_PARSE_PARAMS, int64_t val) {
-  return fastdecode_longvarint_impl(d, ptr, msg, table, hasbits, data, val, 4);
+static const char *fastdecode_longvarint32(UPB_PARSE_PARAMS) {
+  return fastdecode_longvarint_impl(d, ptr, msg, table, hasbits, data, 4);
 }
 
 UPB_NOINLINE
-static const char *fastdecode_longvarint64(UPB_PARSE_PARAMS, int64_t val) {
-  return fastdecode_longvarint_impl(d, ptr, msg, table, hasbits, data, val, 8);
+static const char *fastdecode_longvarint64(UPB_PARSE_PARAMS) {
+  return fastdecode_longvarint_impl(d, ptr, msg, table, hasbits, data, 8);
 }
 
 UPB_FORCEINLINE
-static const char *fastdecode_longvarint(UPB_PARSE_PARAMS, int64_t val,
-                                         int valbytes) {
+static const char *fastdecode_longvarint(UPB_PARSE_PARAMS, int valbytes) {
   if (valbytes == 4) {
-    return fastdecode_longvarint32(d, ptr, msg, table, hasbits, data, val);
+    return fastdecode_longvarint32(d, ptr, msg, table, hasbits, data);
   } else if (valbytes == 8) {
-    return fastdecode_longvarint64(d, ptr, msg, table, hasbits, data, val);
+    return fastdecode_longvarint64(d, ptr, msg, table, hasbits, data);
   }
   UPB_UNREACHABLE();
 }
@@ -178,17 +178,17 @@ static const char *fastdecode_longvarint(UPB_PARSE_PARAMS, int64_t val,
 UPB_FORCEINLINE
 static const char *fastdecode_scalarvarint(UPB_PARSE_PARAMS, int tagbytes,
                                            int valbytes) {
-  int64_t val;
+  uint64_t val = 0;
   void *field;
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) return ptr;
   ptr += tagbytes;
   hasbits |= data;
   field = (char*)msg + (data >> 48);
-  val = *ptr;
-  if (UPB_UNLIKELY(val < 0)) {
+  if (UPB_UNLIKELY(*ptr < 0)) {
     return fastdecode_longvarint(d, ptr, msg, table, hasbits, (uint64_t)field,
-                                 val, valbytes);
+                                 valbytes);
   }
+  val = *ptr;
   memcpy(field, &val, valbytes);
   return fastdecode_dispatch(d, ptr + 1, msg, table, hasbits);
 }
