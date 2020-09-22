@@ -57,4 +57,7 @@ upb_map *MapField_GetUpbMap(zval *val, const upb_fielddef *f, upb_arena *arena);
 void MapField_GetPhpWrapper(zval *val, upb_map *arr, const upb_fielddef *f,
                             zval *arena);
 
+bool MapEq(const upb_map *m1, const upb_map *m2, upb_fieldtype_t key_type,
+           upb_fieldtype_t val_type, const upb_msgdef *m);
+
 #endif  // PHP_PROTOBUF_MAP_H_

@@ -56,4 +56,7 @@ bool Message_GetUpbMessage(zval *val, const Descriptor *desc, upb_arena *arena,
 void Message_GetPhpWrapper(zval *val, const Descriptor *desc, upb_msg *msg,
                            zval *arena);
 
+bool ValueEq(upb_msgval val1, upb_msgval val2, upb_fieldtype_t type,
+             const upb_msgdef *m);
+
 #endif  // PHP_PROTOBUF_MESSAGE_H_
