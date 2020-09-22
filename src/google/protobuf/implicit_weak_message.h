@@ -76,12 +76,12 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
     data_.append(static_cast<const ImplicitWeakMessage&>(other).data_);
   }
 
-  const char* _InternalParse(const char* ptr, ParseContext* ctx) final;
+  const char* _InternalParse(const char* ptr, ParseContext* ctx) final override;
 
   size_t ByteSizeLong() const override { return data_.size(); }
 
   uint8* _InternalSerialize(uint8* target,
-                            io::EpsCopyOutputStream* stream) const final {
+                            io::EpsCopyOutputStream* stream) const final override {
     return stream->WriteRaw(data_.data(), static_cast<int>(data_.size()),
                             target);
   }
