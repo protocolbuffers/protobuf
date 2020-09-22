@@ -399,30 +399,30 @@ class PROTOBUF_EXPORT FileDescriptorSet PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline FileDescriptorSet* New() const final {
+  inline FileDescriptorSet* New() const final override {
     return CreateMaybeMessage<FileDescriptorSet>(nullptr);
   }
 
-  FileDescriptorSet* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FileDescriptorSet* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<FileDescriptorSet>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const FileDescriptorSet& from);
   void MergeFrom(const FileDescriptorSet& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(FileDescriptorSet* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -435,7 +435,7 @@ class PROTOBUF_EXPORT FileDescriptorSet PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -551,30 +551,30 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline FileDescriptorProto* New() const final {
+  inline FileDescriptorProto* New() const final override {
     return CreateMaybeMessage<FileDescriptorProto>(nullptr);
   }
 
-  FileDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FileDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<FileDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const FileDescriptorProto& from);
   void MergeFrom(const FileDescriptorProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(FileDescriptorProto* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -587,7 +587,7 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -944,30 +944,30 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline DescriptorProto_ExtensionRange* New() const final {
+  inline DescriptorProto_ExtensionRange* New() const final override {
     return CreateMaybeMessage<DescriptorProto_ExtensionRange>(nullptr);
   }
 
-  DescriptorProto_ExtensionRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  DescriptorProto_ExtensionRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<DescriptorProto_ExtensionRange>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
   void MergeFrom(const DescriptorProto_ExtensionRange& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(DescriptorProto_ExtensionRange* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -980,7 +980,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -1127,30 +1127,30 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline DescriptorProto_ReservedRange* New() const final {
+  inline DescriptorProto_ReservedRange* New() const final override {
     return CreateMaybeMessage<DescriptorProto_ReservedRange>(nullptr);
   }
 
-  DescriptorProto_ReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  DescriptorProto_ReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<DescriptorProto_ReservedRange>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
   void MergeFrom(const DescriptorProto_ReservedRange& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(DescriptorProto_ReservedRange* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -1163,7 +1163,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -1290,30 +1290,30 @@ class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline DescriptorProto* New() const final {
+  inline DescriptorProto* New() const final override {
     return CreateMaybeMessage<DescriptorProto>(nullptr);
   }
 
-  DescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  DescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<DescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const DescriptorProto& from);
   void MergeFrom(const DescriptorProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(DescriptorProto* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -1326,7 +1326,7 @@ class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -1634,30 +1634,30 @@ class PROTOBUF_EXPORT ExtensionRangeOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline ExtensionRangeOptions* New() const final {
+  inline ExtensionRangeOptions* New() const final override {
     return CreateMaybeMessage<ExtensionRangeOptions>(nullptr);
   }
 
-  ExtensionRangeOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  ExtensionRangeOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<ExtensionRangeOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const ExtensionRangeOptions& from);
   void MergeFrom(const ExtensionRangeOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(ExtensionRangeOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -1670,7 +1670,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -1789,30 +1789,30 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline FieldDescriptorProto* New() const final {
+  inline FieldDescriptorProto* New() const final override {
     return CreateMaybeMessage<FieldDescriptorProto>(nullptr);
   }
 
-  FieldDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FieldDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<FieldDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const FieldDescriptorProto& from);
   void MergeFrom(const FieldDescriptorProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(FieldDescriptorProto* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -1825,7 +1825,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -2221,30 +2221,30 @@ class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline OneofDescriptorProto* New() const final {
+  inline OneofDescriptorProto* New() const final override {
     return CreateMaybeMessage<OneofDescriptorProto>(nullptr);
   }
 
-  OneofDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  OneofDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<OneofDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const OneofDescriptorProto& from);
   void MergeFrom(const OneofDescriptorProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(OneofDescriptorProto* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -2257,7 +2257,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -2396,30 +2396,30 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline EnumDescriptorProto_EnumReservedRange* New() const final {
+  inline EnumDescriptorProto_EnumReservedRange* New() const final override {
     return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(nullptr);
   }
 
-  EnumDescriptorProto_EnumReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumDescriptorProto_EnumReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
   void MergeFrom(const EnumDescriptorProto_EnumReservedRange& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -2432,7 +2432,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -2559,30 +2559,30 @@ class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline EnumDescriptorProto* New() const final {
+  inline EnumDescriptorProto* New() const final override {
     return CreateMaybeMessage<EnumDescriptorProto>(nullptr);
   }
 
-  EnumDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<EnumDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const EnumDescriptorProto& from);
   void MergeFrom(const EnumDescriptorProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(EnumDescriptorProto* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -2595,7 +2595,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -2802,30 +2802,30 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline EnumValueDescriptorProto* New() const final {
+  inline EnumValueDescriptorProto* New() const final override {
     return CreateMaybeMessage<EnumValueDescriptorProto>(nullptr);
   }
 
-  EnumValueDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumValueDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<EnumValueDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const EnumValueDescriptorProto& from);
   void MergeFrom(const EnumValueDescriptorProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(EnumValueDescriptorProto* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -2838,7 +2838,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -2992,30 +2992,30 @@ class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline ServiceDescriptorProto* New() const final {
+  inline ServiceDescriptorProto* New() const final override {
     return CreateMaybeMessage<ServiceDescriptorProto>(nullptr);
   }
 
-  ServiceDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  ServiceDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<ServiceDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const ServiceDescriptorProto& from);
   void MergeFrom(const ServiceDescriptorProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(ServiceDescriptorProto* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -3028,7 +3028,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -3187,30 +3187,30 @@ class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline MethodDescriptorProto* New() const final {
+  inline MethodDescriptorProto* New() const final override {
     return CreateMaybeMessage<MethodDescriptorProto>(nullptr);
   }
 
-  MethodDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  MethodDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<MethodDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const MethodDescriptorProto& from);
   void MergeFrom(const MethodDescriptorProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(MethodDescriptorProto* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -3223,7 +3223,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -3436,30 +3436,30 @@ class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline FileOptions* New() const final {
+  inline FileOptions* New() const final override {
     return CreateMaybeMessage<FileOptions>(nullptr);
   }
 
-  FileOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FileOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<FileOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const FileOptions& from);
   void MergeFrom(const FileOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(FileOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -3472,7 +3472,7 @@ class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -3994,30 +3994,30 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline MessageOptions* New() const final {
+  inline MessageOptions* New() const final override {
     return CreateMaybeMessage<MessageOptions>(nullptr);
   }
 
-  MessageOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  MessageOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<MessageOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const MessageOptions& from);
   void MergeFrom(const MessageOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(MessageOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -4030,7 +4030,7 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -4210,30 +4210,30 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline FieldOptions* New() const final {
+  inline FieldOptions* New() const final override {
     return CreateMaybeMessage<FieldOptions>(nullptr);
   }
 
-  FieldOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  FieldOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<FieldOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const FieldOptions& from);
   void MergeFrom(const FieldOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(FieldOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -4246,7 +4246,7 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -4520,30 +4520,30 @@ class PROTOBUF_EXPORT OneofOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline OneofOptions* New() const final {
+  inline OneofOptions* New() const final override {
     return CreateMaybeMessage<OneofOptions>(nullptr);
   }
 
-  OneofOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  OneofOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<OneofOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const OneofOptions& from);
   void MergeFrom(const OneofOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(OneofOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -4556,7 +4556,7 @@ class PROTOBUF_EXPORT OneofOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -4675,30 +4675,30 @@ class PROTOBUF_EXPORT EnumOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline EnumOptions* New() const final {
+  inline EnumOptions* New() const final override {
     return CreateMaybeMessage<EnumOptions>(nullptr);
   }
 
-  EnumOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<EnumOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const EnumOptions& from);
   void MergeFrom(const EnumOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(EnumOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -4711,7 +4711,7 @@ class PROTOBUF_EXPORT EnumOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -4861,30 +4861,30 @@ class PROTOBUF_EXPORT EnumValueOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline EnumValueOptions* New() const final {
+  inline EnumValueOptions* New() const final override {
     return CreateMaybeMessage<EnumValueOptions>(nullptr);
   }
 
-  EnumValueOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  EnumValueOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<EnumValueOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const EnumValueOptions& from);
   void MergeFrom(const EnumValueOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(EnumValueOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -4897,7 +4897,7 @@ class PROTOBUF_EXPORT EnumValueOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -5032,30 +5032,30 @@ class PROTOBUF_EXPORT ServiceOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline ServiceOptions* New() const final {
+  inline ServiceOptions* New() const final override {
     return CreateMaybeMessage<ServiceOptions>(nullptr);
   }
 
-  ServiceOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  ServiceOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<ServiceOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const ServiceOptions& from);
   void MergeFrom(const ServiceOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(ServiceOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -5068,7 +5068,7 @@ class PROTOBUF_EXPORT ServiceOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -5203,30 +5203,30 @@ class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline MethodOptions* New() const final {
+  inline MethodOptions* New() const final override {
     return CreateMaybeMessage<MethodOptions>(nullptr);
   }
 
-  MethodOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  MethodOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<MethodOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const MethodOptions& from);
   void MergeFrom(const MethodOptions& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(MethodOptions* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -5239,7 +5239,7 @@ class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -5421,30 +5421,30 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline UninterpretedOption_NamePart* New() const final {
+  inline UninterpretedOption_NamePart* New() const final override {
     return CreateMaybeMessage<UninterpretedOption_NamePart>(nullptr);
   }
 
-  UninterpretedOption_NamePart* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  UninterpretedOption_NamePart* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<UninterpretedOption_NamePart>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const UninterpretedOption_NamePart& from);
   void MergeFrom(const UninterpretedOption_NamePart& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(UninterpretedOption_NamePart* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -5457,7 +5457,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -5594,30 +5594,30 @@ class PROTOBUF_EXPORT UninterpretedOption PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline UninterpretedOption* New() const final {
+  inline UninterpretedOption* New() const final override {
     return CreateMaybeMessage<UninterpretedOption>(nullptr);
   }
 
-  UninterpretedOption* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  UninterpretedOption* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<UninterpretedOption>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const UninterpretedOption& from);
   void MergeFrom(const UninterpretedOption& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(UninterpretedOption* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -5630,7 +5630,7 @@ class PROTOBUF_EXPORT UninterpretedOption PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -5860,30 +5860,30 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline SourceCodeInfo_Location* New() const final {
+  inline SourceCodeInfo_Location* New() const final override {
     return CreateMaybeMessage<SourceCodeInfo_Location>(nullptr);
   }
 
-  SourceCodeInfo_Location* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  SourceCodeInfo_Location* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<SourceCodeInfo_Location>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const SourceCodeInfo_Location& from);
   void MergeFrom(const SourceCodeInfo_Location& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(SourceCodeInfo_Location* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -5896,7 +5896,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -6113,30 +6113,30 @@ class PROTOBUF_EXPORT SourceCodeInfo PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline SourceCodeInfo* New() const final {
+  inline SourceCodeInfo* New() const final override {
     return CreateMaybeMessage<SourceCodeInfo>(nullptr);
   }
 
-  SourceCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  SourceCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<SourceCodeInfo>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const SourceCodeInfo& from);
   void MergeFrom(const SourceCodeInfo& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(SourceCodeInfo* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -6149,7 +6149,7 @@ class PROTOBUF_EXPORT SourceCodeInfo PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -6267,30 +6267,30 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline GeneratedCodeInfo_Annotation* New() const final {
+  inline GeneratedCodeInfo_Annotation* New() const final override {
     return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(nullptr);
   }
 
-  GeneratedCodeInfo_Annotation* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  GeneratedCodeInfo_Annotation* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
   void MergeFrom(const GeneratedCodeInfo_Annotation& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(GeneratedCodeInfo_Annotation* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -6303,7 +6303,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
@@ -6477,30 +6477,30 @@ class PROTOBUF_EXPORT GeneratedCodeInfo PROTOBUF_FINAL :
 
   // implements Message ----------------------------------------------
 
-  inline GeneratedCodeInfo* New() const final {
+  inline GeneratedCodeInfo* New() const final override {
     return CreateMaybeMessage<GeneratedCodeInfo>(nullptr);
   }
 
-  GeneratedCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+  GeneratedCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final override {
     return CreateMaybeMessage<GeneratedCodeInfo>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final override;
   void CopyFrom(const GeneratedCodeInfo& from);
   void MergeFrom(const GeneratedCodeInfo& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final override;
+  bool IsInitialized() const final override;
 
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  size_t ByteSizeLong() const final override;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final override;
   ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final override;
+  int GetCachedSize() const final override { return _cached_size_.Get(); }
 
   private:
   inline void SharedCtor();
   inline void SharedDtor();
-  void SetCachedSize(int size) const final;
+  void SetCachedSize(int size) const final override;
   void InternalSwap(GeneratedCodeInfo* other);
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
@@ -6513,7 +6513,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo PROTOBUF_FINAL :
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final override;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
