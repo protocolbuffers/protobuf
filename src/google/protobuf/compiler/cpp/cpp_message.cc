@@ -296,6 +296,26 @@ bool ShouldMarkClearAsFinal(const Descriptor* descriptor,
          options.opensource_runtime;
 }
 
+bool ShouldMarkClearAsOverride(const Descriptor* descriptor,
+                            const Options& options) {
+  static std::set<std::string> exclusions{
+  };
+
+  const std::string name = ClassName(descriptor, true);
+  return exclusions.find(name) == exclusions.end() ||
+         options.opensource_runtime;
+}
+
+bool ShouldMarkIsInitializedAsOverride(const Descriptor* descriptor,
+                                    const Options& options) {
+  static std::set<std::string> exclusions{
+  };
+
+  const std::string name = ClassName(descriptor, true);
+  return exclusions.find(name) == exclusions.end() ||
+         options.opensource_runtime;
+}
+
 bool ShouldMarkIsInitializedAsFinal(const Descriptor* descriptor,
                                     const Options& options) {
   static std::set<std::string> exclusions{
@@ -1318,11 +1338,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "\n"
       "// implements Message ----------------------------------------------\n"
       "\n"
-      "inline $classname$* New() const$ new_final$ {\n"
+      "inline $classname$* New() const$ new_final$ override {\n"
       "  return CreateMaybeMessage<$classname$>(nullptr);\n"
       "}\n"
       "\n"
-      "$classname$* New(::$proto_ns$::Arena* arena) const$ new_final$ {\n"
+      "$classname$* New(::$proto_ns$::Arena* arena) const$ new_final$ override {\n"
       "  return CreateMaybeMessage<$classname$>(arena);\n"
       "}\n");
 
@@ -1331,50 +1351,57 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format.Set("full_final", HasDescriptorMethods(descriptor_->file(), options_)
                                ? "final"
                                : "");
-
+  format.Set("full_override", HasDescriptorMethods(descriptor_->file(), options_)
+                               ? "override"
+                               : "");
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
-          "void CopyFrom(const ::$proto_ns$::Message& from) final;\n"
-          "void MergeFrom(const ::$proto_ns$::Message& from) final;\n");
+          "void CopyFrom(const ::$proto_ns$::Message& from) final override;\n"
+          "void MergeFrom(const ::$proto_ns$::Message& from) final override;\n");
     } else {
       format(
           "void CheckTypeAndMergeFrom(const ::$proto_ns$::MessageLite& from)\n"
-          "  final;\n");
+          "  final override;\n");
     }
 
     format.Set("clear_final",
                ShouldMarkClearAsFinal(descriptor_, options_) ? "final" : "");
+    format.Set("clear_override",
+               ShouldMarkClearAsOverride(descriptor_, options_) ? "override" : "");
     format.Set(
         "is_initialized_final",
         ShouldMarkIsInitializedAsFinal(descriptor_, options_) ? "final" : "");
+    format.Set(
+        "is_initialized_override",
+        ShouldMarkIsInitializedAsOverride(descriptor_, options_) ? "override" : "");
 
     format(
         "void CopyFrom(const $classname$& from);\n"
         "void MergeFrom(const $classname$& from);\n"
-        "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear()$ clear_final$;\n"
-        "bool IsInitialized() const$ is_initialized_final$;\n"
+        "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear()$ clear_final$$ clear_override$;\n"
+        "bool IsInitialized() const$ is_initialized_final$ $is_initialized_override$;\n"
         "\n"
-        "size_t ByteSizeLong() const final;\n"
+        "size_t ByteSizeLong() const final override;\n"
         "const char* _InternalParse(const char* ptr, "
-        "::$proto_ns$::internal::ParseContext* ctx) final;\n"
+        "::$proto_ns$::internal::ParseContext* ctx) final override;\n"
         "$uint8$* _InternalSerialize(\n"
         "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
-        "const final;\n");
+        "const final override;\n");
 
     // DiscardUnknownFields() is implemented in message.cc using reflections. We
     // need to implement this function in generated code for messages.
     if (!UseUnknownFieldSet(descriptor_->file(), options_)) {
-      format("void DiscardUnknownFields()$ full_final$;\n");
+      format("void DiscardUnknownFields()$ full_final$$ full_override$;\n");
     }
   }
 
   format(
-      "int GetCachedSize() const final { return _cached_size_.Get(); }"
+      "int GetCachedSize() const final override { return _cached_size_.Get(); }"
       "\n\nprivate:\n"
       "inline void SharedCtor();\n"
       "inline void SharedDtor();\n"
-      "void SetCachedSize(int size) const$ full_final$;\n"
+      "void SetCachedSize(int size) const$ full_final$$ full_override$;\n"
       "void InternalSwap($classname$* other);\n");
 
   format(
@@ -1402,7 +1429,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
-        "::$proto_ns$::Metadata GetMetadata() const final;\n"
+        "::$proto_ns$::Metadata GetMetadata() const final override;\n"
         "private:\n"
         "static ::$proto_ns$::Metadata GetMetadataStatic() {\n"
         "  ::$proto_ns$::internal::AssignDescriptors(&::$desc_table$);\n"
@@ -1413,7 +1440,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "\n");
   } else {
     format(
-        "std::string GetTypeName() const final;\n"
+        "std::string GetTypeName() const final override;\n"
         "\n");
   }
 
