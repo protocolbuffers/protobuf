@@ -739,10 +739,9 @@ py_library(
     name = "python_srcs",
     srcs = glob(
         [
-            "python/google/**/*.py",
+            "python/google/protobuf/**/*.py",
         ],
         exclude = [
-            "python/google/protobuf/**/__init__.py",
             "python/google/protobuf/internal/*_test.py",
             "python/google/protobuf/internal/test_util.py",
         ],
@@ -843,7 +842,6 @@ py_proto_library(
     }),
     default_runtime = "",
     protoc = ":protoc",
-    py_extra_srcs = glob(["python/**/__init__.py"]),
     py_libs = [
         ":python_srcs",
         "@six//:six",
