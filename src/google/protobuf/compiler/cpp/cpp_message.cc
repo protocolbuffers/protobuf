@@ -2487,8 +2487,9 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
         "  reinterpret_cast<char*>(&$first$_)) + sizeof($last$_));\n";
   } else {
     pod_template =
-        "::memset(&$first$_, 0, static_cast<size_t>(\n"
-        "    reinterpret_cast<char*>(&$last$_) -\n"
+        "::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(\n"
+        "    reinterpret_cast<char*>(&$first$_) - reinterpret_cast<char*>(this)),\n"
+        "    0, static_cast<size_t>(reinterpret_cast<char*>(&$last$_) -\n"
         "    reinterpret_cast<char*>(&$first$_)) + sizeof($last$_));\n";
   }
 
