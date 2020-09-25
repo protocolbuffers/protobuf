@@ -248,3 +248,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Wire wire_package
    * Website: https://square.github.io/wire/
    * Extensions: 1087
+
+1. Confluent Schema Registry
+   * Website: https://github.com/confluentinc/schema-registry
+   * Extensions: 1088
