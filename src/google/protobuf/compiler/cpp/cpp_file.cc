@@ -1198,7 +1198,6 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
       decls[Namespace(d, options_)].AddEnum(d);
   }
 
-
   {
     NamespaceOpener ns(format);
     for (const auto& pair : decls) {
@@ -1281,7 +1280,6 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   IncludeFile("net/proto2/public/arenastring.h", printer);
   IncludeFile("net/proto2/public/generated_message_table_driven.h", printer);
   IncludeFile("net/proto2/public/generated_message_util.h", printer);
-  IncludeFile("net/proto2/public/inlined_string_field.h", printer);
   IncludeFile("net/proto2/public/metadata_lite.h", printer);
 
   if (HasDescriptorMethods(file_, options_)) {

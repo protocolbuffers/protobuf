@@ -40,6 +40,7 @@
  * intact, you _must_ read them using one of the Hash64 methods, which return
  * an 8-character string.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 

@@ -178,11 +178,6 @@ class FieldGenerator {
   // are placed in the message's ByteSize() method.
   virtual void GenerateByteSize(io::Printer* printer) const = 0;
 
-  // Any tags about field layout decisions (such as inlining) to embed in the
-  // offset.
-  virtual uint32 CalculateFieldTag() const { return 0; }
-  virtual bool IsInlined() const { return false; }
-
   void SetHasBitIndex(int32 has_bit_index);
 
  protected:

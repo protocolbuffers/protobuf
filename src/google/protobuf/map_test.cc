@@ -194,6 +194,62 @@ TEST_F(MapImplTest, OperatorBracket) {
   ExpectSingleElement(key, value2);
 }
 
+struct MoveTestKey {
+  MoveTestKey(int data, int* copies) : data(data), copies(copies) {}
+
+  MoveTestKey(const MoveTestKey& other)
+      : data(other.data), copies(other.copies) {
+    ++*copies;
+  }
+
+  MoveTestKey(MoveTestKey&& other) noexcept
+      : data(other.data), copies(other.copies) {}
+
+  friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
+    return lhs.data == rhs.data;
+  }
+  friend bool operator<(const MoveTestKey& lhs, const MoveTestKey& rhs) {
+    return lhs.data < rhs.data;
+  }
+
+  int data;
+  int* copies;
+};
+
+}  // namespace
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+namespace std {
+
+template <>  // NOLINT
+struct hash<google::protobuf::internal::MoveTestKey> {
+  size_t operator()(const google::protobuf::internal::MoveTestKey& key) const {
+    return hash<int>{}(key.data);
+  }
+};
+}  // namespace std
+
+namespace google {
+namespace protobuf {
+namespace internal {
+namespace {
+
+TEST_F(MapImplTest, OperatorBracketRValue) {
+  Arena arena;
+  for (Arena* arena_to_use : {&arena, static_cast<Arena*>(nullptr)}) {
+    int copies = 0;
+    Map<MoveTestKey, int> map(arena_to_use);
+    MoveTestKey key1(1, &copies);
+    EXPECT_EQ(copies, 0);
+    map[key1] = 0;
+    EXPECT_EQ(copies, 1);
+    map[MoveTestKey(2, &copies)] = 2;
+    EXPECT_EQ(copies, 1);
+  }
+}
+
 TEST_F(MapImplTest, OperatorBracketNonExist) {
   int32 key = 0;
   int32 default_value = 0;
@@ -1104,6 +1160,11 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   EXPECT_EQ(m.erase(key), 0);
   EXPECT_EQ(m.erase(miss_key), 0);
   EXPECT_THAT(m, UnorderedElementsAre(Pair("DEF", 2)));
+
+  m[key];
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 0), Pair("DEF", 2)));
+  m[key] = 1;
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 1), Pair("DEF", 2)));
 }
 
 TEST_F(MapImplTest, TransparentLookupForString) {

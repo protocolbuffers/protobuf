@@ -2,6 +2,7 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/any.cc
   ${protobuf_source_dir}/src/google/protobuf/any.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/api.pb.cc
+  ${protobuf_source_dir}/src/google/protobuf/arenastring.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/importer.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser.cc
   ${protobuf_source_dir}/src/google/protobuf/descriptor.cc

@@ -25,7 +25,6 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
@@ -807,7 +806,7 @@ inline void Value::set_has_string_value() {
 }
 inline void Value::clear_string_value() {
   if (_internal_has_string_value()) {
-    kind_.string_value_.Destroy(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+    kind_.string_value_.Destroy(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
     clear_has_kind();
   }
 }
@@ -827,7 +826,7 @@ inline const std::string& Value::_internal_string_value() const {
   if (_internal_has_string_value()) {
     return kind_.string_value_.Get();
   }
-  return *&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited();
+  return ::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited();
 }
 inline void Value::_internal_set_string_value(const std::string& value) {
   if (!_internal_has_string_value()) {
@@ -835,7 +834,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
     set_has_string_value();
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
-  kind_.string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  kind_.string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void Value::set_string_value(std::string&& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
@@ -845,7 +844,7 @@ inline void Value::set_string_value(std::string&& value) {
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
   kind_.string_value_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Value.string_value)
 }
 inline void Value::set_string_value(const char* value) {
@@ -855,7 +854,7 @@ inline void Value::set_string_value(const char* value) {
     set_has_string_value();
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
-  kind_.string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+  kind_.string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{},
       ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.Value.string_value)
 }
@@ -867,7 +866,7 @@ inline void Value::set_string_value(const char* value,
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
   kind_.string_value_.Set(
-      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size),
       GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Value.string_value)
@@ -878,13 +877,14 @@ inline std::string* Value::_internal_mutable_string_value() {
     set_has_string_value();
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
-  return kind_.string_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return kind_.string_value_.Mutable(
+      ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* Value::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (_internal_has_string_value()) {
     clear_has_kind();
-    return kind_.string_value_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+    return kind_.string_value_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
   } else {
     return nullptr;
   }

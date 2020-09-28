@@ -119,7 +119,7 @@ void MockCodeGenerator::ExpectGenerated(
 
   std::vector<std::string> insertion_list;
   if (!insertions.empty()) {
-    SplitStringUsing(insertions, ",", &insertion_list);
+    insertion_list = Split(insertions, ",", true);
   }
 
   EXPECT_EQ(lines.size(), 3 + insertion_list.size() * 2);
@@ -250,12 +250,10 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
 
   bool insert_endlines = HasPrefixString(parameter, "insert_endlines=");
   if (insert_endlines || HasPrefixString(parameter, "insert=")) {
-    std::vector<std::string> insert_into;
-
-    SplitStringUsing(
+    std::vector<std::string> insert_into = Split(
         StripPrefixString(
             parameter, insert_endlines ? "insert_endlines=" : "insert="),
-        ",", &insert_into);
+        ",", true);
 
     for (size_t i = 0; i < insert_into.size(); i++) {
       {

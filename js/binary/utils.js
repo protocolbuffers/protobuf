@@ -32,6 +32,7 @@
  * @fileoverview This file contains helper code used by jspb.BinaryReader
  * and BinaryWriter.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 

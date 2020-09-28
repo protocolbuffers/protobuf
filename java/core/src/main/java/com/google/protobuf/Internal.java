@@ -30,7 +30,6 @@
 
 package com.google.protobuf;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;

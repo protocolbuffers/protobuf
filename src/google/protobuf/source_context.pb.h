@@ -25,7 +25,6 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
@@ -220,7 +219,7 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
 
 // string file_name = 1;
 inline void SourceContext::clear_file_name() {
-  file_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  file_name_.ClearToEmpty();
 }
 inline const std::string& SourceContext::file_name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
@@ -239,31 +238,30 @@ inline const std::string& SourceContext::_internal_file_name() const {
 }
 inline void SourceContext::_internal_set_file_name(const std::string& value) {
   
-  file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void SourceContext::set_file_name(std::string&& value) {
   
   file_name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.SourceContext.file_name)
 }
 inline void SourceContext::set_file_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceContext.file_name)
 }
 inline void SourceContext::set_file_name(const char* value,
     size_t size) {
   
-  file_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceContext.file_name)
 }
 inline std::string* SourceContext::_internal_mutable_file_name() {
   
-  return file_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return file_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* SourceContext::release_file_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)

@@ -4052,7 +4052,8 @@ bool DescriptorBuilder::AddSymbol(const std::string& full_name,
       // Symbol seems to have been defined in a different file.
       AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
                "\"" + full_name + "\" is already defined in file \"" +
-                   other_file->name() + "\".");
+                   (other_file == nullptr ? "null" : other_file->name()) +
+                   "\".");
     }
     return false;
   }

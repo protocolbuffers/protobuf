@@ -272,28 +272,36 @@ TEST(ArenaTest, CreateWithMoveArguments) {
 }
 
 TEST(ArenaTest, InitialBlockTooSmall) {
-  // Construct a small (64 byte) initial block of memory to be used by the
-  // arena allocator; then, allocate an object which will not fit in the
-  // initial block.
-  std::vector<char> arena_block(96);
-  ArenaOptions options;
-  options.initial_block = &arena_block[0];
-  options.initial_block_size = arena_block.size();
-  Arena arena(options);
+  // Construct a small blocks of memory to be used by the arena allocator; then,
+  // allocate an object which will not fit in the initial block.
+  for (int size = 0; size <= Arena::kBlockOverhead + 32; size++) {
+    std::vector<char> arena_block(size);
+    ArenaOptions options;
+    options.initial_block = arena_block.data();
+    options.initial_block_size = arena_block.size();
 
-  char* p = Arena::CreateArray<char>(&arena, 96);
-  uintptr_t allocation = reinterpret_cast<uintptr_t>(p);
+    // Try sometimes with non-default block sizes so that we exercise paths
+    // with and without ArenaImpl::Options.
+    if ((size % 2) != 0) {
+      options.start_block_size += 8;
+    }
 
-  // Ensure that the arena allocator did not return memory pointing into the
-  // initial block of memory.
-  uintptr_t arena_start = reinterpret_cast<uintptr_t>(&arena_block[0]);
-  uintptr_t arena_end = arena_start + arena_block.size();
-  EXPECT_FALSE(allocation >= arena_start && allocation < arena_end);
+    Arena arena(options);
 
-  // Write to the memory we allocated; this should (but is not guaranteed to)
-  // trigger a check for heap corruption if the object was allocated from the
-  // initially-provided block.
-  memset(p, '\0', 96);
+    char* p = Arena::CreateArray<char>(&arena, 96);
+    uintptr_t allocation = reinterpret_cast<uintptr_t>(p);
+
+    // Ensure that the arena allocator did not return memory pointing into the
+    // initial block of memory.
+    uintptr_t arena_start = reinterpret_cast<uintptr_t>(arena_block.data());
+    uintptr_t arena_end = arena_start + arena_block.size();
+    EXPECT_FALSE(allocation >= arena_start && allocation < arena_end);
+
+    // Write to the memory we allocated; this should (but is not guaranteed to)
+    // trigger a check for heap corruption if the object was allocated from the
+    // initially-provided block.
+    memset(p, '\0', 96);
+  }
 }
 
 TEST(ArenaTest, Parsing) {
@@ -988,10 +996,7 @@ TEST(ArenaTest, ExtensionsOnArena) {
 TEST(ArenaTest, RepeatedFieldOnArena) {
   // Preallocate an initial arena block to avoid mallocs during hooked region.
   std::vector<char> arena_block(1024 * 1024);
-  ArenaOptions options;
-  options.initial_block = &arena_block[0];
-  options.initial_block_size = arena_block.size();
-  Arena arena(options);
+  Arena arena(arena_block.data(), arena_block.size());
 
   {
     internal::NoHeapChecker no_heap;
@@ -1189,10 +1194,7 @@ TEST(ArenaTest, RepeatedFieldWithNonPODType) {
 uint64 Align8(uint64 n) { return (n + 7) & -8; }
 
 TEST(ArenaTest, SpaceAllocated_and_Used) {
-  ArenaOptions options;
-  options.start_block_size = 256;
-  options.max_block_size = 8192;
-  Arena arena_1(options);
+  Arena arena_1;
   EXPECT_EQ(0, arena_1.SpaceAllocated());
   EXPECT_EQ(0, arena_1.SpaceUsed());
   EXPECT_EQ(0, arena_1.Reset());
@@ -1204,6 +1206,9 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
 
   // Test with initial block.
   std::vector<char> arena_block(1024);
+  ArenaOptions options;
+  options.start_block_size = 256;
+  options.max_block_size = 8192;
   options.initial_block = &arena_block[0];
   options.initial_block_size = arena_block.size();
   Arena arena_2(options);
@@ -1214,19 +1219,25 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   EXPECT_EQ(1024, arena_2.SpaceAllocated());
   EXPECT_EQ(Align8(55), arena_2.SpaceUsed());
   EXPECT_EQ(1024, arena_2.Reset());
+}
 
-  // Reset options to test doubling policy explicitly.
-  options.initial_block = NULL;
-  options.initial_block_size = 0;
-  Arena arena_3(options);
-  EXPECT_EQ(0, arena_3.SpaceUsed());
-  Arena::CreateArray<char>(&arena_3, 160);
-  EXPECT_EQ(256, arena_3.SpaceAllocated());
-  EXPECT_EQ(Align8(160), arena_3.SpaceUsed());
-  Arena::CreateArray<char>(&arena_3, 70);
-  EXPECT_EQ(256 + 512, arena_3.SpaceAllocated());
-  EXPECT_EQ(Align8(160) + Align8(70), arena_3.SpaceUsed());
-  EXPECT_EQ(256 + 512, arena_3.Reset());
+TEST(ArenaTest, BlockSizeDoubling) {
+  Arena arena;
+  EXPECT_EQ(0, arena.SpaceUsed());
+  EXPECT_EQ(0, arena.SpaceAllocated());
+
+  // Allocate something to get initial block size.
+  Arena::CreateArray<char>(&arena, 1);
+  auto first_block_size = arena.SpaceAllocated();
+
+  // Keep allocating until space used increases.
+  while (arena.SpaceAllocated() == first_block_size) {
+    Arena::CreateArray<char>(&arena, 1);
+  }
+  ASSERT_GT(arena.SpaceAllocated(), first_block_size);
+  auto second_block_size = (arena.SpaceAllocated() - first_block_size);
+
+  EXPECT_EQ(second_block_size, 2*first_block_size);
 }
 
 TEST(ArenaTest, Alignment) {
@@ -1304,81 +1315,93 @@ TEST(ArenaTest, AddCleanup) {
   }
 }
 
-// A helper utility class to only contain static hook functions, some
-// counters to be used to verify the counters have been called and a cookie
-// value to be verified.
-class ArenaHooksTestUtil {
+namespace {
+uint32 hooks_num_init = 0;
+uint32 hooks_num_allocations = 0;
+uint32 hooks_num_reset = 0;
+uint32 hooks_num_destruct = 0;
+
+void ClearHookCounts() {
+  hooks_num_init = 0;
+  hooks_num_allocations = 0;
+  hooks_num_reset = 0;
+  hooks_num_destruct = 0;
+}
+}  // namespace
+
+// A helper utility class that handles arena callbacks.
+class ArenaOptionsTestFriend : public internal::ArenaMetricsCollector {
  public:
-  static void* on_init(Arena* arena) {
-    ++num_init;
-    int* cookie = new int(kCookieValue);
-    return static_cast<void*>(cookie);
+  static internal::ArenaMetricsCollector* NewWithAllocs() {
+    return new ArenaOptionsTestFriend(true);
   }
 
-  static void on_allocation(const std::type_info* /*unused*/, uint64 alloc_size,
-                            void* cookie) {
-    ++num_allocations;
-    int cookie_value = *static_cast<int*>(cookie);
-    EXPECT_EQ(kCookieValue, cookie_value);
+  static internal::ArenaMetricsCollector* NewWithoutAllocs() {
+    return new ArenaOptionsTestFriend(false);
   }
 
-  static void on_reset(Arena* arena, void* cookie, uint64 space_used) {
-    ++num_reset;
-    int cookie_value = *static_cast<int*>(cookie);
-    EXPECT_EQ(kCookieValue, cookie_value);
+  static void Enable(ArenaOptions* options) {
+    ClearHookCounts();
+    options->make_metrics_collector = &ArenaOptionsTestFriend::NewWithAllocs;
   }
 
-  static void on_destruction(Arena* arena, void* cookie, uint64 space_used) {
-    ++num_destruct;
-    int cookie_value = *static_cast<int*>(cookie);
-    EXPECT_EQ(kCookieValue, cookie_value);
-    delete static_cast<int*>(cookie);
+  static void EnableWithoutAllocs(ArenaOptions* options) {
+    ClearHookCounts();
+    options->make_metrics_collector = &ArenaOptionsTestFriend::NewWithoutAllocs;
   }
 
-  static const int kCookieValue = 999;
-  static uint32 num_init;
-  static uint32 num_allocations;
-  static uint32 num_reset;
-  static uint32 num_destruct;
-};
-uint32 ArenaHooksTestUtil::num_init = 0;
-uint32 ArenaHooksTestUtil::num_allocations = 0;
-uint32 ArenaHooksTestUtil::num_reset = 0;
-uint32 ArenaHooksTestUtil::num_destruct = 0;
-const int ArenaHooksTestUtil::kCookieValue;
-
-class ArenaOptionsTestFriend {
- public:
-  static void Set(ArenaOptions* options) {
-    options->on_arena_init = ArenaHooksTestUtil::on_init;
-    options->on_arena_allocation = ArenaHooksTestUtil::on_allocation;
-    options->on_arena_reset = ArenaHooksTestUtil::on_reset;
-    options->on_arena_destruction = ArenaHooksTestUtil::on_destruction;
+  explicit ArenaOptionsTestFriend(bool record_allocs)
+      : record_allocs_(record_allocs) {
+    ++hooks_num_init;
   }
+  void OnDestroy(uint64 space_allocated) override {
+    ++hooks_num_destruct;
+    delete this;
+  }
+  void OnReset(uint64 space_allocated) override { ++hooks_num_reset; }
+  bool RecordAllocs() override { return record_allocs_; }
+  void OnAlloc(const std::type_info* allocated_type,
+               uint64 alloc_size) override {
+    ++hooks_num_allocations;
+  }
+
+ private:
+  bool record_allocs_;
 };
 
-// Test the hooks are correctly called and that the cookie is passed.
+// Test the hooks are correctly called.
 TEST(ArenaTest, ArenaHooksSanity) {
   ArenaOptions options;
-  ArenaOptionsTestFriend::Set(&options);
+  ArenaOptionsTestFriend::Enable(&options);
 
   // Scope for defining the arena
   {
     Arena arena(options);
-    EXPECT_EQ(1, ArenaHooksTestUtil::num_init);
-    EXPECT_EQ(0, ArenaHooksTestUtil::num_allocations);
+    EXPECT_EQ(1, hooks_num_init);
+    EXPECT_EQ(0, hooks_num_allocations);
     Arena::Create<uint64>(&arena);
     if (std::is_trivially_destructible<uint64>::value) {
-      EXPECT_EQ(1, ArenaHooksTestUtil::num_allocations);
+      EXPECT_EQ(1, hooks_num_allocations);
     } else {
-      EXPECT_EQ(2, ArenaHooksTestUtil::num_allocations);
+      EXPECT_EQ(2, hooks_num_allocations);
     }
     arena.Reset();
     arena.Reset();
-    EXPECT_EQ(2, ArenaHooksTestUtil::num_reset);
+    EXPECT_EQ(2, hooks_num_reset);
   }
-  EXPECT_EQ(3, ArenaHooksTestUtil::num_reset);
-  EXPECT_EQ(1, ArenaHooksTestUtil::num_destruct);
+  EXPECT_EQ(2, hooks_num_reset);
+  EXPECT_EQ(1, hooks_num_destruct);
+}
+
+// Test that allocation hooks are not called when we don't need them.
+TEST(ArenaTest, ArenaHooksWhenAllocationsNotNeeded) {
+  ArenaOptions options;
+  ArenaOptionsTestFriend::EnableWithoutAllocs(&options);
+
+  Arena arena(options);
+  EXPECT_EQ(0, hooks_num_allocations);
+  Arena::Create<uint64>(&arena);
+  EXPECT_EQ(0, hooks_num_allocations);
 }
 
 

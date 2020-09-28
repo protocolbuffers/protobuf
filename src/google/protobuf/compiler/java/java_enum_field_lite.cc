@@ -83,7 +83,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
-  if (SupportFieldPresence(descriptor)) {
+  if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
 
@@ -137,7 +137,7 @@ ImmutableEnumFieldLiteGenerator::ImmutableEnumFieldLiteGenerator(
 ImmutableEnumFieldLiteGenerator::~ImmutableEnumFieldLiteGenerator() {}
 
 int ImmutableEnumFieldLiteGenerator::GetNumBitsForMessage() const {
-  return SupportFieldPresence(descriptor_) ? 1 : 0;
+  return HasHasbit(descriptor_) ? 1 : 0;
 }
 
 void ImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
