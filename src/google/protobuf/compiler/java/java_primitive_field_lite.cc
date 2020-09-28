@@ -140,7 +140,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
     (*variables)["fixed_size"] = StrCat(fixed_size);
   }
 
-  if (SupportFieldPresence(descriptor)) {
+  if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
 
@@ -188,7 +188,7 @@ ImmutablePrimitiveFieldLiteGenerator::ImmutablePrimitiveFieldLiteGenerator(
 ImmutablePrimitiveFieldLiteGenerator::~ImmutablePrimitiveFieldLiteGenerator() {}
 
 int ImmutablePrimitiveFieldLiteGenerator::GetNumBitsForMessage() const {
-  return SupportFieldPresence(descriptor_) ? 1 : 0;
+  return HasHasbit(descriptor_) ? 1 : 0;
 }
 
 void ImmutablePrimitiveFieldLiteGenerator::GenerateInterfaceMembers(

@@ -337,6 +337,8 @@ struct MapPair {
   MapPair(const Key& other_first, const T& other_second)
       : first(other_first), second(other_second) {}
   explicit MapPair(const Key& other_first) : first(other_first), second() {}
+  explicit MapPair(Key&& other_first)
+      : first(std::move(other_first)), second() {}
   MapPair(const MapPair& other) : first(other.first), second(other.second) {}
 
   ~MapPair() {}
@@ -685,7 +687,8 @@ class Map {
 
     // Insert the key into the map, if not present. In that case, the value will
     // be value initialized.
-    std::pair<iterator, bool> insert(const Key& k) {
+    template <typename K>
+    std::pair<iterator, bool> insert(K&& k) {
       std::pair<const_iterator, size_type> p = FindHelper(k);
       // Case 1: key was already present.
       if (p.first.node_ != nullptr)
@@ -696,12 +699,18 @@ class Map {
       }
       const size_type b = p.second;  // bucket number
       Node* node;
+      // If K is not key_type, make the conversion to key_type explicit.
+      using TypeToInit = typename std::conditional<
+          std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
+          key_type>::type;
       if (alloc_.arena() == nullptr) {
-        node = new Node{value_type(k), nullptr};
+        node = new Node{value_type(static_cast<TypeToInit>(std::forward<K>(k))),
+                        nullptr};
       } else {
         node = Alloc<Node>(1);
-        Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
-                                    alloc_.arena(), k);
+        Arena::CreateInArenaStorage(
+            const_cast<Key*>(&node->kv.first), alloc_.arena(),
+            static_cast<TypeToInit>(std::forward<K>(k)));
         Arena::CreateInArenaStorage(&node->kv.second, alloc_.arena());
       }
 
@@ -710,7 +719,10 @@ class Map {
       return std::make_pair(result, true);
     }
 
-    value_type& operator[](const Key& k) { return *insert(k).first; }
+    template <typename K>
+    value_type& operator[](K&& k) {
+      return *insert(std::forward<K>(k)).first;
+    }
 
     void erase(iterator it) {
       GOOGLE_DCHECK_EQ(it.m_, this);
@@ -1182,7 +1194,17 @@ class Map {
   bool empty() const { return size() == 0; }
 
   // Element access
-  T& operator[](const key_type& key) { return elements_[key].second; }
+  template <typename K = key_type>
+  T& operator[](const key_arg<K>& key) {
+    return elements_[key].second;
+  }
+  template <
+      typename K = key_type,
+      // Disable for integral types to reduce code bloat.
+      typename = typename std::enable_if<!std::is_integral<K>::value>::type>
+  T& operator[](key_arg<K>&& key) {
+    return elements_[std::forward<K>(key)].second;
+  }
 
   template <typename K = key_type>
   const T& at(const key_arg<K>& key) const {

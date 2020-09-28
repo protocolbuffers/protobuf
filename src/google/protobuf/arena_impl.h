@@ -48,6 +48,9 @@
 
 namespace google {
 namespace protobuf {
+
+struct ArenaOptions;
+
 namespace internal {
 
 inline size_t AlignUpTo8(size_t n) {
@@ -57,6 +60,36 @@ inline size_t AlignUpTo8(size_t n) {
 
 using LifecycleId = int64_t;
 
+void PROTOBUF_EXPORT ArenaFree(void* object, size_t size);
+
+// MetricsCollector collects stats for a particular arena.
+class PROTOBUF_EXPORT ArenaMetricsCollector {
+ public:
+  virtual ~ArenaMetricsCollector();
+
+  // Invoked when the arena is about to be destroyed. This method will
+  // typically finalize any metric collection and delete the collector.
+  // space_allocated is the space used by the arena.
+  virtual void OnDestroy(uint64 space_allocated) = 0;
+
+  // OnReset() is called when the associated arena is reset.
+  // space_allocated is the space used by the arena just before the reset.
+  virtual void OnReset(uint64 space_allocated) = 0;
+
+  // Does OnAlloc() need to be called?  If false, metric collection overhead
+  // will be reduced since we will not do extra work per allocation.
+  virtual bool RecordAllocs() = 0;
+
+  // OnAlloc is called when an allocation happens.
+  // type_info is promised to be static - its lifetime extends to
+  // match program's lifetime (It is given by typeid operator).
+  // Note: typeid(void) will be passed as allocated_type every time we
+  // intentionally want to avoid monitoring an allocation. (i.e. internal
+  // allocations for managing the arena)
+  virtual void OnAlloc(const std::type_info* allocated_type,
+                       uint64 alloc_size) = 0;
+};
+
 // This class provides the core Arena memory allocation library. Different
 // implementations only need to implement the public interface below.
 // Arena is not a template type as that would only be useful if all protos
@@ -65,36 +98,22 @@ using LifecycleId = int64_t;
 // use #ifdef the select the best implementation based on hardware / OS.
 class PROTOBUF_EXPORT ArenaImpl {
  public:
-  struct Options {
-    size_t start_block_size;
-    size_t max_block_size;
-    char* initial_block;
-    size_t initial_block_size;
-    void* (*block_alloc)(size_t);
-    void (*block_dealloc)(void*, size_t);
+  static const size_t kDefaultStartBlockSize = 256;
+  static const size_t kDefaultMaxBlockSize = 8192;
 
-    template <typename O>
-    explicit Options(const O& options)
-        : start_block_size(options.start_block_size),
-          max_block_size(options.max_block_size),
-          initial_block(options.initial_block),
-          initial_block_size(options.initial_block_size),
-          block_alloc(options.block_alloc),
-          block_dealloc(options.block_dealloc) {}
-  };
+  ArenaImpl() { Init(false); }
 
-  template <typename O>
-  explicit ArenaImpl(const O& options) : options_(options) {
-    if (options_.initial_block != NULL && options_.initial_block_size > 0) {
-      GOOGLE_CHECK_GE(options_.initial_block_size, sizeof(Block))
-          << ": Initial block size too small for header.";
-      initial_block_ = reinterpret_cast<Block*>(options_.initial_block);
-    } else {
-      initial_block_ = NULL;
+  ArenaImpl(char* mem, size_t size) {
+    GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(mem) & 7, 0u);
+    Init(false);
+
+    // Ignore initial block if it is too small.
+    if (mem != nullptr && size >= kBlockHeaderSize + kSerialArenaSize) {
+      SetInitialBlock(new (mem) Block(size, nullptr, true, true));
     }
-
-    Init();
   }
+
+  explicit ArenaImpl(const ArenaOptions& options);
 
   // Destructor deletes all owned heap allocated objects, and destructs objects
   // that have non-trivial destructors, except for proto2 message objects whose
@@ -134,6 +153,13 @@ class PROTOBUF_EXPORT ArenaImpl {
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
+  inline void RecordAlloc(const std::type_info* allocated_type,
+                          size_t n) const {
+    if (PROTOBUF_PREDICT_FALSE(record_allocs())) {
+      options_->metrics_collector->OnAlloc(allocated_type, n);
+    }
+  }
+
  private:
   friend class ArenaBenchmark;
 
@@ -169,11 +195,6 @@ class PROTOBUF_EXPORT ArenaImpl {
 
     // Creates a new SerialArena inside Block* and returns it.
     static SerialArena* New(Block* b, void* owner, ArenaImpl* arena);
-
-    // Destroys this SerialArena, freeing all blocks with the given dealloc
-    // function, except any block equal to |initial_block|.
-    static uint64 Free(SerialArena* serial, Block* initial_block,
-                       void (*block_dealloc)(void*, size_t));
 
     void CleanupList();
     uint64 SpaceUsed() const;
@@ -224,6 +245,7 @@ class PROTOBUF_EXPORT ArenaImpl {
       return ret;
     }
 
+    Block* head() const { return head_; }
     void* owner() const { return owner_; }
     SerialArena* next() const { return next_; }
     void set_next(SerialArena* next) { next_ = next; }
@@ -254,23 +276,56 @@ class PROTOBUF_EXPORT ArenaImpl {
   // describes the common header for all blocks.
   class PROTOBUF_EXPORT Block {
    public:
-    Block(size_t size, Block* next);
+    Block(size_t size, Block* next, bool special, bool user_owned)
+        : next_and_bits_(reinterpret_cast<uintptr_t>(next) | (special ? 1 : 0) |
+                         (user_owned ? 2 : 0)),
+          pos_(kBlockHeaderSize),
+          size_(size) {
+      GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(next) & 3, 0u);
+    }
 
     char* Pointer(size_t n) {
       GOOGLE_DCHECK(n <= size_);
       return reinterpret_cast<char*>(this) + n;
     }
 
-    Block* next() const { return next_; }
+    // One of the blocks may be special. This is either a user-supplied
+    // initial block, or a block we created at startup to hold Options info.
+    // A special block is not deleted by Reset.
+    bool special() const { return (next_and_bits_ & 1) != 0; }
+
+    // Whether or not this current block is owned by the user.
+    // Only special blocks can be user_owned.
+    bool user_owned() const { return (next_and_bits_ & 2) != 0; }
+
+    Block* next() const {
+      const uintptr_t bottom_bits = 3;
+      return reinterpret_cast<Block*>(next_and_bits_ & ~bottom_bits);
+    }
+
+    void clear_next() {
+      next_and_bits_ &= 3;  // Set next to nullptr, preserve bottom bits.
+    }
+
     size_t pos() const { return pos_; }
     size_t size() const { return size_; }
     void set_pos(size_t pos) { pos_ = pos; }
 
    private:
-    Block* next_;  // Next block for this thread.
+    // Holds pointer to next block for this thread + special/user_owned bits.
+    uintptr_t next_and_bits_;
+
     size_t pos_;
     size_t size_;
     // data follows
+  };
+
+  struct Options {
+    size_t start_block_size;
+    size_t max_block_size;
+    void* (*block_alloc)(size_t);
+    void (*block_dealloc)(void*, size_t);
+    ArenaMetricsCollector* metrics_collector;
   };
 
   struct ThreadCache {
@@ -301,11 +356,30 @@ class PROTOBUF_EXPORT ArenaImpl {
   static ThreadCache& thread_cache() { return thread_cache_; }
 #endif
 
-  void Init();
+  void Init(bool record_allocs);
+  void SetInitialBlock(Block* block); // Can be called right after Init()
 
-  // Free all blocks and return the total space used which is the sums of sizes
-  // of the all the allocated blocks.
-  uint64 FreeBlocks();
+  // Return true iff allocations should be recorded in a metrics collector.
+  inline bool record_allocs() const { return lifecycle_id_ & 1; }
+
+  // Invoke fn(b) for every Block* b.
+  template <typename Functor>
+  void PerBlock(Functor fn) {
+    // By omitting an Acquire barrier we ensure that any user code that doesn't
+    // properly synchronize Reset() or the destructor will throw a TSAN warning.
+    SerialArena* serial = threads_.load(std::memory_order_relaxed);
+    while (serial) {
+      // fn() may delete blocks and arenas, so fetch next pointers before fn();
+      SerialArena* cur = serial;
+      serial = serial->next();
+      for (Block* block = cur->head(); block != nullptr;) {
+        Block* b = block;
+        block = b->next();
+        fn(b);
+      }
+    }
+  }
+
   // Delete or Destruct all objects owned by the arena.
   void CleanupList();
 
@@ -323,9 +397,6 @@ class PROTOBUF_EXPORT ArenaImpl {
       threads_;                     // Pointer to a linked list of SerialArena.
   std::atomic<SerialArena*> hint_;  // Fast thread-local block access
   std::atomic<size_t> space_allocated_;  // Total size of all allocated blocks.
-
-  Block* initial_block_;  // If non-NULL, points to the block that came from
-                          // user data.
 
   Block* NewBlock(Block* last_block, size_t min_bytes);
 
@@ -356,9 +427,12 @@ class PROTOBUF_EXPORT ArenaImpl {
     return false;
   }
   SerialArena* GetSerialArenaFallback(void* me);
-  LifecycleId lifecycle_id_;  // Unique for each arena. Changes on Reset().
 
-  Options options_;
+  // Unique for each arena. Changes on Reset().
+  // Least-significant-bit is 1 iff allocations should be recorded.
+  LifecycleId lifecycle_id_;
+
+  Options* options_ = nullptr;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArenaImpl);
   // All protos have pointers back to the arena hence Arena must have
@@ -373,6 +447,8 @@ class PROTOBUF_EXPORT ArenaImpl {
       (sizeof(Block) + 7) & static_cast<size_t>(-8);
   static const size_t kSerialArenaSize =
       (sizeof(SerialArena) + 7) & static_cast<size_t>(-8);
+  static const size_t kOptionsSize =
+      (sizeof(Options) + 7) & static_cast<size_t>(-8);
   static_assert(kBlockHeaderSize % 8 == 0,
                 "kBlockHeaderSize must be a multiple of 8.");
   static_assert(kSerialArenaSize % 8 == 0,

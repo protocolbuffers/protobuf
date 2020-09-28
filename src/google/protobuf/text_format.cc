@@ -456,8 +456,7 @@ class TextFormat::Parser::ParserImpl {
       DO(ConsumeIdentifier(&field_name));
 
       int32 field_number;
-      if (allow_field_number_ &&
-          safe_strto32(field_name, &field_number)) {
+      if (allow_field_number_ && safe_strto32(field_name, &field_number)) {
         if (descriptor->IsExtensionNumber(field_number)) {
           field = finder_
                       ? finder_->FindExtensionByNumber(descriptor, field_number)
@@ -1473,7 +1472,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
   return MergeUsingImpl(input, output, &parser);
 }
 
-bool TextFormat::Parser::MergeFromString(const std::string& input,
+bool TextFormat::Parser::MergeFromString(ConstStringParam input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
@@ -1524,7 +1523,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
   return Parser().ParseFromString(input, output);
 }
 
-/* static */ bool TextFormat::MergeFromString(const std::string& input,
+/* static */ bool TextFormat::MergeFromString(ConstStringParam input,
                                               Message* output) {
   return Parser().MergeFromString(input, output);
 }

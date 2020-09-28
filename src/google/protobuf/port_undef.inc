@@ -93,6 +93,7 @@
 #pragma pop_macro("SERVICE_DISABLED")
 #pragma pop_macro("SEVERITY_ERROR")
 #pragma pop_macro("STRICT")
+#pragma pop_macro("timezone")
 #endif
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)

@@ -432,15 +432,10 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
-              const std::string* default_value;
-              if (is_prototype()) {
-                default_value = &field->default_value_string();
-              } else {
-                default_value = &(reinterpret_cast<const ArenaStringPtr*>(
-                                      type_info_->prototype->OffsetToPointer(
-                                          type_info_->offsets[i]))
-                                      ->Get());
-              }
+              const std::string* default_value =
+                  field->default_value_string().empty()
+                      ? &internal::GetEmptyStringAlreadyInited()
+                      : nullptr;
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->UnsafeSetDefault(default_value);
             } else {
@@ -523,10 +518,10 @@ DynamicMessage::~DynamicMessage() {
             default:
             case FieldOptions::STRING: {
               const std::string* default_value =
-                  &(reinterpret_cast<const ArenaStringPtr*>(
-                        reinterpret_cast<const uint8*>(type_info_->prototype) +
-                        type_info_->offsets[i])
-                        ->Get());
+                  reinterpret_cast<const ArenaStringPtr*>(
+                      reinterpret_cast<const uint8*>(type_info_->prototype) +
+                      type_info_->offsets[i])
+                      ->GetPointer();
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
                   default_value, NULL);
               break;
@@ -583,10 +578,10 @@ DynamicMessage::~DynamicMessage() {
         default:  // TODO(kenton):  Support other string reps.
         case FieldOptions::STRING: {
           const std::string* default_value =
-              &(reinterpret_cast<const ArenaStringPtr*>(
-                    type_info_->prototype->OffsetToPointer(
-                        type_info_->offsets[i]))
-                    ->Get());
+              reinterpret_cast<const ArenaStringPtr*>(
+                  type_info_->prototype->OffsetToPointer(
+                      type_info_->offsets[i]))
+                  ->GetPointer();
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(default_value,
                                                                 NULL);
           break;

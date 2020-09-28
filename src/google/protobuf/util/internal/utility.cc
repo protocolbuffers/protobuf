@@ -330,7 +330,7 @@ std::string ToSnakeCase(StringPiece input) {
   return result;
 }
 
-std::set<std::string>* well_known_types_ = NULL;
+std::set<std::string>* well_known_types_ = nullptr;
 PROTOBUF_NAMESPACE_ID::internal::once_flag well_known_types_init_;
 const char* well_known_types_name_array_[] = {
     "google.protobuf.Timestamp",   "google.protobuf.Duration",

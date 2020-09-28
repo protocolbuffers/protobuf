@@ -102,15 +102,6 @@ template <typename T>
 void arena_delete_object(void* object) {
   delete reinterpret_cast<T*>(object);
 }
-inline void arena_free(void* object, size_t size) {
-#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-  ::operator delete(object, size);
-#else
-  (void)size;
-  ::operator delete(object);
-#endif
-}
-
 }  // namespace internal
 
 // ArenaOptions provides optional additional parameters to arena construction
@@ -152,43 +143,27 @@ struct ArenaOptions {
         initial_block(NULL),
         initial_block_size(0),
         block_alloc(&::operator new),
-        block_dealloc(&internal::arena_free),
-        on_arena_init(NULL),
-        on_arena_reset(NULL),
-        on_arena_destruction(NULL),
-        on_arena_allocation(NULL) {}
+        block_dealloc(&internal::ArenaFree),
+        make_metrics_collector(nullptr) {}
 
  private:
-  // Hooks for adding external functionality such as user-specific metrics
-  // collection, specific debugging abilities, etc.
-  // Init hook (if set) will always be called at Arena init time. Init hook may
-  // return a pointer to a cookie to be stored in the arena. Reset and
-  // destruction hooks will then be called with the same cookie pointer. This
-  // allows us to save an external object per arena instance and use it on the
-  // other hooks (Note: If init hook returns NULL, the other hooks will NOT be
-  // called on this arena instance).
-  // on_arena_reset and on_arena_destruction also receive the space used in the
-  // arena just before the reset.
-  void* (*on_arena_init)(Arena* arena);
-  void (*on_arena_reset)(Arena* arena, void* cookie, uint64 space_used);
-  void (*on_arena_destruction)(Arena* arena, void* cookie, uint64 space_used);
-
-  // type_info is promised to be static - its lifetime extends to
-  // match program's lifetime (It is given by typeid operator).
-  // Note: typeid(void) will be passed as allocated_type every time we
-  // intentionally want to avoid monitoring an allocation. (i.e. internal
-  // allocations for managing the arena)
-  void (*on_arena_allocation)(const std::type_info* allocated_type,
-                              uint64 alloc_size, void* cookie);
+  // If make_metrics_collector is not nullptr, it will be called at Arena init
+  // time. It may return a pointer to a collector instance that will be notified
+  // of interesting events related to the arena.
+  internal::ArenaMetricsCollector* (*make_metrics_collector)();
 
   // Constants define default starting block size and max block size for
   // arena allocator behavior -- see descriptions above.
-  static const size_t kDefaultStartBlockSize = 256;
-  static const size_t kDefaultMaxBlockSize = 8192;
+  static const size_t kDefaultStartBlockSize =
+      internal::ArenaImpl::kDefaultStartBlockSize;
+  static const size_t kDefaultMaxBlockSize =
+      internal::ArenaImpl::kDefaultMaxBlockSize;
 
   friend void arena_metrics::EnableArenaMetrics(ArenaOptions*);
+
   friend class Arena;
   friend class ArenaOptionsTestFriend;
+  friend class internal::ArenaImpl;
 };
 
 // Support for non-RTTI environments. (The metrics hooks API uses type
@@ -246,11 +221,20 @@ struct ArenaOptions {
 // should not rely on this protocol.
 class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
  public:
-  // Arena constructor taking custom options. See ArenaOptions below for
+  // Default constructor with sensible default options, tuned for average
+  // use-cases.
+  inline Arena() : impl_() {}
+
+  // Construct an arena with default options, except for the supplied
+  // initial block. It is more efficient to use this constructor
+  // instead of passing ArenaOptions if the only configuration needed
+  // by the caller is supplying an initial block.
+  inline Arena(char* initial_block, size_t initial_block_size)
+      : impl_(initial_block, initial_block_size) {}
+
+  // Arena constructor taking custom options. See ArenaOptions above for
   // descriptions of the options available.
-  explicit Arena(const ArenaOptions& options) : impl_(options) {
-    Init(options);
-  }
+  explicit Arena(const ArenaOptions& options) : impl_(options) {}
 
   // Block overhead.  Use this as a guide for how much to over-allocate the
   // initial block if you want an allocation of size N to fit inside it.
@@ -261,27 +245,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   static const size_t kBlockOverhead = internal::ArenaImpl::kBlockHeaderSize +
                                        internal::ArenaImpl::kSerialArenaSize;
 
-  // Default constructor with sensible default options, tuned for average
-  // use-cases.
-  Arena() : impl_(ArenaOptions()) { Init(ArenaOptions()); }
+  inline ~Arena() {}
 
-  ~Arena() {
-    if (hooks_cookie_) {
-      CallDestructorHooks();
-    }
-  }
-
-  void Init(const ArenaOptions& options) {
-    on_arena_allocation_ = options.on_arena_allocation;
-    on_arena_reset_ = options.on_arena_reset;
-    on_arena_destruction_ = options.on_arena_destruction;
-    // Call the initialization hook
-    if (options.on_arena_init != NULL) {
-      hooks_cookie_ = options.on_arena_init(this);
-    } else {
-      hooks_cookie_ = NULL;
-    }
-  }
+  // TODO(protobuf-team): Fix callers to use constructor and delete this method.
+  void Init(const ArenaOptions&) {}
 
   // API to create proto2 message objects on the arena. If the arena passed in
   // is NULL, then a heap allocated object is returned. Type T must be a message
@@ -362,13 +329,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // Any objects allocated on this arena are unusable after this call. It also
   // returns the total space used by the arena which is the sums of the sizes
   // of the allocated blocks. This method is not thread-safe.
-  PROTOBUF_NOINLINE uint64 Reset() {
-    // Call the reset hook
-    if (on_arena_reset_ != NULL) {
-      on_arena_reset_(this, hooks_cookie_, impl_.SpaceAllocated());
-    }
-    return impl_.Reset();
-  }
+  uint64 Reset() { return impl_.Reset(); }
 
   // Adds |object| to a list of heap-allocated objects to be freed with |delete|
   // when the arena is destroyed or reset.
@@ -515,22 +476,17 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  void CallDestructorHooks();
-  void OnArenaAllocation(const std::type_info* allocated_type, size_t n) const;
   inline void AllocHook(const std::type_info* allocated_type, size_t n) const {
-    if (PROTOBUF_PREDICT_FALSE(hooks_cookie_ != NULL)) {
-      OnArenaAllocation(allocated_type, n);
-    }
+    impl_.RecordAlloc(allocated_type, n);
   }
 
-  // Allocate and also optionally call on_arena_allocation callback with the
-  // allocated type info when the hooks are in place in ArenaOptions and
-  // the cookie is not null.
+  // Allocate and also optionally call collector with the allocated type info
+  // when allocation recording is enabled.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void* AllocateInternal(bool skip_explicit_ownership) {
     static_assert(alignof(T) <= 8, "T is overaligned, see b/151247138");
     const size_t n = internal::AlignUpTo8(sizeof(T));
-    AllocHook(RTTI_TYPE_ID(T), n);
+    impl_.RecordAlloc(RTTI_TYPE_ID(T), n);
     // Monitor allocation if needed.
     if (skip_explicit_ownership) {
       return AllocateAlignedNoHook(n);
@@ -593,7 +549,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         << "Requested size is too large to fit into size_t.";
     const size_t n = internal::AlignUpTo8(sizeof(T) * num_elements);
     // Monitor allocation if needed.
-    AllocHook(RTTI_TYPE_ID(T), n);
+    impl_.RecordAlloc(RTTI_TYPE_ID(T), n);
     return static_cast<T*>(AllocateAlignedNoHook(n));
   }
 
@@ -687,7 +643,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   // For friends of arena.
   void* AllocateAligned(size_t n) {
-    AllocHook(NULL, n);
     return AllocateAlignedNoHook(internal::AlignUpTo8(n));
   }
   template<size_t Align>
@@ -705,15 +660,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   void* AllocateAlignedNoHook(size_t n);
 
   internal::ArenaImpl impl_;
-
-  void (*on_arena_allocation_)(const std::type_info* allocated_type,
-                               uint64 alloc_size, void* cookie);
-  void (*on_arena_reset_)(Arena* arena, void* cookie, uint64 space_used);
-  void (*on_arena_destruction_)(Arena* arena, void* cookie, uint64 space_used);
-
-  // The arena may save a cookie it receives from the external on_init hook
-  // and then use it when calling the on_reset and on_destruction hooks.
-  void* hooks_cookie_;
 
   template <typename Type>
   friend class internal::GenericTypeHandler;

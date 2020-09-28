@@ -238,11 +238,14 @@
 #ifdef GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
 #define PROTOBUF_RETURNS_NONNULL GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
 #else
-#ifdef __GNUC__
+#if defined(__has_attribute)
+#if __has_attribute(returns_nonnull)
 #define PROTOBUF_RETURNS_NONNULL __attribute__((returns_nonnull))
-#else
-#define PROTOBUF_RETURNS_NONNULL
 #endif
+#endif
+#endif
+#ifndef PROTOBUF_RETURNS_NONNULL
+#define PROTOBUF_RETURNS_NONNULL
 #endif
 
 #if defined(__has_cpp_attribute)
@@ -433,6 +436,8 @@
 #undef SEVERITY_ERROR
 #pragma push_macro("STRICT")
 #undef STRICT
+#pragma push_macro("timezone")
+#undef timezone
 #endif  // _MSC_VER
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)

@@ -107,6 +107,13 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // is disabled.
     bool suppress_implicit_message_list_error;
 
+    // If true, suppress the error of rendering scalar field if the source is an
+    // object.
+    bool suppress_object_to_scalar_error;
+
+    // If true, use the json name in missing fields errors.
+    bool use_json_name_in_missing_fields;
+
     Options()
         : struct_integers_as_strings(false),
           ignore_unknown_fields(false),
@@ -116,7 +123,9 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
           ignore_null_value_map_entry(false),
           use_legacy_json_map_format(false),
           disable_implicit_message_list(false),
-          suppress_implicit_message_list_error(false) {}
+          suppress_implicit_message_list_error(false),
+          suppress_object_to_scalar_error(false),
+          use_json_name_in_missing_fields(false) {}
 
     // Default instance of Options with all options set to defaults.
     static const Options& Defaults() {

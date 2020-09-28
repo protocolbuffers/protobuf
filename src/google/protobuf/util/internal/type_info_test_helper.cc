@@ -95,7 +95,7 @@ ProtoStreamObjectSource* TypeInfoTestHelper::NewProtoSource(
     }
   }
   GOOGLE_LOG(FATAL) << "Can not reach here.";
-  return NULL;
+  return nullptr;
 }
 
 ProtoStreamObjectWriter* TypeInfoTestHelper::NewProtoWriter(
@@ -109,7 +109,7 @@ ProtoStreamObjectWriter* TypeInfoTestHelper::NewProtoWriter(
     }
   }
   GOOGLE_LOG(FATAL) << "Can not reach here.";
-  return NULL;
+  return nullptr;
 }
 
 DefaultValueObjectWriter* TypeInfoTestHelper::NewDefaultValueWriter(
@@ -121,7 +121,7 @@ DefaultValueObjectWriter* TypeInfoTestHelper::NewDefaultValueWriter(
     }
   }
   GOOGLE_LOG(FATAL) << "Can not reach here.";
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace testing

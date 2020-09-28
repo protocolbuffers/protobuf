@@ -187,9 +187,6 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   bool FindAllFileNames(std::vector<std::string>* output) override;
 
  private:
-  // So that it can use DescriptorIndex.
-  friend class EncodedDescriptorDatabase;
-
   // An index mapping file names, symbol names, and extension numbers to
   // some sort of values.
   template <typename Value>

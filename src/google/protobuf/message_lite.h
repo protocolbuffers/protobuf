@@ -315,12 +315,11 @@ class PROTOBUF_EXPORT MessageLite {
   // format, matching the encoding output by MessageLite::SerializeToString().
   // If you'd like to convert a human-readable string into a protocol buffer
   // object, see google::protobuf::TextFormat::ParseFromString().
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromString(
-      const std::string& data);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromString(ConstStringParam data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
   PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromString(
-      const std::string& data);
+      ConstStringParam data);
   // Parse a protocol buffer contained in an array of bytes.
   PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromArray(const void* data,
                                                        int size);
@@ -351,7 +350,7 @@ class PROTOBUF_EXPORT MessageLite {
   bool MergePartialFromCodedStream(io::CodedInputStream* input);
 
   // Merge a protocol buffer contained in a string.
-  bool MergeFromString(const std::string& data);
+  bool MergeFromString(ConstStringParam data);
 
 
   // Serialization ---------------------------------------------------

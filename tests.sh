@@ -64,7 +64,7 @@ build_cpp_distcheck() {
   git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
     grep -v ".gitignore" | grep -v "java/compatibility_tests" | grep -v "java/lite/proguard.pgcfg" |\
     grep -v "python/compatibility_tests" | grep -v "python/docs" | grep -v "python/.repo-metadata.json" |\
-    grep -v "csharp/compatibility_tests" > dist.lst
+    grep -v "python/protobuf_distutils" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
   DIST=`ls *.tar.gz`
   tar -xf $DIST

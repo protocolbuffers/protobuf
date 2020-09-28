@@ -268,20 +268,6 @@ final class DoubleArrayList extends AbstractProtobufList<Double>
   }
 
   @Override
-  public boolean remove(Object o) {
-    ensureIsMutable();
-    for (int i = 0; i < size; i++) {
-      if (o.equals(array[i])) {
-        System.arraycopy(array, i + 1, array, i, size - i - 1);
-        size--;
-        modCount++;
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Override
   public Double remove(int index) {
     ensureIsMutable();
     ensureIndexInRange(index);
