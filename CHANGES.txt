@@ -3,10 +3,12 @@ Unreleased Changes
   Protocol Compiler
   * The proto compiler no longer requires a .proto filename when it is not
     generating code.
+  * Added flag `--deterministic_output` to `protoc --encode=...`.
 
   C++
   * Arenas are now unconditionally enabled. cc_enable_arenas no longer has
     any effect.
+  * Removed inlined string support, which is incompatible with arenas.
   * Fix a memory corruption bug in reflection when mixing optional and
     non-optional fields.
   * Make SpaceUsed() calculation more thorough for map fields.
@@ -20,9 +22,16 @@ Unreleased Changes
   * When running under ASAN, skip a test that makes huge allocations.
   * Fixed a crash that could happen when creating more than 256 extensions in
     a single message.
+  * Fix a crash in BuildFile when passing in invalid descriptor proto.
+  * Parser security fix when operating with CodedInputStream.
+  * Warn against the use of AllowUnknownExtension.
 
   Java
   * Bugfix in mergeFrom() when a oneof has multiple message fields.
+  * Fix RopeByteString.RopeInputStream.read() returning -1 when told to read
+    0 bytes when not at EOF.
+  * Redefine remove(Object) on primitive repeated field Lists to avoid
+    autoboxing.
 
   Python
   * Print google.protobuf.NullValue as null instead of "NULL_VALUE" when it is
