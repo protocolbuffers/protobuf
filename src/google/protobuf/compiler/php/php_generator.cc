@@ -1402,9 +1402,24 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
     fullname = fullname.substr(lastindex + 1);
   }
 
+  std::string base;
+
+  switch (message->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_ANY:
+      base = "\\Google\\Protobuf\\Internal\\AnyBase";
+      break;
+    case Descriptor::WELLKNOWNTYPE_TIMESTAMP:
+      base = "\\Google\\Protobuf\\Internal\\TimestampBase";
+      break;
+    default:
+      base = "\\Google\\Protobuf\\Internal\\Message";
+      break;
+  }
+
   printer.Print(
-      "class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
+      "class ^name^ extends ^base^\n"
       "{\n",
+      "base", base,
       "name", fullname);
   Indent(&printer);
 

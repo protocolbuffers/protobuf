@@ -21,7 +21,7 @@ class Int32Value extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>int32 value = 1;</code>
      */
-    private $value = 0;
+    protected $value = 0;
 
     /**
      * Constructor.
