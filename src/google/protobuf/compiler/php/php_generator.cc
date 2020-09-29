@@ -78,34 +78,39 @@ namespace protobuf {
 namespace compiler {
 namespace php {
 
+struct Options {
+  bool is_descriptor = false;
+  bool aggregate_metadata = false;
+  std::set<string> aggregate_metadata_prefixes;
+};
+
 namespace {
 
 // Forward decls.
-std::string PhpName(const std::string& full_name, bool is_descriptor);
+std::string PhpName(const std::string& full_name, const Options& options);
 std::string IntToString(int32 value);
 std::string FilenameToClassname(const string& filename);
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
-                                      bool is_descriptor);
+                                      const Options& options);
 std::string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
 std::string BinaryToHex(const string& binary);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
-void GenerateAddFilesToPool(const FileDescriptor* file,
-                            const std::set<string>& aggregate_metadata_prefixes,
+void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
                             io::Printer* printer);
 void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message,
-                               int is_descriptor);
+                               const Options& options);
 void GenerateMessageConstructorDocComment(io::Printer* printer,
                                           const Descriptor* message,
-                                          int is_descriptor);
+                                          const Options& options);
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
-                             int is_descriptor, int function_type);
+                             const Options& options, int function_type);
 void GenerateWrapperFieldGetterDocComment(io::Printer* printer,
                                           const FieldDescriptor* field);
 void GenerateWrapperFieldSetterDocComment(io::Printer* printer,
                                           const FieldDescriptor* field);
 void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
-                            int is_descriptor);
+                            const Options& options);
 void GenerateEnumValueDocComment(io::Printer* printer,
                                  const EnumValueDescriptor* value);
 void GenerateServiceDocComment(io::Printer* printer,
@@ -139,8 +144,8 @@ std::string ReservedNamePrefix(const string& classname,
 }
 
 template <typename DescriptorType>
-std::string DescriptorFullName(const DescriptorType* desc, bool is_descriptor) {
-  if (is_descriptor) {
+std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
+  if (is_internal) {
     return StringReplace(desc->full_name(),
                          "google.protobuf",
                          "google.protobuf.internal", false);
@@ -229,7 +234,8 @@ std::string ConstantNamePrefix(const string& classname) {
 }
 
 template <typename DescriptorType>
-std::string RootPhpNamespace(const DescriptorType* desc, bool is_descriptor) {
+std::string RootPhpNamespace(const DescriptorType* desc,
+                             const Options& options) {
   if (desc->file()->options().has_php_namespace()) {
     const string& php_namespace = desc->file()->options().php_namespace();
     if (!php_namespace.empty()) {
@@ -239,15 +245,15 @@ std::string RootPhpNamespace(const DescriptorType* desc, bool is_descriptor) {
   }
 
   if (!desc->file()->package().empty()) {
-    return PhpName(desc->file()->package(), is_descriptor);
+    return PhpName(desc->file()->package(), options);
   }
   return "";
 }
 
 template <typename DescriptorType>
-std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
+std::string FullClassName(const DescriptorType* desc, const Options& options) {
   string classname = GeneratedClassNameImpl(desc);
-  string php_namespace = RootPhpNamespace(desc, is_descriptor);
+  string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
     return php_namespace + "\\" + classname;
   }
@@ -255,17 +261,25 @@ std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
 }
 
 template <typename DescriptorType>
-std::string LegacyFullClassName(const DescriptorType* desc, bool is_descriptor) {
+std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
+  Options options;
+  options.is_descriptor = is_descriptor;
+  return FullClassName(desc, options);
+}
+
+template <typename DescriptorType>
+std::string LegacyFullClassName(const DescriptorType* desc,
+                                const Options& options) {
   string classname = LegacyGeneratedClassName(desc);
-  string php_namespace = RootPhpNamespace(desc, is_descriptor);
+  string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
     return php_namespace + "\\" + classname;
   }
   return classname;
 }
 
-std::string PhpName(const std::string& full_name, bool is_descriptor) {
-  if (is_descriptor) {
+std::string PhpName(const std::string& full_name, const Options& options) {
+  if (options.is_descriptor) {
     return kDescriptorPackageName;
   }
 
@@ -314,7 +328,7 @@ std::string DefaultForField(const FieldDescriptor* field) {
 }
 
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
-                                      bool is_descriptor) {
+                                      const Options& options) {
   const string& proto_file = file->name();
   int start_index = 0;
   int first_index = proto_file.find_first_of("/", start_index);
@@ -324,7 +338,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   if (proto_file == kEmptyFile) {
     return kEmptyMetadataFile;
   }
-  if (is_descriptor) {
+  if (options.is_descriptor) {
     return kDescriptorMetadataFile;
   }
 
@@ -371,10 +385,17 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   return result + ReservedNamePrefix(segment, file) + segment + ".php";
 }
 
+std::string GeneratedMetadataFileName(const FileDescriptor* file,
+                                      bool is_descriptor) {
+  Options options;
+  options.is_descriptor = is_descriptor;
+  return GeneratedMetadataFileName(file, options);
+}
+
 template <typename DescriptorType>
 std::string GeneratedClassFileName(const DescriptorType* desc,
-                                     bool is_descriptor) {
-  std::string result = FullClassName(desc, is_descriptor);
+                                   const Options& options) {
+  std::string result = FullClassName(desc, options);
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
       result[i] = '/';
@@ -385,8 +406,8 @@ std::string GeneratedClassFileName(const DescriptorType* desc,
 
 template <typename DescriptorType>
 std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
-                                     bool is_descriptor) {
-  std::string result = LegacyFullClassName(desc, is_descriptor);
+                                         const Options& options) {
+  std::string result = LegacyFullClassName(desc, options);
 
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
@@ -397,8 +418,8 @@ std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
 }
 
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
-                                    bool is_descriptor) {
-  std::string result = FullClassName(service, is_descriptor) + "Interface";
+                                     const Options& options) {
+  std::string result = FullClassName(service, options) + "Interface";
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
       result[i] = '/';
@@ -422,7 +443,8 @@ std::string LabelForField(const FieldDescriptor* field) {
   }
 }
 
-std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
+std::string PhpSetterTypeName(const FieldDescriptor* field,
+                              const Options& options) {
   if (field->is_map()) {
     return "array|\\Google\\Protobuf\\Internal\\MapField";
   }
@@ -455,7 +477,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
       type = "string";
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      type = "\\" + FullClassName(field->message_type(), is_descriptor);
+      type = "\\" + FullClassName(field->message_type(), options);
       break;
     case FieldDescriptor::TYPE_GROUP:
       return "null";
@@ -472,7 +494,15 @@ std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
   return type;
 }
 
-std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
+std::string PhpSetterTypeName(const FieldDescriptor* field,
+                              bool is_descriptor) {
+  Options options;
+  options.is_descriptor = is_descriptor;
+  return PhpSetterTypeName(field, options);
+}
+
+std::string PhpGetterTypeName(const FieldDescriptor* field,
+                              const Options& options) {
   if (field->is_map()) {
     return "\\Google\\Protobuf\\Internal\\MapField";
   }
@@ -497,21 +527,38 @@ std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: return "string";
     case FieldDescriptor::TYPE_MESSAGE:
-      return "\\" + FullClassName(field->message_type(), is_descriptor);
+      return "\\" + FullClassName(field->message_type(), options);
     case FieldDescriptor::TYPE_GROUP: return "null";
     default: assert(false); return "";
   }
 }
 
-std::string EnumOrMessageSuffix(
-    const FieldDescriptor* field, bool is_descriptor) {
+std::string PhpGetterTypeName(const FieldDescriptor* field,
+                              bool is_descriptor) {
+  Options options;
+  options.is_descriptor = is_descriptor;
+  return PhpGetterTypeName(field, options);
+}
+
+std::string EnumOrMessageSuffix(const FieldDescriptor* field,
+                                const Options& options) {
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    return ", '" + DescriptorFullName(field->message_type(), is_descriptor) + "'";
+    return ", '" +
+           DescriptorFullName(field->message_type(), options.is_descriptor) +
+           "'";
   }
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
-    return ", '" + DescriptorFullName(field->enum_type(), is_descriptor) + "'";
+    return ", '" +
+           DescriptorFullName(field->enum_type(), options.is_descriptor) + "'";
   }
   return "";
+}
+
+std::string EnumOrMessageSuffix(const FieldDescriptor* field,
+                                bool is_descriptor) {
+  Options options;
+  options.is_descriptor = is_descriptor;
+  return EnumOrMessageSuffix(field, options);
 }
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
@@ -581,9 +628,9 @@ void Outdent(io::Printer* printer) {
 }
 
 void GenerateField(const FieldDescriptor* field, io::Printer* printer,
-                   bool is_descriptor) {
+                   const Options& options) {
   if (field->is_repeated()) {
-    GenerateFieldDocComment(printer, field, is_descriptor, kFieldProperty);
+    GenerateFieldDocComment(printer, field, options, kFieldProperty);
     printer->Print(
         "private $^name^;\n",
         "name", field->name());
@@ -593,7 +640,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
   } else {
     std::string initial_value =
         field->has_presence() ? "null" : DefaultForField(field);
-    GenerateFieldDocComment(printer, field, is_descriptor, kFieldProperty);
+    GenerateFieldDocComment(printer, field, options, kFieldProperty);
     printer->Print(
         "protected $^name^ = ^initial_value^;\n",
         "name", field->name(),
@@ -609,12 +656,12 @@ void GenerateOneofField(const OneofDescriptor* oneof, io::Printer* printer) {
       "name", oneof->name());
 }
 
-void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
+void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
                            io::Printer* printer) {
   const OneofDescriptor* oneof = field->real_containing_oneof();
 
   // Generate getter.
-  GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
+  GenerateFieldDocComment(printer, field, options, kFieldGetter);
 
   if (oneof != NULL) {
     printer->Print(
@@ -671,7 +718,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   }
 
   // Generate setter.
-  GenerateFieldDocComment(printer, field, is_descriptor, kFieldSetter);
+  GenerateFieldDocComment(printer, field, options, kFieldSetter);
   printer->Print(
       "public function set^camel_name^($var)\n"
       "{\n",
@@ -694,12 +741,12 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
       printer->Print(
           ", \\^class_name^);\n",
           "class_name",
-          FullClassName(value->message_type(), is_descriptor) + "::class");
+          FullClassName(value->message_type(), options) + "::class");
     } else if (value->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       printer->Print(
           ", \\^class_name^);\n",
           "class_name",
-          FullClassName(value->enum_type(), is_descriptor) + "::class");
+          FullClassName(value->enum_type(), options) + "::class");
     } else {
       printer->Print(");\n");
     }
@@ -712,23 +759,23 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
       printer->Print(
           ", \\^class_name^);\n",
           "class_name",
-          FullClassName(field->message_type(), is_descriptor) + "::class");
+          FullClassName(field->message_type(), options) + "::class");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       printer->Print(
           ", \\^class_name^);\n",
           "class_name",
-          FullClassName(field->enum_type(), is_descriptor) + "::class");
+          FullClassName(field->enum_type(), options) + "::class");
     } else {
       printer->Print(");\n");
     }
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     printer->Print(
         "GPBUtil::checkMessage($var, \\^class_name^::class);\n",
-        "class_name", FullClassName(field->message_type(), is_descriptor));
+        "class_name", FullClassName(field->message_type(), options));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
     printer->Print(
         "GPBUtil::checkEnum($var, \\^class_name^::class);\n",
-        "class_name", FullClassName(field->enum_type(), is_descriptor));
+        "class_name", FullClassName(field->enum_type(), options));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     printer->Print(
         "GPBUtil::checkString($var, ^utf8^);\n",
@@ -888,19 +935,15 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
   }
 }
 
-void GenerateAddFileToPool(
-    const FileDescriptor* file,
-    bool is_descriptor,
-    bool aggregate_metadata,
-    const std::set<string>& aggregate_metadata_prefixes,
-    io::Printer* printer) {
+void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
+                           io::Printer* printer) {
   printer->Print(
       "public static $is_initialized = false;\n\n"
       "public static function initOnce() {\n");
   Indent(printer);
 
-  if (aggregate_metadata) {
-    GenerateAddFilesToPool(file, aggregate_metadata_prefixes, printer);
+  if (options.aggregate_metadata) {
+    GenerateAddFilesToPool(file, options, printer);
   } else {
     printer->Print(
         "$pool = \\Google\\Protobuf\\Internal\\"
@@ -909,7 +952,7 @@ void GenerateAddFileToPool(
         "  return;\n"
         "}\n");
 
-    if (is_descriptor) {
+    if (options.is_descriptor) {
       for (int i = 0; i < file->message_type_count(); i++) {
         GenerateMessageToPool("", file->message_type(i), printer);
       }
@@ -929,7 +972,7 @@ void GenerateAddFileToPool(
           continue;
         }
         std::string dependency_filename =
-            GeneratedMetadataFileName(file->dependency(i), is_descriptor);
+            GeneratedMetadataFileName(file->dependency(i), options);
         printer->Print(
             "\\^name^::initOnce();\n",
             "name", FilenameToClassname(dependency_filename));
@@ -1016,12 +1059,12 @@ static void AnalyzeDependencyForFile(
 
 static bool NeedsUnwrapping(
     const FileDescriptor* file,
-    const std::set<string>& aggregate_metadata_prefixes) {
+    const Options& options) {
   bool has_aggregate_metadata_prefix = false;
-  if (aggregate_metadata_prefixes.empty()) {
+  if (options.aggregate_metadata_prefixes.empty()) {
     has_aggregate_metadata_prefix = true;
   } else {
-    for (const auto& prefix : aggregate_metadata_prefixes) {
+    for (const auto& prefix : options.aggregate_metadata_prefixes) {
       if (HasPrefixString(file->package(), prefix)) {
         has_aggregate_metadata_prefix = true;
         break;
@@ -1034,7 +1077,7 @@ static bool NeedsUnwrapping(
 
 void GenerateAddFilesToPool(
     const FileDescriptor* file,
-    const std::set<string>& aggregate_metadata_prefixes,
+    const Options& options,
     io::Printer* printer) {
   printer->Print(
       "$pool = \\Google\\Protobuf\\Internal\\"
@@ -1064,7 +1107,7 @@ void GenerateAddFilesToPool(
       }
     }
 
-    bool needs_aggregate = NeedsUnwrapping(file, aggregate_metadata_prefixes);
+    bool needs_aggregate = NeedsUnwrapping(file, options);
 
     if (needs_aggregate) {
       auto file_proto = sorted_file_set.add_file();
@@ -1089,8 +1132,7 @@ void GenerateAddFilesToPool(
         it->clear_extension();
       }
     } else {
-      std::string dependency_filename =
-          GeneratedMetadataFileName(file, false);
+      std::string dependency_filename = GeneratedMetadataFileName(file, false);
       printer->Print(
           "\\^name^::initOnce();\n",
           "name", FilenameToClassname(dependency_filename));
@@ -1115,8 +1157,8 @@ void GenerateAddFilesToPool(
       "static::$is_initialized = true;\n");
 }
 
-void GenerateUseDeclaration(bool is_descriptor, io::Printer* printer) {
-  if (!is_descriptor) {
+void GenerateUseDeclaration(const Options& options, io::Printer* printer) {
+  if (!options.is_descriptor) {
     printer->Print(
         "use Google\\Protobuf\\Internal\\GPBType;\n"
         "use Google\\Protobuf\\Internal\\RepeatedField;\n"
@@ -1151,12 +1193,9 @@ std::string FilenameToClassname(const string& filename) {
   return result;
 }
 
-void GenerateMetadataFile(const FileDescriptor* file,
-                          bool is_descriptor,
-                          bool aggregate_metadata,
-                          const std::set<string>& aggregate_metadata_prefixes,
+void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
                           GeneratorContext* generator_context) {
-  std::string filename = GeneratedMetadataFileName(file, is_descriptor);
+  std::string filename = GeneratedMetadataFileName(file, options);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -1183,32 +1222,30 @@ void GenerateMetadataFile(const FileDescriptor* file,
   }
   Indent(&printer);
 
-  GenerateAddFileToPool(file, is_descriptor, aggregate_metadata,
-                        aggregate_metadata_prefixes, &printer);
+  GenerateAddFileToPool(file, options, &printer);
 
   Outdent(&printer);
   printer.Print("}\n\n");
 }
 
 template <typename DescriptorType>
-void LegacyGenerateClassFile(const FileDescriptor* file, const DescriptorType* desc,
-                         bool is_descriptor,
-                         GeneratorContext* generator_context) {
-
-  std::string filename = LegacyGeneratedClassFileName(desc, is_descriptor);
+void LegacyGenerateClassFile(const FileDescriptor* file,
+                             const DescriptorType* desc, const Options& options,
+                             GeneratorContext* generator_context) {
+  std::string filename = LegacyGeneratedClassFileName(desc, options);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
 
   GenerateHead(file, &printer);
 
-  std::string php_namespace = RootPhpNamespace(desc, is_descriptor);
+  std::string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", php_namespace);
   }
-  std::string newname = FullClassName(desc, is_descriptor);
+  std::string newname = FullClassName(desc, options);
   printer.Print("if (false) {\n");
   Indent(&printer);
   printer.Print("/**\n");
@@ -1224,13 +1261,14 @@ void LegacyGenerateClassFile(const FileDescriptor* file, const DescriptorType* d
       "new", GeneratedClassNameImpl(desc));
   printer.Print("@trigger_error('^old^ is deprecated and will be removed in "
       "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
-      "old", LegacyFullClassName(desc, is_descriptor),
+      "old", LegacyFullClassName(desc, options),
       "fullname", newname);
 }
 
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
-                      bool is_descriptor, GeneratorContext* generator_context) {
-  std::string filename = GeneratedClassFileName(en, is_descriptor);
+                      const Options& options,
+                      GeneratorContext* generator_context) {
+  std::string filename = GeneratedClassFileName(en, options);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -1250,7 +1288,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     printer.Print("use UnexpectedValueException;\n\n");
   }
 
-  GenerateEnumDocComment(&printer, en, is_descriptor);
+  GenerateEnumDocComment(&printer, en, options);
 
   if (lastindex != string::npos) {
     fullname = fullname.substr(lastindex + 1);
@@ -1327,14 +1365,13 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     printer.Print(
         "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
-        "old", LegacyFullClassName(en, is_descriptor));
-    LegacyGenerateClassFile(file, en, is_descriptor, generator_context);
+        "old", LegacyFullClassName(en, options));
+    LegacyGenerateClassFile(file, en, options, generator_context);
   }
 }
 
 void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
-                         bool is_descriptor,
-                         bool aggregate_metadata,
+                         const Options& options,
                          GeneratorContext* generator_context) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
@@ -1342,7 +1379,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
     return;
   }
 
-  std::string filename = GeneratedClassFileName(message, is_descriptor);
+  std::string filename = GeneratedClassFileName(message, options);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -1358,9 +1395,9 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
         "name", fullname.substr(0, lastindex));
   }
 
-  GenerateUseDeclaration(is_descriptor, &printer);
+  GenerateUseDeclaration(options, &printer);
 
-  GenerateMessageDocComment(&printer, message, is_descriptor);
+  GenerateMessageDocComment(&printer, message, options);
   if (lastindex != string::npos) {
     fullname = fullname.substr(lastindex + 1);
   }
@@ -1389,7 +1426,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Field and oneof definitions.
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
-    GenerateField(field, &printer, is_descriptor);
+    GenerateField(field, &printer, options);
   }
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
@@ -1397,13 +1434,12 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   }
   printer.Print("\n");
 
-  GenerateMessageConstructorDocComment(&printer, message, is_descriptor);
+  GenerateMessageConstructorDocComment(&printer, message, options);
   printer.Print(
       "public function __construct($data = NULL) {\n");
   Indent(&printer);
 
-  std::string metadata_filename =
-      GeneratedMetadataFileName(file, is_descriptor);
+  std::string metadata_filename = GeneratedMetadataFileName(file, options);
   std::string metadata_fullname = FilenameToClassname(metadata_filename);
   printer.Print(
       "\\^fullname^::initOnce();\n",
@@ -1418,7 +1454,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   // Field and oneof accessors.
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
-    GenerateFieldAccessor(field, is_descriptor, &printer);
+    GenerateFieldAccessor(field, options, &printer);
   }
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
@@ -1444,26 +1480,24 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
     printer.Print(
         "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
-        "old", LegacyFullClassName(message, is_descriptor));
-    LegacyGenerateClassFile(file, message, is_descriptor, generator_context);
+        "old", LegacyFullClassName(message, options));
+    LegacyGenerateClassFile(file, message, options, generator_context);
   }
 
   // Nested messages and enums.
   for (int i = 0; i < message->nested_type_count(); i++) {
-    GenerateMessageFile(file, message->nested_type(i), is_descriptor,
-                        aggregate_metadata,
+    GenerateMessageFile(file, message->nested_type(i), options,
                         generator_context);
   }
   for (int i = 0; i < message->enum_type_count(); i++) {
-    GenerateEnumFile(file, message->enum_type(i), is_descriptor,
-                     generator_context);
+    GenerateEnumFile(file, message->enum_type(i), options, generator_context);
   }
 }
 
-void GenerateServiceFile(const FileDescriptor* file,
-  const ServiceDescriptor* service, bool is_descriptor,
-  GeneratorContext* generator_context) {
-  std::string filename = GeneratedServiceFileName(service, is_descriptor);
+void GenerateServiceFile(
+    const FileDescriptor* file, const ServiceDescriptor* service,
+    const Options& options, GeneratorContext* generator_context) {
+  std::string filename = GeneratedServiceFileName(service, options);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -1507,26 +1541,20 @@ void GenerateServiceFile(const FileDescriptor* file,
   printer.Print("}\n\n");
 }
 
-void GenerateFile(const FileDescriptor* file, bool is_descriptor,
-                  bool aggregate_metadata,
-                  const std::set<string>& aggregate_metadata_prefixes,
+void GenerateFile(const FileDescriptor* file, const Options& options,
                   GeneratorContext* generator_context) {
-  GenerateMetadataFile(file, is_descriptor, aggregate_metadata,
-                       aggregate_metadata_prefixes, generator_context);
+  GenerateMetadataFile(file, options, generator_context);
 
   for (int i = 0; i < file->message_type_count(); i++) {
-    GenerateMessageFile(file, file->message_type(i), is_descriptor,
-                        aggregate_metadata,
+    GenerateMessageFile(file, file->message_type(i), options,
                         generator_context);
   }
   for (int i = 0; i < file->enum_type_count(); i++) {
-    GenerateEnumFile(file, file->enum_type(i), is_descriptor,
-                     generator_context);
+    GenerateEnumFile(file, file->enum_type(i), options, generator_context);
   }
   if (file->options().php_generic_services()) {
     for (int i = 0; i < file->service_count(); i++) {
-      GenerateServiceFile(file, file->service(i), is_descriptor,
-                          generator_context);
+      GenerateServiceFile(file, file->service(i), options, generator_context);
     }
   }
 }
@@ -1629,20 +1657,20 @@ static string FirstLineOf(const string& value) {
   return result;
 }
 
-void GenerateMessageDocComment(io::Printer* printer,
-                               const Descriptor* message, int is_descriptor) {
+void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message,
+                               const Options& options) {
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, message);
   printer->Print(
     " * Generated from protobuf message <code>^messagename^</code>\n"
     " */\n",
-    "fullname", EscapePhpdoc(FullClassName(message, is_descriptor)),
+    "fullname", EscapePhpdoc(FullClassName(message, options)),
     "messagename", EscapePhpdoc(message->full_name()));
 }
 
 void GenerateMessageConstructorDocComment(io::Printer* printer,
                                           const Descriptor* message,
-                                          int is_descriptor) {
+                                          const Options& options) {
   // In theory we should have slightly different comments for setters, getters,
   // etc., but in practice everyone already knows the difference between these
   // so it's redundant information.
@@ -1660,7 +1688,7 @@ void GenerateMessageConstructorDocComment(io::Printer* printer,
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
     printer->Print(" *     @type ^php_type^ $^var^\n",
-      "php_type", PhpSetterTypeName(field, is_descriptor),
+      "php_type", PhpSetterTypeName(field, options),
       "var", field->name());
     SourceLocation location;
     if (field->GetSourceLocation(&location)) {
@@ -1682,7 +1710,7 @@ void GenerateServiceDocComment(io::Printer* printer,
 }
 
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
-                             int is_descriptor, int function_type) {
+                             const Options& options, int function_type) {
   // In theory we should have slightly different comments for setters, getters,
   // etc., but in practice everyone already knows the difference between these
   // so it's redundant information.
@@ -1698,11 +1726,11 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
     "def", EscapePhpdoc(FirstLineOf(field->DebugString())));
   if (function_type == kFieldSetter) {
     printer->Print(" * @param ^php_type^ $var\n",
-      "php_type", PhpSetterTypeName(field, is_descriptor));
+      "php_type", PhpSetterTypeName(field, options));
     printer->Print(" * @return $this\n");
   } else if (function_type == kFieldGetter) {
     printer->Print(" * @return ^php_type^\n",
-      "php_type", PhpGetterTypeName(field, is_descriptor));
+      "php_type", PhpGetterTypeName(field, options));
   }
   printer->Print(" */\n");
 }
@@ -1743,7 +1771,7 @@ void GenerateWrapperFieldSetterDocComment(io::Printer* printer, const FieldDescr
 }
 
 void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
-                            int is_descriptor) {
+                            const Options& options) {
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, enum_);
   printer->Print(
@@ -1784,32 +1812,26 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
 bool Generator::Generate(const FileDescriptor* file, const string& parameter,
                          GeneratorContext* generator_context,
                          string* error) const {
-  return Generate(file, false, false, std::set<string>(),
-                  generator_context, error);
+  return Generate(file, Options(), generator_context, error);
 }
 
-bool Generator::Generate(
-    const FileDescriptor* file,
-    bool is_descriptor,
-    bool aggregate_metadata,
-    const std::set<string>& aggregate_metadata_prefixes,
-    GeneratorContext* generator_context,
-    string* error) const {
-  if (is_descriptor && file->name() != kDescriptorFile) {
+bool Generator::Generate(const FileDescriptor* file, const Options& options,
+                         GeneratorContext* generator_context,
+                         string* error) const {
+  if (options.is_descriptor && file->name() != kDescriptorFile) {
     *error =
         "Can only generate PHP code for google/protobuf/descriptor.proto.\n";
     return false;
   }
 
-  if (!is_descriptor && file->syntax() != FileDescriptor::SYNTAX_PROTO3) {
+  if (!options.is_descriptor && file->syntax() != FileDescriptor::SYNTAX_PROTO3) {
     *error =
         "Can only generate PHP code for proto3 .proto files.\n"
         "Please add 'syntax = \"proto3\";' to the top of your .proto file.\n";
     return false;
   }
 
-  GenerateFile(file, is_descriptor, aggregate_metadata,
-               aggregate_metadata_prefixes, generator_context);
+  GenerateFile(file, options, generator_context);
 
   return true;
 }
@@ -1818,32 +1840,24 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                             const std::string& parameter,
                             GeneratorContext* generator_context,
                             std::string* error) const {
-  bool is_descriptor = false;
-  bool aggregate_metadata = false;
-  std::set<string> aggregate_metadata_prefixes;
+  Options options;
 
   for (const auto& option : Split(parameter, ",", true)) {
     const std::vector<std::string> option_pair = Split(option, "=", true);
     if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
-      string options_string = option_pair[1];
-      const std::vector<std::string> options =
-          Split(options_string, "#", false);
-      aggregate_metadata = true;
-      for (int i = 0; i < options.size(); i++) {
-        aggregate_metadata_prefixes.insert(options[i]);
-        GOOGLE_LOG(INFO) << options[i];
+      options.aggregate_metadata = true;
+      for (const auto& prefix : Split(option_pair[1], "#", false)) {
+        options.aggregate_metadata_prefixes.insert(prefix);
+        GOOGLE_LOG(INFO) << prefix;
       }
     }
     if (option_pair[0] == "internal") {
-      is_descriptor = true;
+      options.is_descriptor = true;
     }
   }
 
   for (auto file : files) {
-    if (!Generate(
-             file, is_descriptor, aggregate_metadata,
-             aggregate_metadata_prefixes,
-             generator_context, error)) {
+    if (!Generate(file, options, generator_context, error)) {
       return false;
     }
   }
