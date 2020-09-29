@@ -78,15 +78,14 @@ namespace protobuf {
 namespace compiler {
 namespace php {
 
+namespace {
+
 // Forward decls.
 std::string PhpName(const std::string& full_name, bool is_descriptor);
-std::string DefaultForField(FieldDescriptor* field);
 std::string IntToString(int32 value);
 std::string FilenameToClassname(const string& filename);
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       bool is_descriptor);
-std::string LabelForField(FieldDescriptor* field);
-std::string TypeName(FieldDescriptor* field);
 std::string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
 std::string BinaryToHex(const string& binary);
 void Indent(io::Printer* printer);
@@ -176,18 +175,6 @@ std::string GeneratedClassNameImpl(const DescriptorType* desc) {
 std::string GeneratedClassNameImpl(const ServiceDescriptor* desc) {
   std::string classname = desc->name();
   return ClassNamePrefix(classname, desc) + classname;
-}
-
-std::string GeneratedClassName(const Descriptor* desc) {
-  return GeneratedClassNameImpl(desc);
-}
-
-std::string GeneratedClassName(const EnumDescriptor* desc) {
-  return GeneratedClassNameImpl(desc);
-}
-
-std::string GeneratedClassName(const ServiceDescriptor* desc) {
-  return GeneratedClassNameImpl(desc);
 }
 
 template <typename DescriptorType>
@@ -431,30 +418,6 @@ std::string LabelForField(const FieldDescriptor* field) {
     case FieldDescriptor::LABEL_OPTIONAL: return "optional";
     case FieldDescriptor::LABEL_REQUIRED: return "required";
     case FieldDescriptor::LABEL_REPEATED: return "repeated";
-    default: assert(false); return "";
-  }
-}
-
-std::string TypeName(const FieldDescriptor* field) {
-  switch (field->type()) {
-    case FieldDescriptor::TYPE_INT32: return "int32";
-    case FieldDescriptor::TYPE_INT64: return "int64";
-    case FieldDescriptor::TYPE_UINT32: return "uint32";
-    case FieldDescriptor::TYPE_UINT64: return "uint64";
-    case FieldDescriptor::TYPE_SINT32: return "sint32";
-    case FieldDescriptor::TYPE_SINT64: return "sint64";
-    case FieldDescriptor::TYPE_FIXED32: return "fixed32";
-    case FieldDescriptor::TYPE_FIXED64: return "fixed64";
-    case FieldDescriptor::TYPE_SFIXED32: return "sfixed32";
-    case FieldDescriptor::TYPE_SFIXED64: return "sfixed64";
-    case FieldDescriptor::TYPE_DOUBLE: return "double";
-    case FieldDescriptor::TYPE_FLOAT: return "float";
-    case FieldDescriptor::TYPE_BOOL: return "bool";
-    case FieldDescriptor::TYPE_ENUM: return "enum";
-    case FieldDescriptor::TYPE_STRING: return "string";
-    case FieldDescriptor::TYPE_BYTES: return "bytes";
-    case FieldDescriptor::TYPE_MESSAGE: return "message";
-    case FieldDescriptor::TYPE_GROUP: return "group";
     default: assert(false); return "";
   }
 }
@@ -1815,6 +1778,8 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
     " */\n",
     "return_type", EscapePhpdoc(FullClassName(method->output_type(), false)));
 }
+
+}  // namespace
 
 bool Generator::Generate(const FileDescriptor* file, const string& parameter,
                          GeneratorContext* generator_context,
