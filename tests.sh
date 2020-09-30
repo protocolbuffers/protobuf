@@ -316,7 +316,7 @@ build_python() {
   else
     envlist=py\{27,36\}-python
   fi
-  tox -e $envlist
+  python -m tox -e $envlist
   cd ..
 }
 
@@ -324,7 +324,7 @@ build_python_version() {
   internal_build_cpp
   cd python
   envlist=$1
-  tox -e $envlist
+  python -m tox -e $envlist
   cd ..
 }
 
