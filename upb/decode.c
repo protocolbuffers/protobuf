@@ -491,99 +491,106 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
+const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
+                         const upb_msglayout *layout) {
+  uint32_t tag;
+  const upb_msglayout_field *field;
+  int field_number;
+  int wire_type;
+  const char *field_start = ptr;
+  wireval val;
+  int op;
+
+  ptr = decode_varint32(d, ptr, d->limit, &tag);
+  field_number = tag >> 3;
+  wire_type = tag & 7;
+
+  field = upb_find_field(layout, field_number);
+
+  switch (wire_type) {
+    case UPB_WIRE_TYPE_VARINT:
+      ptr = decode_varint64(d, ptr, d->limit, &val.uint64_val);
+      op = varint_ops[field->descriptortype];
+      decode_munge(field->descriptortype, &val);
+      break;
+    case UPB_WIRE_TYPE_32BIT:
+      if (d->limit - ptr < 4) decode_err(d);
+      memcpy(&val.uint32_val, ptr, 4);
+      val.uint32_val = _upb_be_swap32(val.uint32_val);
+      ptr += 4;
+      op = OP_SCALAR_LG2(2);
+      if (((1 << field->descriptortype) & fixed32_ok) == 0) goto unknown;
+      break;
+    case UPB_WIRE_TYPE_64BIT:
+      if (d->limit - ptr < 8) decode_err(d);
+      memcpy(&val.uint64_val, ptr, 8);
+      val.uint64_val = _upb_be_swap64(val.uint64_val);
+      ptr += 8;
+      op = OP_SCALAR_LG2(3);
+      if (((1 << field->descriptortype) & fixed64_ok) == 0) goto unknown;
+      break;
+    case UPB_WIRE_TYPE_DELIMITED: {
+      uint32_t size;
+      int ndx = field->descriptortype;
+      if (_upb_isrepeated(field)) ndx += 18;
+      ptr = decode_varint32(d, ptr, d->limit, &size);
+      if (size >= INT32_MAX || (size_t)(d->limit - ptr) < size) {
+        decode_err(d); /* Length overflow. */
+      }
+      val.str_val.data = ptr;
+      val.str_val.size = size;
+      ptr += size;
+      op = delim_ops[ndx];
+      break;
+    }
+    case UPB_WIRE_TYPE_START_GROUP:
+      val.uint32_val = field_number;
+      op = OP_SUBMSG;
+      if (field->descriptortype != UPB_DTYPE_GROUP) goto unknown;
+      break;
+    case UPB_WIRE_TYPE_END_GROUP:
+      d->end_group = field_number;
+      return ptr;
+    default:
+      decode_err(d);
+  }
+
+  if (op >= 0) {
+    /* Parse, using op for dispatch. */
+    switch (field->label) {
+      case UPB_LABEL_REPEATED:
+      case _UPB_LABEL_PACKED:
+        ptr = decode_toarray(d, ptr, msg, layout, field, val, op);
+        break;
+      case _UPB_LABEL_MAP:
+        decode_tomap(d, msg, layout, field, val);
+        break;
+      default:
+        ptr = decode_tomsg(d, ptr, msg, layout, field, val, op);
+        break;
+    }
+  } else {
+  unknown:
+    /* Skip unknown field. */
+    if (field_number == 0) decode_err(d);
+    if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
+      ptr = decode_group(d, ptr, NULL, NULL, field_number);
+    }
+    if (msg) {
+      if (!_upb_msg_addunknown(msg, field_start, ptr - field_start,
+                               d->arena)) {
+        decode_err(d);
+      }
+    }
+  }
+
+  return ptr;
+}
+
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
   while (ptr < d->limit) {
-    uint32_t tag;
-    const upb_msglayout_field *field;
-    int field_number;
-    int wire_type;
-    const char *field_start = ptr;
-    wireval val;
-    int op;
-
-    ptr = decode_varint32(d, ptr, d->limit, &tag);
-    field_number = tag >> 3;
-    wire_type = tag & 7;
-
-    field = upb_find_field(layout, field_number);
-
-    switch (wire_type) {
-      case UPB_WIRE_TYPE_VARINT:
-        ptr = decode_varint64(d, ptr, d->limit, &val.uint64_val);
-        op = varint_ops[field->descriptortype];
-        decode_munge(field->descriptortype, &val);
-        break;
-      case UPB_WIRE_TYPE_32BIT:
-        if (d->limit - ptr < 4) decode_err(d);
-        memcpy(&val.uint32_val, ptr, 4);
-        val.uint32_val = _upb_be_swap32(val.uint32_val);
-        ptr += 4;
-        op = OP_SCALAR_LG2(2);
-        if (((1 << field->descriptortype) & fixed32_ok) == 0) goto unknown;
-        break;
-      case UPB_WIRE_TYPE_64BIT:
-        if (d->limit - ptr < 8) decode_err(d);
-        memcpy(&val.uint64_val, ptr, 8);
-        val.uint64_val = _upb_be_swap64(val.uint64_val);
-        ptr += 8;
-        op = OP_SCALAR_LG2(3);
-        if (((1 << field->descriptortype) & fixed64_ok) == 0) goto unknown;
-        break;
-      case UPB_WIRE_TYPE_DELIMITED: {
-        uint32_t size;
-        int ndx = field->descriptortype;
-        if (_upb_isrepeated(field)) ndx += 18;
-        ptr = decode_varint32(d, ptr, d->limit, &size);
-        if (size >= INT32_MAX || (size_t)(d->limit - ptr) < size) {
-          decode_err(d); /* Length overflow. */
-        }
-        val.str_val.data = ptr;
-        val.str_val.size = size;
-        ptr += size;
-        op = delim_ops[ndx];
-        break;
-      }
-      case UPB_WIRE_TYPE_START_GROUP:
-        val.uint32_val = field_number;
-        op = OP_SUBMSG;
-        if (field->descriptortype != UPB_DTYPE_GROUP) goto unknown;
-        break;
-      case UPB_WIRE_TYPE_END_GROUP:
-        d->end_group = field_number;
-        return ptr;
-      default:
-        decode_err(d);
-    }
-
-    if (op >= 0) {
-      /* Parse, using op for dispatch. */
-      switch (field->label) {
-        case UPB_LABEL_REPEATED:
-        case _UPB_LABEL_PACKED:
-          ptr = decode_toarray(d, ptr, msg, layout, field, val, op);
-          break;
-        case _UPB_LABEL_MAP:
-          decode_tomap(d, msg, layout, field, val);
-          break;
-        default:
-          ptr = decode_tomsg(d, ptr, msg, layout, field, val, op);
-          break;
-      }
-    } else {
-    unknown:
-      /* Skip unknown field. */
-      if (field_number == 0) decode_err(d);
-      if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
-        ptr = decode_group(d, ptr, NULL, NULL, field_number);
-      }
-      if (msg) {
-        if (!_upb_msg_addunknown(msg, field_start, ptr - field_start,
-                                 d->arena)) {
-          decode_err(d);
-        }
-      }
-    }
+    ptr = decode_field(d, ptr, msg, layout);
   }
 
   if (ptr != d->limit) decode_err(d);
