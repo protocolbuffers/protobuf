@@ -128,6 +128,8 @@ class generate_py_protobufs(Command):
         self.ensure_string_list('proto_files')
 
         if self.protoc is None:
+            self.protoc = os.getenv('PROTOC')
+        if self.protoc is None:
             self.protoc = spawn.find_executable('protoc')
 
     def run(self):
