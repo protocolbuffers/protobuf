@@ -47,7 +47,7 @@ class generate_py_protobufs(Command):
         ('extra-proto-paths=', None,
          'Additional paths to resolve imports in .proto files.'),
 
-        ('protoc', None,
+        ('protoc=', None,
          'Path to a specific `protoc` command to use.'),
     ]
     boolean_options = ['recurse']
