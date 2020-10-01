@@ -1119,6 +1119,14 @@ class JsonFormatTest(JsonFormatBase):
         'Failed to parse value field: Struct must be in a dict which is 1234',
         json_format.Parse, text, message)
 
+  def testInvalidStringValue(self):
+    message = json_format_proto3_pb2.TestTimestamp()
+    text = '{"value": {"seconds": 123, "nanos": 456}}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r'Failed to parse value field: Value must be in a str which is {"seconds": 123, "nanos": 456}',
+        json_format.Parse, text, message)
+
   def testInvalidAny(self):
     message = any_pb2.Any()
     text = '{"@type": "type.googleapis.com/google.protobuf.Int32Value"}'

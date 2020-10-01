@@ -631,6 +631,9 @@ class _Parser(object):
     """Convert a JSON representation into message with FromJsonString."""
     # Duration, Timestamp, FieldMask have a FromJsonString method to do the
     # conversion. Users can also call the method directly.
+    if not isinstance(value, str):
+      raise ParseError(
+          'Value must be in a str which is {0}.'.format(value))
     try:
       message.FromJsonString(value)
     except ValueError as e:
