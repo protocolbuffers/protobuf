@@ -1124,7 +1124,7 @@ class JsonFormatTest(JsonFormatBase):
     text = '{"value": {"seconds": 123, "nanos": 456}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        r'Failed to parse value field: Value must be in a str which is {"seconds": 123, "nanos": 456}',
+        r"Failed to parse value field: Value must be in a str which is \{'seconds': 123, 'nanos': 456\}",
         json_format.Parse, text, message)
 
   def testInvalidAny(self):
