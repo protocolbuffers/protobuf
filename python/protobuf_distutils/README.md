@@ -103,4 +103,19 @@ $ python -m pip install .
 
   By default, the protoc binary (the Protobuf compiler) is found by
   searching the environment path. To use a specific protoc binary, its
-  path can be specified.
+  path can be specified. Resolution of the `protoc` value is as follows:
+  1. If the `--protoc=VALUE` flag is passed to `generate_py_protobufs`,
+     then `VALUE` will be used.
+     For example:
+     ```shell
+     $ python setup.py generate_py_protobufs --protoc=/path/to/protoc
+     ```
+  2. Otherwise, if a value was set in the `options`, it will be used.
+     (See "Example setup.py configuration," above.)
+  3. Otherwise, if the `PROTOC` environment variable is set, it will be
+     used. For example:
+     For example:
+     ```shell
+     $ PROTOC=/path/to/protoc python setup.py generate_py_protobufs
+     ```
+  4. Otherwise, `$PATH` will be searched.
