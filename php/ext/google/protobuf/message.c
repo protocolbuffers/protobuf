@@ -36,6 +36,7 @@
 
 // This is not self-contained: it must be after other Zend includes.
 #include <Zend/zend_exceptions.h>
+#include <Zend/zend_inheritance.h>
 
 #include "arena.h"
 #include "array.h"
@@ -106,6 +107,43 @@ static const upb_fielddef *get_field(Message *msg, PROTO_STR *member) {
   }
 
   return f;
+}
+
+static void Message_get(Message *intern, const upb_fielddef *f, zval *rv) {
+  upb_arena *arena = Arena_Get(&intern->arena);
+
+  if (upb_fielddef_ismap(f)) {
+    upb_mutmsgval msgval = upb_msg_mutable(intern->msg, f, arena);
+    MapField_GetPhpWrapper(rv, msgval.map, f, &intern->arena);
+  } else if (upb_fielddef_isseq(f)) {
+    upb_mutmsgval msgval = upb_msg_mutable(intern->msg, f, arena);
+    RepeatedField_GetPhpWrapper(rv, msgval.array, f, &intern->arena);
+  } else {
+    upb_msgval msgval = upb_msg_get(intern->msg, f);
+    const Descriptor *subdesc = Descriptor_GetFromFieldDef(f);
+    Convert_UpbToPhp(msgval, rv, upb_fielddef_type(f), subdesc, &intern->arena);
+  }
+}
+
+static bool Message_set(Message *intern, const upb_fielddef *f, zval *val) {
+  upb_arena *arena = Arena_Get(&intern->arena);
+  upb_msgval msgval;
+
+  if (upb_fielddef_ismap(f)) {
+    msgval.map_val = MapField_GetUpbMap(val, f, arena);
+    if (!msgval.map_val) return false;
+  } else if (upb_fielddef_isseq(f)) {
+    msgval.array_val = RepeatedField_GetUpbArray(val, f, arena);
+    if (!msgval.array_val) return false;
+  } else {
+    upb_fieldtype_t type = upb_fielddef_type(f);
+    const Descriptor *subdesc = Descriptor_GetFromFieldDef(f);
+    bool ok = Convert_PhpToUpb(val, &msgval, type, subdesc, arena);
+    if (!ok) return false;
+  }
+
+  upb_msg_set(intern->msg, f, msgval, arena);
+  return true;
 }
 
 static bool MessageEq(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m);
@@ -271,6 +309,7 @@ static void Message_unset_property(PROTO_VAL *obj, PROTO_STR *member,
   upb_msg_clearfield(intern->msg, f);
 }
 
+
 /**
  * Message_read_property()
  *
@@ -293,22 +332,9 @@ static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
                                    int type, void **cache_slot, zval *rv) {
   Message* intern = PROTO_MSG_P(obj);
   const upb_fielddef *f = get_field(intern, member);
-  upb_arena *arena = Arena_Get(&intern->arena);
 
   if (!f) return NULL;
-
-  if (upb_fielddef_ismap(f)) {
-    upb_mutmsgval msgval = upb_msg_mutable(intern->msg, f, arena);
-    MapField_GetPhpWrapper(rv, msgval.map, f, &intern->arena);
-  } else if (upb_fielddef_isseq(f)) {
-    upb_mutmsgval msgval = upb_msg_mutable(intern->msg, f, arena);
-    RepeatedField_GetPhpWrapper(rv, msgval.array, f, &intern->arena);
-  } else {
-    upb_msgval msgval = upb_msg_get(intern->msg, f);
-    const Descriptor *subdesc = Descriptor_GetFromFieldDef(f);
-    Convert_UpbToPhp(msgval, rv, upb_fielddef_type(f), subdesc, &intern->arena);
-  }
-
+  Message_get(intern, f, rv);
   return rv;
 }
 
@@ -337,37 +363,20 @@ static PROTO_RETURN_VAL Message_write_property(
     PROTO_VAL *obj, PROTO_STR *member, zval *val, void **cache_slot) {
   Message* intern = PROTO_MSG_P(obj);
   const upb_fielddef *f = get_field(intern, member);
-  upb_arena *arena = Arena_Get(&intern->arena);
-  upb_msgval msgval;
 
-  if (!f) goto error;
-
-  if (upb_fielddef_ismap(f)) {
-    msgval.map_val = MapField_GetUpbMap(val, f, arena);
-    if (!msgval.map_val) goto error;
-  } else if (upb_fielddef_isseq(f)) {
-    msgval.array_val = RepeatedField_GetUpbArray(val, f, arena);
-    if (!msgval.array_val) goto error;
+  if (f && Message_set(intern, f, val)) {
+#if PHP_VERSION_ID < 704000
+    return;
+#else
+    return val;
+#endif
   } else {
-    upb_fieldtype_t type = upb_fielddef_type(f);
-    const Descriptor *subdesc = Descriptor_GetFromFieldDef(f);
-    bool ok = Convert_PhpToUpb(val, &msgval, type, subdesc, arena);
-    if (!ok) goto error;
+#if PHP_VERSION_ID < 704000
+    return;
+#else
+    return &EG(error_zval);
+#endif
   }
-
-  upb_msg_set(intern->msg, f, msgval, arena);
-#if PHP_VERSION_ID < 704000
-  return;
-#else
-  return val;
-#endif
-
-error:
-#if PHP_VERSION_ID < 704000
-  return;
-#else
-  return &EG(error_zval);
-#endif
 }
 
 /**
@@ -1009,6 +1018,151 @@ static zend_function_entry Message_methods[] = {
   ZEND_FE_END
 };
 
+// Well-known types ////////////////////////////////////////////////////////////
+
+static const char TYPE_URL_PREFIX[] = "type.googleapis.com/";
+
+static upb_msgval Message_getval(Message *intern, const char *field_name) {
+  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef, field_name);
+  return upb_msg_get(intern->msg, f);
+}
+
+PHP_METHOD(google_protobuf_Any, unpack) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  upb_strview type_url = Message_getval(intern, "type_url").str_val;
+  upb_strview value = Message_getval(intern, "value").str_val;
+  size_t prefix_len = strlen(TYPE_URL_PREFIX);
+  upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_msgdef *m;
+  Descriptor *desc;
+  zend_class_entry *klass;
+  zval ret;
+
+  // Ensure that type_url has TYPE_URL_PREFIX as a prefix.
+  if (type_url.size < prefix_len ||
+      strncmp(TYPE_URL_PREFIX, type_url.data, prefix_len) != 0) {
+    zend_throw_exception(
+        NULL, "Type url needs to be type.googleapis.com/fully-qualified",
+        0 TSRMLS_CC);
+    return;
+  }
+
+  type_url.size -= prefix_len;
+  type_url.data += prefix_len;
+  m = upb_symtab_lookupmsg2(symtab, type_url.data, type_url.size);
+
+  if (m == NULL) {
+    zend_throw_exception(
+        NULL, "Specified message in any hasn't been added to descriptor pool",
+        0 TSRMLS_CC);
+    return;
+  }
+
+  desc = Descriptor_GetFromMessageDef(m);
+  klass = desc->class_entry;
+  ZVAL_OBJ(&ret, klass->create_object(klass));
+  Message *msg = (Message*)Z_OBJ_P(&ret);
+
+  // Get value.
+  if (!upb_decode(value.data, value.size, msg->msg,
+                  upb_msgdef_layout(desc->msgdef), Arena_Get(&msg->arena))) {
+    zend_throw_exception_ex(NULL, 0, "Error occurred during parsing");
+    return;
+  }
+
+  // Fuse since the parsed message could alias "value".
+  upb_arena_fuse(Arena_Get(&intern->arena), Arena_Get(&msg->arena));
+
+  RETURN_ZVAL(&ret, 1, 0);
+}
+
+/*
+PHP_METHOD(Any, pack) {
+  zval* val;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "o", &val) ==
+      FAILURE) {
+    return;
+  }
+
+  if (!instanceof_function(Z_OBJCE_P(val), message_ce)) {
+    zend_error(E_USER_ERROR, "Given value is not an instance of Message.");
+    return;
+  }
+
+  // Set value by serialized data.
+  zval data;
+  serialize_to_string(val, &data TSRMLS_CC);
+
+  zval member;
+  PHP_PROTO_ZVAL_STRING(&member, "value", 1);
+
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
+  message_handlers->write_property(getThis(), &member, &data,
+                                   NULL PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&data);
+  zval_dtor(&member);
+  PHP_PROTO_FAKE_SCOPE_END;
+
+  // Set type url.
+  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(val));
+  const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
+  size_t type_url_len =
+      strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
+  char* type_url = ALLOC_N(char, type_url_len);
+  sprintf(type_url, "%s%s", TYPE_URL_PREFIX, fully_qualified_name);
+  zval type_url_php;
+  PHP_PROTO_ZVAL_STRING(&type_url_php, type_url, 1);
+  PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
+
+  PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
+  message_handlers->write_property(getThis(), &member, &type_url_php,
+                                   NULL PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&type_url_php);
+  zval_dtor(&member);
+  PHP_PROTO_FAKE_SCOPE_END;
+  FREE(type_url);
+}
+
+PHP_METHOD(Any, is) {
+  zend_class_entry *klass = NULL;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "C", &klass) ==
+      FAILURE) {
+    return;
+  }
+
+  DescriptorInternal* desc = get_ce_desc(klass);
+  if (desc == NULL) {
+    RETURN_BOOL(false);
+  }
+
+  // Create corresponded type url.
+  const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
+  size_t type_url_len =
+      strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
+  char* type_url = ALLOC_N(char, type_url_len);
+  sprintf(type_url, "%s%s", TYPE_URL_PREFIX, fully_qualified_name);
+
+  // Fetch stored type url.
+  zval member;
+  PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
+  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
+  zval* value =
+      php_proto_message_read_property(getThis(), &member PHP_PROTO_TSRMLS_CC);
+  zval_dtor(&member);
+  PHP_PROTO_FAKE_SCOPE_END;
+
+  // Compare two type url.
+  bool is = strcmp(type_url, Z_STRVAL_P(value)) == 0;
+  FREE(type_url);
+
+  RETURN_BOOL(is);
+}
+*/
+
+#include "wkt.inc"
+
 /**
  * Message_ModuleInit()
  *
@@ -1033,4 +1187,6 @@ void Message_ModuleInit() {
   h->unset_property = Message_unset_property;
   h->get_properties = Message_get_properties;
   h->get_property_ptr_ptr = Message_get_property_ptr_ptr;
+
+  WellKnownTypes_ModuleInit();  /* From wkt.inc. */
 }

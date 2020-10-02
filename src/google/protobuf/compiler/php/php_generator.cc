@@ -81,6 +81,7 @@ namespace php {
 struct Options {
   bool is_descriptor = false;
   bool aggregate_metadata = false;
+  bool gen_c_wkt = false;
   std::set<string> aggregate_metadata_prefixes;
 };
 
@@ -1791,7 +1792,7 @@ void GenerateEnumValueDocComment(io::Printer* printer,
 }
 
 void GenerateServiceMethodDocComment(io::Printer* printer,
-                              const MethodDescriptor* method) {
+                                     const MethodDescriptor* method) {
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, method);
   printer->Print(
@@ -1805,6 +1806,231 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
     " * @return \\^return_type^\n"
     " */\n",
     "return_type", EscapePhpdoc(FullClassName(method->output_type(), false)));
+}
+
+std::string FilenameCName(const FileDescriptor* file) {
+  std::string c_name = file->name();
+  c_name = StringReplace(c_name, ".", "_", true);
+  c_name = StringReplace(c_name, "/", "_", true);
+  return c_name;
+}
+
+void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
+  std::string c_name = message->full_name();
+  c_name = StringReplace(c_name, ".", "_", true);
+  std::string php_name = FullClassName(message, Options());
+  php_name = StringReplace(php_name, "\\", "\\\\", true);
+  printer->Print(
+      "/* $c_name$ */\n"
+      "\n"
+      "zend_class_entry* $c_name$_ce;\n"
+      "\n"
+      "static PHP_METHOD($c_name$, __construct) {\n"
+      "  $file_c_name$_AddDescriptor();\n"
+      "  zim_Message___construct(INTERNAL_FUNCTION_PARAM_PASSTHRU);\n"
+      "}\n"
+      "\n",
+      "file_c_name", FilenameCName(message->file()),
+      "c_name", c_name);
+
+  for (int i = 0; i < message->field_count(); i++) {
+    auto field = message->field(i);
+    printer->Print(
+      "static PHP_METHOD($c_name$, get$camel_name$) {\n"
+      "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
+      "  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef,\n"
+      "                                           \"$name$\");\n"
+      "  zval ret;\n"
+      "  Message_get(intern, f, &ret);\n"
+      "  RETURN_ZVAL(&ret, 1, 0);\n"
+      "}\n"
+      "\n"
+      "static PHP_METHOD($c_name$, set$camel_name$) {\n"
+      "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
+      "  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef,\n"
+      "                                           \"$name$\");\n"
+      "  zval *val;\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"z\", &val)\n"
+      "      == FAILURE) {\n"
+      "    return;\n"
+      "  }\n"
+      "  Message_set(intern, f, val);\n"
+      "  RETURN_ZVAL(getThis(), 1, 0);\n"
+      "}\n"
+      "\n",
+      "c_name", c_name,
+      "name", field->name(),
+      "camel_name", UnderscoresToCamelCase(field->name(), true));
+  }
+
+  printer->Print(
+      "static zend_function_entry $c_name$_phpmethods[] = {\n"
+      "  PHP_ME($c_name$, __construct, NULL, ZEND_ACC_PUBLIC)\n",
+      "c_name", c_name);
+
+  for (int i = 0; i < message->field_count(); i++) {
+    auto field = message->field(i);
+    printer->Print(
+      "  PHP_ME($c_name$, get$camel_name$, NULL, ZEND_ACC_PUBLIC)\n"
+      "  PHP_ME($c_name$, set$camel_name$, NULL, ZEND_ACC_PUBLIC)\n",
+      "c_name", c_name,
+      "camel_name", UnderscoresToCamelCase(field->name(), true));
+  }
+
+  if (message->well_known_type() == Descriptor::WELLKNOWNTYPE_ANY) {
+    printer->Print(
+      "  PHP_ME($c_name$, unpack, NULL, ZEND_ACC_PUBLIC)\n",
+      "c_name", c_name);
+  }
+
+  printer->Print(
+      "  ZEND_FE_END\n"
+      "};\n"
+      "\n"
+      "static void $c_name$_ModuleInit() {\n"
+      "  zend_class_entry tmp_ce;\n"
+      "\n"
+      "  INIT_CLASS_ENTRY(tmp_ce, \"$php_name$\",\n"
+      "                   $c_name$_phpmethods);\n"
+      "\n"
+      "  $c_name$_ce = zend_register_internal_class(&tmp_ce);\n"
+      "  $c_name$_ce->ce_flags |= ZEND_ACC_FINAL;\n"
+      "  $c_name$_ce->create_object = Message_create;\n"
+      "  zend_do_inheritance($c_name$_ce, message_ce);\n"
+      "}\n"
+      "\n",
+      "c_name", c_name,
+      "php_name", php_name);
+
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    GenerateCMessage(message->nested_type(i), printer);
+  }
+}
+
+void GenerateCInit(const Descriptor* message, io::Printer* printer) {
+  std::string c_name = message->full_name();
+  c_name = StringReplace(c_name, ".", "_", true);
+
+  printer->Print(
+      "  $c_name$_ModuleInit();\n",
+      "c_name", c_name);
+
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    GenerateCInit(message->nested_type(i), printer);
+  }
+}
+
+void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
+                             GeneratorContext* context) {
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
+      context->Open("../ext/google/protobuf/wkt.inc"));
+  io::Printer printer(output.get(), '$');
+
+  printer.Print(
+      "// This file is generated from the .proto files for the well-known\n"
+      "// types. Do not edit!\n");
+
+  for (auto file : files) {
+    printer.Print(
+        "static void $c_name$_AddDescriptor();\n",
+        "c_name", FilenameCName(file));
+  }
+
+  for (auto file : files) {
+    std::string c_name = FilenameCName(file);
+    std::string metadata_filename = GeneratedMetadataFileName(file, Options());
+    std::string metadata_classname = FilenameToClassname(metadata_filename);
+    std::string metadata_c_name =
+        StringReplace(metadata_classname, "\\", "_", true);
+    metadata_classname = StringReplace(metadata_classname, "\\", "\\\\", true);
+    FileDescriptorProto file_proto;
+    file->CopyTo(&file_proto);
+    std::string serialized;
+    file_proto.SerializeToString(&serialized);
+    printer.Print(
+        "/* $filename$ */\n"
+        "\n"
+        "zend_class_entry* $metadata_c_name$_ce;\n"
+        "\n"
+        "const char $c_name$_descriptor [$size$] = {\n",
+        "filename", file->name(),
+        "c_name", c_name,
+        "metadata_c_name", metadata_c_name,
+        "size", std::to_string(serialized.size()));
+
+    for (size_t i = 0; i < serialized.size();) {
+      for (size_t j = 0; j < 25 && i < serialized.size(); ++i, ++j) {
+        printer.Print("'$ch$', ", "ch", CEscape(serialized.substr(i, 1)));
+      }
+      printer.Print("\n");
+    }
+
+    printer.Print(
+        "};\n"
+        "\n"
+        "static void $c_name$_AddDescriptor() {\n"
+        "  if (DescriptorPool_HasFile(\"$filename$\")) return;\n",
+        "filename", file->name(),
+        "c_name", c_name,
+        "metadata_c_name", metadata_c_name);
+
+    for (int i = 0; i < file->dependency_count(); i++) {
+      std::string dep_c_name = FilenameCName(file->dependency(i));
+      printer.Print(
+          "  $dep_c_name$_AddDescriptor();\n",
+          "dep_c_name", dep_c_name);
+    }
+
+    printer.Print(
+        "  DescriptorPool_AddDescriptor(\"$filename$\", $c_name$_descriptor,\n"
+        "                               sizeof($c_name$_descriptor));\n"
+        "}\n"
+        "\n"
+        "static PHP_METHOD($metadata_c_name$, initOnce) {\n"
+        "  $c_name$_AddDescriptor();\n"
+        "}\n"
+        "\n"
+        "static zend_function_entry $metadata_c_name$_methods[] = {\n"
+        "  PHP_ME($metadata_c_name$, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+        "  ZEND_FE_END\n"
+        "};\n"
+        "\n"
+        "static void $metadata_c_name$_ModuleInit() {\n"
+        "  zend_class_entry tmp_ce;\n"
+        "\n"
+        "  INIT_CLASS_ENTRY(tmp_ce, \"$metadata_classname$\",\n"
+        "                   $metadata_c_name$_methods);\n"
+        "\n"
+        "  $metadata_c_name$_ce = zend_register_internal_class(&tmp_ce);\n"
+        "}\n"
+        "\n",
+        "filename", file->name(),
+        "c_name", c_name,
+        "metadata_c_name", metadata_c_name,
+        "metadata_classname", metadata_classname);
+    for (int i = 0; i < file->message_type_count(); i++) {
+      GenerateCMessage(file->message_type(i), &printer);
+    }
+  }
+
+  printer.Print(
+      "static void WellKnownTypes_ModuleInit() {\n");
+
+  for (auto file : files) {
+    std::string metadata_filename = GeneratedMetadataFileName(file, Options());
+    std::string metadata_classname = FilenameToClassname(metadata_filename);
+    std::string metadata_c_name =
+        StringReplace(metadata_classname, "\\", "_", true);
+    printer.Print(
+        "  $metadata_c_name$_ModuleInit();\n",
+        "metadata_c_name", metadata_c_name);
+    for (int i = 0; i < file->message_type_count(); i++) {
+      GenerateCInit(file->message_type(i), &printer);
+    }
+  }
+
+  printer.Print(
+      "}\n");
 }
 
 }  // namespace
@@ -1850,9 +2076,12 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
         options.aggregate_metadata_prefixes.insert(prefix);
         GOOGLE_LOG(INFO) << prefix;
       }
-    }
-    if (option_pair[0] == "internal") {
+    } else if (option_pair[0] == "internal") {
       options.is_descriptor = true;
+    } else if (option_pair[0] == "internal_generate_c_wkt") {
+      GenerateCWellKnownTypes(files, generator_context);
+    } else {
+      GOOGLE_LOG(FATAL) << "Unknown codegen option: " << option_pair[0];
     }
   }
 
@@ -1861,6 +2090,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       return false;
     }
   }
+
   return true;
 }
 
