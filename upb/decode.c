@@ -275,6 +275,7 @@ static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout *layout,
   return _upb_msg_new(subl, d->arena);
 }
 
+UPB_FORCEINLINE
 static void decode_tosubmsg(upb_decstate *d, upb_msg *submsg,
                             const upb_msglayout *layout,
                             const upb_msglayout_field *field, upb_strview val) {
@@ -288,6 +289,7 @@ static void decode_tosubmsg(upb_decstate *d, upb_msg *submsg,
   d->depth++;
 }
 
+UPB_FORCEINLINE
 static const char *decode_group(upb_decstate *d, const char *ptr,
                                 upb_msg *submsg, const upb_msglayout *subl,
                                 uint32_t number) {
@@ -299,6 +301,7 @@ static const char *decode_group(upb_decstate *d, const char *ptr,
   return ptr;
 }
 
+UPB_FORCEINLINE
 static const char *decode_togroup(upb_decstate *d, const char *ptr,
                                   upb_msg *submsg, const upb_msglayout *layout,
                                   const upb_msglayout_field *field) {
@@ -306,6 +309,7 @@ static const char *decode_togroup(upb_decstate *d, const char *ptr,
   return decode_group(d, ptr, submsg, subl, field->number);
 }
 
+UPB_FORCEINLINE
 static const char *decode_toarray(upb_decstate *d, const char *ptr,
                                   upb_msg *msg, const upb_msglayout *layout,
                                   const upb_msglayout_field *field, wireval val,
@@ -398,6 +402,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
   }
 }
 
+UPB_FORCEINLINE
 static void decode_tomap(upb_decstate *d, upb_msg *msg,
                          const upb_msglayout *layout,
                          const upb_msglayout_field *field, wireval val) {
@@ -434,6 +439,7 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
   _upb_map_set(map, &ent.k, map->key_size, &ent.v, map->val_size, d->arena);
 }
 
+UPB_FORCEINLINE
 static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 const upb_msglayout *layout,
                                 const upb_msglayout_field *field, wireval val,
@@ -491,8 +497,9 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
-const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
-                         const upb_msglayout *layout) {
+UPB_FORCEINLINE
+static const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
+                                const upb_msglayout *layout) {
   uint32_t tag;
   const upb_msglayout_field *field;
   int field_number;
@@ -587,10 +594,19 @@ const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
+const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
+                               const upb_msglayout *table, uint64_t hasbits,
+                               uint64_t data) {
+  *(uint32_t*)msg |= hasbits;  /* Sync hasbits. */
+  (void)data;
+  return decode_field(d, ptr, msg, table);
+}
+
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
   while (ptr < d->limit) {
-    ptr = decode_field(d, ptr, msg, layout);
+    ptr = fastdecode_dispatch(d, ptr, msg, layout, 0);
+    if (ptr < d->limit) ptr = decode_field(d, ptr, msg, layout);
   }
 
   if (ptr != d->limit) decode_err(d);
@@ -601,6 +617,7 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
                 upb_arena *arena) {
   upb_decstate state;
   state.limit = buf + size;
+  state.fastlimit = buf + size - 16;
   state.arena = arena;
   state.depth = 64;
   state.end_group = 0;

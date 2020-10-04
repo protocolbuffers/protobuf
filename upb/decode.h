@@ -16,19 +16,6 @@ extern "C" {
 bool upb_decode(const char *buf, size_t size, upb_msg *msg,
                 const upb_msglayout *l, upb_arena *arena);
 
-struct upb_fasttable;
-struct upb_decstate;
-
-typedef const char *_upb_field_parser(struct upb_decstate *d, const char *ptr,
-                                      upb_msg *msg, struct upb_fasttable *table,
-                                      uint64_t hasbits, uint64_t data);
-
-typedef struct upb_fasttable {
-  _upb_field_parser *field_parser[16];
-  uint64_t field_data[16];
-  _upb_field_parser *fallback;
-} upb_fasttable;
-
 /* Internal only: data pertaining to the parse. */
 typedef struct upb_decstate {
   char *arena_ptr, *arena_end;
@@ -42,6 +29,12 @@ typedef struct upb_decstate {
   uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
   jmp_buf err;
 } upb_decstate;
+
+const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
+                                const upb_msglayout *table, uint64_t hasbits);
+const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
+                               const upb_msglayout *table, uint64_t hasbits,
+                               uint64_t data);
 
 #ifdef __cplusplus
 }  /* extern "C" */

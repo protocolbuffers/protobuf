@@ -804,6 +804,14 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     }
 
     output("const upb_msglayout $0 = {\n", MessageInit(message));
+    output("  {\n");
+    for (int i = 0; i < 32; i++) {
+      output("    &fastdecode_generic,\n");
+    }
+    output("  },\n");
+    output("  {\n");
+    output("    0\n");
+    output("  },\n");
     output("  $0,\n", submsgs_array_ref);
     output("  $0,\n", fields_array_ref);
     output("  $0, $1, $2,\n", GetSizeInit(layout.message_size()),

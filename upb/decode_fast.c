@@ -3,29 +3,33 @@
 
 #include "upb/port_def.inc"
 
-#define UPB_PARSE_PARAMS                                                \
-  upb_decstate *d, const char *ptr, upb_msg *msg, upb_fasttable *table, \
+#define UPB_PARSE_PARAMS                                                      \
+  upb_decstate *d, const char *ptr, upb_msg *msg, const upb_msglayout *table, \
       uint64_t hasbits, uint64_t data
 
 #define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data
 
+UPB_NOINLINE
+const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
+                                const upb_msglayout *table, uint64_t hasbits) {
+  uint16_t tag;
+  uint64_t data;
+  size_t idx;
+  if (UPB_UNLIKELY(ptr >= d->fastlimit)) return ptr;
+  memcpy(&tag, ptr, 2);
+  idx = (tag & 0xf8) >> 3;
+  data = table->field_data[idx] ^ tag;
+  return table->field_parser[idx](UPB_PARSE_ARGS);
+}
+
+#if 0
+
 const char *fastdecode_err(upb_decstate *d);
 
 const char *fastdecode_reallocarr(upb_decstate *d, const char *ptr,
-                                  upb_msg *msg, upb_fasttable *table,
+                                  upb_msg *msg, upb_msglayout *table,
                                   size_t needbytes);
 
-UPB_NOINLINE
-static const char *fastdecode_dispatch(upb_decstate *d, const char *ptr,
-                                       upb_msg *msg, upb_fasttable *table,
-                                       uint64_t hasbits) {
-  uint16_t tag;
-  uint64_t data;
-  if (UPB_UNLIKELY(ptr >= d->fastlimit)) return ptr;
-  memcpy(&tag, ptr, 2);
-  data = table->field_data[(tag & 0xf7) >> 3] ^ tag;
-  return table->field_parser[(tag & 0xf7) >> 3](UPB_PARSE_ARGS);
-}
 
 UPB_FORCEINLINE
 static bool fastdecode_checktag(uint64_t data, int tagbytes) {
@@ -134,7 +138,7 @@ static void *fastdecode_getfield(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 UPB_NOINLINE
 static const char *fastdecode_longstring(upb_decstate *d, const char *ptr,
-                                         upb_msg *msg, upb_fasttable *table,
+                                         upb_msg *msg, upb_msglayout *table,
                                          uint64_t hasbits, upb_strview *dst) {
   uint32_t len;
   if (!fastdecode_readlongsize(ptr, &len, &ptr)) {
@@ -271,7 +275,7 @@ again:
 
 UPB_NOINLINE
 const char *fastdecode_longfixedpacked(upb_decstate *d, const char *ptr,
-                                       upb_msg *msg, upb_fasttable *table,
+                                       upb_msg *msg, upb_msglayout *table,
                                        uint64_t hasbits, void *dst);
 
 UPB_FORCEINLINE
@@ -344,9 +348,6 @@ UPB_NOINLINE
 const char *upb_prf8_1bt(UPB_PARSE_PARAMS) {
   return fastdecode_fixed(UPB_PARSE_ARGS, 1, 8, CARD_r, &upb_ppf8_1bt);
 }
-
-#if 0
-
 
 // Generate all fixed functions.
 // {s,o,r,p} x {f4,f8} x {1bt,2bt}

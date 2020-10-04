@@ -64,6 +64,7 @@ add_library(port
   upb/port.c)
 add_library(upb
   upb/decode.c
+  upb/decode_fast.c
   upb/encode.c
   upb/msg.c
   upb/msg.h
