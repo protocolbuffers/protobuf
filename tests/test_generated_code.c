@@ -47,11 +47,8 @@ static void test_scalars() {
   msg2 = protobuf_test_messages_proto3_TestAllTypesProto3_parse(
       serialized.data, serialized.size, arena);
 
-  ASSERT(msg2);
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(
              msg2) == 10);
-  fprintf(stderr, "optional_int64: %d\n", (int)protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(
-             msg2));
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(
              msg2) == 20);
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint32(
