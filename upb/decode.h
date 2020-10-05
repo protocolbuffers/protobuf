@@ -22,6 +22,7 @@ typedef struct upb_decstate {
   const void *rep_end;
   const char *limit;       /* End of delimited region or end of buffer. */
   const char *fastlimit;   /* End of delimited region or end of buffer. */
+  const char *fastend;
   upb_array *arr;
   _upb_field_parser *resume;
   upb_arena *arena;
