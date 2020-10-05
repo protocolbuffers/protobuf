@@ -146,6 +146,11 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 UPB_NORETURN static void decode_err(upb_decstate *d) { longjmp(d->err, 1); }
 
+const char *fastdecode_err(upb_decstate *d) {
+  longjmp(d->err, 1);
+  return NULL;
+}
+
 void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
   static const uint8_t utf8_offset[] = {
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -596,8 +601,9 @@ UPB_NOINLINE
 const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
                                const upb_msglayout *table, uint64_t hasbits,
                                uint64_t data) {
-  if (hasbits) *(uint32_t*)msg |= hasbits;  /* Sync hasbits. */
+  *(uint32_t*)msg |= hasbits >> 16;  /* Sync hasbits. */
   (void)data;
+  if (ptr == d->limit) return ptr;
   ptr = decode_field(d, ptr, msg, table);
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
 }
@@ -605,12 +611,7 @@ const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
 UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
-  while (1) {
-    ptr = fastdecode_dispatch(d, ptr, msg, layout, 0);
-    if (ptr == d->limit) break;
-    ptr = decode_field(d, ptr, msg, layout);
-  }
-
+  ptr = fastdecode_dispatch(d, ptr, msg, layout, 0);
   if (ptr != d->limit) decode_err(d);
   return ptr;
 }

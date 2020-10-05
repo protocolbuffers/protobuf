@@ -703,6 +703,101 @@ int TableDescriptorType(const protobuf::FieldDescriptor* field) {
   }
 }
 
+typedef std::pair<std::string, MessageLayout::Size> TableEntry;
+
+void TryFillTableEntry(const protobuf::Descriptor* message,
+                       const MessageLayout& layout, int num, TableEntry& ent) {
+  const protobuf::FieldDescriptor* field = message->FindFieldByNumber(num);
+  if (!field) return;
+
+  std::string type = "";
+  std::string cardinality = "";
+  uint8_t wire_type = 0;
+  switch (field->type()) {
+    case protobuf::FieldDescriptor::TYPE_BOOL:
+      type = "b1";
+      break;
+    case protobuf::FieldDescriptor::TYPE_INT32:
+    case protobuf::FieldDescriptor::TYPE_ENUM:
+    case protobuf::FieldDescriptor::TYPE_UINT32:
+      type = "v4";
+      break;
+    case protobuf::FieldDescriptor::TYPE_INT64:
+    case protobuf::FieldDescriptor::TYPE_UINT64:
+      type = "v8";
+      break;
+    case protobuf::FieldDescriptor::TYPE_SINT32:
+      type = "z4";
+      break;
+    case protobuf::FieldDescriptor::TYPE_SINT64:
+      type = "z8";
+      break;
+    case protobuf::FieldDescriptor::TYPE_STRING:
+    case protobuf::FieldDescriptor::TYPE_BYTES:
+      type = "s";
+      wire_type = 2;
+      break;
+    default:
+      return;  // Not supported yet.
+  }
+
+  switch (field->label()) {
+    case protobuf::FieldDescriptor::LABEL_REPEATED:
+      return;  // Not supported yet.
+    case protobuf::FieldDescriptor::LABEL_OPTIONAL:
+    case protobuf::FieldDescriptor::LABEL_REQUIRED:
+      if (field->real_containing_oneof()) {
+        cardinality = "o";
+      } else {
+        cardinality = "s";
+      }
+      break;
+  }
+
+  uint16_t expected_tag = (num << 3) | wire_type;
+  if (num > 15) num |= 0x100;
+  MessageLayout::Size offset = layout.GetFieldOffset(field);
+
+  MessageLayout::Size data;
+  data.size32 = ((uint64_t)offset.size32 << 48) | expected_tag;
+  data.size64 = ((uint64_t)offset.size64 << 48) | expected_tag;
+
+  if (field->real_containing_oneof()) {
+    MessageLayout::Size case_ofs =
+        layout.GetOneofCaseOffset(field->real_containing_oneof());
+    data.size32 |= ((uint64_t)num << 32) | (case_ofs.size32 << 16);
+    data.size64 |= ((uint64_t)num << 32) | (case_ofs.size64 << 16);
+  } else {
+    uint32_t hasbit_mask = 0;
+
+    if (layout.HasHasbit(field)) {
+      int index = layout.GetHasbitIndex(field);
+      if (index > 31) return;
+      hasbit_mask = 1 << index;
+    }
+
+    data.size32 |= (uint64_t)hasbit_mask << 16;
+    data.size64 |= (uint64_t)hasbit_mask << 16;
+  }
+
+  ent.first = absl::Substitute("upb_p$0$1_$2bt", cardinality, type,
+                               (num < 15) ? "1" : "2");
+  ent.second = data;
+}
+
+std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
+                                        const MessageLayout& layout) {
+  std::vector<TableEntry> table;
+  MessageLayout::Size empty_size;
+  empty_size.size32 = 0;
+  empty_size.size64 = 0;
+  for (int i = 0; i < 32; i++) {
+    table.emplace_back(TableEntry{"fastdecode_generic", empty_size});
+    TryFillTableEntry(message, layout, i, table.back());
+  }
+  return table;
+}
+
 void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
   EmitFileWarning(file, output);
 
@@ -803,14 +898,18 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
       output("};\n\n");
     }
 
+    std::vector<TableEntry> table = FastDecodeTable(message, layout);
+
     output("const upb_msglayout $0 = {\n", MessageInit(message));
     output("  {\n");
-    for (int i = 0; i < 32; i++) {
-      output("    &fastdecode_generic,\n");
+    for (const auto& ent : table) {
+      output("    &$0,\n", ent.first);
     }
     output("  },\n");
     output("  {\n");
-    output("    0\n");
+    for (const auto& ent : table) {
+      output("    $0,\n", GetSizeInit(ent.second));
+    }
     output("  },\n");
     output("  $0,\n", submsgs_array_ref);
     output("  $0,\n", fields_array_ref);

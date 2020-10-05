@@ -30,7 +30,7 @@ def Run(cmd):
 def Benchmark(outbase, runs=12):
   tmpfile = "/tmp/bench-output.json"
   Run("rm -rf {}".format(tmpfile))
-  Run("CC=clang bazel test :all")
+  #Run("CC=clang bazel test :all")
   Run("CC=clang bazel build -c opt :benchmark")
 
   Run("./bazel-bin/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={}".format(tmpfile, runs))
