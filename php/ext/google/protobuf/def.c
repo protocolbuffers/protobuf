@@ -1036,6 +1036,7 @@ PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
 static zend_function_entry InternalDescriptorPool_methods[] = {
   PHP_ME(InternalDescriptorPool, getGeneratedPool, NULL,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  ZEND_FE_END
 };
 
 // -----------------------------------------------------------------------------
