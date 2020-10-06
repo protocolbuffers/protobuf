@@ -1020,8 +1020,21 @@ static zend_function_entry DescriptorPool_methods[] = {
 
 zend_class_entry *InternalDescriptorPool_class_entry;
 
+/*
+ * InternalDescriptorPool::getGeneratedPool()
+ *
+ * Returns the generated DescriptorPool. Note that this is identical to
+ * DescriptorPool::getGeneratedPool(), and in fact returns a DescriptorPool
+ * instance.
+ */
+PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
+  zval ret;
+  ZVAL_COPY(&ret, get_generated_pool());
+  RETURN_ZVAL(&ret, 0, 1);
+}
+
 static zend_function_entry InternalDescriptorPool_methods[] = {
-  PHP_ME(DescriptorPool, getGeneratedPool, NULL,
+  PHP_ME(InternalDescriptorPool, getGeneratedPool, NULL,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
 };
 
