@@ -13,4 +13,15 @@ fi
 
 pushd src
 ./protoc --php_out=internal:../php/src google/protobuf/descriptor.proto
+./protoc --php_out=internal_generate_c_wkt:src \
+  google/protobuf/any.proto \
+  google/protobuf/api.proto \
+  google/protobuf/duration.proto \
+  google/protobuf/empty.proto \
+  google/protobuf/field_mask.proto \
+  google/protobuf/source_context.proto \
+  google/protobuf/struct.proto \
+  google/protobuf/type.proto \
+  google/protobuf/timestamp.proto \
+  google/protobuf/wrappers.proto
 popd

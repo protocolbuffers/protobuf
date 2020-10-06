@@ -540,6 +540,12 @@ bool Message_InitFromPhp(upb_msg *msg, const upb_msgdef *m, zval *init,
   }
 }
 
+static void Message_Initialize(Message *intern, const Descriptor *desc) {
+  intern->desc = desc;
+  intern->msg = upb_msg_new(desc->msgdef, Arena_Get(&intern->arena));
+  ObjCache_Add(intern->msg, &intern->std);
+}
+
 /**
  * Message::__construct()
  *
@@ -549,13 +555,10 @@ bool Message_InitFromPhp(upb_msg *msg, const upb_msgdef *m, zval *init,
 PHP_METHOD(Message, __construct) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   const Descriptor* desc = Descriptor_GetFromClassEntry(Z_OBJCE_P(getThis()));
-  const upb_msgdef *msgdef = desc->msgdef;
   upb_arena *arena = Arena_Get(&intern->arena);
   zval *init_arr = NULL;
 
-  intern->desc = desc;
-  intern->msg = upb_msg_new(msgdef, arena);
-  ObjCache_Add(intern->msg, &intern->std);
+  Message_Initialize(intern, desc);
 
   if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &init_arr) == FAILURE) {
     return;
@@ -1024,31 +1027,55 @@ static const char TYPE_URL_PREFIX[] = "type.googleapis.com/";
 
 static upb_msgval Message_getval(Message *intern, const char *field_name) {
   const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef, field_name);
+  PBPHP_ASSERT(f);
   return upb_msg_get(intern->msg, f);
+}
+
+static void Message_setval(Message *intern, const char *field_name,
+                           upb_msgval val) {
+  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef, field_name);
+  PBPHP_ASSERT(f);
+  return upb_msg_set(intern->msg, f, val, Arena_Get(&intern->arena));
+}
+
+static upb_msgval StringVal(upb_strview view) {
+  upb_msgval ret;
+  ret.str_val = view;
+  return ret;
+}
+
+static bool TryStripUrlPrefix(upb_strview *str) {
+  size_t size = strlen(TYPE_URL_PREFIX);
+  if (str->size < size || memcmp(TYPE_URL_PREFIX, str->data, size) != 0) {
+    return false;
+  }
+  str->data += size;
+  str->size -= size;
+  return true;
+}
+
+static bool StrViewEq(upb_strview view, const char *str) {
+  size_t size = strlen(str);
+  return view.size == size && memcmp(view.data, str, size) == 0;
 }
 
 PHP_METHOD(google_protobuf_Any, unpack) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
   upb_strview type_url = Message_getval(intern, "type_url").str_val;
   upb_strview value = Message_getval(intern, "value").str_val;
-  size_t prefix_len = strlen(TYPE_URL_PREFIX);
   upb_symtab *symtab = DescriptorPool_GetSymbolTable();
   const upb_msgdef *m;
   Descriptor *desc;
-  zend_class_entry *klass;
   zval ret;
 
   // Ensure that type_url has TYPE_URL_PREFIX as a prefix.
-  if (type_url.size < prefix_len ||
-      strncmp(TYPE_URL_PREFIX, type_url.data, prefix_len) != 0) {
+  if (!TryStripUrlPrefix(&type_url)) {
     zend_throw_exception(
         NULL, "Type url needs to be type.googleapis.com/fully-qualified",
         0 TSRMLS_CC);
     return;
   }
 
-  type_url.size -= prefix_len;
-  type_url.data += prefix_len;
   m = upb_symtab_lookupmsg2(symtab, type_url.data, type_url.size);
 
   if (m == NULL) {
@@ -1059,9 +1086,11 @@ PHP_METHOD(google_protobuf_Any, unpack) {
   }
 
   desc = Descriptor_GetFromMessageDef(m);
-  klass = desc->class_entry;
-  ZVAL_OBJ(&ret, klass->create_object(klass));
-  Message *msg = (Message*)Z_OBJ_P(&ret);
+  PBPHP_ASSERT(desc->class_entry->create_object == Message_create);
+  zend_object *obj = Message_create(desc->class_entry);
+  Message *msg = (Message*)obj;
+  Message_Initialize(msg, desc);
+  ZVAL_OBJ(&ret, obj);
 
   // Get value.
   if (!upb_decode(value.data, value.size, msg->msg,
@@ -1076,9 +1105,15 @@ PHP_METHOD(google_protobuf_Any, unpack) {
   RETURN_ZVAL(&ret, 1, 0);
 }
 
-/*
-PHP_METHOD(Any, pack) {
-  zval* val;
+PHP_METHOD(google_protobuf_Any, pack) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  upb_arena *arena = Arena_Get(&intern->arena);
+  zval *val;
+  Message *msg;
+  upb_strview value;
+  upb_strview type_url;
+  const char *full_name;
+  char *buf;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "o", &val) ==
       FAILURE) {
@@ -1090,76 +1125,153 @@ PHP_METHOD(Any, pack) {
     return;
   }
 
-  // Set value by serialized data.
-  zval data;
-  serialize_to_string(val, &data TSRMLS_CC);
+  msg = (Message*)Z_OBJ_P(val);
 
-  zval member;
-  PHP_PROTO_ZVAL_STRING(&member, "value", 1);
+  // Serialize and set value.
+  value.data = upb_encode(msg->msg, upb_msgdef_layout(msg->desc->msgdef), arena,
+                          &value.size);
+  Message_setval(intern, "value", StringVal(value));
 
-  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-  message_handlers->write_property(getThis(), &member, &data,
-                                   NULL PHP_PROTO_TSRMLS_CC);
-  zval_dtor(&data);
-  zval_dtor(&member);
-  PHP_PROTO_FAKE_SCOPE_END;
-
-  // Set type url.
-  DescriptorInternal* desc = get_ce_desc(Z_OBJCE_P(val));
-  const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
-  size_t type_url_len =
-      strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
-  char* type_url = ALLOC_N(char, type_url_len);
-  sprintf(type_url, "%s%s", TYPE_URL_PREFIX, fully_qualified_name);
-  zval type_url_php;
-  PHP_PROTO_ZVAL_STRING(&type_url_php, type_url, 1);
-  PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
-
-  PHP_PROTO_FAKE_SCOPE_RESTART(any_type);
-  message_handlers->write_property(getThis(), &member, &type_url_php,
-                                   NULL PHP_PROTO_TSRMLS_CC);
-  zval_dtor(&type_url_php);
-  zval_dtor(&member);
-  PHP_PROTO_FAKE_SCOPE_END;
-  FREE(type_url);
+  // Set type url: type_url_prefix + fully_qualified_name
+  full_name = upb_msgdef_fullname(msg->desc->msgdef);
+  type_url.size = strlen(TYPE_URL_PREFIX) + strlen(full_name);
+  buf = upb_arena_malloc(arena, type_url.size + 1);
+  memcpy(buf, TYPE_URL_PREFIX, strlen(TYPE_URL_PREFIX));
+  memcpy(buf + strlen(TYPE_URL_PREFIX), full_name, strlen(full_name));
+  type_url.data = buf;
+  Message_setval(intern, "type_url", StringVal(type_url));
 }
 
-PHP_METHOD(Any, is) {
+PHP_METHOD(google_protobuf_Any, is) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  upb_strview type_url = Message_getval(intern, "type_url").str_val;
   zend_class_entry *klass = NULL;
+  const upb_msgdef *m;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "C", &klass) ==
       FAILURE) {
     return;
   }
 
-  DescriptorInternal* desc = get_ce_desc(klass);
-  if (desc == NULL) {
+  m = NameMap_GetMessage(klass);
+
+  if (m == NULL) {
     RETURN_BOOL(false);
   }
 
-  // Create corresponded type url.
-  const char* fully_qualified_name = upb_msgdef_fullname(desc->msgdef);
-  size_t type_url_len =
-      strlen(TYPE_URL_PREFIX) + strlen(fully_qualified_name) + 1;
-  char* type_url = ALLOC_N(char, type_url_len);
-  sprintf(type_url, "%s%s", TYPE_URL_PREFIX, fully_qualified_name);
-
-  // Fetch stored type url.
-  zval member;
-  PHP_PROTO_ZVAL_STRING(&member, "type_url", 1);
-  PHP_PROTO_FAKE_SCOPE_BEGIN(any_type);
-  zval* value =
-      php_proto_message_read_property(getThis(), &member PHP_PROTO_TSRMLS_CC);
-  zval_dtor(&member);
-  PHP_PROTO_FAKE_SCOPE_END;
-
-  // Compare two type url.
-  bool is = strcmp(type_url, Z_STRVAL_P(value)) == 0;
-  FREE(type_url);
-
-  RETURN_BOOL(is);
+  RETURN_BOOL(TryStripUrlPrefix(&type_url) &&
+              StrViewEq(type_url, upb_msgdef_fullname(m)));
 }
-*/
+
+PHP_METHOD(google_protobuf_Timestamp, fromDateTime) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  zval* datetime;
+  const char *classname = "\\DatetimeInterface";
+  zend_string *classname_str = zend_string_init(classname, strlen(classname), 0);
+  zend_class_entry *date_interface_ce = zend_lookup_class(classname_str);
+
+  if (date_interface_ce == NULL) {
+    zend_error(E_ERROR, "Make sure date extension is enabled.");
+    return;
+  }
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &datetime,
+                            date_interface_ce) == FAILURE) {
+    zend_error(E_USER_ERROR, "Expect DatetimeInterface.");
+    return;
+  }
+
+  upb_msgval timestamp_seconds;
+  {
+    zval retval;
+    zval function_name;
+
+    ZVAL_STRING(&function_name, "date_timestamp_get");
+
+    if (call_user_function(EG(function_table), NULL, &function_name, &retval, 1,
+                           datetime) == FAILURE ||
+        !Convert_PhpToUpb(&retval, &timestamp_seconds, UPB_TYPE_INT64, NULL,
+                          NULL)) {
+      zend_error(E_ERROR, "Cannot get timestamp from DateTime.");
+      return;
+    }
+
+    zval_dtor(&retval);
+    zval_dtor(&function_name);
+  }
+
+  upb_msgval timestamp_nanos;
+  {
+    zval retval;
+    zval function_name;
+    zval format_string;
+
+    ZVAL_STRING(&function_name, "date_format");
+    ZVAL_STRING(&format_string, "u");
+
+    zval params[2] = {
+        *datetime,
+        format_string,
+    };
+
+    if (call_user_function(EG(function_table), NULL, &function_name, &retval, 2,
+                           params) == FAILURE ||
+        !Convert_PhpToUpb(&retval, &timestamp_nanos, UPB_TYPE_INT32, NULL,
+                          NULL)) {
+      zend_error(E_ERROR, "Cannot format DateTime.");
+      return;
+    }
+
+    timestamp_nanos.int32_val *= 1000;
+
+    zval_dtor(&retval);
+    zval_dtor(&function_name);
+    zval_dtor(&format_string);
+  }
+
+  Message_setval(intern, "seconds", timestamp_seconds);
+  Message_setval(intern, "nanos", timestamp_nanos);
+
+  RETURN_NULL();
+}
+
+PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  upb_msgval seconds = Message_getval(intern, "seconds");
+  upb_msgval nanos = Message_getval(intern, "nanos");
+
+  // Get formatted time string.
+  char formatted_time[32];
+  snprintf(formatted_time, sizeof(formatted_time), "%" PRId64 ".%06" PRId32,
+           seconds.int64_val, nanos.int32_val / 1000);
+
+  // Create Datetime object.
+  zval datetime;
+  zval function_name;
+  zval format_string;
+  zval formatted_time_php;
+
+  ZVAL_STRING(&function_name, "date_create_from_format");
+  ZVAL_STRING(&format_string, "U.u");
+  ZVAL_STRING(&formatted_time_php, formatted_time);
+
+  zval params[2] = {
+    format_string,
+    formatted_time_php,
+  };
+
+  if (call_user_function(EG(function_table), NULL, &function_name, &datetime, 2,
+                         params) == FAILURE) {
+    zend_error(E_ERROR, "Cannot create DateTime.");
+    return;
+  }
+
+  zval_dtor(&function_name);
+  zval_dtor(&format_string);
+  zval_dtor(&formatted_time_php);
+
+  ZVAL_OBJ(return_value, Z_OBJ(datetime));
+}
 
 #include "wkt.inc"
 

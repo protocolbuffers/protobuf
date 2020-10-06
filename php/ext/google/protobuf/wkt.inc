@@ -110,6 +110,8 @@ static zend_function_entry google_protobuf_Timestamp_phpmethods[] = {
   PHP_ME(google_protobuf_Timestamp, setSeconds, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Timestamp, getNanos, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Timestamp, setNanos, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, fromDateTime, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Timestamp, toDateTime, NULL, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -724,6 +726,8 @@ static zend_function_entry google_protobuf_Any_phpmethods[] = {
   PHP_ME(google_protobuf_Any, setTypeUrl, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Any, getValue, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Any, setValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, is, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Any, pack, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Any, unpack, NULL, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
@@ -1979,6 +1983,174 @@ static void google_protobuf_Field_ModuleInit() {
   zend_do_inheritance(google_protobuf_Field_ce, message_ce);
 }
 
+/* google_protobuf_Field_Kind */
+
+zend_class_entry* google_protobuf_Field_Kind_ce;
+
+PHP_METHOD(google_protobuf_Field_Kind, name) {
+  google_protobuf_type_proto_AddDescriptor();
+  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Field.Kind");
+  const char *name;
+  zend_long value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &value) ==
+      FAILURE) {
+    return;
+  }
+  name = upb_enumdef_iton(e, value);
+  if (!name) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Google\\Protobuf\\Field\\Kind has no name "
+                            "defined for value " ZEND_LONG_FMT ".",
+                            value);
+    return;
+  }
+  RETURN_STRING(name);
+}
+
+PHP_METHOD(google_protobuf_Field_Kind, value) {
+  google_protobuf_type_proto_AddDescriptor();
+  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Field.Kind");
+  char *name = NULL;
+  size_t name_len;
+  int32_t num;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name,
+                            &name_len) == FAILURE) {
+    return;
+  }
+  if (!upb_enumdef_ntoi(e, name, name_len, &num)) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Google\\Protobuf\\Field\\Kind has no value "
+                            "defined for name %s.",
+                            name);
+    return;
+  }
+  RETURN_LONG(num);
+}
+
+static zend_function_entry google_protobuf_Field_Kind_phpmethods[] = {
+  PHP_ME(google_protobuf_Field_Kind, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Field_Kind, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  ZEND_FE_END
+};
+
+static void google_protobuf_Field_Kind_ModuleInit() {
+  zend_class_entry tmp_ce;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Field\\Kind",
+                   google_protobuf_Field_Kind_phpmethods);
+
+  google_protobuf_Field_Kind_ce = zend_register_internal_class(&tmp_ce);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_UNKNOWN",
+                                   strlen("TYPE_UNKNOWN"), 0);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_DOUBLE",
+                                   strlen("TYPE_DOUBLE"), 1);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_FLOAT",
+                                   strlen("TYPE_FLOAT"), 2);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_INT64",
+                                   strlen("TYPE_INT64"), 3);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_UINT64",
+                                   strlen("TYPE_UINT64"), 4);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_INT32",
+                                   strlen("TYPE_INT32"), 5);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_FIXED64",
+                                   strlen("TYPE_FIXED64"), 6);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_FIXED32",
+                                   strlen("TYPE_FIXED32"), 7);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_BOOL",
+                                   strlen("TYPE_BOOL"), 8);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_STRING",
+                                   strlen("TYPE_STRING"), 9);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_GROUP",
+                                   strlen("TYPE_GROUP"), 10);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_MESSAGE",
+                                   strlen("TYPE_MESSAGE"), 11);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_BYTES",
+                                   strlen("TYPE_BYTES"), 12);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_UINT32",
+                                   strlen("TYPE_UINT32"), 13);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_ENUM",
+                                   strlen("TYPE_ENUM"), 14);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_SFIXED32",
+                                   strlen("TYPE_SFIXED32"), 15);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_SFIXED64",
+                                   strlen("TYPE_SFIXED64"), 16);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_SINT32",
+                                   strlen("TYPE_SINT32"), 17);
+  zend_declare_class_constant_long(google_protobuf_Field_Kind_ce, "TYPE_SINT64",
+                                   strlen("TYPE_SINT64"), 18);
+}
+
+/* google_protobuf_Field_Cardinality */
+
+zend_class_entry* google_protobuf_Field_Cardinality_ce;
+
+PHP_METHOD(google_protobuf_Field_Cardinality, name) {
+  google_protobuf_type_proto_AddDescriptor();
+  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Field.Cardinality");
+  const char *name;
+  zend_long value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &value) ==
+      FAILURE) {
+    return;
+  }
+  name = upb_enumdef_iton(e, value);
+  if (!name) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Google\\Protobuf\\Field\\Cardinality has no name "
+                            "defined for value " ZEND_LONG_FMT ".",
+                            value);
+    return;
+  }
+  RETURN_STRING(name);
+}
+
+PHP_METHOD(google_protobuf_Field_Cardinality, value) {
+  google_protobuf_type_proto_AddDescriptor();
+  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Field.Cardinality");
+  char *name = NULL;
+  size_t name_len;
+  int32_t num;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name,
+                            &name_len) == FAILURE) {
+    return;
+  }
+  if (!upb_enumdef_ntoi(e, name, name_len, &num)) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Google\\Protobuf\\Field\\Cardinality has no value "
+                            "defined for name %s.",
+                            name);
+    return;
+  }
+  RETURN_LONG(num);
+}
+
+static zend_function_entry google_protobuf_Field_Cardinality_phpmethods[] = {
+  PHP_ME(google_protobuf_Field_Cardinality, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Field_Cardinality, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  ZEND_FE_END
+};
+
+static void google_protobuf_Field_Cardinality_ModuleInit() {
+  zend_class_entry tmp_ce;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Field\\Cardinality",
+                   google_protobuf_Field_Cardinality_phpmethods);
+
+  google_protobuf_Field_Cardinality_ce = zend_register_internal_class(&tmp_ce);
+  zend_declare_class_constant_long(google_protobuf_Field_Cardinality_ce, "CARDINALITY_UNKNOWN",
+                                   strlen("CARDINALITY_UNKNOWN"), 0);
+  zend_declare_class_constant_long(google_protobuf_Field_Cardinality_ce, "CARDINALITY_OPTIONAL",
+                                   strlen("CARDINALITY_OPTIONAL"), 1);
+  zend_declare_class_constant_long(google_protobuf_Field_Cardinality_ce, "CARDINALITY_REQUIRED",
+                                   strlen("CARDINALITY_REQUIRED"), 2);
+  zend_declare_class_constant_long(google_protobuf_Field_Cardinality_ce, "CARDINALITY_REPEATED",
+                                   strlen("CARDINALITY_REPEATED"), 3);
+}
+
 /* google_protobuf_Enum */
 
 zend_class_entry* google_protobuf_Enum_ce;
@@ -2295,6 +2467,71 @@ static void google_protobuf_Option_ModuleInit() {
   google_protobuf_Option_ce->ce_flags |= ZEND_ACC_FINAL;
   google_protobuf_Option_ce->create_object = Message_create;
   zend_do_inheritance(google_protobuf_Option_ce, message_ce);
+}
+
+/* google_protobuf_Syntax */
+
+zend_class_entry* google_protobuf_Syntax_ce;
+
+PHP_METHOD(google_protobuf_Syntax, name) {
+  google_protobuf_type_proto_AddDescriptor();
+  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Syntax");
+  const char *name;
+  zend_long value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &value) ==
+      FAILURE) {
+    return;
+  }
+  name = upb_enumdef_iton(e, value);
+  if (!name) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Google\\Protobuf\\Syntax has no name "
+                            "defined for value " ZEND_LONG_FMT ".",
+                            value);
+    return;
+  }
+  RETURN_STRING(name);
+}
+
+PHP_METHOD(google_protobuf_Syntax, value) {
+  google_protobuf_type_proto_AddDescriptor();
+  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.Syntax");
+  char *name = NULL;
+  size_t name_len;
+  int32_t num;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name,
+                            &name_len) == FAILURE) {
+    return;
+  }
+  if (!upb_enumdef_ntoi(e, name, name_len, &num)) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Google\\Protobuf\\Syntax has no value "
+                            "defined for name %s.",
+                            name);
+    return;
+  }
+  RETURN_LONG(num);
+}
+
+static zend_function_entry google_protobuf_Syntax_phpmethods[] = {
+  PHP_ME(google_protobuf_Syntax, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_Syntax, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  ZEND_FE_END
+};
+
+static void google_protobuf_Syntax_ModuleInit() {
+  zend_class_entry tmp_ce;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Syntax",
+                   google_protobuf_Syntax_phpmethods);
+
+  google_protobuf_Syntax_ce = zend_register_internal_class(&tmp_ce);
+  zend_declare_class_constant_long(google_protobuf_Syntax_ce, "SYNTAX_PROTO2",
+                                   strlen("SYNTAX_PROTO2"), 0);
+  zend_declare_class_constant_long(google_protobuf_Syntax_ce, "SYNTAX_PROTO3",
+                                   strlen("SYNTAX_PROTO3"), 1);
 }
 
 /* google/protobuf/struct.proto */
@@ -2619,6 +2856,13 @@ static PHP_METHOD(google_protobuf_Value, setListValue) {
   RETURN_ZVAL(getThis(), 1, 0);
 }
 
+static PHP_METHOD(google_protobuf_Value, getKind) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  const upb_oneofdef *oneof = upb_msgdef_ntooz(intern->desc->msgdef,
+                                              "kind");
+  const upb_fielddef *field = upb_msg_whichoneof(intern->msg, oneof);
+  RETURN_STRING(field ? upb_fielddef_name(field) : "");
+}
 static zend_function_entry google_protobuf_Value_phpmethods[] = {
   PHP_ME(google_protobuf_Value, __construct, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getNullValue, NULL, ZEND_ACC_PUBLIC)
@@ -2633,6 +2877,7 @@ static zend_function_entry google_protobuf_Value_phpmethods[] = {
   PHP_ME(google_protobuf_Value, setStructValue, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, getListValue, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(google_protobuf_Value, setListValue, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(google_protobuf_Value, getKind, NULL, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -2696,6 +2941,69 @@ static void google_protobuf_ListValue_ModuleInit() {
   google_protobuf_ListValue_ce->ce_flags |= ZEND_ACC_FINAL;
   google_protobuf_ListValue_ce->create_object = Message_create;
   zend_do_inheritance(google_protobuf_ListValue_ce, message_ce);
+}
+
+/* google_protobuf_NullValue */
+
+zend_class_entry* google_protobuf_NullValue_ce;
+
+PHP_METHOD(google_protobuf_NullValue, name) {
+  google_protobuf_struct_proto_AddDescriptor();
+  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.NullValue");
+  const char *name;
+  zend_long value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &value) ==
+      FAILURE) {
+    return;
+  }
+  name = upb_enumdef_iton(e, value);
+  if (!name) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Google\\Protobuf\\NullValue has no name "
+                            "defined for value " ZEND_LONG_FMT ".",
+                            value);
+    return;
+  }
+  RETURN_STRING(name);
+}
+
+PHP_METHOD(google_protobuf_NullValue, value) {
+  google_protobuf_struct_proto_AddDescriptor();
+  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();
+  const upb_enumdef *e = upb_symtab_lookupenum(symtab, "google.protobuf.NullValue");
+  char *name = NULL;
+  size_t name_len;
+  int32_t num;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name,
+                            &name_len) == FAILURE) {
+    return;
+  }
+  if (!upb_enumdef_ntoi(e, name, name_len, &num)) {
+    zend_throw_exception_ex(NULL, 0,
+                            "Google\\Protobuf\\NullValue has no value "
+                            "defined for name %s.",
+                            name);
+    return;
+  }
+  RETURN_LONG(num);
+}
+
+static zend_function_entry google_protobuf_NullValue_phpmethods[] = {
+  PHP_ME(google_protobuf_NullValue, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  PHP_ME(google_protobuf_NullValue, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+  ZEND_FE_END
+};
+
+static void google_protobuf_NullValue_ModuleInit() {
+  zend_class_entry tmp_ce;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\NullValue",
+                   google_protobuf_NullValue_phpmethods);
+
+  google_protobuf_NullValue_ce = zend_register_internal_class(&tmp_ce);
+  zend_declare_class_constant_long(google_protobuf_NullValue_ce, "NULL_VALUE",
+                                   strlen("NULL_VALUE"), 0);
 }
 
 /* google/protobuf/source_context.proto */
@@ -2905,14 +3213,18 @@ static void WellKnownTypes_ModuleInit() {
   GPBMetadata_Google_Protobuf_Type_ModuleInit();
   google_protobuf_Type_ModuleInit();
   google_protobuf_Field_ModuleInit();
+  google_protobuf_Field_Kind_ModuleInit();
+  google_protobuf_Field_Cardinality_ModuleInit();
   google_protobuf_Enum_ModuleInit();
   google_protobuf_EnumValue_ModuleInit();
   google_protobuf_Option_ModuleInit();
+  google_protobuf_Syntax_ModuleInit();
   GPBMetadata_Google_Protobuf_Struct_ModuleInit();
   google_protobuf_Struct_ModuleInit();
   google_protobuf_Struct_FieldsEntry_ModuleInit();
   google_protobuf_Value_ModuleInit();
   google_protobuf_ListValue_ModuleInit();
+  google_protobuf_NullValue_ModuleInit();
   GPBMetadata_Google_Protobuf_SourceContext_ModuleInit();
   google_protobuf_SourceContext_ModuleInit();
   GPBMetadata_Google_Protobuf_FieldMask_ModuleInit();

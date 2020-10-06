@@ -1011,6 +1011,21 @@ static zend_function_entry DescriptorPool_methods[] = {
 };
 
 // -----------------------------------------------------------------------------
+// InternalDescriptorPool
+// -----------------------------------------------------------------------------
+
+// For the C extension, Google\Protobuf\Internal\DescriptorPool is not a
+// separate instantiable object, it just returns a
+// Google\Protobuf\DescriptorPool.
+
+zend_class_entry *InternalDescriptorPool_class_entry;
+
+static zend_function_entry InternalDescriptorPool_methods[] = {
+  PHP_ME(DescriptorPool, getGeneratedPool, NULL,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+};
+
+// -----------------------------------------------------------------------------
 // GPBType
 // -----------------------------------------------------------------------------
 
@@ -1071,7 +1086,7 @@ void Def_ModuleInit() {
   h = &FieldDescriptor_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
 
-  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\DescriptorPool",
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\DescriptorPool",
                    DescriptorPool_methods);
   DescriptorPool_class_entry = zend_register_internal_class(&tmp_ce);
   DescriptorPool_class_entry->ce_flags |= ZEND_ACC_FINAL;
@@ -1079,6 +1094,10 @@ void Def_ModuleInit() {
   h = &DescriptorPool_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = DescriptorPool_destructor;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\DescriptorPool",
+                   InternalDescriptorPool_methods);
+  InternalDescriptorPool_class_entry = zend_register_internal_class(&tmp_ce);
 
   // GPBType.
 #define STR(str) (str), strlen(str)

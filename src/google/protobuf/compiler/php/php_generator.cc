@@ -1815,6 +1815,91 @@ std::string FilenameCName(const FileDescriptor* file) {
   return c_name;
 }
 
+void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
+  std::string c_name = desc->full_name();
+  c_name = StringReplace(c_name, ".", "_", true);
+  std::string php_name = FullClassName(desc, Options());
+  php_name = StringReplace(php_name, "\\", "\\\\", true);
+  printer->Print(
+      "/* $c_name$ */\n"
+      "\n"
+      "zend_class_entry* $c_name$_ce;\n"
+      "\n"
+      "PHP_METHOD($c_name$, name) {\n"
+      "  $file_c_name$_AddDescriptor();\n"
+      "  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();\n"
+      "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
+      "  const char *name;\n"
+      "  zend_long value;\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, \"l\", &value) ==\n"
+      "      FAILURE) {\n"
+      "    return;\n"
+      "  }\n"
+      "  name = upb_enumdef_iton(e, value);\n"
+      "  if (!name) {\n"
+      "    zend_throw_exception_ex(NULL, 0,\n"
+      "                            \"$php_name$ has no name \"\n"
+      "                            \"defined for value \" ZEND_LONG_FMT \".\",\n"
+      "                            value);\n"
+      "    return;\n"
+      "  }\n"
+      "  RETURN_STRING(name);\n"
+      "}\n"
+      "\n"
+      "PHP_METHOD($c_name$, value) {\n"
+      "  $file_c_name$_AddDescriptor();\n"
+      "  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();\n"
+      "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
+      "  char *name = NULL;\n"
+      "  size_t name_len;\n"
+      "  int32_t num;\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, \"s\", &name,\n"
+      "                            &name_len) == FAILURE) {\n"
+      "    return;\n"
+      "  }\n"
+      "  if (!upb_enumdef_ntoi(e, name, name_len, &num)) {\n"
+      "    zend_throw_exception_ex(NULL, 0,\n"
+      "                            \"$php_name$ has no value \"\n"
+      "                            \"defined for name %s.\",\n"
+      "                            name);\n"
+      "    return;\n"
+      "  }\n"
+      "  RETURN_LONG(num);\n"
+      "}\n"
+      "\n"
+      "static zend_function_entry $c_name$_phpmethods[] = {\n"
+      "  PHP_ME($c_name$, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  ZEND_FE_END\n"
+      "};\n"
+      "\n"
+      "static void $c_name$_ModuleInit() {\n"
+      "  zend_class_entry tmp_ce;\n"
+      "\n"
+      "  INIT_CLASS_ENTRY(tmp_ce, \"$php_name$\",\n"
+      "                   $c_name$_phpmethods);\n"
+      "\n"
+      "  $c_name$_ce = zend_register_internal_class(&tmp_ce);\n",
+      "name", desc->full_name(),
+      "file_c_name", FilenameCName(desc->file()),
+      "c_name", c_name,
+      "php_name", php_name);
+
+  for (int i = 0; i < desc->value_count(); i++) {
+    const EnumValueDescriptor* value = desc->value(i);
+    printer->Print(
+        "  zend_declare_class_constant_long($c_name$_ce, \"$name$\",\n"
+        "                                   strlen(\"$name$\"), $num$);\n",
+        "c_name", c_name,
+        "name", value->name(),
+        "num", std::to_string(value->number()));
+  }
+
+  printer->Print(
+      "}\n"
+      "\n");
+}
+
 void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
   std::string c_name = message->full_name();
   c_name = StringReplace(c_name, ".", "_", true);
@@ -1863,6 +1948,21 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "camel_name", UnderscoresToCamelCase(field->name(), true));
   }
 
+  for (int i = 0; i < message->real_oneof_decl_count(); i++) {
+    auto oneof = message->oneof_decl(i);
+    printer->Print(
+      "static PHP_METHOD($c_name$, get$camel_name$) {\n"
+      "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
+      "  const upb_oneofdef *oneof = upb_msgdef_ntooz(intern->desc->msgdef,\n"
+      "                                              \"$name$\");\n"
+      "  const upb_fielddef *field = upb_msg_whichoneof(intern->msg, oneof);\n"
+      "  RETURN_STRING(field ? upb_fielddef_name(field) : \"\");\n"
+      "}\n",
+      "c_name", c_name,
+      "name", oneof->name(),
+      "camel_name", UnderscoresToCamelCase(oneof->name(), true));
+  }
+
   printer->Print(
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
       "  PHP_ME($c_name$, __construct, NULL, ZEND_ACC_PUBLIC)\n",
@@ -1877,11 +1977,32 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "camel_name", UnderscoresToCamelCase(field->name(), true));
   }
 
-  if (message->well_known_type() == Descriptor::WELLKNOWNTYPE_ANY) {
+  for (int i = 0; i < message->real_oneof_decl_count(); i++) {
+    auto oneof = message->oneof_decl(i);
     printer->Print(
-      "  PHP_ME($c_name$, unpack, NULL, ZEND_ACC_PUBLIC)\n",
-      "c_name", c_name);
+      "  PHP_ME($c_name$, get$camel_name$, NULL, ZEND_ACC_PUBLIC)\n",
+      "c_name", c_name,
+      "camel_name", UnderscoresToCamelCase(oneof->name(), true));
   }
+
+  // Extra hand-written functions added to the well-known types.
+  switch (message->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_ANY:
+      printer->Print(
+        "  PHP_ME($c_name$, is, NULL, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, pack, NULL, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, unpack, NULL, ZEND_ACC_PUBLIC)\n",
+        "c_name", c_name);
+      break;
+    case Descriptor::WELLKNOWNTYPE_TIMESTAMP:
+      printer->Print(
+        "  PHP_ME($c_name$, fromDateTime, NULL, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, toDateTime, NULL, ZEND_ACC_PUBLIC)\n",
+        "c_name", c_name);
+      break;
+    default:
+      break;
+  } 
 
   printer->Print(
       "  ZEND_FE_END\n"
@@ -1905,6 +2026,18 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
   for (int i = 0; i < message->nested_type_count(); i++) {
     GenerateCMessage(message->nested_type(i), printer);
   }
+  for (int i = 0; i < message->enum_type_count(); i++) {
+    GenerateCEnum(message->enum_type(i), printer);
+  }
+}
+
+void GenerateEnumCInit(const EnumDescriptor* desc, io::Printer* printer) {
+  std::string c_name = desc->full_name();
+  c_name = StringReplace(c_name, ".", "_", true);
+
+  printer->Print(
+      "  $c_name$_ModuleInit();\n",
+      "c_name", c_name);
 }
 
 void GenerateCInit(const Descriptor* message, io::Printer* printer) {
@@ -1917,6 +2050,9 @@ void GenerateCInit(const Descriptor* message, io::Printer* printer) {
 
   for (int i = 0; i < message->nested_type_count(); i++) {
     GenerateCInit(message->nested_type(i), printer);
+  }
+  for (int i = 0; i < message->enum_type_count(); i++) {
+    GenerateEnumCInit(message->enum_type(i), printer);
   }
 }
 
@@ -2011,6 +2147,9 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
     for (int i = 0; i < file->message_type_count(); i++) {
       GenerateCMessage(file->message_type(i), &printer);
     }
+    for (int i = 0; i < file->enum_type_count(); i++) {
+      GenerateCEnum(file->enum_type(i), &printer);
+    }
   }
 
   printer.Print(
@@ -2026,6 +2165,9 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
         "metadata_c_name", metadata_c_name);
     for (int i = 0; i < file->message_type_count(); i++) {
       GenerateCInit(file->message_type(i), &printer);
+    }
+    for (int i = 0; i < file->enum_type_count(); i++) {
+      GenerateEnumCInit(file->enum_type(i), &printer);
     }
   }
 
