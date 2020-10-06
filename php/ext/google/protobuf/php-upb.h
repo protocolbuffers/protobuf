@@ -80,10 +80,6 @@
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline))
 #define UPB_NOINLINE __attribute__((noinline))
 #define UPB_NORETURN __attribute__((__noreturn__))
-#elif defined(_MSC_VER)
-#define UPB_NOINLINE
-#define UPB_FORCEINLINE
-#define UPB_NORETURN __declspec(noreturn)
 #else  /* !defined(__GNUC__) */
 #define UPB_FORCEINLINE
 #define UPB_NOINLINE
@@ -146,7 +142,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #elif defined _MSC_VER
 #define UPB_ASSUME(expr) if (!(expr)) __assume(0)
 #else
-#define UPB_ASSUME(expr) do {} while (false && (expr))
+#define UPB_ASSUME(expr) do {} if (false && (expr))
 #endif
 #else
 #define UPB_ASSUME(expr) assert(expr)
@@ -217,7 +213,7 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 ** store pointers or integers of at least 32 bits (upb isn't really useful on
 ** systems where sizeof(void*) < 4).
 **
-** The table must be homogenous (all values of the same type).  In debug
+** The table must be homogeneous (all values of the same type).  In debug
 ** mode, we check this on insert and lookup.
 */
 
@@ -499,32 +495,6 @@ typedef enum {
 } upb_descriptortype_t;
 
 #define UPB_MAP_BEGIN ((size_t)-1)
-
-UPB_INLINE bool _upb_isle(void) {
-  int x = 1;
-  return *(char*)&x == 1;
-}
-
-UPB_INLINE uint32_t _upb_be_swap32(uint32_t val) {
-  if (_upb_isle()) {
-    return val;
-  } else {
-    return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
-           ((val & 0xff0000ULL) >> 8) | ((val & 0xff000000ULL) >> 24);
-  }
-}
-
-UPB_INLINE uint64_t _upb_be_swap64(uint64_t val) {
-  if (_upb_isle()) {
-    return val;
-  } else {
-    return ((val & 0xff) << 56) | ((val & 0xff00) << 40) |
-           ((val & 0xff0000) << 24) | ((val & 0xff000000) << 8) |
-           ((val & 0xff00000000ULL) >> 8) | ((val & 0xff0000000000ULL) >> 24) |
-           ((val & 0xff000000000000ULL) >> 40) |
-           ((val & 0xff00000000000000ULL) >> 56);
-  }
-}
 
 
 #ifdef __cplusplus
@@ -1281,7 +1251,7 @@ UPB_INLINE upb_value _upb_map_tovalue(const void *val, size_t size,
   if (size == UPB_MAPTYPE_STRING) {
     upb_strview *strp = (upb_strview*)upb_arena_malloc(a, sizeof(*strp));
     *strp = *(upb_strview*)val;
-    ret = upb_value_ptr(strp);
+    memcpy(&ret, &strp, sizeof(strp));
   } else {
     memcpy(&ret, val, size);
   }
@@ -1412,7 +1382,7 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val, size_t size) 
   /* This is like _upb_map_tovalue() except the entry already exists so we can
    * reuse the allocated upb_strview for string fields. */
   if (size == UPB_MAPTYPE_STRING) {
-    upb_strview *strp = (upb_strview*)(uintptr_t)ent->val.val;
+    upb_strview *strp = (upb_strview*)ent->val.val;
     memcpy(strp, val, sizeof(*strp));
   } else {
     memcpy(&ent->val.val, val, size);
@@ -3519,140 +3489,140 @@ extern "C" {
 
 
 
-extern upb_def_init google_protobuf_descriptor_proto_definit;
+extern upb_def_init google_protobuf_descriptor_proto_upbdefinit;
 
 UPB_INLINE const upb_msgdef *google_protobuf_FileDescriptorSet_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.FileDescriptorSet");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_FileDescriptorProto_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.FileDescriptorProto");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_DescriptorProto_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.DescriptorProto");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_DescriptorProto_ExtensionRange_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.DescriptorProto.ExtensionRange");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_DescriptorProto_ReservedRange_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.DescriptorProto.ReservedRange");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_ExtensionRangeOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.ExtensionRangeOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_FieldDescriptorProto_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.FieldDescriptorProto");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_OneofDescriptorProto_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.OneofDescriptorProto");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_EnumDescriptorProto_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.EnumDescriptorProto");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_EnumDescriptorProto_EnumReservedRange_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.EnumDescriptorProto.EnumReservedRange");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_EnumValueDescriptorProto_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.EnumValueDescriptorProto");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_ServiceDescriptorProto_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.ServiceDescriptorProto");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_MethodDescriptorProto_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.MethodDescriptorProto");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_FileOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.FileOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_MessageOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.MessageOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_FieldOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.FieldOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_OneofOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.OneofOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_EnumOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.EnumOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_EnumValueOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.EnumValueOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_ServiceOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.ServiceOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_MethodOptions_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.MethodOptions");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_UninterpretedOption_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.UninterpretedOption");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_UninterpretedOption_NamePart_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.UninterpretedOption.NamePart");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_SourceCodeInfo_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.SourceCodeInfo");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_SourceCodeInfo_Location_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.SourceCodeInfo.Location");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_GeneratedCodeInfo_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.GeneratedCodeInfo");
 }
 
 UPB_INLINE const upb_msgdef *google_protobuf_GeneratedCodeInfo_Annotation_getmsgdef(upb_symtab *s) {
-  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_definit);
+  _upb_symtab_loaddefinit(s, &google_protobuf_descriptor_proto_upbdefinit);
   return upb_symtab_lookupmsg(s, "google.protobuf.GeneratedCodeInfo.Annotation");
 }
 
@@ -3857,7 +3827,7 @@ extern "C" {
 #endif
 
 enum {
-  /* When set, emits 0/default values.  TOOD(haberman): proto3 only? */
+  /* When set, emits 0/default values.  TODO(haberman): proto3 only? */
   UPB_JSONENC_EMITDEFAULTS = 1,
 
   /* When set, use normal (snake_caes) field names instead of JSON (camelCase)
