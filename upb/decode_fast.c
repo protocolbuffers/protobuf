@@ -56,9 +56,8 @@ UPB_FORCEINLINE uint64_t fastdecode_munge(uint64_t val, int valbytes, bool zigza
 }
 
 UPB_FORCEINLINE
-static void *fastdecode_getfield(upb_msg *msg, uint64_t *data,
-                                 uint64_t *hasbits, upb_card card) {
-  size_t ofs = (*data >> 48);
+static void *fastdecode_getfield_ofs(upb_msg *msg, size_t ofs, uint64_t *data,
+                                     uint64_t *hasbits, upb_card card) {
   void *field = (char *)msg + ofs;
 
   switch (card) {
@@ -75,6 +74,12 @@ static void *fastdecode_getfield(upb_msg *msg, uint64_t *data,
     default:
       UPB_UNREACHABLE();
   }
+}
+
+UPB_FORCEINLINE
+static void *fastdecode_getfield(upb_msg *msg, uint64_t *data,
+                                 uint64_t *hasbits, upb_card card) {
+  return fastdecode_getfield_ofs(msg, *data >> 48, data, hasbits, card);
 }
 
 /* varint fields **************************************************************/
@@ -182,4 +187,65 @@ const char *upb_pss_2bt(UPB_PARSE_PARAMS) {
 
 const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
   return fastdecode_string(UPB_PARSE_ARGS, 2, CARD_o);
+}
+
+/* message fields *************************************************************/
+
+UPB_FORCEINLINE
+static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
+                                     upb_card card) {
+  const char *saved_limit;
+  const upb_msglayout_field *field = &table->fields[data >> 48];
+  size_t ofs = field->offset;
+  const upb_msglayout *subl = table->submsgs[field->submsg_index];
+  upb_msg **submsg;
+  int64_t len;
+
+  if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {
+    return fastdecode_generic(UPB_PARSE_ARGS);
+  }
+
+  submsg = fastdecode_getfield_ofs(msg, ofs, &data, &hasbits, card);
+  len = ptr[tagbytes];
+  if (UPB_UNLIKELY(len < 0)) {
+    return fastdecode_generic(UPB_PARSE_ARGS);
+  }
+  ptr += tagbytes + 1;
+  if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, d->limit))) {
+    return fastdecode_err(d);
+  }
+  if (!*submsg) {
+    *submsg = decode_newmsg(d, subl);
+  }
+
+  saved_limit = d->limit;
+  if (--d->depth < 0) return fastdecode_err(d);
+  d->limit = ptr + len;
+  d->fastlimit = UPB_MIN(d->limit, d->fastend);
+
+  ptr = fastdecode_dispatch(d, ptr, *submsg, subl, 0);
+  if (ptr != d->limit) return fastdecode_err(d);
+
+  d->limit = saved_limit;
+  d->fastlimit = UPB_MIN(d->limit, d->fastend);
+  if (d->end_group != 0) return fastdecode_err(d);
+  d->depth++;
+
+  return fastdecode_dispatch(d, ptr, msg, table, hasbits);
+}
+
+const char *upb_psm_1bt(UPB_PARSE_PARAMS) {
+  return fastdecode_submsg(UPB_PARSE_ARGS, 1, CARD_s);
+}
+
+const char *upb_pom_1bt(UPB_PARSE_PARAMS) {
+  return fastdecode_submsg(UPB_PARSE_ARGS, 1, CARD_o);
+}
+
+const char *upb_psm_2bt(UPB_PARSE_PARAMS) {
+  return fastdecode_submsg(UPB_PARSE_ARGS, 2, CARD_s);
+}
+
+const char *upb_pom_2bt(UPB_PARSE_PARAMS) {
+  return fastdecode_submsg(UPB_PARSE_ARGS, 2, CARD_o);
 }

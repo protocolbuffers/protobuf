@@ -9,6 +9,8 @@
 
 #include "upb/msg.h"
 
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -37,6 +39,28 @@ const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
                                uint64_t data);
 const char *fastdecode_err(upb_decstate *d);
 
+void *decode_mallocfallback(upb_decstate *d, size_t size);
+
+UPB_FORCEINLINE
+static void *decode_malloc(upb_decstate *d, size_t size) {
+  UPB_ASSERT((size & 7) == 0);
+  char *ptr = d->arena_ptr;
+  if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < size)) {
+    return decode_mallocfallback(d, size);
+  }
+  d->arena_ptr += size;
+  return ptr;
+}
+
+UPB_INLINE
+upb_msg *decode_newmsg(upb_decstate *d, const upb_msglayout *l) {
+  size_t size = l->size + sizeof(upb_msg_internal);
+  char *msg_data = (char*)decode_malloc(d, size);
+  memset(msg_data, 0, size);
+  return msg_data + sizeof(upb_msg_internal);
+}
+
+
 #define UPB_PARSE_PARAMS                                                      \
   upb_decstate *d, const char *ptr, upb_msg *msg, const upb_msglayout *table, \
       uint64_t hasbits, uint64_t data
@@ -63,6 +87,10 @@ const char *upb_pss_1bt(UPB_PARSE_PARAMS);
 const char *upb_pss_2bt(UPB_PARSE_PARAMS);
 const char *upb_pos_1bt(UPB_PARSE_PARAMS);
 const char *upb_pos_2bt(UPB_PARSE_PARAMS);
+const char *upb_psm_1bt(UPB_PARSE_PARAMS);
+const char *upb_pom_1bt(UPB_PARSE_PARAMS);
+const char *upb_psm_2bt(UPB_PARSE_PARAMS);
+const char *upb_pom_2bt(UPB_PARSE_PARAMS);
 
 #undef F
 #undef TYPES
@@ -72,5 +100,7 @@ const char *upb_pos_2bt(UPB_PARSE_PARAMS);
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif  /* UPB_DECODE_H_ */

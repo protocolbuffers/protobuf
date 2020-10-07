@@ -737,6 +737,10 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
       type = "s";
       wire_type = 2;
       break;
+    case protobuf::FieldDescriptor::TYPE_MESSAGE:
+      type = "m";
+      wire_type = 2;
+      break;
     default:
       return;  // Not supported yet.
   }
@@ -755,12 +759,23 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
   }
 
   uint16_t expected_tag = (num << 3) | wire_type;
-  if (num > 15) num |= 0x100;
+  if (num > 15) expected_tag |= 0x100;
   MessageLayout::Size offset = layout.GetFieldOffset(field);
 
   MessageLayout::Size data;
-  data.size32 = ((uint64_t)offset.size32 << 48) | expected_tag;
-  data.size64 = ((uint64_t)offset.size64 << 48) | expected_tag;
+  if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
+    // Message fields index into the field array instead of giving an offset.
+    std::vector<const protobuf::FieldDescriptor*> order =
+        FieldNumberOrder(message);
+    auto it = std::find(order.begin(), order.end(), field);
+    assert(it != order.end());
+    uint64_t idx = it - order.begin();
+    data.size32 = (idx << 48) | expected_tag;
+    data.size64 = (idx << 48) | expected_tag;
+  } else {
+    data.size32 = ((uint64_t)offset.size32 << 48) | expected_tag;
+    data.size64 = ((uint64_t)offset.size64 << 48) | expected_tag;
+  }
 
   if (field->real_containing_oneof()) {
     MessageLayout::Size case_ofs =

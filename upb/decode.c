@@ -199,29 +199,11 @@ static void decode_donatemem(upb_decstate *d) {
 }
 
 UPB_NOINLINE
-static void *decode_mallocfallback(upb_decstate *d, size_t size) {
+void *decode_mallocfallback(upb_decstate *d, size_t size) {
   char *ptr = _upb_arena_slowmalloc(d->arena, size);
   if (!ptr) decode_err(d);
   decode_stealmem(d);
   return ptr;
-}
-
-UPB_FORCEINLINE
-static void *decode_malloc(upb_decstate *d, size_t size) {
-  UPB_ASSERT((size & 7) == 0);
-  char *ptr = d->arena_ptr;
-  if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < size)) {
-    return decode_mallocfallback(d, size);
-  }
-  d->arena_ptr += size;
-  return ptr;
-}
-
-static upb_msg *decode_newmsg(upb_decstate *d, const upb_msglayout *l) {
-  size_t size = l->size + sizeof(upb_msg_internal);
-  char *msg_data = decode_malloc(d, size);
-  memset(msg_data, 0, size);
-  return msg_data + sizeof(upb_msg_internal);
 }
 
 UPB_NOINLINE
