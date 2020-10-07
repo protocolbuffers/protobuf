@@ -694,7 +694,11 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
 
   decode_stealmem(&state);
 
+#ifdef __APPLE__
+  if (_setjmp(state.err)) {
+#else
   if (setjmp(state.err)) {
+#endif
     ret = false;
   } else {
     decode_msg(&state, buf, msg, l);

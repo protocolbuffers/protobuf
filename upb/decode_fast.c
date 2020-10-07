@@ -262,9 +262,14 @@ again:
   }
 
   {
-    int64_t len = ptr[tagbytes];
-    if (UPB_UNLIKELY(len < 0)) {
-      return fastdecode_generic(UPB_PARSE_ARGS);
+    uint32_t len = (uint8_t)ptr[tagbytes];
+    if (UPB_UNLIKELY(len & 0x80)) {
+      uint32_t byte = (uint8_t)ptr[tagbytes + 1];
+      len += (byte - 1) << 7;
+      if (UPB_UNLIKELY(byte & 0x80)) {
+        return fastdecode_generic(UPB_PARSE_ARGS);
+      }
+      ptr++;
     }
     ptr += tagbytes + 1;
     if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, d->limit))) {
