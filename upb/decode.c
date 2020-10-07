@@ -185,12 +185,93 @@ void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
   if (i != len) decode_err(d);
 }
 
-static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
-  bool need_realloc = arr->size - arr->len < elem;
-  if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, d->arena)) {
+static void decode_stealmem(upb_decstate *d) {
+  _upb_arena_head *a = (_upb_arena_head*)d->arena;
+  d->arena_ptr = a->ptr;
+  d->arena_end = a->end;
+  a->ptr = a->end;
+}
+
+static void decode_donatemem(upb_decstate *d) {
+  _upb_arena_head *a = (_upb_arena_head*)d->arena;
+  UPB_ASSERT(a->end == d->arena_end);
+  a->ptr = d->arena_ptr;
+}
+
+UPB_NOINLINE
+static void *decode_mallocfallback(upb_decstate *d, size_t size) {
+  char *ptr = _upb_arena_slowmalloc(d->arena, size);
+  if (!ptr) decode_err(d);
+  decode_stealmem(d);
+  return ptr;
+}
+
+UPB_FORCEINLINE
+static void *decode_malloc(upb_decstate *d, size_t size) {
+  UPB_ASSERT((size & 7) == 0);
+  char *ptr = d->arena_ptr;
+  if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < size)) {
+    return decode_mallocfallback(d, size);
+  }
+  d->arena_ptr += size;
+  return ptr;
+}
+
+static upb_msg *decode_newmsg(upb_decstate *d, const upb_msglayout *l) {
+  size_t size = l->size + sizeof(upb_msg_internal);
+  char *msg_data = decode_malloc(d, size);
+  memset(msg_data, 0, size);
+  return msg_data + sizeof(upb_msg_internal);
+}
+
+UPB_NOINLINE
+static void decode_realloc(upb_decstate *d, upb_array *arr, size_t need_elem) {
+  decode_donatemem(d);
+  bool ok = _upb_array_realloc(arr, arr->len + need_elem, d->arena);
+  decode_stealmem(d);
+  if (!ok) decode_err(d);
+}
+
+UPB_FORCEINLINE
+static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t need_elem) {
+  if (arr->size - arr->len < need_elem) {
+    decode_realloc(d, arr, need_elem);
+    return true;
+  }
+  return false;
+}
+
+static upb_array *decode_newarr(upb_decstate *d, upb_fieldtype_t type) {
+  size_t elem_size_lg2 = _upb_fieldtype_to_sizelg2[type];
+  size_t count = type == UPB_TYPE_BOOL ? 8 : 4;
+  size_t size = sizeof(upb_array) + (count * (1 << elem_size_lg2));
+  upb_array *arr = decode_malloc(d, size);
+
+  if (!arr) {
     decode_err(d);
   }
-  return need_realloc;
+
+  arr->data = _upb_array_tagptr(arr + 1, elem_size_lg2);
+  arr->len = 0;
+  arr->size = count;
+
+  return arr;
+}
+
+static void decode_addunknown(upb_decstate *d, upb_msg *msg, const char *ptr,
+                              size_t len) {
+  upb_msg_internal *in = upb_msg_getinternal(msg);
+  if (!in->unknown || in->unknown->size - in->unknown->len < len) {
+    bool ok;
+    decode_donatemem(d);
+    ok = _upb_msg_addunknown(msg, ptr, len, d->arena);
+    decode_stealmem(d);
+    if (!ok) decode_err(d);
+  } else {
+    char *dst = UPB_PTR_AT(in->unknown + 1, in->unknown->len, char);
+    memcpy(dst, ptr, len);
+    in->unknown->len += len;
+  }
 }
 
 UPB_NOINLINE
@@ -276,8 +357,7 @@ static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
 
 static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout *layout,
                                  const upb_msglayout_field *field) {
-  const upb_msglayout *subl = layout->submsgs[field->submsg_index];
-  return _upb_msg_new(subl, d->arena);
+  return decode_newmsg(d, layout->submsgs[field->submsg_index]);
 }
 
 static void decode_tosubmsg(upb_decstate *d, upb_msg *submsg,
@@ -324,8 +404,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
 
   if (!arr) {
     upb_fieldtype_t type = desctype_to_fieldtype[field->descriptortype];
-    arr = _upb_array_new(d->arena, type);
-    if (!arr) decode_err(d);
+    arr = decode_newarr(d, type);
     *arrp = arr;
   }
 
@@ -423,7 +502,9 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
     char val_size = desctype_to_mapsize[val_field->descriptortype];
     UPB_ASSERT(key_field->offset == 0);
     UPB_ASSERT(val_field->offset == sizeof(upb_strview));
+    decode_donatemem(d);  /* We'll let map use the actual arena. */
     map = _upb_map_new(d->arena, key_size, val_size);
+    decode_stealmem(d);
     *map_p = map;
   }
 
@@ -433,13 +514,15 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
   if (entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
       entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_GROUP) {
     /* Create proactively to handle the case where it doesn't appear. */
-    ent.v.val = upb_value_ptr(_upb_msg_new(entry->submsgs[0], d->arena));
+    ent.v.val = upb_value_ptr(decode_newmsg(d, entry->submsgs[0]));
   }
 
   decode_tosubmsg(d, &ent.k, layout, field, val.str_val);
 
   /* Insert into map. */
+  decode_donatemem(d);  /* We'll let map use the actual arena. */
   _upb_map_set(map, &ent.k, map->key_size, &ent.v, map->val_size, d->arena);
+  decode_stealmem(d);
 }
 
 UPB_FORCEINLINE
@@ -587,10 +670,7 @@ static const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
       ptr = decode_group(d, ptr, NULL, NULL, field_number);
     }
     if (msg) {
-      if (!_upb_msg_addunknown(msg, field_start, ptr - field_start,
-                               d->arena)) {
-        decode_err(d);
-      }
+      decode_addunknown(d, msg, field_start, ptr - field_start);
     }
   }
 
@@ -618,7 +698,9 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
                 upb_arena *arena) {
+  bool ret;
   upb_decstate state;
+
   state.limit = buf + size;
   state.fastend = buf + size - 16;
   state.fastlimit = state.fastend;
@@ -626,12 +708,19 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   state.depth = 64;
   state.end_group = 0;
 
-  if (setjmp(state.err)) return false;
-
   if (size == 0) return true;
-  decode_msg(&state, buf, msg, l);
 
-  return state.end_group == 0;
+  decode_stealmem(&state);
+
+  if (setjmp(state.err)) {
+    ret = false;
+  } else {
+    decode_msg(&state, buf, msg, l);
+    ret = state.end_group == 0;
+  }
+
+  decode_donatemem(&state);
+  return ret;
 }
 
 #undef OP_SCALAR_LG2

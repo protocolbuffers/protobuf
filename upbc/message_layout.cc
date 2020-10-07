@@ -105,7 +105,7 @@ int64_t MessageLayout::FieldLayoutRank(const protobuf::FieldDescriptor* field) {
 
 void MessageLayout::ComputeLayout(const protobuf::Descriptor* descriptor) {
   size_ = Size{0, 0};
-  maxalign_ = Size{0, 0};
+  maxalign_ = Size{8, 8};
 
   if (descriptor->options().map_entry()) {
     // Map entries aren't actually stored, they are only used during parsing.

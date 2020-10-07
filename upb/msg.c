@@ -7,7 +7,7 @@
 
 /** upb_msg *******************************************************************/
 
-static const char _upb_fieldtype_to_sizelg2[12] = {
+const char _upb_fieldtype_to_sizelg2[12] = {
   0,
   0,  /* UPB_TYPE_BOOL */
   2,  /* UPB_TYPE_FLOAT */
@@ -22,17 +22,10 @@ static const char _upb_fieldtype_to_sizelg2[12] = {
   UPB_SIZE(3, 4),  /* UPB_TYPE_BYTES */
 };
 
-static uintptr_t tag_arrptr(void* ptr, int elem_size_lg2) {
-  UPB_ASSERT(elem_size_lg2 <= 4);
-  return (uintptr_t)ptr | elem_size_lg2;
-}
-
-static int upb_msg_internalsize(const upb_msglayout *l) {
-  return sizeof(upb_msg_internal) - l->extendable * sizeof(void *);
-}
+static const size_t overhead = sizeof(upb_msg_internal);
 
 static size_t upb_msg_sizeof(const upb_msglayout *l) {
-  return l->size + upb_msg_internalsize(l);
+  return l->size + overhead;
 }
 
 static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
@@ -40,14 +33,9 @@ static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
   return UPB_PTR_AT(msg, -size, upb_msg_internal);
 }
 
-static upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
-  return (upb_msg_internal*)upb_msg_getinternal_const(msg);
-}
-
 void _upb_msg_clear(upb_msg *msg, const upb_msglayout *l) {
-  ptrdiff_t internal = upb_msg_internalsize(l);
-  void *mem = UPB_PTR_AT(msg, -internal, char);
-  memset(mem, 0, l->size + internal);
+  void *mem = UPB_PTR_AT(msg, -overhead, char);
+  memset(mem, 0, l->size + overhead);
 }
 
 upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
@@ -58,37 +46,51 @@ upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
     return NULL;
   }
 
-  msg = UPB_PTR_AT(mem, upb_msg_internalsize(l), upb_msg);
+  msg = UPB_PTR_AT(mem, overhead, upb_msg);
   _upb_msg_clear(msg, l);
   return msg;
 }
 
 bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
                          upb_arena *arena) {
+
   upb_msg_internal *in = upb_msg_getinternal(msg);
-  if (len > in->unknown_size - in->unknown_len) {
-    upb_alloc *alloc = upb_arena_alloc(arena);
-    size_t need = in->unknown_size + len;
-    size_t newsize = UPB_MAX(in->unknown_size * 2, need);
-    void *mem = upb_realloc(alloc, in->unknown, in->unknown_size, newsize);
-    if (!mem) return false;
-    in->unknown = mem;
-    in->unknown_size = newsize;
+  if (!in->unknown) {
+    size_t size = 128;
+    while (size < len) size *= 2;
+    in->unknown = upb_arena_malloc(arena, size + overhead);
+    if (!in->unknown) return false;
+    in->unknown->size = size;
+    in->unknown->len = 0;
+  } else if (in->unknown->size - in->unknown->len < len) {
+    size_t need = in->unknown->len + len;
+    size_t size = in->unknown->size;;
+    while (size < need)  size *= 2;
+    in->unknown = upb_arena_realloc(
+        arena, in->unknown, in->unknown->size + overhead, size + overhead);
+    if (!in->unknown) return false;
   }
-  memcpy(in->unknown + in->unknown_len, data, len);
-  in->unknown_len += len;
+  memcpy(UPB_PTR_AT(in->unknown + 1, in->unknown->len, char), data, len);
+  in->unknown->len += len;
   return true;
 }
 
 void _upb_msg_discardunknown_shallow(upb_msg *msg) {
   upb_msg_internal *in = upb_msg_getinternal(msg);
-  in->unknown_len = 0;
+  if (in->unknown) {
+    in->unknown->len = 0;
+  }
 }
 
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len) {
   const upb_msg_internal *in = upb_msg_getinternal_const(msg);
-  *len = in->unknown_len;
-  return in->unknown;
+  if (in->unknown) {
+    *len = in->unknown->len;
+    return (char*)(in->unknown + 1);
+  } else {
+    *len = 0;
+    return NULL;
+  }
 }
 
 /** upb_array *****************************************************************/
@@ -100,7 +102,7 @@ upb_array *_upb_array_new(upb_arena *a, upb_fieldtype_t type) {
     return NULL;
   }
 
-  arr->data = tag_arrptr(NULL, _upb_fieldtype_to_sizelg2[type]);
+  arr->data = _upb_array_tagptr(NULL, _upb_fieldtype_to_sizelg2[type]);
   arr->len = 0;
   arr->size = 0;
 
@@ -124,7 +126,7 @@ bool _upb_array_realloc(upb_array *arr, size_t min_size, upb_arena *arena) {
     return false;
   }
 
-  arr->data = tag_arrptr(ptr, elem_size_lg2);
+  arr->data = _upb_array_tagptr(ptr, elem_size_lg2);
   arr->size = new_size;
   return true;
 }
