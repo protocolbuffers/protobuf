@@ -89,8 +89,10 @@ const char *upb_pos_1bt(UPB_PARSE_PARAMS);
 const char *upb_pos_2bt(UPB_PARSE_PARAMS);
 const char *upb_psm_1bt(UPB_PARSE_PARAMS);
 const char *upb_pom_1bt(UPB_PARSE_PARAMS);
+const char *upb_prm_1bt(UPB_PARSE_PARAMS);
 const char *upb_psm_2bt(UPB_PARSE_PARAMS);
 const char *upb_pom_2bt(UPB_PARSE_PARAMS);
+const char *upb_prm_2bt(UPB_PARSE_PARAMS);
 
 #undef F
 #undef TYPES

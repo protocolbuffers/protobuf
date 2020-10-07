@@ -738,6 +738,9 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
       wire_type = 2;
       break;
     case protobuf::FieldDescriptor::TYPE_MESSAGE:
+      if (field->is_map()) {
+        return;  // Not supported yet (ever?).
+      }
       type = "m";
       wire_type = 2;
       break;
@@ -747,7 +750,12 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
 
   switch (field->label()) {
     case protobuf::FieldDescriptor::LABEL_REPEATED:
-      return;  // Not supported yet.
+      if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
+        cardinality = "r";
+        break;
+      } else {
+        return;  // Not supported yet.
+      }
     case protobuf::FieldDescriptor::LABEL_OPTIONAL:
     case protobuf::FieldDescriptor::LABEL_REQUIRED:
       if (field->real_containing_oneof()) {
