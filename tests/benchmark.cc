@@ -3,6 +3,7 @@
 #include <benchmark/benchmark.h>
 #include "google/protobuf/descriptor.upb.h"
 #include "google/protobuf/descriptor.upbdefs.h"
+#include "google/protobuf/descriptor.pb.h"
 
 upb_strview descriptor = google_protobuf_descriptor_proto_upbdefinit.descriptor;
 
@@ -62,6 +63,53 @@ static void BM_ParseDescriptor(benchmark::State& state) {
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_ParseDescriptor);
+
+static void BM_ParseDescriptorProto2NoArena(benchmark::State& state) {
+  size_t bytes = 0;
+  for (auto _ : state) {
+    google::protobuf::FileDescriptorProto proto;
+    bool ok = proto.ParseFromArray(descriptor.data, descriptor.size);
+
+    if (!ok) {
+      printf("Failed to parse.\n");
+      exit(1);
+    }
+    bytes += descriptor.size;
+  }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+}
+BENCHMARK(BM_ParseDescriptorProto2NoArena);
+
+static void BM_ParseDescriptorProto2WithArena(benchmark::State& state) {
+  size_t bytes = 0;
+  for (auto _ : state) {
+    google::protobuf::Arena arena;
+    auto proto =
+        google::protobuf::Arena::Create<google::protobuf::FileDescriptorProto>(
+            &arena);
+    bool ok = proto->ParseFromArray(descriptor.data, descriptor.size);
+
+    if (!ok) {
+      printf("Failed to parse.\n");
+      exit(1);
+    }
+    bytes += descriptor.size;
+  }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+}
+BENCHMARK(BM_ParseDescriptorProto2WithArena);
+
+static void BM_SerializeDescriptorProto2(benchmark::State& state) {
+  size_t bytes = 0;
+  google::protobuf::FileDescriptorProto proto;
+  proto.ParseFromArray(descriptor.data, descriptor.size);
+  for (auto _ : state) {
+    proto.SerializeToArray(buf, sizeof(buf));
+    bytes += descriptor.size;
+  }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+}
+BENCHMARK(BM_SerializeDescriptorProto2);
 
 static void BM_SerializeDescriptor(benchmark::State& state) {
   int64_t total = 0;
