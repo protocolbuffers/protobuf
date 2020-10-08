@@ -283,7 +283,8 @@ const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
 UPB_FORCEINLINE
 static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
                                      upb_card card) {
-  const char *saved_limit;
+  const char *saved_limit = d->limit;
+  const char *saved_fastlimit = d->fastlimit;
   const upb_msglayout_field *field = &table->fields[data >> 48];
   size_t ofs = field->offset;
   const upb_msglayout *subl = table->submsgs[field->submsg_index];
@@ -295,6 +296,8 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
     RETURN_GENERIC("submessage field tag mismatch\n");
   }
 
+  if (--d->depth < 0) return fastdecode_err(d);
+
   submsg = fastdecode_getfield_ofs(d, ptr, msg, ofs, &data, &hasbits, &arr,
                                    &end, tagbytes, sizeof(upb_msg *), card);
 
@@ -302,6 +305,9 @@ again:
   if (card == CARD_r) {
     if (UPB_UNLIKELY(submsg == end)) {
       if (arr) arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
+      d->limit = saved_limit;
+      d->fastlimit = saved_fastlimit;
+      d->depth++;
       RETURN_GENERIC("need array realloc\n");
     }
   }
@@ -315,40 +321,42 @@ again:
         if (card == CARD_r) {
           arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
         }
+        d->limit = saved_limit;
+        d->fastlimit = saved_fastlimit;
+        d->depth++;
         RETURN_GENERIC("submessage field len >2 bytes\n");
       }
       ptr++;
     }
     ptr += tagbytes + 1;
-    if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, d->limit))) {
+    if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, saved_limit))) {
       return fastdecode_err(d);
     }
-    if (card == CARD_r || !*submsg) {
-      *submsg = decode_newmsg(d, subl);
-    }
-
-    saved_limit = d->limit;
-    if (--d->depth < 0) return fastdecode_err(d);
     d->limit = ptr + len;
     d->fastlimit = UPB_MIN(d->limit, d->fastend);
   }
 
+  if (card == CARD_r || !*submsg) {
+    *submsg = decode_newmsg(d, subl);
+  }
   ptr = fastdecode_dispatch(d, ptr, *submsg, subl, 0);
   submsg++;
-  if (ptr != d->limit) return fastdecode_err(d);
 
-  d->limit = saved_limit;
-  d->fastlimit = UPB_MIN(d->limit, d->fastend);
-  if (d->end_group != 0) return fastdecode_err(d);
-  d->depth++;
+  if (ptr != d->limit || d->end_group != 0) {
+    return fastdecode_err(d);
+  }
 
   if (card == CARD_r) {
-    if (UPB_LIKELY(ptr < d->fastlimit) &&
+    if (UPB_LIKELY(ptr < saved_fastlimit) &&
         fastdecode_readtag(ptr, tagbytes) == (uint16_t)data) {
       goto again;
     }
     arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
   }
+
+  d->limit = saved_limit;
+  d->fastlimit = saved_fastlimit;
+  d->depth++;
 
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
 }
