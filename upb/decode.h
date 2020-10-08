@@ -53,13 +53,15 @@ static void *decode_malloc(upb_decstate *d, size_t size) {
 }
 
 UPB_INLINE
-upb_msg *decode_newmsg(upb_decstate *d, const upb_msglayout *l) {
-  const size_t cutoff = 192;
+upb_msg *decode_newmsg_ceil(upb_decstate *d, const upb_msglayout *l,
+                            int msg_ceil_bytes) {
   size_t size = l->size + sizeof(upb_msg_internal);
   char *msg_data;
-  if (size <= cutoff && (size_t)(d->arena_end - d->arena_ptr) >= cutoff) {
+  if (msg_ceil_bytes > 0 &&
+      (size_t)(d->arena_end - d->arena_ptr) >= (size_t)msg_ceil_bytes) {
+    UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
     msg_data = d->arena_ptr;
-    memset(msg_data, 0, cutoff);
+    memset(msg_data, 0, msg_ceil_bytes);
     d->arena_ptr += size;
   } else {
     msg_data = (char*)decode_malloc(d, size);
@@ -68,6 +70,10 @@ upb_msg *decode_newmsg(upb_decstate *d, const upb_msglayout *l) {
   return msg_data + sizeof(upb_msg_internal);
 }
 
+UPB_INLINE
+upb_msg *decode_newmsg(upb_decstate *d, const upb_msglayout *l) {
+  return decode_newmsg_ceil(d, l, -1);
+}
 
 #define UPB_PARSE_PARAMS                                                      \
   upb_decstate *d, const char *ptr, upb_msg *msg, const upb_msglayout *table, \
@@ -95,16 +101,33 @@ const char *upb_pss_1bt(UPB_PARSE_PARAMS);
 const char *upb_pss_2bt(UPB_PARSE_PARAMS);
 const char *upb_pos_1bt(UPB_PARSE_PARAMS);
 const char *upb_pos_2bt(UPB_PARSE_PARAMS);
-const char *upb_psm_1bt(UPB_PARSE_PARAMS);
-const char *upb_pom_1bt(UPB_PARSE_PARAMS);
-const char *upb_prm_1bt(UPB_PARSE_PARAMS);
-const char *upb_psm_2bt(UPB_PARSE_PARAMS);
-const char *upb_pom_2bt(UPB_PARSE_PARAMS);
-const char *upb_prm_2bt(UPB_PARSE_PARAMS);
 
 #undef F
 #undef TYPES
 #undef TAGBYTES
+
+#define F(card, tagbytes, size_ceil, ceil_arg) \
+  const char *upb_p##card##m_##tagbytes##bt_max##size_ceil##b(UPB_PARSE_PARAMS);
+
+#define SIZES(card, tagbytes) \
+  F(card, tagbytes, 64, 64) \
+  F(card, tagbytes, 128, 128) \
+  F(card, tagbytes, 192, 192) \
+  F(card, tagbytes, 256, 256) \
+  F(card, tagbytes, max, -1)
+
+#define TAGBYTES(card) \
+  SIZES(card, 1) \
+  SIZES(card, 2)
+
+TAGBYTES(s)
+TAGBYTES(o)
+TAGBYTES(r)
+
+#undef TAGBYTES
+#undef SIZES
+#undef F
+
 #undef UPB_PARSE_PARAMS
 
 #ifdef __cplusplus

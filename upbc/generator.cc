@@ -803,8 +803,27 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     data.size64 |= (uint64_t)hasbit_mask << 16;
   }
 
-  ent.first = absl::Substitute("upb_p$0$1_$2bt", cardinality, type,
-                               (num > 15) ? "2" : "1");
+  if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
+    std::string size_ceil = "max";
+    size_t size = SIZE_MAX;
+    if (field->message_type()->file() == field->file()) {
+      MessageLayout sub_layout(field->message_type());
+      size = sub_layout.message_size().size64 + 8;
+    }
+    std::vector<size_t> breaks = {64, 128, 192, 256};
+    for (auto brk : breaks) {
+      if (size <= brk) {
+        size_ceil = std::to_string(brk);
+        break;
+      }
+    }
+    ent.first = absl::Substitute("upb_p$0$1_$2bt_max$3b", cardinality, type,
+                                 (num > 15) ? "2" : "1", size_ceil);
+
+  } else {
+    ent.first = absl::Substitute("upb_p$0$1_$2bt", cardinality, type,
+                                 (num > 15) ? "2" : "1");
+  }
   ent.second = data;
 }
 

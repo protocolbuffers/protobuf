@@ -81,7 +81,7 @@ static void *fastdecode_getfield_ofs(upb_decstate *d, const char *ptr,
       *(uint32_t*)msg |= *hasbits;
       *hasbits = 0;
       if (UPB_LIKELY(!*arr_p)) {
-        const size_t initial_len = 8;
+        const size_t initial_len = 32;
         size_t need = (valbytes * initial_len) + sizeof(upb_array);
         if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < need)) {
           *outarr = NULL;
@@ -348,7 +348,7 @@ const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
 
 UPB_FORCEINLINE
 static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
-                                     upb_card card) {
+                                     int msg_ceil_bytes, upb_card card) {
   const char *saved_limit = d->limit;
   const char *saved_fastlimit = d->fastlimit;
   const upb_msglayout_field *field = &table->fields[data >> 48];
@@ -403,7 +403,7 @@ again:
   }
 
   if (card == CARD_r || !*submsg) {
-    *submsg = decode_newmsg(d, subl);
+    *submsg = decode_newmsg_ceil(d, subl, msg_ceil_bytes);
   }
   ptr = fastdecode_dispatch(d, ptr, *submsg, subl, 0);
   submsg++;
@@ -427,26 +427,27 @@ again:
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
 }
 
-const char *upb_psm_1bt(UPB_PARSE_PARAMS) {
-  return fastdecode_submsg(UPB_PARSE_ARGS, 1, CARD_s);
-}
+#define F(card, tagbytes, size_ceil, ceil_arg)                                 \
+  const char *upb_p##card##m_##tagbytes##bt_max##size_ceil##b(                 \
+      UPB_PARSE_PARAMS) {                                                      \
+    return fastdecode_submsg(UPB_PARSE_ARGS, tagbytes, ceil_arg, CARD_##card); \
+  }
 
-const char *upb_pom_1bt(UPB_PARSE_PARAMS) {
-  return fastdecode_submsg(UPB_PARSE_ARGS, 1, CARD_o);
-}
+#define SIZES(card, tagbytes) \
+  F(card, tagbytes, 64, 64) \
+  F(card, tagbytes, 128, 128) \
+  F(card, tagbytes, 192, 192) \
+  F(card, tagbytes, 256, 256) \
+  F(card, tagbytes, max, -1)
 
-const char *upb_prm_1bt(UPB_PARSE_PARAMS) {
-  return fastdecode_submsg(UPB_PARSE_ARGS, 1, CARD_r);
-}
+#define TAGBYTES(card) \
+  SIZES(card, 1) \
+  SIZES(card, 2)
 
-const char *upb_psm_2bt(UPB_PARSE_PARAMS) {
-  return fastdecode_submsg(UPB_PARSE_ARGS, 2, CARD_s);
-}
+TAGBYTES(s)
+TAGBYTES(o)
+TAGBYTES(r)
 
-const char *upb_pom_2bt(UPB_PARSE_PARAMS) {
-  return fastdecode_submsg(UPB_PARSE_ARGS, 2, CARD_o);
-}
-
-const char *upb_prm_2bt(UPB_PARSE_PARAMS) {
-  return fastdecode_submsg(UPB_PARSE_ARGS, 2, CARD_r);
-}
+#undef TAGBYTES
+#undef SIZES
+#undef F
