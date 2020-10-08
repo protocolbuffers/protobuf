@@ -54,9 +54,17 @@ static void *decode_malloc(upb_decstate *d, size_t size) {
 
 UPB_INLINE
 upb_msg *decode_newmsg(upb_decstate *d, const upb_msglayout *l) {
+  const size_t cutoff = 192;
   size_t size = l->size + sizeof(upb_msg_internal);
-  char *msg_data = (char*)decode_malloc(d, size);
-  memset(msg_data, 0, size);
+  char *msg_data;
+  if (size <= cutoff && (size_t)(d->arena_end - d->arena_ptr) >= cutoff) {
+    msg_data = d->arena_ptr;
+    memset(msg_data, 0, cutoff);
+    d->arena_ptr += size;
+  } else {
+    msg_data = (char*)decode_malloc(d, size);
+    memset(msg_data, 0, size);
+  }
   return msg_data + sizeof(upb_msg_internal);
 }
 

@@ -41,7 +41,7 @@ static void BM_ParseDescriptorNoHeap(benchmark::State& state) {
     }
     bytes += descriptor.size;
     upb_arena_free(arena);
-    fprintf(stderr, "+++ finished parse\n");
+    //fprintf(stderr, "+++ finished parse: %zu\n", descriptor.size);
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }

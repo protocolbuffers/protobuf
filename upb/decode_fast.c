@@ -9,6 +9,10 @@
 
 #define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data
 
+#define RETURN_GENERIC(msg)  \
+  /* fprintf(stderr, msg); */ \
+  return fastdecode_generic(UPB_PARSE_ARGS);
+
 typedef enum {
   CARD_s = 0,
   CARD_o = 1,
@@ -24,10 +28,10 @@ const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
   size_t idx;
   if (UPB_UNLIKELY(ptr >= d->fastlimit)) {
     if (UPB_LIKELY(ptr == d->limit)) {
+      *(uint32_t*)msg |= hasbits >> 16;  /* Sync hasbits. */
       return ptr;
     }
-    //fprintf(stderr, "dispatch hit end\n");
-    return fastdecode_generic(UPB_PARSE_ARGS);
+    RETURN_GENERIC("dispatch hit end\n");
   }
   memcpy(&tag, ptr, 2);
   idx = (tag & 0xf8) >> 3;
@@ -166,8 +170,7 @@ static const char *fastdecode_varint(UPB_PARSE_PARAMS, int tagbytes,
   uint64_t val = 0;
   void *dst;
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {
-    //fprintf(stderr, "varint field tag mismatch\n");
-    return fastdecode_generic(UPB_PARSE_ARGS);;
+    RETURN_GENERIC("varint field tag mismatch\n");
   }
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, tagbytes, valbytes,
                             card);
@@ -176,8 +179,7 @@ static const char *fastdecode_varint(UPB_PARSE_PARAMS, int tagbytes,
     uint32_t byte = (uint8_t)ptr[tagbytes + 1];
     val += (byte - 1) << 7;
     if (UPB_UNLIKELY(byte & 0x80)) {
-      //fprintf(stderr, "varint field >2 bytes\n");
-      return fastdecode_generic(UPB_PARSE_ARGS);
+      RETURN_GENERIC("varint field >2 bytes\n");
     }
     ptr++;
   }
@@ -241,16 +243,14 @@ static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
   upb_strview *dst;
   int64_t len;
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {
-    //fprintf(stderr, "string field tag mismatch\n");
-    return fastdecode_generic(UPB_PARSE_ARGS);
+    RETURN_GENERIC("string field tag mismatch\n");
   }
 
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, tagbytes,
                             sizeof(upb_strview), card);
   len = ptr[tagbytes];
   if (UPB_UNLIKELY(len < 0)) {
-    //fprintf(stderr, "string field len >1 byte\n");
-    return fastdecode_generic(UPB_PARSE_ARGS);
+    RETURN_GENERIC("string field len >1 byte\n");
   }
   ptr += tagbytes + 1;
   dst->data = ptr;
@@ -292,8 +292,7 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
   void *end;
 
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {
-    //fprintf(stderr, "submessage field tag mismatch\n");
-    return fastdecode_generic(UPB_PARSE_ARGS);
+    RETURN_GENERIC("submessage field tag mismatch\n");
   }
 
   submsg = fastdecode_getfield_ofs(d, ptr, msg, ofs, &data, &hasbits, &arr,
@@ -302,8 +301,7 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
 again:
   if (card == CARD_r) {
     if (UPB_UNLIKELY(submsg == end)) {
-      //fprintf(stderr, "need array realloc\n");
-      return fastdecode_generic(UPB_PARSE_ARGS);
+      RETURN_GENERIC("need array realloc\n");
     }
   }
 
@@ -313,8 +311,7 @@ again:
       uint32_t byte = (uint8_t)ptr[tagbytes + 1];
       len += (byte - 1) << 7;
       if (UPB_UNLIKELY(byte & 0x80)) {
-        //fprintf(stderr, "submessage field len >2 bytes\n");
-        return fastdecode_generic(UPB_PARSE_ARGS);
+        RETURN_GENERIC("submessage field len >2 bytes\n");
       }
       ptr++;
     }

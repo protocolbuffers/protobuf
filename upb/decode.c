@@ -565,9 +565,14 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
+typedef struct {
+  const char *ptr;
+  bool group_end;
+} decode_parseret;
+
 UPB_FORCEINLINE
-static const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                const upb_msglayout *layout) {
+static decode_parseret decode_field(upb_decstate *d, const char *ptr,
+                                    upb_msg *msg, const upb_msglayout *layout) {
   uint32_t tag;
   const upb_msglayout_field *field;
   int field_number;
@@ -575,6 +580,7 @@ static const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
   const char *field_start = ptr;
   wireval val;
   int op;
+  decode_parseret ret;
 
   ptr = decode_varint32(d, ptr, d->limit, &tag);
   field_number = tag >> 3;
@@ -625,7 +631,9 @@ static const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
       break;
     case UPB_WIRE_TYPE_END_GROUP:
       d->end_group = field_number;
-      return ptr;
+      ret.ptr = ptr;
+      ret.group_end = true;
+      return ret;
     default:
       decode_err(d);
   }
@@ -656,24 +664,36 @@ static const char *decode_field(upb_decstate *d, const char *ptr, upb_msg *msg,
     }
   }
 
-  return ptr;
+  ret.ptr = ptr;
+  ret.group_end = false;
+  return ret;
 }
 
 UPB_NOINLINE
 const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
                                const upb_msglayout *table, uint64_t hasbits,
                                uint64_t data) {
+  decode_parseret ret;
   *(uint32_t*)msg |= hasbits >> 16;  /* Sync hasbits. */
   (void)data;
   if (ptr == d->limit) return ptr;
-  ptr = decode_field(d, ptr, msg, table);
-  return fastdecode_dispatch(d, ptr, msg, table, hasbits);
+  ret = decode_field(d, ptr, msg, table);
+  if (ret.group_end) return ptr;
+  return fastdecode_dispatch(d, ret.ptr, msg, table, hasbits);
 }
 
 UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
-  ptr = fastdecode_dispatch(d, ptr, msg, layout, 0);
+  if (msg) {
+    ptr = fastdecode_dispatch(d, ptr, msg, layout, 0);
+  } else {
+    while (ptr < d->limit) {
+      decode_parseret ret = decode_field(d, ptr, msg, layout);
+      ptr = ret.ptr;
+      if (ret.group_end) return ptr;
+    }
+  }
   if (ptr != d->limit) decode_err(d);
   return ptr;
 }
