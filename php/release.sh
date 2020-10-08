@@ -10,8 +10,8 @@ set -ex
 
 VERSION=$1
 
-git clone git@github.com:protocolbuffers/protobuf-php.git
-git clone git@github.com:protocolbuffers/protobuf.git
+git clone https://github.com/protocolbuffers/protobuf-php.git
+git clone https://github.com/protocolbuffers/protobuf.git
 
 # Clean old files
 pushd protobuf-php
