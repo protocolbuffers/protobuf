@@ -98,6 +98,7 @@ static void *fastdecode_getfield_ofs(upb_decstate *d, const char *ptr,
       if (UPB_LIKELY(!*arr_p)) {
         size_t need = (valbytes * 4) + sizeof(upb_array);
         if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < need)) {
+          *outarr = NULL;
           *data = 0;
           *end = NULL;
           return NULL;
@@ -107,7 +108,6 @@ static void *fastdecode_getfield_ofs(upb_decstate *d, const char *ptr,
         arr->data = _upb_array_tagptr(field, elem_size_lg2);
         *arr_p = arr;
         arr->size = 4;
-        arr->len = 0;
         *end = (char*)field + (arr->size * valbytes);
         d->arena_ptr += need;
       } else {
@@ -301,6 +301,7 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
 again:
   if (card == CARD_r) {
     if (UPB_UNLIKELY(submsg == end)) {
+      if (arr) arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
       RETURN_GENERIC("need array realloc\n");
     }
   }
@@ -311,6 +312,9 @@ again:
       uint32_t byte = (uint8_t)ptr[tagbytes + 1];
       len += (byte - 1) << 7;
       if (UPB_UNLIKELY(byte & 0x80)) {
+        if (card == CARD_r) {
+          arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
+        }
         RETURN_GENERIC("submessage field len >2 bytes\n");
       }
       ptr++;
@@ -322,11 +326,6 @@ again:
     if (card == CARD_r || !*submsg) {
       *submsg = decode_newmsg(d, subl);
     }
-    if (card == CARD_r) {
-      size_t elem_ofs = (size_t)(submsg - (upb_msg **)_upb_array_ptr(arr));
-      UPB_ASSERT(elem_ofs == arr->len);
-      arr->len++;
-    }
 
     saved_limit = d->limit;
     if (--d->depth < 0) return fastdecode_err(d);
@@ -335,6 +334,7 @@ again:
   }
 
   ptr = fastdecode_dispatch(d, ptr, *submsg, subl, 0);
+  submsg++;
   if (ptr != d->limit) return fastdecode_err(d);
 
   d->limit = saved_limit;
@@ -345,9 +345,9 @@ again:
   if (card == CARD_r) {
     if (UPB_LIKELY(ptr < d->fastlimit) &&
         fastdecode_readtag(ptr, tagbytes) == (uint16_t)data) {
-      submsg++;
       goto again;
     }
+    arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
   }
 
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
