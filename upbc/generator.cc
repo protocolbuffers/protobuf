@@ -733,7 +733,7 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
       type = "z8";
       break;
     case protobuf::FieldDescriptor::TYPE_STRING:
-    //case protobuf::FieldDescriptor::TYPE_BYTES:
+    case protobuf::FieldDescriptor::TYPE_BYTES:
       type = "s";
       wire_type = 2;
       break;
@@ -804,7 +804,7 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
   }
 
   ent.first = absl::Substitute("upb_p$0$1_$2bt", cardinality, type,
-                               (num < 15) ? "1" : "2");
+                               (num > 15) ? "2" : "1");
   ent.second = data;
 }
 
