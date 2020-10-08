@@ -41,6 +41,7 @@ static void BM_ParseDescriptorNoHeap(benchmark::State& state) {
     }
     bytes += descriptor.size;
     upb_arena_free(arena);
+    fprintf(stderr, "+++ finished parse\n");
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
@@ -84,9 +85,8 @@ static void BM_ParseDescriptorProto2WithArena(benchmark::State& state) {
   size_t bytes = 0;
   for (auto _ : state) {
     google::protobuf::Arena arena;
-    auto proto =
-        google::protobuf::Arena::Create<google::protobuf::FileDescriptorProto>(
-            &arena);
+    auto proto = google::protobuf::Arena::CreateMessage<
+        google::protobuf::FileDescriptorProto>(&arena);
     bool ok = proto->ParseFromArray(descriptor.data, descriptor.size);
 
     if (!ok) {
