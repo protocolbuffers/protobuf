@@ -48,21 +48,6 @@ static bool fastdecode_checktag(uint64_t data, int tagbytes) {
   }
 }
 
-UPB_FORCEINLINE uint64_t fastdecode_munge(uint64_t val, int valbytes, bool zigzag) {
-  if (valbytes == 1) {
-    return val != 0;
-  } else if (zigzag) {
-    if (valbytes == 4) {
-      uint32_t n = val;
-      return (n >> 1) ^ -(int32_t)(n & 1);
-    } else if (valbytes == 8) {
-      return (val >> 1) ^ -(int64_t)(val & 1);
-    }
-    UPB_UNREACHABLE();
-  }
-  return val;
-}
-
 UPB_FORCEINLINE
 static uint16_t fastdecode_readtag(const char *ptr, int tagbytes) {
   uint16_t ret = 0;
@@ -96,7 +81,8 @@ static void *fastdecode_getfield_ofs(upb_decstate *d, const char *ptr,
       *(uint32_t*)msg |= *hasbits;
       *hasbits = 0;
       if (UPB_LIKELY(!*arr_p)) {
-        size_t need = (valbytes * 4) + sizeof(upb_array);
+        const size_t initial_len = 8;
+        size_t need = (valbytes * initial_len) + sizeof(upb_array);
         if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < need)) {
           *outarr = NULL;
           *data = 0;
@@ -107,7 +93,7 @@ static void *fastdecode_getfield_ofs(upb_decstate *d, const char *ptr,
         field = arr + 1;
         arr->data = _upb_array_tagptr(field, elem_size_lg2);
         *arr_p = arr;
-        arr->size = 4;
+        arr->size = initial_len;
         *end = (char*)field + (arr->size * valbytes);
         d->arena_ptr += need;
       } else {
@@ -136,37 +122,75 @@ static void *fastdecode_getfield(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 /* varint fields **************************************************************/
 
-/*
-UPB_FORCEINLINE
-static const char *fastdecode_longvarint(UPB_PARSE_PARAMS, int valbytes, int varintbytes) {
-  uint64_t val = 0;
-  void *dst = (void*)data;
 #ifdef __BMI2__
-#else
-  for (int i = 0; i < varintbytes; i++) {
-    uint64_t byte = ptr[i];
-    if (i != varintbytes - 1) byte &= 0x7f;
-    val |= byte << (7 * i);
-  }
+#include <immintrin.h>
 #endif
-  memcpy((void*)data, &val, valbytes);
+
+UPB_FORCEINLINE uint64_t fastdecode_munge(uint64_t val, int valbytes, bool zigzag) {
+  if (valbytes == 1) {
+    return val != 0;
+  } else if (zigzag) {
+    if (valbytes == 4) {
+      uint32_t n = val;
+      return (n >> 1) ^ -(int32_t)(n & 1);
+    } else if (valbytes == 8) {
+      return (val >> 1) ^ -(int64_t)(val & 1);
+    }
+    UPB_UNREACHABLE();
+  }
+  return val;
+}
+
+UPB_FORCEINLINE
+static int fastdecode_varintlen(uint64_t data64) {
+  uint64_t clear_bits = ~data64 & 0x8080808080808080;
+  if (clear_bits == 0) return -1;
+  return __builtin_ctzl(clear_bits) / 8 + 1;
+}
+
+UPB_FORCEINLINE
+static const char *fastdecode_longvarint(UPB_PARSE_PARAMS, int valbytes,
+                                         int varintbytes, bool zigzag) {
+  uint64_t val = data >> 18;
+  size_t ofs = (uint16_t)data;
+  uint64_t data64;
+  int sawbytes;
+  memcpy(&data64, ptr + 2, 8);
+  sawbytes = fastdecode_varintlen(data64) + 2;
+  UPB_ASSERT(sawbytes == varintbytes);
+#ifdef __BMI2__
+  if (varintbytes != 3) {
+    uint64_t mask = 0x7f7f7f7f7f7f7f7f >> (8 * (10  - varintbytes));
+    val |= _pext_u64(data64, mask) << 14;
+  } else
+#endif
+  {
+    for (int i = 2; i < varintbytes; i++) {
+      uint64_t byte = ptr[i];
+      if (i != varintbytes - 1) byte &= 0x7f;
+      val |= byte << (7 * i);
+    }
+  }
+  val = fastdecode_munge(val, valbytes, zigzag);
+  memcpy((char*)msg + ofs, &val, valbytes);
   return fastdecode_dispatch(d, ptr + varintbytes, msg, table, hasbits);
 }
 
 UPB_FORCEINLINE
-static const char *fastdecode_longvarintjmp(UPB_PARSE_PARAMS, void *dst,
-                                            _upb_field_parser *funcs) {
-  uint64_t bytes;
-  memcpy(&bytes, ptr + 1, 8);
-  bytes = ~bytes & 0x8080808080808080;
-  data = (uint64_t)dst;
-  return funcs[__builtin_ctz(bytes) / 8](UPB_PARSE_ARGS);
+static const char *fastdecode_longvarintjmp(UPB_PARSE_PARAMS,
+                                            _upb_field_parser **funcs) {
+  int len;
+  uint64_t data64;
+  memcpy(&data64, ptr + 2, 8);
+  len = fastdecode_varintlen(data64);
+  if (len < 0) return fastdecode_err(d);
+  return funcs[len - 1](UPB_PARSE_ARGS);
 }
-*/
 
 UPB_FORCEINLINE
 static const char *fastdecode_varint(UPB_PARSE_PARAMS, int tagbytes,
-                                     int valbytes, upb_card card, bool zigzag) {
+                                     int valbytes, upb_card card, bool zigzag,
+                                     _upb_field_parser **funcs) {
   uint64_t val = 0;
   void *dst;
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {
@@ -179,27 +203,69 @@ static const char *fastdecode_varint(UPB_PARSE_PARAMS, int tagbytes,
     uint32_t byte = (uint8_t)ptr[tagbytes + 1];
     val += (byte - 1) << 7;
     if (UPB_UNLIKELY(byte & 0x80)) {
-      RETURN_GENERIC("varint field >2 bytes\n");
+      ptr += tagbytes;
+      data = (uint32_t)(val << 18 | data >> 48);
+      return fastdecode_longvarintjmp(UPB_PARSE_ARGS, funcs);
     }
-    ptr++;
+    ptr += tagbytes + 2;
+  } else {
+    ptr += tagbytes + 1;
   }
-  ptr += tagbytes + 1;
   val = fastdecode_munge(val, valbytes, zigzag);
   memcpy(dst, &val, valbytes);
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
 }
 
-// Generate all varint functions.
-// {s,o,r} x {b1,v4,z4,v8,z8} x {1bt,2bt}
-
 #define z_ZZ true
 #define b_ZZ false
 #define v_ZZ false
 
+// Generate varint vallbacks.
+
+#define FUNCNAME(type, valbytes, varintbytes) \
+  upb_pl##type##valbytes##_##varintbytes##bv
+
+#define TABLENAME(type, valbytes) \
+  upb_pl##type##valbytes##_table
+
+#define F(type, valbytes, varintbytes)                                         \
+  static const char *FUNCNAME(type, valbytes, varintbytes)(UPB_PARSE_PARAMS) { \
+    return fastdecode_longvarint(UPB_PARSE_ARGS, valbytes, varintbytes,        \
+                                 type##_ZZ);                                   \
+  }
+
+#define FALLBACKS(type, valbytes)                                 \
+  F(type, valbytes, 3)                                            \
+  F(type, valbytes, 4)                                            \
+  F(type, valbytes, 5)                                            \
+  F(type, valbytes, 6)                                            \
+  F(type, valbytes, 7)                                            \
+  F(type, valbytes, 8)                                            \
+  F(type, valbytes, 9)                                            \
+  F(type, valbytes, 10)                                           \
+  static _upb_field_parser *TABLENAME(type, valbytes)[8] = {      \
+      &FUNCNAME(type, valbytes, 3), &FUNCNAME(type, valbytes, 4), \
+      &FUNCNAME(type, valbytes, 5), &FUNCNAME(type, valbytes, 6), \
+      &FUNCNAME(type, valbytes, 7), &FUNCNAME(type, valbytes, 8), \
+      &FUNCNAME(type, valbytes, 9), &FUNCNAME(type, valbytes, 10)};
+
+FALLBACKS(b, 1)
+FALLBACKS(v, 4)
+FALLBACKS(v, 8)
+FALLBACKS(z, 4)
+FALLBACKS(z, 8)
+
+#undef F
+#undef FALLBACKS
+#undef FUNCNAME
+
+// Generate all varint functions.
+// {s,o,r} x {b1,v4,z4,v8,z8} x {1bt,2bt}
+
 #define F(card, type, valbytes, tagbytes)                                      \
   const char *upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS) { \
     return fastdecode_varint(UPB_PARSE_ARGS, tagbytes, valbytes, CARD_##card,  \
-                             type##_ZZ);                                       \
+                             type##_ZZ, TABLENAME(type, valbytes));            \
   }
 
 #define TYPES(card, tagbytes) \
