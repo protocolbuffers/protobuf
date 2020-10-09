@@ -20,7 +20,7 @@ typedef enum {
   CARD_p = 3
 } upb_card;
 
-UPB_NOINLINE
+UPB_FORCEINLINE
 const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 const upb_msglayout *table, uint64_t hasbits) {
   uint16_t tag;
@@ -81,7 +81,7 @@ static void *fastdecode_getfield_ofs(upb_decstate *d, const char *ptr,
       *(uint32_t*)msg |= *hasbits;
       *hasbits = 0;
       if (UPB_LIKELY(!*arr_p)) {
-        const size_t initial_len = 32;
+        const size_t initial_len = 8;
         size_t need = (valbytes * initial_len) + sizeof(upb_array);
         if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < need)) {
           *outarr = NULL;
@@ -370,11 +370,31 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
 again:
   if (card == CARD_r) {
     if (UPB_UNLIKELY(submsg == end)) {
-      if (arr) arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
-      d->limit = saved_limit;
-      d->fastlimit = saved_fastlimit;
-      d->depth++;
-      RETURN_GENERIC("need array realloc\n");
+      if (arr) {
+        size_t old_size = arr->size;
+        size_t old_bytes = old_size * sizeof(upb_msg*);
+        size_t new_size = old_size * 2;
+        size_t new_bytes = new_size * sizeof(upb_msg*);
+        char *old_ptr = _upb_array_ptr(arr);
+        if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < new_bytes)) {
+          d->limit = saved_limit;
+          d->fastlimit = saved_fastlimit;
+          arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
+          d->depth++;
+          RETURN_GENERIC("repeated realloc failed: arena full");
+        }
+        memcpy(d->arena_ptr, old_ptr, old_bytes);
+        arr->size = new_size;
+        arr->data = _upb_array_tagptr(d->arena_ptr, 3);
+        submsg = (void*)(d->arena_ptr + (old_size * sizeof(upb_msg*)));
+        end = (void*)(d->arena_ptr + (new_size * sizeof(upb_msg*)));
+        d->arena_ptr += new_bytes;
+      } else {
+        d->limit = saved_limit;
+        d->fastlimit = saved_fastlimit;
+        d->depth++;
+        RETURN_GENERIC("need array realloc\n");
+      }
     }
   }
 
