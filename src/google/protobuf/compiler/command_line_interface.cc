@@ -58,8 +58,10 @@
 
 #include <memory>
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
+#elif defined(__FreeBSD__)
+#include <sys/sysctl.h>
 #endif
 
 #include <google/protobuf/stubs/common.h>
@@ -201,6 +203,13 @@ bool GetProtocAbsolutePath(std::string* path) {
   if (_NSGetExecutablePath(dirtybuffer, &size) == 0) {
     realpath(dirtybuffer, buffer);
     len = strlen(buffer);
+  }
+#elif defined(__FreeBSD__)
+  char buffer[PATH_MAX];
+  size_t len = PATH_MAX;
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+  if (sysctl(mib, 4, &buffer, &len, NULL, 0) != 0) {
+    len = 0;
   }
 #else
   char buffer[PATH_MAX];
