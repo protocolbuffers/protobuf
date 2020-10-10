@@ -14,10 +14,9 @@
   return fastdecode_generic(UPB_PARSE_ARGS);
 
 typedef enum {
-  CARD_s = 0,
-  CARD_o = 1,
-  CARD_r = 2,
-  CARD_p = 3
+  CARD_s = 0,  /* Singular (optional, non-repeated) */
+  CARD_o = 1,  /* Oneof */
+  CARD_r = 2,  /* Repeated */
 } upb_card;
 
 UPB_FORCEINLINE
@@ -191,7 +190,7 @@ UPB_FORCEINLINE
 static const char *fastdecode_varint(UPB_PARSE_PARAMS, int tagbytes,
                                      int valbytes, upb_card card, bool zigzag,
                                      _upb_field_parser **funcs) {
-  uint64_t val = 0;
+  uint64_t val;
   void *dst;
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {
     RETURN_GENERIC("varint field tag mismatch\n");
@@ -296,7 +295,7 @@ TAGBYTES(o)
 /* string fields **************************************************************/
 
 UPB_FORCEINLINE
-bool fastdecode_boundscheck(const char *ptr, unsigned len, const char *end) {
+bool fastdecode_boundscheck(const char *ptr, size_t len, const char *end) {
   uintptr_t uptr = (uintptr_t)ptr;
   uintptr_t uend = (uintptr_t)end;
   uintptr_t res = uptr + len;
@@ -314,15 +313,13 @@ static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
 
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, tagbytes,
                             sizeof(upb_strview), card);
-  len = ptr[tagbytes];
-  if (UPB_UNLIKELY(len < 0)) {
-    RETURN_GENERIC("string field len >1 byte\n");
-  }
+  len = (int8_t)ptr[tagbytes];
   ptr += tagbytes + 1;
   dst->data = ptr;
   dst->size = len;
   if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, d->limit))) {
-    return fastdecode_err(d);
+    dst->size = 0;
+    RETURN_GENERIC("string field len >1 byte\n");
   }
   ptr += len;
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
@@ -345,6 +342,14 @@ const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
 }
 
 /* message fields *************************************************************/
+
+UPB_FORCEINLINE
+bool fastdecode_boundscheck2(const char *ptr, unsigned len, const char *end) {
+  uintptr_t uptr = (uintptr_t)ptr;
+  uintptr_t uend = (uintptr_t)end;
+  uintptr_t res = uptr + len;
+  return res < uptr || res > uend;
+}
 
 UPB_FORCEINLINE
 static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
@@ -415,7 +420,7 @@ again:
       ptr++;
     }
     ptr += tagbytes + 1;
-    if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, saved_limit))) {
+    if (UPB_UNLIKELY(fastdecode_boundscheck2(ptr, len, saved_limit))) {
       return fastdecode_err(d);
     }
     d->limit = ptr + len;

@@ -41,11 +41,15 @@ const char *fastdecode_err(upb_decstate *d);
 
 void *decode_mallocfallback(upb_decstate *d, size_t size);
 
+UPB_FORCEINLINE bool decode_arenahas(upb_decstate *d, size_t bytes) {
+  return (size_t)(d->arena_end - d->arena_ptr) >= bytes;
+}
+
 UPB_FORCEINLINE
 static void *decode_malloc(upb_decstate *d, size_t size) {
   UPB_ASSERT((size & 7) == 0);
   char *ptr = d->arena_ptr;
-  if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < size)) {
+  if (UPB_UNLIKELY(!decode_arenahas(d, size))) {
     return decode_mallocfallback(d, size);
   }
   d->arena_ptr += size;
@@ -57,8 +61,7 @@ upb_msg *decode_newmsg_ceil(upb_decstate *d, const upb_msglayout *l,
                             int msg_ceil_bytes) {
   size_t size = l->size + sizeof(upb_msg_internal);
   char *msg_data;
-  if (msg_ceil_bytes > 0 &&
-      (size_t)(d->arena_end - d->arena_ptr) >= (size_t)msg_ceil_bytes) {
+  if (msg_ceil_bytes > 0 && decode_arenahas(d, msg_ceil_bytes)) {
     UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
     msg_data = d->arena_ptr;
     memset(msg_data, 0, msg_ceil_bytes);
