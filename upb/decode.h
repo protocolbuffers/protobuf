@@ -98,7 +98,7 @@ upb_msg *decode_newmsg(upb_decstate *d, const upb_msglayout *l) {
 
 TAGBYTES(s)
 TAGBYTES(o)
-//TAGBYTES(r)
+/* TAGBYTES(r) */
 
 const char *upb_pss_1bt(UPB_PARSE_PARAMS);
 const char *upb_pss_2bt(UPB_PARSE_PARAMS);

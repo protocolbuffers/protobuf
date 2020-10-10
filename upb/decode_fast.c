@@ -16,7 +16,7 @@
 typedef enum {
   CARD_s = 0,  /* Singular (optional, non-repeated) */
   CARD_o = 1,  /* Oneof */
-  CARD_r = 2,  /* Repeated */
+  CARD_r = 2   /* Repeated */
 } upb_card;
 
 UPB_FORCEINLINE
@@ -164,7 +164,8 @@ static const char *fastdecode_longvarint(UPB_PARSE_PARAMS, int valbytes,
   } else
 #endif
   {
-    for (int i = 2; i < varintbytes; i++) {
+    int i;
+    for (i = 2; i < varintbytes; i++) {
       uint64_t byte = ptr[i];
       if (i != varintbytes - 1) byte &= 0x7f;
       val |= byte << (7 * i);
@@ -219,7 +220,7 @@ static const char *fastdecode_varint(UPB_PARSE_PARAMS, int tagbytes,
 #define b_ZZ false
 #define v_ZZ false
 
-// Generate varint vallbacks.
+/* Generate varint vallbacks. */
 
 #define FUNCNAME(type, valbytes, varintbytes) \
   upb_pl##type##valbytes##_##varintbytes##bv
@@ -258,8 +259,8 @@ FALLBACKS(z, 8)
 #undef FALLBACKS
 #undef FUNCNAME
 
-// Generate all varint functions.
-// {s,o,r} x {b1,v4,z4,v8,z8} x {1bt,2bt}
+/* Generate all varint functions.
+ * {s,o,r} x {b1,v4,z4,v8,z8} x {1bt,2bt} */
 
 #define F(card, type, valbytes, tagbytes)                                      \
   const char *upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS) { \
@@ -280,7 +281,7 @@ FALLBACKS(z, 8)
 
 TAGBYTES(s)
 TAGBYTES(o)
-//TAGBYTES(r)
+/* TAGBYTES(r) */
 
 #undef z_ZZ
 #undef b_ZZ
