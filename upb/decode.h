@@ -41,12 +41,11 @@ const char *fastdecode_err(upb_decstate *d);
 
 void *decode_mallocfallback(upb_decstate *d, size_t size);
 
-UPB_FORCEINLINE bool decode_arenahas(upb_decstate *d, size_t bytes) {
+UPB_INLINE bool decode_arenahas(upb_decstate *d, size_t bytes) {
   return (size_t)(d->arena_end - d->arena_ptr) >= bytes;
 }
 
-UPB_FORCEINLINE
-static void *decode_malloc(upb_decstate *d, size_t size) {
+UPB_INLINE void *decode_malloc(upb_decstate *d, size_t size) {
   char *ptr = d->arena_ptr;
   UPB_ASSERT((size & 7) == 0);
   if (UPB_UNLIKELY(!decode_arenahas(d, size))) {
