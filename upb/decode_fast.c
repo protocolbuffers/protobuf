@@ -23,7 +23,7 @@ UPB_FORCEINLINE
 const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 const upb_msglayout *table, uint64_t hasbits) {
   uint16_t tag;
-  uint64_t data = 0;;
+  uint64_t data = 0;
   size_t idx;
   if (UPB_UNLIKELY(ptr >= d->fastlimit)) {
     if (UPB_LIKELY(ptr == d->limit)) {

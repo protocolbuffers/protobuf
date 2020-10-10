@@ -47,8 +47,8 @@ UPB_FORCEINLINE bool decode_arenahas(upb_decstate *d, size_t bytes) {
 
 UPB_FORCEINLINE
 static void *decode_malloc(upb_decstate *d, size_t size) {
-  UPB_ASSERT((size & 7) == 0);
   char *ptr = d->arena_ptr;
+  UPB_ASSERT((size & 7) == 0);
   if (UPB_UNLIKELY(!decode_arenahas(d, size))) {
     return decode_mallocfallback(d, size);
   }
