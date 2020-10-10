@@ -307,6 +307,7 @@ UPB_FORCEINLINE
 static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
                                      upb_card card) {
   upb_strview *dst;
+  const char *str;
   int64_t len;
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {
     RETURN_GENERIC("string field tag mismatch\n");
@@ -315,15 +316,14 @@ static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits, tagbytes,
                             sizeof(upb_strview), card);
   len = (int8_t)ptr[tagbytes];
-  ptr += tagbytes + 1;
-  dst->data = ptr;
+  str = ptr + tagbytes + 1;
+  dst->data = str;
   dst->size = len;
-  if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, d->limit))) {
+  if (UPB_UNLIKELY(fastdecode_boundscheck(str, len, d->limit))) {
     dst->size = 0;
     RETURN_GENERIC("string field len >1 byte\n");
   }
-  ptr += len;
-  return fastdecode_dispatch(d, ptr, msg, table, hasbits);
+  return fastdecode_dispatch(d, str + len, msg, table, hasbits);
 }
 
 const char *upb_pss_1bt(UPB_PARSE_PARAMS) {
