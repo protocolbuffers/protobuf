@@ -252,16 +252,15 @@ err:
 
 static void onmreg(const void *c, upb_handlers *h) {
   const upb_msgdef *m = upb_handlers_msgdef(h);
-  upb_msg_field_iter i;
+  int i, n;
   UPB_UNUSED(c);
 
   upb_handlers_setstartmsg(h, textprinter_startmsg, NULL);
   upb_handlers_setendmsg(h, textprinter_endmsg, NULL);
 
-  for(upb_msg_field_begin(&i, m);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(m);
+  for(i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(m, i);
     upb_handlerattr attr = UPB_HANDLERATTR_INIT;
     attr.handler_data = f;
     switch (upb_fielddef_type(f)) {

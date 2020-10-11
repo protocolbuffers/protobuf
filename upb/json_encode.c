@@ -648,10 +648,10 @@ static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
 
   if (e->options & UPB_JSONENC_EMITDEFAULTS) {
     /* Iterate over all fields. */
-    upb_msg_field_iter i;
-    for (upb_msg_field_begin(&i, m); !upb_msg_field_done(&i);
-         upb_msg_field_next(&i)) {
-      f = upb_msg_iter_field(&i);
+    int i = 0;
+    int n = upb_msgdef_fieldcount(m);
+    for (i = 0; i < n; i++) {
+      f = upb_msgdef_field(m, i);
       jsonenc_fieldval(e, f, upb_msg_get(msg, f), &first);
     }
   } else {

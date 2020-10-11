@@ -359,7 +359,7 @@ struct upb_handlercache {
 
 const upb_handlers *upb_handlercache_get(upb_handlercache *c,
                                          const upb_msgdef *md) {
-  upb_msg_field_iter i;
+  int i, n;
   upb_value v;
   upb_handlers *h;
 
@@ -377,10 +377,9 @@ const upb_handlers *upb_handlercache_get(upb_handlercache *c,
 
   /* For each submessage field, get or create a handlers object and set it as
    * the subhandlers. */
-  for(upb_msg_field_begin(&i, md);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(md);
+  for (i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(md, i);
 
     if (upb_fielddef_issubmsg(f)) {
       const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
