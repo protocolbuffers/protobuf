@@ -703,6 +703,27 @@ int TableDescriptorType(const protobuf::FieldDescriptor* field) {
   }
 }
 
+struct SubmsgArray {
+  std::vector<const protobuf::Descriptor*> messages;
+  absl::flat_hash_map<const protobuf::Descriptor*, int> indexes;
+};
+
+SubmsgArray GetSubmsgArray(const protobuf::Descriptor* message) {
+  SubmsgArray ret;
+  MessageLayout layout(message);
+  std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
+      SortedSubmessages(message);
+  int i = 0;
+  for (auto submsg : sorted_submsgs) {
+    if (ret.indexes.find(submsg->message_type()) != ret.indexes.end()) {
+      continue;
+    }
+    ret.messages.push_back(submsg->message_type());
+    ret.indexes[submsg->message_type()] = i++;
+  }
+  return ret;
+}
+
 typedef std::pair<std::string, MessageLayout::Size> TableEntry;
 
 void TryFillTableEntry(const protobuf::Descriptor* message,
@@ -759,7 +780,7 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     case protobuf::FieldDescriptor::LABEL_OPTIONAL:
     case protobuf::FieldDescriptor::LABEL_REQUIRED:
       if (field->real_containing_oneof()) {
-        cardinality = "o";
+        return;  // Not supported yet.
       } else {
         cardinality = "s";
       }
@@ -769,39 +790,29 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
   uint16_t expected_tag = (num << 3) | wire_type;
   if (num > 15) expected_tag |= 0x100;
   MessageLayout::Size offset = layout.GetFieldOffset(field);
+  uint64_t hasbit_index = 0;
 
-  MessageLayout::Size data;
-  if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
-    // Message fields index into the field array instead of giving an offset.
-    std::vector<const protobuf::FieldDescriptor*> order =
-        FieldNumberOrder(message);
-    auto it = std::find(order.begin(), order.end(), field);
-    assert(it != order.end());
-    uint64_t idx = it - order.begin();
-    data.size32 = (idx << 48) | expected_tag;
-    data.size64 = (idx << 48) | expected_tag;
-  } else {
-    data.size32 = ((uint64_t)offset.size32 << 48) | expected_tag;
-    data.size64 = ((uint64_t)offset.size64 << 48) | expected_tag;
+  if (layout.HasHasbit(field)) {
+    hasbit_index = layout.GetHasbitIndex(field);
+    if (hasbit_index > 31) return;
   }
 
-  if (field->real_containing_oneof()) {
-    MessageLayout::Size case_ofs =
-        layout.GetOneofCaseOffset(field->real_containing_oneof());
-    data.size32 |= ((uint64_t)num << 32) | (case_ofs.size32 << 16);
-    data.size64 |= ((uint64_t)num << 32) | (case_ofs.size64 << 16);
+  MessageLayout::Size data;
+
+  data.size32 = ((uint64_t)offset.size32 << 48) | expected_tag;
+  data.size64 = ((uint64_t)offset.size64 << 48) | expected_tag;
+
+  if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
+    SubmsgArray submsg_array = GetSubmsgArray(message);
+    uint64_t idx = submsg_array.indexes[field->message_type()];
+    data.size32 |= idx << 32 | hasbit_index << 16;
+    data.size64 |= idx << 32 | hasbit_index << 16;
   } else {
-    uint32_t hasbit_mask = 0;
-
-    if (layout.HasHasbit(field)) {
-      int index = layout.GetHasbitIndex(field);
-      if (index > 31) return;
-      hasbit_mask = 1 << index;
-    }
-
+    uint32_t hasbit_mask = 1U << hasbit_index;
     data.size32 |= (uint64_t)hasbit_mask << 16;
     data.size64 |= (uint64_t)hasbit_mask << 16;
   }
+
 
   if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
     std::string size_ceil = "max";
@@ -863,27 +874,19 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     std::string msgname = ToCIdent(message->full_name());
     std::string fields_array_ref = "NULL";
     std::string submsgs_array_ref = "NULL";
-    absl::flat_hash_map<const protobuf::Descriptor*, int> submsg_indexes;
     MessageLayout layout(message);
-    std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
-        SortedSubmessages(message);
+    SubmsgArray submsg_array = GetSubmsgArray(message);
 
-    if (!sorted_submsgs.empty()) {
+    if (!submsg_array.messages.empty()) {
       // TODO(haberman): could save a little bit of space by only generating a
       // "submsgs" array for every strongly-connected component.
       std::string submsgs_array_name = msgname + "_submsgs";
       submsgs_array_ref = "&" + submsgs_array_name + "[0]";
       output("static const upb_msglayout *const $0[$1] = {\n",
-             submsgs_array_name, sorted_submsgs.size());
+             submsgs_array_name, submsg_array.messages.size());
 
-      int i = 0;
-      for (auto submsg : sorted_submsgs) {
-        if (submsg_indexes.find(submsg->message_type()) !=
-            submsg_indexes.end()) {
-          continue;
-        }
-        output("  &$0,\n", MessageInit(submsg->message_type()));
-        submsg_indexes[submsg->message_type()] = i++;
+      for (auto submsg : submsg_array.messages) {
+        output("  &$0,\n", MessageInit(submsg));
       }
 
       output("};\n\n");
@@ -901,7 +904,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
         std::string presence = "0";
 
         if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-          submsg_index = submsg_indexes[field->message_type()];
+          submsg_index = submsg_array.indexes[field->message_type()];
         }
 
         if (MessageLayout::HasHasbit(field)) {

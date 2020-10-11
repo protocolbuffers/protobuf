@@ -24,9 +24,7 @@ MessageLayout::Size MessageLayout::Place(
 }
 
 bool MessageLayout::HasHasbit(const protobuf::FieldDescriptor* field) {
-  return field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2 &&
-         field->label() != protobuf::FieldDescriptor::LABEL_REPEATED &&
-         !field->containing_oneof() &&
+  return field->has_presence() && !field->real_containing_oneof() &&
          !field->containing_type()->options().map_entry();
 }
 

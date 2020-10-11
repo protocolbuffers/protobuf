@@ -60,7 +60,7 @@ upb_msg *decode_newmsg_ceil(upb_decstate *d, const upb_msglayout *l,
                             int msg_ceil_bytes) {
   size_t size = l->size + sizeof(upb_msg_internal);
   char *msg_data;
-  if (msg_ceil_bytes > 0 && decode_arenahas(d, msg_ceil_bytes)) {
+  if (UPB_LIKELY(msg_ceil_bytes > 0 && decode_arenahas(d, msg_ceil_bytes))) {
     UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
     msg_data = d->arena_ptr;
     memset(msg_data, 0, msg_ceil_bytes);
