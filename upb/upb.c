@@ -1,5 +1,5 @@
 
-#include "upb/upb.h"
+#include "upb/upb.int.h"
 
 #include <errno.h>
 #include <stdarg.h>
@@ -84,25 +84,6 @@ typedef struct cleanup_ent {
   upb_cleanup_func *cleanup;
   void *ud;
 } cleanup_ent;
-
-struct upb_arena {
-  _upb_arena_head head;
-  uint32_t *cleanups;
-
-  /* Allocator to allocate arena blocks.  We are responsible for freeing these
-   * when we are destroyed. */
-  upb_alloc *block_alloc;
-  uint32_t last_size;
-
-  /* When multiple arenas are fused together, each arena points to a parent
-   * arena (root points to itself). The root tracks how many live arenas
-   * reference it. */
-  uint32_t refcount;  /* Only used when a->parent == a */
-  struct upb_arena *parent;
-
-  /* Linked list of blocks to free/cleanup. */
-  mem_block *freelist, *freelist_tail;
-};
 
 static const size_t memblock_reserve = UPB_ALIGN_UP(sizeof(mem_block), 16);
 
