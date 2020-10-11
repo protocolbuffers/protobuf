@@ -357,6 +357,7 @@ cc_binary(
         ":descriptor_upb_proto",
         ":descriptor_upbreflection",
         "@com_github_google_benchmark//:benchmark_main",
+        "@com_google_protobuf//:protobuf",
     ],
 )
 
