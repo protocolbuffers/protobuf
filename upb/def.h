@@ -134,7 +134,7 @@ UPB_INLINE const upb_fielddef *upb_oneofdef_ntofz(const upb_oneofdef *o,
 }
 const upb_fielddef *upb_oneofdef_itof(const upb_oneofdef *o, uint32_t num);
 
-// DEPRECATED, slated for removal.
+/* DEPRECATED, slated for removal. */
 int upb_oneofdef_numfields(const upb_oneofdef *o);
 void upb_oneof_begin(upb_oneof_iter *iter, const upb_oneofdef *o);
 void upb_oneof_next(upb_oneof_iter *iter);
@@ -143,7 +143,7 @@ upb_fielddef *upb_oneof_iter_field(const upb_oneof_iter *iter);
 void upb_oneof_iter_setdone(upb_oneof_iter *iter);
 bool upb_oneof_iter_isequal(const upb_oneof_iter *iter1,
                             const upb_oneof_iter *iter2);
-// END DEPRECATED
+/* END DEPRECATED */
 
 /* upb_msgdef *****************************************************************/
 
@@ -215,7 +215,7 @@ UPB_INLINE bool upb_msgdef_lookupnamez(const upb_msgdef *m, const char *name,
 const upb_fielddef *upb_msgdef_lookupjsonname(const upb_msgdef *m,
                                               const char *name, size_t len);
 
-// DEPRECATED, slated for removal
+/* DEPRECATED, slated for removal */
 int upb_msgdef_numfields(const upb_msgdef *m);
 int upb_msgdef_numoneofs(const upb_msgdef *m);
 int upb_msgdef_numrealoneofs(const upb_msgdef *m);
@@ -233,7 +233,7 @@ const upb_oneofdef *upb_msg_iter_oneof(const upb_msg_oneof_iter *iter);
 void upb_msg_oneof_iter_setdone(upb_msg_oneof_iter * iter);
 bool upb_msg_oneof_iter_isequal(const upb_msg_oneof_iter *iter1,
                                 const upb_msg_oneof_iter *iter2);
-// END DEPRECATED
+/* END DEPRECATED */
 
 /* upb_enumdef ****************************************************************/
 
