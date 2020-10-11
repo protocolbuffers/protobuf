@@ -37,6 +37,27 @@ function test_def_readers()
   assert_nil(f:containing_oneof())
   assert_equal(m, f:containing_type())
   assert_equal(0, f:default())
+  local message_field_count = 0
+  for field in m:fields() do
+    message_field_count = message_field_count + 1
+  end
+  assert_equal(message_field_count, #m)
+
+  local message_oneof_count = 0
+  for oneof in m:oneofs() do
+    message_oneof_count = message_oneof_count + 1
+  end
+  assert_equal(message_oneof_count, m:oneof_count())
+
+  -- oneof
+  local o = m:lookup_name("oneof_field")
+  assert_equal("oneof_field", o:name())
+  assert_equal(m, o:containing_type())
+  local oneof_field_count = 0
+  for field in o:fields() do
+    oneof_field_count = oneof_field_count + 1
+  end
+  assert_equal(oneof_field_count, #o)
 
   -- enum
   local e = test_messages_proto3['TestAllTypesProto3.NestedEnum']

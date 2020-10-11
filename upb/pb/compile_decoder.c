@@ -701,7 +701,7 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   const upb_handlers *h;
   const upb_msgdef *md;
   uint32_t* start_pc;
-  upb_msg_field_iter i;
+  int i, n;
   upb_value val;
 
   UPB_ASSERT(method);
@@ -718,10 +718,9 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   putsel(c, OP_STARTMSG, UPB_STARTMSG_SELECTOR, h);
  label(c, LABEL_FIELD);
   start_pc = c->pc;
-  for(upb_msg_field_begin(&i, md);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    const upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(md);
+  for(i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(md, i);
     upb_fieldtype_t type = upb_fielddef_type(f);
 
     if (type == UPB_TYPE_MESSAGE && !(haslazyhandlers(h, f) && c->lazy)) {
@@ -765,7 +764,7 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
  * Generates a new method for every destination handlers reachable from "h". */
 static void find_methods(compiler *c, const upb_handlers *h) {
   upb_value v;
-  upb_msg_field_iter i;
+  int i, n;
   const upb_msgdef *md;
   upb_pbdecodermethod *method;
 
@@ -777,10 +776,9 @@ static void find_methods(compiler *c, const upb_handlers *h) {
 
   /* Find submethods. */
   md = upb_handlers_msgdef(h);
-  for(upb_msg_field_begin(&i, md);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    const upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(md);
+  for (i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(md, i);
     const upb_handlers *sub_h;
     if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE &&
         (sub_h = upb_handlers_getsubhandlers(h, f)) != NULL) {
