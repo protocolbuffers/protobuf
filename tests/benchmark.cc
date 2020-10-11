@@ -69,8 +69,8 @@ static void BM_ParseDescriptor_Proto2_NoArena(benchmark::State& state) {
   size_t bytes = 0;
   for (auto _ : state) {
     protobuf::FileDescriptorProto proto;
-    bool ok = proto.ParseFromArray(descriptor.data, descriptor.size);
-
+    protobuf::StringPiece input(descriptor.data,descriptor.size);
+    bool ok = proto.ParseFrom<protobuf::MessageLite::kMergePartial>(input);
     if (!ok) {
       printf("Failed to parse.\n");
       exit(1);
@@ -85,9 +85,10 @@ static void BM_ParseDescriptor_Proto2_Arena(benchmark::State& state) {
   size_t bytes = 0;
   for (auto _ : state) {
     protobuf::Arena arena;
+    protobuf::StringPiece input(descriptor.data,descriptor.size);
     auto proto = protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(
         &arena);
-    bool ok = proto->ParseFromArray(descriptor.data, descriptor.size);
+    bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input);
 
     if (!ok) {
       printf("Failed to parse.\n");
@@ -106,9 +107,10 @@ static void BM_ParseDescriptor_Proto2_Arena_LargeInitialBlock(benchmark::State& 
   opts.initial_block_size = sizeof(buf);
   for (auto _ : state) {
     protobuf::Arena arena(opts);
+    protobuf::StringPiece input(descriptor.data,descriptor.size);
     auto proto = protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(
         &arena);
-    bool ok = proto->ParsePartialFromArray(descriptor.data, descriptor.size);
+    bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input);
 
     if (!ok) {
       printf("Failed to parse.\n");
@@ -125,7 +127,7 @@ static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;
   proto.ParseFromArray(descriptor.data, descriptor.size);
   for (auto _ : state) {
-    proto.SerializeToArray(buf, sizeof(buf));
+    proto.SerializePartialToArray(buf, sizeof(buf));
     bytes += descriptor.size;
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
