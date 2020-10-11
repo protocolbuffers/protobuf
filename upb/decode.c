@@ -1,10 +1,13 @@
 
+#include "upb/decode.h"
+
 #include <setjmp.h>
 #include <string.h>
 
-#include "upb/decode.h"
 #include "upb/upb.h"
+#include "upb/upb.int.h"
 
+/* Must be last. */
 #include "upb/port_def.inc"
 
 /* Maps descriptor type -> upb field type.  */
@@ -137,7 +140,7 @@ static const int8_t delim_ops[37] = {
 /* Data pertaining to the parse. */
 typedef struct {
   const char *limit;       /* End of delimited region or end of buffer. */
-  upb_arena *arena;
+  upb_arena arena;
   int depth;
   uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
   jmp_buf err;
@@ -191,7 +194,7 @@ void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
 
 static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
   bool need_realloc = arr->size - arr->len < elem;
-  if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, d->arena)) {
+  if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, &d->arena)) {
     decode_err(d);
   }
   return need_realloc;
@@ -281,7 +284,7 @@ static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
 static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout *layout,
                                  const upb_msglayout_field *field) {
   const upb_msglayout *subl = layout->submsgs[field->submsg_index];
-  return _upb_msg_new(subl, d->arena);
+  return _upb_msg_new(subl, &d->arena);
 }
 
 static void decode_tosubmsg(upb_decstate *d, upb_msg *submsg,
@@ -325,7 +328,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
 
   if (!arr) {
     upb_fieldtype_t type = desctype_to_fieldtype[field->descriptortype];
-    arr = _upb_array_new(d->arena, type);
+    arr = _upb_array_new(&d->arena, type);
     if (!arr) decode_err(d);
     *arrp = arr;
   }
@@ -424,7 +427,7 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
     char val_size = desctype_to_mapsize[val_field->descriptortype];
     UPB_ASSERT(key_field->offset == 0);
     UPB_ASSERT(val_field->offset == sizeof(upb_strview));
-    map = _upb_map_new(d->arena, key_size, val_size);
+    map = _upb_map_new(&d->arena, key_size, val_size);
     *map_p = map;
   }
 
@@ -434,13 +437,13 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
   if (entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
       entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_GROUP) {
     /* Create proactively to handle the case where it doesn't appear. */
-    ent.v.val = upb_value_ptr(_upb_msg_new(entry->submsgs[0], d->arena));
+    ent.v.val = upb_value_ptr(_upb_msg_new(entry->submsgs[0], &d->arena));
   }
 
   decode_tosubmsg(d, &ent.k, layout, field, val.str_val);
 
   /* Insert into map. */
-  _upb_map_set(map, &ent.k, map->key_size, &ent.v, map->val_size, d->arena);
+  _upb_map_set(map, &ent.k, map->key_size, &ent.v, map->val_size, &d->arena);
 }
 
 static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
@@ -588,7 +591,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
       }
       if (msg) {
         if (!_upb_msg_addunknown(msg, field_start, ptr - field_start,
-                                 d->arena)) {
+                                 &d->arena)) {
           decode_err(d);
         }
       }
@@ -601,18 +604,25 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
                 upb_arena *arena) {
+  bool ok;
   upb_decstate state;
+
+  if (size == 0) return true;
+
   state.limit = buf + size;
-  state.arena = arena;
+  state.arena = *arena;
   state.depth = 64;
   state.end_group = 0;
 
-  if (setjmp(state.err)) return false;
+  if (setjmp(state.err)) {
+    ok = false;
+  } else {
+    decode_msg(&state, buf, msg, l);
+    ok = state.end_group == 0;
+  }
 
-  if (size == 0) return true;
-  decode_msg(&state, buf, msg, l);
-
-  return state.end_group == 0;
+  *arena = state.arena;
+  return ok;
 }
 
 #undef OP_SCALAR_LG2

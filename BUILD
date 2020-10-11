@@ -85,6 +85,7 @@ cc_library(
         "upb/table.c",
         "upb/table.int.h",
         "upb/upb.c",
+        "upb/upb.int.h",
     ],
     hdrs = [
         "upb/decode.h",
