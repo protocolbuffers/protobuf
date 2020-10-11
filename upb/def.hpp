@@ -129,17 +129,17 @@ class OneofDefPtr {
   explicit OneofDefPtr(const upb_oneofdef* ptr) : ptr_(ptr) {}
 
   const upb_oneofdef* ptr() const { return ptr_; }
-  explicit operator bool() { return ptr_ != nullptr; }
+  explicit operator bool() const { return ptr_ != nullptr; }
 
-  // Returns the MessageDef that owns this OneofDef.
+  // Returns the MessageDef that contains this OneofDef.
   MessageDefPtr containing_type() const;
 
-  // Returns the name of this oneof. This is the name used to look up the oneof
-  // by name once added to a message def.
+  // Returns the name of this oneof.
   const char* name() const { return upb_oneofdef_name(ptr_); }
 
-  // Returns the number of fields currently defined in the oneof.
+  // Returns the number of fields in the oneof.
   int field_count() const { return upb_oneofdef_numfields(ptr_); }
+  FieldDefPtr field(int i) const { return FieldDefPtr(upb_oneofdef_field(ptr_, i)); }
 
   // Looks up by name.
   FieldDefPtr FindFieldByName(const char* name, size_t len) const {
@@ -159,40 +159,6 @@ class OneofDefPtr {
     return FieldDefPtr(upb_oneofdef_itof(ptr_, num));
   }
 
-  class const_iterator
-      : public std::iterator<std::forward_iterator_tag, FieldDefPtr> {
-   public:
-    void operator++() { upb_oneof_next(&iter_); }
-
-    FieldDefPtr operator*() const {
-      return FieldDefPtr(upb_oneof_iter_field(&iter_));
-    }
-
-    bool operator!=(const const_iterator& other) const {
-      return !upb_oneof_iter_isequal(&iter_, &other.iter_);
-    }
-
-    bool operator==(const const_iterator& other) const {
-      return upb_oneof_iter_isequal(&iter_, &other.iter_);
-    }
-
-   private:
-    friend class OneofDefPtr;
-
-    const_iterator() {}
-    explicit const_iterator(OneofDefPtr o) { upb_oneof_begin(&iter_, o.ptr()); }
-    static const_iterator end() {
-      const_iterator iter;
-      upb_oneof_iter_setdone(&iter.iter_);
-      return iter;
-    }
-
-    upb_oneof_iter iter_;
-  };
-
-  const_iterator begin() const { return const_iterator(*this); }
-  const_iterator end() const { return const_iterator::end(); }
-
  private:
   const upb_oneofdef* ptr_;
 };
@@ -211,9 +177,11 @@ class MessageDefPtr {
 
   // The number of fields that belong to the MessageDef.
   int field_count() const { return upb_msgdef_numfields(ptr_); }
+  FieldDefPtr field(int i) const { return FieldDefPtr(upb_msgdef_field(ptr_, i)); }
 
   // The number of oneofs that belong to the MessageDef.
   int oneof_count() const { return upb_msgdef_numoneofs(ptr_); }
+  OneofDefPtr oneof(int i) const { return OneofDefPtr(upb_msgdef_oneof(ptr_, i)); }
 
   upb_syntax_t syntax() const { return upb_msgdef_syntax(ptr_); }
 
@@ -258,112 +226,58 @@ class MessageDefPtr {
   // Whether is a number wrapper.
   bool isnumberwrapper() const { return upb_msgdef_isnumberwrapper(ptr_); }
 
-  // Iteration over fields.  The order is undefined.
-  class const_field_iterator
-      : public std::iterator<std::forward_iterator_tag, FieldDefPtr> {
+ private:
+  class FieldIter {
    public:
-    void operator++() { upb_msg_field_next(&iter_); }
+    explicit FieldIter(const upb_msgdef *m, int i) : m_(m), i_(i) {}
+    void operator++() { i_++; }
 
-    FieldDefPtr operator*() const {
-      return FieldDefPtr(upb_msg_iter_field(&iter_));
-    }
-
-    bool operator!=(const const_field_iterator& other) const {
-      return !upb_msg_field_iter_isequal(&iter_, &other.iter_);
-    }
-
-    bool operator==(const const_field_iterator& other) const {
-      return upb_msg_field_iter_isequal(&iter_, &other.iter_);
-    }
+    FieldDefPtr operator*() { return FieldDefPtr(upb_msgdef_field(m_, i_)); }
+    bool operator!=(const FieldIter& other) { return i_ != other.i_; }
+    bool operator==(const FieldIter& other) { return i_ == other.i_; }
 
    private:
-    friend class MessageDefPtr;
-
-    explicit const_field_iterator() {}
-
-    explicit const_field_iterator(MessageDefPtr msg) {
-      upb_msg_field_begin(&iter_, msg.ptr());
-    }
-
-    static const_field_iterator end() {
-      const_field_iterator iter;
-      upb_msg_field_iter_setdone(&iter.iter_);
-      return iter;
-    }
-
-    upb_msg_field_iter iter_;
+    const upb_msgdef *m_;
+    int i_;
   };
 
-  // Iteration over oneofs. The order is undefined.
-  class const_oneof_iterator
-      : public std::iterator<std::forward_iterator_tag, OneofDefPtr> {
+  class FieldAccessor {
    public:
-    void operator++() { upb_msg_oneof_next(&iter_); }
-
-    OneofDefPtr operator*() const {
-      return OneofDefPtr(upb_msg_iter_oneof(&iter_));
-    }
-
-    bool operator!=(const const_oneof_iterator& other) const {
-      return !upb_msg_oneof_iter_isequal(&iter_, &other.iter_);
-    }
-
-    bool operator==(const const_oneof_iterator& other) const {
-      return upb_msg_oneof_iter_isequal(&iter_, &other.iter_);
-    }
-
-   private:
-    friend class MessageDefPtr;
-
-    const_oneof_iterator() {}
-
-    explicit const_oneof_iterator(MessageDefPtr msg) {
-      upb_msg_oneof_begin(&iter_, msg.ptr());
-    }
-
-    static const_oneof_iterator end() {
-      const_oneof_iterator iter;
-      upb_msg_oneof_iter_setdone(&iter.iter_);
-      return iter;
-    }
-
-    upb_msg_oneof_iter iter_;
-  };
-
-  class ConstFieldAccessor {
-   public:
-    explicit ConstFieldAccessor(const upb_msgdef* md) : md_(md) {}
-    const_field_iterator begin() { return MessageDefPtr(md_).field_begin(); }
-    const_field_iterator end() { return MessageDefPtr(md_).field_end(); }
+    explicit FieldAccessor(const upb_msgdef* md) : md_(md) {}
+    FieldIter begin() { return FieldIter(md_, 0); }
+    FieldIter end() { return FieldIter(md_, upb_msgdef_fieldcount(md_)); }
 
    private:
     const upb_msgdef* md_;
   };
 
-  class ConstOneofAccessor {
+  class OneofIter {
    public:
-    explicit ConstOneofAccessor(const upb_msgdef* md) : md_(md) {}
-    const_oneof_iterator begin() { return MessageDefPtr(md_).oneof_begin(); }
-    const_oneof_iterator end() { return MessageDefPtr(md_).oneof_end(); }
+    explicit OneofIter(const upb_msgdef *m, int i) : m_(m), i_(i) {}
+    void operator++() { i_++; }
+
+    OneofDefPtr operator*() { return OneofDefPtr(upb_msgdef_oneof(m_, i_)); }
+    bool operator!=(const OneofIter& other) { return i_ != other.i_; }
+    bool operator==(const OneofIter& other) { return i_ == other.i_; }
+
+   private:
+    const upb_msgdef *m_;
+    int i_;
+  };
+
+  class OneofAccessor {
+   public:
+    explicit OneofAccessor(const upb_msgdef* md) : md_(md) {}
+    OneofIter begin() { return OneofIter(md_, 0); }
+    OneofIter end() { return OneofIter(md_, upb_msgdef_oneofcount(md_)); }
 
    private:
     const upb_msgdef* md_;
   };
 
-  const_field_iterator field_begin() const {
-    return const_field_iterator(*this);
-  }
-
-  const_field_iterator field_end() const { return const_field_iterator::end(); }
-
-  const_oneof_iterator oneof_begin() const {
-    return const_oneof_iterator(*this);
-  }
-
-  const_oneof_iterator oneof_end() const { return const_oneof_iterator::end(); }
-
-  ConstFieldAccessor fields() const { return ConstFieldAccessor(ptr()); }
-  ConstOneofAccessor oneofs() const { return ConstOneofAccessor(ptr()); }
+ public:
+  FieldAccessor fields() const { return FieldAccessor(ptr()); }
+  OneofAccessor oneofs() const { return OneofAccessor(ptr()); }
 
  private:
   const upb_msgdef* ptr_;

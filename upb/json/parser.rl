@@ -2858,7 +2858,7 @@ static void json_parser_reset(upb_json_parser *p) {
 
 static upb_json_parsermethod *parsermethod_new(upb_json_codecache *c,
                                                const upb_msgdef *md) {
-  upb_msg_field_iter i;
+  int i, n;
   upb_alloc *alloc = upb_arena_alloc(c->arena);
 
   upb_json_parsermethod *m = upb_malloc(alloc, sizeof(*m));
@@ -2873,10 +2873,9 @@ static upb_json_parsermethod *parsermethod_new(upb_json_codecache *c,
 
   /* Build name_table */
 
-  for(upb_msg_field_begin(&i, md);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    const upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(md);
+  for(i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(md, i);
     upb_value v = upb_value_constptr(f);
     const char *name;
 
@@ -2965,7 +2964,7 @@ const upb_json_parsermethod *upb_json_codecache_get(upb_json_codecache *c,
                                                     const upb_msgdef *md) {
   upb_json_parsermethod *m;
   upb_value v;
-  upb_msg_field_iter i;
+  int i, n;
   upb_alloc *alloc = upb_arena_alloc(c->arena);
 
   if (upb_inttable_lookupptr(&c->methods, md, &v)) {
@@ -2980,10 +2979,9 @@ const upb_json_parsermethod *upb_json_codecache_get(upb_json_codecache *c,
 
   /* Populate parser methods for all submessages, so the name tables will
    * be available during parsing. */
-  for(upb_msg_field_begin(&i, md);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(md);
+  for(i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(md, i);
 
     if (upb_fielddef_issubmsg(f)) {
       const upb_msgdef *subdef = upb_fielddef_msgsubdef(f);
