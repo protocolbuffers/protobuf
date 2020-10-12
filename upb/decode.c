@@ -623,7 +623,8 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
     ok = state.end_group == 0;
   }
 
-  arena->head = state.arena.head;
+  arena->head.ptr = state.arena.head.ptr;
+  arena->head.end = state.arena.head.end;
   return ok;
 }
 
