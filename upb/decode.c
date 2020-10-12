@@ -11,26 +11,26 @@
 #include "upb/port_def.inc"
 
 /* Maps descriptor type -> upb field type.  */
-static const uint8_t desctype_to_fieldtype[] = {
+static const uint8_t desctype_to_elem_size_lg2[] = {
     -1,               /* invalid descriptor type */
-    UPB_TYPE_DOUBLE,  /* DOUBLE */
-    UPB_TYPE_FLOAT,   /* FLOAT */
-    UPB_TYPE_INT64,   /* INT64 */
-    UPB_TYPE_UINT64,  /* UINT64 */
-    UPB_TYPE_INT32,   /* INT32 */
-    UPB_TYPE_UINT64,  /* FIXED64 */
-    UPB_TYPE_UINT32,  /* FIXED32 */
-    UPB_TYPE_BOOL,    /* BOOL */
-    UPB_TYPE_STRING,  /* STRING */
-    UPB_TYPE_MESSAGE, /* GROUP */
-    UPB_TYPE_MESSAGE, /* MESSAGE */
-    UPB_TYPE_BYTES,   /* BYTES */
-    UPB_TYPE_UINT32,  /* UINT32 */
-    UPB_TYPE_ENUM,    /* ENUM */
-    UPB_TYPE_INT32,   /* SFIXED32 */
-    UPB_TYPE_INT64,   /* SFIXED64 */
-    UPB_TYPE_INT32,   /* SINT32 */
-    UPB_TYPE_INT64,   /* SINT64 */
+    3,  /* DOUBLE */
+    2,   /* FLOAT */
+    3,   /* INT64 */
+    3,  /* UINT64 */
+    2,   /* INT32 */
+    3,  /* FIXED64 */
+    2,  /* FIXED32 */
+    0,    /* BOOL */
+    UPB_SIZE(3, 4),  /* STRING */
+    UPB_SIZE(2, 3),  /* GROUP */
+    UPB_SIZE(2, 3),  /* MESSAGE */
+    UPB_SIZE(3, 4),  /* BYTES */
+    2,  /* UINT32 */
+    2,    /* ENUM */
+    2,   /* SFIXED32 */
+    3,   /* SFIXED64 */
+    2,   /* SINT32 */
+    3,   /* SINT64 */
 };
 
 /* Maps descriptor type -> upb map size.  */
@@ -284,7 +284,7 @@ static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
 static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout *layout,
                                  const upb_msglayout_field *field) {
   const upb_msglayout *subl = layout->submsgs[field->submsg_index];
-  return _upb_msg_new(subl, &d->arena);
+  return _upb_msg_new_inl(subl, &d->arena);
 }
 
 static void decode_tosubmsg(upb_decstate *d, upb_msg *submsg,
@@ -326,14 +326,14 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
   upb_array *arr = *arrp;
   void *mem;
 
-  if (!arr) {
-    upb_fieldtype_t type = desctype_to_fieldtype[field->descriptortype];
-    arr = _upb_array_new(&d->arena, type);
+  if (arr) {
+    decode_reserve(d, arr, 1);
+  } else {
+    size_t lg2 = desctype_to_elem_size_lg2[field->descriptortype];
+    arr = _upb_array_new(&d->arena, 4, lg2);
     if (!arr) decode_err(d);
     *arrp = arr;
   }
-
-  decode_reserve(d, arr, 1);
 
   switch (op) {
     case OP_SCALAR_LG2(0):
