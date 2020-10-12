@@ -795,6 +795,9 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
   if (layout.HasHasbit(field)) {
     hasbit_index = layout.GetHasbitIndex(field);
     if (hasbit_index > 31) return;
+    // thas hasbits mask in the parser occupies bits 16-48
+    // in the 64 bit register.
+    hasbit_index += 16;  // account for the shifted hasbits
   }
 
   MessageLayout::Size data;
@@ -805,8 +808,8 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
   if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
     SubmsgArray submsg_array = GetSubmsgArray(message);
     uint64_t idx = submsg_array.indexes[field->message_type()];
-    data.size32 |= idx << 32 | hasbit_index << 16;
-    data.size64 |= idx << 32 | hasbit_index << 16;
+    data.size32 |= idx << 16 | hasbit_index << 32;
+    data.size64 |= idx << 16 | hasbit_index << 32;
   } else {
     uint32_t hasbit_mask = 1U << hasbit_index;
     data.size32 |= (uint64_t)hasbit_mask << 16;
