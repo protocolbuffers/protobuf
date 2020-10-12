@@ -182,7 +182,6 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #define UPB_NAN (0.0 / 0.0)
 #endif
 
-// User code should use macros instead of functions.
 #if defined(__SANITIZE_ADDRESS__)
 #define UPB_ASAN 1
 #ifdef __cplusplus
