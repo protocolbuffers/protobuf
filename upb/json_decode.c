@@ -798,12 +798,14 @@ static upb_msgval jsondec_enum(jsondec *d, const upb_fielddef *f) {
       return val;
     }
     case JD_NULL: {
-      UPB_ASSERT(jsondec_isnullvalue(f));
-      jsondec_null(d);
-      upb_msgval val;
-      val.int32_val = 0;
-      return val;
+      if (jsondec_isnullvalue(f)) {
+        upb_msgval val;
+        jsondec_null(d);
+        val.int32_val = 0;
+        return val;
+      }
     }
+      /* Fallthrough. */
     default:
       return jsondec_int(d, f);
   }
