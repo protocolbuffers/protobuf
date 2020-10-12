@@ -26,3 +26,6 @@
 #undef _upb_snprintf
 #undef _upb_vsnprintf
 #undef _upb_va_copy
+#undef UPB_POISON_MEMORY_REGION
+#undef UPB_UNPOISON_MEMORY_REGION
+#undef UPB_ASAN
