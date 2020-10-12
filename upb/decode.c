@@ -616,7 +616,7 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   state.arena.last_size = arena->last_size;
   state.arena.parent = arena;
 
-  if (setjmp(state.err)) {
+  if (UPB_UNLIKELY(setjmp(state.err))) {
     ok = false;
   } else {
     decode_msg(&state, buf, msg, l);
