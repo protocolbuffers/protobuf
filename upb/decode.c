@@ -10,7 +10,7 @@
 /* Must be last. */
 #include "upb/port_def.inc"
 
-/* Maps descriptor type -> upb field type.  */
+/* Maps descriptor type -> elem_size_lg2.  */
 static const uint8_t desctype_to_elem_size_lg2[] = {
     -1,               /* invalid descriptor type */
     3,  /* DOUBLE */
