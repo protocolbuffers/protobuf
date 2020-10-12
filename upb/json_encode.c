@@ -167,12 +167,17 @@ static void jsonenc_duration(jsonenc *e, const upb_msg *msg, const upb_msgdef *m
 
 static void jsonenc_enum(int32_t val, const upb_fielddef *f, jsonenc *e) {
   const upb_enumdef *e_def = upb_fielddef_enumsubdef(f);
-  const char *name = upb_enumdef_iton(e_def, val);
 
-  if (name) {
-    jsonenc_printf(e, "\"%s\"", name);
+  if (strcmp(upb_enumdef_fullname(e_def), "google.protobuf.NullValue") == 0) {
+    jsonenc_putstr(e, "null");
   } else {
-    jsonenc_printf(e, "%" PRId32, val);
+    const char *name = upb_enumdef_iton(e_def, val);
+
+    if (name) {
+      jsonenc_printf(e, "\"%s\"", name);
+    } else {
+      jsonenc_printf(e, "%" PRId32, val);
+    }
   }
 }
 
