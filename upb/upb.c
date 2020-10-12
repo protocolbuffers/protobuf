@@ -1,5 +1,5 @@
 
-#include "upb/upb.h"
+#include "upb/upb.int.h"
 
 #include <errno.h>
 #include <stdarg.h>
@@ -73,36 +73,17 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 /* Be conservative and choose 16 in case anyone is using SSE. */
 
-typedef struct mem_block {
+struct mem_block {
   struct mem_block *next;
   uint32_t size;
   uint32_t cleanups;
   /* Data follows. */
-} mem_block;
+};
 
 typedef struct cleanup_ent {
   upb_cleanup_func *cleanup;
   void *ud;
 } cleanup_ent;
-
-struct upb_arena {
-  _upb_arena_head head;
-  uint32_t *cleanups;
-
-  /* Allocator to allocate arena blocks.  We are responsible for freeing these
-   * when we are destroyed. */
-  upb_alloc *block_alloc;
-  uint32_t last_size;
-
-  /* When multiple arenas are fused together, each arena points to a parent
-   * arena (root points to itself). The root tracks how many live arenas
-   * reference it. */
-  uint32_t refcount;  /* Only used when a->parent == a */
-  struct upb_arena *parent;
-
-  /* Linked list of blocks to free/cleanup. */
-  mem_block *freelist, *freelist_tail;
-};
 
 static const size_t memblock_reserve = UPB_ALIGN_UP(sizeof(mem_block), 16);
 
@@ -117,9 +98,9 @@ static upb_arena *arena_findroot(upb_arena *a) {
   return a;
 }
 
-static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
+static void upb_arena_addblock(upb_arena *a, upb_arena *root, void *ptr,
+                               size_t size) {
   mem_block *block = ptr;
-  upb_arena *root = arena_findroot(a);
 
   /* The block is for arena |a|, but should appear in the freelist of |root|. */
   block->next = root->freelist;
@@ -137,11 +118,12 @@ static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
 }
 
 static bool upb_arena_allocblock(upb_arena *a, size_t size) {
+  upb_arena *root = arena_findroot(a);
   size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
-  mem_block *block = upb_malloc(a->block_alloc, block_size);
+  mem_block *block = upb_malloc(root->block_alloc, block_size);
 
   if (!block) return false;
-  upb_arena_addblock(a, block, block_size);
+  upb_arena_addblock(a, root, block, block_size);
   return true;
 }
 
@@ -184,7 +166,7 @@ upb_arena *arena_initslow(void *mem, size_t n, upb_alloc *alloc) {
   a->freelist = NULL;
   a->freelist_tail = NULL;
 
-  upb_arena_addblock(a, mem, n);
+  upb_arena_addblock(a, a, mem, n);
 
   return a;
 }
