@@ -703,6 +703,27 @@ int TableDescriptorType(const protobuf::FieldDescriptor* field) {
   }
 }
 
+struct SubmsgArray {
+  std::vector<const protobuf::Descriptor*> messages;
+  absl::flat_hash_map<const protobuf::Descriptor*, int> indexes;
+};
+
+SubmsgArray GetSubmsgArray(const protobuf::Descriptor* message) {
+  SubmsgArray ret;
+  MessageLayout layout(message);
+  std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
+      SortedSubmessages(message);
+  int i = 0;
+  for (auto submsg : sorted_submsgs) {
+    if (ret.indexes.find(submsg->message_type()) != ret.indexes.end()) {
+      continue;
+    }
+    ret.messages.push_back(submsg->message_type());
+    ret.indexes[submsg->message_type()] = i++;
+  }
+  return ret;
+}
+
 void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
   EmitFileWarning(file, output);
 
@@ -726,27 +747,19 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     std::string msgname = ToCIdent(message->full_name());
     std::string fields_array_ref = "NULL";
     std::string submsgs_array_ref = "NULL";
-    absl::flat_hash_map<const protobuf::Descriptor*, int> submsg_indexes;
     MessageLayout layout(message);
-    std::vector<const protobuf::FieldDescriptor*> sorted_submsgs =
-        SortedSubmessages(message);
+    SubmsgArray submsg_array = GetSubmsgArray(message);
 
-    if (!sorted_submsgs.empty()) {
+    if (!submsg_array.messages.empty()) {
       // TODO(haberman): could save a little bit of space by only generating a
       // "submsgs" array for every strongly-connected component.
       std::string submsgs_array_name = msgname + "_submsgs";
       submsgs_array_ref = "&" + submsgs_array_name + "[0]";
       output("static const upb_msglayout *const $0[$1] = {\n",
-             submsgs_array_name, sorted_submsgs.size());
+             submsgs_array_name, submsg_array.messages.size());
 
-      int i = 0;
-      for (auto submsg : sorted_submsgs) {
-        if (submsg_indexes.find(submsg->message_type()) !=
-            submsg_indexes.end()) {
-          continue;
-        }
-        output("  &$0,\n", MessageInit(submsg->message_type()));
-        submsg_indexes[submsg->message_type()] = i++;
+      for (auto submsg : submsg_array.messages) {
+        output("  &$0,\n", MessageInit(submsg));
       }
 
       output("};\n\n");
@@ -764,7 +777,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
         std::string presence = "0";
 
         if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
-          submsg_index = submsg_indexes[field->message_type()];
+          submsg_index = submsg_array.indexes[field->message_type()];
         }
 
         if (MessageLayout::HasHasbit(field)) {
