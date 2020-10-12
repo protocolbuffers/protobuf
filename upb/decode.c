@@ -648,6 +648,8 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   if (size == 0) return true;
 
   state.limit = buf + size;
+  state.fastlimit = state.limit - 16;
+  state.fastend = state.fastlimit;
   state.depth = 64;
   state.end_group = 0;
   state.arena.head = arena->head;
