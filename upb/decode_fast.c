@@ -157,7 +157,8 @@ static const char *fastdecode_varint(UPB_PARSE_PARAMS, int tagbytes,
   ptr += tagbytes + 1;
   val = (uint8_t)ptr[-1];
   if (UPB_UNLIKELY(val & 0x80)) {
-    for (int i = 0; i < 8; i++) {
+    int i;
+    for (i = 0; i < 8; i++) {
       ptr++;
       uint64_t byte = (uint8_t)ptr[-1];
       val += (byte - 1) << (7 + 7 * i);
