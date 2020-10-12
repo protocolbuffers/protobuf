@@ -141,7 +141,6 @@ static const int8_t delim_ops[37] = {
 typedef struct {
   const char *limit;       /* End of delimited region or end of buffer. */
   upb_arena arena;
-  upb_arena *orig_parent;
   int depth;
   uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
   jmp_buf err;
@@ -613,11 +612,9 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   state.limit = buf + size;
   state.depth = 64;
   state.end_group = 0;
-  state.orig_parent = arena->parent;
-  state.arena = *arena;
-  if (arena->parent == arena) {
-    state.arena.parent = &state.arena;
-  }
+  state.arena.head = arena->head;
+  state.arena.last_size = arena->last_size;
+  state.arena.parent = arena;
 
   if (setjmp(state.err)) {
     ok = false;
@@ -626,8 +623,7 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
     ok = state.end_group == 0;
   }
 
-  *arena = state.arena;
-  arena->parent = state.orig_parent;
+  arena->head = state.arena.head;
   return ok;
 }
 

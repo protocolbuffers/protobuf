@@ -98,9 +98,9 @@ static upb_arena *arena_findroot(upb_arena *a) {
   return a;
 }
 
-static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
+static void upb_arena_addblock(upb_arena *a, upb_arena *root, void *ptr,
+                               size_t size) {
   mem_block *block = ptr;
-  upb_arena *root = arena_findroot(a);
 
   /* The block is for arena |a|, but should appear in the freelist of |root|. */
   block->next = root->freelist;
@@ -118,11 +118,12 @@ static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size) {
 }
 
 static bool upb_arena_allocblock(upb_arena *a, size_t size) {
+  upb_arena *root = arena_findroot(a);
   size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
-  mem_block *block = upb_malloc(a->block_alloc, block_size);
+  mem_block *block = upb_malloc(root->block_alloc, block_size);
 
   if (!block) return false;
-  upb_arena_addblock(a, block, block_size);
+  upb_arena_addblock(a, root, block, block_size);
   return true;
 }
 
@@ -165,7 +166,7 @@ upb_arena *arena_initslow(void *mem, size_t n, upb_alloc *alloc) {
   a->freelist = NULL;
   a->freelist_tail = NULL;
 
-  upb_arena_addblock(a, mem, n);
+  upb_arena_addblock(a, a, mem, n);
 
   return a;
 }
