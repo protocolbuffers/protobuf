@@ -73,12 +73,12 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 /* Be conservative and choose 16 in case anyone is using SSE. */
 
-typedef struct mem_block {
+struct mem_block {
   struct mem_block *next;
   uint32_t size;
   uint32_t cleanups;
   /* Data follows. */
-} mem_block;
+};
 
 typedef struct cleanup_ent {
   upb_cleanup_func *cleanup;
