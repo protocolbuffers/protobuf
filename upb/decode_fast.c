@@ -87,9 +87,6 @@ static void *fastdecode_getfield_ofs(upb_decstate *d, const char *ptr,
         const size_t initial_len = 8;
         size_t need = (valbytes * initial_len) + sizeof(upb_array);
         if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < need)) {
-          *outarr = NULL;
-          *data = 0;
-          *end = NULL;
           return NULL;
         }
         arr = (void*)d->arena_ptr;
@@ -262,40 +259,25 @@ const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
 
 /* message fields *************************************************************/
 
-UPB_FORCEINLINE
-bool fastdecode_boundscheck2(const char *ptr, unsigned len, const char *end) {
-  uintptr_t uptr = (uintptr_t)ptr;
-  uintptr_t uend = (uintptr_t)end;
-  uintptr_t res = uptr + len;
-  return res < uptr || res > uend;
-}
-
 UPB_NOINLINE static
 const char *fastdecode_lendelim_submsg(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 const upb_msglayout *table, uint64_t hasbits, const char* saved_limit) {
-  uint32_t len = (uint8_t)ptr[-1];
+  size_t len = (uint8_t)ptr[-1];
   if (UPB_UNLIKELY(len & 0x80)) {
-    ptr++;
-    uint32_t byte = (uint8_t)ptr[-1];
-    len += (byte - 1) << 7;
-    if (UPB_UNLIKELY(byte & 0x80)) {
+    for (int i = 0; i < 3; i++) {
       ptr++;
-      uint32_t byte = (uint8_t)ptr[-1];
-      len += (byte - 1) << 14;
-      if (UPB_UNLIKELY(byte & 0x80)) {
-        ptr++;
-        uint32_t byte = (uint8_t)ptr[-1];
-        len += (byte - 1) << 21;
-        if (UPB_UNLIKELY(byte & 0x80)) {
-          ptr++;
-          uint32_t byte = (uint8_t)ptr[-1];
-          len += (byte - 1) << 28;
-          if (UPB_UNLIKELY(byte >= 8)) return fastdecode_err(d);
-        }
-      }
+      size_t byte = (uint8_t)ptr[-1];
+      len += (byte - 1) << (7 + 7 * i);
+      if (UPB_LIKELY((byte & 0x80) == 0)) goto done;
     }
+    ptr++;
+    size_t byte = (uint8_t)ptr[-1];
+    // len is limited by 2gb not 4gb, hence 8 and not 16 as normally expected for a 32 bit varint.
+    if (UPB_UNLIKELY(byte >= 8)) return fastdecode_err(d);
+    len += (byte - 1) << 28;
   }
-  if (UPB_UNLIKELY(fastdecode_boundscheck2(ptr, len, saved_limit))) {
+done:
+  if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, saved_limit))) {
     return fastdecode_err(d);
   }
   d->limit = ptr + len;
@@ -318,11 +300,16 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
   upb_array *arr;
   void *end;
   uint32_t submsg_idx = data;
-  submsg_idx >>= 16; asm("" : "+r" (submsg_idx));
+  submsg_idx >>= 16;
   const upb_msglayout *subl = table->submsgs[submsg_idx];
   submsg = fastdecode_getfield_ofs(d, ptr, msg, &data, &hasbits, &arr, &end,
                                    sizeof(upb_msg *), card, true);
 
+  if (card == CARD_r) {
+    if (UPB_UNLIKELY(!submsg)) {
+      RETURN_GENERIC("need array resize\n");
+    }
+  }
   if (card == CARD_s) {
     *(uint32_t*)msg |= hasbits >> 16;
     hasbits = 0;
@@ -334,24 +321,20 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
 again:
   if (card == CARD_r) {
     if (UPB_UNLIKELY(submsg == end)) {
-      if (UPB_LIKELY(arr != NULL)) {
-        size_t old_size = arr->size;
-        size_t old_bytes = old_size * sizeof(upb_msg*);
-        size_t new_size = old_size * 2;
-        size_t new_bytes = new_size * sizeof(upb_msg*);
-        char *old_ptr = _upb_array_ptr(arr);
-        if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < new_bytes)) {
-          goto repeated_generic;
-        }
-        memcpy(d->arena_ptr, old_ptr, old_bytes);
-        arr->size = new_size;
-        arr->data = _upb_array_tagptr(d->arena_ptr, 3);
-        submsg = (void*)(d->arena_ptr + (old_size * sizeof(upb_msg*)));
-        end = (void*)(d->arena_ptr + (new_size * sizeof(upb_msg*)));
-        d->arena_ptr += new_bytes;
-      } else {
+      size_t old_size = arr->size;
+      size_t old_bytes = old_size * sizeof(upb_msg*);
+      size_t new_size = old_size * 2;
+      size_t new_bytes = new_size * sizeof(upb_msg*);
+      char *old_ptr = _upb_array_ptr(arr);
+      if (UPB_UNLIKELY((size_t)(d->arena_end - d->arena_ptr) < new_bytes)) {
         goto repeated_generic;
       }
+      memcpy(d->arena_ptr, old_ptr, old_bytes);
+      arr->size = new_size;
+      arr->data = _upb_array_tagptr(d->arena_ptr, 3);
+      submsg = (void*)(d->arena_ptr + (old_size * sizeof(upb_msg*)));
+      end = (void*)(d->arena_ptr + (new_size * sizeof(upb_msg*)));
+      d->arena_ptr += new_bytes;
     }
   }
   

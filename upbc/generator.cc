@@ -795,6 +795,9 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
   if (layout.HasHasbit(field)) {
     hasbit_index = layout.GetHasbitIndex(field);
     if (hasbit_index > 31) return;
+    // thas hasbits mask in the parser occupies bits 16-48
+    // in the 64 bit register.
+    hasbit_index += 16;  // account for the shifted hasbits
   }
 
   MessageLayout::Size data;
