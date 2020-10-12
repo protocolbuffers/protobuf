@@ -33,7 +33,7 @@ def Benchmark(outbase, bench_cpu=True, runs=12):
   Run("CC=clang bazel test :all")
 
   if bench_cpu:
-    Run("CC=clang bazel build -c opt :benchmark")
+    Run("CC=clang bazel build -c opt --copt=-march=native :benchmark")
 
     Run("./bazel-bin/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={}".format(tmpfile, runs))
     with open(tmpfile) as f:
