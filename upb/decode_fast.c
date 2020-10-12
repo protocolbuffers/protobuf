@@ -269,7 +269,8 @@ const char *fastdecode_lendelim_submsg(upb_decstate *d, const char *ptr, upb_msg
                                 const upb_msglayout *table, uint64_t hasbits, const char* saved_limit) {
   size_t len = (uint8_t)ptr[-1];
   if (UPB_UNLIKELY(len & 0x80)) {
-    for (int i = 0; i < 3; i++) {
+    int i;
+    for (i = 0; i < 3; i++) {
       ptr++;
       size_t byte = (uint8_t)ptr[-1];
       len += (byte - 1) << (7 + 7 * i);
