@@ -231,28 +231,28 @@ std::string CTypeInternal(const protobuf::FieldDescriptor* field,
   }
 }
 
-std::string UpbType(const protobuf::FieldDescriptor* field) {
+std::string SizeLg2(const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-      return "UPB_TYPE_MESSAGE";
+      return "UPB_SIZE(2, 3)";
     case protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      return "UPB_TYPE_ENUM";
+      return std::to_string(2);
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
-      return "UPB_TYPE_BOOL";
+      return std::to_string(1);
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      return "UPB_TYPE_FLOAT";
+      return std::to_string(2);
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
-      return "UPB_TYPE_INT32";
+      return std::to_string(2);
     case protobuf::FieldDescriptor::CPPTYPE_UINT32:
-      return "UPB_TYPE_UINT32";
+      return std::to_string(2);
     case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      return "UPB_TYPE_DOUBLE";
+      return std::to_string(3);
     case protobuf::FieldDescriptor::CPPTYPE_INT64:
-      return "UPB_TYPE_INT64";
+      return std::to_string(3);
     case protobuf::FieldDescriptor::CPPTYPE_UINT64:
-      return "UPB_TYPE_UINT64";
+      return std::to_string(3);
     case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "UPB_TYPE_STRING";
+      return "UPB_SIZE(3, 4)";
     default:
       fprintf(stderr, "Unexpected type");
       abort();
@@ -509,7 +509,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
           "}\n",
           CType(field), msgname, field->name(),
           GetSizeInit(layout.GetFieldOffset(field)),
-          UpbType(field));
+          SizeLg2(field));
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         output(
             "UPB_INLINE struct $0* $1_add_$2($1 *msg, upb_arena *arena) {\n"
@@ -523,7 +523,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
             MessageInit(field->message_type()),
             GetSizeInit(layout.GetFieldOffset(field)),
             GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size),
-            UpbType(field));
+            SizeLg2(field));
       } else {
         output(
             "UPB_INLINE bool $1_add_$2($1 *msg, $0 val, upb_arena *arena) {\n"
@@ -533,7 +533,7 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output
             CType(field), msgname, field->name(),
             GetSizeInit(layout.GetFieldOffset(field)),
             GetSizeInit(MessageLayout::SizeOfUnwrapped(field).size),
-            UpbType(field));
+            SizeLg2(field));
       }
     } else {
       // Non-repeated field.
@@ -600,6 +600,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
       "#define $0_UPB_H_\n\n"
       "#include \"upb/msg.h\"\n"
       "#include \"upb/decode.h\"\n"
+      "#include \"upb/decode_fast.h\"\n"
       "#include \"upb/encode.h\"\n\n",
       ToPreproc(file->name()));
 

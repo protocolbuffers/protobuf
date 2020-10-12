@@ -437,7 +437,7 @@ T(sint64,   int64_t,  upb_zzenc_64, doencode_varint)
 #include <stdio.h>
 static void newhandlers_callback(const void *closure, upb_handlers *h) {
   const upb_msgdef *m;
-  upb_msg_field_iter i;
+  int i, n;
 
   UPB_UNUSED(closure);
 
@@ -446,10 +446,9 @@ static void newhandlers_callback(const void *closure, upb_handlers *h) {
   upb_handlers_setunknown(h, encode_unknown, NULL);
 
   m = upb_handlers_msgdef(h);
-  for(upb_msg_field_begin(&i, m);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    const upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(m);
+  for(i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(m, i);
     bool packed = upb_fielddef_isseq(f) && upb_fielddef_isprimitive(f) &&
                   upb_fielddef_packed(f);
     upb_handlerattr attr = UPB_HANDLERATTR_INIT;

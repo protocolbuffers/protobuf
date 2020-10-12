@@ -1124,16 +1124,16 @@ void printer_sethandlers_timestamp(const void *closure, upb_handlers *h) {
 
 void printer_sethandlers_value(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
-  upb_msg_field_iter i;
+  int i, n;
 
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
 
   upb_handlers_setstartmsg(h, printer_startmsg_noframe, &empty_attr);
   upb_handlers_setendmsg(h, printer_endmsg_noframe, &empty_attr);
 
-  upb_msg_field_begin(&i, md);
-  for(; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
-    const upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(md);
+  for (i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(md, i);
 
     switch (upb_fielddef_type(f)) {
       case UPB_TYPE_ENUM:
@@ -1222,7 +1222,7 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
   const upb_msgdef *md = upb_handlers_msgdef(h);
   bool is_mapentry = upb_msgdef_mapentry(md);
   upb_handlerattr empty_attr = UPB_HANDLERATTR_INIT;
-  upb_msg_field_iter i;
+  int i, n;
   const upb_json_printercache *cache = closure;
   const bool preserve_fieldnames = cache->preserve_fieldnames;
 
@@ -1287,9 +1287,9 @@ void printer_sethandlers(const void *closure, upb_handlers *h) {
     }                                                                         \
     break;
 
-  upb_msg_field_begin(&i, md);
-  for(; !upb_msg_field_done(&i); upb_msg_field_next(&i)) {
-    const upb_fielddef *f = upb_msg_iter_field(&i);
+  n = upb_msgdef_fieldcount(md);
+  for (i = 0; i < n; i++) {
+    const upb_fielddef *f = upb_msgdef_field(md, i);
 
     upb_handlerattr name_attr = UPB_HANDLERATTR_INIT;
     name_attr.handler_data = newstrpc(h, f, preserve_fieldnames);

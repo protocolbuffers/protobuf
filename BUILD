@@ -79,13 +79,16 @@ cc_library(
     name = "upb",
     srcs = [
         "upb/decode.c",
+        "upb/decode.int.h",
         "upb/decode_fast.c",
+        "upb/decode_fast.h",
         "upb/encode.c",
         "upb/msg.c",
         "upb/msg.h",
         "upb/table.c",
         "upb/table.int.h",
         "upb/upb.c",
+        "upb/upb.int.h",
     ],
     hdrs = [
         "upb/decode.h",
@@ -110,6 +113,7 @@ cc_library(
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
+        "upb/decode_fast.h",
         "upb/msg.h",
         "upb/port_def.inc",
         "upb/port_undef.inc",

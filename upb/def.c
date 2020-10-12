@@ -89,7 +89,9 @@ struct upb_enumdef {
 struct upb_oneofdef {
   const upb_msgdef *parent;
   const char *full_name;
-  uint32_t index;
+  int field_count;
+  bool synthetic;
+  const upb_fielddef **fields;
   upb_strtable ntof;
   upb_inttable itof;
 };
@@ -290,37 +292,6 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   m->selector_count = selector;
 
   upb_gfree(fields);
-  return true;
-}
-
-static bool check_oneofs(upb_msgdef *m, upb_status *s) {
-  int i;
-  int first_synthetic = -1;
-  upb_oneofdef *mutable_oneofs = (upb_oneofdef*)m->oneofs;
-
-  for (i = 0; i < m->oneof_count; i++) {
-    mutable_oneofs[i].index = i;
-
-    if (upb_oneofdef_issynthetic(&mutable_oneofs[i])) {
-      if (first_synthetic == -1) {
-        first_synthetic = i;
-      }
-    } else {
-      if (first_synthetic != -1) {
-        upb_status_seterrf(
-            s, "Synthetic oneofs must be after all other oneofs: %s",
-            upb_oneofdef_name(&mutable_oneofs[i]));
-        return false;
-      }
-    }
-  }
-
-  if (first_synthetic == -1) {
-    m->real_oneof_count = m->oneof_count;
-  } else {
-    m->real_oneof_count = first_synthetic;
-  }
-
   return true;
 }
 
@@ -726,13 +697,30 @@ int upb_msgdef_numrealoneofs(const upb_msgdef *m) {
   return m->real_oneof_count;
 }
 
+int upb_msgdef_fieldcount(const upb_msgdef *m) {
+  return m->field_count;
+}
+
+int upb_msgdef_oneofcount(const upb_msgdef *m) {
+  return m->oneof_count;
+}
+
+int upb_msgdef_realoneofcount(const upb_msgdef *m) {
+  return m->real_oneof_count;
+}
+
 const upb_msglayout *upb_msgdef_layout(const upb_msgdef *m) {
   return m->layout;
 }
 
-const upb_fielddef *_upb_msgdef_field(const upb_msgdef *m, int i) {
-  if (i >= m->field_count) return NULL;
+const upb_fielddef *upb_msgdef_field(const upb_msgdef *m, int i) {
+  UPB_ASSERT(i >= 0 && i < m->field_count);
   return &m->fields[i];
+}
+
+const upb_oneofdef *upb_msgdef_oneof(const upb_msgdef *m, int i) {
+  UPB_ASSERT(i >= 0 && i < m->oneof_count);
+  return &m->oneofs[i];
 }
 
 bool upb_msgdef_mapentry(const upb_msgdef *m) {
@@ -822,22 +810,25 @@ const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o) {
   return o->parent;
 }
 
+int upb_oneofdef_fieldcount(const upb_oneofdef *o) {
+  return o->field_count;
+}
+
+const upb_fielddef *upb_oneofdef_field(const upb_oneofdef *o, int i) {
+  UPB_ASSERT(i < o->field_count);
+  return o->fields[i];
+}
+
 int upb_oneofdef_numfields(const upb_oneofdef *o) {
-  return (int)upb_strtable_count(&o->ntof);
+  return o->field_count;
 }
 
 uint32_t upb_oneofdef_index(const upb_oneofdef *o) {
-  return o->index;
+  return o - o->parent->oneofs;
 }
 
 bool upb_oneofdef_issynthetic(const upb_oneofdef *o) {
-  upb_inttable_iter iter;
-  const upb_fielddef *f;
-  upb_inttable_begin(&iter, &o->itof);
-  if (upb_oneofdef_numfields(o) != 1) return false;
-  f = upb_value_getptr(upb_inttable_iter_value(&iter));
-  UPB_ASSERT(f);
-  return f->proto3_optional_;
+  return o->synthetic;
 }
 
 const upb_fielddef *upb_oneofdef_ntof(const upb_oneofdef *o,
@@ -1159,6 +1150,46 @@ static const char *makefullname(const symtab_addctx *ctx, const char *prefix,
   }
 }
 
+static bool finalize_oneofs(symtab_addctx *ctx, upb_msgdef *m) {
+  int i;
+  int synthetic_count = 0;
+  upb_oneofdef *mutable_oneofs = (upb_oneofdef*)m->oneofs;
+
+  for (i = 0; i < m->oneof_count; i++) {
+    upb_oneofdef *o = &mutable_oneofs[i];
+
+    if (o->synthetic && o->field_count != 1) {
+      upb_status_seterrf(
+          ctx->status, "Synthetic oneofs must have one field, not %d: %s",
+          o->field_count, upb_oneofdef_name(o));
+      return false;
+    }
+
+    if (o->synthetic) {
+      synthetic_count++;
+    } else if (synthetic_count != 0) {
+      upb_status_seterrf(
+          ctx->status, "Synthetic oneofs must be after all other oneofs: %s",
+          upb_oneofdef_name(o));
+      return false;
+    }
+
+    o->fields = upb_malloc(ctx->alloc, sizeof(upb_fielddef*) * o->field_count);
+    o->field_count = 0;
+  }
+
+  for (i = 0; i < m->field_count; i++) {
+    const upb_fielddef *f = &m->fields[i];
+    upb_oneofdef *o = (upb_oneofdef*)f->oneof;
+    if (o) {
+      o->fields[o->field_count++] = f;
+    }
+  }
+
+  m->real_oneof_count = m->oneof_count - synthetic_count;
+  return true;
+}
+
 size_t getjsonname(const char *name, char *buf, size_t len) {
   size_t src, dst = 0;
   bool ucase_next = false;
@@ -1275,6 +1306,8 @@ static bool create_oneofdef(
   o = (upb_oneofdef*)&m->oneofs[m->oneof_count++];
   o->parent = m;
   o->full_name = makefullname(ctx, m->full_name, name);
+  o->field_count = 0;
+  o->synthetic = false;
 
   v = pack_def(o, UPB_DEFTYPE_ONEOF);
   CHK_OOM(symtab_add(ctx, o->full_name, v));
@@ -1554,10 +1587,20 @@ static bool create_fielddef(
     oneof = (upb_oneofdef*)&m->oneofs[oneof_index];
     f->oneof = oneof;
 
+    oneof->field_count++;
+    if (f->proto3_optional_) {
+      oneof->synthetic = true;
+    }
     CHK(upb_inttable_insert2(&oneof->itof, f->number_, v, alloc));
     CHK(upb_strtable_insert3(&oneof->ntof, name.data, name.size, v, alloc));
   } else {
     f->oneof = NULL;
+    if (f->proto3_optional_) {
+      upb_status_seterrf(ctx->status,
+                         "field with proto3_optional was not in a oneof (%s)",
+                         f->full_name);
+      return false;
+    }
   }
 
   options = google_protobuf_FieldDescriptorProto_has_options(field_proto) ?
@@ -1697,7 +1740,7 @@ static bool create_msgdef(symtab_addctx *ctx, const char *prefix,
   }
 
   CHK(assign_msg_indices(m, ctx->status));
-  CHK(check_oneofs(m, ctx->status));
+  CHK(finalize_oneofs(ctx, m));
   assign_msg_wellknowntype(m);
   upb_inttable_compact2(&m->itof, ctx->alloc);
 

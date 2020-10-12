@@ -48,6 +48,21 @@ static char _upb_fieldtype_to_mapsize[12] = {
   0,  /* UPB_TYPE_BYTES */
 };
 
+static const char _upb_fieldtype_to_sizelg2[12] = {
+  0,
+  0,  /* UPB_TYPE_BOOL */
+  2,  /* UPB_TYPE_FLOAT */
+  2,  /* UPB_TYPE_INT32 */
+  2,  /* UPB_TYPE_UINT32 */
+  2,  /* UPB_TYPE_ENUM */
+  UPB_SIZE(2, 3),  /* UPB_TYPE_MESSAGE */
+  3,  /* UPB_TYPE_DOUBLE */
+  3,  /* UPB_TYPE_INT64 */
+  3,  /* UPB_TYPE_UINT64 */
+  UPB_SIZE(3, 4),  /* UPB_TYPE_STRING */
+  UPB_SIZE(3, 4),  /* UPB_TYPE_BYTES */
+};
+
 /** upb_msg *******************************************************************/
 
 upb_msg *upb_msg_new(const upb_msgdef *m, upb_arena *a) {
@@ -207,11 +222,12 @@ void upb_msg_clear(upb_msg *msg, const upb_msgdef *m) {
 bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
                   const upb_symtab *ext_pool, const upb_fielddef **out_f,
                   upb_msgval *out_val, size_t *iter) {
-  size_t i = *iter;
+  int i = *iter;
+  int n = upb_msgdef_fieldcount(m);
   const upb_msgval zero = {0};
-  const upb_fielddef *f;
   UPB_UNUSED(ext_pool);
-  while ((f = _upb_msgdef_field(m, (int)++i)) != NULL) {
+  while (++i < n) {
+    const upb_fielddef *f = upb_msgdef_field(m, i);
     upb_msgval val = _upb_msg_getraw(msg, f);
 
     /* Skip field if unset or empty. */
@@ -296,7 +312,7 @@ bool upb_msg_discardunknown(upb_msg *msg, const upb_msgdef *m, int maxdepth) {
 /** upb_array *****************************************************************/
 
 upb_array *upb_array_new(upb_arena *a, upb_fieldtype_t type) {
-  return _upb_array_new(a, type);
+  return _upb_array_new(a, 4, _upb_fieldtype_to_sizelg2[type]);
 }
 
 size_t upb_array_size(const upb_array *arr) {

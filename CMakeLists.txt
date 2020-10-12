@@ -71,6 +71,7 @@ add_library(upb
   upb/table.c
   upb/table.int.h
   upb/upb.c
+  upb/upb.int.h
   upb/decode.h
   upb/encode.h
   upb/upb.h

@@ -1,33 +1,37 @@
 
+#include "upb/decode.h"
+
 #include <setjmp.h>
 #include <string.h>
 
-#include "upb/decode.h"
+#include "upb/decode.int.h"
 #include "upb/upb.h"
+#include "upb/upb.int.h"
 
+/* Must be last. */
 #include "upb/port_def.inc"
 
-/* Maps descriptor type -> upb field type.  */
-static const uint8_t desctype_to_fieldtype[] = {
+/* Maps descriptor type -> elem_size_lg2.  */
+static const uint8_t desctype_to_elem_size_lg2[] = {
     -1,               /* invalid descriptor type */
-    UPB_TYPE_DOUBLE,  /* DOUBLE */
-    UPB_TYPE_FLOAT,   /* FLOAT */
-    UPB_TYPE_INT64,   /* INT64 */
-    UPB_TYPE_UINT64,  /* UINT64 */
-    UPB_TYPE_INT32,   /* INT32 */
-    UPB_TYPE_UINT64,  /* FIXED64 */
-    UPB_TYPE_UINT32,  /* FIXED32 */
-    UPB_TYPE_BOOL,    /* BOOL */
-    UPB_TYPE_STRING,  /* STRING */
-    UPB_TYPE_MESSAGE, /* GROUP */
-    UPB_TYPE_MESSAGE, /* MESSAGE */
-    UPB_TYPE_BYTES,   /* BYTES */
-    UPB_TYPE_UINT32,  /* UINT32 */
-    UPB_TYPE_ENUM,    /* ENUM */
-    UPB_TYPE_INT32,   /* SFIXED32 */
-    UPB_TYPE_INT64,   /* SFIXED64 */
-    UPB_TYPE_INT32,   /* SINT32 */
-    UPB_TYPE_INT64,   /* SINT64 */
+    3,  /* DOUBLE */
+    2,   /* FLOAT */
+    3,   /* INT64 */
+    3,  /* UINT64 */
+    2,   /* INT32 */
+    3,  /* FIXED64 */
+    2,  /* FIXED32 */
+    0,    /* BOOL */
+    UPB_SIZE(3, 4),  /* STRING */
+    UPB_SIZE(2, 3),  /* GROUP */
+    UPB_SIZE(2, 3),  /* MESSAGE */
+    UPB_SIZE(3, 4),  /* BYTES */
+    2,  /* UINT32 */
+    2,    /* ENUM */
+    2,   /* SFIXED32 */
+    3,   /* SFIXED64 */
+    2,   /* SINT32 */
+    3,   /* SINT64 */
 };
 
 /* Maps descriptor type -> upb map size.  */
@@ -185,75 +189,12 @@ void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
   if (i != len) decode_err(d);
 }
 
-static void decode_stealmem(upb_decstate *d) {
-  _upb_arena_head *a = (_upb_arena_head*)d->arena;
-  d->arena_ptr = a->ptr;
-  d->arena_end = a->end;
-  a->ptr = a->end;
-}
-
-static void decode_donatemem(upb_decstate *d) {
-  _upb_arena_head *a = (_upb_arena_head*)d->arena;
-  UPB_ASSERT(a->end == d->arena_end);
-  a->ptr = d->arena_ptr;
-}
-
-UPB_NOINLINE
-void *decode_mallocfallback(upb_decstate *d, size_t size) {
-  char *ptr = _upb_arena_slowmalloc(d->arena, size);
-  if (!ptr) decode_err(d);
-  decode_stealmem(d);
-  return ptr;
-}
-
-UPB_NOINLINE
-static void decode_realloc(upb_decstate *d, upb_array *arr, size_t need_elem) {
-  decode_donatemem(d);
-  bool ok = _upb_array_realloc(arr, arr->len + need_elem, d->arena);
-  decode_stealmem(d);
-  if (!ok) decode_err(d);
-}
-
-UPB_FORCEINLINE
-static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t need_elem) {
-  if (arr->size - arr->len < need_elem) {
-    decode_realloc(d, arr, need_elem);
-    return true;
-  }
-  return false;
-}
-
-static upb_array *decode_newarr(upb_decstate *d, upb_fieldtype_t type) {
-  size_t elem_size_lg2 = _upb_fieldtype_to_sizelg2[type];
-  size_t count = type == UPB_TYPE_BOOL ? 8 : 4;
-  size_t size = sizeof(upb_array) + (count * (1 << elem_size_lg2));
-  upb_array *arr = decode_malloc(d, size);
-
-  if (!arr) {
+static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
+  bool need_realloc = arr->size - arr->len < elem;
+  if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, &d->arena)) {
     decode_err(d);
   }
-
-  arr->data = _upb_array_tagptr(arr + 1, elem_size_lg2);
-  arr->len = 0;
-  arr->size = count;
-
-  return arr;
-}
-
-static void decode_addunknown(upb_decstate *d, upb_msg *msg, const char *ptr,
-                              size_t len) {
-  upb_msg_internal *in = upb_msg_getinternal(msg);
-  if (!in->unknown || in->unknown->size - in->unknown->len < len) {
-    bool ok;
-    decode_donatemem(d);
-    ok = _upb_msg_addunknown(msg, ptr, len, d->arena);
-    decode_stealmem(d);
-    if (!ok) decode_err(d);
-  } else {
-    char *dst = UPB_PTR_AT(in->unknown + 1, in->unknown->len, char);
-    memcpy(dst, ptr, len);
-    in->unknown->len += len;
-  }
+  return need_realloc;
 }
 
 UPB_NOINLINE
@@ -339,7 +280,8 @@ static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
 
 static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout *layout,
                                  const upb_msglayout_field *field) {
-  return decode_newmsg(d, layout->submsgs[field->submsg_index]);
+  const upb_msglayout *subl = layout->submsgs[field->submsg_index];
+  return _upb_msg_new_inl(subl, &d->arena);
 }
 
 static void decode_tosubmsg(upb_decstate *d, upb_msg *submsg,
@@ -384,13 +326,14 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
   upb_array *arr = *arrp;
   void *mem;
 
-  if (!arr) {
-    upb_fieldtype_t type = desctype_to_fieldtype[field->descriptortype];
-    arr = decode_newarr(d, type);
+  if (arr) {
+    decode_reserve(d, arr, 1);
+  } else {
+    size_t lg2 = desctype_to_elem_size_lg2[field->descriptortype];
+    arr = _upb_array_new(&d->arena, 4, lg2);
+    if (!arr) decode_err(d);
     *arrp = arr;
   }
-
-  decode_reserve(d, arr, 1);
 
   switch (op) {
     case OP_SCALAR_LG2(0):
@@ -484,9 +427,7 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
     char val_size = desctype_to_mapsize[val_field->descriptortype];
     UPB_ASSERT(key_field->offset == 0);
     UPB_ASSERT(val_field->offset == sizeof(upb_strview));
-    decode_donatemem(d);  /* We'll let map use the actual arena. */
-    map = _upb_map_new(d->arena, key_size, val_size);
-    decode_stealmem(d);
+    map = _upb_map_new(&d->arena, key_size, val_size);
     *map_p = map;
   }
 
@@ -496,15 +437,13 @@ static void decode_tomap(upb_decstate *d, upb_msg *msg,
   if (entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_MESSAGE ||
       entry->fields[1].descriptortype == UPB_DESCRIPTOR_TYPE_GROUP) {
     /* Create proactively to handle the case where it doesn't appear. */
-    ent.v.val = upb_value_ptr(decode_newmsg(d, entry->submsgs[0]));
+    ent.v.val = upb_value_ptr(_upb_msg_new(entry->submsgs[0], &d->arena));
   }
 
   decode_tosubmsg(d, &ent.k, layout, field, val.str_val);
 
   /* Insert into map. */
-  decode_donatemem(d);  /* We'll let map use the actual arena. */
-  _upb_map_set(map, &ent.k, map->key_size, &ent.v, map->val_size, d->arena);
-  decode_stealmem(d);
+  _upb_map_set(map, &ent.k, map->key_size, &ent.v, map->val_size, &d->arena);
 }
 
 UPB_FORCEINLINE
@@ -660,7 +599,10 @@ static decode_parseret decode_field(upb_decstate *d, const char *ptr,
       ptr = decode_group(d, ptr, NULL, NULL, field_number);
     }
     if (msg) {
-      decode_addunknown(d, msg, field_start, ptr - field_start);
+      if (!_upb_msg_addunknown(msg, field_start, ptr - field_start,
+                               &d->arena)) {
+        decode_err(d);
+      }
     }
   }
 
@@ -700,33 +642,32 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
                 upb_arena *arena) {
-  bool ret;
+  bool ok;
   upb_decstate state;
-
-  state.limit = buf + size;
-  state.fastend = buf + size - 16;
-  state.fastlimit = state.fastend;
-  state.arena = arena;
-  state.depth = 64;
-  state.end_group = 0;
 
   if (size == 0) return true;
 
-  decode_stealmem(&state);
+  state.limit = buf + size;
+  state.depth = 64;
+  state.end_group = 0;
+  state.arena.head = arena->head;
+  state.arena.last_size = arena->last_size;
+  state.arena.parent = arena;
 
 #ifdef __APPLE__
-  if (_setjmp(state.err)) {
+  if (UPB_UNLIKELY(_setjmp(state.err))) {
 #else
-  if (setjmp(state.err)) {
+  if (UPB_UNLIKELY(setjmp(state.err))) {
 #endif
-    ret = false;
+    ok = false;
   } else {
     decode_msg(&state, buf, msg, l);
-    ret = state.end_group == 0;
+    ok = state.end_group == 0;
   }
 
-  decode_donatemem(&state);
-  return ret;
+  arena->head.ptr = state.arena.head.ptr;
+  arena->head.end = state.arena.head.end;
+  return ok;
 }
 
 #undef OP_SCALAR_LG2
