@@ -42,6 +42,19 @@ static bool jsondec_streql(upb_strview str, const char *lit) {
   return str.size == strlen(lit) && memcmp(str.data, lit, str.size) == 0;
 }
 
+static bool jsondec_isnullvalue(const upb_fielddef *f) {
+  return upb_fielddef_type(f) == UPB_TYPE_ENUM &&
+         strcmp(upb_enumdef_fullname(upb_fielddef_enumsubdef(f)),
+                "google.protobuf.NullValue") == 0;
+}
+
+static bool jsondec_isvalue(const upb_fielddef *f) {
+  return (upb_fielddef_type(f) == UPB_TYPE_MESSAGE &&
+          upb_msgdef_wellknowntype(upb_fielddef_msgsubdef(f)) ==
+              UPB_WELLKNOWN_VALUE) ||
+         jsondec_isnullvalue(f);
+}
+
 UPB_NORETURN static void jsondec_err(jsondec *d, const char *msg) {
   upb_status_seterrf(d->status, "Error parsing JSON @%d:%d: %s", d->line,
                      (int)(d->ptr - d->line_begin), msg);
@@ -769,21 +782,30 @@ static upb_msgval jsondec_strfield(jsondec *d, const upb_fielddef *f) {
 }
 
 static upb_msgval jsondec_enum(jsondec *d, const upb_fielddef *f) {
-  if (jsondec_peek(d) == JD_STRING) {
-    const upb_enumdef *e = upb_fielddef_enumsubdef(f);
-    upb_strview str = jsondec_string(d);
-    upb_msgval val;
-    if (!upb_enumdef_ntoi(e, str.data, str.size, &val.int32_val)) {
-      if (d->options & UPB_JSONDEC_IGNOREUNKNOWN) {
-        val.int32_val = 0;
-      } else {
-        jsondec_errf(d, "Unknown enumerator: '" UPB_STRVIEW_FORMAT "'",
-                     UPB_STRVIEW_ARGS(str));
+  switch (jsondec_peek(d)) {
+    case JD_STRING: {
+      const upb_enumdef *e = upb_fielddef_enumsubdef(f);
+      upb_strview str = jsondec_string(d);
+      upb_msgval val;
+      if (!upb_enumdef_ntoi(e, str.data, str.size, &val.int32_val)) {
+        if (d->options & UPB_JSONDEC_IGNOREUNKNOWN) {
+          val.int32_val = 0;
+        } else {
+          jsondec_errf(d, "Unknown enumerator: '" UPB_STRVIEW_FORMAT "'",
+                       UPB_STRVIEW_ARGS(str));
+        }
       }
+      return val;
     }
-    return val;
-  } else {
-    return jsondec_int(d, f);
+    case JD_NULL: {
+      UPB_ASSERT(jsondec_isnullvalue(f));
+      jsondec_null(d);
+      upb_msgval val;
+      val.int32_val = 0;
+      return val;
+    }
+    default:
+      return jsondec_int(d, f);
   }
 }
 
@@ -865,12 +887,6 @@ static upb_msgval jsondec_msg(jsondec *d, const upb_fielddef *f) {
   jsondec_tomsg(d, msg, m);
   val.msg_val = msg;
   return val;
-}
-
-static bool jsondec_isvalue(const upb_fielddef *f) {
-  return upb_fielddef_type(f) == UPB_TYPE_MESSAGE &&
-         upb_msgdef_wellknowntype(upb_fielddef_msgsubdef(f)) ==
-             UPB_WELLKNOWN_VALUE;
 }
 
 static void jsondec_field(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
