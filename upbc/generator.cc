@@ -791,13 +791,13 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
   uint16_t expected_tag = (num << 3) | wire_type;
   if (num > 15) expected_tag |= 0x100;
   MessageLayout::Size offset = layout.GetFieldOffset(field);
-  uint64_t hasbit_index = 0;
+  uint64_t hasbit_index = 0;  // Zero means no hasbits.
 
   if (layout.HasHasbit(field)) {
     hasbit_index = layout.GetHasbitIndex(field);
     if (hasbit_index > 31) return;
     // thas hasbits mask in the parser occupies bits 16-48
-    // in the 64 bit register.
+    // in the 64 bit register. 
     hasbit_index += 16;  // account for the shifted hasbits
   }
 
@@ -812,9 +812,9 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     data.size32 |= idx << 16 | hasbit_index << 32;
     data.size64 |= idx << 16 | hasbit_index << 32;
   } else {
-    uint32_t hasbit_mask = 1U << hasbit_index;
-    data.size32 |= (uint64_t)hasbit_mask << 16;
-    data.size64 |= (uint64_t)hasbit_mask << 16;
+    uint64_t hasbit_mask = (1ull << hasbit_index) & -0x10000;
+    data.size32 |= (uint64_t)hasbit_mask;
+    data.size64 |= (uint64_t)hasbit_mask;
   }
 
 
