@@ -40,7 +40,7 @@ uint32_t fastdecode_load_tag(const char* ptr) {
   return tag;
 }
 
-UPB_NOINLINE
+UPB_FORCEINLINE
 const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 const upb_msglayout *table, uint64_t hasbits) {
   if (UPB_UNLIKELY(ptr >= d->fastlimit)) {
