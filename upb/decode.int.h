@@ -18,7 +18,7 @@ typedef struct upb_decstate {
 } upb_decstate;
 
 const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                const upb_msglayout *table, uint64_t hasbits);
+                                intptr_t table, uint64_t hasbits);
 const char *fastdecode_err(upb_decstate *d);
 
 
