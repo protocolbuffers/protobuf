@@ -61,12 +61,12 @@ typedef struct {
 typedef struct upb_msglayout {
   const struct upb_msglayout *const* submsgs;
   const upb_msglayout_field *fields;
-  uint8_t table_mask;
   /* Must be aligned to sizeof(void*).  Doesn't include internal members like
    * unknown fields, extension dict, pointer to msglayout, etc. */
   uint16_t size;
   uint16_t field_count;
   bool extendable;
+  uint8_t table_mask;
   _upb_fasttable_entry fasttable[];
 } upb_msglayout;
 

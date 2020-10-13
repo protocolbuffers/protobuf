@@ -23,8 +23,7 @@ static const upb_msglayout_field google_protobuf_FileDescriptorSet__fields[1] = 
 const upb_msglayout google_protobuf_FileDescriptorSet_msginit = {
   &google_protobuf_FileDescriptorSet_submsgs[0],
   &google_protobuf_FileDescriptorSet__fields[0],
-  8,
-  UPB_SIZE(8, 8), 1, false,
+  UPB_SIZE(8, 8), 1, false, 8,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_prm_1bt_max192b, UPB_SIZE(10, 10)},
@@ -58,8 +57,7 @@ static const upb_msglayout_field google_protobuf_FileDescriptorProto__fields[12]
 const upb_msglayout google_protobuf_FileDescriptorProto_msginit = {
   &google_protobuf_FileDescriptorProto_submsgs[0],
   &google_protobuf_FileDescriptorProto__fields[0],
-  120,
-  UPB_SIZE(64, 128), 12, false,
+  UPB_SIZE(64, 128), 12, false, 120,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(1125899906973706, 2251799813816330)},
@@ -106,8 +104,7 @@ static const upb_msglayout_field google_protobuf_DescriptorProto__fields[10] = {
 const upb_msglayout google_protobuf_DescriptorProto_msginit = {
   &google_protobuf_DescriptorProto_submsgs[0],
   &google_protobuf_DescriptorProto__fields[0],
-  120,
-  UPB_SIZE(48, 96), 10, false,
+  UPB_SIZE(48, 96), 10, false, 120,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(1125899906973706, 2251799813816330)},
@@ -141,8 +138,7 @@ static const upb_msglayout_field google_protobuf_DescriptorProto_ExtensionRange_
 const upb_msglayout google_protobuf_DescriptorProto_ExtensionRange_msginit = {
   &google_protobuf_DescriptorProto_ExtensionRange_submsgs[0],
   &google_protobuf_DescriptorProto_ExtensionRange__fields[0],
-  24,
-  UPB_SIZE(16, 24), 3, false,
+  UPB_SIZE(16, 24), 3, false, 24,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_psv4_1bt, UPB_SIZE(1125899906973704, 1125899906973704)},
@@ -159,8 +155,7 @@ static const upb_msglayout_field google_protobuf_DescriptorProto_ReservedRange__
 const upb_msglayout google_protobuf_DescriptorProto_ReservedRange_msginit = {
   NULL,
   &google_protobuf_DescriptorProto_ReservedRange__fields[0],
-  24,
-  UPB_SIZE(16, 16), 2, false,
+  UPB_SIZE(16, 16), 2, false, 24,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_psv4_1bt, UPB_SIZE(1125899906973704, 1125899906973704)},
@@ -180,8 +175,7 @@ static const upb_msglayout_field google_protobuf_ExtensionRangeOptions__fields[1
 const upb_msglayout google_protobuf_ExtensionRangeOptions_msginit = {
   &google_protobuf_ExtensionRangeOptions_submsgs[0],
   &google_protobuf_ExtensionRangeOptions__fields[0],
-  0,
-  UPB_SIZE(8, 8), 1, false,
+  UPB_SIZE(8, 8), 1, false, 0,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
   },
@@ -208,8 +202,7 @@ static const upb_msglayout_field google_protobuf_FieldDescriptorProto__fields[11
 const upb_msglayout google_protobuf_FieldDescriptorProto_msginit = {
   &google_protobuf_FieldDescriptorProto_submsgs[0],
   &google_protobuf_FieldDescriptorProto__fields[0],
-  248,
-  UPB_SIZE(80, 128), 11, false,
+  UPB_SIZE(80, 128), 11, false, 248,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(10133099165777930, 11258999072620554)},
@@ -258,8 +251,7 @@ static const upb_msglayout_field google_protobuf_OneofDescriptorProto__fields[2]
 const upb_msglayout google_protobuf_OneofDescriptorProto_msginit = {
   &google_protobuf_OneofDescriptorProto_submsgs[0],
   &google_protobuf_OneofDescriptorProto__fields[0],
-  24,
-  UPB_SIZE(16, 32), 2, false,
+  UPB_SIZE(16, 32), 2, false, 24,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(1125899906973706, 2251799813816330)},
@@ -285,8 +277,7 @@ static const upb_msglayout_field google_protobuf_EnumDescriptorProto__fields[5] 
 const upb_msglayout google_protobuf_EnumDescriptorProto_msginit = {
   &google_protobuf_EnumDescriptorProto_submsgs[0],
   &google_protobuf_EnumDescriptorProto__fields[0],
-  56,
-  UPB_SIZE(32, 64), 5, false,
+  UPB_SIZE(32, 64), 5, false, 56,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(1125899906973706, 2251799813816330)},
@@ -307,8 +298,7 @@ static const upb_msglayout_field google_protobuf_EnumDescriptorProto_EnumReserve
 const upb_msglayout google_protobuf_EnumDescriptorProto_EnumReservedRange_msginit = {
   NULL,
   &google_protobuf_EnumDescriptorProto_EnumReservedRange__fields[0],
-  24,
-  UPB_SIZE(16, 16), 2, false,
+  UPB_SIZE(16, 16), 2, false, 24,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_psv4_1bt, UPB_SIZE(1125899906973704, 1125899906973704)},
@@ -330,8 +320,7 @@ static const upb_msglayout_field google_protobuf_EnumValueDescriptorProto__field
 const upb_msglayout google_protobuf_EnumValueDescriptorProto_msginit = {
   &google_protobuf_EnumValueDescriptorProto_submsgs[0],
   &google_protobuf_EnumValueDescriptorProto__fields[0],
-  24,
-  UPB_SIZE(24, 32), 3, false,
+  UPB_SIZE(24, 32), 3, false, 24,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(2251799813947402, 2251799813947402)},
@@ -354,8 +343,7 @@ static const upb_msglayout_field google_protobuf_ServiceDescriptorProto__fields[
 const upb_msglayout google_protobuf_ServiceDescriptorProto_msginit = {
   &google_protobuf_ServiceDescriptorProto_submsgs[0],
   &google_protobuf_ServiceDescriptorProto__fields[0],
-  24,
-  UPB_SIZE(24, 48), 3, false,
+  UPB_SIZE(24, 48), 3, false, 24,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(1125899906973706, 2251799813816330)},
@@ -380,8 +368,7 @@ static const upb_msglayout_field google_protobuf_MethodDescriptorProto__fields[6
 const upb_msglayout google_protobuf_MethodDescriptorProto_msginit = {
   &google_protobuf_MethodDescriptorProto_submsgs[0],
   &google_protobuf_MethodDescriptorProto__fields[0],
-  56,
-  UPB_SIZE(32, 64), 6, false,
+  UPB_SIZE(32, 64), 6, false, 56,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(1125899907366922, 2251799814209546)},
@@ -425,8 +412,7 @@ static const upb_msglayout_field google_protobuf_FileOptions__fields[21] = {
 const upb_msglayout google_protobuf_FileOptions_msginit = {
   &google_protobuf_FileOptions_submsgs[0],
   &google_protobuf_FileOptions__fields[0],
-  248,
-  UPB_SIZE(112, 208), 21, false,
+  UPB_SIZE(112, 208), 21, false, 248,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(7881299482116106, 9007199388958730)},
@@ -478,8 +464,7 @@ static const upb_msglayout_field google_protobuf_MessageOptions__fields[5] = {
 const upb_msglayout google_protobuf_MessageOptions_msginit = {
   &google_protobuf_MessageOptions_submsgs[0],
   &google_protobuf_MessageOptions__fields[0],
-  56,
-  UPB_SIZE(16, 16), 5, false,
+  UPB_SIZE(16, 16), 5, false, 56,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_psb1_1bt, UPB_SIZE(281474976841736, 281474976841736)},
@@ -509,8 +494,7 @@ static const upb_msglayout_field google_protobuf_FieldOptions__fields[7] = {
 const upb_msglayout google_protobuf_FieldOptions_msginit = {
   &google_protobuf_FieldOptions_submsgs[0],
   &google_protobuf_FieldOptions__fields[0],
-  120,
-  UPB_SIZE(32, 40), 7, false,
+  UPB_SIZE(32, 40), 7, false, 120,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_psv4_1bt, UPB_SIZE(2251799813816328, 2251799813816328)},
@@ -542,8 +526,7 @@ static const upb_msglayout_field google_protobuf_OneofOptions__fields[1] = {
 const upb_msglayout google_protobuf_OneofOptions_msginit = {
   &google_protobuf_OneofOptions_submsgs[0],
   &google_protobuf_OneofOptions__fields[0],
-  0,
-  UPB_SIZE(8, 8), 1, false,
+  UPB_SIZE(8, 8), 1, false, 0,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
   },
@@ -562,8 +545,7 @@ static const upb_msglayout_field google_protobuf_EnumOptions__fields[3] = {
 const upb_msglayout google_protobuf_EnumOptions_msginit = {
   &google_protobuf_EnumOptions_submsgs[0],
   &google_protobuf_EnumOptions__fields[0],
-  24,
-  UPB_SIZE(8, 16), 3, false,
+  UPB_SIZE(8, 16), 3, false, 24,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&fastdecode_generic, UPB_SIZE(0, 0)},
@@ -584,8 +566,7 @@ static const upb_msglayout_field google_protobuf_EnumValueOptions__fields[2] = {
 const upb_msglayout google_protobuf_EnumValueOptions_msginit = {
   &google_protobuf_EnumValueOptions_submsgs[0],
   &google_protobuf_EnumValueOptions__fields[0],
-  8,
-  UPB_SIZE(8, 16), 2, false,
+  UPB_SIZE(8, 16), 2, false, 8,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_psb1_1bt, UPB_SIZE(281474976841736, 281474976841736)},
@@ -604,8 +585,7 @@ static const upb_msglayout_field google_protobuf_ServiceOptions__fields[2] = {
 const upb_msglayout google_protobuf_ServiceOptions_msginit = {
   &google_protobuf_ServiceOptions_submsgs[0],
   &google_protobuf_ServiceOptions__fields[0],
-  0,
-  UPB_SIZE(8, 16), 2, false,
+  UPB_SIZE(8, 16), 2, false, 0,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
   },
@@ -624,8 +604,7 @@ static const upb_msglayout_field google_protobuf_MethodOptions__fields[3] = {
 const upb_msglayout google_protobuf_MethodOptions_msginit = {
   &google_protobuf_MethodOptions_submsgs[0],
   &google_protobuf_MethodOptions__fields[0],
-  0,
-  UPB_SIZE(24, 32), 3, false,
+  UPB_SIZE(24, 32), 3, false, 0,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
   },
@@ -648,8 +627,7 @@ static const upb_msglayout_field google_protobuf_UninterpretedOption__fields[7] 
 const upb_msglayout google_protobuf_UninterpretedOption_msginit = {
   &google_protobuf_UninterpretedOption_submsgs[0],
   &google_protobuf_UninterpretedOption__fields[0],
-  120,
-  UPB_SIZE(64, 96), 7, false,
+  UPB_SIZE(64, 96), 7, false, 120,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&fastdecode_generic, UPB_SIZE(0, 0)},
@@ -678,8 +656,7 @@ static const upb_msglayout_field google_protobuf_UninterpretedOption_NamePart__f
 const upb_msglayout google_protobuf_UninterpretedOption_NamePart_msginit = {
   NULL,
   &google_protobuf_UninterpretedOption_NamePart__fields[0],
-  24,
-  UPB_SIZE(16, 32), 2, false,
+  UPB_SIZE(16, 32), 2, false, 24,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_pss_1bt, UPB_SIZE(1125899907104778, 2251799813947402)},
@@ -699,8 +676,7 @@ static const upb_msglayout_field google_protobuf_SourceCodeInfo__fields[1] = {
 const upb_msglayout google_protobuf_SourceCodeInfo_msginit = {
   &google_protobuf_SourceCodeInfo_submsgs[0],
   &google_protobuf_SourceCodeInfo__fields[0],
-  8,
-  UPB_SIZE(8, 8), 1, false,
+  UPB_SIZE(8, 8), 1, false, 8,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_prm_1bt_max128b, UPB_SIZE(10, 10)},
@@ -718,8 +694,7 @@ static const upb_msglayout_field google_protobuf_SourceCodeInfo_Location__fields
 const upb_msglayout google_protobuf_SourceCodeInfo_Location_msginit = {
   NULL,
   &google_protobuf_SourceCodeInfo_Location__fields[0],
-  56,
-  UPB_SIZE(32, 64), 5, false,
+  UPB_SIZE(32, 64), 5, false, 56,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&fastdecode_generic, UPB_SIZE(0, 0)},
@@ -743,8 +718,7 @@ static const upb_msglayout_field google_protobuf_GeneratedCodeInfo__fields[1] = 
 const upb_msglayout google_protobuf_GeneratedCodeInfo_msginit = {
   &google_protobuf_GeneratedCodeInfo_submsgs[0],
   &google_protobuf_GeneratedCodeInfo__fields[0],
-  8,
-  UPB_SIZE(8, 8), 1, false,
+  UPB_SIZE(8, 8), 1, false, 8,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&upb_prm_1bt_max64b, UPB_SIZE(10, 10)},
@@ -761,8 +735,7 @@ static const upb_msglayout_field google_protobuf_GeneratedCodeInfo_Annotation__f
 const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
   NULL,
   &google_protobuf_GeneratedCodeInfo_Annotation__fields[0],
-  56,
-  UPB_SIZE(24, 48), 4, false,
+  UPB_SIZE(24, 48), 4, false, 56,
   {
     {&fastdecode_generic, UPB_SIZE(0, 0)},
     {&fastdecode_generic, UPB_SIZE(0, 0)},

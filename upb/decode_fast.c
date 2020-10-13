@@ -27,7 +27,7 @@ UPB_FORCEINLINE
 const char *fastdecode_tag_dispatch(upb_decstate *d, const char *ptr,
                                     upb_msg *msg, intptr_t table,
                                     uint64_t hasbits, uint32_t tag) {
-  const upb_msglayout *table_p = (void*)(table >> 8);
+  const upb_msglayout *table_p = decode_totablep(table);
   uint8_t mask = table;
   uint64_t data;
   size_t idx = tag & mask;
@@ -310,9 +310,9 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
   void *end;
   uint32_t submsg_idx = data;
   submsg_idx >>= 16;
-  const upb_msglayout *table_p = (void*)(table >> 8);
+  const upb_msglayout *table_p = decode_totablep(table);
   const upb_msglayout *subl = table_p->submsgs[submsg_idx];
-  intptr_t subt = (intptr_t)subl << 8 | subl->table_mask;
+  intptr_t subt = decode_totable(subl);
   size_t submsg_size = subl->size + sizeof(upb_msg_internal);
   submsg = fastdecode_getfield_ofs(d, ptr, msg, &data, &hasbits, &arr, &end,
                                    sizeof(upb_msg *), card, true);

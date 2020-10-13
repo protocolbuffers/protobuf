@@ -973,10 +973,10 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     output("const upb_msglayout $0 = {\n", MessageInit(message));
     output("  $0,\n", submsgs_array_ref);
     output("  $0,\n", fields_array_ref);
-    output("  $0,\n", (table.size() - 1) << 3);
-    output("  $0, $1, $2,\n", GetSizeInit(layout.message_size()),
+    output("  $0, $1, $2, $3,\n", GetSizeInit(layout.message_size()),
            field_number_order.size(),
-           "false"  // TODO: extendable
+           "false",  // TODO: extendable
+           (table.size() - 1) << 3
     );
     output("  {\n");
     for (const auto& ent : table) {

@@ -619,7 +619,7 @@ const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
   *(uint32_t*)msg |= hasbits >> 16;  /* Sync hasbits. */
   (void)data;
   if (ptr == d->limit) return ptr;
-  ret = decode_field(d, ptr, msg, (const upb_msglayout *)(table >> 8));
+  ret = decode_field(d, ptr, msg, decode_totablep(table));
   if (ret.group_end) return ptr;
   return fastdecode_dispatch(d, ret.ptr, msg, table, hasbits);
 }
@@ -628,8 +628,7 @@ UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
   if (msg) {
-    ptr = fastdecode_dispatch(d, ptr, msg,
-                              ((intptr_t)layout << 8) | layout->table_mask, 0);
+    ptr = fastdecode_dispatch(d, ptr, msg, decode_totable(layout), 0);
   } else {
     while (ptr < d->limit) {
       decode_parseret ret = decode_field(d, ptr, msg, layout);
