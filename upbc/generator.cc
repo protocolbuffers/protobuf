@@ -965,12 +965,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     output("const upb_msglayout $0 = {\n", MessageInit(message));
     output("  {\n");
     for (const auto& ent : table) {
-      output("    &$0,\n", ent.first);
-    }
-    output("  },\n");
-    output("  {\n");
-    for (const auto& ent : table) {
-      output("    $0,\n", GetSizeInit(ent.second));
+      output("    {&$0, $1},\n", ent.first, GetSizeInit(ent.second));
     }
     output("  },\n");
     output("  $0,\n", submsgs_array_ref);

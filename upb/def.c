@@ -958,7 +958,7 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
   l->submsgs = submsgs;
 
   for (i = 0; i < 32; i++) {
-    l->field_parser[i] = &fastdecode_generic;
+    l->fasttable[i].field_parser = &fastdecode_generic;
   }
 
   if (upb_msgdef_mapentry(m)) {
