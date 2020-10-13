@@ -114,7 +114,7 @@ static void upb_arena_addblock(upb_arena *a, upb_arena *root, void *ptr,
   a->head.end = UPB_PTR_AT(block, size, char);
   a->cleanups = &block->cleanups;
 
-  /* TODO(haberman): ASAN poison. */
+  UPB_POISON_MEMORY_REGION(a->head.ptr, a->head.end - a->head.ptr);
 }
 
 static bool upb_arena_allocblock(upb_arena *a, size_t size) {
@@ -127,14 +127,9 @@ static bool upb_arena_allocblock(upb_arena *a, size_t size) {
   return true;
 }
 
-static bool arena_has(upb_arena *a, size_t size) {
-  _upb_arena_head *h = (_upb_arena_head*)a;
-  return (size_t)(h->end - h->ptr) >= size;
-}
-
 void *_upb_arena_slowmalloc(upb_arena *a, size_t size) {
   if (!upb_arena_allocblock(a, size)) return NULL;  /* Out of memory. */
-  UPB_ASSERT(arena_has(a, size));
+  UPB_ASSERT(_upb_arenahas(a, size));
   return upb_arena_malloc(a, size);
 }
 
@@ -229,14 +224,15 @@ void upb_arena_free(upb_arena *a) {
 bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func) {
   cleanup_ent *ent;
 
-  if (!a->cleanups || !arena_has(a, sizeof(cleanup_ent))) {
+  if (!a->cleanups || !_upb_arenahas(a, sizeof(cleanup_ent))) {
     if (!upb_arena_allocblock(a, 128)) return false;  /* Out of memory. */
-    UPB_ASSERT(arena_has(a, sizeof(cleanup_ent)));
+    UPB_ASSERT(_upb_arenahas(a, sizeof(cleanup_ent)));
   }
 
   a->head.end -= sizeof(cleanup_ent);
   ent = (cleanup_ent*)a->head.end;
   (*a->cleanups)++;
+  UPB_UNPOISON_MEMORY_REGION(ent, sizeof(cleanup_ent));
 
   ent->cleanup = func;
   ent->ud = ud;

@@ -9,7 +9,7 @@ load("@rules_proto//proto:defs.bzl", "ProtoInfo")  # copybara:strip_for_google3
 
 # Generic support code #########################################################
 
-_is_bazel = not hasattr(native, "genmpm")
+_is_bazel = True  # copybara:replace_for_google3 _is_bazel = False
 
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:

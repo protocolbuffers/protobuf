@@ -481,6 +481,13 @@ function test_numeric_map()
   end
 end
 
+function test_unknown()
+  local bytes = string.rep("\x38\x00", 1000)
+  for i=1,1000 do
+    local msg = upb.decode(test_messages_proto3.TestAllTypesProto3, bytes)
+  end
+end
+
 function test_foo()
   local symtab = upb.SymbolTable()
   local filename = "external/com_google_protobuf/descriptor_proto-descriptor-set.proto.bin"

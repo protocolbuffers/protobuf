@@ -181,3 +181,25 @@ int msvc_vsnprintf(char* s, size_t n, const char* format, va_list arg);
 #else
 #define UPB_NAN (0.0 / 0.0)
 #endif
+
+#if defined(__SANITIZE_ADDRESS__)
+#define UPB_ASAN 1
+#ifdef __cplusplus
+extern "C" {
+#endif
+void __asan_poison_memory_region(void const volatile *addr, size_t size);
+void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
+#define UPB_POISON_MEMORY_REGION(addr, size) \
+  __asan_poison_memory_region((addr), (size))
+#define UPB_UNPOISON_MEMORY_REGION(addr, size) \
+  __asan_unpoison_memory_region((addr), (size))
+#else
+#define UPB_ASAN 0
+#define UPB_POISON_MEMORY_REGION(addr, size) \
+  ((void)(addr), (void)(size))
+#define UPB_UNPOISON_MEMORY_REGION(addr, size) \
+  ((void)(addr), (void)(size))
+#endif 

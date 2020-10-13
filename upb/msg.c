@@ -36,11 +36,12 @@ bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
     in->unknown->len = 0;
   } else if (in->unknown->size - in->unknown->len < len) {
     size_t need = in->unknown->len + len;
-    size_t size = in->unknown->size;;
+    size_t size = in->unknown->size;
     while (size < need)  size *= 2;
     in->unknown = upb_arena_realloc(
         arena, in->unknown, in->unknown->size + overhead, size + overhead);
     if (!in->unknown) return false;
+    in->unknown->size = size;
   }
   memcpy(UPB_PTR_AT(in->unknown + 1, in->unknown->len, char), data, len);
   in->unknown->len += len;

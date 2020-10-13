@@ -22,20 +22,18 @@ const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
 const char *fastdecode_err(upb_decstate *d);
 
 
-UPB_INLINE bool decode_arenahas(upb_decstate *d, size_t bytes) {
-  return (size_t)(d->arena.head.end - d->arena.head.ptr) >= bytes;
-}
-
 UPB_INLINE
 upb_msg *decode_newmsg_ceil(upb_decstate *d, const upb_msglayout *l,
                             int msg_ceil_bytes) {
   size_t size = l->size + sizeof(upb_msg_internal);
   char *msg_data;
-  if (UPB_LIKELY(msg_ceil_bytes > 0 && decode_arenahas(d, msg_ceil_bytes))) {
+  if (UPB_LIKELY(msg_ceil_bytes > 0 && _upb_arenahas(&d->arena, msg_ceil_bytes))) {
     UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
     msg_data = d->arena.head.ptr;
-    memset(msg_data, 0, msg_ceil_bytes);
     d->arena.head.ptr += size;
+    UPB_UNPOISON_MEMORY_REGION(msg_data, msg_ceil_bytes);
+    memset(msg_data, 0, msg_ceil_bytes);
+    UPB_POISON_MEMORY_REGION(msg_data + size, msg_ceil_bytes - size);
   } else {
     msg_data = (char*)upb_arena_malloc(&d->arena, size);
     memset(msg_data, 0, size);

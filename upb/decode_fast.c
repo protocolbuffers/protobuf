@@ -90,16 +90,15 @@ static void *fastdecode_getfield_ofs(upb_decstate *d, const char *ptr,
       if (UPB_LIKELY(!*arr_p)) {
         const size_t initial_len = 8;
         size_t need = (valbytes * initial_len) + sizeof(upb_array);
-        if (UPB_UNLIKELY(!decode_arenahas(d, need))) {
+        if (!hasbit_is_idx && UPB_UNLIKELY(!_upb_arenahas(&d->arena, need))) {
           return NULL;
         }
-        arr = (void*)d->arena.head.ptr;
+        arr = upb_arena_malloc(&d->arena, need);
         field = arr + 1;
         arr->data = _upb_array_tagptr(field, elem_size_lg2);
         *arr_p = arr;
         arr->size = initial_len;
         *end = (char*)field + (arr->size * valbytes);
-        d->arena.head.ptr += need;
       } else {
         arr = *arr_p;
         field = _upb_array_ptr(arr);
@@ -311,11 +310,6 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
   submsg = fastdecode_getfield_ofs(d, ptr, msg, &data, &hasbits, &arr, &end,
                                    sizeof(upb_msg *), card, true);
 
-  if (card == CARD_r) {
-    if (UPB_UNLIKELY(!submsg)) {
-      RETURN_GENERIC("need array resize\n");
-    }
-  }
   if (card == CARD_s) {
     *(uint32_t*)msg |= hasbits >> 16;
     hasbits = 0;
@@ -332,15 +326,11 @@ again:
       size_t new_size = old_size * 2;
       size_t new_bytes = new_size * sizeof(upb_msg*);
       char *old_ptr = _upb_array_ptr(arr);
-      if (UPB_UNLIKELY(!decode_arenahas(d, new_bytes))) {
-        goto repeated_generic;
-      }
-      memcpy(d->arena.head.ptr, old_ptr, old_bytes);
+      char *new_ptr = upb_arena_realloc(&d->arena, old_ptr, old_bytes, new_bytes);
       arr->size = new_size;
-      arr->data = _upb_array_tagptr(d->arena.head.ptr, 3);
-      submsg = (void*)(d->arena.head.ptr + (old_size * sizeof(upb_msg*)));
-      end = (void*)(d->arena.head.ptr + (new_size * sizeof(upb_msg*)));
-      d->arena.head.ptr += new_bytes;
+      arr->data = _upb_array_tagptr(new_ptr, 3);
+      submsg = (void*)(new_ptr + (old_size * sizeof(upb_msg*)));
+      end = (void*)(new_ptr + (new_size * sizeof(upb_msg*)));
     }
   }
 
