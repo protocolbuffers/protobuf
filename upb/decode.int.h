@@ -23,9 +23,7 @@ const char *fastdecode_err(upb_decstate *d);
 
 
 UPB_INLINE
-upb_msg *decode_newmsg_ceil(upb_decstate *d, const upb_msglayout *l,
-                            int msg_ceil_bytes) {
-  size_t size = l->size + sizeof(upb_msg_internal);
+upb_msg *decode_newmsg_ceil(upb_decstate *d, size_t size, int msg_ceil_bytes) {
   char *msg_data;
   if (UPB_LIKELY(msg_ceil_bytes > 0 && _upb_arenahas(&d->arena, msg_ceil_bytes))) {
     UPB_ASSERT(size <= (size_t)msg_ceil_bytes);

@@ -313,6 +313,7 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
   const upb_msglayout *table_p = (void*)(table >> 8);
   const upb_msglayout *subl = table_p->submsgs[submsg_idx];
   intptr_t subt = (intptr_t)subl << 8 | subl->table_mask;
+  size_t submsg_size = subl->size + sizeof(upb_msg_internal);
   submsg = fastdecode_getfield_ofs(d, ptr, msg, &data, &hasbits, &arr, &end,
                                    sizeof(upb_msg *), card, true);
 
@@ -343,7 +344,7 @@ again:
   upb_msg* child = *submsg;
 
   if (card == CARD_r || UPB_LIKELY(!child)) {
-    *submsg = child = decode_newmsg_ceil(d, subl, msg_ceil_bytes);
+    *submsg = child = decode_newmsg_ceil(d, submsg_size, msg_ceil_bytes);
   }
 
   ptr += tagbytes + 1;
