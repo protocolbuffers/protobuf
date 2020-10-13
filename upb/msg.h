@@ -54,16 +54,21 @@ typedef const char *_upb_field_parser(struct upb_decstate *d, const char *ptr,
                                       const struct upb_msglayout *table,
                                       uint64_t hasbits, uint64_t data);
 
+typedef struct {
+  _upb_field_parser *field_parser;
+  uint64_t field_data;
+} _upb_fasttable_entry;
+
 typedef struct upb_msglayout {
-  _upb_field_parser *field_parser[32];
-  uint64_t field_data[32];
   const struct upb_msglayout *const* submsgs;
   const upb_msglayout_field *fields;
+  uint32_t table_mask;
   /* Must be aligned to sizeof(void*).  Doesn't include internal members like
    * unknown fields, extension dict, pointer to msglayout, etc. */
   uint16_t size;
   uint16_t field_count;
   bool extendable;
+  _upb_fasttable_entry fasttable[];
 } upb_msglayout;
 
 /** upb_msg *******************************************************************/

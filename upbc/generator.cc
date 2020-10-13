@@ -857,11 +857,19 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
 
 std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
                                         const MessageLayout& layout) {
+  int table_size = 1;
+  for (int i = 0; i < message->field_count(); i++) {
+    int num = message->field(i)->number();
+    while (num >= table_size && num < 32) {
+      table_size *= 2;
+    }
+  }
+
   std::vector<TableEntry> table;
   MessageLayout::Size empty_size;
   empty_size.size32 = 0;
   empty_size.size64 = 0;
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < table_size; i++) {
     table.emplace_back(TableEntry{"fastdecode_generic", empty_size});
     TryFillTableEntry(message, layout, i, table.back());
   }
@@ -963,22 +971,18 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     std::vector<TableEntry> table = FastDecodeTable(message, layout);
 
     output("const upb_msglayout $0 = {\n", MessageInit(message));
-    output("  {\n");
-    for (const auto& ent : table) {
-      output("    &$0,\n", ent.first);
-    }
-    output("  },\n");
-    output("  {\n");
-    for (const auto& ent : table) {
-      output("    $0,\n", GetSizeInit(ent.second));
-    }
-    output("  },\n");
     output("  $0,\n", submsgs_array_ref);
     output("  $0,\n", fields_array_ref);
+    output("  $0,\n", (table.size() - 1) << 3);
     output("  $0, $1, $2,\n", GetSizeInit(layout.message_size()),
            field_number_order.size(),
            "false"  // TODO: extendable
     );
+    output("  {\n");
+    for (const auto& ent : table) {
+      output("    {&$0, $1},\n", ent.first, GetSizeInit(ent.second));
+    }
+    output("  },\n");
 
     output("};\n\n");
   }

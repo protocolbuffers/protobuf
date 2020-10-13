@@ -28,9 +28,11 @@ const char *fastdecode_tag_dispatch(upb_decstate *d, const char *ptr, upb_msg *m
                                 const upb_msglayout *table, uint64_t hasbits, uint32_t tag) {
   uint64_t data;
   size_t idx;
-  idx = (tag & 0xf8) >> 3;
-  data = table->field_data[idx] ^ tag;
-  return table->field_parser[idx](UPB_PARSE_ARGS);
+  idx = (tag & table->table_mask);
+  __builtin_assume((idx & 7) == 0);
+  idx >>= 3;
+  data = table->fasttable[idx].field_data ^ tag;
+  return table->fasttable[idx].field_parser(UPB_PARSE_ARGS);
 }
 
 UPB_FORCEINLINE
@@ -40,7 +42,7 @@ uint32_t fastdecode_load_tag(const char* ptr) {
   return tag;
 }
 
-UPB_FORCEINLINE
+UPB_NOINLINE
 const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 const upb_msglayout *table, uint64_t hasbits) {
   if (UPB_UNLIKELY(ptr >= d->fastlimit)) {
