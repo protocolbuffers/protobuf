@@ -9,8 +9,8 @@
 
 typedef struct upb_decstate {
   const char *limit;       /* End of delimited region or end of buffer. */
-  const char *fastlimit;   /* End of delimited region or end of buffer. */
-  const char *fastend;
+  const char *fastend;     /* The end of the entire buffer - 16 */
+  const char *fastlimit;   /* UPB_MIN(limit, fastend) */
   upb_arena arena;
   int depth;
   uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
