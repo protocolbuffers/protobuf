@@ -7,12 +7,12 @@
 struct upb_decstate;
 
 const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
-                               upb_msg *msg, const upb_msglayout *table,
-                               uint64_t hasbits, uint64_t data);
+                               upb_msg *msg, intptr_t table, uint64_t hasbits,
+                               uint64_t data);
 
-#define UPB_PARSE_PARAMS                                 \
-  struct upb_decstate *d, const char *ptr, upb_msg *msg, \
-      const upb_msglayout *table, uint64_t hasbits, uint64_t data
+#define UPB_PARSE_PARAMS                                                 \
+  struct upb_decstate *d, const char *ptr, upb_msg *msg, intptr_t table, \
+      uint64_t hasbits, uint64_t data
 
 #define F(card, type, valbytes, tagbytes) \
   const char *upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS);

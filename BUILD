@@ -42,6 +42,7 @@ COPTS = CPPOPTS + [
     # copybara:strip_for_google3_begin
     #"-pedantic",
     #"-Werror=pedantic",
+    "-std=gnu11",
     "-Wstrict-prototypes",
     # copybara:strip_end
 ]
