@@ -56,7 +56,7 @@ const upb_msglayout google_protobuf_FileDescriptorProto_msginit = {
   UPB_SIZE(64, 128), 12, false,
 };
 
-static const upb_msglayout *const google_protobuf_DescriptorProto_submsgs[8] = {
+static const upb_msglayout *const google_protobuf_DescriptorProto_submsgs[7] = {
   &google_protobuf_DescriptorProto_msginit,
   &google_protobuf_DescriptorProto_ExtensionRange_msginit,
   &google_protobuf_DescriptorProto_ReservedRange_msginit,
