@@ -855,6 +855,7 @@ filegroup(
         "upbc/**/*",
         "upb/**/*",
         "tests/**/*",
+        "third_party/**/*",
     ]),
 )
 
