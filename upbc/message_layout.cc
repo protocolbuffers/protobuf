@@ -58,6 +58,8 @@ MessageLayout::SizeAndAlign MessageLayout::SizeOfUnwrapped(
     case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
       return {{8, 8}, {8, 8}};
   }
+  assert(false);
+  return {{-1, -1}, {-1, -1}};
 }
 
 int64_t MessageLayout::FieldLayoutRank(const protobuf::FieldDescriptor* field) {
