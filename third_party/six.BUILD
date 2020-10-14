@@ -6,7 +6,7 @@ load("@rules_python//python:defs.bzl", "py_library")
 # https://github.com/bazelbuild/bazel/issues/10076
 genrule(
     name = "copy_six",
-    srcs = ["six-1.12.0/six.py"],
+    srcs = ["six-1.15.0/six.py"],
     outs = ["__init__.py"],
     cmd = "cp $< $(@)",
 )

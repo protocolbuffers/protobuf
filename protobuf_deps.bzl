@@ -28,8 +28,8 @@ def protobuf_deps():
         http_archive(
             name = "six",
             build_file = "@com_google_protobuf//:third_party/six.BUILD",
-            sha256 = "d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73",
-            urls = ["https://pypi.python.org/packages/source/s/six/six-1.12.0.tar.gz"],
+            sha256 = "30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259",
+            urls = ["https://pypi.python.org/packages/source/s/six/six-1.15.0.tar.gz"],
         )
 
     if not native.existing_rule("rules_cc"):
