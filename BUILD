@@ -86,6 +86,7 @@ cc_library(
         "upb/table.int.h",
         "upb/upb.c",
         "upb/upb.int.h",
+        "third_party/wyhash/wyhash.h",
     ],
     hdrs = [
         "upb/decode.h",

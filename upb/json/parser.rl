@@ -2869,7 +2869,7 @@ static upb_json_parsermethod *parsermethod_new(upb_json_codecache *c,
   upb_byteshandler_setstring(&m->input_handler_, parse, m);
   upb_byteshandler_setendstr(&m->input_handler_, end, m);
 
-  upb_strtable_init2(&m->name_table, UPB_CTYPE_CONSTPTR, alloc);
+  upb_strtable_init2(&m->name_table, UPB_CTYPE_CONSTPTR, 4, alloc);
 
   /* Build name_table */
 

@@ -1309,7 +1309,7 @@ static bool create_oneofdef(
   CHK_OOM(upb_strtable_insert3(&m->ntof, name.data, name.size, v, ctx->alloc));
 
   CHK_OOM(upb_inttable_init2(&o->itof, UPB_CTYPE_CONSTPTR, ctx->alloc));
-  CHK_OOM(upb_strtable_init2(&o->ntof, UPB_CTYPE_CONSTPTR, ctx->alloc));
+  CHK_OOM(upb_strtable_init2(&o->ntof, UPB_CTYPE_CONSTPTR, 4, ctx->alloc));
 
   return true;
 }
@@ -1633,13 +1633,12 @@ static bool create_enumdef(
   e->full_name = makefullname(ctx, prefix, name);
   CHK_OOM(symtab_add(ctx, e->full_name, pack_def(e, UPB_DEFTYPE_ENUM)));
 
-  CHK_OOM(upb_strtable_init2(&e->ntoi, UPB_CTYPE_INT32, ctx->alloc));
+  values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n);
+  CHK_OOM(upb_strtable_init2(&e->ntoi, UPB_CTYPE_INT32, n, ctx->alloc));
   CHK_OOM(upb_inttable_init2(&e->iton, UPB_CTYPE_CSTR, ctx->alloc));
 
   e->file = ctx->file;
   e->defaultval = 0;
-
-  values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n);
 
   if (n == 0) {
     upb_status_seterrf(ctx->status,
@@ -1690,7 +1689,7 @@ static bool create_msgdef(symtab_addctx *ctx, const char *prefix,
   const google_protobuf_FieldDescriptorProto *const *fields;
   const google_protobuf_EnumDescriptorProto *const *enums;
   const google_protobuf_DescriptorProto *const *msgs;
-  size_t i, n;
+  size_t i, n_oneof, n_field, n;
   upb_strview name;
 
   name = google_protobuf_DescriptorProto_name(msg_proto);
@@ -1700,8 +1699,12 @@ static bool create_msgdef(symtab_addctx *ctx, const char *prefix,
   m->full_name = makefullname(ctx, prefix, name);
   CHK_OOM(symtab_add(ctx, m->full_name, pack_def(m, UPB_DEFTYPE_MSG)));
 
+  oneofs = google_protobuf_DescriptorProto_oneof_decl(msg_proto, &n_oneof);
+  fields = google_protobuf_DescriptorProto_field(msg_proto, &n_field);
+
   CHK_OOM(upb_inttable_init2(&m->itof, UPB_CTYPE_CONSTPTR, ctx->alloc));
-  CHK_OOM(upb_strtable_init2(&m->ntof, UPB_CTYPE_CONSTPTR, ctx->alloc));
+  CHK_OOM(upb_strtable_init2(&m->ntof, UPB_CTYPE_CONSTPTR, n_oneof + n_field,
+                             ctx->alloc));
 
   m->file = ctx->file;
   m->map_entry = false;
@@ -1720,17 +1723,15 @@ static bool create_msgdef(symtab_addctx *ctx, const char *prefix,
     m->layout = upb_malloc(ctx->alloc, sizeof(*m->layout));
   }
 
-  oneofs = google_protobuf_DescriptorProto_oneof_decl(msg_proto, &n);
   m->oneof_count = 0;
-  m->oneofs = upb_malloc(ctx->alloc, sizeof(*m->oneofs) * n);
-  for (i = 0; i < n; i++) {
+  m->oneofs = upb_malloc(ctx->alloc, sizeof(*m->oneofs) * n_oneof);
+  for (i = 0; i < n_oneof; i++) {
     CHK(create_oneofdef(ctx, m, oneofs[i]));
   }
 
-  fields = google_protobuf_DescriptorProto_field(msg_proto, &n);
   m->field_count = 0;
-  m->fields = upb_malloc(ctx->alloc, sizeof(*m->fields) * n);
-  for (i = 0; i < n; i++) {
+  m->fields = upb_malloc(ctx->alloc, sizeof(*m->fields) * n_field);
+  for (i = 0; i < n_field; i++) {
     CHK(create_fielddef(ctx, m->full_name, m, fields[i]));
   }
 
@@ -2085,8 +2086,8 @@ upb_symtab *upb_symtab_new(void) {
   s->arena = upb_arena_new();
   alloc = upb_arena_alloc(s->arena);
 
-  if (!upb_strtable_init2(&s->syms, UPB_CTYPE_CONSTPTR, alloc) ||
-      !upb_strtable_init2(&s->files, UPB_CTYPE_CONSTPTR, alloc)) {
+  if (!upb_strtable_init2(&s->syms, UPB_CTYPE_CONSTPTR, 32, alloc) ||
+      !upb_strtable_init2(&s->files, UPB_CTYPE_CONSTPTR, 4, alloc)) {
     upb_arena_free(s->arena);
     upb_gfree(s);
     s = NULL;
@@ -2148,7 +2149,7 @@ static const upb_filedef *_upb_symtab_addfile(
   ctx.layouts = layouts;
   ctx.status = status;
 
-  ok = file && upb_strtable_init2(&addtab, UPB_CTYPE_CONSTPTR, ctx.tmp) &&
+  ok = file && upb_strtable_init2(&addtab, UPB_CTYPE_CONSTPTR, 8, ctx.tmp) &&
        build_filedef(&ctx, file, file_proto) && upb_symtab_addtotabs(s, &ctx);
 
   upb_arena_free(tmparena);

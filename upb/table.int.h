@@ -171,7 +171,8 @@ typedef struct _upb_tabent {
 
 typedef struct {
   size_t count;          /* Number of entries in the hash part. */
-  size_t mask;           /* Mask to turn hash value -> bucket. */
+  uint32_t mask;         /* Mask to turn hash value -> bucket. */
+  uint32_t max_count;    /* Max count before we hit our load limit. */
   uint8_t size_lg2;      /* Size of the hashtable part is 2^size_lg2 entries. */
 
   /* Hash table entries.
@@ -230,7 +231,8 @@ UPB_INLINE bool upb_arrhas(upb_tabval key) {
 /* Initialize and uninitialize a table, respectively.  If memory allocation
  * failed, false is returned that the table is uninitialized. */
 bool upb_inttable_init2(upb_inttable *table, upb_ctype_t ctype, upb_alloc *a);
-bool upb_strtable_init2(upb_strtable *table, upb_ctype_t ctype, upb_alloc *a);
+bool upb_strtable_init2(upb_strtable *table, upb_ctype_t ctype,
+                        size_t expected_size, upb_alloc *a);
 void upb_inttable_uninit2(upb_inttable *table, upb_alloc *a);
 void upb_strtable_uninit2(upb_strtable *table, upb_alloc *a);
 
@@ -239,7 +241,7 @@ UPB_INLINE bool upb_inttable_init(upb_inttable *table, upb_ctype_t ctype) {
 }
 
 UPB_INLINE bool upb_strtable_init(upb_strtable *table, upb_ctype_t ctype) {
-  return upb_strtable_init2(table, ctype, &upb_alloc_global);
+  return upb_strtable_init2(table, ctype, 4, &upb_alloc_global);
 }
 
 UPB_INLINE void upb_inttable_uninit(upb_inttable *table) {
