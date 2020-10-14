@@ -43,6 +43,7 @@ static void BM_LoadDescriptor_Upb(benchmark::State& state) {
       exit(1);
     }
   }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_LoadDescriptor_Upb);
 
@@ -60,6 +61,7 @@ static void BM_LoadDescriptor_Proto2(benchmark::State& state) {
       exit(1);
     }
   }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_LoadDescriptor_Proto2);
 
