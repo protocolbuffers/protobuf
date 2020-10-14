@@ -296,19 +296,14 @@ UPB_INLINE int _upb_sizelg2(upb_fieldtype_t type) {
     case UPB_TYPE_BOOL:
       return 0;
     case UPB_TYPE_FLOAT:
-      return 2;
     case UPB_TYPE_INT32:
-      return 2;
     case UPB_TYPE_UINT32:
-      return 2;
     case UPB_TYPE_ENUM:
       return 2;
     case UPB_TYPE_MESSAGE:
       return UPB_SIZE(2, 3);
     case UPB_TYPE_DOUBLE:
-      return 3;
     case UPB_TYPE_INT64:
-      return 3;
     case UPB_TYPE_UINT64:
       return 3;
     case UPB_TYPE_STRING:
