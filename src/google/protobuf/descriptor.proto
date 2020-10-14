@@ -710,6 +710,19 @@ message MethodOptions {
   optional IdempotencyLevel idempotency_level = 34
       [default = IDEMPOTENCY_UNKNOWN];
 
+  // The default duration a client should wait for an RPC call to complete. This may be overridden
+  // by clients at runtime. If no timeout is specified the effective timeout is
+  // implementation-dependent.
+  //
+  // If a response is not received within the client's timeout, the client may treat the call as
+  // failed. Timeouts are enforced by clients and include the transport time of messages over the
+  // network. If a client has a particularly high-latency connection to the server, the amount of
+  // time the server has to process the request is reduced.
+  //
+  // Clients and servers should agree on timeouts so that servers can satisfy the client's
+  // expectations and so that clients don't give up prematurely or retry too aggressively.
+  optional int64 timeout_millis = 35;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
