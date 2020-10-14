@@ -58,6 +58,41 @@ static void BM_ArenaInitialBlockOneAlloc(benchmark::State& state) {
 }
 BENCHMARK(BM_ArenaInitialBlockOneAlloc);
 
+static void BM_LoadDescriptor_Upb(benchmark::State& state) {
+  for (auto _ : state) {
+    upb::SymbolTable symtab;
+    upb::Arena arena;
+    google_protobuf_FileDescriptorProto* file_proto =
+        google_protobuf_FileDescriptorProto_parse(descriptor.data,
+                                                  descriptor.size, arena.ptr());
+    upb::FileDefPtr file_def = symtab.AddFile(file_proto, NULL);
+    if (!file_def) {
+      printf("Failed to add file.\n");
+      exit(1);
+    }
+  }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+}
+BENCHMARK(BM_LoadDescriptor_Upb);
+
+static void BM_LoadDescriptor_Proto2(benchmark::State& state) {
+  for (auto _ : state) {
+    protobuf::Arena arena;
+    protobuf::StringPiece input(descriptor.data,descriptor.size);
+    auto proto = protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(
+        &arena);
+    protobuf::DescriptorPool pool;
+    bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input) &&
+              pool.BuildFile(*proto) != nullptr;
+    if (!ok) {
+      printf("Failed to add file.\n");
+      exit(1);
+    }
+  }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+}
+BENCHMARK(BM_LoadDescriptor_Proto2);
+
 static void BM_ParseDescriptor_Upb_LargeInitialBlock(benchmark::State& state) {
   size_t bytes = 0;
   for (auto _ : state) {
