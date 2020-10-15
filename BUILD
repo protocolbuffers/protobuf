@@ -567,7 +567,7 @@ cc_test(
     }),
     deps = [
         ":descriptor_upb_proto",
-        ":descriptor_upbreflection",
+        ":descriptor_upb_proto_reflection",
         ":upb",
         ":upb_cc_bindings",
         ":upb_pb",
