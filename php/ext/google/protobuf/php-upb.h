@@ -1,3 +1,5 @@
+#define NDEBUG
+
 /* Amalgamated source file */
 #include <stdint.h>/*
 * This is where we define macros used across upb.
