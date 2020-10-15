@@ -373,6 +373,7 @@ cc_binary(
         ":benchmark_descriptor_cc_proto",
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
+        ":descriptor_upb_proto",
         ":reflection",
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_protobuf//:protobuf",
