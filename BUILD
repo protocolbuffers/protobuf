@@ -349,9 +349,24 @@ cc_binary(
 
 # C/C++ tests ##################################################################
 
+proto_library(
+    name = "benchmark_descriptor_proto",
+    srcs = ["tests/descriptor.proto"],
+)
+
+upb_proto_library(
+    name = "benchmark_descriptor_upb_proto",
+    deps = [":benchmark_descriptor_proto"],
+)
+
 upb_proto_reflection_library(
-    name = "descriptor_upbreflection",
-    deps = ["@com_google_protobuf//:descriptor_proto"],
+    name = "benchmark_descriptor_upb_proto_reflection",
+    deps = [":benchmark_descriptor_proto"],
+)
+
+cc_proto_library(
+    name = "benchmark_descriptor_cc_proto",
+    deps = [":benchmark_descriptor_proto"],
 )
 
 cc_binary(
@@ -359,8 +374,10 @@ cc_binary(
     testonly = 1,
     srcs = ["tests/benchmark.cc"],
     deps = [
+        ":benchmark_descriptor_cc_proto",
+        ":benchmark_descriptor_upb_proto",
+        ":benchmark_descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
-        ":descriptor_upbreflection",
         ":reflection",
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_protobuf//:protobuf",
@@ -555,7 +572,7 @@ cc_test(
     }),
     deps = [
         ":descriptor_upb_proto",
-        ":descriptor_upbreflection",
+        ":descriptor_upb_proto_reflection",
         ":upb",
         ":upb_cc_bindings",
         ":upb_pb",
