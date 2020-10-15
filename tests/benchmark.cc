@@ -2,12 +2,12 @@
 #include <benchmark/benchmark.h>
 #include <string.h>
 
-// For parsing speed tests.
+// For benchmarks of parsing speed.
 #include "tests/descriptor.pb.h"
 #include "tests/descriptor.upb.h"
 #include "tests/descriptor.upbdefs.h"
 
-// For descriptor building benchmarks.
+// For for benchmarks of building descriptors.
 #include "google/protobuf/descriptor.upb.h"
 #include "google/protobuf/descriptor.pb.h"
 
