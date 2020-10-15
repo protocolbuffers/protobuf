@@ -49,10 +49,15 @@ MessageLayout::SizeAndAlign MessageLayout::SizeOfUnwrapped(
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
     case protobuf::FieldDescriptor::CPPTYPE_UINT32:
+    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
       return {{4, 4}, {4, 4}};
-    default:
+    case protobuf::FieldDescriptor::CPPTYPE_INT64:
+    case protobuf::FieldDescriptor::CPPTYPE_UINT64:
+    case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
       return {{8, 8}, {8, 8}};
   }
+  assert(false);
+  return {{-1, -1}, {-1, -1}};
 }
 
 int64_t MessageLayout::FieldLayoutRank(const protobuf::FieldDescriptor* field) {
