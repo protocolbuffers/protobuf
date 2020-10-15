@@ -731,8 +731,8 @@ message UninterpretedOption {
   // E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
   // "foo.(bar.baz).qux".
   message NamePart {
-    required string name_part = 1;
-    required bool is_extension = 2;
+    optional string name_part = 1;
+    optional bool is_extension = 2;
   }
   repeated NamePart name = 2;
 
