@@ -999,16 +999,29 @@ void GenerateAddFileToPool(
       string files_data;
       files.SerializeToString(&files_data);
 
-      printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
+      printer->Print("$pool->internalAddGeneratedFile(\n");
       Indent(printer);
+      printer->Print("'");
 
-      printer->Print(
-          "\"^data^\"\n",
-          "data", BinaryToHex(files_data));
+      for (auto ch : files_data) {
+        switch (ch) {
+          case '\\':
+            printer->Print(R"(\\)");
+            break;
+          case '\'':
+            printer->Print(R"(\')");
+            break;
+          default:
+            printer->Print("^char^", "char", std::string(1, ch));
+            break;
+        }
+      }
+
+      printer->Print("'\n");
 
       Outdent(printer);
       printer->Print(
-          "), true);\n\n");
+          ", true);\n\n");
     }
     printer->Print(
         "static::$is_initialized = true;\n");
