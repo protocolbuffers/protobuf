@@ -335,17 +335,17 @@ static const upb_msglayout *const google_protobuf_FieldDescriptorProto_submsgs[1
 };
 
 static const upb_msglayout_field google_protobuf_FieldDescriptorProto__fields[11] = {
-  {1, UPB_SIZE(36, 40), 6, 0, 12, 1},
-  {2, UPB_SIZE(44, 56), 7, 0, 12, 1},
-  {3, UPB_SIZE(24, 24), 3, 0, 5, 1},
-  {4, UPB_SIZE(8, 8), 1, 0, 14, 1},
-  {5, UPB_SIZE(16, 16), 2, 0, 14, 1},
-  {6, UPB_SIZE(52, 72), 8, 0, 12, 1},
-  {7, UPB_SIZE(60, 88), 9, 0, 12, 1},
-  {8, UPB_SIZE(76, 120), 11, 0, 11, 1},
-  {9, UPB_SIZE(28, 28), 4, 0, 5, 1},
-  {10, UPB_SIZE(68, 104), 10, 0, 12, 1},
-  {17, UPB_SIZE(32, 32), 5, 0, 8, 1},
+  {1, UPB_SIZE(24, 24), 6, 0, 12, 1},
+  {2, UPB_SIZE(32, 40), 7, 0, 12, 1},
+  {3, UPB_SIZE(12, 12), 3, 0, 5, 1},
+  {4, UPB_SIZE(4, 4), 1, 0, 14, 1},
+  {5, UPB_SIZE(8, 8), 2, 0, 14, 1},
+  {6, UPB_SIZE(40, 56), 8, 0, 12, 1},
+  {7, UPB_SIZE(48, 72), 9, 0, 12, 1},
+  {8, UPB_SIZE(64, 104), 11, 0, 11, 1},
+  {9, UPB_SIZE(16, 16), 4, 0, 5, 1},
+  {10, UPB_SIZE(56, 88), 10, 0, 12, 1},
+  {17, UPB_SIZE(20, 20), 5, 0, 8, 1},
 };
 
 const upb_msglayout google_protobuf_FieldDescriptorProto_msginit = {
@@ -385,7 +385,7 @@ const upb_msglayout google_protobuf_FieldDescriptorProto_msginit = {
   },
   &google_protobuf_FieldDescriptorProto_submsgs[0],
   &google_protobuf_FieldDescriptorProto__fields[0],
-  UPB_SIZE(80, 128), 11, false,
+  UPB_SIZE(72, 112), 11, false,
 };
 
 static const upb_msglayout *const google_protobuf_OneofDescriptorProto_submsgs[1] = {
@@ -695,27 +695,27 @@ static const upb_msglayout *const google_protobuf_FileOptions_submsgs[1] = {
 };
 
 static const upb_msglayout_field google_protobuf_FileOptions__fields[21] = {
-  {1, UPB_SIZE(28, 32), 11, 0, 12, 1},
-  {8, UPB_SIZE(36, 48), 12, 0, 12, 1},
-  {9, UPB_SIZE(8, 8), 1, 0, 14, 1},
-  {10, UPB_SIZE(16, 16), 2, 0, 8, 1},
-  {11, UPB_SIZE(44, 64), 13, 0, 12, 1},
-  {16, UPB_SIZE(17, 17), 3, 0, 8, 1},
-  {17, UPB_SIZE(18, 18), 4, 0, 8, 1},
-  {18, UPB_SIZE(19, 19), 5, 0, 8, 1},
-  {20, UPB_SIZE(20, 20), 6, 0, 8, 1},
-  {23, UPB_SIZE(21, 21), 7, 0, 8, 1},
-  {27, UPB_SIZE(22, 22), 8, 0, 8, 1},
-  {31, UPB_SIZE(23, 23), 9, 0, 8, 1},
-  {36, UPB_SIZE(52, 80), 14, 0, 12, 1},
-  {37, UPB_SIZE(60, 96), 15, 0, 12, 1},
-  {39, UPB_SIZE(68, 112), 16, 0, 12, 1},
-  {40, UPB_SIZE(76, 128), 17, 0, 12, 1},
-  {41, UPB_SIZE(84, 144), 18, 0, 12, 1},
-  {42, UPB_SIZE(24, 24), 10, 0, 8, 1},
-  {44, UPB_SIZE(92, 160), 19, 0, 12, 1},
-  {45, UPB_SIZE(100, 176), 20, 0, 12, 1},
-  {999, UPB_SIZE(108, 192), 0, 0, 11, 3},
+  {1, UPB_SIZE(20, 24), 11, 0, 12, 1},
+  {8, UPB_SIZE(28, 40), 12, 0, 12, 1},
+  {9, UPB_SIZE(4, 4), 1, 0, 14, 1},
+  {10, UPB_SIZE(8, 8), 2, 0, 8, 1},
+  {11, UPB_SIZE(36, 56), 13, 0, 12, 1},
+  {16, UPB_SIZE(9, 9), 3, 0, 8, 1},
+  {17, UPB_SIZE(10, 10), 4, 0, 8, 1},
+  {18, UPB_SIZE(11, 11), 5, 0, 8, 1},
+  {20, UPB_SIZE(12, 12), 6, 0, 8, 1},
+  {23, UPB_SIZE(13, 13), 7, 0, 8, 1},
+  {27, UPB_SIZE(14, 14), 8, 0, 8, 1},
+  {31, UPB_SIZE(15, 15), 9, 0, 8, 1},
+  {36, UPB_SIZE(44, 72), 14, 0, 12, 1},
+  {37, UPB_SIZE(52, 88), 15, 0, 12, 1},
+  {39, UPB_SIZE(60, 104), 16, 0, 12, 1},
+  {40, UPB_SIZE(68, 120), 17, 0, 12, 1},
+  {41, UPB_SIZE(76, 136), 18, 0, 12, 1},
+  {42, UPB_SIZE(16, 16), 10, 0, 8, 1},
+  {44, UPB_SIZE(84, 152), 19, 0, 12, 1},
+  {45, UPB_SIZE(92, 168), 20, 0, 12, 1},
+  {999, UPB_SIZE(100, 184), 0, 0, 11, 3},
 };
 
 const upb_msglayout google_protobuf_FileOptions_msginit = {
@@ -755,7 +755,7 @@ const upb_msglayout google_protobuf_FileOptions_msginit = {
   },
   &google_protobuf_FileOptions_submsgs[0],
   &google_protobuf_FileOptions__fields[0],
-  UPB_SIZE(112, 208), 21, false,
+  UPB_SIZE(104, 192), 21, false,
 };
 
 static const upb_msglayout *const google_protobuf_MessageOptions_submsgs[1] = {
@@ -815,13 +815,13 @@ static const upb_msglayout *const google_protobuf_FieldOptions_submsgs[1] = {
 };
 
 static const upb_msglayout_field google_protobuf_FieldOptions__fields[7] = {
-  {1, UPB_SIZE(8, 8), 1, 0, 14, 1},
-  {2, UPB_SIZE(24, 24), 3, 0, 8, 1},
-  {3, UPB_SIZE(25, 25), 4, 0, 8, 1},
-  {5, UPB_SIZE(26, 26), 5, 0, 8, 1},
-  {6, UPB_SIZE(16, 16), 2, 0, 14, 1},
-  {10, UPB_SIZE(27, 27), 6, 0, 8, 1},
-  {999, UPB_SIZE(28, 32), 0, 0, 11, 3},
+  {1, UPB_SIZE(4, 4), 1, 0, 14, 1},
+  {2, UPB_SIZE(12, 12), 3, 0, 8, 1},
+  {3, UPB_SIZE(13, 13), 4, 0, 8, 1},
+  {5, UPB_SIZE(14, 14), 5, 0, 8, 1},
+  {6, UPB_SIZE(8, 8), 2, 0, 14, 1},
+  {10, UPB_SIZE(15, 15), 6, 0, 8, 1},
+  {999, UPB_SIZE(16, 16), 0, 0, 11, 3},
 };
 
 const upb_msglayout google_protobuf_FieldOptions_msginit = {
@@ -861,7 +861,7 @@ const upb_msglayout google_protobuf_FieldOptions_msginit = {
   },
   &google_protobuf_FieldOptions_submsgs[0],
   &google_protobuf_FieldOptions__fields[0],
-  UPB_SIZE(32, 40), 7, false,
+  UPB_SIZE(20, 24), 7, false,
 };
 
 static const upb_msglayout *const google_protobuf_OneofOptions_submsgs[1] = {
@@ -1065,9 +1065,9 @@ static const upb_msglayout *const google_protobuf_MethodOptions_submsgs[1] = {
 };
 
 static const upb_msglayout_field google_protobuf_MethodOptions__fields[3] = {
-  {33, UPB_SIZE(16, 16), 2, 0, 8, 1},
-  {34, UPB_SIZE(8, 8), 1, 0, 14, 1},
-  {999, UPB_SIZE(20, 24), 0, 0, 11, 3},
+  {33, UPB_SIZE(8, 8), 2, 0, 8, 1},
+  {34, UPB_SIZE(4, 4), 1, 0, 14, 1},
+  {999, UPB_SIZE(12, 16), 0, 0, 11, 3},
 };
 
 const upb_msglayout google_protobuf_MethodOptions_msginit = {
@@ -1107,7 +1107,7 @@ const upb_msglayout google_protobuf_MethodOptions_msginit = {
   },
   &google_protobuf_MethodOptions_submsgs[0],
   &google_protobuf_MethodOptions__fields[0],
-  UPB_SIZE(24, 32), 3, false,
+  UPB_SIZE(16, 24), 3, false,
 };
 
 static const upb_msglayout *const google_protobuf_UninterpretedOption_submsgs[1] = {

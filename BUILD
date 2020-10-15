@@ -361,6 +361,7 @@ cc_binary(
     deps = [
         ":descriptor_upb_proto",
         ":descriptor_upbreflection",
+        ":reflection",
         "@com_github_google_benchmark//:benchmark_main",
         "@com_google_protobuf//:protobuf",
     ],

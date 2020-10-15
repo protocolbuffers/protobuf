@@ -280,10 +280,10 @@ UPB_INLINE void *_upb_array_mutable_accessor(void *msg, size_t ofs,
   }
 }
 
-UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
-                                            int elem_size_lg2,
-                                            upb_arena *arena) {
-  upb_array **arr_ptr = PTR_AT(msg, ofs, upb_array*);
+UPB_INLINE void *_upb_array_resize_accessor2(void *msg, size_t ofs, size_t size,
+                                             int elem_size_lg2,
+                                             upb_arena *arena) {
+  upb_array **arr_ptr = PTR_AT(msg, ofs, upb_array *);
   upb_array *arr = *arr_ptr;
   if (!arr || arr->size < size) {
     return _upb_array_resize_fallback(arr_ptr, size, elem_size_lg2, arena);
@@ -292,13 +292,14 @@ UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
   return _upb_array_ptr(arr);
 }
 
-UPB_INLINE bool _upb_array_append_accessor(void *msg, size_t ofs,
-                                           size_t elem_size, int elem_size_lg2,
-                                           const void *value,
-                                           upb_arena *arena) {
-  upb_array **arr_ptr = PTR_AT(msg, ofs, upb_array*);
+UPB_INLINE bool _upb_array_append_accessor2(void *msg, size_t ofs,
+                                            int elem_size_lg2,
+                                            const void *value,
+                                            upb_arena *arena) {
+  upb_array **arr_ptr = PTR_AT(msg, ofs, upb_array *);
+  size_t elem_size = 1 << elem_size_lg2;
   upb_array *arr = *arr_ptr;
-  void* ptr;
+  void *ptr;
   if (!arr || arr->len == arr->size) {
     return _upb_array_append_fallback(arr_ptr, value, elem_size_lg2, arena);
   }
@@ -306,6 +307,42 @@ UPB_INLINE bool _upb_array_append_accessor(void *msg, size_t ofs,
   memcpy(PTR_AT(ptr, arr->len * elem_size, char), value, elem_size);
   arr->len++;
   return true;
+}
+
+/* Used by old generated code, remove once all code has been regenerated. */
+UPB_INLINE int _upb_sizelg2(upb_fieldtype_t type) {
+  switch (type) {
+    case UPB_TYPE_BOOL:
+      return 0;
+    case UPB_TYPE_FLOAT:
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_ENUM:
+      return 2;
+    case UPB_TYPE_MESSAGE:
+      return UPB_SIZE(2, 3);
+    case UPB_TYPE_DOUBLE:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT64:
+      return 3;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      return UPB_SIZE(3, 4);
+  }
+  UPB_UNREACHABLE();
+}
+UPB_INLINE void *_upb_array_resize_accessor(void *msg, size_t ofs, size_t size,
+                                             upb_fieldtype_t type,
+                                             upb_arena *arena) {
+  return _upb_array_resize_accessor2(msg, ofs, size, _upb_sizelg2(type), arena);
+}
+UPB_INLINE bool _upb_array_append_accessor(void *msg, size_t ofs,
+                                            size_t elem_size, upb_fieldtype_t type,
+                                            const void *value,
+                                            upb_arena *arena) {
+  (void)elem_size;
+  return _upb_array_append_accessor2(msg, ofs, _upb_sizelg2(type), value,
+                                     arena);
 }
 
 /** upb_map *******************************************************************/
