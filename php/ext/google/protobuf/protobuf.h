@@ -56,7 +56,7 @@ const zval *get_generated_pool();
 // instead of zval* and zend_string* instead of zval* for property names.
 // https://github.com/php/php-src/blob/php-8.0.0beta1/UPGRADING.INTERNALS#L37-L39
 #if PHP_VERSION_ID < 80000
-#define PROTO_VAL zval 
+#define PROTO_VAL zval
 #define PROTO_STR zval
 #define PROTO_MSG_P(obj) (Message*)Z_OBJ_P(obj)
 #define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
@@ -69,7 +69,7 @@ const zval *get_generated_pool();
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
 #endif
 
-#define PHP_PROTOBUF_VERSION "3.13.0"
+#define PHP_PROTOBUF_VERSION "3.13.0.1"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
