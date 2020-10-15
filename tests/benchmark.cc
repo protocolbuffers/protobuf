@@ -76,9 +76,9 @@ static void BM_ParseDescriptor_Upb(benchmark::State& state) {
   size_t bytes = 0;
   for (auto _ : state) {
     upb_arena* arena = upb_arena_new();
-    google_protobuf_FileDescriptorProto* set =
-        google_protobuf_FileDescriptorProto_parse(descriptor.data,
-                                                  descriptor.size, arena);
+    upb_benchmark_FileDescriptorProto* set =
+        upb_benchmark_FileDescriptorProto_parse(descriptor.data,
+                                                descriptor.size, arena);
     if (!set) {
       printf("Failed to parse.\n");
       exit(1);
@@ -94,9 +94,9 @@ static void BM_ParseDescriptor_Upb_LargeInitialBlock(benchmark::State& state) {
   size_t bytes = 0;
   for (auto _ : state) {
     upb_arena* arena = upb_arena_init(buf, sizeof(buf), NULL);
-    google_protobuf_FileDescriptorProto* set =
-        google_protobuf_FileDescriptorProto_parse(descriptor.data,
-                                                  descriptor.size, arena);
+    upb_benchmark_FileDescriptorProto* set =
+        upb_benchmark_FileDescriptorProto_parse(descriptor.data,
+                                                descriptor.size, arena);
     if (!set) {
       printf("Failed to parse.\n");
       exit(1);
