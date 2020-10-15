@@ -72,24 +72,6 @@ static void BM_LoadDescriptor_Proto2(benchmark::State& state) {
 }
 BENCHMARK(BM_LoadDescriptor_Proto2);
 
-static void BM_ParseDescriptor_Upb_LargeInitialBlock(benchmark::State& state) {
-  size_t bytes = 0;
-  for (auto _ : state) {
-    upb_arena* arena = upb_arena_init(buf, sizeof(buf), NULL);
-    upb_benchmark_FileDescriptorProto* set =
-        upb_benchmark_FileDescriptorProto_parse(descriptor.data,
-                                                descriptor.size, arena);
-    if (!set) {
-      printf("Failed to parse.\n");
-      exit(1);
-    }
-    bytes += descriptor.size;
-    upb_arena_free(arena);
-  }
-  state.SetBytesProcessed(state.iterations() * descriptor.size);
-}
-BENCHMARK(BM_ParseDescriptor_Upb_LargeInitialBlock);
-
 static void BM_ParseDescriptor_Upb(benchmark::State& state) {
   size_t bytes = 0;
   for (auto _ : state) {
@@ -107,6 +89,24 @@ static void BM_ParseDescriptor_Upb(benchmark::State& state) {
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_ParseDescriptor_Upb);
+
+static void BM_ParseDescriptor_Upb_LargeInitialBlock(benchmark::State& state) {
+  size_t bytes = 0;
+  for (auto _ : state) {
+    upb_arena* arena = upb_arena_init(buf, sizeof(buf), NULL);
+    upb_benchmark_FileDescriptorProto* set =
+        upb_benchmark_FileDescriptorProto_parse(descriptor.data,
+                                                descriptor.size, arena);
+    if (!set) {
+      printf("Failed to parse.\n");
+      exit(1);
+    }
+    bytes += descriptor.size;
+    upb_arena_free(arena);
+  }
+  state.SetBytesProcessed(state.iterations() * descriptor.size);
+}
+BENCHMARK(BM_ParseDescriptor_Upb_LargeInitialBlock);
 
 static void BM_ParseDescriptor_Proto2_NoArena(benchmark::State& state) {
   size_t bytes = 0;
