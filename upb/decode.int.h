@@ -2,6 +2,9 @@
 #ifndef UPB_DECODE_INT_H_
 #define UPB_DECODE_INT_H_
 
+#include <setjmp.h>
+
+#include "upb/msg.h"
 #include "upb/upb.int.h"
 
 /* Must be last. */
