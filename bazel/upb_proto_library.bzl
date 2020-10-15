@@ -18,6 +18,7 @@ def _get_real_short_path(file):
     if short_path.startswith("../"):
         second_slash = short_path.index("/", 3)
         short_path = short_path[second_slash + 1:]
+
     # Sometimes it has another few prefixes like:
     #   _virtual_imports/any_proto/google/protobuf/any.proto
     # We want just google/protobuf/any.proto.
