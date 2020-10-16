@@ -60,14 +60,14 @@ namespace csharp {
 //
 // Returns:
 //   The namespace to use for given file descriptor.
-string PROTOC_EXPORT GetFileNamespace(const FileDescriptor* descriptor);
+std::string PROTOC_EXPORT GetFileNamespace(const FileDescriptor* descriptor);
 
 // Requires:
 //   descriptor != NULL
 //
 // Returns:
 //   The fully-qualified C# class name.
-string PROTOC_EXPORT GetClassName(const Descriptor* descriptor);
+std::string PROTOC_EXPORT GetClassName(const Descriptor* descriptor);
 
 // Requires:
 //   descriptor != NULL
@@ -76,7 +76,8 @@ string PROTOC_EXPORT GetClassName(const Descriptor* descriptor);
 //   The fully-qualified name of the C# class that provides
 //   access to the file descriptor. Proto compiler generates
 //   such class for each .proto file processed.
-string PROTOC_EXPORT GetReflectionClassName(const FileDescriptor* descriptor);
+std::string PROTOC_EXPORT
+GetReflectionClassName(const FileDescriptor* descriptor);
 
 // Generates output file name for given file descriptor. If generate_directories
 // is true, the output file will be put under directory corresponding to file's
@@ -92,10 +93,11 @@ string PROTOC_EXPORT GetReflectionClassName(const FileDescriptor* descriptor);
 //    The file name to use as output file for given file descriptor. In case
 //    of failure, this function will return empty string and error parameter
 //    will contain the error message.
-string PROTOC_EXPORT GetOutputFile(const FileDescriptor* descriptor,
-                                   const string file_extension,
-                                   const bool generate_directories,
-                                   const string base_namespace, string* error);
+std::string PROTOC_EXPORT GetOutputFile(const FileDescriptor* descriptor,
+                                        const std::string file_extension,
+                                        const bool generate_directories,
+                                        const std::string base_namespace,
+                                        std::string* error);
 
 }  // namespace csharp
 }  // namespace compiler
