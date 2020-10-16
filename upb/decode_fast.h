@@ -29,20 +29,24 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   F(card, v, 4, tagbytes)     \
   F(card, v, 8, tagbytes)     \
   F(card, z, 4, tagbytes)     \
-  F(card, z, 8, tagbytes)
+  F(card, z, 8, tagbytes)     \
+  F(card, f, 4, tagbytes)     \
+  F(card, f, 8, tagbytes)
 
 #define TAGBYTES(card) \
   TYPES(card, 1)       \
   TYPES(card, 2)
 
 TAGBYTES(s)
-TAGBYTES(o)
-/* TAGBYTES(r) */
+// TAGBYTES(o)
+TAGBYTES(r)
 
 const char *upb_pss_1bt(UPB_PARSE_PARAMS);
 const char *upb_pss_2bt(UPB_PARSE_PARAMS);
 const char *upb_pos_1bt(UPB_PARSE_PARAMS);
 const char *upb_pos_2bt(UPB_PARSE_PARAMS);
+const char *upb_prs_1bt(UPB_PARSE_PARAMS);
+const char *upb_prs_2bt(UPB_PARSE_PARAMS);
 
 #undef F
 #undef TYPES

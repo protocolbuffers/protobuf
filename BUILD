@@ -41,6 +41,7 @@ CPPOPTS = [
 COPTS = CPPOPTS + [
     # copybara:strip_for_google3_begin
     #"-pedantic",
+    #"-Wno-gnu-flexible-array-initializer",
     #"-Werror=pedantic",
     "-std=gnu11",
     "-Wstrict-prototypes",

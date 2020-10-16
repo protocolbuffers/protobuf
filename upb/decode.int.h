@@ -10,6 +10,7 @@
 
 #include "upb/msg.h"
 #include "upb/upb.int.h"
+#include "upb/decode_fast.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"
@@ -23,9 +24,6 @@ typedef struct upb_decstate {
   uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
   jmp_buf err;
 } upb_decstate;
-
-const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                intptr_t table, uint64_t hasbits);
 
 /* Error function that will abort decoding with longjmp(). We can't declare this
  * UPB_NORETURN, even though it is appropriate, because if we do then compilers
@@ -44,6 +42,41 @@ UPB_INLINE intptr_t decode_totable(const upb_msglayout *tablep) {
 
 UPB_INLINE const upb_msglayout *decode_totablep(intptr_t table) {
   return (void*)(table >> 8);
+}
+
+UPB_FORCEINLINE static
+const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
+                                    upb_msg *msg, intptr_t table,
+                                    uint64_t hasbits, uint32_t tag) {
+  const upb_msglayout *table_p = decode_totablep(table);
+  uint8_t mask = table;
+  uint64_t data;
+  size_t idx = tag & mask;
+  __builtin_assume((idx & 7) == 0);
+  idx >>= 3;
+  data = table_p->fasttable[idx].field_data ^ tag;
+  return table_p->fasttable[idx].field_parser(d, ptr, msg, table, hasbits, data);
+}
+
+UPB_FORCEINLINE static
+uint32_t fastdecode_loadtag(const char* ptr) {
+  uint16_t tag;
+  memcpy(&tag, ptr, 2);
+  return tag;
+}
+
+UPB_FORCEINLINE static
+const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
+                                intptr_t table, uint64_t hasbits) {
+  if (UPB_UNLIKELY(ptr >= d->fastlimit)) {
+    if (UPB_LIKELY(ptr == d->limit)) {
+      *(uint32_t*)msg |= hasbits >> 16;  /* Sync hasbits. */
+      return ptr;
+    }
+    uint64_t data = 0;
+    return fastdecode_generic(d, ptr, msg, table, hasbits, data);
+  }
+  return fastdecode_tagdispatch(d, ptr, msg, table, hasbits, fastdecode_loadtag(ptr));
 }
 
 #include "upb/port_undef.inc"
