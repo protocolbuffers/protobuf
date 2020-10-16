@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "google/protobuf/descriptor.upb.h"
+#include "upb/decode.int.h"
 
 #include "upb/port_def.inc"
 

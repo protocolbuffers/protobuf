@@ -627,8 +627,8 @@ const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
 UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
-  if (msg) {
-    ptr = fastdecode_dispatch(d, ptr, msg, decode_totable(layout), 0);
+  if (msg && layout->table_mask != (unsigned char)-1) {
+      ptr = fastdecode_dispatch(d, ptr, msg, decode_totable(layout), 0);
   } else {
     while (ptr < d->limit) {
       decode_parseret ret = decode_field(d, ptr, msg, layout);
