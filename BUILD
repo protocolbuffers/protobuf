@@ -369,12 +369,23 @@ cc_proto_library(
     deps = [":benchmark_descriptor_proto"],
 )
 
+proto_library(
+    name = "benchmark_descriptor_sv_proto",
+    srcs = ["tests/descriptor_sv.proto"],
+)
+
+cc_proto_library(
+    name = "benchmark_descriptor_sv_cc_proto",
+    deps = [":benchmark_descriptor_sv_proto"],
+)
+
 cc_binary(
     name = "benchmark",
     testonly = 1,
     srcs = ["tests/benchmark.cc"],
     deps = [
         ":benchmark_descriptor_cc_proto",
+        ":benchmark_descriptor_sv_cc_proto",
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
         ":descriptor_upb_proto",
