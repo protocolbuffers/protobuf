@@ -26,6 +26,14 @@ typedef struct upb_decstate {
 
 const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 intptr_t table, uint64_t hasbits);
+
+/* Error function that will abort decoding with longjmp(). We can't declare this
+ * UPB_NORETURN, even though it is appropriate, because if we do then compilers
+ * will "helpfully" refuse to tailcall to it
+ * (see: https://stackoverflow.com/a/55657013), which will defeat a major goal
+ * of our optimizations. That is also why we must declare it in a separate file,
+ * otherwise the compiler will see that it calls longjmp() and deduce that it is
+ * noreturn. */
 const char *fastdecode_err(upb_decstate *d);
 
 /* x86-64 pointers always have the high 16 bits matching. So we can shift

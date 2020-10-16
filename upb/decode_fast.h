@@ -11,6 +11,8 @@
 
 struct upb_decstate;
 
+// The fallback, generic parsing function that can handle any field type.
+// This just uses the regular (non-fast) parser to parse a single field.
 const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
                                upb_msg *msg, intptr_t table, uint64_t hasbits,
                                uint64_t data);
