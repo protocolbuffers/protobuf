@@ -1,7 +1,14 @@
+/*
+** Internal implementation details of the decoder that are shared between
+** decode.c and decode_fast.c.
+*/
 
 #ifndef UPB_DECODE_INT_H_
 #define UPB_DECODE_INT_H_
 
+#include <setjmp.h>
+
+#include "upb/msg.h"
 #include "upb/upb.int.h"
 
 /* Must be last. */
@@ -29,23 +36,6 @@ UPB_INLINE intptr_t decode_totable(const upb_msglayout *tablep) {
 
 UPB_INLINE const upb_msglayout *decode_totablep(intptr_t table) {
   return (void*)(table >> 8);
-}
-
-UPB_INLINE
-upb_msg *decode_newmsg_ceil(upb_decstate *d, size_t size, int msg_ceil_bytes) {
-  char *msg_data;
-  if (UPB_LIKELY(msg_ceil_bytes > 0 && _upb_arenahas(&d->arena, msg_ceil_bytes))) {
-    UPB_ASSERT(size <= (size_t)msg_ceil_bytes);
-    msg_data = d->arena.head.ptr;
-    d->arena.head.ptr += size;
-    UPB_UNPOISON_MEMORY_REGION(msg_data, msg_ceil_bytes);
-    memset(msg_data, 0, msg_ceil_bytes);
-    UPB_POISON_MEMORY_REGION(msg_data + size, msg_ceil_bytes - size);
-  } else {
-    msg_data = (char*)upb_arena_malloc(&d->arena, size);
-    memset(msg_data, 0, size);
-  }
-  return msg_data + sizeof(upb_msg_internal);
 }
 
 #include "upb/port_undef.inc"

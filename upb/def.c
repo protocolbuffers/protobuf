@@ -957,6 +957,8 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
   l->submsgs = submsgs;
   l->table_mask = 0;
 
+  /* TODO(haberman): initialize fast tables so that reflection-based parsing
+   * can get the same speeds as linked-in types. */
   l->fasttable[0].field_parser = &fastdecode_generic;
   l->fasttable[0].field_data = 0;
 

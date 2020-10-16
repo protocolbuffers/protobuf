@@ -46,8 +46,8 @@ typedef struct {
   uint8_t label;          /* google.protobuf.Label or _UPB_LABEL_* above. */
 } upb_msglayout_field;
 
-struct upb_msglayout;
 struct upb_decstate;
+struct upb_msglayout;
 
 typedef const char *_upb_field_parser(struct upb_decstate *d, const char *ptr,
                                       upb_msg *msg, intptr_t table,
