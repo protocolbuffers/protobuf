@@ -1,3 +1,8 @@
+// These are the specialized field parser functions for the fast parser.
+// Generated tables will refer to these by name.
+//
+// Here we follow the same pattern of macros used in decode_fast.c to declare
+// all of the variants.
 
 #ifndef UPB_DECODE_FAST_H_
 #define UPB_DECODE_FAST_H_
