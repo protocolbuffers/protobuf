@@ -48,16 +48,16 @@ namespace objectivec {
 namespace {
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<string, string>* variables) {
-  string camel_case_name = FieldName(descriptor);
-  string raw_field_name;
+                             std::map<std::string, std::string>* variables) {
+  std::string camel_case_name = FieldName(descriptor);
+  std::string raw_field_name;
   if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {
     raw_field_name = descriptor->message_type()->name();
   } else {
     raw_field_name = descriptor->name();
   }
   // The logic here has to match -[GGPBFieldDescriptor textFormatName].
-  const string un_camel_case_name(
+  const std::string un_camel_case_name(
       UnCamelCaseFieldName(camel_case_name, descriptor));
   const bool needs_custom_name = (raw_field_name != un_camel_case_name);
 
@@ -67,10 +67,10 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   } else {
     (*variables)["comments"] = "\n";
   }
-  const string& classname = ClassName(descriptor->containing_type());
+  const std::string& classname = ClassName(descriptor->containing_type());
   (*variables)["classname"] = classname;
   (*variables)["name"] = camel_case_name;
-  const string& capitalized_name = FieldNameCapitalized(descriptor);
+  const std::string& capitalized_name = FieldNameCapitalized(descriptor);
   (*variables)["capitalized_name"] = capitalized_name;
   (*variables)["raw_field_name"] = raw_field_name;
   (*variables)["field_number_name"] =
@@ -78,7 +78,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["field_number"] = StrCat(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor);
-  std::vector<string> field_flags;
+  std::vector<std::string> field_flags;
   if (descriptor->is_repeated()) field_flags.push_back("GPBFieldRepeated");
   if (descriptor->is_required()) field_flags.push_back("GPBFieldRequired");
   if (descriptor->is_optional()) field_flags.push_back("GPBFieldOptional");
@@ -185,12 +185,12 @@ void FieldGenerator::GenerateCFunctionImplementations(
 }
 
 void FieldGenerator::DetermineForwardDeclarations(
-    std::set<string>* fwd_decls) const {
+    std::set<std::string>* fwd_decls) const {
   // Nothing
 }
 
 void FieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<string>* fwd_decls) const {
+    std::set<std::string>* fwd_decls) const {
   // Nothing
 }
 
