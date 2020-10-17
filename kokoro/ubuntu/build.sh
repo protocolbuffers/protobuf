@@ -19,12 +19,12 @@ which bazel
 bazel version
 
 cd $(dirname $0)/../..
-bazel test --test_output=errors :all
+bazel test --test_output=errors ...
 
 if [[ $(uname) = "Linux" ]]; then
   # Verify the ASAN build.  Have to exclude test_conformance_upb as protobuf
   # currently leaks memory in the conformance test runner.
-  bazel test --copt=-fsanitize=address --linkopt=-fsanitize=address --test_output=errors :all
+  bazel test --copt=-fsanitize=address --linkopt=-fsanitize=address --test_output=errors ...
 
   # Verify the UBSan build. Have to exclude Lua as the version we are using
   # fails some UBSan tests.
