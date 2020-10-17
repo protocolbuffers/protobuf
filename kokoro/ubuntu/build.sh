@@ -35,5 +35,5 @@ if [[ $(uname) = "Linux" ]]; then
 fi
 
 if which valgrind; then
-  bazel test --run_under='valgrind --leak-check=full --error-exitcode=1' :all -- -:test_conformance_upb -:cmake_build
+  bazel test --run_under='valgrind --leak-check=full --error-exitcode=1' ... -- -tests:test_conformance_upb -cmake:cmake_build
 fi
