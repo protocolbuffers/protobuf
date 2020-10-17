@@ -43,7 +43,6 @@
 #else  // AMALGAMATED
 #include "upb/handlers.h"
 #include "upb/pb/decoder.h"
-#include "upb/pb/varint.int.h"
 #include "upb/upb.h"
 #endif  // !AMALGAMATED
 
@@ -145,6 +144,29 @@ void PrintBinary(const string& str) {
       fprintf(stderr, "\\x%02x", (int)(uint8_t)str[i]);
     }
   }
+}
+
+#define UPB_PB_VARINT_MAX_LEN 10
+
+static size_t upb_vencode64(uint64_t val, char *buf) {
+  size_t i;
+  if (val == 0) { buf[0] = 0; return 1; }
+  i = 0;
+  while (val) {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    buf[i++] = byte;
+  }
+  return i;
+}
+
+static uint32_t upb_zzenc_32(int32_t n) {
+  return ((uint32_t)n << 1) ^ (n >> 31);
+}
+
+static uint64_t upb_zzenc_64(int64_t n) {
+  return ((uint64_t)n << 1) ^ (n >> 63);
 }
 
 /* Routines for building arbitrary protos *************************************/

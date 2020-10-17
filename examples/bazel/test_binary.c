@@ -1,7 +1,7 @@
 
 #include <time.h>
 
-#include "foo.upb.h"
+#include "examples/bazel/foo.upb.h"
 
 int main() {
   upb_arena *arena = upb_arena_new();

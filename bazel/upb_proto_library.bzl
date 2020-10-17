@@ -225,7 +225,7 @@ _upb_proto_library_aspect = aspect(
         "_upbc": attr.label(
             executable = True,
             cfg = "host",
-            default = "//:protoc-gen-upb",
+            default = "//upbc:protoc-gen-upb",
         ),
         "_protoc": attr.label(
             executable = True,
@@ -270,7 +270,7 @@ _upb_proto_reflection_library_aspect = aspect(
         "_upbc": attr.label(
             executable = True,
             cfg = "host",
-            default = "//:protoc-gen-upb",
+            default = "//upbc:protoc-gen-upb",
         ),
         "_protoc": attr.label(
             executable = True,
