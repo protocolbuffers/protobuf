@@ -976,6 +976,26 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void UnknownEnum_Ignored()
+        {
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"single_nested_enum\": \"NOT_VALID_ENUM\"" + ", \"singleString\": \"x\" }";
+            var actual = parser.Parse<TestAllTypes>(json);
+            var expected = new TestAllTypes { SingleString = "x" };
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
+        public void KnownEnum_NotIgnored()
+        {
+            var parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            string json = "{ \"single_nested_enum\": \"FOO\"" + ", \"singleString\": \"x\" }";
+            var actual = parser.Parse<TestAllTypes>(json);
+            var expected = new TestAllTypes { SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo, SingleString = "x" };
+            Assert.AreEqual(expected, actual);
+        }
+
+        [Test]
         public void NullValueOutsideStruct_NullLiteral()
         {
             string json = "{ \"nullValue\": null }";

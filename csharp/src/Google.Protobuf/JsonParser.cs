@@ -373,7 +373,7 @@ namespace Google.Protobuf
                     // case instead, but this way we'd only need to change one place.
                     goto default;
                 case JsonToken.TokenType.StringValue:
-                    return ParseSingleStringValue(field, token.StringValue);
+                    return ParseSingleStringValue(field, token.StringValue, this.settings.IgnoreUnknownFields);
                 // Note: not passing the number value itself here, as we may end up storing the string value in the token too.
                 case JsonToken.TokenType.Number:
                     return ParseSingleNumberValue(field, token);
@@ -690,7 +690,7 @@ namespace Google.Protobuf
             }
         }
 
-        private static object ParseSingleStringValue(FieldDescriptor field, string text)
+        private static object ParseSingleStringValue(FieldDescriptor field, string text, bool ignoreUnknownFields)
         {
             switch (field.FieldType)
             {
@@ -731,7 +731,14 @@ namespace Google.Protobuf
                     var enumValue = field.EnumType.FindValueByName(text);
                     if (enumValue == null)
                     {
-                        throw new InvalidProtocolBufferException($"Invalid enum value: {text} for enum type: {field.EnumType.FullName}");
+                        if (ignoreUnknownFields)
+                        {
+                            enumValue = field.EnumType.FindValueByNumber(0);
+                        }
+                        else
+                        {
+                            throw new InvalidProtocolBufferException($"Invalid enum value: {text} for enum type: {field.EnumType.FullName}");
+                        }
                     }
                     // Just return it as an int, and let the CLR convert it.
                     return enumValue.Number;
