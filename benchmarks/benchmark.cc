@@ -3,10 +3,10 @@
 #include <string.h>
 
 // For benchmarks of parsing speed.
-#include "tests/descriptor.pb.h"
-#include "tests/descriptor.upb.h"
-#include "tests/descriptor.upbdefs.h"
-#include "tests/descriptor_sv.pb.h"
+#include "benchmarks/descriptor.pb.h"
+#include "benchmarks/descriptor.upb.h"
+#include "benchmarks/descriptor.upbdefs.h"
+#include "benchmarks/descriptor_sv.pb.h"
 
 // For for benchmarks of building descriptors.
 #include "google/protobuf/descriptor.upb.h"
@@ -14,7 +14,7 @@
 
 #include "upb/def.hpp"
 
-upb_strview descriptor = tests_descriptor_proto_upbdefinit.descriptor;
+upb_strview descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
 namespace protobuf = ::google::protobuf;
 
 /* A buffer big enough to parse descriptor.proto without going to heap. */

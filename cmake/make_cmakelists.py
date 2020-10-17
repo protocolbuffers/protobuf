@@ -46,9 +46,9 @@ class BuildFileFunctions(object):
     found_files = []
     for file in files:
         if os.path.isfile(file):
-            found_files.append(file)
-        elif os.path.isfile("generated_for_cmake/" + file):
-            found_files.append("generated_for_cmake/" + file)
+            found_files.append("../" + file)
+        elif os.path.isfile("cmake/" + file):
+            found_files.append("../cmake/" + file)
         else:
             print("Warning: no such file: " + file)
 
@@ -242,8 +242,8 @@ class Converter(object):
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif()
 
-    include_directories(.)
-    include_directories(generated_for_cmake)
+    include_directories(..)
+    include_directories(../cmake)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
     if(APPLE)
@@ -263,6 +263,7 @@ converter = Converter()
 
 def GetDict(obj):
   ret = {}
+  ret["UPB_DEFAULT_COPTS"] = []  # HACK
   for k in dir(obj):
     if not k.startswith("_"):
       ret[k] = getattr(obj, k);

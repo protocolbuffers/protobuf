@@ -48,8 +48,8 @@ if(UPB_ENABLE_UBSAN)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
 endif()
 
-include_directories(.)
-include_directories(generated_for_cmake)
+include_directories(..)
+include_directories(../cmake)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(APPLE)
@@ -61,20 +61,20 @@ endif()
 enable_testing()
 
 add_library(port
-  upb/port.c)
+  ../upb/port.c)
 add_library(upb
-  upb/decode.c
-  upb/encode.c
-  upb/msg.c
-  upb/msg.h
-  upb/table.c
-  upb/table.int.h
-  upb/upb.c
-  upb/upb.int.h
-  upb/decode.h
-  upb/encode.h
-  upb/upb.h
-  upb/upb.hpp)
+  ../upb/decode.c
+  ../upb/encode.c
+  ../upb/msg.c
+  ../upb/msg.h
+  ../upb/table.c
+  ../upb/table.int.h
+  ../upb/upb.c
+  ../upb/upb.int.h
+  ../upb/decode.h
+  ../upb/encode.h
+  ../upb/upb.h
+  ../upb/upb.hpp)
 target_link_libraries(upb
   port)
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
@@ -82,28 +82,28 @@ target_link_libraries(generated_code_support__only_for_generated_code_do_not_use
   table
   upb)
 add_library(reflection
-  upb/def.c
-  upb/msg.h
-  upb/reflection.c
-  upb/def.h
-  upb/def.hpp
-  upb/reflection.h)
+  ../upb/def.c
+  ../upb/msg.h
+  ../upb/reflection.c
+  ../upb/def.h
+  ../upb/def.hpp
+  ../upb/reflection.h)
 target_link_libraries(reflection
   descriptor_upb_proto
   port
   table
   upb)
 add_library(textformat
-  upb/text_encode.c
-  upb/text_encode.h)
+  ../upb/text_encode.c
+  ../upb/text_encode.h)
 target_link_libraries(textformat
   port
   reflection)
 add_library(json
-  upb/json_decode.c
-  upb/json_encode.c
-  upb/json_decode.h
-  upb/json_encode.h)
+  ../upb/json_decode.c
+  ../upb/json_encode.c
+  ../upb/json_decode.h
+  ../upb/json_encode.h)
 target_link_libraries(json
   port
   reflection
@@ -113,27 +113,27 @@ target_link_libraries(table INTERFACE
   port
   upb)
 add_library(handlers
-  upb/handlers.c
-  upb/handlers-inl.h
-  upb/sink.c
-  upb/handlers.h
-  upb/sink.h)
+  ../upb/handlers.c
+  ../upb/handlers-inl.h
+  ../upb/sink.c
+  ../upb/handlers.h
+  ../upb/sink.h)
 target_link_libraries(handlers
   port
   reflection
   table
   upb)
 add_library(upb_pb
-  upb/pb/compile_decoder.c
-  upb/pb/decoder.c
-  upb/pb/decoder.int.h
-  upb/pb/encoder.c
-  upb/pb/textprinter.c
-  upb/pb/varint.c
-  upb/pb/varint.int.h
-  upb/pb/decoder.h
-  upb/pb/encoder.h
-  upb/pb/textprinter.h)
+  ../upb/pb/compile_decoder.c
+  ../upb/pb/decoder.c
+  ../upb/pb/decoder.int.h
+  ../upb/pb/encoder.c
+  ../upb/pb/textprinter.c
+  ../upb/pb/varint.c
+  ../upb/pb/varint.int.h
+  ../upb/pb/decoder.h
+  ../upb/pb/encoder.h
+  ../upb/pb/textprinter.h)
 target_link_libraries(upb_pb
   descriptor_upb_proto
   handlers
@@ -142,26 +142,12 @@ target_link_libraries(upb_pb
   table
   upb)
 add_library(upb_json
-  generated_for_cmake/upb/json/parser.c
-  upb/json/printer.c
-  upb/json/parser.h
-  upb/json/printer.h)
+  ../cmake/upb/json/parser.c
+  ../upb/json/printer.c
+  ../upb/json/parser.h
+  ../upb/json/printer.h)
 target_link_libraries(upb_json
   upb
   upb_pb)
-add_library(upb_cc_bindings INTERFACE)
-target_link_libraries(upb_cc_bindings INTERFACE
-  descriptor_upb_proto
-  handlers
-  port
-  upb)
-add_library(upb_test
-  tests/testmain.cc
-  tests/test_util.h
-  tests/upb_test.h)
-target_link_libraries(upb_test
-  handlers
-  port
-  upb)
 
 
