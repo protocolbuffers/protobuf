@@ -1,7 +1,6 @@
 load(
     "//bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
-    "licenses",  # copybara:strip_for_google3
     "upb_amalgamation",
 )
 load(

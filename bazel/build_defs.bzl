@@ -135,7 +135,3 @@ upb_amalgamation = rule(
     },
     implementation = _upb_amalgamation,
 )
-
-def licenses(*args):
-    # No-op (for Google-internal usage).
-    pass

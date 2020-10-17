@@ -10,6 +10,8 @@ load(
     "upb_proto_reflection_library",
 )
 
+licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+
 config_setting(
     name = "fuzz",
     values = {"define": "fuzz=true"},

@@ -4,6 +4,8 @@ load(
     "upb_proto_reflection_library",
 )
 
+licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+
 proto_library(
     name = "benchmark_descriptor_proto",
     srcs = ["descriptor.proto"],

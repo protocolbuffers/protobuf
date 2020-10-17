@@ -3,6 +3,8 @@ load(
     "lua_proto_library",
 )
 
+licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+
 cc_test(
     name = "test_lua",
     srcs = ["main.c"],

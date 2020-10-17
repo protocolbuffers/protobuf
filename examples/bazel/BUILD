@@ -1,6 +1,8 @@
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@upb//bazel:upb_proto_library.bzl", "upb_proto_library")
 
+licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+
 proto_library(
     name = "foo_proto",
     srcs = ["foo.proto"],
