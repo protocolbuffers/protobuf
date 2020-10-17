@@ -3,7 +3,7 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 
-licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+licenses(["notice"])
 
 cc_library(
     name = "upbc_generator",

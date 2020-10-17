@@ -7,7 +7,7 @@ load(
     "make_shell_script",
 )
 
-licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+licenses(["notice"])
 
 exports_files(["staleness_test.py"])
 

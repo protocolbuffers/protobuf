@@ -1,7 +1,7 @@
 load(
     "//bazel:build_defs.bzl",
     "UPB_DEFAULT_COPTS",
-    "upb_amalgamation",
+    "upb_amalgamation",  # copybara:strip_for_google3
 )
 load(
     "//bazel:upb_proto_library.bzl",
