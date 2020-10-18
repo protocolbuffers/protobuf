@@ -1,4 +1,3 @@
-
 package(
     default_visibility = ["//visibility:public"],
 )
@@ -158,7 +157,10 @@ cc_binary(
         "aapl/avlimelkey.h",
         "aapl/avltree.h",
     ],
-    includes = ["ragel", "aapl"],
+    includes = [
+        "aapl",
+        "ragel",
+    ],
 )
 
 config_h_contents = """

@@ -3,10 +3,10 @@
 #include <string.h>
 
 // For benchmarks of parsing speed.
-#include "tests/descriptor.pb.h"
-#include "tests/descriptor.upb.h"
-#include "tests/descriptor.upbdefs.h"
-#include "tests/descriptor_sv.pb.h"
+#include "benchmarks/descriptor.pb.h"
+#include "benchmarks/descriptor.upb.h"
+#include "benchmarks/descriptor.upbdefs.h"
+#include "benchmarks/descriptor_sv.pb.h"
 
 // For for benchmarks of building descriptors.
 #include "google/protobuf/descriptor.upb.h"
@@ -14,7 +14,7 @@
 
 #include "upb/def.hpp"
 
-upb_strview descriptor = tests_descriptor_proto_upbdefinit.descriptor;
+upb_strview descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
 namespace protobuf = ::google::protobuf;
 
 /* A buffer big enough to parse descriptor.proto without going to heap. */
@@ -149,7 +149,7 @@ using FileDescSV = ::upb_benchmark::sv::FileDescriptorProto;
 
 const protobuf::MessageLite::ParseFlags kMergePartial =
     protobuf::MessageLite::ParseFlags::kMergePartial;
-const protobuf::MessageLite::ParseFlags kAliasStrings =
+const protobuf::MessageLite::ParseFlags kAlias =
     protobuf::MessageLite::ParseFlags::kMergePartialWithAliasing;
 
 template <class P, template <class> class Factory,
@@ -175,9 +175,9 @@ BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDesc, WithInitialBlock);
 //BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena);
 //BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena);
 BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock);
-//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena, kAliasStrings);
-//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena, kAliasStrings);
-BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock, kAliasStrings);
+//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena, kAlias);
+//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena, kAlias);
+BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock, kAlias);
 
 static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   size_t bytes = 0;

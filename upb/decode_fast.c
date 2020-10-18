@@ -6,7 +6,6 @@
 
 #include "upb/decode_fast.h"
 
-#include "upb/decode.h"
 #include "upb/decode.int.h"
 
 /* Must be last. */

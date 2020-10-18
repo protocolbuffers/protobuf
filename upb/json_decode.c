@@ -1096,6 +1096,7 @@ static void jsondec_duration(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
   upb_strview str = jsondec_string(d);
   const char *ptr = str.data;
   const char *end = ptr + str.size;
+  const int64_t max = (uint64_t)3652500 * 86400;
 
   /* "3.000000001s", "3s", etc. */
   ptr = jsondec_buftoint64(d, ptr, end, &seconds.int64_val);
@@ -1105,7 +1106,7 @@ static void jsondec_duration(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
     jsondec_err(d, "Malformed duration");
   }
 
-  if (seconds.int64_val < -315576000000LL || seconds.int64_val > 315576000000LL) {
+  if (seconds.int64_val < -max || seconds.int64_val > max) {
     jsondec_err(d, "Duration out of range");
   }
 

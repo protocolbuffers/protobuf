@@ -301,7 +301,7 @@ UPB_INLINE uint32_t _upb_be_swap32(uint32_t val) {
     return val;
   } else {
     return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
-           ((val & 0xff0000ULL) >> 8) | ((val & 0xff000000ULL) >> 24);
+           ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
   }
 }
 
@@ -309,11 +309,7 @@ UPB_INLINE uint64_t _upb_be_swap64(uint64_t val) {
   if (_upb_isle()) {
     return val;
   } else {
-    return ((val & 0xff) << 56) | ((val & 0xff00) << 40) |
-           ((val & 0xff0000) << 24) | ((val & 0xff000000) << 8) |
-           ((val & 0xff00000000ULL) >> 8) | ((val & 0xff0000000000ULL) >> 24) |
-           ((val & 0xff000000000000ULL) >> 40) |
-           ((val & 0xff00000000000000ULL) >> 56);
+    return ((uint64_t)_upb_be_swap32(val) << 32) | _upb_be_swap32(val >> 32);
   }
 }
 

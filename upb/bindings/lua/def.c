@@ -56,8 +56,8 @@ static void lupb_wrapper_pushwrapper(lua_State *L, int narg, const void *def,
  * wrapper for field |f| of this msgdef.
  */
 void lupb_msgdef_pushsubmsgdef(lua_State *L, const upb_fielddef *f) {
-  assert(luaL_testudata(L, -1, LUPB_MSGDEF));
   const upb_msgdef *m = upb_fielddef_msgsubdef(f);
+  assert(m);
   assert(upb_fielddef_containingtype(f) == lupb_msgdef_check(L, -1));
   lupb_wrapper_pushwrapper(L, -1, m, LUPB_MSGDEF);
   lua_replace(L, -2);  /* Replace msgdef with submsgdef. */
@@ -251,8 +251,8 @@ static int lupb_oneofiter_next(lua_State *L) {
 }
 
 static int lupb_oneofdef_fields(lua_State *L) {
-  lupb_oneofdef_check(L, 1);
   int *index = lua_newuserdata(L, sizeof(int));
+  lupb_oneofdef_check(L, 1);
   *index = 0;
 
   /* Closure upvalues are: oneofdef, index. */
@@ -408,8 +408,8 @@ static int lupb_msgfielditer_next(lua_State *L) {
 }
 
 static int lupb_msgdef_fields(lua_State *L) {
-  lupb_msgdef_check(L, 1);
   int *index = lua_newuserdata(L, sizeof(int));
+  lupb_msgdef_check(L, 1);
   *index = 0;
 
   /* Closure upvalues are: msgdef, index. */
@@ -441,8 +441,8 @@ static int lupb_msgoneofiter_next(lua_State *L) {
 }
 
 static int lupb_msgdef_oneofs(lua_State *L) {
-  lupb_msgdef_check(L, 1);
   int *index = lua_newuserdata(L, sizeof(int));
+  lupb_msgdef_check(L, 1);
   *index = 0;
 
   /* Closure upvalues are: msgdef, index. */
@@ -750,7 +750,7 @@ static int lupb_symtab_addfile(lua_State *L) {
   size_t len;
   upb_symtab *s = lupb_symtab_check(L, 1);
   const char *str = luaL_checklstring(L, 2, &len);
-  upb_arena *arena = lupb_arena_pushnew(L);;
+  upb_arena *arena = lupb_arena_pushnew(L);
   const google_protobuf_FileDescriptorProto *file;
   const upb_filedef *file_def;
   upb_status status;
@@ -776,7 +776,7 @@ static int lupb_symtab_addset(lua_State *L) {
   google_protobuf_FileDescriptorSet *set;
   upb_symtab *s = lupb_symtab_check(L, 1);
   const char *str = luaL_checklstring(L, 2, &len);
-  upb_arena *arena = lupb_arena_pushnew(L);;
+  upb_arena *arena = lupb_arena_pushnew(L);
   upb_status status;
 
   upb_status_clear(&status);
