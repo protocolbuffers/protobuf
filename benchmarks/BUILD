@@ -51,3 +51,35 @@ cc_binary(
         "@com_google_protobuf//:protobuf",
     ],
 )
+
+# Size benchmarks.
+
+upb_proto_library(
+    name = "empty_upb_proto",
+    deps = ["@com_google_protobuf//:empty_proto"],
+)
+
+cc_proto_library(
+    name = "empty_cc_proto",
+    deps = ["@com_google_protobuf//:empty_proto"],
+)
+
+cc_binary(
+    name = "upb_binary",
+    testonly = 1,
+    srcs = ["upb_binary.c"],
+    deps = [
+        ":empty_upb_proto",
+    ],
+    #features = ["fully_static_link"],
+)
+
+cc_binary(
+    name = "protobuf_binary",
+    testonly = 1,
+    srcs = ["protobuf_binary.cc"],
+    deps = [
+        ":empty_cc_proto",
+    ],
+    #features = ["fully_static_link"],
+)
