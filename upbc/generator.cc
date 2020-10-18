@@ -883,7 +883,8 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
   return table;
 }
 
-void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
+void WriteSource(const protobuf::FileDescriptor* file, Output& output,
+                 bool fasttable_enabled) {
   EmitFileWarning(file, output);
 
   output(
@@ -975,7 +976,13 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
       output("};\n\n");
     }
 
-    std::vector<TableEntry> table = FastDecodeTable(message, layout);
+    std::vector<TableEntry> table;
+    uint8_t table_mask = -1;
+
+    if (fasttable_enabled) {
+      table = FastDecodeTable(message, layout);
+      table_mask = (table.size() - 1) << 3;
+    }
 
     output("const upb_msglayout $0 = {\n", MessageInit(message));
     output("  $0,\n", submsgs_array_ref);
@@ -983,7 +990,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     output("  $0, $1, $2, $3,\n", GetSizeInit(layout.message_size()),
            field_number_order.size(),
            "false",  // TODO: extendable
-           (table.size() - 1) << 3
+           table_mask
     );
     output("  {\n");
     for (const auto& ent : table) {
@@ -1120,14 +1127,15 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
 }
 
 bool Generator::Generate(const protobuf::FileDescriptor* file,
-                         const std::string& /* parameter */,
+                         const std::string& parameter,
                          protoc::GeneratorContext* context,
                          std::string* /* error */) const {
+  bool fasttable_enabled = parameter == "fasttable";
   Output h_output(context->Open(HeaderFilename(file->name())));
   WriteHeader(file, h_output);
 
   Output c_output(context->Open(SourceFilename(file->name())));
-  WriteSource(file, c_output);
+  WriteSource(file, c_output, fasttable_enabled);
 
   Output h_def_output(context->Open(DefHeaderFilename(file->name())));
   WriteDefHeader(file, h_def_output);

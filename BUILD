@@ -5,6 +5,7 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
+    "upb_fasttable_enabled",
     "upb_proto_library",
     "upb_proto_reflection_library",
 )
@@ -33,6 +34,12 @@ config_setting(
 config_setting(
     name = "windows",
     constraint_values = ["@bazel_tools//platforms:windows"],
+)
+
+upb_fasttable_enabled(
+    name = "fasttable_enabled",
+    build_setting_default = True,
+    visibility = ["//visibility:public"],
 )
 
 # Public C/C++ libraries #######################################################
