@@ -176,6 +176,7 @@ class Descriptor
             ->optional('no_standard_descriptor_accessor', \Google\Protobuf\Internal\GPBType::BOOL, 2)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 3)
             ->optional('map_entry', \Google\Protobuf\Internal\GPBType::BOOL, 7)
+            ->optional('protected_attributes', \Google\Protobuf\Internal\GPBType::STRING, 10)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 

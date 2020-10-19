@@ -4045,6 +4045,7 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
 
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
+    kProtectedAttributesFieldNumber = 10,
     kMessageSetWireFormatFieldNumber = 1,
     kNoStandardDescriptorAccessorFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
@@ -4067,6 +4068,26 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
   PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
+
+  // optional string protected_attributes = 10;
+  bool has_protected_attributes() const;
+  private:
+  bool _internal_has_protected_attributes() const;
+  public:
+  void clear_protected_attributes();
+  const std::string& protected_attributes() const;
+  void set_protected_attributes(const std::string& value);
+  void set_protected_attributes(std::string&& value);
+  void set_protected_attributes(const char* value);
+  void set_protected_attributes(const char* value, size_t size);
+  std::string* mutable_protected_attributes();
+  std::string* release_protected_attributes();
+  void set_allocated_protected_attributes(std::string* protected_attributes);
+  private:
+  const std::string& _internal_protected_attributes() const;
+  void _internal_set_protected_attributes(const std::string& value);
+  std::string* _internal_mutable_protected_attributes();
+  public:
 
   // optional bool message_set_wire_format = 1 [default = false];
   bool has_message_set_wire_format() const;
@@ -4133,6 +4154,7 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption > uninterpreted_option_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr protected_attributes_;
   bool message_set_wire_format_;
   bool no_standard_descriptor_accessor_;
   bool deprecated_;
@@ -11037,7 +11059,7 @@ FileOptions::uninterpreted_option() const {
 
 // optional bool message_set_wire_format = 1 [default = false];
 inline bool MessageOptions::_internal_has_message_set_wire_format() const {
-  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  bool value = (_has_bits_[0] & 0x00000002u) != 0;
   return value;
 }
 inline bool MessageOptions::has_message_set_wire_format() const {
@@ -11045,7 +11067,7 @@ inline bool MessageOptions::has_message_set_wire_format() const {
 }
 inline void MessageOptions::clear_message_set_wire_format() {
   message_set_wire_format_ = false;
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline bool MessageOptions::_internal_message_set_wire_format() const {
   return message_set_wire_format_;
@@ -11055,7 +11077,7 @@ inline bool MessageOptions::message_set_wire_format() const {
   return _internal_message_set_wire_format();
 }
 inline void MessageOptions::_internal_set_message_set_wire_format(bool value) {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
   message_set_wire_format_ = value;
 }
 inline void MessageOptions::set_message_set_wire_format(bool value) {
@@ -11065,7 +11087,7 @@ inline void MessageOptions::set_message_set_wire_format(bool value) {
 
 // optional bool no_standard_descriptor_accessor = 2 [default = false];
 inline bool MessageOptions::_internal_has_no_standard_descriptor_accessor() const {
-  bool value = (_has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_has_bits_[0] & 0x00000004u) != 0;
   return value;
 }
 inline bool MessageOptions::has_no_standard_descriptor_accessor() const {
@@ -11073,7 +11095,7 @@ inline bool MessageOptions::has_no_standard_descriptor_accessor() const {
 }
 inline void MessageOptions::clear_no_standard_descriptor_accessor() {
   no_standard_descriptor_accessor_ = false;
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline bool MessageOptions::_internal_no_standard_descriptor_accessor() const {
   return no_standard_descriptor_accessor_;
@@ -11083,7 +11105,7 @@ inline bool MessageOptions::no_standard_descriptor_accessor() const {
   return _internal_no_standard_descriptor_accessor();
 }
 inline void MessageOptions::_internal_set_no_standard_descriptor_accessor(bool value) {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
   no_standard_descriptor_accessor_ = value;
 }
 inline void MessageOptions::set_no_standard_descriptor_accessor(bool value) {
@@ -11093,7 +11115,7 @@ inline void MessageOptions::set_no_standard_descriptor_accessor(bool value) {
 
 // optional bool deprecated = 3 [default = false];
 inline bool MessageOptions::_internal_has_deprecated() const {
-  bool value = (_has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline bool MessageOptions::has_deprecated() const {
@@ -11101,7 +11123,7 @@ inline bool MessageOptions::has_deprecated() const {
 }
 inline void MessageOptions::clear_deprecated() {
   deprecated_ = false;
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline bool MessageOptions::_internal_deprecated() const {
   return deprecated_;
@@ -11111,7 +11133,7 @@ inline bool MessageOptions::deprecated() const {
   return _internal_deprecated();
 }
 inline void MessageOptions::_internal_set_deprecated(bool value) {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000008u;
   deprecated_ = value;
 }
 inline void MessageOptions::set_deprecated(bool value) {
@@ -11121,7 +11143,7 @@ inline void MessageOptions::set_deprecated(bool value) {
 
 // optional bool map_entry = 7;
 inline bool MessageOptions::_internal_has_map_entry() const {
-  bool value = (_has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline bool MessageOptions::has_map_entry() const {
@@ -11129,7 +11151,7 @@ inline bool MessageOptions::has_map_entry() const {
 }
 inline void MessageOptions::clear_map_entry() {
   map_entry_ = false;
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline bool MessageOptions::_internal_map_entry() const {
   return map_entry_;
@@ -11139,12 +11161,86 @@ inline bool MessageOptions::map_entry() const {
   return _internal_map_entry();
 }
 inline void MessageOptions::_internal_set_map_entry(bool value) {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000010u;
   map_entry_ = value;
 }
 inline void MessageOptions::set_map_entry(bool value) {
   _internal_set_map_entry(value);
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.map_entry)
+}
+
+// optional string protected_attributes = 10;
+inline bool MessageOptions::_internal_has_protected_attributes() const {
+  bool value = (_has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline bool MessageOptions::has_protected_attributes() const {
+  return _internal_has_protected_attributes();
+}
+inline void MessageOptions::clear_protected_attributes() {
+  protected_attributes_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& MessageOptions::protected_attributes() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.protected_attributes)
+  return _internal_protected_attributes();
+}
+inline void MessageOptions::set_protected_attributes(const std::string& value) {
+  _internal_set_protected_attributes(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.protected_attributes)
+}
+inline std::string* MessageOptions::mutable_protected_attributes() {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.MessageOptions.protected_attributes)
+  return _internal_mutable_protected_attributes();
+}
+inline const std::string& MessageOptions::_internal_protected_attributes() const {
+  return protected_attributes_.Get();
+}
+inline void MessageOptions::_internal_set_protected_attributes(const std::string& value) {
+  _has_bits_[0] |= 0x00000001u;
+  protected_attributes_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void MessageOptions::set_protected_attributes(std::string&& value) {
+  _has_bits_[0] |= 0x00000001u;
+  protected_attributes_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.MessageOptions.protected_attributes)
+}
+inline void MessageOptions::set_protected_attributes(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  _has_bits_[0] |= 0x00000001u;
+  protected_attributes_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:google.protobuf.MessageOptions.protected_attributes)
+}
+inline void MessageOptions::set_protected_attributes(const char* value,
+    size_t size) {
+  _has_bits_[0] |= 0x00000001u;
+  protected_attributes_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.MessageOptions.protected_attributes)
+}
+inline std::string* MessageOptions::_internal_mutable_protected_attributes() {
+  _has_bits_[0] |= 0x00000001u;
+  return protected_attributes_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* MessageOptions::release_protected_attributes() {
+  // @@protoc_insertion_point(field_release:google.protobuf.MessageOptions.protected_attributes)
+  if (!_internal_has_protected_attributes()) {
+    return nullptr;
+  }
+  _has_bits_[0] &= ~0x00000001u;
+  return protected_attributes_.ReleaseNonDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void MessageOptions::set_allocated_protected_attributes(std::string* protected_attributes) {
+  if (protected_attributes != nullptr) {
+    _has_bits_[0] |= 0x00000001u;
+  } else {
+    _has_bits_[0] &= ~0x00000001u;
+  }
+  protected_attributes_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), protected_attributes,
+      GetArena());
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.MessageOptions.protected_attributes)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;

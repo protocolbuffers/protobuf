@@ -76,6 +76,10 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      */
     protected $map_entry = null;
     /**
+     * Generated from protobuf field <code>optional string protected_attributes = 10;</code>
+     */
+    protected $protected_attributes = null;
+    /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
@@ -132,6 +136,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *           NOTE: Do not set the option in .proto files. Always use the maps syntax
      *           instead. The option should only be implicitly set by the proto compiler
      *           parser.
+     *     @type string $protected_attributes
      *     @type \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
@@ -353,6 +358,38 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->map_entry = $var;
+
+        return $this;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional string protected_attributes = 10;</code>
+     * @return string
+     */
+    public function getProtectedAttributes()
+    {
+        return isset($this->protected_attributes) ? $this->protected_attributes : '';
+    }
+
+    public function hasProtectedAttributes()
+    {
+        return isset($this->protected_attributes);
+    }
+
+    public function clearProtectedAttributes()
+    {
+        unset($this->protected_attributes);
+    }
+
+    /**
+     * Generated from protobuf field <code>optional string protected_attributes = 10;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setProtectedAttributes($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->protected_attributes = $var;
 
         return $this;
     }
