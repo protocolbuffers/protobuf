@@ -157,7 +157,7 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   static inline void DeleteNoArena(const Type* x);
   static inline void Merge(const Type& from, Type** to, Arena* arena);
   static inline void Clear(Type** value, Arena* arena);
-  static inline void Initialize(Type** x, Arena* arena);
+  static constexpr TypeOnMemory Constinit();
 
   static inline Type* EnsureMutable(Type** value, Arena* arena);
   // SpaceUsedInMapEntry: Return bytes used by value in MapEntry, excluding
@@ -207,7 +207,7 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
         const TypeOnMemory& value);                                           \
     static inline bool IsInitialized(const TypeOnMemory& value);              \
     static void DeleteNoArena(TypeOnMemory& value);                           \
-    static inline void Initialize(TypeOnMemory* value, Arena* arena);         \
+    static constexpr TypeOnMemory Constinit();                                \
     static inline MapEntryAccessorType* EnsureMutable(TypeOnMemory* value,    \
                                                       Arena* arena);          \
   };
@@ -522,9 +522,9 @@ void MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::DeleteNoArena(
 }
 
 template <typename Type>
-inline void MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Initialize(
-    Type** x, Arena* /* arena */) {
-  *x = NULL;
+constexpr auto MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::Constinit()
+    -> TypeOnMemory {
+  return nullptr;
 }
 
 template <typename Type>
@@ -583,10 +583,10 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
     value.DestroyNoArena(&internal::GetEmptyStringAlreadyInited());           \
   }                                                                           \
   template <typename Type>                                                    \
-  inline void                                                                 \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Initialize(         \
-      TypeOnMemory* value, Arena* /* arena */) {                              \
-    value->UnsafeSetDefault(&internal::GetEmptyStringAlreadyInited());        \
+  constexpr auto                                                              \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Constinit()         \
+      ->TypeOnMemory {                                                        \
+    return TypeOnMemory(&internal::GetEmptyStringAlreadyInited());            \
   }                                                                           \
   template <typename Type>                                                    \
   inline typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,            \
@@ -640,10 +640,10 @@ STRING_OR_BYTES_HANDLER_FUNCTIONS(BYTES)
   inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType,               \
                              Type>::DeleteNoArena(TypeOnMemory& /* x */) {}  \
   template <typename Type>                                                   \
-  inline void                                                                \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Initialize(        \
-      TypeOnMemory* value, Arena* /* arena */) {                             \
-    *value = 0;                                                              \
+  constexpr auto                                                             \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Constinit()        \
+      ->TypeOnMemory {                                                       \
+    return 0;                                                                \
   }                                                                          \
   template <typename Type>                                                   \
   inline typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,           \

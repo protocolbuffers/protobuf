@@ -14,10 +14,10 @@ exports_files(["LICENSE"])
 # build configuration
 ################################################################################
 
+# TODO(yannic): Remove in 3.14.0.
 string_flag(
     name = "incompatible_use_com_google_googletest",
-    # TODO(yannic): Flip to `true` for `3.13.0`.
-    build_setting_default = "false",
+    build_setting_default = "true",
     values = ["true", "false"]
 )
 
@@ -369,7 +369,15 @@ cc_library(
 
 cc_proto_blacklist_test(
     name = "cc_proto_blacklist_test",
-    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()]
+    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    tags = [
+        # Exclude this target from wildcard expansion (//...). Due to
+        # https://github.com/bazelbuild/bazel/issues/10590, this test has to
+        # be nominated using the `@com_google_protobuf//` prefix. We do that,
+        # e.g., in kokoro/linux/bazel/build.sh.
+        # See also https://github.com/protocolbuffers/protobuf/pull/7096.
+        "manual",
+    ],
 )
 
 ################################################################################
@@ -757,6 +765,13 @@ cc_binary(
     copts = COPTS + [
         "-DPYTHON_PROTO2_CPP_IMPL_V2",
     ],
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # not even be buildable. It will be built if it is needed according
+        # to :use_fast_cpp_protos.
+        # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
+        "manual",
+    ],
     linkshared = 1,
     linkstatic = 1,
     deps = select({
@@ -780,6 +795,13 @@ cc_binary(
     includes = [
         "python/",
         "src/",
+    ],
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # not even be buildable. It will be built if it is needed according
+        # to :use_fast_cpp_protos.
+        # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
+        "manual",
     ],
     linkshared = 1,
     linkstatic = 1,

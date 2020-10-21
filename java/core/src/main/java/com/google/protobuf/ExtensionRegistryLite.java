@@ -84,10 +84,8 @@ public class ExtensionRegistryLite {
   static final String EXTENSION_CLASS_NAME = "com.google.protobuf.Extension";
 
   private static class ExtensionClassHolder {
-    /* @Nullable */
     static final Class<?> INSTANCE = resolveExtensionClass();
 
-    /* @Nullable */
     static Class<?> resolveExtensionClass() {
       try {
         return Class.forName(EXTENSION_CLASS_NAME);

@@ -53,9 +53,6 @@ const char kAnyFullTypeName[] = "google.protobuf.Any";
 const char kTypeGoogleApisComPrefix[] = "type.googleapis.com/";
 const char kTypeGoogleProdComPrefix[] = "type.googleprod.com/";
 
-AnyMetadata::AnyMetadata(UrlType* type_url, ValueType* value)
-    : type_url_(type_url), value_(value) {}
-
 void AnyMetadata::InternalPackFrom(const MessageLite& message,
                                    StringPiece type_url_prefix,
                                    StringPiece type_name) {

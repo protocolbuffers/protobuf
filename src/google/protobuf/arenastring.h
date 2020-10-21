@@ -87,22 +87,27 @@ class PROTOBUF_EXPORT LazyString {
 template <typename T>
 class TaggedPtr {
  public:
+  TaggedPtr() = default;
+  explicit constexpr TaggedPtr(const std::string* ptr)
+      : ptr_(const_cast<std::string*>(ptr)) {}
+
   void SetTagged(T* p) {
     Set(p);
-    ptr_ |= 1;
+    ptr_ = reinterpret_cast<void*>(as_int() | 1);
   }
-  void Set(T* p) { ptr_ = reinterpret_cast<uintptr_t>(p); }
-  T* Get() const { return reinterpret_cast<T*>(ptr_ & -2); }
-  bool IsTagged() const { return ptr_ & 1; }
+  void Set(T* p) { ptr_ = p; }
+  T* Get() const { return reinterpret_cast<T*>(as_int() & -2); }
+  bool IsTagged() const { return as_int() & 1; }
 
   // Returned value is only safe to dereference if IsTagged() == false.
   // It is safe to compare.
-  T* UnsafeGet() const { return reinterpret_cast<T*>(ptr_); }
+  T* UnsafeGet() const { return static_cast<T*>(ptr_); }
 
-  bool IsNull() { return ptr_ == 0; }
+  bool IsNull() { return ptr_ == nullptr; }
 
  private:
-  uintptr_t ptr_;
+  uintptr_t as_int() const { return reinterpret_cast<uintptr_t>(ptr_); }
+  void* ptr_;
 };
 
 static_assert(std::is_trivial<TaggedPtr<std::string>>::value,
@@ -165,9 +170,9 @@ static_assert(std::is_trivial<TaggedPtr<std::string>>::value,
 // single "cmp %reg, GLOBAL" in the resulting machine code. (Note that this also
 // requires the String tag to be 0 so we can avoid the mask before comparing.)
 struct PROTOBUF_EXPORT ArenaStringPtr {
-  // No default constructor or destructor -- we have to be POD because we go
-  // into a union when used in a oneof. Message code calls UnsafeReset() to zero
-  // the pointer when necessary instead.
+  ArenaStringPtr() = default;
+  explicit constexpr ArenaStringPtr(const std::string* default_value)
+      : tagged_ptr_(default_value) {}
 
   // Some methods below are overloaded on a `default_value` and on tags.
   // The tagged overloads help reduce code size in the callers in generated

@@ -41,7 +41,6 @@ import java.util.logging.Logger;
 
 /** Utility class for working with unsafe operations. */
 final class UnsafeUtil {
-  private static final Logger logger = Logger.getLogger(UnsafeUtil.class.getName());
   private static final sun.misc.Unsafe UNSAFE = getUnsafe();
   private static final Class<?> MEMORY_CLASS = Android.getMemoryClass();
   private static final boolean IS_ANDROID_64 = determineAndroidSupportByAddressSize(long.class);
@@ -363,9 +362,13 @@ final class UnsafeUtil {
 
       return true;
     } catch (Throwable e) {
-      logger.log(
-          Level.WARNING,
-          "platform method missing - proto runtime falling back to safer methods: " + e);
+      // Because log statements are fairly sparse in this class, this logger is initialized
+      // non-statically. Static initialization adds undue runtime costs to the first client to
+      // initialize this class.
+      Logger.getLogger(UnsafeUtil.class.getName())
+          .log(
+              Level.WARNING,
+              "platform method missing - proto runtime falling back to safer methods: " + e);
     }
     return false;
   }
@@ -397,9 +400,13 @@ final class UnsafeUtil {
       clazz.getMethod("copyMemory", Object.class, long.class, Object.class, long.class, long.class);
       return true;
     } catch (Throwable e) {
-      logger.log(
-          Level.WARNING,
-          "platform method missing - proto runtime falling back to safer methods: " + e);
+      // Because log statements are fairly sparse in this class, this logger is initialized
+      // non-statically. Static initialization adds undue runtime costs to the first client to
+      // initialize this class.
+      Logger.getLogger(UnsafeUtil.class.getName())
+          .log(
+              Level.WARNING,
+              "platform method missing - proto runtime falling back to safer methods: " + e);
     }
     return false;
   }

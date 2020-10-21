@@ -1065,6 +1065,7 @@ void Reflection::ListFieldsMayFailOnStripped(
           output->push_back(field);
         }
       } else if (has_bits && has_bits_indices[i] != -1) {
+        CheckInvalidAccess(schema_, field);
         // Equivalent to: HasBit(message, field)
         if (IsIndexInHasBitSet(has_bits, has_bits_indices[i])) {
           output->push_back(field);

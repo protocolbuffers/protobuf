@@ -49,6 +49,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/any.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
@@ -254,14 +255,14 @@ std::string ToCamelCase(const std::string& input, bool lower_first) {
   std::string result;
   result.reserve(input.size());
 
-  for (int i = 0; i < input.size(); i++) {
-    if (input[i] == '_') {
+  for (char character : input) {
+    if (character == '_') {
       capitalize_next = true;
     } else if (capitalize_next) {
-      result.push_back(ToUpper(input[i]));
+      result.push_back(ToUpper(character));
       capitalize_next = false;
     } else {
-      result.push_back(input[i]);
+      result.push_back(character);
     }
   }
 
@@ -278,14 +279,14 @@ std::string ToJsonName(const std::string& input) {
   std::string result;
   result.reserve(input.size());
 
-  for (int i = 0; i < input.size(); i++) {
-    if (input[i] == '_') {
+  for (char character : input) {
+    if (character == '_') {
       capitalize_next = true;
     } else if (capitalize_next) {
-      result.push_back(ToUpper(input[i]));
+      result.push_back(ToUpper(character));
       capitalize_next = false;
     } else {
-      result.push_back(input[i]);
+      result.push_back(character);
     }
   }
 
@@ -297,14 +298,14 @@ std::string EnumValueToPascalCase(const std::string& input) {
   std::string result;
   result.reserve(input.size());
 
-  for (int i = 0; i < input.size(); i++) {
-    if (input[i] == '_') {
+  for (char character : input) {
+    if (character == '_') {
       next_upper = true;
     } else {
       if (next_upper) {
-        result.push_back(ToUpper(input[i]));
+        result.push_back(ToUpper(character));
       } else {
-        result.push_back(ToLower(input[i]));
+        result.push_back(ToLower(character));
       }
       next_upper = false;
     }
@@ -318,9 +319,9 @@ class PrefixRemover {
  public:
   PrefixRemover(StringPiece prefix) {
     // Strip underscores and lower-case the prefix.
-    for (int i = 0; i < prefix.size(); i++) {
-      if (prefix[i] != '_') {
-        prefix_ += ascii_tolower(prefix[i]);
+    for (char character : prefix) {
+      if (character != '_') {
+        prefix_ += ascii_tolower(character);
       }
     }
   }
@@ -471,16 +472,15 @@ std::set<std::string>* NewAllowedProto3Extendee() {
   const char* kOptionNames[] = {
       "FileOptions",      "MessageOptions", "FieldOptions",  "EnumOptions",
       "EnumValueOptions", "ServiceOptions", "MethodOptions", "OneofOptions"};
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(kOptionNames); ++i) {
+  for (const char* option_name : kOptionNames) {
     // descriptor.proto has a different package name in opensource. We allow
     // both so the opensource protocol compiler can also compile internal
     // proto3 files with custom options. See: b/27567912
     allowed_proto3_extendees->insert(std::string("google.protobuf.") +
-                                     kOptionNames[i]);
+                                     option_name);
     // Split the word to trick the opensource processing scripts so they
     // will keep the original package name.
-    allowed_proto3_extendees->insert(std::string("proto") + "2." +
-                                     kOptionNames[i]);
+    allowed_proto3_extendees->insert(std::string("proto") + "2." + option_name);
   }
   return allowed_proto3_extendees;
 }
@@ -1571,8 +1571,7 @@ void DescriptorPool::FindAllExtensions(
     std::vector<int> numbers;
     if (fallback_database_->FindAllExtensionNumbers(extendee->full_name(),
                                                     &numbers)) {
-      for (int i = 0; i < numbers.size(); ++i) {
-        int number = numbers[i];
+      for (int number : numbers) {
         if (tables_->FindExtension(extendee, number) == nullptr) {
           TryFindExtensionInFallbackDatabase(extendee, number);
         }
@@ -2279,34 +2278,34 @@ bool RetrieveOptionsAssumingRightPool(
   const Reflection* reflection = options.GetReflection();
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(options, &fields);
-  for (int i = 0; i < fields.size(); i++) {
+  for (const FieldDescriptor* field : fields) {
     int count = 1;
     bool repeated = false;
-    if (fields[i]->is_repeated()) {
-      count = reflection->FieldSize(options, fields[i]);
+    if (field->is_repeated()) {
+      count = reflection->FieldSize(options, field);
       repeated = true;
     }
     for (int j = 0; j < count; j++) {
       std::string fieldval;
-      if (fields[i]->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         std::string tmp;
         TextFormat::Printer printer;
         printer.SetInitialIndentLevel(depth + 1);
-        printer.PrintFieldValueToString(options, fields[i], repeated ? j : -1,
+        printer.PrintFieldValueToString(options, field, repeated ? j : -1,
                                         &tmp);
         fieldval.append("{\n");
         fieldval.append(tmp);
         fieldval.append(depth * 2, ' ');
         fieldval.append("}");
       } else {
-        TextFormat::PrintFieldValueToString(options, fields[i],
-                                            repeated ? j : -1, &fieldval);
+        TextFormat::PrintFieldValueToString(options, field, repeated ? j : -1,
+                                            &fieldval);
       }
       std::string name;
-      if (fields[i]->is_extension()) {
-        name = "(." + fields[i]->full_name() + ")";
+      if (field->is_extension()) {
+        name = "(." + field->full_name() + ")";
       } else {
-        name = fields[i]->name();
+        name = field->name();
       }
       option_entries->push_back(name + " = " + fieldval);
     }
@@ -2363,9 +2362,8 @@ bool FormatLineOptions(int depth, const Message& options,
   std::string prefix(depth * 2, ' ');
   std::vector<std::string> all_options;
   if (RetrieveOptions(depth, options, pool, &all_options)) {
-    for (int i = 0; i < all_options.size(); i++) {
-      strings::SubstituteAndAppend(output, "$0option $1;\n", prefix,
-                                all_options[i]);
+    for (const std::string& option : all_options) {
+      strings::SubstituteAndAppend(output, "$0option $1;\n", prefix, option);
     }
   }
   return !all_options.empty();
@@ -2395,8 +2393,9 @@ class SourceLocationCommentPrinter {
   void AddPreComment(std::string* output) {
     if (have_source_loc_) {
       // Detached leading comments.
-      for (int i = 0; i < source_loc_.leading_detached_comments.size(); ++i) {
-        *output += FormatComment(source_loc_.leading_detached_comments[i]);
+      for (const std::string& leading_detached_comment :
+           source_loc_.leading_detached_comments) {
+        *output += FormatComment(leading_detached_comment);
         *output += "\n";
       }
       // Attached leading comments.
@@ -2418,8 +2417,7 @@ class SourceLocationCommentPrinter {
     StripWhitespace(&stripped_comment);
     std::vector<std::string> lines = Split(stripped_comment, "\n");
     std::string output;
-    for (int i = 0; i < lines.size(); ++i) {
-      const std::string& line = lines[i];
+    for (const std::string& line : lines) {
       strings::SubstituteAndAppend(&output, "$0// $1\n", prefix_, line);
     }
     return output;
@@ -3866,13 +3864,13 @@ Symbol DescriptorBuilder::LookupSymbol(
 static bool ValidateQualifiedName(StringPiece name) {
   bool last_was_period = false;
 
-  for (int i = 0; i < name.size(); i++) {
+  for (char character : name) {
     // I don't trust isalnum() due to locales.  :(
-    if (('a' <= name[i] && name[i] <= 'z') ||
-        ('A' <= name[i] && name[i] <= 'Z') ||
-        ('0' <= name[i] && name[i] <= '9') || (name[i] == '_')) {
+    if (('a' <= character && character <= 'z') ||
+        ('A' <= character && character <= 'Z') ||
+        ('0' <= character && character <= '9') || (character == '_')) {
       last_was_period = false;
-    } else if (name[i] == '.') {
+    } else if (character == '.') {
       if (last_was_period) return false;
       last_was_period = true;
     } else {
@@ -4096,11 +4094,11 @@ void DescriptorBuilder::ValidateSymbolName(const std::string& name,
     AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
              "Missing name.");
   } else {
-    for (int i = 0; i < name.size(); i++) {
+    for (char character : name) {
       // I don't trust isalnum() due to locales.  :(
-      if ((name[i] < 'a' || 'z' < name[i]) &&
-          (name[i] < 'A' || 'Z' < name[i]) &&
-          (name[i] < '0' || '9' < name[i]) && (name[i] != '_')) {
+      if ((character < 'a' || 'z' < character) &&
+          (character < 'A' || 'Z' < character) &&
+          (character < '0' || '9' < character) && (character != '_')) {
         AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
                  "\"" + name + "\" is not a valid identifier.");
       }
@@ -5945,12 +5943,12 @@ void DescriptorBuilder::ValidateProto3(FileDescriptor* file,
 
 static std::string ToLowercaseWithoutUnderscores(const std::string& name) {
   std::string result;
-  for (int i = 0; i < name.size(); ++i) {
-    if (name[i] != '_') {
-      if (name[i] >= 'A' && name[i] <= 'Z') {
-        result.push_back(name[i] - 'A' + 'a');
+  for (char character : name) {
+    if (character != '_') {
+      if (character >= 'A' && character <= 'Z') {
+        result.push_back(character - 'A' + 'a');
       } else {
-        result.push_back(name[i]);
+        result.push_back(character);
       }
     }
   }
@@ -7066,6 +7064,18 @@ class DescriptorBuilder::OptionInterpreter::AggregateOptionFinder
     : public TextFormat::Finder {
  public:
   DescriptorBuilder* builder_;
+
+  const Descriptor* FindAnyType(const Message& message,
+                                const std::string& prefix,
+                                const std::string& name) const override {
+    if (prefix != internal::kTypeGoogleApisComPrefix &&
+        prefix != internal::kTypeGoogleProdComPrefix) {
+      return nullptr;
+    }
+    assert_mutex_held(builder_->pool_);
+    Symbol result = builder_->FindSymbol(name);
+    return result.type == Symbol::MESSAGE ? result.descriptor : nullptr;
+  }
 
   const FieldDescriptor* FindExtension(Message* message,
                                        const std::string& name) const override {

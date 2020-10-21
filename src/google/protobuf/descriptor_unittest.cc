@@ -38,6 +38,7 @@
 #include <memory>
 #include <vector>
 
+#include <google/protobuf/any.pb.h>
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/unittest.pb.h>
@@ -287,9 +288,8 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
         break;
     }
 
-    strings::SubstituteAndAppend(&warning_text_, "$0: $1: $2: $3\n",
-                                       filename, element_name, location_name,
-                                       message);
+    strings::SubstituteAndAppend(&warning_text_, "$0: $1: $2: $3\n", filename,
+                              element_name, location_name, message);
   }
 };
 
@@ -3148,6 +3148,11 @@ TEST(CustomOptions, OptionsFromOtherFile) {
   FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
 
+  // We have to import the Any dependency.
+  FileDescriptorProto any_proto;
+  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
+
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
@@ -3205,6 +3210,10 @@ TEST(CustomOptions, MessageOptionThreeFieldsSet) {
   FileDescriptorProto file_proto;
   FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  FileDescriptorProto any_proto;
+  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
 
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
@@ -3282,6 +3291,10 @@ TEST(CustomOptions, MessageOptionRepeatedLeafFieldSet) {
   FileDescriptorProto file_proto;
   FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  FileDescriptorProto any_proto;
+  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
 
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
@@ -3362,6 +3375,10 @@ TEST(CustomOptions, MessageOptionRepeatedMsgFieldSet) {
   FileDescriptorProto file_proto;
   FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  FileDescriptorProto any_proto;
+  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
 
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
@@ -3463,6 +3480,10 @@ TEST(CustomOptions, AggregateOptions) {
                                   message_set_extension)
                 .s());
 
+  protobuf_unittest::AggregateMessageSetElement any_payload;
+  ASSERT_TRUE(file_options.any().UnpackTo(&any_payload));
+  EXPECT_EQ("EmbeddedMessageSetElement", any_payload.s());
+
   // Simple tests for all the other types of annotations
   EXPECT_EQ("MessageAnnotation",
             msg->options().GetExtension(protobuf_unittest::msgopt).s());
@@ -3484,6 +3505,10 @@ TEST(CustomOptions, UnusedImportError) {
   FileDescriptorProto file_proto;
   FileDescriptorProto::descriptor()->file()->CopyTo(&file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != nullptr);
+
+  FileDescriptorProto any_proto;
+  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
+  ASSERT_TRUE(pool.BuildFile(any_proto) != nullptr);
 
   protobuf_unittest::TestMessageWithCustomOptions::descriptor()->file()->CopyTo(
       &file_proto);
@@ -7182,8 +7207,8 @@ class SourceLocationTest : public testing::Test {
 
   static std::string PrintSourceLocation(const SourceLocation& loc) {
     return strings::Substitute("$0:$1-$2:$3", 1 + loc.start_line,
-                                     1 + loc.start_column, 1 + loc.end_line,
-                                     1 + loc.end_column);
+                            1 + loc.start_column, 1 + loc.end_line,
+                            1 + loc.end_column);
   }
 
  private:

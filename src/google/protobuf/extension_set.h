@@ -173,7 +173,7 @@ class MessageSetFieldSkipper;
 // off to the ExtensionSet for parsing.  Etc.
 class PROTOBUF_EXPORT ExtensionSet {
  public:
-  ExtensionSet();
+  constexpr ExtensionSet();
   explicit ExtensionSet(Arena* arena);
   ~ExtensionSet();
 
@@ -849,6 +849,9 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
+
+constexpr ExtensionSet::ExtensionSet()
+    : arena_(nullptr), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,

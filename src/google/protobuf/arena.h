@@ -142,9 +142,11 @@ struct ArenaOptions {
         max_block_size(kDefaultMaxBlockSize),
         initial_block(NULL),
         initial_block_size(0),
-        block_alloc(&::operator new),
+        block_alloc(kDefaultBlockAlloc),
         block_dealloc(&internal::ArenaFree),
         make_metrics_collector(nullptr) {}
+
+  PROTOBUF_EXPORT static void* (*const kDefaultBlockAlloc)(size_t);
 
  private:
   // If make_metrics_collector is not nullptr, it will be called at Arena init

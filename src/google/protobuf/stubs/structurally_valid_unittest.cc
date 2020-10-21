@@ -43,7 +43,8 @@ TEST(StructurallyValidTest, ValidUTF8String) {
   // On GCC, this string can be written as:
   //   "abcd 1234 - \u2014\u2013\u2212"
   // MSVC seems to interpret \u differently.
-  string valid_str("abcd 1234 - \342\200\224\342\200\223\342\210\222 - xyz789");
+  std::string valid_str(
+      "abcd 1234 - \342\200\224\342\200\223\342\210\222 - xyz789");
   EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(),
                                       valid_str.size()));
   // Additional check for pointer alignment
@@ -54,7 +55,7 @@ TEST(StructurallyValidTest, ValidUTF8String) {
 }
 
 TEST(StructurallyValidTest, InvalidUTF8String) {
-  const string invalid_str("abcd\xA0\xB0\xA0\xB0\xA0\xB0 - xyz789");
+  const std::string invalid_str("abcd\xA0\xB0\xA0\xB0\xA0\xB0 - xyz789");
   EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data(),
                                        invalid_str.size()));
   // Additional check for pointer alignment

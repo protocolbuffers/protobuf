@@ -65,6 +65,7 @@ int ProtobufMain(int argc, char* argv[]) {
                         "Generate Java source file.");
 
 
+
   // Proto2 Python
   python::Generator py_generator;
   cli.RegisterGenerator("--python_out", "--python_opt", &py_generator,

@@ -1000,7 +1000,10 @@ TEST_P(ProtoStreamObjectWriterTest,
   Proto3Message expected;
   EXPECT_CALL(
       listener_,
-      InvalidValue(_, StringPiece("TYPE_ENUM"),
+      InvalidValue(_,
+                   StringPiece(
+                       "type.googleapis.com/"
+                       "proto_util_converter.testing.Proto3Message.NestedEnum"),
                    StringPiece("\"someunknownvalueyouwillneverknow\"")))
       .With(Args<0>(HasObjectLocation("enum_value")));
   ow_->StartObject("")

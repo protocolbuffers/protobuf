@@ -316,7 +316,7 @@ build_python() {
   else
     envlist=py\{27,36\}-python
   fi
-  tox -e $envlist
+  python -m tox -e $envlist
   cd ..
 }
 
@@ -324,7 +324,7 @@ build_python_version() {
   internal_build_cpp
   cd python
   envlist=$1
-  tox -e $envlist
+  python -m tox -e $envlist
   cd ..
 }
 
@@ -465,45 +465,6 @@ use_php_zts() {
   VERSION=$1
   export PATH=/usr/local/php-${VERSION}-zts/bin:$PATH
   internal_build_cpp
-}
-
-build_php5.5() {
-  use_php 5.5
-
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
-}
-
-build_php5.6() {
-  use_php 5.6
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
-}
-
-build_php5.6_mac() {
-  # Install PHP
-  curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
-  PHP_FOLDER=`find /usr/local -type d -name "php5-5.6*"`  # The folder name may change upon time
-  test ! -z "$PHP_FOLDER"
-  export PATH="$PHP_FOLDER/bin:$PATH"
-
-  internal_build_cpp
-
-  # Run pure-PHP tests only.
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
 }
 
 build_php7.0() {
@@ -747,8 +708,6 @@ build_php8.0_all() {
 }
 
 build_php_all_32() {
-  build_php5.5
-  build_php5.6
   build_php7.0
   build_php7.1
   build_php7.4
@@ -803,8 +762,6 @@ Usage: $0 { cpp |
             ruby27 |
             jruby |
             ruby_all |
-            php5.5   |
-            php5.6   |
             php7.0   |
             php7.0_c |
             php_compatibility |

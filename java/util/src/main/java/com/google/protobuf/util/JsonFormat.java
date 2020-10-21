@@ -525,7 +525,6 @@ public class JsonFormat {
       return types.get(name);
     }
 
-    /* @Nullable */
     Descriptor getDescriptorForTypeUrl(String typeUrl) throws InvalidProtocolBufferException {
       return find(getTypeName(typeUrl));
     }

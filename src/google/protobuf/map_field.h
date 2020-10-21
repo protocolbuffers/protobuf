@@ -324,6 +324,16 @@ class PROTOBUF_EXPORT MapFieldBase {
  public:
   MapFieldBase()
       : arena_(NULL), repeated_field_(NULL), state_(STATE_MODIFIED_MAP) {}
+
+  // This constructor is for constant initialized global instances.
+  // It uses a linker initialized mutex, so it is not compatible with regular
+  // runtime instances.
+  // Except in MSVC, where we can't have a constinit mutex.
+  explicit PROTOBUF_MAYBE_CONSTEXPR MapFieldBase(ConstantInitialized)
+      : arena_(nullptr),
+        repeated_field_(nullptr),
+        mutex_(GOOGLE_PROTOBUF_LINKER_INITIALIZED),
+        state_(STATE_MODIFIED_MAP) {}
   explicit MapFieldBase(Arena* arena)
       : arena_(arena), repeated_field_(NULL), state_(STATE_MODIFIED_MAP) {
     // Mutex's destructor needs to be called explicitly to release resources
@@ -466,6 +476,12 @@ template <typename Key, typename T>
 class TypeDefinedMapFieldBase : public MapFieldBase {
  public:
   TypeDefinedMapFieldBase() {}
+
+  // This constructor is for constant initialized global instances.
+  // It uses a linker initialized mutex, so it is not compatible with regular
+  // runtime instances.
+  explicit constexpr TypeDefinedMapFieldBase(ConstantInitialized tag)
+      : MapFieldBase(tag) {}
   explicit TypeDefinedMapFieldBase(Arena* arena) : MapFieldBase(arena) {}
   ~TypeDefinedMapFieldBase() override {}
   void MapBegin(MapIterator* map_iter) const override;
@@ -521,6 +537,12 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   typedef Map<Key, T> MapType;
 
   MapField() {}
+
+  // This constructor is for constant initialized global instances.
+  // It uses a linker initialized mutex, so it is not compatible with regular
+  // runtime instances.
+  explicit constexpr MapField(ConstantInitialized tag)
+      : TypeDefinedMapFieldBase<Key, T>(tag), impl_() {}
   explicit MapField(Arena* arena)
       : TypeDefinedMapFieldBase<Key, T>(arena), impl_(arena) {}
 

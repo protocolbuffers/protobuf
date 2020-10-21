@@ -74,6 +74,12 @@ class ZeroCopyOutputStream;
 }  // namespace io
 namespace internal {
 
+// Tag type used to invoke the constinit constructor overload of some classes.
+// Such constructors are internal implementation details of the library.
+struct ConstantInitialized {
+  explicit ConstantInitialized() = default;
+};
+
 // See parse_context.h for explanation
 class ParseContext;
 
@@ -145,14 +151,27 @@ class ExplicitlyConstructed {
   } union_;
 };
 
+PROTOBUF_DISABLE_MSVC_UNION_WARNING
+// We need a publicly accessible `value` object to allow constexpr
+// support in C++11.
+// A constexpr accessor does not work portably.
+union EmptyString {
+  constexpr EmptyString() : dummy{} {}
+  ~EmptyString() {}
+
+  // We need a dummy object for constant initialization.
+  std::false_type dummy;
+  std::string value;
+};
+PROTOBUF_ENABLE_MSVC_UNION_WARNING
+
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
-PROTOBUF_EXPORT extern ExplicitlyConstructed<std::string>
-    fixed_address_empty_string;
+PROTOBUF_EXPORT extern EmptyString fixed_address_empty_string;
 
 
-PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
-  return fixed_address_empty_string.get();
+PROTOBUF_EXPORT constexpr const std::string& GetEmptyStringAlreadyInited() {
+  return fixed_address_empty_string.value;
 }
 
 PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
@@ -187,7 +206,7 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT MessageLite {
  public:
-  inline MessageLite() {}
+  constexpr MessageLite() = default;
   virtual ~MessageLite() = default;
 
   // Basic Operations ------------------------------------------------

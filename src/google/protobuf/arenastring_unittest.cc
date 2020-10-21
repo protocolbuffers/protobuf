@@ -45,6 +45,9 @@
 #include <google/protobuf/stubs/strutil.h>
 
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 

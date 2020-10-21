@@ -29,13 +29,13 @@ bind(
     actual = "//util/python:python_headers",
 )
 
-# TODO(yannic): Remove in 3.13.0.
+# TODO(yannic): Remove in 3.14.0.
 bind(
     name = "gtest",
     actual = "@com_google_googletest//:gtest",
 )
 
-# TODO(yannic): Remove in 3.13.0.
+# TODO(yannic): Remove in 3.14.0.
 bind(
     name = "gtest_main",
     actual = "@com_google_googletest//:gtest_main",
