@@ -1126,7 +1126,7 @@ bool ValidateObjCClassPrefix(
   // to Apple's rules (the checks above implicitly whitelist anything that
   // doesn't meet these rules).
   if (!ascii_isupper(prefix[0])) {
-    std::cerr << std::endl
+    std::cerr
          << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
          << " it should start with a capital letter." << std::endl;
@@ -1135,7 +1135,7 @@ bool ValidateObjCClassPrefix(
   if (prefix.length() < 3) {
     // Apple reserves 2 character prefixes for themselves. They do use some
     // 3 character prefixes, but they haven't updated the rules/docs.
-    std::cerr << std::endl
+    std::cerr
          << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
          << " Apple recommends they should be at least 3 characters long."
@@ -1159,7 +1159,7 @@ bool ValidateObjCClassPrefix(
     // The file does not have a package and ...
     if (other_package_for_prefix.empty()) {
       // ... no other package has declared that prefix.
-      std::cerr << std::endl
+      std::cerr
            << "protoc:0: warning: File '" << file->name() << "' has no "
            << "package. Consider adding a new package to the proto and adding '"
            << "new.package = " << prefix << "' to the expected prefixes file ("
@@ -1167,7 +1167,7 @@ bool ValidateObjCClassPrefix(
       std::cerr.flush();
     } else {
       // ... another package has declared the same prefix.
-      std::cerr << std::endl
+      std::cerr
            << "protoc:0: warning: File '" << file->name() << "' has no package "
            << "and package '" << other_package_for_prefix << "' already uses '"
            << prefix << "' as its prefix. Consider either adding a new package "
@@ -1196,7 +1196,7 @@ bool ValidateObjCClassPrefix(
   // Check: Warning - If the given package/prefix pair wasn't expected, issue a
   // warning issue a warning suggesting it gets added to the file.
   if (!expected_package_prefixes.empty()) {
-    std::cerr << std::endl
+    std::cerr
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
          << " consider adding it to the expected prefixes file ("
