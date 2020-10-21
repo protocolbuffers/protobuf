@@ -204,33 +204,40 @@ static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
   return need_realloc;
 }
 
+typedef struct {
+  const char *ptr;
+  uint64_t val;
+} decode_vret;
+
 UPB_NOINLINE
-static const char *decode_longvarint64(upb_decstate *d, const char *ptr,
-                                       uint64_t *val) {
-  uint8_t byte;
-  int bitpos = 0;
-  uint64_t out = 0;
-
-  do {
-    if (bitpos >= 70) decode_err(d);
-    byte = *ptr;
-    out |= (uint64_t)(byte & 0x7F) << bitpos;
-    ptr++;
-    bitpos += 7;
-  } while (byte & 0x80);
-
-  *val = out;
-  return ptr;
+static decode_vret decode_longvarint64(const char *ptr, uint64_t val) {
+  decode_vret ret = {NULL, 0};
+  uint64_t byte;
+  int i;
+  for (i = 1; i < 10; i++) {
+    byte = (uint8_t)ptr[i];
+    val += (byte - 1) << (i * 7);
+    if (!(byte & 0x80)) {
+      ret.ptr = ptr + i + 1;
+      ret.val = val;
+      return ret;
+    }
+  }
+  return ret;
 }
 
 UPB_FORCEINLINE
 static const char *decode_varint64(upb_decstate *d, const char *ptr,
                                    uint64_t *val) {
-  if (UPB_LIKELY((*ptr & 0x80) == 0)) {
-    *val = (uint8_t)*ptr;
+  uint64_t byte = (uint8_t)*ptr;
+  if (UPB_LIKELY((byte & 0x80) == 0)) {
+    *val = byte;
     return ptr + 1;
   } else {
-    return decode_longvarint64(d, ptr, val);
+    decode_vret res = decode_longvarint64(ptr, byte);
+    if (!res.ptr) decode_err(d);
+    *val = res.val;
+    return res.ptr;
   }
 }
 
@@ -313,7 +320,7 @@ UPB_NOINLINE
 static const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
                                          int overrun) {
   if (overrun < d->limit) {
-    // Need to copy remaining data into patch buffer.
+    /* Need to copy remaining data into patch buffer. */
     UPB_ASSERT(overrun < 16);
     memset(d->patch + 16, 0, 16);
     memcpy(d->patch, d->end, 16);
