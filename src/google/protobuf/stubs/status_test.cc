@@ -101,7 +101,7 @@ TEST(Status, AssignEmpty) {
   util::Status a(util::error::UNKNOWN, "message");
   util::Status b;
   a = b;
-  ASSERT_EQ(string("OK"), a.ToString());
+  ASSERT_EQ(std::string("OK"), a.ToString());
   ASSERT_TRUE(b.ok());
   ASSERT_TRUE(a.ok());
 }

@@ -78,6 +78,7 @@ class FileGenerator {
 
   void Generate(io::Printer* printer);
 
+
   // If we aren't putting everything into one file, this will write all the
   // files other than the outer file (i.e. one for each message, enum, and
   // service type).

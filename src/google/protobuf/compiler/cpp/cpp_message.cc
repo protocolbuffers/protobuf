@@ -1895,13 +1895,6 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
   return num_field_metadata;
 }
 
-void MessageGenerator::GenerateFieldDefaultInstances(io::Printer* printer) {
-  // Construct the default instances for all fields that need one.
-  for (auto field : FieldRange(descriptor_)) {
-    field_generators_.get(field).GenerateDefaultInstanceAllocator(printer);
-  }
-}
-
 void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   Formatter format(printer, variables_);
   if (IsMapEntryMessage(descriptor_)) {

@@ -68,16 +68,25 @@ void DestroyString(const void* s) {
   static_cast<const std::string*>(s)->~basic_string();
 }
 
-ExplicitlyConstructed<std::string> fixed_address_empty_string;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EmptyString
+    fixed_address_empty_string;  // NOLINT
 
 
+PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
-  fixed_address_empty_string.DefaultConstruct();
-  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+  ::new (static_cast<void*>(&fixed_address_empty_string.value)) std::string();
+  OnShutdownDestroyString(&fixed_address_empty_string.value);
+
+  // Verify that we can indeed get the address during constant evaluation.
+  PROTOBUF_CONSTINIT static const std::string& fixed_address_empty_string_test =
+      GetEmptyStringAlreadyInited();
+  (void)fixed_address_empty_string_test;
+
+  init_protobuf_defaults_state.store(true, std::memory_order_release);
   return true;
 }
 
-void InitProtobufDefaults() {
+void InitProtobufDefaultsSlow() {
   static bool is_inited = InitProtobufDefaultsImpl();
   (void)is_inited;
 }

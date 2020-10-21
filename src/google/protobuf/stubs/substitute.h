@@ -90,8 +90,8 @@ class SubstituteArg {
  public:
   inline SubstituteArg(const char* value)
     : text_(value), size_(strlen(text_)) {}
-  inline SubstituteArg(const string& value)
-    : text_(value.data()), size_(value.size()) {}
+  inline SubstituteArg(const std::string& value)
+      : text_(value.data()), size_(value.size()) {}
 
   // Indicates that no argument was given.
   inline explicit SubstituteArg()
@@ -139,21 +139,21 @@ class SubstituteArg {
 
 }  // namespace internal
 
-PROTOBUF_EXPORT string
-Substitute(const char* format,
-           const internal::SubstituteArg& arg0 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg1 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg2 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg3 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg4 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg5 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg6 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg7 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg8 = internal::SubstituteArg(),
-           const internal::SubstituteArg& arg9 = internal::SubstituteArg());
+PROTOBUF_EXPORT std::string Substitute(
+    const char* format,
+    const internal::SubstituteArg& arg0 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg1 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg2 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg3 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg4 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg5 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg6 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg7 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg8 = internal::SubstituteArg(),
+    const internal::SubstituteArg& arg9 = internal::SubstituteArg());
 
 PROTOBUF_EXPORT void SubstituteAndAppend(
-    string* output, const char* format,
+    std::string* output, const char* format,
     const internal::SubstituteArg& arg0 = internal::SubstituteArg(),
     const internal::SubstituteArg& arg1 = internal::SubstituteArg(),
     const internal::SubstituteArg& arg2 = internal::SubstituteArg(),

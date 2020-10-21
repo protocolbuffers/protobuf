@@ -69,6 +69,7 @@ ProtoWriter::ProtoWriter(TypeResolver* type_resolver,
       ignore_unknown_enum_values_(false),
       use_lower_camel_for_enums_(false),
       case_insensitive_enum_parsing_(true),
+      use_json_name_in_missing_fields_(false),
       element_(nullptr),
       size_insert_(),
       output_(output),
@@ -90,6 +91,7 @@ ProtoWriter::ProtoWriter(const TypeInfo* typeinfo,
       ignore_unknown_enum_values_(false),
       use_lower_camel_for_enums_(false),
       case_insensitive_enum_parsing_(true),
+      use_json_name_in_missing_fields_(false),
       element_(nullptr),
       size_insert_(),
       output_(output),
@@ -618,24 +620,10 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
   // Pushing a ProtoElement and then pop it off at the end for 2 purposes:
   // error location reporting and required field accounting.
   //
-  // For proto3, since there is no required field tracking, we only need to push
-  // ProtoElement for error cases.
+  // For proto3, since there is no required field tracking, we only need to
+  // push ProtoElement for error cases.
   if (!element_->proto3()) {
     element_.reset(new ProtoElement(element_.release(), &field, type, false));
-  }
-
-  if (field.kind() == google::protobuf::Field::TYPE_UNKNOWN ||
-      field.kind() == google::protobuf::Field::TYPE_MESSAGE) {
-    // Push a ProtoElement for location reporting purposes.
-    if (element_->proto3()) {
-      element_.reset(new ProtoElement(element_.release(), &field, type, false));
-    }
-    InvalidValue(field.type_url().empty()
-                     ? google::protobuf::Field_Kind_Name(field.kind())
-                     : field.type_url(),
-                 data.ValueAsStringOrDefault(""));
-    element_.reset(element()->pop());
-    return this;
   }
 
   switch (field.kind()) {
@@ -706,9 +694,9 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
           case_insensitive_enum_parsing_, ignore_unknown_enum_values_);
       break;
     }
-    default:  // TYPE_GROUP or TYPE_MESSAGE
+    default:  // TYPE_GROUP, TYPE_MESSAGE, TYPE_UNKNOWN.
       status = util::Status(util::error::INVALID_ARGUMENT,
-                            data.ToString().value());
+                            data.ValueAsStringOrDefault(""));
   }
 
   if (!status.ok()) {
@@ -716,7 +704,9 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
     if (element_->proto3()) {
       element_.reset(new ProtoElement(element_.release(), &field, type, false));
     }
-    InvalidValue(google::protobuf::Field_Kind_Name(field.kind()),
+    InvalidValue(field.type_url().empty()
+                     ? google::protobuf::Field_Kind_Name(field.kind())
+                     : field.type_url(),
                  status.message());
     element_.reset(element()->pop());
     return this;

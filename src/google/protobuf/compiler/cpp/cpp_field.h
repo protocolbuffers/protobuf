@@ -164,10 +164,6 @@ class FieldGenerator {
     return false;
   }
 
-  // Generate code that allocates the fields's default instance.
-  virtual void GenerateDefaultInstanceAllocator(
-      io::Printer* /*printer*/) const {}
-
   // Generate lines to serialize this field directly to the array "target",
   // which are placed within the message's SerializeWithCachedSizesToArray()
   // method. This must also advance "target" past the written bytes.

@@ -162,7 +162,7 @@ size_t Message::SpaceUsedLong() const {
   return GetReflection()->SpaceUsedLong(*this);
 }
 
-size_t Message::GetInvariantPerBuild(size_t salt) {
+uint64 Message::GetInvariantPerBuild(uint64 salt) {
   return salt;
 }
 

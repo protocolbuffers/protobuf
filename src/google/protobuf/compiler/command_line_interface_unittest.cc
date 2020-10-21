@@ -47,6 +47,7 @@
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/any.pb.h>
 #include <google/protobuf/compiler/mock_code_generator.h>
 #include <google/protobuf/compiler/subprocess.h>
 #include <google/protobuf/compiler/code_generator.h>
@@ -123,7 +124,7 @@ class CommandLineInterfaceTest : public testing::Test {
   void SwitchToTempDirectory() {
     File::ChangeWorkingDirectory(temp_directory_);
   }
-#else   // !PROTOBUF_OPENSOURCE
+#else  // !PROTOBUF_OPENSOURCE
   // TODO(teboring): Figure out how to change and get working directory in
   // google3.
 #endif  // !PROTOBUF_OPENSOURCE
@@ -680,6 +681,9 @@ TEST_F(CommandLineInterfaceTest, MultipleInputs_UnusedImport_DescriptorSetIn) {
   const FileDescriptor* descriptor_file =
       FileDescriptorProto::descriptor()->file();
   descriptor_file->CopyTo(file_descriptor_set.add_file());
+
+  FileDescriptorProto& any_proto = *file_descriptor_set.add_file();
+  google::protobuf::Any::descriptor()->file()->CopyTo(&any_proto);
 
   const FileDescriptor* custom_file =
       protobuf_unittest::AggregateMessage::descriptor()->file();

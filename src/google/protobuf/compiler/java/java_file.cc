@@ -390,6 +390,7 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Print("}\n");
 }
 
+
 void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     io::Printer* printer) {
   printer->Print(

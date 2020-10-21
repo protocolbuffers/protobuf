@@ -60,7 +60,8 @@ class PROTOBUF_EXPORT AnyMetadata {
   typedef ArenaStringPtr ValueType;
  public:
   // AnyMetadata does not take ownership of "type_url" and "value".
-  AnyMetadata(UrlType* type_url, ValueType* value);
+  constexpr AnyMetadata(UrlType* type_url, ValueType* value)
+      : type_url_(type_url), value_(value) {}
 
   // Packs a message using the default type URL prefix: "type.googleapis.com".
   // The resulted type URL will be "type.googleapis.com/<message_full_name>".

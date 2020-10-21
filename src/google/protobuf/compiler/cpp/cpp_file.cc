@@ -941,7 +941,6 @@ void FileGenerator::GenerateInitForSCC(const SCC* scc,
     if (scc_analyzer_.GetSCC(message_generators_[i]->descriptor_) != scc) {
       continue;
     }
-    message_generators_[i]->GenerateFieldDefaultInstances(printer);
     format(
         "{\n"
         "  void* ptr = &$1$;\n"

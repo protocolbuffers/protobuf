@@ -47,6 +47,10 @@ static const size_t kMaxCleanupListElements = 64;  // 1kB on 64-bit.
 
 namespace google {
 namespace protobuf {
+
+PROTOBUF_EXPORT /*static*/ void* (*const ArenaOptions::kDefaultBlockAlloc)(
+    size_t) = &::operator new;
+
 namespace internal {
 
 const size_t ArenaImpl::kBlockHeaderSize;
@@ -54,7 +58,7 @@ const size_t ArenaImpl::kSerialArenaSize;
 const size_t ArenaImpl::kOptionsSize;
 
 
-std::atomic<LifecycleId> ArenaImpl::lifecycle_id_generator_;
+ArenaImpl::CacheAlignedLifecycleIdGenerator ArenaImpl::lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
 ArenaImpl::ThreadCache& ArenaImpl::thread_cache() {
   static internal::ThreadLocalStorage<ThreadCache>* thread_cache_ =
@@ -63,12 +67,13 @@ ArenaImpl::ThreadCache& ArenaImpl::thread_cache() {
 }
 #elif defined(PROTOBUF_USE_DLLS)
 ArenaImpl::ThreadCache& ArenaImpl::thread_cache() {
-  static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_ = {-1, NULL};
+  static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_ = {
+      0, static_cast<LifecycleIdAtomic>(-1), nullptr};
   return thread_cache_;
 }
 #else
-PROTOBUF_THREAD_LOCAL ArenaImpl::ThreadCache ArenaImpl::thread_cache_ = {-1,
-                                                                         NULL};
+PROTOBUF_THREAD_LOCAL ArenaImpl::ThreadCache ArenaImpl::thread_cache_ = {
+    0, static_cast<LifecycleIdAtomic>(-1), nullptr};
 #endif
 
 void ArenaFree(void* object, size_t size) {
@@ -122,9 +127,26 @@ ArenaImpl::ArenaImpl(const ArenaOptions& options) {
 }
 
 void ArenaImpl::Init(bool record_allocs) {
+  ThreadCache& tc = thread_cache();
+  auto id = tc.next_lifecycle_id;
+  constexpr uint64 kInc = ThreadCache::kPerThreadIds * 2;
+  if (PROTOBUF_PREDICT_FALSE((id & (kInc - 1)) == 0)) {
+    if (sizeof(lifecycle_id_generator_.id) == 4) {
+      // 2^32 is dangerous low to guarantee uniqueness. If we start dolling out
+      // unique id's in ranges of kInc it's unacceptably low. In this case
+      // we increment by 1. The additional range of kPerThreadIds that are used
+      // per thread effectively pushes the overflow time from weeks to years
+      // of continuous running.
+      id = lifecycle_id_generator_.id.fetch_add(1, std::memory_order_relaxed) *
+           kInc;
+    } else {
+      id =
+          lifecycle_id_generator_.id.fetch_add(kInc, std::memory_order_relaxed);
+    }
+  }
+  tc.next_lifecycle_id = id + 2;
   // We store "record_allocs" in the low bit of lifecycle_id_.
-  auto id = lifecycle_id_generator_.fetch_add(1, std::memory_order_relaxed);
-  lifecycle_id_ = (id << 1) | (record_allocs ? 1 : 0);
+  lifecycle_id_ = id | (record_allocs ? 1 : 0);
   hint_.store(nullptr, std::memory_order_relaxed);
   threads_.store(nullptr, std::memory_order_relaxed);
   space_allocated_.store(0, std::memory_order_relaxed);

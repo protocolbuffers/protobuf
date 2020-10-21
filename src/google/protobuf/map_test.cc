@@ -80,6 +80,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -1180,6 +1181,11 @@ TEST_F(MapImplTest, TransparentLookupForString) {
   TestTransparent(std::cref(abc), std::cref(lkj));
 }
 
+TEST_F(MapImplTest, ConstInit) {
+  PROTOBUF_CONSTINIT static Map<int, int> map;  // NOLINT
+  EXPECT_TRUE(map.empty());
+}
+
 // Map Field Reflection Test ========================================
 
 static int Func(int i, int j) { return i * j; }
@@ -2045,6 +2051,39 @@ TEST_F(MapFieldReflectionTest, UninitializedEntry) {
   auto entry = reflection->AddMessage(&message, field);
   EXPECT_FALSE(entry->IsInitialized());
   EXPECT_FALSE(message.IsInitialized());
+}
+
+class MyMapEntry
+    : public internal::MapEntry<MyMapEntry, ::google::protobuf::int32, ::google::protobuf::int32,
+                                internal::WireFormatLite::TYPE_INT32,
+                                internal::WireFormatLite::TYPE_INT32> {
+ public:
+  constexpr MyMapEntry() {}
+  MyMapEntry(Arena*) { std::abort(); }
+  Metadata GetMetadata() const override { std::abort(); }
+  static bool ValidateKey(void*) { return true; }
+  static bool ValidateValue(void*) { return true; }
+};
+
+class MyMapEntryLite
+    : public internal::MapEntryLite<MyMapEntryLite, ::google::protobuf::int32, ::google::protobuf::int32,
+                                    internal::WireFormatLite::TYPE_INT32,
+                                    internal::WireFormatLite::TYPE_INT32> {
+ public:
+  constexpr MyMapEntryLite() {}
+  explicit MyMapEntryLite(Arena*) { std::abort(); }
+  static bool ValidateKey(void*) { return true; }
+  static bool ValidateValue(void*) { return true; }
+};
+
+TEST(MapEntryTest, ConstInit) {
+  // This verifies that `MapEntry`, `MapEntryLite` and `MapEntryImpl` can be
+  // constant initialized.
+  PROTOBUF_CONSTINIT static MyMapEntry entry{};
+  EXPECT_NE(entry.SpaceUsed(), 0);
+
+  PROTOBUF_CONSTINIT static MyMapEntryLite entry_lite{};  // NOLINT
+  EXPECT_TRUE(entry_lite.IsInitialized());
 }
 
 // Generated Message Test ===========================================

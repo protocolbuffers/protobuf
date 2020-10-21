@@ -72,6 +72,11 @@
 #undef PROTOBUF_FINAL
 #undef PROTOBUF_THREAD_LOCAL
 #undef PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
+#undef PROTOBUF_DISABLE_MSVC_UNION_WARNING
+#undef PROTOBUF_ENABLE_MSVC_UNION_WARNING
+#undef PROTOBUF_CONSTINIT
+#undef PROTOBUF_MAYBE_CONSTEXPR
+#undef PROTOBUF_ATTRIBUTE_NO_DESTROY
 
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER
@@ -88,6 +93,8 @@
 #pragma pop_macro("OPTIONAL")
 #pragma pop_macro("min")
 #pragma pop_macro("max")
+#pragma pop_macro("NEAR")
+#pragma pop_macro("NO_DATA")
 #pragma pop_macro("NO_ERROR")
 #pragma pop_macro("REASON_UNKNOWN")
 #pragma pop_macro("SERVICE_DISABLED")
@@ -97,8 +104,6 @@
 #endif
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
-#pragma pop_macro("YES")
-#pragma pop_macro("NO")
 #pragma pop_macro("DEBUG")
 #pragma pop_macro("TRUE")
 #pragma pop_macro("FALSE")

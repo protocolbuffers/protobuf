@@ -105,8 +105,8 @@ class MapAllocator {
   using size_type = size_t;
   using difference_type = ptrdiff_t;
 
-  MapAllocator() : arena_(nullptr) {}
-  explicit MapAllocator(Arena* arena) : arena_(arena) {}
+  constexpr MapAllocator() : arena_(nullptr) {}
+  explicit constexpr MapAllocator(Arena* arena) : arena_(arena) {}
   template <typename X>
   MapAllocator(const MapAllocator<X>& allocator)  // NOLINT(runtime/explicit)
       : arena_(allocator.arena()) {}
@@ -382,7 +382,7 @@ class Map {
   using size_type = size_t;
   using hasher = typename internal::TransparentSupport<Key>::hash;
 
-  Map() : elements_(nullptr) {}
+  constexpr Map() : elements_(nullptr) {}
   explicit Map(Arena* arena) : elements_(arena) {}
 
   Map(const Map& other) : Map() { insert(other.begin(), other.end()); }
@@ -450,11 +450,11 @@ class Map {
   //    otherwise. This avoids unnecessary copies of string keys, for example.
   class InnerMap : private hasher {
    public:
-    explicit InnerMap(Arena* arena)
+    explicit constexpr InnerMap(Arena* arena)
         : hasher(),
           num_elements_(0),
           num_buckets_(internal::kGlobalEmptyTableSize),
-          seed_(Seed()),
+          seed_(0),
           index_of_first_non_null_(num_buckets_),
           table_(const_cast<void**>(internal::kGlobalEmptyTable)),
           alloc_(arena) {}
@@ -919,6 +919,7 @@ class Map {
         // Just overwrite with a new one. No need to transfer or free anything.
         num_buckets_ = index_of_first_non_null_ = kMinTableSize;
         table_ = CreateEmptyTable(num_buckets_);
+        seed_ = Seed();
         return;
       }
 

@@ -58,7 +58,7 @@ inline size_t AlignUpTo8(size_t n) {
   return (n + 7) & static_cast<size_t>(-8);
 }
 
-using LifecycleId = int64_t;
+using LifecycleIdAtomic = uint64_t;
 
 void PROTOBUF_EXPORT ArenaFree(void* object, size_t size);
 
@@ -328,20 +328,43 @@ class PROTOBUF_EXPORT ArenaImpl {
     ArenaMetricsCollector* metrics_collector;
   };
 
-  struct ThreadCache {
+#ifdef _MSC_VER
+#pragma warning(disable:4324)
+#endif
+  struct alignas(64) ThreadCache {
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
     // If we are using the ThreadLocalStorage class to store the ThreadCache,
     // then the ThreadCache's default constructor has to be responsible for
     // initializing it.
-    ThreadCache() : last_lifecycle_id_seen(-1), last_serial_arena(NULL) {}
+    ThreadCache()
+        : next_lifecycle_id(0),
+          last_lifecycle_id_seen(-1),
+          last_serial_arena(NULL) {}
 #endif
 
+    // Number of per-thread lifecycle IDs to reserve. Must be power of two.
+    // To reduce contention on a global atomic, each thread reserves a batch of
+    // IDs.  The following number is caluculated based on a stress test with
+    // ~6500 threads all frequently allocating a new arena.
+    static constexpr size_t kPerThreadIds = 256;
+    // Next lifecycle ID available to this thread. We need to reserve a new
+    // batch, if `next_lifecycle_id & (kPerThreadIds - 1) == 0`.
+    uint64 next_lifecycle_id;
     // The ThreadCache is considered valid as long as this matches the
     // lifecycle_id of the arena being used.
-    LifecycleId last_lifecycle_id_seen;
+    uint64 last_lifecycle_id_seen;
     SerialArena* last_serial_arena;
   };
-  static std::atomic<LifecycleId> lifecycle_id_generator_;
+  // Lifecycle_id can be highly contended variable in a situation of lots of
+  // arena creation. Make sure that other global variables are not sharing the
+  // cacheline.
+#ifdef _MSC_VER
+#pragma warning(disable:4324)
+#endif
+  struct alignas(64) CacheAlignedLifecycleIdGenerator {
+    std::atomic<LifecycleIdAtomic> id;
+  };
+  static CacheAlignedLifecycleIdGenerator lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
   // Android ndk does not support __thread keyword so we use a custom thread
   // local storage class we implemented.
@@ -430,7 +453,7 @@ class PROTOBUF_EXPORT ArenaImpl {
 
   // Unique for each arena. Changes on Reset().
   // Least-significant-bit is 1 iff allocations should be recorded.
-  LifecycleId lifecycle_id_;
+  uint64 lifecycle_id_;
 
   Options* options_ = nullptr;
 

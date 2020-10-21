@@ -85,9 +85,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
 
   std::vector<const FieldDescriptor*> fields;
   from_reflection->ListFieldsOmitStripped(from, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
-
+  for (const FieldDescriptor* field : fields) {
     if (field->is_repeated()) {
       // Use map reflection if both are in map status and have the
       // same map type to avoid sync with repeated field.
@@ -180,8 +178,8 @@ void ReflectionOps::Clear(Message* message) {
 
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFieldsOmitStripped(*message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    reflection->ClearField(message, fields[i]);
+  for (const FieldDescriptor* field : fields) {
+    reflection->ClearField(message, field);
   }
 
   reflection->MutableUnknownFields(message)->Clear();
@@ -270,8 +268,7 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   // Should be safe to skip stripped fields because required fields are not
   // stripped.
   reflection->ListFieldsOmitStripped(message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+  for (const FieldDescriptor* field : fields) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
       if (field->is_map()) {
@@ -329,8 +326,7 @@ void ReflectionOps::DiscardUnknownFields(Message* message) {
   // messages present.
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+  for (const FieldDescriptor* field : fields) {
     // Skip over non-message fields.
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
       continue;
@@ -401,8 +397,7 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
   // Check sub-messages.
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFieldsOmitStripped(message, &fields);
-  for (int i = 0; i < fields.size(); i++) {
-    const FieldDescriptor* field = fields[i];
+  for (const FieldDescriptor* field : fields) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
 
       if (field->is_repeated()) {

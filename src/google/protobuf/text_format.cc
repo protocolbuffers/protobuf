@@ -2052,8 +2052,8 @@ void TextFormat::Printer::Print(const Message& message,
   if (print_message_fields_in_index_order_) {
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
-  for (int i = 0; i < fields.size(); i++) {
-    PrintField(message, reflection, fields[i], generator);
+  for (const FieldDescriptor* field : fields) {
+    PrintField(message, reflection, field, generator);
   }
   if (!hide_unknown_fields_) {
     PrintUnknownFields(reflection->GetUnknownFields(message), generator,
@@ -2312,8 +2312,8 @@ void TextFormat::Printer::PrintField(const Message& message,
   }
 
   if (need_release) {
-    for (int j = 0; j < sorted_map_field.size(); ++j) {
-      delete sorted_map_field[j];
+    for (const Message* message_to_delete : sorted_map_field) {
+      delete message_to_delete;
     }
   }
 }
