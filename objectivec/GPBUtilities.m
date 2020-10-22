@@ -504,15 +504,6 @@ static void GPBMaybeClearOneofPrivate(GPBMessage *self,
 // Object types are handled slightly differently, they need to be released
 // and retained.
 
-void GPBSetAutocreatedRetainedObjectIvarWithField(
-    GPBMessage *self, GPBFieldDescriptor *field,
-    id __attribute__((ns_consumed)) value) {
-  uint8_t *storage = (uint8_t *)self->messageStorage_;
-  id *typePtr = (id *)&storage[field->description_->offset];
-  NSCAssert(*typePtr == NULL, @"Can't set autocreated object more than once.");
-  *typePtr = value;
-}
-
 void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
                                              GPBFieldDescriptor *field) {
   if (GPBGetHasIvarField(self, field)) {
