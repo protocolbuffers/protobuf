@@ -74,21 +74,6 @@ bool decode_isdone(upb_decstate *d, const char **ptr) {
   }
 }
 
-UPB_INLINE
-int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
-  int limit = size + (int)(ptr - d->end);
-  int delta = d->limit - limit;
-  d->limit = limit;
-  d->limit_ptr = d->end + UPB_MIN(0, limit);
-  return delta;
-}
-
-UPB_INLINE
-void decode_poplimit(upb_decstate *d, int saved_delta) {
-  d->limit += saved_delta;
-  d->limit_ptr = d->end + UPB_MIN(0, d->limit);
-}
-
 #include "upb/port_undef.inc"
 
 #endif  /* UPB_DECODE_INT_H_ */

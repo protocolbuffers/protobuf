@@ -48,6 +48,37 @@ upb_msg *decode_newmsg_ceil(upb_decstate *d, const upb_msglayout *l,
   return msg_data + sizeof(upb_msg_internal);
 }
 
+typedef struct {
+  const char *limit_ptr;
+  int val;  /* If <=0, the old limit, else a delta */
+} fastdecode_savedlimit;
+
+static fastdecode_savedlimit fastdecode_pushlimit(upb_decstate *d,
+                                                  const char *ptr, int size) {
+  fastdecode_savedlimit saved;
+  int limit = size + (int)(ptr - d->end);
+  if (UPB_LIKELY(limit <= 0)) {
+    saved.limit_ptr = d->limit_ptr;
+    saved.val = d->limit;
+    d->limit_ptr = ptr + size;
+  } else {
+    saved.limit_ptr = NULL;
+    saved.val = d->limit - limit;
+  }
+  d->limit = limit;
+  return saved;
+}
+
+static void fastdecode_poplimit(upb_decstate *d, fastdecode_savedlimit saved) {
+  if (UPB_LIKELY(saved.limit_ptr != NULL)) {
+    d->limit_ptr = saved.limit_ptr;
+    d->limit = saved.val;
+  } else {
+    d->limit += saved.val;
+    d->limit_ptr = d->end + UPB_MIN(0, d->limit);
+  }
+}
+
 UPB_FORCEINLINE
 static const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
                                           upb_msg *msg,
@@ -399,7 +430,6 @@ again:
 
   ptr += tagbytes + 1;
   size_t len = (uint8_t)ptr[-1];
-  int saved_delta;
   if (UPB_UNLIKELY(len & 0x80)) {
     int i;
     for (i = 0; i < 3; i++) {
@@ -419,9 +449,9 @@ done:
   if (ptr - d->end + (int)len > d->limit) {
     return fastdecode_err(d);
   }
-  saved_delta = decode_pushlimit(d, ptr, len);
+  fastdecode_savedlimit saved = fastdecode_pushlimit(d, ptr, len);
   ptr = fastdecode_dispatch(d, ptr, child, subl, 0);
-  decode_poplimit(d, saved_delta);
+  fastdecode_poplimit(d, saved);
   if (UPB_UNLIKELY(d->end_group != 0)) {
     return fastdecode_err(d);
   }
