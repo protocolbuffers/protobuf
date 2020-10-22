@@ -72,19 +72,31 @@ static uint32_t fastdecode_loadtag(const char *ptr) {
   return tag;
 }
 
+UPB_NOINLINE
+static const char *fastdecode_isdonefallback(upb_decstate *d, const char *ptr,
+                                             upb_msg *msg,
+                                             const upb_msglayout *table,
+                                             uint64_t hasbits, int overrun) {
+  ptr = decode_isdonefallback_inl(d, ptr, overrun);
+  if (ptr == NULL) {
+    return fastdecode_err(d);
+  }
+  uint16_t tag = fastdecode_loadtag(ptr);
+  return fastdecode_tagdispatch(d, ptr, msg, table, hasbits, tag);
+}
+
 UPB_FORCEINLINE
 const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 const upb_msglayout *table, uint64_t hasbits) {
-  if (UPB_UNLIKELY(ptr >= d->fastlimit)) {
-    if (UPB_LIKELY(ptr == d->limit)) {
+  if (UPB_UNLIKELY(ptr >= d->limit_ptr)) {
+    int overrun = ptr - d->end;
+    if (UPB_LIKELY(overrun == d->limit)) {
       // Parse is finished.
       *(uint32_t*)msg |= hasbits >> 16;  // Sync hasbits.
       return ptr;
+    } else {
+      return fastdecode_isdonefallback(d, ptr, msg, table, hasbits, overrun);
     }
-    // We are within 16 bytes of end-of-buffer, so we can't use fast parsing
-    // functions anymore (they will read up to 16b without bounds checks).
-    uint64_t data = 0;
-    RETURN_GENERIC("dispatch hit end\n");
   }
 
   // Read two bytes of tag data (for a one-byte tag, the high byte is junk).
@@ -247,9 +259,24 @@ UPB_FORCEINLINE
 static bool fastdecode_boundscheck(const char *ptr, size_t len,
                                    const char *end) {
   uintptr_t uptr = (uintptr_t)ptr;
-  uintptr_t uend = (uintptr_t)end;
+  uintptr_t uend = (uintptr_t)end + 16;
   uintptr_t res = uptr + len;
   return res < uptr || res > uend;
+}
+
+UPB_NOINLINE
+static const char *fastdecode_copystring(struct upb_decstate *d,
+                                         size_t len, upb_msg *msg,
+                                         const upb_msglayout *table,
+                                         uint64_t hasbits, upb_strview *str) {
+  char *ptr = (char*)str->data;
+  char *data = upb_arena_malloc(&d->arena, len);
+  if (!data) {
+    return fastdecode_err(d);
+  }
+  memcpy(data, ptr, len);
+  str->data = data;
+  return fastdecode_dispatch(d, ptr + len, msg, table, hasbits);
 }
 
 UPB_FORCEINLINE
@@ -268,9 +295,12 @@ static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
   str = ptr + tagbytes + 1;
   dst->data = str;
   dst->size = len;
-  if (UPB_UNLIKELY(fastdecode_boundscheck(str, len, d->limit))) {
+  if (UPB_UNLIKELY(fastdecode_boundscheck(str, len, d->limit_ptr))) {
     dst->size = 0;
     RETURN_GENERIC("string field len >1 byte\n");
+  }
+  if (!d->alias) {
+    return fastdecode_copystring(d, len, msg, table, hasbits, dst);
   }
   return fastdecode_dispatch(d, str + len, msg, table, hasbits);
 }
@@ -292,37 +322,6 @@ const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
 }
 
 /* message fields *************************************************************/
-
-UPB_NOINLINE
-static const char *fastdecode_tosubmsg(upb_decstate *d, const char *ptr,
-                                       upb_msg *msg, const upb_msglayout *table,
-                                       uint64_t hasbits,
-                                       const char *saved_limit) {
-  size_t len = (uint8_t)ptr[-1];
-  if (UPB_UNLIKELY(len & 0x80)) {
-    int i;
-    for (i = 0; i < 3; i++) {
-      ptr++;
-      size_t byte = (uint8_t)ptr[-1];
-      len += (byte - 1) << (7 + 7 * i);
-      if (UPB_LIKELY((byte & 0x80) == 0)) goto done;
-    }
-    ptr++;
-    size_t byte = (uint8_t)ptr[-1];
-    // len is limited by 2gb not 4gb, hence 8 and not 16 as normally expected
-    // for a 32 bit varint.
-    if (UPB_UNLIKELY(byte >= 8)) return fastdecode_err(d);
-    len += (byte - 1) << 28;
-  }
-done:
-  if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, saved_limit))) {
-    return fastdecode_err(d);
-  }
-  d->limit = ptr + len;
-  d->fastlimit = UPB_MIN(d->limit, d->fastend);
-
-  return fastdecode_dispatch(d, ptr, msg, table, hasbits);
-}
 
 UPB_FORCEINLINE
 static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
@@ -348,9 +347,6 @@ static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
     hasbits = 0;
   }
 
-  const char *saved_limit = d->limit;
-  const char *saved_fastlimit = d->fastlimit;
-
 again:
   if (card == CARD_r) {
     if (UPB_UNLIKELY(submsg == end)) {
@@ -374,16 +370,37 @@ again:
   }
 
   ptr += tagbytes + 1;
-
-  ptr = fastdecode_tosubmsg(d, ptr, child, subl, 0, saved_limit);
-
-  if (UPB_UNLIKELY(ptr != d->limit || d->end_group != 0)) {
+  size_t len = (uint8_t)ptr[-1];
+  int saved_delta;
+  if (UPB_UNLIKELY(len & 0x80)) {
+    int i;
+    for (i = 0; i < 3; i++) {
+      ptr++;
+      size_t byte = (uint8_t)ptr[-1];
+      len += (byte - 1) << (7 + 7 * i);
+      if (UPB_LIKELY((byte & 0x80) == 0)) goto done;
+    }
+    ptr++;
+    size_t byte = (uint8_t)ptr[-1];
+    // len is limited by 2gb not 4gb, hence 8 and not 16 as normally expected
+    // for a 32 bit varint.
+    if (UPB_UNLIKELY(byte >= 8)) return fastdecode_err(d);
+    len += (byte - 1) << 28;
+  }
+done:
+  if (ptr - d->end + (int)len > d->limit) {
+    return fastdecode_err(d);
+  }
+  saved_delta = decode_pushlimit(d, ptr, len);
+  ptr = fastdecode_dispatch(d, ptr, child, subl, 0);
+  decode_poplimit(d, saved_delta);
+  if (UPB_UNLIKELY(d->end_group != 0)) {
     return fastdecode_err(d);
   }
 
   if (card == CARD_r) {
     submsg++;
-    if (UPB_LIKELY(ptr < saved_fastlimit)) {
+    if (UPB_LIKELY(!decode_isdone(d, &ptr))) {
       uint32_t tag = fastdecode_loadtag(ptr);
       if (tagbytes == 1) {
         if ((uint8_t)tag == (uint8_t)data) goto again;
@@ -391,34 +408,17 @@ again:
         if ((uint16_t)tag == (uint16_t)data) goto again;
       }
       arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
-      d->limit = saved_limit;
-      d->fastlimit = saved_fastlimit;
       d->depth++;
       return fastdecode_tagdispatch(d, ptr, msg, table, hasbits, tag);
     } else {
-      if (ptr == saved_limit) {
-        arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
-        d->limit = saved_limit;
-        d->fastlimit = saved_fastlimit;
-        d->depth++;
-        return ptr;
-      }
-      goto repeated_generic;
+      arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
+      d->depth++;
+      return ptr;
     }
   }
 
-  d->limit = saved_limit;
-  d->fastlimit = saved_fastlimit;
   d->depth++;
-
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
-
-repeated_generic:
-  arr->len = submsg - (upb_msg**)_upb_array_ptr(arr);
-  d->limit = saved_limit;
-  d->fastlimit = saved_fastlimit;
-  d->depth++;
-  RETURN_GENERIC("repeated generic");
 }
 
 #define F(card, tagbytes, size_ceil, ceil_arg)                                 \

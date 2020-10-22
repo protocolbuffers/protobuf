@@ -15,12 +15,14 @@
 #include "upb/port_def.inc"
 
 typedef struct upb_decstate {
-  const char *limit;       /* End of delimited region or end of buffer. */
-  const char *fastend;     /* The end of the entire buffer - 16 */
-  const char *fastlimit;   /* UPB_MIN(limit, fastend) */
-  upb_arena arena;
+  const char *end;         /* Can read up to 16 bytes slop beyond this. */
+  const char *limit_ptr;   /* = end + UPB_MIN(limit, 0) */
+  int limit;               /* Submessage limit relative to end. */
   int depth;
   uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
+  bool alias;
+  char patch[32];
+  upb_arena arena;
   jmp_buf err;
 } upb_decstate;
 
@@ -35,6 +37,57 @@ const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
  * otherwise the compiler will see that it calls longjmp() and deduce that it is
  * noreturn. */
 const char *fastdecode_err(upb_decstate *d);
+
+const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
+                                  int overrun);
+
+UPB_INLINE
+const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
+                                      int overrun) {
+  if (overrun < d->limit) {
+    /* Need to copy remaining data into patch buffer. */
+    UPB_ASSERT(overrun < 16);
+    memset(d->patch + 16, 0, 16);
+    memcpy(d->patch, d->end, 16);
+    ptr = &d->patch[0] + overrun;
+    d->end = &d->patch[16];
+    d->limit -= 16;
+    d->limit_ptr = d->end + d->limit;
+    d->alias = false;
+    UPB_ASSERT(ptr < d->limit_ptr);
+    return ptr;
+  } else {
+    return NULL;
+  }
+}
+
+UPB_INLINE
+bool decode_isdone(upb_decstate *d, const char **ptr) {
+  int overrun = *ptr - d->end;
+  if (UPB_LIKELY(*ptr < d->limit_ptr)) {
+    return false;
+  } else if (UPB_LIKELY(overrun == d->limit)) {
+    return true;
+  } else {
+    *ptr = decode_isdonefallback(d, *ptr, overrun);
+    return false;
+  }
+}
+
+UPB_INLINE
+int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
+  int limit = size + (int)(ptr - d->end);
+  int delta = d->limit - limit;
+  d->limit = limit;
+  d->limit_ptr = d->end + UPB_MIN(0, limit);
+  return delta;
+}
+
+UPB_INLINE
+void decode_poplimit(upb_decstate *d, int saved_delta) {
+  d->limit += saved_delta;
+  d->limit_ptr = d->end + UPB_MIN(0, d->limit);
+}
 
 #include "upb/port_undef.inc"
 
