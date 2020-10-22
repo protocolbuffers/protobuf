@@ -48,11 +48,6 @@ upb_msg *decode_newmsg_ceil(upb_decstate *d, const upb_msglayout *l,
   return msg_data + sizeof(upb_msg_internal);
 }
 
-typedef struct {
-  const char *limit_ptr;
-  int val;  /* If <=0, the old limit, else a delta */
-} fastdecode_savedlimit;
-
 UPB_FORCEINLINE
 static const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
                                           upb_msg *msg,
@@ -308,9 +303,22 @@ static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits,
                             sizeof(upb_strview), card);
   if (UPB_UNLIKELY(!d->alias)) {
-    return func(d, ptr + tagbytes, msg, table, hasbits, dst);
+    len = (uint8_t)ptr[tagbytes];
+    if (UPB_UNLIKELY(len > 15 - tagbytes || !_upb_arenahas(&d->arena, 16))) {
+      return func(d, ptr + tagbytes, msg, table, hasbits, dst);
+    }
+    char *data = d->arena.head.ptr;
+    d->arena.head.ptr += 16;
+    UPB_UNPOISON_MEMORY_REGION(data, 16);
+    memcpy(data, ptr, 16);
+    UPB_ASSERT(tagbytes + 1 + len <= 16);
+    ptr += tagbytes + 1;
+    dst->data = data + tagbytes + 1;
+    dst->size = len;
+    UPB_POISON_MEMORY_REGION(data, 1);
+    UPB_POISON_MEMORY_REGION(data + 1 + len, 16 - len - 1);
+    return fastdecode_dispatch(d, ptr + len, msg, table, hasbits);
   }
-
 
   len = (int8_t)ptr[tagbytes];
   ptr += tagbytes + 1;
@@ -355,14 +363,6 @@ const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
 }
 
 /* message fields *************************************************************/
-
-UPB_NOINLINE
-static const char *fastdecode_longsubmsg(upb_decstate *d, const char *ptr,
-                                         upb_msg *msg,
-                                         const upb_msglayout *table,
-                                         size_t len) {
-  return ptr;
-}
 
 UPB_FORCEINLINE
 static bool fastdecode_boundscheck2(const char *ptr, size_t len,
