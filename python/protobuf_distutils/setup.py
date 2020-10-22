@@ -28,71 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Setuptools/distutils extension for generating Python protobuf code.
-
-This extension uses a prebuilt 'protoc' binary to generate Python types for
-protobuf sources. By default, it will use a system-installed protoc binary, but
-a custom protoc can be specified by flag.
-
-This command should usually be run before the 'build' command, so that the
-generated sources are treated the same way as the rest of the Python
-sources.
-
-Options:
-
-    source_dir:
-        This is the directory holding .proto files to be processed.
-
-        The default behavior is to generate sources for all .proto files found
-        under `source_dir`, recursively. This behavior can be controlled with
-        options below.
-
-    proto_root_path:
-        This is the root path for resolving imports in source .proto files.
-
-        The default is the shortest prefix of `source_dir` among:
-            [source_dir] + self.extra_proto_paths
-
-    extra_proto_paths:
-        Specifies additional paths that should be used to find imports, in
-        addition to `source_dir`.
-
-        This option can be used to specify the path to other protobuf sources,
-        which are imported by files under `source_dir`.  No Python code will be
-        generated for .proto files under `extra_proto_paths`.
-
-    output_dir:
-        Specifies where generated code should be placed.
-
-        Typically, this should be the root package that generated Python modules
-        should be below.
-
-        The generated files will be named according to the relative source paths
-        under `proto_root_path`. For example, this source .proto file:
-            ${proto_root_path}/subdir/message.proto
-        will correspond to this generated Python module:
-            ${output_dir}/subdir/message_pb2.py
-
-    proto_files:
-        Specific .proto files can be specified for generating code, instead of
-        searching for all .proto files under `source_path`.
-
-        These paths are relative to `source_dir`. For example, to generate code
-        for just ${source_dir}/subdir/message.proto, specify
-        ['subdir/message.proto'].
-
-    protoc:
-        By default, the protoc binary (the Protobuf compiler) is found by
-        searching the environment path. To use a specific protoc binary, its
-        path can be specified.
-
-    recurse:
-        If `proto_files` are not specified, then the default behavior is to
-        search `source_dir` recursively. This option controls the recursive
-        search; if it is False, only .proto files immediately under `source_dir`
-        will be used to generate sources.
-
-"""
+"""Setuptools/distutils extension for generating Python protobuf code."""
 
 __author__ = 'dlj@google.com (David L. Jones)'
 

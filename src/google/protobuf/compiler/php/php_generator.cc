@@ -90,11 +90,12 @@ namespace {
 // Forward decls.
 std::string PhpName(const std::string& full_name, const Options& options);
 std::string IntToString(int32 value);
-std::string FilenameToClassname(const string& filename);
+std::string FilenameToClassname(const std::string& filename);
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options);
-std::string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
-std::string BinaryToHex(const string& binary);
+std::string UnderscoresToCamelCase(const std::string& name,
+                                   bool cap_first_letter);
+std::string BinaryToHex(const std::string& binary);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
 void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
@@ -119,11 +120,11 @@ void GenerateServiceDocComment(io::Printer* printer,
 void GenerateServiceMethodDocComment(io::Printer* printer,
                               const MethodDescriptor* method);
 
-std::string ReservedNamePrefix(const string& classname,
+std::string ReservedNamePrefix(const std::string& classname,
                                 const FileDescriptor* file) {
   bool is_reserved = false;
 
-  string lower = classname;
+  std::string lower = classname;
   std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
   for (int i = 0; i < kReservedNamesSize; i++) {
@@ -156,9 +157,9 @@ std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
 }
 
 template <typename DescriptorType>
-std::string ClassNamePrefix(const string& classname,
+std::string ClassNamePrefix(const std::string& classname,
                             const DescriptorType* desc) {
-  const string& prefix = (desc->file()->options()).php_class_prefix();
+  const std::string& prefix = (desc->file()->options()).php_class_prefix();
   if (!prefix.empty()) {
     return prefix;
   }
@@ -194,8 +195,8 @@ std::string LegacyGeneratedClassName(const DescriptorType* desc) {
   return ClassNamePrefix(classname, desc) + classname;
 }
 
-std::string ClassNamePrefix(const string& classname) {
-  string lower = classname;
+std::string ClassNamePrefix(const std::string& classname) {
+  std::string lower = classname;
   std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
   for (int i = 0; i < kReservedNamesSize; i++) {
@@ -207,10 +208,10 @@ std::string ClassNamePrefix(const string& classname) {
   return "";
 }
 
-std::string ConstantNamePrefix(const string& classname) {
+std::string ConstantNamePrefix(const std::string& classname) {
   bool is_reserved = false;
 
-  string lower = classname;
+  std::string lower = classname;
   std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
   for (int i = 0; i < kReservedNamesSize; i++) {
@@ -238,7 +239,7 @@ template <typename DescriptorType>
 std::string RootPhpNamespace(const DescriptorType* desc,
                              const Options& options) {
   if (desc->file()->options().has_php_namespace()) {
-    const string& php_namespace = desc->file()->options().php_namespace();
+    const std::string& php_namespace = desc->file()->options().php_namespace();
     if (!php_namespace.empty()) {
       return php_namespace;
     }
@@ -253,8 +254,8 @@ std::string RootPhpNamespace(const DescriptorType* desc,
 
 template <typename DescriptorType>
 std::string FullClassName(const DescriptorType* desc, const Options& options) {
-  string classname = GeneratedClassNameImpl(desc);
-  string php_namespace = RootPhpNamespace(desc, options);
+  std::string classname = GeneratedClassNameImpl(desc);
+  std::string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
     return php_namespace + "\\" + classname;
   }
@@ -271,8 +272,8 @@ std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
 template <typename DescriptorType>
 std::string LegacyFullClassName(const DescriptorType* desc,
                                 const Options& options) {
-  string classname = LegacyGeneratedClassName(desc);
-  string php_namespace = RootPhpNamespace(desc, options);
+  std::string classname = LegacyGeneratedClassName(desc);
+  std::string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
     return php_namespace + "\\" + classname;
   }
@@ -330,7 +331,7 @@ std::string DefaultForField(const FieldDescriptor* field) {
 
 std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options) {
-  const string& proto_file = file->name();
+  const std::string& proto_file = file->name();
   int start_index = 0;
   int first_index = proto_file.find_first_of("/", start_index);
   std::string result = "";
@@ -353,7 +354,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
   }
 
   if (file->options().has_php_metadata_namespace()) {
-    const string& php_metadata_namespace =
+    const std::string& php_metadata_namespace =
         file->options().php_metadata_namespace();
     if (!php_metadata_namespace.empty() && php_metadata_namespace != "\\") {
       result += php_metadata_namespace;
@@ -364,7 +365,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
     }
   } else {
     result += "GPBMetadata/";
-    while (first_index != string::npos) {
+    while (first_index != std::string::npos) {
       segment = UnderscoresToCamelCase(
           file_no_suffix.substr(start_index, first_index - start_index), true);
       result += ReservedNamePrefix(segment, file) + segment + "/";
@@ -375,7 +376,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
 
   // Append file name.
   int file_name_start = file_no_suffix.find_last_of("/");
-  if (file_name_start == string::npos) {
+  if (file_name_start == std::string::npos) {
     file_name_start = 0;
   } else {
     file_name_start += 1;
@@ -449,7 +450,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
   if (field->is_map()) {
     return "array|\\Google\\Protobuf\\Internal\\MapField";
   }
-  string type;
+  std::string type;
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_UINT32:
@@ -564,7 +565,8 @@ std::string EnumOrMessageSuffix(const FieldDescriptor* field,
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
-std::string UnderscoresToCamelCase(const string& name, bool cap_first_letter) {
+std::string UnderscoresToCamelCase(const std::string& name,
+                                   bool cap_first_letter) {
   std::string result;
   for (int i = 0; i < name.size(); i++) {
     if ('a' <= name[i] && name[i] <= 'z') {
@@ -598,8 +600,8 @@ std::string UnderscoresToCamelCase(const string& name, bool cap_first_letter) {
   return result;
 }
 
-std::string BinaryToHex(const string& binary) {
-  string dest;
+std::string BinaryToHex(const std::string& binary) {
+  std::string dest;
   size_t i;
   unsigned char symbol[16] = {
     '0', '1', '2', '3',
@@ -855,15 +857,16 @@ void GenerateServiceMethod(const MethodDescriptor* method,
   );
 }
 
-void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
-                           io::Printer* printer) {
+void GenerateMessageToPool(const std::string& name_prefix,
+                           const Descriptor* message, io::Printer* printer) {
   // Don't generate MapEntry messages -- we use the PHP extension's native
   // support for map fields instead.
   if (message->options().map_entry()) {
     return;
   }
-  string class_name = (name_prefix.empty() ? "" : name_prefix + "\\") +
-    ReservedNamePrefix(message->name(), message->file()) + message->name();
+  std::string class_name =
+      (name_prefix.empty() ? "" : name_prefix + "\\") +
+      ReservedNamePrefix(message->name(), message->file()) + message->name();
 
   printer->Print(
       "$pool->addMessage('^message^', "
@@ -985,8 +988,9 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
       file->CopyTo(file_proto);
 
       // Filter out descriptor.proto as it cannot be depended on for now.
-      RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
-      for (RepeatedPtrField<string>::iterator it = dependency->begin();
+      RepeatedPtrField<std::string>* dependency =
+          file_proto->mutable_dependency();
+      for (RepeatedPtrField<std::string>::iterator it = dependency->begin();
            it != dependency->end(); ++it) {
         if (*it != kDescriptorFile) {
           dependency->erase(it);
@@ -1003,7 +1007,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
         it->clear_extension();
       }
 
-      string files_data;
+      std::string files_data;
       files.SerializeToString(&files_data);
 
       printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
@@ -1058,9 +1062,8 @@ static void AnalyzeDependencyForFile(
   }
 }
 
-static bool NeedsUnwrapping(
-    const FileDescriptor* file,
-    const Options& options) {
+static bool NeedsUnwrapping(const FileDescriptor* file,
+                            const Options& options) {
   bool has_aggregate_metadata_prefix = false;
   if (options.aggregate_metadata_prefixes.empty()) {
     has_aggregate_metadata_prefix = true;
@@ -1076,10 +1079,8 @@ static bool NeedsUnwrapping(
   return has_aggregate_metadata_prefix;
 }
 
-void GenerateAddFilesToPool(
-    const FileDescriptor* file,
-    const Options& options,
-    io::Printer* printer) {
+void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
+                            io::Printer* printer) {
   printer->Print(
       "$pool = \\Google\\Protobuf\\Internal\\"
       "DescriptorPool::getGeneratedPool();\n"
@@ -1115,8 +1116,9 @@ void GenerateAddFilesToPool(
       file->CopyTo(file_proto);
 
       // Filter out descriptor.proto as it cannot be depended on for now.
-      RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
-      for (RepeatedPtrField<string>::iterator it = dependency->begin();
+      RepeatedPtrField<std::string>* dependency =
+          file_proto->mutable_dependency();
+      for (RepeatedPtrField<std::string>::iterator it = dependency->begin();
            it != dependency->end(); ++it) {
         if (*it != kDescriptorFile) {
           dependency->erase(it);
@@ -1140,7 +1142,7 @@ void GenerateAddFilesToPool(
     }
   }
 
-  string files_data;
+  std::string files_data;
   sorted_file_set.SerializeToString(&files_data);
 
   printer->Print("$pool->internalAddGeneratedFile(hex2bin(\n");
@@ -1183,7 +1185,7 @@ void GenerateHead(const FileDescriptor* file, io::Printer* printer) {
     "filename", file->name());
 }
 
-std::string FilenameToClassname(const string& filename) {
+std::string FilenameToClassname(const std::string& filename) {
   int lastindex = filename.find_last_of(".");
   std::string result = filename.substr(0, lastindex);
   for (int i = 0; i < result.size(); i++) {
@@ -1206,7 +1208,7 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  if (lastindex != string::npos) {
+  if (lastindex != std::string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1279,7 +1281,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  if (lastindex != string::npos) {
+  if (lastindex != std::string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1291,7 +1293,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
 
   GenerateEnumDocComment(&printer, en, options);
 
-  if (lastindex != string::npos) {
+  if (lastindex != std::string::npos) {
     fullname = fullname.substr(lastindex + 1);
   }
 
@@ -1390,7 +1392,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  if (lastindex != string::npos) {
+  if (lastindex != std::string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1399,7 +1401,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   GenerateUseDeclaration(options, &printer);
 
   GenerateMessageDocComment(&printer, message, options);
-  if (lastindex != string::npos) {
+  if (lastindex != std::string::npos) {
     fullname = fullname.substr(lastindex + 1);
   }
 
@@ -1510,7 +1512,7 @@ void GenerateServiceFile(
 
   if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||
-      lastindex != string::npos) {
+      lastindex != std::string::npos) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
@@ -1518,13 +1520,13 @@ void GenerateServiceFile(
 
   GenerateServiceDocComment(&printer, service);
 
-  if (lastindex != string::npos) {
-      printer.Print(
+  if (lastindex != std::string::npos) {
+    printer.Print(
         "interface ^name^\n"
         "{\n",
         "name", fullname.substr(lastindex + 1));
   } else {
-      printer.Print(
+    printer.Print(
         "interface ^name^\n"
         "{\n",
         "name", fullname);
@@ -1560,13 +1562,13 @@ void GenerateFile(const FileDescriptor* file, const Options& options,
   }
 }
 
-static string EscapePhpdoc(const string& input) {
-  string result;
+static std::string EscapePhpdoc(const std::string& input) {
+  std::string result;
   result.reserve(input.size() * 2);
 
   char prev = '*';
 
-  for (string::size_type i = 0; i < input.size(); i++) {
+  for (std::string::size_type i = 0; i < input.size(); i++) {
     char c = input[i];
     switch (c) {
       case '*':
@@ -1605,8 +1607,9 @@ static string EscapePhpdoc(const string& input) {
 static void GenerateDocCommentBodyForLocation(
     io::Printer* printer, const SourceLocation& location, bool trailingNewline,
     int indentCount) {
-  string comments = location.leading_comments.empty() ?
-      location.trailing_comments : location.leading_comments;
+  std::string comments = location.leading_comments.empty()
+                             ? location.trailing_comments
+                             : location.leading_comments;
   if (!comments.empty()) {
     // TODO(teboring):  Ideally we should parse the comment text as Markdown and
     //   write it back as HTML, but this requires a Markdown parser.  For now
@@ -1616,7 +1619,7 @@ static void GenerateDocCommentBodyForLocation(
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapePhpdoc(comments);
 
-    std::vector<string> lines = Split(comments, "\n", true);
+    std::vector<std::string> lines = Split(comments, "\n", true);
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }
@@ -1647,11 +1650,11 @@ static void GenerateDocCommentBody(
   }
 }
 
-static string FirstLineOf(const string& value) {
-  string result = value;
+static std::string FirstLineOf(const std::string& value) {
+  std::string result = value;
 
-  string::size_type pos = result.find_first_of('\n');
-  if (pos != string::npos) {
+  std::string::size_type pos = result.find_first_of('\n');
+  if (pos != std::string::npos) {
     result.erase(pos);
   }
 
@@ -2177,15 +2180,16 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
 }  // namespace
 
-bool Generator::Generate(const FileDescriptor* file, const string& parameter,
+bool Generator::Generate(const FileDescriptor* file,
+                         const std::string& parameter,
                          GeneratorContext* generator_context,
-                         string* error) const {
+                         std::string* error) const {
   return Generate(file, Options(), generator_context, error);
 }
 
 bool Generator::Generate(const FileDescriptor* file, const Options& options,
                          GeneratorContext* generator_context,
-                         string* error) const {
+                         std::string* error) const {
   if (options.is_descriptor && file->name() != kDescriptorFile) {
     *error =
         "Can only generate PHP code for google/protobuf/descriptor.proto.\n";

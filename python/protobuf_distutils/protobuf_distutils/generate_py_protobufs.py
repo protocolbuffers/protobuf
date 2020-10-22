@@ -47,7 +47,7 @@ class generate_py_protobufs(Command):
         ('extra-proto-paths=', None,
          'Additional paths to resolve imports in .proto files.'),
 
-        ('protoc', None,
+        ('protoc=', None,
          'Path to a specific `protoc` command to use.'),
     ]
     boolean_options = ['recurse']
@@ -127,6 +127,8 @@ class generate_py_protobufs(Command):
 
         self.ensure_string_list('proto_files')
 
+        if self.protoc is None:
+            self.protoc = os.getenv('PROTOC')
         if self.protoc is None:
             self.protoc = spawn.find_executable('protoc')
 

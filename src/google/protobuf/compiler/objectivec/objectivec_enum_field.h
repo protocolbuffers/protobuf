@@ -50,7 +50,8 @@ class EnumFieldGenerator : public SingleFieldGenerator {
  public:
   virtual void GenerateCFunctionDeclarations(io::Printer* printer) const;
   virtual void GenerateCFunctionImplementations(io::Printer* printer) const;
-  virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
+  virtual void DetermineForwardDeclarations(
+      std::set<std::string>* fwd_decls) const;
 
  protected:
   EnumFieldGenerator(const FieldDescriptor* descriptor, const Options& options);

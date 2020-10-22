@@ -365,13 +365,13 @@ static PROTO_RETURN_VAL Message_write_property(
   const upb_fielddef *f = get_field(intern, member);
 
   if (f && Message_set(intern, f, val)) {
-#if PHP_VERSION_ID < 704000
+#if PHP_VERSION_ID < 70400
     return;
 #else
     return val;
 #endif
   } else {
-#if PHP_VERSION_ID < 704000
+#if PHP_VERSION_ID < 70400
     return;
 #else
     return &EG(error_zval);
