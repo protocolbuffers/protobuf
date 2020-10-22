@@ -53,32 +53,6 @@ typedef struct {
   int val;  /* If <=0, the old limit, else a delta */
 } fastdecode_savedlimit;
 
-static fastdecode_savedlimit fastdecode_pushlimit(upb_decstate *d,
-                                                  const char *ptr, int size) {
-  fastdecode_savedlimit saved;
-  int limit = size + (int)(ptr - d->end);
-  if (UPB_LIKELY(limit <= 0)) {
-    saved.limit_ptr = d->limit_ptr;
-    saved.val = d->limit;
-    d->limit_ptr = ptr + size;
-  } else {
-    saved.limit_ptr = NULL;
-    saved.val = d->limit - limit;
-  }
-  d->limit = limit;
-  return saved;
-}
-
-static void fastdecode_poplimit(upb_decstate *d, fastdecode_savedlimit saved) {
-  if (UPB_LIKELY(saved.limit_ptr != NULL)) {
-    d->limit_ptr = saved.limit_ptr;
-    d->limit = saved.val;
-  } else {
-    d->limit += saved.val;
-    d->limit_ptr = d->end + UPB_MIN(0, d->limit);
-  }
-}
-
 UPB_FORCEINLINE
 static const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
                                           upb_msg *msg,
@@ -382,6 +356,23 @@ const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
 
 /* message fields *************************************************************/
 
+UPB_NOINLINE
+static const char *fastdecode_longsubmsg(upb_decstate *d, const char *ptr,
+                                         upb_msg *msg,
+                                         const upb_msglayout *table,
+                                         size_t len) {
+  return ptr;
+}
+
+UPB_FORCEINLINE
+static bool fastdecode_boundscheck2(const char *ptr, size_t len,
+                                   const char *end) {
+  uintptr_t uptr = (uintptr_t)ptr;
+  uintptr_t uend = (uintptr_t)end;
+  uintptr_t res = uptr + len;
+  return res < uptr || res > uend;
+}
+
 UPB_FORCEINLINE
 static const char *fastdecode_submsg(UPB_PARSE_PARAMS, int tagbytes,
                                      int msg_ceil_bytes, upb_card card) {
@@ -429,29 +420,44 @@ again:
   }
 
   ptr += tagbytes + 1;
-  size_t len = (uint8_t)ptr[-1];
-  if (UPB_UNLIKELY(len & 0x80)) {
-    int i;
-    for (i = 0; i < 3; i++) {
+  int64_t len = (int8_t)ptr[-1];
+  if (fastdecode_boundscheck2(ptr, len, d->limit_ptr)) {
+    if (UPB_UNLIKELY(len & 0x80)) {
+      len &= 0xff;
+      int i;
+      for (i = 0; i < 3; i++) {
+        ptr++;
+        size_t byte = (uint8_t)ptr[-1];
+        len += (byte - 1) << (7 + 7 * i);
+        if (UPB_LIKELY((byte & 0x80) == 0)) goto done;
+      }
       ptr++;
       size_t byte = (uint8_t)ptr[-1];
-      len += (byte - 1) << (7 + 7 * i);
-      if (UPB_LIKELY((byte & 0x80) == 0)) goto done;
+      // len is limited by 2gb not 4gb, hence 8 and not 16 as normally expected
+      // for a 32 bit varint.
+      if (UPB_UNLIKELY(byte >= 8)) return fastdecode_err(d);
+      len += (byte - 1) << 28;
     }
-    ptr++;
-    size_t byte = (uint8_t)ptr[-1];
-    // len is limited by 2gb not 4gb, hence 8 and not 16 as normally expected
-    // for a 32 bit varint.
-    if (UPB_UNLIKELY(byte >= 8)) return fastdecode_err(d);
-    len += (byte - 1) << 28;
+  done:
+    if (ptr - d->end + (int)len > d->limit) {
+      return fastdecode_err(d);
+    }
+    int delta = decode_pushlimit(d, ptr, len);
+    ptr = fastdecode_dispatch(d, ptr, child, subl, 0);
+    decode_poplimit(d, delta);
+  } else {
+    UPB_ASSERT(d->limit_ptr - ptr >= len);
+    UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
+    const char *saved_limit_ptr = d->limit_ptr;
+    int saved_limit = d->limit;
+    d->limit_ptr = ptr + len;
+    d->limit = d->limit_ptr - d->end;
+    UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
+    ptr = fastdecode_dispatch(d, ptr, child, subl, 0);
+    d->limit_ptr = saved_limit_ptr;
+    d->limit = saved_limit;
+    UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
   }
-done:
-  if (ptr - d->end + (int)len > d->limit) {
-    return fastdecode_err(d);
-  }
-  fastdecode_savedlimit saved = fastdecode_pushlimit(d, ptr, len);
-  ptr = fastdecode_dispatch(d, ptr, child, subl, 0);
-  fastdecode_poplimit(d, saved);
   if (UPB_UNLIKELY(d->end_group != 0)) {
     return fastdecode_err(d);
   }

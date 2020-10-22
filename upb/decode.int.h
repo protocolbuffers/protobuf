@@ -46,6 +46,7 @@ const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
                                       int overrun) {
   if (overrun < d->limit) {
     /* Need to copy remaining data into patch buffer. */
+    UPB_ASSERT(overrun >= 0);
     UPB_ASSERT(overrun < 16);
     memset(d->patch + 16, 0, 16);
     memcpy(d->patch, d->end, 16);
@@ -62,7 +63,8 @@ const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
 }
 
 UPB_INLINE
-bool decode_isdone(upb_decstate *d, const char **ptr) {
+bool decode_isdone_limit(upb_decstate *d, const char **ptr,
+                         const char *limit_ptr) {
   int overrun = *ptr - d->end;
   if (UPB_LIKELY(*ptr < d->limit_ptr)) {
     return false;
@@ -72,6 +74,25 @@ bool decode_isdone(upb_decstate *d, const char **ptr) {
     *ptr = decode_isdonefallback(d, *ptr, overrun);
     return false;
   }
+}
+
+UPB_INLINE
+bool decode_isdone(upb_decstate *d, const char **ptr) {
+  return decode_isdone_limit(d, ptr, d->limit_ptr);
+}
+
+UPB_INLINE int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
+  int limit = size + (int)(ptr - d->end);
+  int delta = d->limit - limit;
+  d->limit = limit;
+  d->limit_ptr = d->end + UPB_MIN(0, limit);
+  return delta;
+}
+
+UPB_INLINE void decode_poplimit(upb_decstate *d, int saved_delta) {
+  d->limit += saved_delta;
+  d->limit_ptr = d->end + UPB_MIN(0, d->limit);
+  UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
 }
 
 #include "upb/port_undef.inc"
