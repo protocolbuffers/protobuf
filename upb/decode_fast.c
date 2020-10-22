@@ -19,9 +19,9 @@
 
 #define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data
 
-#define RETURN_GENERIC(msg)  \
-  /* fprintf(stderr, msg); */ \
-  return fastdecode_generic(UPB_PARSE_ARGS);
+#define RETURN_GENERIC(m)  \
+  /* fprintf(stderr, m); */ \
+  return fastdecode_generic(d, ptr, msg, table, hasbits, 0);
 
 typedef enum {
   CARD_s = 0,  /* Singular (optional, non-repeated) */
@@ -264,26 +264,37 @@ static bool fastdecode_boundscheck(const char *ptr, size_t len,
   return res < uptr || res > uend;
 }
 
-UPB_NOINLINE
+typedef const char *fastdecode_copystr_func(struct upb_decstate *d,
+                                            const char *ptr, upb_msg *msg,
+                                            const upb_msglayout *table,
+                                            uint64_t hasbits, upb_strview *dst);
+
+UPB_FORCEINLINE
 static const char *fastdecode_copystring(struct upb_decstate *d,
-                                         size_t len, upb_msg *msg,
+                                         const char *ptr, upb_msg *msg,
                                          const upb_msglayout *table,
-                                         uint64_t hasbits, upb_strview *str) {
-  char *ptr = (char*)str->data;
+                                         uint64_t hasbits, upb_strview *dst,
+                                         int tagbytes) {
+  int64_t len = (int8_t)*ptr;
+  ptr++;
+  if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, d->limit_ptr))) {
+    ptr -= tagbytes + 1;
+    RETURN_GENERIC("string field len >1 byte\n");
+  }
   char *data = upb_arena_malloc(&d->arena, len);
   if (!data) {
     return fastdecode_err(d);
   }
   memcpy(data, ptr, len);
-  str->data = data;
+  dst->data = data;
+  dst->size = len;
   return fastdecode_dispatch(d, ptr + len, msg, table, hasbits);
 }
 
 UPB_FORCEINLINE
 static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
-                                     upb_card card) {
+                                     upb_card card, fastdecode_copystr_func *func) {
   upb_strview *dst;
-  const char *str;
   int64_t len;
   if (UPB_UNLIKELY(!fastdecode_checktag(data, tagbytes))) {
     RETURN_GENERIC("string field tag mismatch\n");
@@ -291,34 +302,51 @@ static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
 
   dst = fastdecode_getfield(d, ptr, msg, &data, &hasbits,
                             sizeof(upb_strview), card);
+  if (UPB_UNLIKELY(!d->alias)) {
+    return func(d, ptr + tagbytes, msg, table, hasbits, dst);
+  }
+
+
   len = (int8_t)ptr[tagbytes];
-  str = ptr + tagbytes + 1;
-  dst->data = str;
+  ptr += tagbytes + 1;
+  dst->data = ptr;
   dst->size = len;
-  if (UPB_UNLIKELY(fastdecode_boundscheck(str, len, d->limit_ptr))) {
+  if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, len, d->limit_ptr))) {
     dst->size = 0;
+    ptr -= tagbytes + 1;
     RETURN_GENERIC("string field len >1 byte\n");
   }
-  if (!d->alias) {
-    return fastdecode_copystring(d, len, msg, table, hasbits, dst);
-  }
-  return fastdecode_dispatch(d, str + len, msg, table, hasbits);
+  return fastdecode_dispatch(d, ptr + len, msg, table, hasbits);
+}
+
+UPB_NOINLINE
+static const char *upb_copystr_1bt(upb_decstate *d, const char *ptr,
+                                   upb_msg *msg, const upb_msglayout *table,
+                                   uint64_t hasbits, upb_strview *dst) {
+  return fastdecode_copystring(d, ptr, msg, table, hasbits, dst, 1);
+}
+
+UPB_NOINLINE
+static const char *upb_copystr_2bt(upb_decstate *d, const char *ptr, upb_msg *msg,
+                            const upb_msglayout *table, uint64_t hasbits,
+                            upb_strview *dst) {
+  return fastdecode_copystring(d, ptr, msg, table, hasbits, dst, 2);
 }
 
 const char *upb_pss_1bt(UPB_PARSE_PARAMS) {
-  return fastdecode_string(UPB_PARSE_ARGS, 1, CARD_s);
+  return fastdecode_string(UPB_PARSE_ARGS, 1, CARD_s, &upb_copystr_1bt);
 }
 
 const char *upb_pos_1bt(UPB_PARSE_PARAMS) {
-  return fastdecode_string(UPB_PARSE_ARGS, 1, CARD_o);
+  return fastdecode_string(UPB_PARSE_ARGS, 1, CARD_o, &upb_copystr_1bt);
 }
 
 const char *upb_pss_2bt(UPB_PARSE_PARAMS) {
-  return fastdecode_string(UPB_PARSE_ARGS, 2, CARD_s);
+  return fastdecode_string(UPB_PARSE_ARGS, 2, CARD_s, &upb_copystr_2bt);
 }
 
 const char *upb_pos_2bt(UPB_PARSE_PARAMS) {
-  return fastdecode_string(UPB_PARSE_ARGS, 2, CARD_o);
+  return fastdecode_string(UPB_PARSE_ARGS, 2, CARD_o, &upb_copystr_2bt);
 }
 
 /* message fields *************************************************************/
