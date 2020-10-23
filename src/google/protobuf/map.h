@@ -455,7 +455,7 @@ class Map {
           num_elements_(0),
           num_buckets_(internal::kGlobalEmptyTableSize),
           seed_(0),
-          index_of_first_non_null_(num_buckets_),
+          index_of_first_non_null_(internal::kGlobalEmptyTableSize),
           table_(const_cast<void**>(internal::kGlobalEmptyTable)),
           alloc_(arena) {}
 
