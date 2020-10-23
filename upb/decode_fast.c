@@ -472,11 +472,11 @@ static const char *fastdecode_longstring(struct upb_decstate *d,
 UPB_FORCEINLINE
 static void fastdecode_docopy(upb_decstate *d, const char *ptr, uint32_t size,
                               int copy, char *data, upb_strview *dst) {
+  d->arena.head.ptr += copy;
   UPB_UNPOISON_MEMORY_REGION(data, copy);
   memcpy(data, ptr, copy);
   UPB_POISON_MEMORY_REGION(data + size, copy - size);
   dst->data = data;
-  d->arena.head.ptr += copy;
 }
 
 UPB_FORCEINLINE
@@ -504,35 +504,30 @@ again:
   ptr += tagbytes + 1;
   dst->size = size;
 
-  if (UPB_UNLIKELY(size == 0)) {
-    goto done;
-  } else if (UPB_UNLIKELY(size > 127)) {
-    goto longstr;
-  }
-
   buf = d->arena.head.ptr;
   arena_has = _upb_arenahas(&d->arena);
   common_has = UPB_MIN(arena_has, (d->end - ptr) + 16);
 
   if (UPB_LIKELY(size <= 15 - tagbytes)) {
     if (arena_has < 16) goto longstr;
+    d->arena.head.ptr += 16;
     memcpy(buf, ptr - tagbytes - 1, 16);
     dst->data = buf + tagbytes + 1;
-    d->arena.head.ptr += 16;
   } else if (UPB_LIKELY(size <= 32)) {
     if (UPB_UNLIKELY(common_has < 32)) goto longstr;
     fastdecode_docopy(d, ptr, size, 32, buf, dst);
-  } else if (UPB_LIKELY(size <= 64 && common_has >= 64)) {
+  } else if (UPB_LIKELY(size <= 64)) {
     if (UPB_UNLIKELY(common_has < 64)) goto longstr;
     fastdecode_docopy(d, ptr, size, 64, buf, dst);
-  } else {
+  } else if (UPB_LIKELY(size <= 128)) {
     if (UPB_UNLIKELY(common_has < 128)) goto longstr;
     fastdecode_docopy(d, ptr, size, 128, buf, dst);
+  } else {
+    goto longstr;
   }
 
   ptr += size;
 
-done:
   if (card == CARD_r) {
     fastdecode_nextret ret = fastdecode_nextrepeated(
         d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_strview));
