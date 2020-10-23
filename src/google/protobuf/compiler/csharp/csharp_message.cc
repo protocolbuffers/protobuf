@@ -112,7 +112,7 @@ void MessageGenerator::AddSerializableAttribute(io::Printer* printer) {
 }
 
 void MessageGenerator::Generate(io::Printer* printer) {
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
@@ -374,7 +374,7 @@ bool MessageGenerator::HasNestedGeneratedTypes()
 }
 
 void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   WriteGeneratedCodeAttributes(printer);
   vars["class_name"] = class_name();
     printer->Print(
@@ -438,7 +438,7 @@ void MessageGenerator::GenerateFreezingCode(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
-    std::map<string, string> vars;
+    std::map<std::string, std::string> vars;
     vars["class_name"] = class_name();
 
     // Equality
@@ -605,7 +605,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   // Note:  These are separate from GenerateMessageSerializationMethods()
   //   because they need to be generated even for messages that are optimized
   //   for code size.
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   vars["class_name"] = class_name();
 
   WriteGeneratedCodeAttributes(printer);
@@ -685,7 +685,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateMainParseLoop(io::Printer* printer, bool use_parse_context) {
-  std::map<string, string> vars;
+  std::map<std::string, std::string> vars;
   vars["maybe_ref_input"] = use_parse_context ? "ref input" : "input";
 
   printer->Print(

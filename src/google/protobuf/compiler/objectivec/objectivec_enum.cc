@@ -65,7 +65,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
       base_values_.push_back(value);
       value_names.insert(EnumValueName(value));
     } else {
-      string value_name(EnumValueName(value));
+      std::string value_name(EnumValueName(value));
       if (value_names.find(value_name) != value_names.end()) {
         alias_values_to_skip_.insert(value);
       } else {
@@ -79,7 +79,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
 EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::GenerateHeader(io::Printer* printer) {
-  string enum_comments;
+  std::string enum_comments;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
     enum_comments = BuildCommentsString(location, true);
@@ -129,7 +129,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
     }
     SourceLocation location;
     if (all_values_[i]->GetSourceLocation(&location)) {
-      string comments = BuildCommentsString(location, true).c_str();
+      std::string comments = BuildCommentsString(location, true).c_str();
       if (comments.length() > 0) {
         if (i > 0) {
           printer->Print("\n");
@@ -172,11 +172,11 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
   // will be zero.
   TextFormatDecodeData text_format_decode_data;
   int enum_value_description_key = -1;
-  string text_blob;
+  std::string text_blob;
 
   for (int i = 0; i < all_values_.size(); i++) {
     ++enum_value_description_key;
-    string short_name(EnumValueShortName(all_values_[i]));
+    std::string short_name(EnumValueShortName(all_values_[i]));
     text_blob += short_name + '\0';
     if (UnCamelCaseEnumShortName(short_name) != all_values_[i]->name()) {
       text_format_decode_data.AddString(enum_value_description_key, short_name,

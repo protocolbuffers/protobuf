@@ -31,6 +31,7 @@
 #include <google/protobuf/arena.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <cstring>
 #include <memory>
 #include <string>

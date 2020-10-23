@@ -53,10 +53,6 @@ PROTOBUF_EXPORT /*static*/ void* (*const ArenaOptions::kDefaultBlockAlloc)(
 
 namespace internal {
 
-const size_t ArenaImpl::kBlockHeaderSize;
-const size_t ArenaImpl::kSerialArenaSize;
-const size_t ArenaImpl::kOptionsSize;
-
 
 ArenaImpl::CacheAlignedLifecycleIdGenerator ArenaImpl::lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
@@ -108,7 +104,8 @@ ArenaImpl::ArenaImpl(const ArenaOptions& options) {
   // Create the special block.
   const bool special = true;
   const bool user_owned = (mem == options.initial_block);
-  auto block = new (mem) Block(mem_size, nullptr, special, user_owned);
+  auto block =
+      new (mem) SerialArena::Block(mem_size, nullptr, special, user_owned);
 
   // Options occupy the beginning of the initial block.
   options_ = new (block->Pointer(block->pos())) Options;
@@ -152,7 +149,7 @@ void ArenaImpl::Init(bool record_allocs) {
   space_allocated_.store(0, std::memory_order_relaxed);
 }
 
-void ArenaImpl::SetInitialBlock(Block* block) {
+void ArenaImpl::SetInitialBlock(SerialArena::Block* block) {
   // Calling thread owns the first block. This allows the single-threaded case
   // to allocate on the first block without having to perform atomic operations.
   SerialArena* serial = SerialArena::New(block, &thread_cache(), this);
@@ -174,7 +171,7 @@ ArenaImpl::~ArenaImpl() {
     deallocator = options_->block_dealloc;
   }
 
-  PerBlock([deallocator](Block* b) {
+  PerBlock([deallocator](SerialArena::Block* b) {
 #ifdef ADDRESS_SANITIZER
     // This memory was provided by the underlying allocator as unpoisoned, so
     // return it in an unpoisoned state.
@@ -201,25 +198,26 @@ uint64 ArenaImpl::Reset() {
 
   // Discard all blocks except the special block (if present).
   uint64 space_allocated = 0;
-  Block* special_block = nullptr;
+  SerialArena::Block* special_block = nullptr;
   auto deallocator = (options_ ? options_->block_dealloc : &ArenaFree);
-  PerBlock([&space_allocated, &special_block, deallocator](Block* b) {
-    space_allocated += b->size();
+  PerBlock(
+      [&space_allocated, &special_block, deallocator](SerialArena::Block* b) {
+        space_allocated += b->size();
 #ifdef ADDRESS_SANITIZER
-    // This memory was provided by the underlying allocator as unpoisoned, so
-    // return it in an unpoisoned state.
-    ASAN_UNPOISON_MEMORY_REGION(b->Pointer(0), b->size());
+        // This memory was provided by the underlying allocator as unpoisoned,
+        // so return it in an unpoisoned state.
+        ASAN_UNPOISON_MEMORY_REGION(b->Pointer(0), b->size());
 #endif  // ADDRESS_SANITIZER
-    if (!b->special()) {
-      (*deallocator)(b, b->size());
-    } else {
-      // Prepare special block for reuse.
-      // Note: if options_ is present, it occupies the beginning of the
-      // block and therefore pos is advanced past it.
-      GOOGLE_DCHECK(special_block == nullptr);
-      special_block = b;
-    }
-  });
+        if (!b->special()) {
+          (*deallocator)(b, b->size());
+        } else {
+          // Prepare special block for reuse.
+          // Note: if options_ is present, it occupies the beginning of the
+          // block and therefore pos is advanced past it.
+          GOOGLE_DCHECK(special_block == nullptr);
+          special_block = b;
+        }
+      });
 
   Init(record_allocs());
   if (special_block != nullptr) {
@@ -233,12 +231,13 @@ uint64 ArenaImpl::Reset() {
   return space_allocated;
 }
 
-ArenaImpl::Block* ArenaImpl::NewBlock(Block* last_block, size_t min_bytes) {
+std::pair<void*, size_t> ArenaImpl::NewBuffer(size_t last_size,
+                                              size_t min_bytes) {
   size_t size;
-  if (last_block) {
+  if (last_size != -1) {
     // Double the current block size, up to a limit.
     auto max_size = options_ ? options_->max_block_size : kDefaultMaxBlockSize;
-    size = std::min(2 * last_block->size(), max_size);
+    size = std::min(2 * last_size, max_size);
   } else {
     size = options_ ? options_->start_block_size : kDefaultStartBlockSize;
   }
@@ -247,14 +246,22 @@ ArenaImpl::Block* ArenaImpl::NewBlock(Block* last_block, size_t min_bytes) {
   size = std::max(size, kBlockHeaderSize + min_bytes);
 
   void* mem = options_ ? (*options_->block_alloc)(size) : ::operator new(size);
-  Block* b = new (mem) Block(size, last_block, false, false);
   space_allocated_.fetch_add(size, std::memory_order_relaxed);
+  return {mem, size};
+}
+
+SerialArena::Block* SerialArena::NewBlock(SerialArena::Block* last_block,
+                                          size_t min_bytes, ArenaImpl* arena) {
+  void* mem;
+  size_t size;
+  std::tie(mem, size) =
+      arena->NewBuffer(last_block ? last_block->size() : -1, min_bytes);
+  Block* b = new (mem) Block(size, last_block, false, false);
   return b;
 }
 
 PROTOBUF_NOINLINE
-void ArenaImpl::SerialArena::AddCleanupFallback(void* elem,
-                                                void (*cleanup)(void*)) {
+void SerialArena::AddCleanupFallback(void* elem, void (*cleanup)(void*)) {
   size_t size = cleanup_ ? cleanup_->size * 2 : kMinCleanupListElements;
   size = std::min(size, kMaxCleanupListElements);
   size_t bytes = internal::AlignUpTo8(CleanupChunk::SizeOf(size));
@@ -306,11 +313,11 @@ void ArenaImpl::AddCleanupFallback(void* elem, void (*cleanup)(void*)) {
 }
 
 PROTOBUF_NOINLINE
-void* ArenaImpl::SerialArena::AllocateAlignedFallback(size_t n) {
+void* SerialArena::AllocateAlignedFallback(size_t n) {
   // Sync back to current's pos.
   head_->set_pos(head_->size() - (limit_ - ptr_));
 
-  head_ = arena_->NewBlock(head_, n);
+  head_ = NewBlock(head_, n, arena_);
   ptr_ = head_->Pointer(head_->pos());
   limit_ = head_->Pointer(head_->size());
 
@@ -338,7 +345,7 @@ uint64 ArenaImpl::SpaceUsed() const {
   return space_used;
 }
 
-uint64 ArenaImpl::SerialArena::SpaceUsed() const {
+uint64 SerialArena::SpaceUsed() const {
   // Get current block's size from ptr_ (since we can't trust head_->pos().
   uint64 space_used = ptr_ - head_->Pointer(kBlockHeaderSize);
   // Get subsequent block size from b->pos().
@@ -346,7 +353,7 @@ uint64 ArenaImpl::SerialArena::SpaceUsed() const {
     space_used += (b->pos() - kBlockHeaderSize);
   }
   // Remove the overhead of the SerialArena itself.
-  space_used -= kSerialArenaSize;
+  space_used -= ArenaImpl::kSerialArenaSize;
   return space_used;
 }
 
@@ -360,13 +367,13 @@ void ArenaImpl::CleanupList() {
   }
 }
 
-void ArenaImpl::SerialArena::CleanupList() {
+void SerialArena::CleanupList() {
   if (cleanup_ != NULL) {
     CleanupListFallback();
   }
 }
 
-void ArenaImpl::SerialArena::CleanupListFallback() {
+void SerialArena::CleanupListFallback() {
   // The first chunk might be only partially full, so calculate its size
   // from cleanup_ptr_. Subsequent chunks are always full, so use list->size.
   size_t n = cleanup_ptr_ - &cleanup_->nodes[0];
@@ -386,12 +393,11 @@ void ArenaImpl::SerialArena::CleanupListFallback() {
   }
 }
 
-ArenaImpl::SerialArena* ArenaImpl::SerialArena::New(Block* b, void* owner,
-                                                    ArenaImpl* arena) {
+SerialArena* SerialArena::New(Block* b, void* owner, ArenaImpl* arena) {
   auto pos = b->pos();
-  GOOGLE_DCHECK_LE(pos + kSerialArenaSize, b->size());
+  GOOGLE_DCHECK_LE(pos + ArenaImpl::kSerialArenaSize, b->size());
   SerialArena* serial = reinterpret_cast<SerialArena*>(b->Pointer(pos));
-  b->set_pos(pos + kSerialArenaSize);
+  b->set_pos(pos + ArenaImpl::kSerialArenaSize);
   serial->arena_ = arena;
   serial->owner_ = owner;
   serial->head_ = b;
@@ -404,7 +410,7 @@ ArenaImpl::SerialArena* ArenaImpl::SerialArena::New(Block* b, void* owner,
 }
 
 PROTOBUF_NOINLINE
-ArenaImpl::SerialArena* ArenaImpl::GetSerialArenaFallback(void* me) {
+SerialArena* ArenaImpl::GetSerialArenaFallback(void* me) {
   // Look for this SerialArena in our linked list.
   SerialArena* serial = threads_.load(std::memory_order_acquire);
   for (; serial; serial = serial->next()) {
@@ -416,7 +422,7 @@ ArenaImpl::SerialArena* ArenaImpl::GetSerialArenaFallback(void* me) {
   if (!serial) {
     // This thread doesn't have any SerialArena, which also means it doesn't
     // have any blocks yet.  So we'll allocate its first block now.
-    Block* b = NewBlock(NULL, kSerialArenaSize);
+    SerialArena::Block* b = SerialArena::NewBlock(NULL, kSerialArenaSize, this);
     serial = SerialArena::New(b, me, this);
 
     SerialArena* head = threads_.load(std::memory_order_relaxed);

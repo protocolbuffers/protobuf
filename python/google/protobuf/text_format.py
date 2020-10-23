@@ -882,9 +882,11 @@ class _Parser(object):
           raise tokenizer.ParseErrorPreviousToken('Expected "%s".' %
                                                   (expanded_any_end_token,))
         self._MergeField(tokenizer, expanded_any_sub_message)
+      deterministic = False
+
       message.Pack(expanded_any_sub_message,
                    type_url_prefix=type_url_prefix,
-                   deterministic=True)
+                   deterministic=deterministic)
       return
 
     if tokenizer.TryConsume('['):

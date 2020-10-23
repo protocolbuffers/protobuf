@@ -143,7 +143,7 @@ std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor) {
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter,
                                    bool preserve_period) {
-  string result;
+  std::string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
     if ('a' <= input[i] && input[i] <= 'z') {
@@ -195,7 +195,7 @@ std::string UnderscoresToPascalCase(const std::string& input) {
 // Lower letter                  Alphanumeric              Same as current
 // Upper letter                  Alphanumeric              Lower
 std::string ShoutyToPascalCase(const std::string& input) {
-  string result;
+  std::string result;
   // Simple way of implementing "always start with upper"
   char previous = '_';
   for (int i = 0; i < input.size(); i++) {
@@ -325,7 +325,7 @@ std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
   if (!result.empty()) {
     result += '.';
   }
-  string classname;
+  std::string classname;
   if (file->package().empty()) {
     classname = name;
   } else {
@@ -396,19 +396,20 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
 std::string GetOutputFile(const FileDescriptor* descriptor,
                           const std::string file_extension,
                           const bool generate_directories,
-                          const std::string base_namespace, string* error) {
-  string relative_filename = GetFileNameBase(descriptor) + file_extension;
+                          const std::string base_namespace,
+                          std::string* error) {
+  std::string relative_filename = GetFileNameBase(descriptor) + file_extension;
   if (!generate_directories) {
     return relative_filename;
   }
-  string ns = GetFileNamespace(descriptor);
-  string namespace_suffix = ns;
+  std::string ns = GetFileNamespace(descriptor);
+  std::string namespace_suffix = ns;
   if (!base_namespace.empty()) {
     // Check that the base_namespace is either equal to or a leading part of
     // the file namespace. This isn't just a simple prefix; "Foo.B" shouldn't
     // be regarded as a prefix of "Foo.Bar". The simplest option is to add "."
     // to both.
-    string extended_ns = ns + ".";
+    std::string extended_ns = ns + ".";
     if (extended_ns.find(base_namespace + ".") != 0) {
       *error = "Namespace " + ns + " is not a prefix namespace of base namespace " + base_namespace;
       return ""; // This will be ignored, because we've set an error.
@@ -419,7 +420,7 @@ std::string GetOutputFile(const FileDescriptor* descriptor,
     }
   }
 
-  string namespace_dir = StringReplace(namespace_suffix, ".", "/", true);
+  std::string namespace_dir = StringReplace(namespace_suffix, ".", "/", true);
   if (!namespace_dir.empty()) {
     namespace_dir += "/";
   }
