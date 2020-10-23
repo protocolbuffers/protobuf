@@ -426,7 +426,7 @@ class PROTOBUF_EXPORT ArenaImpl {
 
     // Number of per-thread lifecycle IDs to reserve. Must be power of two.
     // To reduce contention on a global atomic, each thread reserves a batch of
-    // IDs.  The following number is caluculated based on a stress test with
+    // IDs.  The following number is calculated based on a stress test with
     // ~6500 threads all frequently allocating a new arena.
     static constexpr size_t kPerThreadIds = 256;
     // Next lifecycle ID available to this thread. We need to reserve a new
