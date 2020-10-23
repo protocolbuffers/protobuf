@@ -38,6 +38,8 @@ Unreleased Changes
   * Support "\u" escapes in textformat string literals.
   * Trailing empty spaces are no longer ignored for FieldMask.
   * Fix FieldMaskUtil.subtract to recursively remove mask.
+  * Mark enums with `@java.lang.Deprecated` if the proto enum has option
+    `deprecated = true;`.
 
   Python
   * Print google.protobuf.NullValue as null instead of "NULL_VALUE" when it is
