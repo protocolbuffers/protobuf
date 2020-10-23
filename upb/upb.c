@@ -129,7 +129,7 @@ static bool upb_arena_allocblock(upb_arena *a, size_t size) {
 
 void *_upb_arena_slowmalloc(upb_arena *a, size_t size) {
   if (!upb_arena_allocblock(a, size)) return NULL;  /* Out of memory. */
-  UPB_ASSERT(_upb_arenahas(a, size));
+  UPB_ASSERT(_upb_arenahas(a) >= size);
   return upb_arena_malloc(a, size);
 }
 
@@ -224,9 +224,9 @@ void upb_arena_free(upb_arena *a) {
 bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func) {
   cleanup_ent *ent;
 
-  if (!a->cleanups || !_upb_arenahas(a, sizeof(cleanup_ent))) {
+  if (!a->cleanups || _upb_arenahas(a) < sizeof(cleanup_ent)) {
     if (!upb_arena_allocblock(a, 128)) return false;  /* Out of memory. */
-    UPB_ASSERT(_upb_arenahas(a, sizeof(cleanup_ent)));
+    UPB_ASSERT(_upb_arenahas(a) >= sizeof(cleanup_ent));
   }
 
   a->head.end -= sizeof(cleanup_ent);

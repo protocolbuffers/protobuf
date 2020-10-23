@@ -21,6 +21,8 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   struct upb_decstate *d, const char *ptr, upb_msg *msg, \
       const upb_msglayout *table, uint64_t hasbits, uint64_t data
 
+/* primitive fields ***********************************************************/
+
 #define F(card, type, valbytes, tagbytes) \
   const char *upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS);
 
@@ -29,7 +31,9 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   F(card, v, 4, tagbytes)     \
   F(card, v, 8, tagbytes)     \
   F(card, z, 4, tagbytes)     \
-  F(card, z, 8, tagbytes)
+  F(card, z, 8, tagbytes)     \
+  F(card, f, 4, tagbytes)     \
+  F(card, f, 8, tagbytes)
 
 #define TAGBYTES(card) \
   TYPES(card, 1)       \
@@ -37,16 +41,30 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
 
 TAGBYTES(s)
 TAGBYTES(o)
-/* TAGBYTES(r) */
-
-const char *upb_pss_1bt(UPB_PARSE_PARAMS);
-const char *upb_pss_2bt(UPB_PARSE_PARAMS);
-const char *upb_pos_1bt(UPB_PARSE_PARAMS);
-const char *upb_pos_2bt(UPB_PARSE_PARAMS);
+TAGBYTES(r)
 
 #undef F
 #undef TYPES
 #undef TAGBYTES
+
+/* string fields **************************************************************/
+
+#define F(card, tagbytes)                                      \
+  const char *upb_p##card##s_##tagbytes##bt(UPB_PARSE_PARAMS); \
+  const char *upb_c##card##s_##tagbytes##bt(UPB_PARSE_PARAMS);
+
+#define TAGBYTES(card) \
+  F(card, 1)           \
+  F(card, 2)
+
+TAGBYTES(s)
+TAGBYTES(o)
+TAGBYTES(r)
+
+#undef F
+#undef TAGBYTES
+
+/* sub-message fields *********************************************************/
 
 #define F(card, tagbytes, size_ceil, ceil_arg) \
   const char *upb_p##card##m_##tagbytes##bt_max##size_ceil##b(UPB_PARSE_PARAMS);

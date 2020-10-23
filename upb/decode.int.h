@@ -58,6 +58,7 @@ const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
     UPB_ASSERT(ptr < d->limit_ptr);
     return ptr;
   } else {
+    /* Parse error: we read past our limit. */
     return NULL;
   }
 }

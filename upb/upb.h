@@ -161,9 +161,9 @@ void *_upb_arena_slowmalloc(upb_arena *a, size_t size);
 
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
 
-UPB_INLINE bool _upb_arenahas(upb_arena *a, size_t size) {
+UPB_INLINE size_t _upb_arenahas(upb_arena *a) {
   _upb_arena_head *h = (_upb_arena_head*)a;
-  return (size_t)(h->end - h->ptr) >= size;
+  return (size_t)(h->end - h->ptr);
 }
 
 UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
@@ -171,7 +171,7 @@ UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
   void* ret;
   size = UPB_ALIGN_MALLOC(size);
 
-  if (UPB_UNLIKELY(!_upb_arenahas(a, size))) {
+  if (UPB_UNLIKELY(_upb_arenahas(a) < size)) {
     return _upb_arena_slowmalloc(a, size);
   }
 
@@ -182,7 +182,7 @@ UPB_INLINE void *upb_arena_malloc(upb_arena *a, size_t size) {
 #if UPB_ASAN
   {
     size_t guard_size = 32;
-    if (_upb_arenahas(a, guard_size)) {
+    if (_upb_arenahas(a) >= guard_size) {
       h->ptr += guard_size;
     } else {
       h->ptr = h->end;
