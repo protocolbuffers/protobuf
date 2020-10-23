@@ -138,7 +138,7 @@ inline bool IsDescriptorOptionMessage(const Descriptor* descriptor) {
   if (!IsDescriptorProto(descriptor->file())) {
     return false;
   }
-  const string name = descriptor->full_name();
+  const std::string name = descriptor->full_name();
   return name == "google.protobuf.FileOptions" ||
       name == "google.protobuf.MessageOptions" ||
       name == "google.protobuf.FieldOptions" ||

@@ -486,15 +486,23 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // when allocation recording is enabled.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void* AllocateInternal(bool skip_explicit_ownership) {
-    static_assert(alignof(T) <= 8, "T is overaligned, see b/151247138");
     const size_t n = internal::AlignUpTo8(sizeof(T));
-    impl_.RecordAlloc(RTTI_TYPE_ID(T), n);
     // Monitor allocation if needed.
+    impl_.RecordAlloc(RTTI_TYPE_ID(T), n);
     if (skip_explicit_ownership) {
-      return AllocateAlignedNoHook(n);
+      return AllocateAlignedTo<alignof(T)>(sizeof(T));
     } else {
-      return impl_.AllocateAlignedAndAddCleanup(
-          n, &internal::arena_destruct_object<T>);
+      if (alignof(T) <= 8) {
+        return impl_.AllocateAlignedAndAddCleanup(
+            n, &internal::arena_destruct_object<T>);
+      } else {
+        auto ptr =
+            reinterpret_cast<uintptr_t>(impl_.AllocateAlignedAndAddCleanup(
+                sizeof(T) + alignof(T) - 8,
+                &internal::arena_destruct_object<T>));
+        return reinterpret_cast<void*>((ptr + alignof(T) - 8) &
+                                       (~alignof(T) + 1));
+      }
     }
   }
 
@@ -549,10 +557,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   PROTOBUF_ALWAYS_INLINE T* CreateInternalRawArray(size_t num_elements) {
     GOOGLE_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
+    // We count on compiler to realize that if sizeof(T) is a multiple of
+    // 8 AlignUpTo can be elided.
     const size_t n = internal::AlignUpTo8(sizeof(T) * num_elements);
     // Monitor allocation if needed.
     impl_.RecordAlloc(RTTI_TYPE_ID(T), n);
-    return static_cast<T*>(AllocateAlignedNoHook(n));
+    return static_cast<T*>(AllocateAlignedTo<alignof(T)>(n));
   }
 
   template <typename T, typename... Args>
@@ -655,7 +665,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     // TODO(b/151247138): if the pointer would have been aligned already,
     // this is wasting space. We should pass the alignment down.
     uintptr_t ptr = reinterpret_cast<uintptr_t>(AllocateAligned(n + Align - 8));
-    ptr = (ptr + Align - 1) & -Align;
+    ptr = (ptr + Align - 1) & (~Align + 1);
     return reinterpret_cast<void*>(ptr);
   }
 

@@ -3438,7 +3438,6 @@ class DescriptorBuilder {
     void SetUInt64(int number, uint64 value, FieldDescriptor::Type type,
                    UnknownFieldSet* unknown_fields);
 
-
     // A helper function that adds an error at the specified location of the
     // option we're currently interpreting, and returns false.
     bool AddOptionError(DescriptorPool::ErrorCollector::ErrorLocation location,
@@ -6381,7 +6380,6 @@ DescriptorBuilder::OptionInterpreter::OptionInterpreter(
 
 DescriptorBuilder::OptionInterpreter::~OptionInterpreter() {}
 
-
 bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
     OptionsToInterpret* options_to_interpret) {
   // Note that these may be in different pools, so we can't use the same
@@ -6461,7 +6459,6 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
       options->GetReflection()->Swap(unparsed_options.get(), options);
     }
   }
-
 
   return !failed;
 }

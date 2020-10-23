@@ -44,9 +44,10 @@ namespace objectivec {
 namespace {
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
-                         std::map<string, string>* variables) {
-  const string& message_type = ClassName(descriptor->message_type());
-  const string& containing_class = ClassName(descriptor->containing_type());
+                         std::map<std::string, std::string>* variables) {
+  const std::string& message_type = ClassName(descriptor->message_type());
+  const std::string& containing_class =
+      ClassName(descriptor->containing_type());
   (*variables)["type"] = message_type;
   (*variables)["containing_class"] = containing_class;
   (*variables)["storage_type"] = message_type;
@@ -66,14 +67,14 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
 MessageFieldGenerator::~MessageFieldGenerator() {}
 
 void MessageFieldGenerator::DetermineForwardDeclarations(
-    std::set<string>* fwd_decls) const {
+    std::set<std::string>* fwd_decls) const {
   ObjCObjFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   // Class name is already in "storage_type".
   fwd_decls->insert("@class " + variable("storage_type"));
 }
 
 void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<string>* fwd_decls) const {
+    std::set<std::string>* fwd_decls) const {
   fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 
@@ -89,14 +90,14 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
-    std::set<string>* fwd_decls) const {
+    std::set<std::string>* fwd_decls) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   // Class name is already in "storage_type".
   fwd_decls->insert("@class " + variable("storage_type"));
 }
 
 void RepeatedMessageFieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<string>* fwd_decls) const {
+    std::set<std::string>* fwd_decls) const {
   fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 

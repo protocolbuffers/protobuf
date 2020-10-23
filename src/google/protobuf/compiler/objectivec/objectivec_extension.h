@@ -41,7 +41,7 @@ namespace objectivec {
 
 class ExtensionGenerator {
  public:
-  ExtensionGenerator(const string& root_class_name,
+  ExtensionGenerator(const std::string& root_class_name,
                      const FieldDescriptor* descriptor);
   ~ExtensionGenerator();
 
@@ -51,11 +51,11 @@ class ExtensionGenerator {
   void GenerateMembersHeader(io::Printer* printer);
   void GenerateStaticVariablesInitialization(io::Printer* printer);
   void GenerateRegistrationSource(io::Printer* printer);
-  void DetermineObjectiveCClassDefinitions(std::set<string>* fwd_decls);
+  void DetermineObjectiveCClassDefinitions(std::set<std::string>* fwd_decls);
 
  private:
-  string method_name_;
-  string root_class_and_method_name_;
+  std::string method_name_;
+  std::string root_class_and_method_name_;
   const FieldDescriptor* descriptor_;
 };
 
