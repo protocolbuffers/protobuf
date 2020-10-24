@@ -640,7 +640,7 @@ const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
                                const upb_msglayout *table, uint64_t hasbits,
                                uint64_t data) {
   decode_parseret ret;
-  *(uint32_t*)msg |= hasbits >> 16;  /* Sync hasbits. */
+  *(uint32_t*)msg |= hasbits;  /* Sync hasbits. */
   (void)data;
   if (decode_isdone(d, &ptr)) return ptr;
   ret = decode_field(d, ptr, msg, table);

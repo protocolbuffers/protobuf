@@ -736,7 +736,7 @@ struct SubmsgArray {
   absl::flat_hash_map<const protobuf::Descriptor*, int> indexes_;
 };
 
-typedef std::pair<std::string, MessageLayout::Size> TableEntry;
+typedef std::pair<std::string, uint64_t> TableEntry;
 
 void TryFillTableEntry(const protobuf::Descriptor* message,
                        const MessageLayout& layout, int num, TableEntry& ent) {
@@ -801,7 +801,7 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     case protobuf::FieldDescriptor::LABEL_OPTIONAL:
     case protobuf::FieldDescriptor::LABEL_REQUIRED:
       if (field->real_containing_oneof()) {
-        return;  // Not supported yet.
+        cardinality = "o";
       } else {
         cardinality = "s";
       }
@@ -811,37 +811,49 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
   uint16_t expected_tag = (num << 3) | wire_type;
   if (num > 15) expected_tag |= 0x100;
   MessageLayout::Size offset = layout.GetFieldOffset(field);
-  uint64_t hasbit_index = 0;  // Zero means no hasbits.
 
-  if (layout.HasHasbit(field)) {
-    hasbit_index = layout.GetHasbitIndex(field);
-    if (hasbit_index > 31) return;
-    // thas hasbits mask in the parser occupies bits 16-48
-    // in the 64 bit register. 
-    hasbit_index += 16;  // account for the shifted hasbits
+  // Data is:
+  //
+  //                  48                32                16                 0
+  // |--------|--------|--------|--------|--------|--------|--------|--------|
+  // |   offset (16)   |case offset (16) |presence| submsg |  exp. tag (16)  |
+  // |--------|--------|--------|--------|--------|--------|--------|--------|
+  //
+  // - |presence| is either hasbit index or field number for oneofs.
+
+  uint64_t data = offset.size64 << 48 | expected_tag;
+
+  if (field->is_repeated()) {
+    // No hasbit/oneof-related fields.
+  } if (field->real_containing_oneof()) {
+    MessageLayout::Size case_offset =
+        layout.GetOneofCaseOffset(field->real_containing_oneof());
+    if (case_offset.size64 > 0xffff) return;
+    assert(field->number() < 256);
+    data |= field->number() << 24;
+    data |= case_offset.size64 << 32;
+  } else {
+    uint64_t hasbit_index = 63;  // No hasbit (set a high, unused bit).
+    if (layout.HasHasbit(field)) {
+      hasbit_index = layout.GetHasbitIndex(field);
+      if (hasbit_index > 31) return;
+    }
+    data |= hasbit_index << 24;
   }
 
-  MessageLayout::Size data;
-
-  data.size32 = ((uint64_t)offset.size32 << 48) | expected_tag;
-  data.size64 = ((uint64_t)offset.size64 << 48) | expected_tag;
-
-  if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
+  if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     SubmsgArray submsg_array(message);
     uint64_t idx = submsg_array.GetIndex(field);
-    data.size32 |= idx << 16 | hasbit_index << 32;
-    data.size64 |= idx << 16 | hasbit_index << 32;
-  } else {
-    uint64_t hasbit_mask = (1ull << hasbit_index) & -0x10000;
-    data.size32 |= (uint64_t)hasbit_mask;
-    data.size64 |= (uint64_t)hasbit_mask;
-  }
+    if (idx > 255) return;
+    data |= idx << 16;
 
-
-  if (field->type() == protobuf::FieldDescriptor::TYPE_MESSAGE) {
     std::string size_ceil = "max";
     size_t size = SIZE_MAX;
     if (field->message_type()->file() == field->file()) {
+      // We can only be guaranteed the size of the sub-message if it is in the
+      // same file as us.  We could relax this to increase the speed of
+      // cross-file sub-message parsing if we are comfortable requiring that
+      // users compile all messages at the same time.
       MessageLayout sub_layout(field->message_type());
       size = sub_layout.message_size().size64 + 8;
     }
@@ -865,11 +877,8 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
 std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
                                         const MessageLayout& layout) {
   std::vector<TableEntry> table;
-  MessageLayout::Size empty_size;
-  empty_size.size32 = 0;
-  empty_size.size64 = 0;
   for (int i = 0; i < 32; i++) {
-    table.emplace_back(TableEntry{"fastdecode_generic", empty_size});
+    table.emplace_back(TableEntry{"fastdecode_generic", 0});
     TryFillTableEntry(message, layout, i, table.back());
   }
   return table;
@@ -972,7 +981,8 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
     output("const upb_msglayout $0 = {\n", MessageInit(message));
     output("  {\n");
     for (const auto& ent : table) {
-      output("    {&$0, $1},\n", ent.first, GetSizeInit(ent.second));
+      output("    {0x$1, &$0},\n", ent.first,
+             absl::StrCat(absl::Hex(ent.second, absl::kZeroPad16)));
     }
     output("  },\n");
     output("  $0,\n", submsgs_array_ref);

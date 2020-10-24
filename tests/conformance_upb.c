@@ -286,6 +286,7 @@ int main(void) {
     if (!DoTestIo(symtab)) {
       fprintf(stderr, "conformance_upb: received EOF from test runner "
                       "after %d tests, exiting\n", test_count);
+      upb_symtab_free(symtab);
       return 0;
     }
   }
