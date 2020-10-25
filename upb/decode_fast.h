@@ -42,6 +42,7 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
 TAGBYTES(s)
 TAGBYTES(o)
 TAGBYTES(r)
+TAGBYTES(p)
 
 #undef F
 #undef TYPES

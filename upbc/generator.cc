@@ -763,11 +763,13 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     case protobuf::FieldDescriptor::TYPE_SFIXED32:
     case protobuf::FieldDescriptor::TYPE_FLOAT:
       type = "f4";
+      wire_type = 5;
       break;
     case protobuf::FieldDescriptor::TYPE_FIXED64:
     case protobuf::FieldDescriptor::TYPE_SFIXED64:
     case protobuf::FieldDescriptor::TYPE_DOUBLE:
       type = "f8";
+      wire_type = 1;
       break;
     case protobuf::FieldDescriptor::TYPE_SINT32:
       type = "z4";
@@ -793,9 +795,11 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
 
   switch (field->label()) {
     case protobuf::FieldDescriptor::LABEL_REPEATED:
-      cardinality = "r";
       if (field->is_packed()) {
-        return;  // Not supported yet.
+        cardinality = "p";
+        wire_type = 2;
+      } else {
+        cardinality = "r";
       }
       break;
     case protobuf::FieldDescriptor::LABEL_OPTIONAL:

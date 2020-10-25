@@ -133,6 +133,65 @@ function test_string_double_map()
   assert_equal(2.5, msg2.map_string_double["two point five"])
 end
 
+function test_string_double_map()
+  local function fill_msg(msg)
+    msg.i32_packed[1] = 100
+    msg.i32_packed[2] = 200
+    msg.i32_packed[3] = 50000
+
+    msg.i64_packed[1] = 101
+    msg.i64_packed[2] = 201
+    msg.i64_packed[3] = 50001
+
+    msg.f32_packed[1] = 102
+    msg.f32_packed[2] = 202
+    msg.f32_packed[3] = 50002
+
+    msg.f64_packed[1] = 103
+    msg.f64_packed[2] = 203
+    msg.f64_packed[3] = 50003
+  end
+
+  local function check_msg(msg)
+    assert_equal(100, msg.i32_packed[1])
+    assert_equal(200, msg.i32_packed[2])
+    assert_equal(50000, msg.i32_packed[3])
+    assert_equal(3, #msg.i32_packed)
+
+    assert_equal(101, msg.i64_packed[1])
+    assert_equal(201, msg.i64_packed[2])
+    assert_equal(50001, msg.i64_packed[3])
+    assert_equal(3, #msg.i64_packed)
+
+    assert_equal(102, msg.f32_packed[1])
+    assert_equal(202, msg.f32_packed[2])
+    assert_equal(50002, msg.f32_packed[3])
+    assert_equal(3, #msg.f32_packed)
+
+    assert_equal(103, msg.f64_packed[1])
+    assert_equal(203, msg.f64_packed[2])
+    assert_equal(50003, msg.f64_packed[3])
+    assert_equal(3, #msg.f64_packed)
+  end
+
+  local msg = upb_test.PackedTest()
+  fill_msg(msg)
+  check_msg(msg)
+
+  local serialized_packed = upb.encode(msg)
+  local msg2 = upb.decode(upb_test.PackedTest, serialized_packed)
+  local msg3 = upb.decode(upb_test.UnpackedTest, serialized_packed)
+  check_msg(msg2)
+  check_msg(msg3)
+
+  serialized_unpacked = upb.encode(msg3)
+  local msg4 = upb.decode(upb_test.PackedTest, serialized_unpacked)
+  local msg5 = upb.decode(upb_test.PackedTest, serialized_unpacked)
+  check_msg(msg4)
+  check_msg(msg5)
+
+end
+
 function test_msg_string_map()
   msg = test_messages_proto3.TestAllTypesProto3()
   msg.map_string_string["foo"] = "bar"

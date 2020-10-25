@@ -1132,7 +1132,7 @@ const upb_msglayout google_protobuf_UninterpretedOption_msginit = {
     {0x002000000400001a, &upb_pss_1bt},
     {0x0008000001000020, &upb_psv8_1bt},
     {0x0010000002000028, &upb_psv8_1bt},
-    {0x0018000003000030, &upb_psf8_1bt},
+    {0x0018000003000031, &upb_psf8_1bt},
     {0x003000000500003a, &upb_pss_1bt},
     {0x0040000006000042, &upb_pss_1bt},
     {0x0000000000000000, &fastdecode_generic},
@@ -1268,8 +1268,8 @@ static const upb_msglayout_field google_protobuf_SourceCodeInfo_Location__fields
 const upb_msglayout google_protobuf_SourceCodeInfo_Location_msginit = {
   {
     {0x0000000000000000, &fastdecode_generic},
-    {0x0000000000000000, &fastdecode_generic},
-    {0x0000000000000000, &fastdecode_generic},
+    {0x002800003f00000a, &upb_ppv4_1bt},
+    {0x003000003f000012, &upb_ppv4_1bt},
     {0x000800000100001a, &upb_pss_1bt},
     {0x0018000002000022, &upb_pss_1bt},
     {0x0000000000000000, &fastdecode_generic},
@@ -1363,7 +1363,7 @@ static const upb_msglayout_field google_protobuf_GeneratedCodeInfo_Annotation__f
 const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
   {
     {0x0000000000000000, &fastdecode_generic},
-    {0x0000000000000000, &fastdecode_generic},
+    {0x002000003f00000a, &upb_ppv4_1bt},
     {0x0010000003000012, &upb_pss_1bt},
     {0x0004000001000018, &upb_psv4_1bt},
     {0x0008000002000020, &upb_psv4_1bt},
