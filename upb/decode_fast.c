@@ -588,6 +588,7 @@ static const char *fastdecode_packedfixed(UPB_PARSE_PARAMS, int tagbytes,
     }
   }
 
+  ptr += tagbytes;
   int size = (uint8_t)ptr[0];
   ptr++;
   if (size & 0x80) {

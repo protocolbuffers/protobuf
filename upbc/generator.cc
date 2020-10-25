@@ -739,13 +739,13 @@ struct SubmsgArray {
 typedef std::pair<std::string, uint64_t> TableEntry;
 
 void TryFillTableEntry(const protobuf::Descriptor* message,
-                       const MessageLayout& layout, int num, TableEntry& ent) {
-  const protobuf::FieldDescriptor* field = message->FindFieldByNumber(num);
-  if (!field) return;
-
+                       const MessageLayout& layout,
+                       const protobuf::FieldDescriptor* field,
+                       TableEntry& ent) {
   std::string type = "";
   std::string cardinality = "";
-  uint8_t wire_type = 0;
+  protobuf::internal::WireFormatLite::WireType wire_type =
+      protobuf::internal::WireFormatLite::WIRETYPE_VARINT;
   switch (field->type()) {
     case protobuf::FieldDescriptor::TYPE_BOOL:
       type = "b1";
@@ -763,13 +763,13 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     case protobuf::FieldDescriptor::TYPE_SFIXED32:
     case protobuf::FieldDescriptor::TYPE_FLOAT:
       type = "f4";
-      wire_type = 5;
+      wire_type = protobuf::internal::WireFormatLite::WIRETYPE_FIXED32;
       break;
     case protobuf::FieldDescriptor::TYPE_FIXED64:
     case protobuf::FieldDescriptor::TYPE_SFIXED64:
     case protobuf::FieldDescriptor::TYPE_DOUBLE:
       type = "f8";
-      wire_type = 1;
+      wire_type = protobuf::internal::WireFormatLite::WIRETYPE_FIXED64;
       break;
     case protobuf::FieldDescriptor::TYPE_SINT32:
       type = "z4";
@@ -780,14 +780,14 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     case protobuf::FieldDescriptor::TYPE_STRING:
     case protobuf::FieldDescriptor::TYPE_BYTES:
       type = "s";
-      wire_type = 2;
+      wire_type = protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
       break;
     case protobuf::FieldDescriptor::TYPE_MESSAGE:
       if (field->is_map()) {
         return;  // Not supported yet (ever?).
       }
       type = "m";
-      wire_type = 2;
+      wire_type = protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
       break;
     default:
       return;  // Not supported yet.
@@ -797,7 +797,8 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     case protobuf::FieldDescriptor::LABEL_REPEATED:
       if (field->is_packed()) {
         cardinality = "p";
-        wire_type = 2;
+        wire_type =
+            protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
       } else {
         cardinality = "r";
       }
@@ -812,8 +813,17 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
       break;
   }
 
-  uint16_t expected_tag = (num << 3) | wire_type;
-  if (num > 15) expected_tag |= 0x100;
+  uint32_t unencoded_tag =
+      protobuf::internal::WireFormatLite::MakeTag(field->number(), wire_type);
+  uint8_t tag_bytes[10] = {0};
+  protobuf::io::CodedOutputStream::WriteVarint32ToArray(unencoded_tag,
+                                                        tag_bytes);
+  uint64_t expected_tag = 0;
+  memcpy(&expected_tag, tag_bytes, sizeof(expected_tag));
+  if (expected_tag > 0x7fff) {
+    // Tag is >2 bytes.
+    return;
+  }
   MessageLayout::Size offset = layout.GetFieldOffset(field);
 
   // Data is:
@@ -869,11 +879,11 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
       }
     }
     ent.first = absl::Substitute("upb_p$0$1_$2bt_max$3b", cardinality, type,
-                                 (num > 15) ? "2" : "1", size_ceil);
+                                 expected_tag > 0xff ? "2" : "1", size_ceil);
 
   } else {
     ent.first = absl::Substitute("upb_p$0$1_$2bt", cardinality, type,
-                                 (num > 15) ? "2" : "1");
+                                 expected_tag > 0xff ? "2" : "1");
   }
   ent.second = data;
 }
@@ -883,7 +893,15 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
   std::vector<TableEntry> table;
   for (int i = 0; i < 32; i++) {
     table.emplace_back(TableEntry{"fastdecode_generic", 0});
-    TryFillTableEntry(message, layout, i, table.back());
+  }
+  for (int i = 0; i < message->field_count(); i++) {
+    const protobuf::FieldDescriptor* field = message->field(i);
+    int slot = field->number() & 31;
+    if (table[slot].first != "fastdecode_generic") {
+      // This slot is already populated by another field.
+      continue;
+    }
+    TryFillTableEntry(message, layout, field, table[slot]);
   }
   return table;
 }
