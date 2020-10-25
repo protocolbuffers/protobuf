@@ -741,7 +741,7 @@ typedef std::pair<std::string, uint64_t> TableEntry;
 void TryFillTableEntry(const protobuf::Descriptor* message,
                        const MessageLayout& layout,
                        const protobuf::FieldDescriptor* field,
-                       TableEntry& ent) {
+                       std::vector<TableEntry>& table) {
   std::string type = "";
   std::string cardinality = "";
   protobuf::internal::WireFormatLite::WireType wire_type =
@@ -824,6 +824,14 @@ void TryFillTableEntry(const protobuf::Descriptor* message,
     // Tag is >2 bytes.
     return;
   }
+  int slot = (expected_tag & 0xf8) >> 3;
+  auto& ent = table[slot];
+
+  if (ent.first != "fastdecode_generic") {
+    // This slot is already populated by another field.
+    return;
+  }
+
   MessageLayout::Size offset = layout.GetFieldOffset(field);
 
   // Data is:
@@ -895,12 +903,7 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
     table.emplace_back(TableEntry{"fastdecode_generic", 0});
   }
   for (const auto field : FieldHotnessOrder(message)) {
-    int slot = field->number() & 31;
-    if (table[slot].first != "fastdecode_generic") {
-      // This slot is already populated by another field.
-      continue;
-    }
-    TryFillTableEntry(message, layout, field, table[slot]);
+    TryFillTableEntry(message, layout, field, table);
   }
   return table;
 }

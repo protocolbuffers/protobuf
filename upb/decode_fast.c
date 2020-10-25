@@ -560,8 +560,8 @@ again:
   ptr += valbytes;
 
   if (card == CARD_r) {
-    fastdecode_nextret ret = fastdecode_nextrepeated(
-        d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_msg *));
+    fastdecode_nextret ret =
+        fastdecode_nextrepeated(d, dst, &ptr, &farr, data, tagbytes, valbytes);
     switch (ret.next) {
       case FD_NEXT_SAMEFIELD:
         dst = ret.dst;
@@ -822,6 +822,12 @@ again:
     switch (ret.next) {
       case FD_NEXT_SAMEFIELD:
         dst = ret.dst;
+        if (UPB_UNLIKELY(!d->alias)) {
+          // Buffer flipped and we can't alias any more. Bounce to copyfunc(),
+          // but via dispatch since we need to reload table data also.
+          fastdecode_commitarr(dst, &farr, sizeof(upb_strview));
+          return fastdecode_tagdispatch(d, ptr, msg, table, hasbits, ret.tag);
+        }
         goto again;
       case FD_NEXT_OTHERFIELD:
         return fastdecode_tagdispatch(d, ptr, msg, table, hasbits, ret.tag);
