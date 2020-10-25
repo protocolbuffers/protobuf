@@ -140,16 +140,16 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
 
 std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
     const protobuf::Descriptor* message) {
-  std::vector<const protobuf::FieldDescriptor*> messages;
+  std::vector<const protobuf::FieldDescriptor*> fields;
   for (int i = 0; i < message->field_count(); i++) {
-    messages.push_back(message->field(i));
+    fields.push_back(message->field(i));
   }
-  std::sort(messages.begin(), messages.end(),
+  std::sort(fields.begin(), fields.end(),
             [](const protobuf::FieldDescriptor* a,
                const protobuf::FieldDescriptor* b) {
               return a->number() < b->number();
             });
-  return messages;
+  return fields;
 }
 
 std::vector<const protobuf::FieldDescriptor*> SortedSubmessages(
@@ -894,8 +894,7 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
   for (int i = 0; i < 32; i++) {
     table.emplace_back(TableEntry{"fastdecode_generic", 0});
   }
-  for (int i = 0; i < message->field_count(); i++) {
-    const protobuf::FieldDescriptor* field = message->field(i);
+  for (const auto field : FieldHotnessOrder(message)) {
     int slot = field->number() & 31;
     if (table[slot].first != "fastdecode_generic") {
       // This slot is already populated by another field.
