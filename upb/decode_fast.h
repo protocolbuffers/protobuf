@@ -1,8 +1,31 @@
 // These are the specialized field parser functions for the fast parser.
 // Generated tables will refer to these by name.
 //
-// Here we follow the same pattern of macros used in decode_fast.c to declare
-// all of the variants.
+// The function names are encoded with names like:
+//
+//   //  123
+//   upb_pss_1bt();   // Parse singular string, 1 byte tag.
+//
+// In position 1:
+//   - 'p' for parse, most function use this
+//   - 'c' for copy, for when we are copying strings instead of aliasing
+//
+// In position 2 (cardinality):
+//   - 's' for singular, with or without hasbit
+//   - 'o' for oneof
+//   - 'r' for non-packed repeated
+//   - 'p' for packed repeated
+//
+// In position 3 (type):
+//   - 'b1' for bool
+//   - 'v4' for 4-byte varint
+//   - 'v8' for 8-byte varint
+//   - 'z4' for zig-zag-encoded 4-byte varint
+//   - 'z8' for zig-zag-encoded 8-byte varint
+//   - 'f4' for 4-byte fixed
+//   - 'f8' for 8-byte fixed
+//   - 'm' for sub-message
+//   - 's' for string
 
 #ifndef UPB_DECODE_FAST_H_
 #define UPB_DECODE_FAST_H_

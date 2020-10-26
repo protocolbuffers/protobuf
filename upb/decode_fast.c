@@ -491,6 +491,7 @@ static const char *fastdecode_varint(UPB_PARSE_PARAMS, int tagbytes,
  * {s,o,r,p} x {b1,v4,z4,v8,z8} x {1bt,2bt} */
 
 #define F(card, type, valbytes, tagbytes)                                      \
+  UPB_NOINLINE                                                                 \
   const char *upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS) { \
     return fastdecode_varint(UPB_PARSE_ARGS, tagbytes, valbytes, CARD_##card,  \
                              type##_ZZ,                                        \
@@ -621,7 +622,7 @@ static const char *fastdecode_packedfixed(UPB_PARSE_PARAMS, int tagbytes,
   return fastdecode_dispatch(d, ptr + size, msg, table, hasbits);
 }
 
-
+UPB_FORCEINLINE
 static const char *fastdecode_fixed(UPB_PARSE_PARAMS, int tagbytes,
                                     int valbytes, upb_card card,
                                     _upb_field_parser *unpacked,
@@ -638,6 +639,7 @@ static const char *fastdecode_fixed(UPB_PARSE_PARAMS, int tagbytes,
  * {s,o,r,p} x {f4,f8} x {1bt,2bt} */
 
 #define F(card, valbytes, tagbytes)                                          \
+  UPB_NOINLINE                                                               \
   const char *upb_p##card##f##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS) {  \
     return fastdecode_fixed(UPB_PARSE_ARGS, tagbytes, valbytes, CARD_##card, \
                             &upb_ppf##valbytes##_##tagbytes##bt,             \
