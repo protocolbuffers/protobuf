@@ -143,7 +143,7 @@ void MessageLayout::PlaceNonOneofFields(
 
   // Place/count hasbits.
   int hasbit_count = 0;
-  for (auto field : field_order) {
+  for (auto field : FieldHotnessOrder(descriptor)) {
     if (HasHasbit(field)) {
       // We don't use hasbit 0, so that 0 can indicate "no presence" in the
       // table. This wastes one hasbit, but we don't worry about it for now.

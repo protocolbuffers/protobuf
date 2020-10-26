@@ -102,6 +102,23 @@ class MessageLayout {
   Size size_;
 };
 
+// Returns fields in order of "hotness", eg. how frequently they appear in
+// serialized payloads. Ideally this will use a profile. When we don't have
+// that, we assume that fields with smaller numbers are used more frequently.
+inline std::vector<const google::protobuf::FieldDescriptor*> FieldHotnessOrder(
+    const google::protobuf::Descriptor* message) {
+  std::vector<const google::protobuf::FieldDescriptor*> fields;
+  for (int i = 0; i < message->field_count(); i++) {
+    fields.push_back(message->field(i));
+  }
+  std::sort(fields.begin(), fields.end(),
+            [](const google::protobuf::FieldDescriptor* a,
+               const google::protobuf::FieldDescriptor* b) {
+              return a->number() < b->number();
+            });
+  return fields;
+}
+
 }  // namespace upbc
 
 #endif  // UPBC_MESSAGE_LAYOUT_H

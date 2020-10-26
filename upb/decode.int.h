@@ -16,12 +16,16 @@
 #include "upb/port_def.inc"
 
 typedef struct upb_decstate {
-  const char *limit;       /* End of delimited region or end of buffer. */
-  const char *fastend;     /* The end of the entire buffer - 16 */
-  const char *fastlimit;   /* UPB_MIN(limit, fastend) */
-  upb_arena arena;
+  const char *end;         /* Can read up to 16 bytes slop beyond this. */
+  const char *limit_ptr;   /* = end + UPB_MIN(limit, 0) */
+  upb_msg *unknown_msg;    /* If non-NULL, add unknown data at buffer flip. */
+  const char *unknown;     /* Start of unknown data. */
+  int limit;               /* Submessage limit relative to end. */
   int depth;
   uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
+  bool alias;
+  char patch[32];
+  upb_arena arena;
   jmp_buf err;
 } upb_decstate;
 
@@ -44,7 +48,50 @@ UPB_INLINE const upb_msglayout *decode_totablep(intptr_t table) {
   return (void*)(table >> 8);
 }
 
-UPB_FORCEINLINE static
+UPB_INLINE
+const char *decode_isdonefallback_inl(upb_decstate *d, const char *ptr,
+                                      int overrun) {
+  if (overrun < d->limit) {
+    /* Need to copy remaining data into patch buffer. */
+    UPB_ASSERT(overrun < 16);
+    if (d->unknown_msg) {
+      if (!_upb_msg_addunknown(d->unknown_msg, d->unknown, ptr - d->unknown,
+                               &d->arena)) {
+        return NULL;
+      }
+      d->unknown = &d->patch[0] + overrun;
+    }
+    memset(d->patch + 16, 0, 16);
+    memcpy(d->patch, d->end, 16);
+    ptr = &d->patch[0] + overrun;
+    d->end = &d->patch[16];
+    d->limit -= 16;
+    d->limit_ptr = d->end + d->limit;
+    d->alias = false;
+    UPB_ASSERT(ptr < d->limit_ptr);
+    return ptr;
+  } else {
+    return NULL;
+  }
+}
+
+const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
+                                  int overrun);
+
+UPB_INLINE
+bool decode_isdone(upb_decstate *d, const char **ptr) {
+  int overrun = *ptr - d->end;
+  if (UPB_LIKELY(*ptr < d->limit_ptr)) {
+    return false;
+  } else if (UPB_LIKELY(overrun == d->limit)) {
+    return true;
+  } else {
+    *ptr = decode_isdonefallback(d, *ptr, overrun);
+    return false;
+  }
+}
+
+UPB_INLINE
 const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
                                     upb_msg *msg, intptr_t table,
                                     uint64_t hasbits, uint32_t tag) {
@@ -58,25 +105,24 @@ const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
   return table_p->fasttable[idx].field_parser(d, ptr, msg, table, hasbits, data);
 }
 
-UPB_FORCEINLINE static
-uint32_t fastdecode_loadtag(const char* ptr) {
+UPB_INLINE uint32_t fastdecode_loadtag(const char* ptr) {
   uint16_t tag;
   memcpy(&tag, ptr, 2);
   return tag;
 }
 
-UPB_FORCEINLINE static
-const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                intptr_t table, uint64_t hasbits) {
-  if (UPB_UNLIKELY(ptr >= d->fastlimit)) {
-    if (UPB_LIKELY(ptr == d->limit)) {
-      *(uint32_t*)msg |= hasbits >> 16;  /* Sync hasbits. */
-      return ptr;
-    }
-    uint64_t data = 0;
-    return fastdecode_generic(d, ptr, msg, table, hasbits, data);
-  }
-  return fastdecode_tagdispatch(d, ptr, msg, table, hasbits, fastdecode_loadtag(ptr));
+UPB_INLINE int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
+  int limit = size + (int)(ptr - d->end);
+  int delta = d->limit - limit;
+  d->limit = limit;
+  d->limit_ptr = d->end + UPB_MIN(0, limit);
+  return delta;
+}
+
+UPB_INLINE void decode_poplimit(upb_decstate *d, int saved_delta) {
+  d->limit += saved_delta;
+  d->limit_ptr = d->end + UPB_MIN(0, d->limit);
+  UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
 }
 
 #include "upb/port_undef.inc"

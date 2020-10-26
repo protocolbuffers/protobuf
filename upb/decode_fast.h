@@ -1,8 +1,31 @@
 // These are the specialized field parser functions for the fast parser.
 // Generated tables will refer to these by name.
 //
-// Here we follow the same pattern of macros used in decode_fast.c to declare
-// all of the variants.
+// The function names are encoded with names like:
+//
+//   //  123
+//   upb_pss_1bt();   // Parse singular string, 1 byte tag.
+//
+// In position 1:
+//   - 'p' for parse, most function use this
+//   - 'c' for copy, for when we are copying strings instead of aliasing
+//
+// In position 2 (cardinality):
+//   - 's' for singular, with or without hasbit
+//   - 'o' for oneof
+//   - 'r' for non-packed repeated
+//   - 'p' for packed repeated
+//
+// In position 3 (type):
+//   - 'b1' for bool
+//   - 'v4' for 4-byte varint
+//   - 'v8' for 8-byte varint
+//   - 'z4' for zig-zag-encoded 4-byte varint
+//   - 'z8' for zig-zag-encoded 8-byte varint
+//   - 'f4' for 4-byte fixed
+//   - 'f8' for 8-byte fixed
+//   - 'm' for sub-message
+//   - 's' for string
 
 #ifndef UPB_DECODE_FAST_H_
 #define UPB_DECODE_FAST_H_
@@ -21,6 +44,8 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   struct upb_decstate *d, const char *ptr, upb_msg *msg, intptr_t table, \
       uint64_t hasbits, uint64_t data
 
+/* primitive fields ***********************************************************/
+
 #define F(card, type, valbytes, tagbytes) \
   const char *upb_p##card##type##valbytes##_##tagbytes##bt(UPB_PARSE_PARAMS);
 
@@ -38,19 +63,32 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   TYPES(card, 2)
 
 TAGBYTES(s)
-// TAGBYTES(o)
+TAGBYTES(o)
 TAGBYTES(r)
-
-const char *upb_pss_1bt(UPB_PARSE_PARAMS);
-const char *upb_pss_2bt(UPB_PARSE_PARAMS);
-const char *upb_pos_1bt(UPB_PARSE_PARAMS);
-const char *upb_pos_2bt(UPB_PARSE_PARAMS);
-const char *upb_prs_1bt(UPB_PARSE_PARAMS);
-const char *upb_prs_2bt(UPB_PARSE_PARAMS);
+TAGBYTES(p)
 
 #undef F
 #undef TYPES
 #undef TAGBYTES
+
+/* string fields **************************************************************/
+
+#define F(card, tagbytes)                                      \
+  const char *upb_p##card##s_##tagbytes##bt(UPB_PARSE_PARAMS); \
+  const char *upb_c##card##s_##tagbytes##bt(UPB_PARSE_PARAMS);
+
+#define TAGBYTES(card) \
+  F(card, 1)           \
+  F(card, 2)
+
+TAGBYTES(s)
+TAGBYTES(o)
+TAGBYTES(r)
+
+#undef F
+#undef TAGBYTES
+
+/* sub-message fields *********************************************************/
 
 #define F(card, tagbytes, size_ceil, ceil_arg) \
   const char *upb_p##card##m_##tagbytes##bt_max##size_ceil##b(UPB_PARSE_PARAMS);

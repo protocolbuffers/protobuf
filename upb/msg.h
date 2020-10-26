@@ -54,8 +54,8 @@ typedef const char *_upb_field_parser(struct upb_decstate *d, const char *ptr,
                                       uint64_t hasbits, uint64_t data);
 
 typedef struct {
-  _upb_field_parser *field_parser;
   uint64_t field_data;
+  _upb_field_parser *field_parser;
 } _upb_fasttable_entry;
 
 typedef struct upb_msglayout {

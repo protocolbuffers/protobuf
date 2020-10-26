@@ -30,6 +30,7 @@ static void test_scalars() {
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
   protobuf_test_messages_proto3_TestAllTypesProto3 *msg2;
   upb_strview serialized;
+  upb_strview val;
 
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 10);
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int64(msg, 20);
@@ -61,9 +62,8 @@ static void test_scalars() {
              msg2) == 60.6);
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_bool(
              msg2) == 1);
-  ASSERT(upb_strview_eql(
-      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(msg2),
-      test_str_view));
+  val = protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(msg2);
+  ASSERT(upb_strview_eql(val, test_str_view));
 
   upb_arena_free(arena);
 }

@@ -201,6 +201,16 @@ void DoTest(const ctx* c) {
   upb_msg *msg;
   upb_strview name = conformance_ConformanceRequest_message_type(c->request);
   const upb_msgdef *m = upb_symtab_lookupmsg2(c->symtab, name.data, name.size);
+#if 0
+  // Handy code for limiting conformance tests to a single input payload.
+  // This is a hack since the conformance runner doesn't give an easy way to
+  // specify what test should be run.
+  const char skip[] = "\343>\010\301\002\344>\230?\001\230?\002\230?\003";
+  upb_strview skip_str = upb_strview_make(skip, sizeof(skip) - 1);
+  upb_strview pb_payload =
+      conformance_ConformanceRequest_protobuf_payload(c->request);
+  if (!upb_strview_eql(pb_payload, skip_str)) m = NULL;
+#endif
 
   if (!m) {
     static const char msg[] = "Unknown message type.";
@@ -286,6 +296,7 @@ int main(void) {
     if (!DoTestIo(symtab)) {
       fprintf(stderr, "conformance_upb: received EOF from test runner "
                       "after %d tests, exiting\n", test_count);
+      upb_symtab_free(symtab);
       return 0;
     }
   }
