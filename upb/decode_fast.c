@@ -77,9 +77,10 @@ static bool fastdecode_checktag(uint64_t data, int tagbytes) {
 
 UPB_FORCEINLINE
 static const char *fastdecode_longsize(const char *ptr, int *size) {
+  int i;
   UPB_ASSERT(*size & 0x80);
   *size &= 0xff;
-  for (int i = 0; i < 3; i++) {
+  for (i = 0; i < 3; i++) {
     ptr++;
     size_t byte = (uint8_t)ptr[-1];
     *size += (byte - 1) << (7 + 7 * i);

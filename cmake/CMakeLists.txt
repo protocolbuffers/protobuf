@@ -77,12 +77,12 @@ add_library(upb
   ../upb/upb.h
   ../upb/upb.hpp)
 target_link_libraries(upb
-  port
-  fastdecode)
+  fastdecode
+  port)
 add_library(fastdecode
+  ../upb/decode.int.h
   ../upb/decode_fast.c
   ../upb/decode_fast.h
-  ../upb/decode.int.h
   ../upb/msg.h
   ../upb/upb.int.h)
 target_link_libraries(fastdecode

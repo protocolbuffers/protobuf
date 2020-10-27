@@ -77,19 +77,26 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = [":port", ":fastdecode"],
+    deps = [
+        ":fastdecode",
+        ":port",
+    ],
 )
 
 cc_library(
     name = "fastdecode",
     srcs = [
+        "upb/decode.int.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",
-        "upb/decode.int.h",
         "upb/msg.h",
         "upb/upb.int.h",
     ],
-    deps = [":port", ":table"],
+    copts = ["-std=gnu99"],
+    deps = [
+        ":port",
+        ":table",
+    ],
 )
 
 # Common support routines used by generated code.  This library has no
@@ -188,8 +195,8 @@ cc_library(
 cc_library(
     name = "table",
     hdrs = [
-      "upb/table.int.h",
-      "upb/upb.h",
+        "upb/table.int.h",
+        "upb/upb.h",
     ],
     visibility = ["//tests:__pkg__"],
     deps = [
