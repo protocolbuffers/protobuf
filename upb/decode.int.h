@@ -99,7 +99,7 @@ const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
   uint8_t mask = table;
   uint64_t data;
   size_t idx = tag & mask;
-  __builtin_assume((idx & 7) == 0);
+  UPB_ASSUME((idx & 7) == 0);
   idx >>= 3;
   data = table_p->fasttable[idx].field_data ^ tag;
   return table_p->fasttable[idx].field_parser(d, ptr, msg, table, hasbits, data);

@@ -38,7 +38,7 @@ config_setting(
 
 upb_fasttable_enabled(
     name = "fasttable_enabled",
-    build_setting_default = True,
+    build_setting_default = False,
     visibility = ["//visibility:public"],
 )
 

@@ -47,8 +47,9 @@ static const char *fastdecode_isdonefallback(upb_decstate *d, const char *ptr,
 }
 
 UPB_FORCEINLINE
-const char *fastdecode_dispatch(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                intptr_t table, uint64_t hasbits) {
+static const char *fastdecode_dispatch(upb_decstate *d, const char *ptr,
+                                       upb_msg *msg, intptr_t table,
+                                       uint64_t hasbits) {
   if (UPB_UNLIKELY(ptr >= d->limit_ptr)) {
     int overrun = ptr - d->end;
     if (UPB_LIKELY(overrun == d->limit)) {
@@ -331,7 +332,7 @@ static const char *fastdecode_varint64(const char *ptr, uint64_t *val) {
     *val += (byte - 1) << 63;
   }
 done:
-  __builtin_assume(ptr != NULL);
+  UPB_ASSUME(ptr != NULL);
   return ptr;
 }
 
@@ -872,7 +873,7 @@ static const char *fastdecode_tosubmsg(upb_decstate *d, const char *ptr,
                                        void *ctx) {
   fastdecode_submsgdata *submsg = ctx;
   ptr = fastdecode_dispatch(d, ptr, submsg->msg, submsg->table, 0);
-  __builtin_assume(ptr != NULL);
+  UPB_ASSUME(ptr != NULL);
   return ptr;
 }
 

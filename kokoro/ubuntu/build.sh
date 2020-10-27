@@ -11,15 +11,25 @@ fi
 echo PATH=$PATH
 ls -l `which cmake`
 cmake --version
-echo CC=${CC:-cc}
-${CC:-cc} --version
 
 # Log the bazel path and version.
 which bazel
 bazel version
 
 cd $(dirname $0)/../..
-bazel test --test_output=errors ...
+
+if which gcc; then
+  gcc --version
+  bazel test --test_output=errors ...
+  # The checked-in code is with fasttable not enabled.
+  bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files
+fi
+
+if which clang; then
+  CC=clang bazel test --test_output=errors ...
+  # The checked-in code is with fasttable not enabled.
+  CC=clang bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files
+fi
 
 if [[ $(uname) = "Linux" ]]; then
   # Verify the ASAN build.  Have to exclude test_conformance_upb as protobuf
