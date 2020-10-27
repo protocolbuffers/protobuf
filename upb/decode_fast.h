@@ -3,7 +3,7 @@
 //
 // The function names are encoded with names like:
 //
-//   //  123
+//   //  123 4
 //   upb_pss_1bt();   // Parse singular string, 1 byte tag.
 //
 // In position 1:
@@ -25,7 +25,11 @@
 //   - 'f4' for 4-byte fixed
 //   - 'f8' for 8-byte fixed
 //   - 'm' for sub-message
-//   - 's' for string
+//   - 's' for string/bytes
+//
+// In position 4 (tag length):
+//   - '1' for one-byte tags (field numbers 1-15)
+//   - '2' for two-byte tags (field numbers 16-2048)
 
 #ifndef UPB_DECODE_FAST_H_
 #define UPB_DECODE_FAST_H_
