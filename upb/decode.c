@@ -319,15 +319,15 @@ static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
 static const char *decode_tosubmsg(upb_decstate *d, const char *ptr,
                                    upb_msg *submsg, const upb_msglayout *layout,
                                    const upb_msglayout_field *field, int size) {
-  if (size > 0) {
-    const upb_msglayout *subl = layout->submsgs[field->submsg_index];
-    int saved_delta = decode_pushlimit(d, ptr, size);
-    if (--d->depth < 0) decode_err(d);
+  const upb_msglayout *subl = layout->submsgs[field->submsg_index];
+  int saved_delta = decode_pushlimit(d, ptr, size);
+  if (--d->depth < 0) decode_err(d);
+  if (!decode_isdone(d, &ptr)) {
     ptr = decode_msg(d, ptr, submsg, subl);
-    decode_poplimit(d, saved_delta);
-    if (d->end_group != 0) decode_err(d);
-    d->depth++;
   }
+  decode_poplimit(d, ptr, saved_delta);
+  if (d->end_group != 0) decode_err(d);
+  d->depth++;
   return ptr;
 }
 
@@ -335,6 +335,9 @@ static const char *decode_group(upb_decstate *d, const char *ptr,
                                 upb_msg *submsg, const upb_msglayout *subl,
                                 uint32_t number) {
   if (--d->depth < 0) decode_err(d);
+  if (decode_isdone(d, &ptr)) {
+    decode_err(d);
+  }
   ptr = decode_msg(d, ptr, submsg, subl);
   if (d->end_group != number) decode_err(d);
   d->end_group = 0;
@@ -430,7 +433,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
         memcpy(out, &elem, scale);
         out += scale;
       }
-      decode_poplimit(d, saved_limit);
+      decode_poplimit(d, ptr, saved_limit);
       return ptr;
     }
     default:
@@ -554,6 +557,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     wireval val;
     int op;
 
+    UPB_ASSERT(ptr < d->limit_ptr);
     ptr = decode_varint32(d, ptr, &tag);
     field_number = tag >> 3;
     wire_type = tag & 7;
@@ -658,7 +662,7 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
 
   if (size == 0) {
     return true;
-  } else if (size < 16) {
+  } else if (size <= 16) {
     memset(&state.patch, 0, 32);
     memcpy(&state.patch, buf, size);
     buf = state.patch;

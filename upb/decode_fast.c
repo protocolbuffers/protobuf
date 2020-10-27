@@ -142,7 +142,7 @@ static const char *fastdecode_delimited(upb_decstate *d, const char *ptr,
     }
     int delta = decode_pushlimit(d, ptr, len);
     ptr = func(d, ptr, ctx);
-    decode_poplimit(d, delta);
+    decode_poplimit(d, ptr, delta);
   } else {
     // Fast case: Sub-message is <128 bytes and fits in the current buffer.
     // This means we can preserve limit/limit_ptr verbatim.

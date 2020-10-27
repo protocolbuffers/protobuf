@@ -119,7 +119,9 @@ UPB_INLINE int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
   return delta;
 }
 
-UPB_INLINE void decode_poplimit(upb_decstate *d, int saved_delta) {
+UPB_INLINE void decode_poplimit(upb_decstate *d, const char *ptr,
+                                int saved_delta) {
+  UPB_ASSERT(ptr - d->end == d->limit);
   d->limit += saved_delta;
   d->limit_ptr = d->end + UPB_MIN(0, d->limit);
   UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
