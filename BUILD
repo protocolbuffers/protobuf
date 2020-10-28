@@ -7,6 +7,7 @@ load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
     "upb_proto_reflection_library",
+    "upb_proto_library_copts",
 )
 
 # copybara:strip_for_google3_begin
@@ -33,6 +34,12 @@ config_setting(
 config_setting(
     name = "windows",
     constraint_values = ["@bazel_tools//platforms:windows"],
+)
+
+upb_proto_library_copts(
+    name = "upb_proto_library_copts__for_generated_code_only_do_not_use",
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
 )
 
 # Public C/C++ libraries #######################################################
