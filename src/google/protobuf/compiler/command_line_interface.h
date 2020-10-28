@@ -451,6 +451,9 @@ class PROTOC_EXPORT CommandLineInterface {
   // Was the --experimental_allow_proto3_optional flag used?
   bool allow_proto3_optional_ = false;
 
+  // When using --encode, this will be passed to SetSerializationDeterministic.
+  bool deterministic_output_ = false;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CommandLineInterface);
 };
 

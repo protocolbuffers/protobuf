@@ -276,7 +276,13 @@ public final class FieldMaskUtil {
     return maskTree.toFieldMask();
   }
 
-  /** Subtracts {@code secondMask} and {@code otherMasks} from {@code firstMask}. */
+  /**
+   * Subtracts {@code secondMask} and {@code otherMasks} from {@code firstMask}.
+   *
+   * <p>This method disregards proto structure. That is, if {@code firstMask} is "foo" and {@code
+   * secondMask} is "foo.bar", the response will always be "foo" without considering the internal
+   * proto structure of message "foo".
+   */
   public static FieldMask subtract(
       FieldMask firstMask, FieldMask secondMask, FieldMask... otherMasks) {
     FieldMaskTree maskTree = new FieldMaskTree(firstMask).removeFromFieldMask(secondMask);

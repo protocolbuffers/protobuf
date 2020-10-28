@@ -80,6 +80,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -192,6 +193,62 @@ TEST_F(MapImplTest, OperatorBracket) {
 
   map_[key] = value2;
   ExpectSingleElement(key, value2);
+}
+
+struct MoveTestKey {
+  MoveTestKey(int data, int* copies) : data(data), copies(copies) {}
+
+  MoveTestKey(const MoveTestKey& other)
+      : data(other.data), copies(other.copies) {
+    ++*copies;
+  }
+
+  MoveTestKey(MoveTestKey&& other) noexcept
+      : data(other.data), copies(other.copies) {}
+
+  friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
+    return lhs.data == rhs.data;
+  }
+  friend bool operator<(const MoveTestKey& lhs, const MoveTestKey& rhs) {
+    return lhs.data < rhs.data;
+  }
+
+  int data;
+  int* copies;
+};
+
+}  // namespace
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+namespace std {
+
+template <>  // NOLINT
+struct hash<google::protobuf::internal::MoveTestKey> {
+  size_t operator()(const google::protobuf::internal::MoveTestKey& key) const {
+    return hash<int>{}(key.data);
+  }
+};
+}  // namespace std
+
+namespace google {
+namespace protobuf {
+namespace internal {
+namespace {
+
+TEST_F(MapImplTest, OperatorBracketRValue) {
+  Arena arena;
+  for (Arena* arena_to_use : {&arena, static_cast<Arena*>(nullptr)}) {
+    int copies = 0;
+    Map<MoveTestKey, int> map(arena_to_use);
+    MoveTestKey key1(1, &copies);
+    EXPECT_EQ(copies, 0);
+    map[key1] = 0;
+    EXPECT_EQ(copies, 1);
+    map[MoveTestKey(2, &copies)] = 2;
+    EXPECT_EQ(copies, 1);
+  }
 }
 
 TEST_F(MapImplTest, OperatorBracketNonExist) {
@@ -1104,6 +1161,11 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   EXPECT_EQ(m.erase(key), 0);
   EXPECT_EQ(m.erase(miss_key), 0);
   EXPECT_THAT(m, UnorderedElementsAre(Pair("DEF", 2)));
+
+  m[key];
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 0), Pair("DEF", 2)));
+  m[key] = 1;
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 1), Pair("DEF", 2)));
 }
 
 TEST_F(MapImplTest, TransparentLookupForString) {
@@ -1117,6 +1179,11 @@ TEST_F(MapImplTest, TransparentLookupForString) {
   std::string abc = "ABC", lkj = "LKJ";
   TestTransparent(std::ref(abc), std::ref(lkj));
   TestTransparent(std::cref(abc), std::cref(lkj));
+}
+
+TEST_F(MapImplTest, ConstInit) {
+  PROTOBUF_CONSTINIT static Map<int, int> map;  // NOLINT
+  EXPECT_TRUE(map.empty());
 }
 
 // Map Field Reflection Test ========================================
@@ -1984,6 +2051,39 @@ TEST_F(MapFieldReflectionTest, UninitializedEntry) {
   auto entry = reflection->AddMessage(&message, field);
   EXPECT_FALSE(entry->IsInitialized());
   EXPECT_FALSE(message.IsInitialized());
+}
+
+class MyMapEntry
+    : public internal::MapEntry<MyMapEntry, ::google::protobuf::int32, ::google::protobuf::int32,
+                                internal::WireFormatLite::TYPE_INT32,
+                                internal::WireFormatLite::TYPE_INT32> {
+ public:
+  constexpr MyMapEntry() {}
+  MyMapEntry(Arena*) { std::abort(); }
+  Metadata GetMetadata() const override { std::abort(); }
+  static bool ValidateKey(void*) { return true; }
+  static bool ValidateValue(void*) { return true; }
+};
+
+class MyMapEntryLite
+    : public internal::MapEntryLite<MyMapEntryLite, ::google::protobuf::int32, ::google::protobuf::int32,
+                                    internal::WireFormatLite::TYPE_INT32,
+                                    internal::WireFormatLite::TYPE_INT32> {
+ public:
+  constexpr MyMapEntryLite() {}
+  explicit MyMapEntryLite(Arena*) { std::abort(); }
+  static bool ValidateKey(void*) { return true; }
+  static bool ValidateValue(void*) { return true; }
+};
+
+TEST(MapEntryTest, ConstInit) {
+  // This verifies that `MapEntry`, `MapEntryLite` and `MapEntryImpl` can be
+  // constant initialized.
+  PROTOBUF_CONSTINIT static MyMapEntry entry{};
+  EXPECT_NE(entry.SpaceUsed(), 0);
+
+  PROTOBUF_CONSTINIT static MyMapEntryLite entry_lite{};  // NOLINT
+  EXPECT_TRUE(entry_lite.IsInitialized());
 }
 
 // Generated Message Test ===========================================

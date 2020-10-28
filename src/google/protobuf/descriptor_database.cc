@@ -37,7 +37,6 @@
 #include <set>
 
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -553,11 +552,9 @@ class EncodedDescriptorDatabase::DescriptorIndex {
 
 bool EncodedDescriptorDatabase::Add(const void* encoded_file_descriptor,
                                     int size) {
-  google::protobuf::Arena arena;
-  auto* file = google::protobuf::Arena::CreateMessage<FileDescriptorProto>(&arena);
-  if (file->ParseFromArray(encoded_file_descriptor, size)) {
-    return index_->AddFile(*file,
-                           std::make_pair(encoded_file_descriptor, size));
+  FileDescriptorProto file;
+  if (file.ParseFromArray(encoded_file_descriptor, size)) {
+    return index_->AddFile(file, std::make_pair(encoded_file_descriptor, size));
   } else {
     GOOGLE_LOG(ERROR) << "Invalid file descriptor data passed to "
                   "EncodedDescriptorDatabase::Add().";
@@ -934,8 +931,8 @@ bool DescriptorPoolDatabase::FindAllExtensionNumbers(
   std::vector<const FieldDescriptor*> extensions;
   pool_.FindAllExtensions(extendee, &extensions);
 
-  for (int i = 0; i < extensions.size(); ++i) {
-    output->push_back(extensions[i]->number());
+  for (const FieldDescriptor* extension : extensions) {
+    output->push_back(extension->number());
   }
 
   return true;
@@ -955,8 +952,8 @@ MergedDescriptorDatabase::~MergedDescriptorDatabase() {}
 
 bool MergedDescriptorDatabase::FindFileByName(const std::string& filename,
                                               FileDescriptorProto* output) {
-  for (int i = 0; i < sources_.size(); i++) {
-    if (sources_[i]->FindFileByName(filename, output)) {
+  for (DescriptorDatabase* source : sources_) {
+    if (source->FindFileByName(filename, output)) {
       return true;
     }
   }
@@ -1013,8 +1010,8 @@ bool MergedDescriptorDatabase::FindAllExtensionNumbers(
   std::vector<int> results;
   bool success = false;
 
-  for (int i = 0; i < sources_.size(); i++) {
-    if (sources_[i]->FindAllExtensionNumbers(extendee_type, &results)) {
+  for (DescriptorDatabase* source : sources_) {
+    if (source->FindAllExtensionNumbers(extendee_type, &results)) {
       std::copy(results.begin(), results.end(),
                 std::insert_iterator<std::set<int> >(merged_results,
                                                      merged_results.begin()));

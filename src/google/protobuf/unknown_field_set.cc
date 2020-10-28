@@ -108,8 +108,7 @@ size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
 
   size_t total_size = sizeof(fields_) + sizeof(UnknownField) * fields_.size();
 
-  for (int i = 0; i < fields_.size(); i++) {
-    const UnknownField& field = (fields_)[i];
+  for (const UnknownField& field : fields_) {
     switch (field.type()) {
       case UnknownField::TYPE_LENGTH_DELIMITED:
         total_size += sizeof(*field.data_.length_delimited_.string_value) +

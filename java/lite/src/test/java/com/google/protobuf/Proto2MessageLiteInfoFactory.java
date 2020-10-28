@@ -174,8 +174,9 @@ public final class Proto2MessageLiteInfoFactory implements MessageInfoFactory {
           "fieldRequiredSint6487_",
           "fieldRequiredGroup88_",
         };
-    // To update this after a proto change, run protoc on proto2_message_lite.proto and copy over
-    // the content of the generated buildMessageInfo() method here.
+    // To update this after a proto change, run blaze build on proto2_message_lite.proto and copy
+    // over the String info from the proto2_message_lite_proto-lite-src.jar file in the
+    // blaze-genfiles directory.
     java.lang.String info =
         "\u0001U\u0001\u0002\u0001XU\u0000 \u0015\u0001\u1000\u0000\u0002\u1001\u0001\u0003"
             + "\u1002\u0002\u0004\u1003\u0003\u0005\u1004\u0004\u0006\u1005\u0005\u0007\u1006\u0006\b\u1007\u0007"

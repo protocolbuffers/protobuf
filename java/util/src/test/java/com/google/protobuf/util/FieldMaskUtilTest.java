@@ -239,7 +239,7 @@ public class FieldMaskUtilTest extends TestCase {
     FieldMask mask3 = FieldMaskUtil.fromString("bar.quz");
     FieldMask mask4 = FieldMaskUtil.fromString("foo,bar.baz");
     FieldMask result = FieldMaskUtil.subtract(mask1, mask2, mask3, mask4);
-    assertEquals("bar", FieldMaskUtil.toString(result));
+    assertThat(FieldMaskUtil.toString(result)).isEmpty();
   }
 
   public void testIntersection() throws Exception {

@@ -339,6 +339,11 @@ PyObject* GetEntryClass(PyObject* _self) {
 
 PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
   MapContainer* self = GetMap(_self);
+  if (!PyObject_TypeCheck(arg, ScalarMapContainer_Type) &&
+      !PyObject_TypeCheck(arg, MessageMapContainer_Type)) {
+    PyErr_SetString(PyExc_AttributeError, "Not a map field");
+    return nullptr;
+  }
   MapContainer* other_map = GetMap(arg);
   Message* message = self->GetMutableMessage();
   const Message* other_message = other_map->parent->message;

@@ -41,6 +41,7 @@
 
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/any.pb.h>
 #include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -2276,6 +2277,11 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   FileDescriptorProto import_proto;
   import->CopyTo(&import_proto);
   ASSERT_TRUE(pool_.BuildFile(import_proto) != NULL);
+
+  FileDescriptorProto any_import;
+  google::protobuf::Any::descriptor()->file()->CopyTo(&any_import);
+  ASSERT_TRUE(pool_.BuildFile(any_import) != nullptr);
+
   const FileDescriptor* actual = pool_.BuildFile(parsed);
   ASSERT_TRUE(actual != NULL);
   parsed.Clear();

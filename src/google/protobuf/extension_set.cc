@@ -192,14 +192,6 @@ ExtensionSet::ExtensionSet(Arena* arena)
                ? NULL
                : Arena::CreateArray<KeyValue>(arena_, flat_capacity_)} {}
 
-ExtensionSet::ExtensionSet()
-    : arena_(NULL),
-      flat_capacity_(0),
-      flat_size_(0),
-      map_{flat_capacity_ == 0
-               ? NULL
-               : Arena::CreateArray<KeyValue>(arena_, flat_capacity_)} {}
-
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
   if (arena_ == NULL) {

@@ -65,6 +65,11 @@ namespace {
 using ::protobuf_unittest::TestAllTypes;
 using ::testing::ElementsAre;
 
+TEST(RepeatedField, ConstInit) {
+  PROTOBUF_CONSTINIT static RepeatedField<int> field{};  // NOLINT
+  EXPECT_TRUE(field.empty());
+}
+
 // Test operations on a small RepeatedField.
 TEST(RepeatedField, Small) {
   RepeatedField<int> field;
@@ -826,6 +831,11 @@ TEST(RepeatedField, TestSAddFromSelf) {
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField
 // tests above.
+
+TEST(RepeatedPtrField, ConstInit) {
+  PROTOBUF_CONSTINIT static RepeatedPtrField<std::string> field{};  // NOLINT
+  EXPECT_TRUE(field.empty());
+}
 
 TEST(RepeatedPtrField, Small) {
   RepeatedPtrField<std::string> field;

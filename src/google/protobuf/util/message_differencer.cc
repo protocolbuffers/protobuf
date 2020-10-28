@@ -112,8 +112,8 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
       : message_differencer_(message_differencer),
         key_field_paths_(key_field_paths) {
     GOOGLE_CHECK(!key_field_paths_.empty());
-    for (int i = 0; i < key_field_paths_.size(); ++i) {
-      GOOGLE_CHECK(!key_field_paths_[i].empty());
+    for (const auto& path : key_field_paths_) {
+      GOOGLE_CHECK(!path.empty());
     }
   }
   MultipleFieldsMapKeyComparator(MessageDifferencer* message_differencer,
@@ -125,9 +125,8 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
   }
   bool IsMatch(const Message& message1, const Message& message2,
                const std::vector<SpecificField>& parent_fields) const override {
-    for (int i = 0; i < key_field_paths_.size(); ++i) {
-      if (!IsMatchInternal(message1, message2, parent_fields,
-                           key_field_paths_[i], 0)) {
+    for (const auto& path : key_field_paths_) {
+      if (!IsMatchInternal(message1, message2, parent_fields, path, 0)) {
         return false;
       }
     }
@@ -276,11 +275,11 @@ MessageDifferencer::MessageDifferencer()
           MatchIndicesPostProcessorForSmartList) {}
 
 MessageDifferencer::~MessageDifferencer() {
-  for (int i = 0; i < owned_key_comparators_.size(); ++i) {
-    delete owned_key_comparators_[i];
+  for (MapKeyComparator* comparator : owned_key_comparators_) {
+    delete comparator;
   }
-  for (int i = 0; i < ignore_criteria_.size(); ++i) {
-    delete ignore_criteria_[i];
+  for (IgnoreCriteria* criteria : ignore_criteria_) {
+    delete criteria;
   }
 }
 
@@ -380,9 +379,9 @@ void MessageDifferencer::TreatAsMapWithMultipleFieldsAsKey(
     const FieldDescriptor* field,
     const std::vector<const FieldDescriptor*>& key_fields) {
   std::vector<std::vector<const FieldDescriptor*> > key_field_paths;
-  for (int i = 0; i < key_fields.size(); ++i) {
+  for (const FieldDescriptor* key_filed : key_fields) {
     std::vector<const FieldDescriptor*> key_field_path;
-    key_field_path.push_back(key_fields[i]);
+    key_field_path.push_back(key_filed);
     key_field_paths.push_back(key_field_path);
   }
   TreatAsMapWithMultipleFieldPathsAsKey(field, key_field_paths);
@@ -395,9 +394,7 @@ void MessageDifferencer::TreatAsMapWithMultipleFieldPathsAsKey(
       << "Field must be repeated: " << field->full_name();
   GOOGLE_CHECK_EQ(FieldDescriptor::CPPTYPE_MESSAGE, field->cpp_type())
       << "Field has to be message type.  Field name is: " << field->full_name();
-  for (int i = 0; i < key_field_paths.size(); ++i) {
-    const std::vector<const FieldDescriptor*>& key_field_path =
-        key_field_paths[i];
+  for (const auto& key_field_path : key_field_paths) {
     for (int j = 0; j < key_field_path.size(); ++j) {
       const FieldDescriptor* parent_field =
           j == 0 ? field : key_field_path[j - 1];
@@ -919,7 +916,8 @@ bool MessageDifferencer::IsMatch(
 
 bool MessageDifferencer::CompareMapFieldByMapReflection(
     const Message& message1, const Message& message2,
-    const FieldDescriptor* map_field) {
+    const FieldDescriptor* map_field, std::vector<SpecificField>* parent_fields,
+    DefaultFieldComparator* comparator) {
   const Reflection* reflection1 = message1.GetReflection();
   const Reflection* reflection2 = message2.GetReflection();
   const int count1 = reflection1->MapSize(message1, map_field);
@@ -945,9 +943,9 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
       }                                                                       \
       MapValueConstRef value2;                                                \
       reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2); \
-      if (!default_field_comparator_.Compare##COMPAREMETHOD(                  \
-              *val_des, it.GetValueRef().Get##METHOD(),                       \
-              value2.Get##METHOD())) {                                        \
+      if (!comparator->Compare##COMPAREMETHOD(*val_des,                       \
+                                              it.GetValueRef().Get##METHOD(), \
+                                              value2.Get##METHOD())) {        \
         return false;                                                         \
       }                                                                       \
     }                                                                         \
@@ -972,10 +970,17 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
         if (!reflection2->ContainsMapKey(message2, map_field, it.GetKey())) {
           return false;
         }
+        bool compare_result;
         MapValueConstRef value2;
         reflection2->LookupMapValue(message2, map_field, it.GetKey(), &value2);
-        if (!Compare(it.GetValueRef().GetMessageValue(),
-                     value2.GetMessageValue())) {
+        // Append currently compared field to the end of parent_fields.
+        SpecificField specific_value_field;
+        specific_value_field.field = val_des;
+        parent_fields->push_back(specific_value_field);
+        compare_result = Compare(it.GetValueRef().GetMessageValue(),
+                                 value2.GetMessageValue(), parent_fields);
+        parent_fields->pop_back();
+        if (!compare_result) {
           return false;
         }
       }
@@ -996,18 +1001,42 @@ bool MessageDifferencer::CompareRepeatedField(
   // When both map fields are on map, do not sync to repeated field.
   // TODO(jieluo): Add support for reporter
   if (repeated_field->is_map() && reporter_ == nullptr &&
-      field_comparator_ == nullptr) {
-    const FieldDescriptor* key_des = repeated_field->message_type()->map_key();
-    const FieldDescriptor* val_des =
-        repeated_field->message_type()->map_value();
-    const internal::MapFieldBase* map_field1 =
-        reflection1->GetMapData(message1, repeated_field);
-    const internal::MapFieldBase* map_field2 =
-        reflection2->GetMapData(message2, repeated_field);
-    if (map_field1->IsMapValid() && map_field2->IsMapValid() &&
-        ignored_fields_.find(key_des) == ignored_fields_.end() &&
-        ignored_fields_.find(val_des) == ignored_fields_.end()) {
-      return CompareMapFieldByMapReflection(message1, message2, repeated_field);
+      // Users didn't set custom map field key comparator
+      map_field_key_comparator_.find(repeated_field) ==
+          map_field_key_comparator_.end() &&
+      // Users didn't set repeated field comparison
+      repeated_field_comparison_ == AS_LIST) {
+    DefaultFieldComparator* map_field_comparator =
+        field_comparator_ ? nullptr : &default_field_comparator_;
+#if PROTOBUF_RTTI
+    // Inherit class from DefaultFieldComparator can not get the benefit
+    // because DefaultFieldComparator::Compare() method might be overwrote.
+    if (field_comparator_ &&
+        typeid(*field_comparator_) == typeid(default_field_comparator_)) {
+      map_field_comparator =
+          static_cast<DefaultFieldComparator*>(field_comparator_);
+    }
+#endif
+    if (map_field_comparator) {
+      const FieldDescriptor* key_des =
+          repeated_field->message_type()->map_key();
+      const FieldDescriptor* val_des =
+          repeated_field->message_type()->map_value();
+      const internal::MapFieldBase* map_field1 =
+          reflection1->GetMapData(message1, repeated_field);
+      const internal::MapFieldBase* map_field2 =
+          reflection2->GetMapData(message2, repeated_field);
+      std::vector<SpecificField> current_parent_fields(*parent_fields);
+      SpecificField specific_field;
+      specific_field.field = repeated_field;
+      current_parent_fields.push_back(specific_field);
+      if (map_field1->IsMapValid() && map_field2->IsMapValid() &&
+          !IsIgnored(message1, message2, key_des, current_parent_fields) &&
+          !IsIgnored(message1, message2, val_des, current_parent_fields)) {
+        return CompareMapFieldByMapReflection(
+            message1, message2, repeated_field, &current_parent_fields,
+            map_field_comparator);
+      }
     }
   }
 
@@ -1204,10 +1233,11 @@ bool MessageDifferencer::CompareFieldValueUsingParentFields(
 
 bool MessageDifferencer::CheckPathChanged(
     const std::vector<SpecificField>& field_path) {
-  for (int i = 0; i < field_path.size(); ++i) {
+  for (const SpecificField& specific_field : field_path) {
     // Don't check indexes for map entries -- maps are unordered.
-    if (field_path[i].field != NULL && field_path[i].field->is_map()) continue;
-    if (field_path[i].index != field_path[i].new_index) return true;
+    if (specific_field.field != nullptr && specific_field.field->is_map())
+      continue;
+    if (specific_field.index != specific_field.new_index) return true;
   }
   return false;
 }
@@ -1254,9 +1284,8 @@ bool MessageDifferencer::IsIgnored(
   if (ignored_fields_.find(field) != ignored_fields_.end()) {
     return true;
   }
-  for (int i = 0; i < ignore_criteria_.size(); ++i) {
-    if (ignore_criteria_[i]->IsIgnored(message1, message2, field,
-                                       parent_fields)) {
+  for (IgnoreCriteria* criteria : ignore_criteria_) {
+    if (criteria->IsIgnored(message1, message2, field, parent_fields)) {
       return true;
     }
   }
@@ -1267,9 +1296,9 @@ bool MessageDifferencer::IsUnknownFieldIgnored(
     const Message& message1, const Message& message2,
     const SpecificField& field,
     const std::vector<SpecificField>& parent_fields) {
-  for (int i = 0; i < ignore_criteria_.size(); ++i) {
-    if (ignore_criteria_[i]->IsUnknownFieldIgnored(message1, message2, field,
-                                                   parent_fields)) {
+  for (IgnoreCriteria* criteria : ignore_criteria_) {
+    if (criteria->IsUnknownFieldIgnored(message1, message2, field,
+                                        parent_fields)) {
       return true;
     }
   }

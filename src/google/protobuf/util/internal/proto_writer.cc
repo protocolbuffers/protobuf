@@ -55,7 +55,6 @@ namespace converter {
 using io::CodedOutputStream;
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using util::Status;
-using util::StatusOr;
 using util::error::INVALID_ARGUMENT;
 
 
@@ -70,6 +69,7 @@ ProtoWriter::ProtoWriter(TypeResolver* type_resolver,
       ignore_unknown_enum_values_(false),
       use_lower_camel_for_enums_(false),
       case_insensitive_enum_parsing_(true),
+      use_json_name_in_missing_fields_(false),
       element_(nullptr),
       size_insert_(),
       output_(output),
@@ -91,6 +91,7 @@ ProtoWriter::ProtoWriter(const TypeInfo* typeinfo,
       ignore_unknown_enum_values_(false),
       use_lower_camel_for_enums_(false),
       case_insensitive_enum_parsing_(true),
+      use_json_name_in_missing_fields_(false),
       element_(nullptr),
       size_insert_(),
       output_(output),
@@ -120,9 +121,9 @@ ProtoWriter::~ProtoWriter() {
 namespace {
 
 // Writes an INT32 field, including tag to the stream.
-inline Status WriteInt32(int field_number, const DataPiece& data,
-                         CodedOutputStream* stream) {
-  StatusOr<int32> i32 = data.ToInt32();
+inline util::Status WriteInt32(int field_number, const DataPiece& data,
+                               CodedOutputStream* stream) {
+  util::StatusOr<int32> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteInt32(field_number, i32.value(), stream);
   }
@@ -130,9 +131,9 @@ inline Status WriteInt32(int field_number, const DataPiece& data,
 }
 
 // writes an SFIXED32 field, including tag, to the stream.
-inline Status WriteSFixed32(int field_number, const DataPiece& data,
-                            CodedOutputStream* stream) {
-  StatusOr<int32> i32 = data.ToInt32();
+inline util::Status WriteSFixed32(int field_number, const DataPiece& data,
+                                  CodedOutputStream* stream) {
+  util::StatusOr<int32> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteSFixed32(field_number, i32.value(), stream);
   }
@@ -140,9 +141,9 @@ inline Status WriteSFixed32(int field_number, const DataPiece& data,
 }
 
 // Writes an SINT32 field, including tag, to the stream.
-inline Status WriteSInt32(int field_number, const DataPiece& data,
-                          CodedOutputStream* stream) {
-  StatusOr<int32> i32 = data.ToInt32();
+inline util::Status WriteSInt32(int field_number, const DataPiece& data,
+                                CodedOutputStream* stream) {
+  util::StatusOr<int32> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteSInt32(field_number, i32.value(), stream);
   }
@@ -150,9 +151,9 @@ inline Status WriteSInt32(int field_number, const DataPiece& data,
 }
 
 // Writes a FIXED32 field, including tag, to the stream.
-inline Status WriteFixed32(int field_number, const DataPiece& data,
-                           CodedOutputStream* stream) {
-  StatusOr<uint32> u32 = data.ToUint32();
+inline util::Status WriteFixed32(int field_number, const DataPiece& data,
+                                 CodedOutputStream* stream) {
+  util::StatusOr<uint32> u32 = data.ToUint32();
   if (u32.ok()) {
     WireFormatLite::WriteFixed32(field_number, u32.value(), stream);
   }
@@ -160,9 +161,9 @@ inline Status WriteFixed32(int field_number, const DataPiece& data,
 }
 
 // Writes a UINT32 field, including tag, to the stream.
-inline Status WriteUInt32(int field_number, const DataPiece& data,
-                          CodedOutputStream* stream) {
-  StatusOr<uint32> u32 = data.ToUint32();
+inline util::Status WriteUInt32(int field_number, const DataPiece& data,
+                                CodedOutputStream* stream) {
+  util::StatusOr<uint32> u32 = data.ToUint32();
   if (u32.ok()) {
     WireFormatLite::WriteUInt32(field_number, u32.value(), stream);
   }
@@ -170,9 +171,9 @@ inline Status WriteUInt32(int field_number, const DataPiece& data,
 }
 
 // Writes an INT64 field, including tag, to the stream.
-inline Status WriteInt64(int field_number, const DataPiece& data,
-                         CodedOutputStream* stream) {
-  StatusOr<int64> i64 = data.ToInt64();
+inline util::Status WriteInt64(int field_number, const DataPiece& data,
+                               CodedOutputStream* stream) {
+  util::StatusOr<int64> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteInt64(field_number, i64.value(), stream);
   }
@@ -180,9 +181,9 @@ inline Status WriteInt64(int field_number, const DataPiece& data,
 }
 
 // Writes an SFIXED64 field, including tag, to the stream.
-inline Status WriteSFixed64(int field_number, const DataPiece& data,
-                            CodedOutputStream* stream) {
-  StatusOr<int64> i64 = data.ToInt64();
+inline util::Status WriteSFixed64(int field_number, const DataPiece& data,
+                                  CodedOutputStream* stream) {
+  util::StatusOr<int64> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteSFixed64(field_number, i64.value(), stream);
   }
@@ -190,9 +191,9 @@ inline Status WriteSFixed64(int field_number, const DataPiece& data,
 }
 
 // Writes an SINT64 field, including tag, to the stream.
-inline Status WriteSInt64(int field_number, const DataPiece& data,
-                          CodedOutputStream* stream) {
-  StatusOr<int64> i64 = data.ToInt64();
+inline util::Status WriteSInt64(int field_number, const DataPiece& data,
+                                CodedOutputStream* stream) {
+  util::StatusOr<int64> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteSInt64(field_number, i64.value(), stream);
   }
@@ -200,9 +201,9 @@ inline Status WriteSInt64(int field_number, const DataPiece& data,
 }
 
 // Writes a FIXED64 field, including tag, to the stream.
-inline Status WriteFixed64(int field_number, const DataPiece& data,
-                           CodedOutputStream* stream) {
-  StatusOr<uint64> u64 = data.ToUint64();
+inline util::Status WriteFixed64(int field_number, const DataPiece& data,
+                                 CodedOutputStream* stream) {
+  util::StatusOr<uint64> u64 = data.ToUint64();
   if (u64.ok()) {
     WireFormatLite::WriteFixed64(field_number, u64.value(), stream);
   }
@@ -210,9 +211,9 @@ inline Status WriteFixed64(int field_number, const DataPiece& data,
 }
 
 // Writes a UINT64 field, including tag, to the stream.
-inline Status WriteUInt64(int field_number, const DataPiece& data,
-                          CodedOutputStream* stream) {
-  StatusOr<uint64> u64 = data.ToUint64();
+inline util::Status WriteUInt64(int field_number, const DataPiece& data,
+                                CodedOutputStream* stream) {
+  util::StatusOr<uint64> u64 = data.ToUint64();
   if (u64.ok()) {
     WireFormatLite::WriteUInt64(field_number, u64.value(), stream);
   }
@@ -220,9 +221,9 @@ inline Status WriteUInt64(int field_number, const DataPiece& data,
 }
 
 // Writes a DOUBLE field, including tag, to the stream.
-inline Status WriteDouble(int field_number, const DataPiece& data,
-                          CodedOutputStream* stream) {
-  StatusOr<double> d = data.ToDouble();
+inline util::Status WriteDouble(int field_number, const DataPiece& data,
+                                CodedOutputStream* stream) {
+  util::StatusOr<double> d = data.ToDouble();
   if (d.ok()) {
     WireFormatLite::WriteDouble(field_number, d.value(), stream);
   }
@@ -230,9 +231,9 @@ inline Status WriteDouble(int field_number, const DataPiece& data,
 }
 
 // Writes a FLOAT field, including tag, to the stream.
-inline Status WriteFloat(int field_number, const DataPiece& data,
-                         CodedOutputStream* stream) {
-  StatusOr<float> f = data.ToFloat();
+inline util::Status WriteFloat(int field_number, const DataPiece& data,
+                               CodedOutputStream* stream) {
+  util::StatusOr<float> f = data.ToFloat();
   if (f.ok()) {
     WireFormatLite::WriteFloat(field_number, f.value(), stream);
   }
@@ -240,9 +241,9 @@ inline Status WriteFloat(int field_number, const DataPiece& data,
 }
 
 // Writes a BOOL field, including tag, to the stream.
-inline Status WriteBool(int field_number, const DataPiece& data,
-                        CodedOutputStream* stream) {
-  StatusOr<bool> b = data.ToBool();
+inline util::Status WriteBool(int field_number, const DataPiece& data,
+                              CodedOutputStream* stream) {
+  util::StatusOr<bool> b = data.ToBool();
   if (b.ok()) {
     WireFormatLite::WriteBool(field_number, b.value(), stream);
   }
@@ -250,9 +251,9 @@ inline Status WriteBool(int field_number, const DataPiece& data,
 }
 
 // Writes a BYTES field, including tag, to the stream.
-inline Status WriteBytes(int field_number, const DataPiece& data,
-                         CodedOutputStream* stream) {
-  StatusOr<std::string> c = data.ToBytes();
+inline util::Status WriteBytes(int field_number, const DataPiece& data,
+                               CodedOutputStream* stream) {
+  util::StatusOr<std::string> c = data.ToBytes();
   if (c.ok()) {
     WireFormatLite::WriteBytes(field_number, c.ValueOrDie(), stream);
   }
@@ -260,9 +261,9 @@ inline Status WriteBytes(int field_number, const DataPiece& data,
 }
 
 // Writes a STRING field, including tag, to the stream.
-inline Status WriteString(int field_number, const DataPiece& data,
-                          CodedOutputStream* stream) {
-  StatusOr<std::string> s = data.ToString();
+inline util::Status WriteString(int field_number, const DataPiece& data,
+                                CodedOutputStream* stream) {
+  util::StatusOr<std::string> s = data.ToString();
   if (s.ok()) {
     WireFormatLite::WriteString(field_number, s.value(), stream);
   }
@@ -350,7 +351,9 @@ ProtoWriter::ProtoElement* ProtoWriter::ProtoElement::pop() {
     for (std::set<const google::protobuf::Field*>::iterator it =
              required_fields_.begin();
          it != required_fields_.end(); ++it) {
-      ow_->MissingField((*it)->name());
+      ow_->MissingField(ow_->use_json_name_in_missing_fields_
+                            ? (*it)->json_name()
+                            : (*it)->name());
     }
   }
   // Computes the total number of proto bytes used by a message, also adjusts
@@ -539,7 +542,7 @@ ProtoWriter* ProtoWriter::EndList() {
 
 ProtoWriter* ProtoWriter::RenderDataPiece(
     StringPiece name, const DataPiece& data) {
-  Status status;
+  util::Status status;
   if (invalid_depth_ > 0) return this;
 
   const google::protobuf::Field* field = Lookup(name);
@@ -593,16 +596,16 @@ ProtoWriter* ProtoWriter::StartListField(const google::protobuf::Field& field,
   return this;
 }
 
-Status ProtoWriter::WriteEnum(int field_number, const DataPiece& data,
-                              const google::protobuf::Enum* enum_type,
-                              CodedOutputStream* stream,
-                              bool use_lower_camel_for_enums,
-                              bool case_insensitive_enum_parsing,
-                              bool ignore_unknown_values) {
+util::Status ProtoWriter::WriteEnum(int field_number, const DataPiece& data,
+                                    const google::protobuf::Enum* enum_type,
+                                    CodedOutputStream* stream,
+                                    bool use_lower_camel_for_enums,
+                                    bool case_insensitive_enum_parsing,
+                                    bool ignore_unknown_values) {
   bool is_unknown_enum_value = false;
-  StatusOr<int> e = data.ToEnum(enum_type, use_lower_camel_for_enums,
-                                case_insensitive_enum_parsing,
-                                ignore_unknown_values, &is_unknown_enum_value);
+  util::StatusOr<int> e = data.ToEnum(
+      enum_type, use_lower_camel_for_enums, case_insensitive_enum_parsing,
+      ignore_unknown_values, &is_unknown_enum_value);
   if (e.ok() && !is_unknown_enum_value) {
     WireFormatLite::WriteEnum(field_number, e.value(), stream);
   }
@@ -612,29 +615,15 @@ Status ProtoWriter::WriteEnum(int field_number, const DataPiece& data,
 ProtoWriter* ProtoWriter::RenderPrimitiveField(
     const google::protobuf::Field& field, const google::protobuf::Type& type,
     const DataPiece& data) {
-  Status status;
+  util::Status status;
 
   // Pushing a ProtoElement and then pop it off at the end for 2 purposes:
   // error location reporting and required field accounting.
   //
-  // For proto3, since there is no required field tracking, we only need to push
-  // ProtoElement for error cases.
+  // For proto3, since there is no required field tracking, we only need to
+  // push ProtoElement for error cases.
   if (!element_->proto3()) {
     element_.reset(new ProtoElement(element_.release(), &field, type, false));
-  }
-
-  if (field.kind() == google::protobuf::Field::TYPE_UNKNOWN ||
-      field.kind() == google::protobuf::Field::TYPE_MESSAGE) {
-    // Push a ProtoElement for location reporting purposes.
-    if (element_->proto3()) {
-      element_.reset(new ProtoElement(element_.release(), &field, type, false));
-    }
-    InvalidValue(field.type_url().empty()
-                     ? google::protobuf::Field_Kind_Name(field.kind())
-                     : field.type_url(),
-                 data.ValueAsStringOrDefault(""));
-    element_.reset(element()->pop());
-    return this;
   }
 
   switch (field.kind()) {
@@ -705,9 +694,9 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
           case_insensitive_enum_parsing_, ignore_unknown_enum_values_);
       break;
     }
-    default:  // TYPE_GROUP or TYPE_MESSAGE
-      status =
-          Status(util::error::INVALID_ARGUMENT, data.ToString().value());
+    default:  // TYPE_GROUP, TYPE_MESSAGE, TYPE_UNKNOWN.
+      status = util::Status(util::error::INVALID_ARGUMENT,
+                            data.ValueAsStringOrDefault(""));
   }
 
   if (!status.ok()) {
@@ -715,7 +704,9 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
     if (element_->proto3()) {
       element_.reset(new ProtoElement(element_.release(), &field, type, false));
     }
-    InvalidValue(google::protobuf::Field_Kind_Name(field.kind()),
+    InvalidValue(field.type_url().empty()
+                     ? google::protobuf::Field_Kind_Name(field.kind())
+                     : field.type_url(),
                  status.message());
     element_.reset(element()->pop());
     return this;

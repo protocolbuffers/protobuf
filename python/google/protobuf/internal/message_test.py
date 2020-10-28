@@ -2107,6 +2107,11 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(msg.map_int32_foreign_message[222].d, 20)
     self.assertNotEqual(msg.map_int32_foreign_message[222].c, 123)
 
+    # Merge a dict to map field is not accepted
+    with self.assertRaises(AttributeError):
+      m1.map_int32_all_types.MergeFrom(
+          {1: unittest_proto3_arena_pb2.TestAllTypes()})
+
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()
     with self.assertRaisesRegexp(

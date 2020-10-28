@@ -60,11 +60,16 @@ if _api_version < 0:  # Still unspecified?
       raise ImportError('_use_fast_cpp_protos import succeeded but was None')
     del _use_fast_cpp_protos
     _api_version = 2
+    # Can not import both use_fast_cpp_protos and use_pure_python.
+    from google.protobuf import use_pure_python
+    raise RuntimeError(
+        'Conflict depend on both use_fast_cpp_protos and use_pure_python')
   except ImportError:
     try:
       # pylint: disable=g-import-not-at-top
-      from google.protobuf.internal import use_pure_python
+      from google.protobuf import use_pure_python
       del use_pure_python  # Avoids a pylint error and namespace pollution.
+      _api_version = 0
     except ImportError:
       # TODO(b/74017912): It's unsafe to enable :use_fast_cpp_protos by default;
       # it can cause data loss if you have any Python-only extensions to any

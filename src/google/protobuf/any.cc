@@ -51,9 +51,8 @@ void AnyMetadata::PackFrom(const Message& message,
       &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
       GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix),
       nullptr);
-  message.SerializeToString(value_->Mutable(
-      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      nullptr));
+  message.SerializeToString(
+      value_->Mutable(ArenaStringPtr::EmptyDefault{}, nullptr));
 }
 
 bool AnyMetadata::UnpackTo(Message* message) const {

@@ -78,9 +78,10 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_);
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_, immutable_api_);
   printer->Print(
-      "public enum $classname$\n"
+      "$deprecation$public enum $classname$\n"
       "    implements com.google.protobuf.Internal.EnumLite {\n",
-      "classname", descriptor_->name());
+      "classname", descriptor_->name(), "deprecation",
+      descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "");
   printer->Annotate("classname", descriptor_);
   printer->Indent();
 

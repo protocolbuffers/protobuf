@@ -165,24 +165,13 @@ int FileInputStream::CopyingFileInputStream::Skip(int count) {
 // ===================================================================
 
 FileOutputStream::FileOutputStream(int file_descriptor, int block_size)
-    : copying_output_(file_descriptor), impl_(&copying_output_, block_size) {}
-
-FileOutputStream::~FileOutputStream() { impl_.Flush(); }
+    : CopyingOutputStreamAdaptor(&copying_output_),
+      copying_output_(file_descriptor) {}
 
 bool FileOutputStream::Close() {
-  bool flush_succeeded = impl_.Flush();
+  bool flush_succeeded = Flush();
   return copying_output_.Close() && flush_succeeded;
 }
-
-bool FileOutputStream::Flush() { return impl_.Flush(); }
-
-bool FileOutputStream::Next(void** data, int* size) {
-  return impl_.Next(data, size);
-}
-
-void FileOutputStream::BackUp(int count) { impl_.BackUp(count); }
-
-int64_t FileOutputStream::ByteCount() const { return impl_.ByteCount(); }
 
 FileOutputStream::CopyingFileOutputStream::CopyingFileOutputStream(
     int file_descriptor)
@@ -190,6 +179,8 @@ FileOutputStream::CopyingFileOutputStream::CopyingFileOutputStream(
       close_on_delete_(false),
       is_closed_(false),
       errno_(0) {}
+
+FileOutputStream::~FileOutputStream() { Flush(); }
 
 FileOutputStream::CopyingFileOutputStream::~CopyingFileOutputStream() {
   if (close_on_delete_) {

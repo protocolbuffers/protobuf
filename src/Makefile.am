@@ -68,7 +68,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/stubs/bytestream.h                             \
   google/protobuf/stubs/casts.h                                  \
   google/protobuf/stubs/common.h                                 \
-  google/protobuf/stubs/fastmem.h                                \
   google/protobuf/stubs/hash.h                                   \
   google/protobuf/stubs/logging.h                                \
   google/protobuf/stubs/macros.h                                 \
@@ -104,7 +103,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
-  google/protobuf/inlined_string_field.h                         \
   google/protobuf/io/io_win32.h                                \
   google/protobuf/map_entry.h                                    \
   google/protobuf/map_entry_lite.h                               \
@@ -202,6 +200,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/time.h                                 \
   google/protobuf/any_lite.cc                                  \
   google/protobuf/arena.cc                                     \
+  google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_enum_util.cc                       \
   google/protobuf/generated_message_util.cc                    \
