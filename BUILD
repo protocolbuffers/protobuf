@@ -8,6 +8,7 @@ load(
     "upb_fasttable_enabled",
     "upb_proto_library",
     "upb_proto_reflection_library",
+    "upb_proto_library_copts",
 )
 
 # copybara:strip_for_google3_begin
@@ -33,6 +34,12 @@ config_setting(
 upb_fasttable_enabled(
     name = "fasttable_enabled",
     build_setting_default = False,
+    visibility = ["//visibility:public"],
+)
+
+upb_proto_library_copts(
+    name = "upb_proto_library_copts__for_generated_code_only_do_not_use",
+    copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
 )
 
