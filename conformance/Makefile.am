@@ -369,7 +369,14 @@ test_python: protoc_middleman conformance-test-runner
 	fi
 
 test_python_cpp: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp.txt ./conformance_python.py
+	VERSION="$(shell python --version 2>&1)"; \
+	if [[ "$$VERSION"  == "Python 2.7"* ]]; then \
+	  echo "Using Python 2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp_2.7.txt ./conformance_python.py \
+	else \
+	  echo "Using Python >2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp.txt ./conformance_python.py; \
+	fi
 
 test_nodejs: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	NODE_PATH=../js:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_js.txt ./conformance_nodejs.js
