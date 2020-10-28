@@ -372,7 +372,7 @@ test_python_cpp: protoc_middleman conformance-test-runner
 	VERSION="$(shell python --version 2>&1)"; \
 	if [[ "$$VERSION"  == "Python 2.7"* ]]; then \
 	  echo "Using Python 2.7 failure list."; \
-	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp_2.7.txt ./conformance_python.py \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp_2.7.txt ./conformance_python.py; \
 	else \
 	  echo "Using Python >2.7 failure list."; \
 	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp.txt ./conformance_python.py; \
