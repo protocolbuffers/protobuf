@@ -166,6 +166,7 @@ class WorkspaceFileFunctions(object):
 
   def workspace(self, **kwargs):
     self.converter.prelude += "project(%s)\n" % (kwargs["name"])
+    self.converter.prelude += "set(CMAKE_C_STANDARD 99)\n"
 
   def http_archive(self, **kwargs):
     pass
