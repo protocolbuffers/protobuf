@@ -43,7 +43,7 @@ static void txtenc_printf(txtenc *e, const char *fmt, ...) {
   va_list args;
 
   va_start(args, fmt);
-  n = _upb_vsnprintf(e->ptr, have, fmt, args);
+  n = vsnprintf(e->ptr, have, fmt, args);
   va_end(args);
 
   if (UPB_LIKELY(have > n)) {

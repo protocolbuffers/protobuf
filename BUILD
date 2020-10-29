@@ -50,6 +50,7 @@ cc_library(
     srcs = [
         "upb/port.c",
     ],
+    copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         "upb/port_def.inc",
         "upb/port_undef.inc",
@@ -93,7 +94,7 @@ cc_library(
         "upb/msg.h",
         "upb/upb.int.h",
     ],
-    copts = ["-std=gnu99"],
+    copts = UPB_DEFAULT_COPTS,
     deps = [
         ":port",
         ":table",
@@ -281,6 +282,7 @@ genrule(
     outs = ["upb/json/parser.c"],
     cmd = "$(location @ragel//:ragelc) -C -o upb/json/parser.c $< && mv upb/json/parser.c $@",
     tools = ["@ragel//:ragelc"],
+    visibility = ["//cmake:__pkg__"],
 )
 
 # Amalgamation #################################################################
@@ -313,6 +315,7 @@ cc_library(
     name = "amalgamation",
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
+    copts = UPB_DEFAULT_COPTS,
 )
 
 upb_amalgamation(
@@ -338,6 +341,7 @@ cc_library(
     name = "php_amalgamation",
     srcs = ["php-upb.c"],
     hdrs = ["php-upb.h"],
+    copts = UPB_DEFAULT_COPTS,
 )
 
 upb_amalgamation(
@@ -362,6 +366,7 @@ cc_library(
     name = "ruby_amalgamation",
     srcs = ["ruby-upb.c"],
     hdrs = ["ruby-upb.h"],
+    copts = UPB_DEFAULT_COPTS,
 )
 
 exports_files(

@@ -40,7 +40,7 @@ void upb_status_seterrf(upb_status *status, const char *fmt, ...) {
 void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args) {
   if (!status) return;
   status->ok = false;
-  _upb_vsnprintf(status->msg, sizeof(status->msg), fmt, args);
+  vsnprintf(status->msg, sizeof(status->msg), fmt, args);
   status->msg[UPB_STATUS_MAX_MESSAGE - 1] = '\0';
 }
 
@@ -49,7 +49,7 @@ void upb_status_vappenderrf(upb_status *status, const char *fmt, va_list args) {
   if (!status) return;
   status->ok = false;
   len = strlen(status->msg);
-  _upb_vsnprintf(status->msg + len, sizeof(status->msg) - len, fmt, args);
+  vsnprintf(status->msg + len, sizeof(status->msg) - len, fmt, args);
   status->msg[UPB_STATUS_MAX_MESSAGE - 1] = '\0';
 }
 

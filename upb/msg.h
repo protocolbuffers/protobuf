@@ -67,13 +67,9 @@ typedef struct upb_msglayout {
   uint16_t field_count;
   bool extendable;
   uint8_t table_mask;
-#if __STDC_VERSION__ >= 199901L
   /* To constant-initialize the tables of variable length, we need a flexible
    * array member, and we need to compile in C99 mode. */
   _upb_fasttable_entry fasttable[];
-#else
-  _upb_fasttable_entry fasttable[1];
-#endif
 } upb_msglayout;
 
 /** upb_msg *******************************************************************/

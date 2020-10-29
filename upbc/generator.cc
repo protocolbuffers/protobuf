@@ -1036,13 +1036,14 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
            "false",  // TODO: extendable
            table_mask
     );
-    output("  {\n");
-    for (const auto& ent : table) {
-      output("    {0x$1, &$0},\n", ent.first,
-             absl::StrCat(absl::Hex(ent.second, absl::kZeroPad16)));
+    if (!table.empty()) {
+      output("  {\n");
+      for (const auto& ent : table) {
+        output("    {0x$1, &$0},\n", ent.first,
+               absl::StrCat(absl::Hex(ent.second, absl::kZeroPad16)));
+      }
+      output("  },\n");
     }
-    output("  },\n");
-
     output("};\n\n");
   }
 

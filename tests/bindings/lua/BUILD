@@ -2,12 +2,17 @@ load(
     "//upb/bindings/lua:lua_proto_library.bzl",
     "lua_proto_library",
 )
+load(
+    "//bazel:build_defs.bzl",
+    "UPB_DEFAULT_COPTS",
+)
 
 licenses(["notice"])
 
 cc_test(
     name = "test_lua",
     srcs = ["main.c"],
+    copts = UPB_DEFAULT_COPTS,
     data = [
         "test_upb.lua",
         ":descriptor_proto_lua",

@@ -16,5 +16,6 @@ upb_proto_library(
 cc_binary(
     name = "test_binary",
     srcs = ["test_binary.c"],
+    copts = ["-std=c99"],
     deps = [":foo_upbproto"],
 )

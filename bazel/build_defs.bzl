@@ -19,6 +19,8 @@ UPB_DEFAULT_COPTS = select({
     "//conditions:default": [
         # copybara:strip_for_google3_begin
         "-std=c99",
+        "-pedantic",
+        "-Werror=pedantic",
         "-Wstrict-prototypes",
         # copybara:strip_end
     ],
