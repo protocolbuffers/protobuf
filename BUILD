@@ -7,8 +7,8 @@ load(
     "//bazel:upb_proto_library.bzl",
     "upb_fasttable_enabled",
     "upb_proto_library",
-    "upb_proto_reflection_library",
     "upb_proto_library_copts",
+    "upb_proto_reflection_library",
 )
 
 # copybara:strip_for_google3_begin
@@ -35,6 +35,11 @@ upb_fasttable_enabled(
     name = "fasttable_enabled",
     build_setting_default = False,
     visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "fasttable_enabled_setting",
+    flag_values = {"//:fasttable_enabled": "true"},
 )
 
 upb_proto_library_copts(

@@ -119,14 +119,14 @@ def fasttable_enabled_impl(ctx):
     raw_setting = ctx.build_setting_value
 
     if raw_setting:
-      # TODO(haberman): check that the target CPU supports fasttable.
-      pass
+        # TODO(haberman): check that the target CPU supports fasttable.
+        pass
 
     return _FastTableEnabled(enabled = raw_setting)
 
 upb_fasttable_enabled = rule(
     implementation = fasttable_enabled_impl,
-    build_setting = config.bool(flag = True)
+    build_setting = config.bool(flag = True),
 )
 
 # Dummy rule to expose select() copts to aspects  ##############################
@@ -285,7 +285,7 @@ _upb_proto_library_aspect = aspect(
             "//:upb",
         ]),
         "_ext": attr.string(default = ".upb"),
-        "_fasttable_enabled": attr.label(default = "//:fasttable_enabled")
+        "_fasttable_enabled": attr.label(default = "//:fasttable_enabled"),
     }),
     implementation = _upb_proto_library_aspect_impl,
     provides = [
@@ -344,7 +344,7 @@ _upb_proto_reflection_library_aspect = aspect(
             ],
         ),
         "_ext": attr.string(default = ".upbdefs"),
-        "_fasttable_enabled": attr.label(default = "//:fasttable_enabled")
+        "_fasttable_enabled": attr.label(default = "//:fasttable_enabled"),
     }),
     implementation = _upb_proto_reflection_library_aspect_impl,
     provides = [

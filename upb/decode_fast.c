@@ -15,6 +15,8 @@
 /* Must be last. */
 #include "upb/port_def.inc"
 
+#if UPB_FASTTABLE
+
 // The standard set of arguments passed to each parsing function.
 // Thanks to x86-64 calling conventions, these will stay in registers.
 #define UPB_PARSE_PARAMS                                          \
@@ -969,3 +971,5 @@ TAGBYTES(r)
 #undef TAGBYTES
 #undef SIZES
 #undef F
+
+#endif  /* UPB_FASTTABLE */

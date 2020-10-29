@@ -1037,12 +1037,12 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
            table_mask
     );
     if (!table.empty()) {
-      output("  {\n");
+      output("  UPB_FASTTABLE_INIT({\n");
       for (const auto& ent : table) {
         output("    {0x$1, &$0},\n", ent.first,
                absl::StrCat(absl::Hex(ent.second, absl::kZeroPad16)));
       }
-      output("  },\n");
+      output("  }),\n");
     }
     output("};\n\n");
   }

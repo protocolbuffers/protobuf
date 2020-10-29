@@ -535,14 +535,15 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
 UPB_FORCEINLINE
 static bool decode_tryfastdispatch(upb_decstate *d, const char **ptr,
                                    upb_msg *msg, const upb_msglayout *layout) {
+#if UPB_FASTTABLE
   if (layout && layout->table_mask != (unsigned char)-1) {
     uint16_t tag = fastdecode_loadtag(*ptr);
     intptr_t table = decode_totable(layout);
     *ptr = fastdecode_tagdispatch(d, *ptr, msg, table, 0, tag);
     return true;
-  } else {
-    return false;
   }
+#endif
+  return false;
 }
 
 UPB_NOINLINE
