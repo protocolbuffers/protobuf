@@ -24,7 +24,7 @@ const int32_t test_int32_2 = -20;
 const int32_t test_int32_3 = 30;
 const int32_t test_int32_4 = -40;
 
-static void test_scalars() {
+static void test_scalars(void) {
   upb_arena *arena = upb_arena_new();
   protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
@@ -117,7 +117,7 @@ static void check_string_map_one_entry(
   ASSERT(!const_ent);
 }
 
-static void test_string_double_map() {
+static void test_string_double_map(void) {
   upb_arena *arena = upb_arena_new();
   upb_strview serialized;
   upb_test_MapTest *msg = upb_test_MapTest_new(arena);
@@ -141,7 +141,7 @@ static void test_string_double_map() {
   upb_arena_free(arena);
 }
 
-static void test_string_map() {
+static void test_string_map(void) {
   upb_arena *arena = upb_arena_new();
   protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
@@ -259,7 +259,7 @@ static void check_int32_map_one_entry(
   ASSERT(!const_ent);
 }
 
-static void test_int32_map() {
+static void test_int32_map(void) {
   upb_arena *arena = upb_arena_new();
   protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
@@ -328,7 +328,7 @@ static void test_int32_map() {
   upb_arena_free(arena);
 }
 
-void test_repeated() {
+void test_repeated(void) {
   upb_arena *arena = upb_arena_new();
   protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
@@ -347,7 +347,7 @@ void test_repeated() {
   upb_arena_free(arena);
 }
 
-void test_null_decode_buf() {
+void test_null_decode_buf(void) {
   upb_arena *arena = upb_arena_new();
   protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_parse(NULL, 0, arena);
@@ -359,7 +359,7 @@ void test_null_decode_buf() {
   upb_arena_free(arena);
 }
 
-void test_status_truncation() {
+void test_status_truncation(void) {
   int i, j;
   upb_status status;
   upb_status status2;
