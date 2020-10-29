@@ -38,6 +38,29 @@ typedef struct upb_decstate {
  * noreturn. */
 const char *fastdecode_err(upb_decstate *d);
 
+extern const uint8_t upb_utf8_offsets[];
+
+UPB_INLINE
+bool decode_verifyutf8_inl(const char *buf, int len) {
+  int i, j;
+  uint8_t offset;
+
+  i = 0;
+  while (i < len) {
+    offset = upb_utf8_offsets[(uint8_t)buf[i]];
+    if (offset == 0 || i + offset > len) {
+      return false;
+    }
+    for (j = i + 1; j < i + offset; j++) {
+      if ((buf[j] & 0xc0) != 0x80) {
+        return false;
+      }
+    }
+    i += offset;
+  }
+  return i == len;
+}
+
 /* x86-64 pointers always have the high 16 bits matching. So we can shift
  * left 8 and right 8 without loss of information. */
 UPB_INLINE intptr_t decode_totable(const upb_msglayout *tablep) {

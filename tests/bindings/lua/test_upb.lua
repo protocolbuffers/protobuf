@@ -356,6 +356,22 @@ local numeric_types = {
   },
 }
 
+function test_utf8()
+  local invalid_utf8 = "\xff"
+  local proto2_msg = test_messages_proto2.TestAllTypesProto2{
+    optional_string = invalid_utf8,
+  }
+
+  -- As proto2, invalid UTF-8 parses and serializes fine.
+  local serialized = upb.encode(proto2_msg)
+  local proto2_msg2 = upb.decode(test_messages_proto2.TestAllTypesProto2, serialized)
+
+  -- Decoding as proto3 fails.
+  assert_error(function()
+    upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
+  end)
+end
+
 function test_msg_primitives()
   local msg = test_messages_proto3.TestAllTypesProto3{
     optional_int32 = 10,

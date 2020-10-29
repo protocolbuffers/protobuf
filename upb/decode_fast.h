@@ -25,7 +25,8 @@
 //   - 'f4' for 4-byte fixed
 //   - 'f8' for 8-byte fixed
 //   - 'm' for sub-message
-//   - 's' for string/bytes
+//   - 's' for string (validate UTF-8)
+//   - 'b' for bytes
 //
 // In position 4 (tag length):
 //   - '1' for one-byte tags (field numbers 1-15)
@@ -77,13 +78,17 @@ TAGBYTES(p)
 
 /* string fields **************************************************************/
 
-#define F(card, tagbytes)                                      \
-  const char *upb_p##card##s_##tagbytes##bt(UPB_PARSE_PARAMS); \
-  const char *upb_c##card##s_##tagbytes##bt(UPB_PARSE_PARAMS);
+#define F(card, tagbytes, type)                                     \
+  const char *upb_p##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS); \
+  const char *upb_c##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS);
+
+#define UTF8(card, tagbytes) \
+  F(card, tagbytes, s)       \
+  F(card, tagbytes, b)
 
 #define TAGBYTES(card) \
-  F(card, 1)           \
-  F(card, 2)
+  UTF8(card, 1)        \
+  UTF8(card, 2)
 
 TAGBYTES(s)
 TAGBYTES(o)

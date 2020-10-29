@@ -798,8 +798,14 @@ bool TryFillTableEntry(const protobuf::Descriptor* message,
       type = "z8";
       break;
     case protobuf::FieldDescriptor::TYPE_STRING:
+      if (field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO3) {
+        // Only proto3 validates UTF-8.
+        type = "s";
+        break;
+      }
+      /* Fallthrough. */
     case protobuf::FieldDescriptor::TYPE_BYTES:
-      type = "s";
+      type = "b";
       break;
     case protobuf::FieldDescriptor::TYPE_MESSAGE:
       if (field->is_map()) {

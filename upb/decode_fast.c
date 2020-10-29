@@ -650,10 +650,21 @@ typedef const char *fastdecode_copystr_func(struct upb_decstate *d,
                                             uint64_t hasbits, upb_strview *dst);
 
 UPB_NOINLINE
+static const char *fastdecode_verifyutf8(upb_decstate *d, const char *ptr,
+                                         upb_msg *msg, intptr_t table,
+                                         uint64_t hasbits, upb_strview *dst) {
+  if (!decode_verifyutf8_inl(dst->data, dst->size)) {
+    return fastdecode_err(d);
+  }
+  return fastdecode_dispatch(d, ptr, msg, table, hasbits);
+}
+
+UPB_FORCEINLINE
 static const char *fastdecode_longstring(struct upb_decstate *d,
                                          const char *ptr, upb_msg *msg,
                                          intptr_t table, uint64_t hasbits,
-                                         upb_strview *dst) {
+                                         upb_strview *dst,
+                                         bool validate_utf8) {
   int size = (uint8_t)ptr[0];  // Could plumb through hasbits.
   ptr++;
   if (size & 0x80) {
@@ -678,7 +689,28 @@ static const char *fastdecode_longstring(struct upb_decstate *d,
     dst->size = size;
   }
 
-  return fastdecode_dispatch(d, ptr + size, msg, table, hasbits);
+  if (validate_utf8) {
+    return fastdecode_verifyutf8(d, ptr + size, msg, table, hasbits, dst);
+  } else {
+    return fastdecode_dispatch(d, ptr + size, msg, table, hasbits);
+  }
+}
+
+UPB_NOINLINE
+static const char *fastdecode_longstring_utf8(struct upb_decstate *d,
+                                         const char *ptr, upb_msg *msg,
+                                         intptr_t table, uint64_t hasbits,
+                                         upb_strview *dst) {
+  return fastdecode_longstring(d, ptr, msg, table, hasbits, dst, true);
+}
+
+UPB_NOINLINE
+static const char *fastdecode_longstring_noutf8(struct upb_decstate *d,
+                                                const char *ptr, upb_msg *msg,
+                                                intptr_t table,
+                                                uint64_t hasbits,
+                                                upb_strview *dst) {
+  return fastdecode_longstring(d, ptr, msg, table, hasbits, dst, false);
 }
 
 UPB_FORCEINLINE
@@ -693,7 +725,7 @@ static void fastdecode_docopy(upb_decstate *d, const char *ptr, uint32_t size,
 
 UPB_FORCEINLINE
 static const char *fastdecode_copystring(UPB_PARSE_PARAMS, int tagbytes,
-                                         upb_card card) {
+                                         upb_card card, bool validate_utf8) {
   upb_strview *dst;
   fastdecode_arr farr;
   int64_t size;
@@ -741,6 +773,9 @@ again:
   ptr += size;
 
   if (card == CARD_r) {
+    if (validate_utf8 && !decode_verifyutf8_inl(dst->data, dst->size)) {
+      return fastdecode_err(d);
+    }
     fastdecode_nextret ret = fastdecode_nextrepeated(
         d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_strview));
     switch (ret.next) {
@@ -754,17 +789,25 @@ again:
     }
   }
 
+  if (card != CARD_r && validate_utf8) {
+    return fastdecode_verifyutf8(d, ptr, msg, table, hasbits, dst);
+  }
+
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
 
 longstr:
   ptr--;
-  return fastdecode_longstring(d, ptr, msg, table, hasbits, dst);
+  if (validate_utf8) {
+    return fastdecode_longstring_utf8(d, ptr, msg, table, hasbits, dst);
+  } else {
+    return fastdecode_longstring_noutf8(d, ptr, msg, table, hasbits, dst);
+  }
 }
 
 UPB_FORCEINLINE
 static const char *fastdecode_string(UPB_PARSE_PARAMS, int tagbytes,
-                                     upb_card card,
-                                     _upb_field_parser *copyfunc) {
+                                     upb_card card, _upb_field_parser *copyfunc,
+                                     bool validate_utf8) {
   upb_strview *dst;
   fastdecode_arr farr;
   int64_t size;
@@ -792,12 +835,19 @@ again:
 
   if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, size, d->end))) {
     ptr--;
-    return fastdecode_longstring(d, ptr, msg, table, hasbits, dst);
+    if (validate_utf8) {
+      return fastdecode_longstring_utf8(d, ptr, msg, table, hasbits, dst);
+    } else {
+      return fastdecode_longstring_noutf8(d, ptr, msg, table, hasbits, dst);
+    }
   }
 
   ptr += size;
 
   if (card == CARD_r) {
+    if (validate_utf8 && !decode_verifyutf8_inl(dst->data, dst->size)) {
+      return fastdecode_err(d);
+    }
     fastdecode_nextret ret = fastdecode_nextrepeated(
         d, dst, &ptr, &farr, data, tagbytes, sizeof(upb_strview));
     switch (ret.next) {
@@ -817,30 +867,45 @@ again:
     }
   }
 
+  if (card != CARD_r && validate_utf8) {
+    return fastdecode_verifyutf8(d, ptr, msg, table, hasbits, dst);
+  }
+
   return fastdecode_dispatch(d, ptr, msg, table, hasbits);
 }
 
 /* Generate all combinations:
- * {p,c} x {s,o,r} x {1bt,2bt} */
+ * {p,c} x {s,o,r} x {s, b} x {1bt,2bt} */
 
-#define F(card, tagbytes)                                                \
-  UPB_NOINLINE                                                           \
-  const char *upb_c##card##s_##tagbytes##bt(UPB_PARSE_PARAMS) {          \
-    return fastdecode_copystring(UPB_PARSE_ARGS, tagbytes, CARD_##card); \
-  }                                                                      \
-  const char *upb_p##card##s_##tagbytes##bt(UPB_PARSE_PARAMS) {          \
-    return fastdecode_string(UPB_PARSE_ARGS, tagbytes, CARD_##card,      \
-                             &upb_c##card##s_##tagbytes##bt);            \
+#define s_VALIDATE true
+#define b_VALIDATE false
+
+#define F(card, tagbytes, type)                                         \
+  UPB_NOINLINE                                                          \
+  const char *upb_c##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS) {    \
+    return fastdecode_copystring(UPB_PARSE_ARGS, tagbytes, CARD_##card, \
+                                 type##_VALIDATE);                      \
+  }                                                                     \
+  const char *upb_p##card##type##_##tagbytes##bt(UPB_PARSE_PARAMS) {    \
+    return fastdecode_string(UPB_PARSE_ARGS, tagbytes, CARD_##card,     \
+                             &upb_c##card##type##_##tagbytes##bt,       \
+                             type##_VALIDATE);                          \
   }
 
+#define UTF8(card, tagbytes) \
+  F(card, tagbytes, s)       \
+  F(card, tagbytes, b)
+
 #define TAGBYTES(card) \
-  F(card, 1)           \
-  F(card, 2)
+  UTF8(card, 1)        \
+  UTF8(card, 2)
 
 TAGBYTES(s)
 TAGBYTES(o)
 TAGBYTES(r)
 
+#undef s_VALIDATE
+#undef b_VALIDATE
 #undef F
 #undef TAGBYTES
 
