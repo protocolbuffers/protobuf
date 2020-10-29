@@ -772,13 +772,11 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/arena.h                                     \
   php/ext/google/protobuf/array.c                                     \
   php/ext/google/protobuf/array.h                                     \
-  php/ext/google/protobuf/bundled_php.h                               \
   php/ext/google/protobuf/config.m4                                   \
   php/ext/google/protobuf/convert.c                                   \
   php/ext/google/protobuf/convert.h                                   \
   php/ext/google/protobuf/def.c                                       \
   php/ext/google/protobuf/def.h                                       \
-  php/ext/google/protobuf/make-preload.php                            \
   php/ext/google/protobuf/map.c                                       \
   php/ext/google/protobuf/map.h                                       \
   php/ext/google/protobuf/message.c                                   \
@@ -790,6 +788,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/php-upb.h                                   \
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
+  php/ext/google/protobuf/wkt.inc                                     \
   php/generate_descriptor_protos.sh                                   \
   php/phpunit.xml                                                     \
   php/release.sh                                                      \
