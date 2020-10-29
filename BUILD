@@ -6,8 +6,8 @@ load(
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
-    "upb_proto_reflection_library",
     "upb_proto_library_copts",
+    "upb_proto_reflection_library",
 )
 
 # copybara:strip_for_google3_begin
@@ -49,6 +49,7 @@ cc_library(
     srcs = [
         "upb/port.c",
     ],
+    copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         "upb/port_def.inc",
         "upb/port_undef.inc",
