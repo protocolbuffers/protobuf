@@ -826,6 +826,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/GPBEmpty.php                                \
   php/src/Google/Protobuf/Int32Value.php                              \
   php/src/Google/Protobuf/Int64Value.php                              \
+  php/src/Google/Protobuf/Internal/AnyBase.php                        \
   php/src/Google/Protobuf/Internal/CodedInputStream.php               \
   php/src/Google/Protobuf/Internal/CodedOutputStream.php              \
   php/src/Google/Protobuf/Internal/Descriptor.php                     \
@@ -885,6 +886,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/ServiceOptions.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo/Location.php        \
+  php/src/Google/Protobuf/Internal/TimestampBase.php                  \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php   \
   php/src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php \
