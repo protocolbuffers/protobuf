@@ -2076,7 +2076,7 @@ void Generator::GenerateClassConstructor(const GeneratorOptions& options,
   printer->Print(
       "};\n"
       "goog.inherits($classname$, jspb.Message);\n"
-      "if (goog.DEBUG && !COMPILED) {\n"
+      "if (goog.DEBUG && !goog.COMPILED) {\n"
       // displayName overrides Function.prototype.displayName
       // http://google3/javascript/externs/es3.js?l=511
       "  /**\n"
