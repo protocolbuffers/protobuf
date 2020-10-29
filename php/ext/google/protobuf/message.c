@@ -295,7 +295,10 @@ static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
   const upb_fielddef *f = get_field(intern, member);
   upb_arena *arena = Arena_Get(&intern->arena);
 
-  if (!f) return NULL;
+  if (!f) {
+    /* A special zval* used to return "No such property" from read_property handler */
+    return &EG(uninitialized_zval);
+  }
 
   if (upb_fielddef_ismap(f)) {
     upb_mutmsgval msgval = upb_msg_mutable(intern->msg, f, arena);
