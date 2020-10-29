@@ -760,7 +760,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Compare the map fields using map reflection instead of sync to repeated.
   bool CompareMapFieldByMapReflection(const Message& message1,
                                       const Message& message2,
-                                      const FieldDescriptor* field);
+                                      const FieldDescriptor* field,
+                                      std::vector<SpecificField>* parent_fields,
+                                      DefaultFieldComparator* comparator);
 
   // Shorthand for CompareFieldValueUsingParentFields with NULL parent_fields.
   bool CompareFieldValue(const Message& message1, const Message& message2,

@@ -182,17 +182,16 @@ class MapEntryImpl : public Base {
   static const WireFormatLite::FieldType kEntryKeyFieldType = kKeyFieldType;
   static const WireFormatLite::FieldType kEntryValueFieldType = kValueFieldType;
 
-  MapEntryImpl() {
-    KeyTypeHandler::Initialize(&key_, NULL);
-    ValueTypeHandler::Initialize(&value_, NULL);
-    _has_bits_[0] = 0;
-  }
+  constexpr MapEntryImpl()
+      : key_(KeyTypeHandler::Constinit()),
+        value_(ValueTypeHandler::Constinit()),
+        _has_bits_{} {}
 
-  explicit MapEntryImpl(Arena* arena) : Base(arena) {
-    KeyTypeHandler::Initialize(&key_, arena);
-    ValueTypeHandler::Initialize(&value_, arena);
-    _has_bits_[0] = 0;
-  }
+  explicit MapEntryImpl(Arena* arena)
+      : Base(arena),
+        key_(KeyTypeHandler::Constinit()),
+        value_(ValueTypeHandler::Constinit()),
+        _has_bits_{} {}
 
   ~MapEntryImpl() {
     if (Base::GetArena() != NULL) return;
@@ -523,7 +522,7 @@ class MapEntryLite : public MapEntryImpl<T, MessageLite, Key, Value,
   typedef MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType,
                        kValueFieldType>
       SuperType;
-  MapEntryLite() {}
+  constexpr MapEntryLite() {}
   explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
   ~MapEntryLite() { MessageLite::_internal_metadata_.Delete<std::string>(); }
   void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }

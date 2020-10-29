@@ -77,25 +77,37 @@ public class FieldMaskTreeTest extends TestCase {
 
   public void testRemoveFieldPath() throws Exception {
     String initialTreeString = "bar.baz,bar.quz.bar,foo";
-    FieldMaskTree tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
+    FieldMaskTree tree;
+
     // Empty path.
+    tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("");
     assertEquals(initialTreeString, tree.toString());
+
     // Non-exist sub-path of an existing leaf.
+    tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("foo.bar");
     assertEquals(initialTreeString, tree.toString());
+
     // Non-exist path.
+    tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("bar.foo");
     assertEquals(initialTreeString, tree.toString());
-    // Match an existing leaf node.
+
+    // Match an existing leaf node -> remove leaf node.
+    tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("foo");
     assertEquals("bar.baz,bar.quz.bar", tree.toString());
-    // Match sub-path of an existing leaf node.
+
+    // Match sub-path of an existing leaf node -> recursive removal.
+    tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("bar.quz.bar");
-    assertEquals("bar.baz,bar.quz", tree.toString());
-    // Match a non-leaf node.
+    assertEquals("bar.baz,foo", tree.toString());
+
+    // Match a non-leaf node -> remove all children.
+    tree = new FieldMaskTree(FieldMaskUtil.fromString(initialTreeString));
     tree.removeFieldPath("bar");
-    assertThat(tree.toString()).isEmpty();
+    assertEquals("foo", tree.toString());
   }
 
   public void testRemoveFromFieldMask() throws Exception {

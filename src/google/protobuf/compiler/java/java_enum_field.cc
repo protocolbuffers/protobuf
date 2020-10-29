@@ -81,7 +81,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   // with v2.5.0/v2.6.1, and remove the @SuppressWarnings annotations.
   (*variables)["for_number"] = "valueOf";
 
-  if (SupportFieldPresence(descriptor)) {
+  if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
@@ -145,7 +145,7 @@ ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
 ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() {}
 
 int ImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
-  return SupportFieldPresence(descriptor_) ? 1 : 0;
+  return HasHasbit(descriptor_) ? 1 : 0;
 }
 
 int ImmutableEnumFieldGenerator::GetNumBitsForBuilder() const {

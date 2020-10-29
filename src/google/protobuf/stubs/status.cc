@@ -38,7 +38,7 @@ namespace google {
 namespace protobuf {
 namespace util {
 namespace error {
-inline string CodeEnumToString(error::Code code) {
+inline std::string CodeEnumToString(error::Code code) {
   switch (code) {
     case OK:
       return "OK";
@@ -111,7 +111,7 @@ bool Status::operator==(const Status& x) const {
       error_message_ == x.error_message_;
 }
 
-string Status::ToString() const {
+std::string Status::ToString() const {
   if (error_code_ == error::OK) {
     return "OK";
   } else {

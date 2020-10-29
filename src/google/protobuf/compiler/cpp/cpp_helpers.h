@@ -318,8 +318,6 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
-bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
-
 // For a string field, returns the effective ctype.  If the actual ctype is
 // not supported, returns the default of STRING.
 FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
@@ -408,14 +406,6 @@ inline bool IsProto2MessageSet(const Descriptor* descriptor,
          !options.lite_implicit_weak_fields &&
          descriptor->options().message_set_wire_format() &&
          descriptor->full_name() == "google.protobuf.bridge.MessageSet";
-}
-
-inline bool IsProto2MessageSetFile(const FileDescriptor* file,
-                                   const Options& options) {
-  return !options.opensource_runtime &&
-         options.enforce_mode != EnforceOptimizeMode::kLiteRuntime &&
-         !options.lite_implicit_weak_fields &&
-         file->name() == "net/proto2/bridge/proto/message_set.proto";
 }
 
 inline bool IsMapEntryMessage(const Descriptor* descriptor) {

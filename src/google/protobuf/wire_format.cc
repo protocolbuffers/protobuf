@@ -1462,8 +1462,8 @@ size_t WireFormat::ByteSize(const Message& message) {
     message_reflection->ListFields(message, &fields);
   }
 
-  for (int i = 0; i < fields.size(); i++) {
-    our_size += FieldByteSize(fields[i], message);
+  for (const FieldDescriptor* field : fields) {
+    our_size += FieldByteSize(field, message);
   }
 
   if (descriptor->options().message_set_wire_format()) {

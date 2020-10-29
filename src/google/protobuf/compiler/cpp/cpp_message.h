@@ -82,9 +82,6 @@ class MessageGenerator {
 
   // Source file stuff.
 
-  // Generates code that creates default instances for fields.
-  void GenerateFieldDefaultInstances(io::Printer* printer);
-
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* printer);
 

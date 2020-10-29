@@ -169,7 +169,7 @@ class RepeatedField final {
       "We only support types that have an alignment smaller than Arena");
 
  public:
-  RepeatedField();
+  constexpr RepeatedField();
   explicit RepeatedField(Arena* arena);
   RepeatedField(const RepeatedField& other);
   template <typename Iter>
@@ -577,7 +577,7 @@ struct IsMovable
 //   };
 class PROTOBUF_EXPORT RepeatedPtrFieldBase {
  protected:
-  RepeatedPtrFieldBase();
+  constexpr RepeatedPtrFieldBase();
   explicit RepeatedPtrFieldBase(Arena* arena);
   ~RepeatedPtrFieldBase() {
 #ifndef NDEBUG
@@ -920,7 +920,7 @@ class StringTypeHandler {
 template <typename Element>
 class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
  public:
-  RepeatedPtrField();
+  constexpr RepeatedPtrField();
   explicit RepeatedPtrField(Arena* arena);
 
   RepeatedPtrField(const RepeatedPtrField& other);
@@ -1180,7 +1180,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 // implementation ====================================================
 
 template <typename Element>
-inline RepeatedField<Element>::RepeatedField()
+constexpr RepeatedField<Element>::RepeatedField()
     : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {}
 
 template <typename Element>
@@ -1647,7 +1647,7 @@ struct ElementCopier<Element, true> {
 
 namespace internal {
 
-inline RepeatedPtrFieldBase::RepeatedPtrFieldBase()
+constexpr RepeatedPtrFieldBase::RepeatedPtrFieldBase()
     : arena_(NULL), current_size_(0), total_size_(0), rep_(NULL) {}
 
 inline RepeatedPtrFieldBase::RepeatedPtrFieldBase(Arena* arena)
@@ -2090,7 +2090,8 @@ class RepeatedPtrField<std::string>::TypeHandler
     : public internal::StringTypeHandler {};
 
 template <typename Element>
-inline RepeatedPtrField<Element>::RepeatedPtrField() : RepeatedPtrFieldBase() {}
+constexpr RepeatedPtrField<Element>::RepeatedPtrField()
+    : RepeatedPtrFieldBase() {}
 
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena)

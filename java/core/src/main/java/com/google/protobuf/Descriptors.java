@@ -764,7 +764,10 @@ public final class Descriptors {
     /**
      * Finds a field by name.
      *
-     * @param name The unqualified name of the field (e.g. "foo").
+     * @param name The unqualified name of the field (e.g. "foo"). For protocol buffer messages that
+     *     follow <a
+     *     href=https://developers.google.com/protocol-buffers/docs/style#message_and_field_names>Google's
+     *     guidance on naming</a> this will be a snake case string, such as <pre>song_name</pre>.
      * @return The field's descriptor, or {@code null} if not found.
      */
     public FieldDescriptor findFieldByName(final String name) {

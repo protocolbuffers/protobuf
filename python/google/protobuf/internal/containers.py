@@ -629,7 +629,8 @@ class MessageMap(MutableMapping):
     return repr(self._values)
 
   def MergeFrom(self, other):
-    for key in other:
+    # pylint: disable=protected-access
+    for key in other._values:
       # According to documentation: "When parsing from the wire or when merging,
       # if there are duplicate map keys the last key seen is used".
       if key in self:

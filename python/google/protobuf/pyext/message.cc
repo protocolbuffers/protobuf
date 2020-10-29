@@ -809,7 +809,7 @@ bool CheckAndSetString(
     return false;
   }
 
-  string value_string(value, value_len);
+  std::string value_string(value, value_len);
   if (append) {
     reflection->AddString(message, descriptor, std::move(value_string));
   } else if (index < 0) {

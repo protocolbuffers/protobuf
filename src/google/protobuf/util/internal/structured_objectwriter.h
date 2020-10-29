@@ -69,7 +69,8 @@ class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
    public:
     // Takes ownership of the parent Element.
     explicit BaseElement(BaseElement* parent)
-        : parent_(parent), level_(parent == NULL ? 0 : parent->level() + 1) {}
+        : parent_(parent),
+          level_(parent == nullptr ? 0 : parent->level() + 1) {}
     virtual ~BaseElement() {}
 
     // Releases ownership of the parent and returns a pointer to it.

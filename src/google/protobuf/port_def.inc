@@ -139,6 +139,21 @@
 #ifdef PROTOBUF_FINAL
 #error PROTOBUF_FINAL was previously defined
 #endif
+#ifdef PROTOBUF_DISABLE_MSVC_UNION_WARNING
+#error PROTOBUF_DISABLE_MSVC_UNION_WARNING was previously defined
+#endif
+#ifdef PROTOBUF_ENABLE_MSVC_UNION_WARNING
+#error PROTOBUF_ENABLE_MSVC_UNION_WARNING was previously defined
+#endif
+#ifdef PROTOBUF_CONSTINIT
+#error PROTOBUF_CONSTINIT was previously defined
+#endif
+#ifdef PROTOBUF_MAYBE_CONSTEXPR
+#error PROTOBUF_MAYBE_CONSTEXPR was previously defined
+#endif
+#ifdef PROTOBUF_ATTRIBUTE_NO_DESTROY
+#error PROTOBUF_ATTRIBUTE_NO_DESTROY was previously defined
+#endif
 
 
 #define PROTOBUF_NAMESPACE "google::protobuf"
@@ -238,11 +253,14 @@
 #ifdef GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
 #define PROTOBUF_RETURNS_NONNULL GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
 #else
-#ifdef __GNUC__
+#if defined(__has_attribute)
+#if __has_attribute(returns_nonnull)
 #define PROTOBUF_RETURNS_NONNULL __attribute__((returns_nonnull))
-#else
-#define PROTOBUF_RETURNS_NONNULL
 #endif
+#endif
+#endif
+#ifndef PROTOBUF_RETURNS_NONNULL
+#define PROTOBUF_RETURNS_NONNULL
 #endif
 
 #if defined(__has_cpp_attribute)
@@ -425,6 +443,10 @@
 #undef min
 #pragma push_macro("max")
 #undef max
+#pragma push_macro("NEAR")
+#undef NEAR
+#pragma push_macro("NO_DATA")
+#undef NO_DATA
 #pragma push_macro("REASON_UNKNOWN")
 #undef REASON_UNKNOWN
 #pragma push_macro("SERVICE_DISABLED")
@@ -433,15 +455,13 @@
 #undef SEVERITY_ERROR
 #pragma push_macro("STRICT")
 #undef STRICT
+#pragma push_macro("timezone")
+#undef timezone
 #endif  // _MSC_VER
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 // Don't let Objective-C Macros interfere with proto identifiers with the same 
 // name.
-#pragma push_macro("YES")
-#undef YES
-#pragma push_macro("NO")
-#undef NO
 #pragma push_macro("DEBUG")
 #undef DEBUG
 #pragma push_macro("TRUE")
@@ -528,3 +548,59 @@
 // This experiment is purely for the purpose of gathering data. All code guarded
 // by this flag is supposed to be removed after this experiment.
 // #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
+
+#if defined(__cpp_constinit)
+#define PROTOBUF_CONSTINIT constinit
+#elif defined(__has_cpp_attribute)
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#endif
+#endif
+#ifndef PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTINIT
+#endif
+
+// Some constructors can't be constexpr under MSVC, but given that MSVC will not
+// do constant initialization of globals anyway we can omit `constexpr` from
+// them. These constructors are marked with PROTOBUF_MAYBE_CONSTEXPR
+#if defined(_MSC_VER)
+#define PROTOBUF_MAYBE_CONSTEXPR
+#else
+#define PROTOBUF_MAYBE_CONSTEXPR constexpr
+#endif
+
+#if _MSC_VER
+#define PROTOBUF_DISABLE_MSVC_UNION_WARNING \
+  __pragma(warning(push)) \
+  __pragma(warning(disable : 4582)) \
+  __pragma(warning(disable : 4583))
+
+#define PROTOBUF_ENABLE_MSVC_UNION_WARNING \
+  __pragma(warning(pop))
+#else
+#define PROTOBUF_DISABLE_MSVC_UNION_WARNING
+#define PROTOBUF_ENABLE_MSVC_UNION_WARNING
+#endif
+
+#if defined(__cpp_constinit)
+#define PROTOBUF_CONSTINIT constinit
+#elif defined(__has_cpp_attribute)
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#endif
+#endif
+#ifndef PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTINIT
+#endif
+
+// Some globals with an empty non-trivial destructor are annotated with
+// no_destroy for performance reasons. It reduces the cost of these globals in
+// non-opt mode and under sanitizers.
+#if defined(__has_cpp_attribute)
+#if __has_cpp_attribute(clang::no_destroy)
+#define PROTOBUF_ATTRIBUTE_NO_DESTROY [[clang::no_destroy]]
+#endif
+#endif
+#if !defined(PROTOBUF_ATTRIBUTE_NO_DESTROY)
+#define PROTOBUF_ATTRIBUTE_NO_DESTROY
+#endif

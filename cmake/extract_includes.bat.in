@@ -53,7 +53,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_tab
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_util.h" include\google\protobuf\generated_message_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\has_bits.h" include\google\protobuf\has_bits.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\implicit_weak_message.h" include\google\protobuf\implicit_weak_message.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\inlined_string_field.h" include\google\protobuf\inlined_string_field.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\coded_stream.h" include\google\protobuf\io\coded_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\gzip_stream.h" include\google\protobuf\io\gzip_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\io_win32.h" include\google\protobuf\io\io_win32.h
@@ -88,7 +87,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\bytestream.h" i
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\callback.h" include\google\protobuf\stubs\callback.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\casts.h" include\google\protobuf\stubs\casts.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\common.h" include\google\protobuf\stubs\common.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\fastmem.h" include\google\protobuf\stubs\fastmem.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\hash.h" include\google\protobuf\stubs\hash.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\logging.h" include\google\protobuf\stubs\logging.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\macros.h" include\google\protobuf\stubs\macros.h

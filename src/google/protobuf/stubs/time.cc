@@ -130,7 +130,7 @@ int64 SecondsSinceCommonEra(const DateTime& time) {
 
 // Format nanoseconds with either 3, 6, or 9 digits depending on the required
 // precision to represent the exact value.
-string FormatNanos(int32 nanos) {
+std::string FormatNanos(int32 nanos) {
   if (nanos % kNanosPerMillisecond == 0) {
     return StringPrintf("%03d", nanos / kNanosPerMillisecond);
   } else if (nanos % kNanosPerMicrosecond == 0) {
@@ -268,21 +268,21 @@ void GetCurrentTime(int64* seconds, int32* nanos) {
   *nanos = 0;
 }
 
-string FormatTime(int64 seconds, int32 nanos) {
+std::string FormatTime(int64 seconds, int32 nanos) {
   DateTime time;
   if (nanos < 0 || nanos > 999999999 || !SecondsToDateTime(seconds, &time)) {
     return "InvalidTime";
   }
-  string result = StringPrintf("%04d-%02d-%02dT%02d:%02d:%02d",
-                               time.year, time.month, time.day,
-                               time.hour, time.minute, time.second);
+  std::string result =
+      StringPrintf("%04d-%02d-%02dT%02d:%02d:%02d", time.year, time.month,
+                   time.day, time.hour, time.minute, time.second);
   if (nanos != 0) {
     result += "." + FormatNanos(nanos);
   }
   return result + "Z";
 }
 
-bool ParseTime(const string& value, int64* seconds, int32* nanos) {
+bool ParseTime(const std::string& value, int64* seconds, int32* nanos) {
   DateTime time;
   const char* data = value.c_str();
   // We only accept:

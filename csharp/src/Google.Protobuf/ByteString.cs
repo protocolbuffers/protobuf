@@ -245,6 +245,7 @@ namespace Google.Protobuf
         /// are copied, so further modifications to the span will not
         /// be reflected in the returned <see cref="ByteString" />.
         /// </summary>
+        [SecuritySafeCritical]
         public static ByteString CopyFrom(ReadOnlySpan<byte> bytes)
         {
             return new ByteString(bytes.ToArray());

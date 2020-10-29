@@ -231,7 +231,7 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
-  inline Message() {}
+  constexpr Message() = default;
 
   // Basic Operations ------------------------------------------------
 
@@ -367,7 +367,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
 
  protected:
-  static size_t GetInvariantPerBuild(size_t salt);
+  static uint64 GetInvariantPerBuild(uint64 salt);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Message);
@@ -1056,8 +1056,6 @@ class PROTOBUF_EXPORT Reflection final {
       const Message& message) const;
 
   internal::InternalMetadata* MutableInternalMetadata(Message* message) const;
-
-  inline bool IsInlined(const FieldDescriptor* field) const;
 
   inline bool HasBit(const Message& message,
                      const FieldDescriptor* field) const;

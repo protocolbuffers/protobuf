@@ -514,6 +514,20 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(classUnderTest + " InputStream must now be exhausted", -1, input.read());
   }
 
+  public void testNewInput_readZeroBytes() throws IOException {
+    InputStream input = stringUnderTest.newInput();
+    assertEquals(
+        classUnderTest + " InputStream.read() returns 0 when told to read 0 bytes and not at EOF",
+        0,
+        input.read(new byte[0]));
+
+    input.skip(input.available());
+    assertEquals(
+        classUnderTest + " InputStream.read() returns -1 when told to read 0 bytes at EOF",
+        -1,
+        input.read(new byte[0]));
+  }
+
   public void testNewInput_skip() throws IOException {
     InputStream input = stringUnderTest.newInput();
     int stringSize = stringUnderTest.size();

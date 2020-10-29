@@ -45,6 +45,9 @@
 #include <google/protobuf/repeated_field.h>
 #include <gtest/gtest.h>
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -476,6 +479,22 @@ TEST_P(MapFieldStateTest, MutableMapField) {
   } else {
     Expect(map_field_.get(), REPEATED_DIRTY, 0, 1, false);
   }
+}
+
+class MyMapField
+    : public MapField<unittest::TestMap_MapInt32Int32Entry_DoNotUse, int32,
+                      int32, internal::WireFormatLite::TYPE_INT32,
+                      internal::WireFormatLite::TYPE_INT32> {
+ public:
+  constexpr MyMapField()
+      : MyMapField::MapField(internal::ConstantInitialized{}) {}
+};
+
+TEST(MapFieldTest, ConstInit) {
+  // This tests that `MapField` and all its base classes can be constant
+  // initialized.
+  PROTOBUF_CONSTINIT static MyMapField field;  // NOLINT
+  EXPECT_EQ(field.size(), 0);
 }
 
 
