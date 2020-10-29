@@ -12,6 +12,7 @@ cmake_minimum_required (VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
 
 project(upb)
+set(CMAKE_C_STANDARD 99)
 
 
 # Prevent CMake from setting -rdynamic on Linux (!!).

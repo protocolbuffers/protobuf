@@ -37,7 +37,7 @@ genrule(
 
 genrule(
     name = "copy_json_ragel",
-    srcs = ["upb/json/parser.c"],
+    srcs = ["//:upb/json/parser.c"],
     outs = ["generated-in/upb/json/parser.c"],
     cmd = "cp $< $@",
 )

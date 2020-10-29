@@ -951,7 +951,7 @@ static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
   upb_fieldtype_t type = upb_fielddef_type(p->top->f);
   double val;
   double dummy;
-  double inf = UPB_INFINITY;
+  double inf = INFINITY;
 
   errno = 0;
 
