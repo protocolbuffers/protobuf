@@ -1,4 +1,3 @@
-
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
@@ -9,7 +8,7 @@ def upb_deps():
         name = "com_google_absl",
         commit = "df3ea785d8c30a9503321a3d35ee7d35808f190d",  # LTS 2020-02-25
         remote = "https://github.com/abseil/abseil-cpp.git",
-        shallow_since = "1583355457 -0500"
+        shallow_since = "1583355457 -0500",
     )
 
     maybe(

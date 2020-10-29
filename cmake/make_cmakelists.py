@@ -46,9 +46,9 @@ class BuildFileFunctions(object):
     found_files = []
     for file in files:
         if os.path.isfile(file):
-            found_files.append(file)
-        elif os.path.isfile("generated_for_cmake/" + file):
-            found_files.append("generated_for_cmake/" + file)
+            found_files.append("../" + file)
+        elif os.path.isfile("cmake/" + file):
+            found_files.append("../cmake/" + file)
         else:
             print("Warning: no such file: " + file)
 
@@ -117,6 +117,9 @@ class BuildFileFunctions(object):
   def proto_library(self, **kwargs):
     pass
 
+  def cc_proto_library(self, **kwargs):
+    pass
+
   def generated_file_staleness_test(self, **kwargs):
     pass
 
@@ -124,6 +127,9 @@ class BuildFileFunctions(object):
     pass
 
   def upb_proto_library(self, **kwargs):
+    pass
+
+  def upb_proto_library_copts(self, **kwargs):
     pass
 
   def upb_proto_reflection_library(self, **kwargs):
@@ -163,6 +169,7 @@ class WorkspaceFileFunctions(object):
 
   def workspace(self, **kwargs):
     self.converter.prelude += "project(%s)\n" % (kwargs["name"])
+    self.converter.prelude += "set(CMAKE_C_STANDARD 99)\n"
 
   def http_archive(self, **kwargs):
     pass
@@ -239,8 +246,8 @@ class Converter(object):
       set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif()
 
-    include_directories(.)
-    include_directories(generated_for_cmake)
+    include_directories(..)
+    include_directories(../cmake)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
     if(APPLE)
@@ -260,6 +267,7 @@ converter = Converter()
 
 def GetDict(obj):
   ret = {}
+  ret["UPB_DEFAULT_COPTS"] = []  # HACK
   for k in dir(obj):
     if not k.startswith("_"):
       ret[k] = getattr(obj, k);

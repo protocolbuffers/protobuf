@@ -7,6 +7,7 @@ generated_file_staleness_test() rules.
 from __future__ import absolute_import
 from __future__ import print_function
 
+import sys
 import os
 from shutil import copyfile
 
@@ -47,13 +48,13 @@ def _GetFilePairs(config):
 
   ret = []
 
-  has_bazel_genfiles = os.path.exists("bazel-genfiles")
+  has_bazel_genfiles = os.path.exists("bazel-bin")
 
   for filename in config.file_list:
     target = os.path.join(config.package_name, filename)
     generated = os.path.join(config.package_name, config.pattern % filename)
     if has_bazel_genfiles:
-      generated = os.path.join("bazel-genfiles", generated)
+      generated = os.path.join("bazel-bin", generated)
 
     # Generated files should always exist.  Blaze should guarantee this before
     # we are run.
@@ -61,6 +62,7 @@ def _GetFilePairs(config):
       print("Generated file '%s' does not exist." % generated)
       print("Please run this command to generate it:")
       print("  bazel build %s:%s" % (config.package_name, config.target_name))
+      sys.exit(1)
     ret.append(_FilePair(target, generated))
 
   return ret
@@ -87,10 +89,9 @@ def _GetMissingAndStaleFiles(file_pairs):
       missing_files.append(pair)
       continue
 
-    generated = open(pair.generated).read()
-    target = open(pair.target).read()
-    if generated != target:
-      stale_files.append(pair)
+    with open(pair.generated) as g, open(pair.target) as t:
+      if g.read() != t.read():
+        stale_files.append(pair)
 
   return missing_files, stale_files
 

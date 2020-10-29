@@ -564,8 +564,8 @@ static int lupb_mapiter_next(lua_State *L) {
  *   pairs(map)
  */
 static int lupb_map_pairs(lua_State *L) {
-  lupb_map_check(L, 1);
   size_t *iter = lua_newuserdata(L, sizeof(*iter));
+  lupb_map_check(L, 1);
 
   *iter = UPB_MAP_BEGIN;
   lua_pushvalue(L, 1);

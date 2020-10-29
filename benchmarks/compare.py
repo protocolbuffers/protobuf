@@ -30,12 +30,12 @@ def Run(cmd):
 def Benchmark(outbase, bench_cpu=True, runs=12):
   tmpfile = "/tmp/bench-output.json"
   Run("rm -rf {}".format(tmpfile))
-  Run("CC=clang bazel test :all")
+  Run("CC=clang bazel test ...")
 
   if bench_cpu:
-    Run("CC=clang bazel build -c opt --copt=-march=native :benchmark")
+    Run("CC=clang bazel build -c opt --copt=-march=native benchmarks:benchmark")
 
-    Run("./bazel-bin/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={}".format(tmpfile, runs))
+    Run("./bazel-bin/benchmarks/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={}".format(tmpfile, runs))
     with open(tmpfile) as f:
       bench_json = json.load(f)
 
@@ -48,8 +48,8 @@ def Benchmark(outbase, bench_cpu=True, runs=12):
         values = (name, run["iterations"], run["cpu_time"])
         print("{} {} {} ns/op".format(*values), file=f)
 
-  Run("CC=clang bazel build -c opt --copt=-g :conformance_upb")
-  Run("cp -f bazel-bin/conformance_upb {}.bin".format(outbase))
+  Run("CC=clang bazel build -c opt --copt=-g tests:conformance_upb")
+  Run("cp -f bazel-bin/tests/conformance_upb {}.bin".format(outbase))
 
 
 baseline = "master"

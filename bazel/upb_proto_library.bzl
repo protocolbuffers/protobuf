@@ -18,6 +18,7 @@ def _get_real_short_path(file):
     if short_path.startswith("../"):
         second_slash = short_path.index("/", 3)
         short_path = short_path[second_slash + 1:]
+
     # Sometimes it has another few prefixes like:
     #   _virtual_imports/any_proto/google/protobuf/any.proto
     # We want just google/protobuf/any.proto.
@@ -51,7 +52,7 @@ def _filter_none(elems):
             out.append(elem)
     return out
 
-def _cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
+def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
     """Like cc_library(), but callable from rules.
 
     Args:
@@ -87,6 +88,7 @@ def _cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
         name = name,
         srcs = srcs,
         public_hdrs = hdrs,
+        user_compile_flags = copts,
         compilation_contexts = compilation_contexts,
         **blaze_only_args
     )
@@ -104,6 +106,22 @@ def _cc_library_func(ctx, name, hdrs, srcs, dep_ccinfos):
         compilation_context = compilation_context,
         linking_context = linking_context,
     )
+
+# Dummy rule to expose select() copts to aspects  ##############################
+
+_UpbProtoLibraryCopts = provider(
+    fields = {
+        "copts": "copts for upb_proto_library()",
+    },
+)
+
+def upb_proto_library_copts_impl(ctx):
+    return _UpbProtoLibraryCopts(copts = ctx.attr.copts)
+
+upb_proto_library_copts = rule(
+    implementation = upb_proto_library_copts_impl,
+    attrs = {"copts": attr.string_list(default = [])},
+)
 
 # upb_proto_library / upb_proto_reflection_library shared code #################
 
@@ -198,6 +216,7 @@ def _upb_proto_aspect_impl(target, ctx, cc_provider, file_provider):
         name = ctx.rule.attr.name + ctx.attr._ext,
         hdrs = files.hdrs,
         srcs = files.srcs,
+        copts = ctx.attr._copts[_UpbProtoLibraryCopts].copts,
         dep_ccinfos = dep_ccinfos,
     )
     return [cc_provider(cc_info = cc_info), file_provider(srcs = files)]
@@ -221,10 +240,13 @@ def _maybe_add(d):
 
 _upb_proto_library_aspect = aspect(
     attrs = _maybe_add({
+        "_copts": attr.label(
+            default = "//:upb_proto_library_copts__for_generated_code_only_do_not_use",
+        ),
         "_upbc": attr.label(
             executable = True,
             cfg = "host",
-            default = "//:protoc-gen-upb",
+            default = "//upbc:protoc-gen-upb",
         ),
         "_protoc": attr.label(
             executable = True,
@@ -266,10 +288,13 @@ upb_proto_library = rule(
 
 _upb_proto_reflection_library_aspect = aspect(
     attrs = _maybe_add({
+        "_copts": attr.label(
+            default = "//:upb_proto_library_copts__for_generated_code_only_do_not_use",
+        ),
         "_upbc": attr.label(
             executable = True,
             cfg = "host",
-            default = "//:protoc-gen-upb",
+            default = "//upbc:protoc-gen-upb",
         ),
         "_protoc": attr.label(
             executable = True,

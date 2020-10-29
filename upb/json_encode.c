@@ -4,14 +4,16 @@
 #include <ctype.h>
 #include <float.h>
 #include <inttypes.h>
+#include <math.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <setjmp.h>
 
 #include "upb/decode.h"
 #include "upb/reflection.h"
 
+/* Must be last. */
 #include "upb/port_def.inc"
 
 typedef struct {
@@ -76,7 +78,7 @@ static void jsonenc_printf(jsonenc *e, const char *fmt, ...) {
   va_list args;
 
   va_start(args, fmt);
-  n = _upb_vsnprintf(e->ptr, have, fmt, args);
+  n = vsnprintf(e->ptr, have, fmt, args);
   va_end(args);
 
   if (UPB_LIKELY(have > n)) {
@@ -268,9 +270,9 @@ static void jsonenc_string(jsonenc *e, upb_strview str) {
 }
 
 static void jsonenc_double(jsonenc *e, const char *fmt, double val) {
-  if (val == UPB_INFINITY) {
+  if (val == INFINITY) {
     jsonenc_putstr(e, "\"Infinity\"");
-  } else if (val == -UPB_INFINITY) {
+  } else if (val == -INFINITY) {
     jsonenc_putstr(e, "\"-Infinity\"");
   } else if (val != val) {
     jsonenc_putstr(e, "\"NaN\"");

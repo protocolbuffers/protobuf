@@ -82,7 +82,7 @@ _lua_proto_library_aspect = aspect(
         "_upbc": attr.label(
             executable = True,
             cfg = "host",
-            default = "//:protoc-gen-lua",
+            default = "//upb/bindings/lua:protoc-gen-lua",
         ),
         "_protoc": attr.label(
             executable = True,
