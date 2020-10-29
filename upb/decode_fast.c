@@ -356,7 +356,7 @@ static const char *fastdecode_varint64(const char *ptr, uint64_t *val) {
     *val += (byte - 1) << 63;
   }
 done:
-  __builtin_assume(ptr != NULL);
+  UPB_ASSUME(ptr != NULL);
   return ptr;
 }
 
@@ -897,7 +897,7 @@ static const char *fastdecode_tosubmsg(upb_decstate *d, const char *ptr,
                                        void *ctx) {
   fastdecode_submsgdata *submsg = ctx;
   ptr = fastdecode_dispatch(d, ptr, submsg->msg, submsg->layout, 0);
-  __builtin_assume(ptr != NULL);
+  UPB_ASSUME(ptr != NULL);
   return ptr;
 }
 

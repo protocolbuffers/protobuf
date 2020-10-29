@@ -78,19 +78,26 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = [":port", ":fastdecode"],
+    deps = [
+        ":fastdecode",
+        ":port",
+    ],
 )
 
 cc_library(
     name = "fastdecode",
     srcs = [
+        "upb/decode.int.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",
-        "upb/decode.int.h",
         "upb/msg.h",
         "upb/upb.int.h",
     ],
-    deps = [":port", ":table"],
+    copts = UPB_DEFAULT_COPTS,
+    deps = [
+        ":port",
+        ":table",
+    ],
 )
 
 # Common support routines used by generated code.  This library has no
@@ -189,8 +196,8 @@ cc_library(
 cc_library(
     name = "table",
     hdrs = [
-      "upb/table.int.h",
-      "upb/upb.h",
+        "upb/table.int.h",
+        "upb/upb.h",
     ],
     visibility = ["//tests:__pkg__"],
     deps = [
@@ -307,6 +314,7 @@ cc_library(
     name = "amalgamation",
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
+    copts = UPB_DEFAULT_COPTS,
 )
 
 upb_amalgamation(
@@ -332,6 +340,7 @@ cc_library(
     name = "php_amalgamation",
     srcs = ["php-upb.c"],
     hdrs = ["php-upb.h"],
+    copts = UPB_DEFAULT_COPTS,
 )
 
 upb_amalgamation(
@@ -356,6 +365,7 @@ cc_library(
     name = "ruby_amalgamation",
     srcs = ["ruby-upb.c"],
     hdrs = ["ruby-upb.h"],
+    copts = UPB_DEFAULT_COPTS,
 )
 
 exports_files(
