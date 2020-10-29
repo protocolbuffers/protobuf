@@ -7,7 +7,6 @@ cd $(dirname $0)
 pushd  ../ext/google/protobuf
 phpize --clean
 rm -f configure.in configure.ac
-php make-preload.php
 phpize
 if [ "$1" = "--release" ]; then
   ./configure --with-php-config=$(which php-config)

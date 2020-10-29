@@ -49,6 +49,12 @@ upb_symtab *DescriptorPool_Steal(zval *zv);
 
 upb_symtab *DescriptorPool_GetSymbolTable();
 
+// Returns true if the global descriptor pool already has the given filename.
+bool DescriptorPool_HasFile(const char *filename);
+
+// Adds the given descriptor with the given filename to the global pool.
+void DescriptorPool_AddDescriptor(const char *filename, const char *data, int size);
+
 typedef struct Descriptor {
   zend_object std;
   const upb_msgdef *msgdef;

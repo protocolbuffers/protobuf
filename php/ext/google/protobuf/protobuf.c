@@ -35,7 +35,6 @@
 
 #include "arena.h"
 #include "array.h"
-#include "bundled_php.h"
 #include "convert.h"
 #include "def.h"
 #include "map.h"
@@ -162,10 +161,6 @@ static PHP_RINIT_FUNCTION(protobuf) {
   upb_symtab *symtab = PROTOBUF_G(saved_symtab);
   DescriptorPool_CreateWithSymbolTable(&PROTOBUF_G(generated_pool), symtab);
 
-  // Set up autoloader for bundled sources.
-  zend_eval_string("spl_autoload_register('protobuf_internal_loadbundled');",
-                   NULL, "autoload_register.php");
-
   zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
   zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, 0);
   zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, 0);
@@ -192,34 +187,6 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 
   return SUCCESS;
 }
-
-// -----------------------------------------------------------------------------
-// Bundled PHP sources
-// -----------------------------------------------------------------------------
-
-// We bundle PHP sources for well-known types into the C extension. There is no
-// need to implement these in C.
-
-static PHP_FUNCTION(protobuf_internal_loadbundled) {
-  char *name = NULL;
-  zend_long size;
-  BundledPhp_File *file;
-
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s", &name, &size) != SUCCESS) {
-    return;
-  }
-
-  for (file = bundled_files; file->filename; file++) {
-    if (strcmp(file->filename, name) == 0) {
-      zend_eval_string((char*)file->contents, NULL, (char*)file->filename);
-      return;
-    }
-  }
-}
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_load_bundled_source, 0, 0, 1)
-  ZEND_ARG_INFO(0, class_name)
-ZEND_END_ARG_INFO()
 
 // -----------------------------------------------------------------------------
 // Object Cache.
@@ -303,7 +270,6 @@ const upb_enumdef *NameMap_GetEnum(zend_class_entry *ce) {
 // -----------------------------------------------------------------------------
 
 zend_function_entry protobuf_functions[] = {
-  PHP_FE(protobuf_internal_loadbundled, arginfo_load_bundled_source)
   ZEND_FE_END
 };
 
