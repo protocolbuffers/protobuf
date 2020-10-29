@@ -7,7 +7,9 @@
 
 #include <ctype.h>
 #include <inttypes.h>
+#include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -139,7 +141,7 @@ static void putstring(upb_json_printer *p, const char *buf, size_t len) {
       char escape_buf[8];
       if (!escape) {
         unsigned char byte = (unsigned char)c;
-        _upb_snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)byte);
+        snprintf(escape_buf, sizeof(escape_buf), "\\u%04x", (int)byte);
         escape = escape_buf;
       }
 
@@ -178,53 +180,53 @@ const char neginf[] = "\"-Infinity\"";
 const char inf[] = "\"Infinity\"";
 
 static size_t fmt_double(double val, char* buf, size_t length) {
-  if (val == UPB_INFINITY) {
+  if (val == INFINITY) {
     CHKLENGTH(length >= strlen(inf));
     strcpy(buf, inf);
     return strlen(inf);
-  } else if (val == -UPB_INFINITY) {
+  } else if (val == -INFINITY) {
     CHKLENGTH(length >= strlen(neginf));
     strcpy(buf, neginf);
     return strlen(neginf);
   } else {
-    size_t n = _upb_snprintf(buf, length, "%.17g", val);
+    size_t n = snprintf(buf, length, "%.17g", val);
     CHKLENGTH(n > 0 && n < length);
     return n;
   }
 }
 
 static size_t fmt_float(float val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%.8g", val);
+  size_t n = snprintf(buf, length, "%.8g", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_bool(bool val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%s", (val ? "true" : "false"));
+  size_t n = snprintf(buf, length, "%s", (val ? "true" : "false"));
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_int64_as_number(int64_t val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%" PRId64, val);
+  size_t n = snprintf(buf, length, "%" PRId64, val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_uint64_as_number(uint64_t val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%" PRIu64, val);
+  size_t n = snprintf(buf, length, "%" PRIu64, val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_int64_as_string(int64_t val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "\"%" PRId64 "\"", val);
+  size_t n = snprintf(buf, length, "\"%" PRId64 "\"", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
 
 static size_t fmt_uint64_as_string(uint64_t val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "\"%" PRIu64 "\"", val);
+  size_t n = snprintf(buf, length, "\"%" PRIu64 "\"", val);
   CHKLENGTH(n > 0 && n < length);
   return n;
 }
@@ -870,12 +872,12 @@ static bool printer_enddurationmsg(void *closure, const void *handler_data,
     return false;
   }
 
-  _upb_snprintf(buffer, sizeof(buffer), "%ld", (long)p->seconds);
+  snprintf(buffer, sizeof(buffer), "%ld", (long)p->seconds);
   base_len = strlen(buffer);
 
   if (p->nanos != 0) {
     char nanos_buffer[UPB_DURATION_MAX_NANO_LEN + 3];
-    _upb_snprintf(nanos_buffer, sizeof(nanos_buffer), "%.9f",
+    snprintf(nanos_buffer, sizeof(nanos_buffer), "%.9f",
                   p->nanos / 1000000000.0);
     /* Remove trailing 0. */
     for (i = UPB_DURATION_MAX_NANO_LEN + 2;
@@ -949,8 +951,8 @@ static bool printer_endtimestampmsg(void *closure, const void *handler_data,
            "%Y-%m-%dT%H:%M:%S", gmtime(&time));
   if (p->nanos != 0) {
     char nanos_buffer[UPB_TIMESTAMP_MAX_NANO_LEN + 3];
-    _upb_snprintf(nanos_buffer, sizeof(nanos_buffer), "%.9f",
-                  p->nanos / 1000000000.0);
+    snprintf(nanos_buffer, sizeof(nanos_buffer), "%.9f",
+             p->nanos / 1000000000.0);
     /* Remove trailing 0. */
     for (i = UPB_TIMESTAMP_MAX_NANO_LEN + 2;
          nanos_buffer[i] == '0'; i--) {

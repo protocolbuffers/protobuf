@@ -6,6 +6,7 @@ load(
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
+    "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
 
@@ -35,6 +36,12 @@ config_setting(
     constraint_values = ["@bazel_tools//platforms:windows"],
 )
 
+upb_proto_library_copts(
+    name = "upb_proto_library_copts__for_generated_code_only_do_not_use",
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+)
+
 # Public C/C++ libraries #######################################################
 
 cc_library(
@@ -42,6 +49,7 @@ cc_library(
     srcs = [
         "upb/port.c",
     ],
+    copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         "upb/port_def.inc",
         "upb/port_undef.inc",
@@ -250,6 +258,7 @@ genrule(
     outs = ["upb/json/parser.c"],
     cmd = "$(location @ragel//:ragelc) -C -o upb/json/parser.c $< && mv upb/json/parser.c $@",
     tools = ["@ragel//:ragelc"],
+    visibility = ["//cmake:__pkg__"],
 )
 
 # Amalgamation #################################################################

@@ -2,6 +2,10 @@ load(
     "//upb/bindings/lua:lua_proto_library.bzl",
     "lua_proto_library",
 )
+load(
+    "//bazel:build_defs.bzl",
+    "UPB_DEFAULT_COPTS",
+)
 
 licenses(["notice"])
 
@@ -20,6 +24,7 @@ cc_test(
         "@com_google_protobuf//:conformance_proto",
         "@com_google_protobuf//:descriptor_proto",
     ],
+    copts = UPB_DEFAULT_COPTS,
     linkstatic = 1,
     deps = [
         "//upb/bindings/lua:lupb",
