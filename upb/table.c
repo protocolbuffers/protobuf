@@ -294,11 +294,9 @@ static bool streql(upb_tabkey k1, lookupkey_t k2) {
 bool upb_strtable_init2(upb_strtable *t, upb_ctype_t ctype,
                         size_t expected_size, upb_alloc *a) {
   UPB_UNUSED(ctype);  /* TODO(haberman): rm */
-  size_t need_entries = (expected_size + 1) / MAX_LOAD;
-  int size_lg2 = 2;
-  while (1 << size_lg2 < need_entries) {
-    size_lg2++;
-  }
+  size_t need_entries = (expected_size + 1) * 1204 / 1024;
+  UPB_ASSERT(need_entries >= expected_size * 0.85);
+  int size_lg2 = _upb_lg2ceil(need_entries);
   return init(&t->t, size_lg2, a);
 }
 
