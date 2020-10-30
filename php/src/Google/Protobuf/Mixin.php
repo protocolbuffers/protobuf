@@ -81,14 +81,14 @@ class Mixin extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string name = 1;</code>
      */
-    private $name = '';
+    protected $name = '';
     /**
      * If non-empty specifies a path under which inherited HTTP paths
      * are rooted.
      *
      * Generated from protobuf field <code>string root = 2;</code>
      */
-    private $root = '';
+    protected $root = '';
 
     /**
      * Constructor.
