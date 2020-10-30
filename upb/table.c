@@ -294,6 +294,7 @@ static bool streql(upb_tabkey k1, lookupkey_t k2) {
 bool upb_strtable_init2(upb_strtable *t, upb_ctype_t ctype,
                         size_t expected_size, upb_alloc *a) {
   UPB_UNUSED(ctype);  /* TODO(haberman): rm */
+  // Multiply by approximate reciprocal of MAX_LOAD (0.85), with pow2 denominator.
   size_t need_entries = (expected_size + 1) * 1204 / 1024;
   UPB_ASSERT(need_entries >= expected_size * 0.85);
   int size_lg2 = _upb_lg2ceil(need_entries);
