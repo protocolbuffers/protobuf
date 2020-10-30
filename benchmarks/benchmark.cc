@@ -20,34 +20,6 @@ namespace protobuf = ::google::protobuf;
 /* A buffer big enough to parse descriptor.proto without going to heap. */
 char buf[65535];
 
-static void BM_LoadDescriptor(benchmark::State& state) {
-  FILE *f = fopen("/tmp/ads-descriptor.pb", "rb");
-  fseek(f, 0, SEEK_END);
-  size_t size = ftell(f);
-  fseek(f, 0, SEEK_SET);
-  std::string str(size, '\0');
-  fread(&str[0], 1, size, f);
-  fclose(f);
-  fprintf(stderr, "size: %zu\n", str.size());
-  for (auto _ : state) {
-    upb::SymbolTable symtab;
-    upb::Arena arena;
-    google_protobuf_FileDescriptorSet* set =
-        google_protobuf_FileDescriptorSet_parse(str.data(), str.size(),
-                                                arena.ptr());
-    const google_protobuf_FileDescriptorProto*const * files =
-        google_protobuf_FileDescriptorSet_file(set, &size);
-    for (size_t i = 0; i < size; i++) {
-      upb::FileDefPtr file_def = symtab.AddFile(files[i], NULL);
-      if (!file_def) {
-        printf("Failed to add file.\n");
-        exit(1);
-      }
-    }
-  }
-}
-BENCHMARK(BM_LoadDescriptor);
-
 static void BM_ArenaOneAlloc(benchmark::State& state) {
   for (auto _ : state) {
     upb_arena* arena = upb_arena_new();
