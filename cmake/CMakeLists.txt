@@ -72,6 +72,7 @@ add_library(upb
   ../upb/table.int.h
   ../upb/upb.c
   ../upb/upb.int.h
+  ../third_party/wyhash/wyhash.h
   ../upb/decode.h
   ../upb/encode.h
   ../upb/upb.h

@@ -313,6 +313,17 @@ UPB_INLINE uint64_t _upb_be_swap64(uint64_t val) {
   }
 }
 
+UPB_INLINE int _upb_lg2ceil(int x) {
+  if (x == 0) return 0;
+#ifdef __GNUC__
+  return 32 - __builtin_clz(x - 1);
+#else
+  int lg2 = 0;
+  while (1 << lg2 < x) lg2++;
+  return lg2;
+#endif
+}
+
 #include "upb/port_undef.inc"
 
 #ifdef __cplusplus
