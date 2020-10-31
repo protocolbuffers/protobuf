@@ -864,7 +864,40 @@ void upb_oneof_iter_setdone(upb_oneof_iter *iter) {
   upb_inttable_iter_setdone(iter);
 }
 
-/* Dynamic Layout Generation. *************************************************/
+/* Code to build defs from descriptor protos. *********************************/
+
+/* There is a question of how much validation to do here.  It will be difficult
+ * to perfectly match the amount of validation performed by proto2.  But since
+ * this code is used to directly build defs from Ruby (for example) we do need
+ * to validate important constraints like uniqueness of names and numbers. */
+
+#define CHK_OOM(ctx, x) if (!(x)) { symtab_oomerr(ctx); }
+
+typedef struct {
+  const upb_symtab *symtab;
+  upb_filedef *file;              /* File we are building. */
+  upb_alloc *alloc;               /* Allocate defs here. */
+  upb_alloc *tmp;                 /* Alloc for addtab and any other tmp data. */
+  upb_strtable *addtab;           /* full_name -> packed def ptr for new defs */
+  const upb_msglayout **layouts;  /* NULL if we should build layouts. */
+  upb_status *status;             /* Record errors here. */
+  jmp_buf err;                    /* longjmp() on error. */
+} symtab_addctx;
+
+static void symtab_err(symtab_addctx *ctx) { longjmp(ctx->err, 1); }
+
+static void symtab_errf(symtab_addctx *ctx, const char *fmt, ...) {
+  va_list argp;
+  va_start(argp, fmt);
+  upb_status_vseterrf(d->status, fmt, argp);
+  va_end(argp);
+  longjmp(ctx->err, 1);
+}
+
+static void symtab_oomerr(symtab_addctx *ctx) {
+  upb_status_setoom(ctx->status);
+  longjmp(ctx->err, 1);
+}
 
 static size_t div_round_up(size_t n, size_t d) {
   return (n + d - 1) / d;
@@ -931,7 +964,8 @@ static void assign_layout_indices(const upb_msgdef *m, upb_msglayout_field *fiel
 
 /* This function is the dynamic equivalent of message_layout.{cc,h} in upbc.
  * It computes a dynamic layout for all of the fields in |m|. */
-static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
+static void make_layout(symtab_addctx *ctx, const upb_symtab *symtab,
+                        const upb_msgdef *m) {
   upb_msglayout *l = (upb_msglayout*)m->layout;
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
@@ -948,8 +982,7 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
 
   if ((!fields && upb_msgdef_numfields(m)) ||
       (!submsgs && submsg_count)) {
-    /* OOM. */
-    return false;
+    symtab_oomerr(ctx);
   }
 
   l->field_count = upb_msgdef_numfields(m);
@@ -980,7 +1013,7 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
     l->field_count = 2;
     l->size = 2 * sizeof(upb_strview);
     l->size = UPB_ALIGN_UP(l->size, 8);
-    return true;
+    return;
   }
 
   /* Allocate data offsets in three stages:
@@ -1092,29 +1125,7 @@ static bool make_layout(const upb_symtab *symtab, const upb_msgdef *m) {
   /* Sort fields by number. */
   qsort(fields, upb_msgdef_numfields(m), sizeof(*fields), field_number_cmp);
   assign_layout_indices(m, fields);
-
-  return true;
 }
-
-/* Code to build defs from descriptor protos. *********************************/
-
-/* There is a question of how much validation to do here.  It will be difficult
- * to perfectly match the amount of validation performed by proto2.  But since
- * this code is used to directly build defs from Ruby (for example) we do need
- * to validate important constraints like uniqueness of names and numbers. */
-
-#define CHK(x) if (!(x)) { return false; }
-#define CHK_OOM(x) if (!(x)) { upb_status_setoom(ctx->status); return false; }
-
-typedef struct {
-  const upb_symtab *symtab;
-  upb_filedef *file;              /* File we are building. */
-  upb_alloc *alloc;               /* Allocate defs here. */
-  upb_alloc *tmp;                 /* Alloc for addtab and any other tmp data. */
-  upb_strtable *addtab;           /* full_name -> packed def ptr for new defs */
-  const upb_msglayout **layouts;  /* NULL if we should build layouts. */
-  upb_status *status;             /* Record errors here. */
-} symtab_addctx;
 
 static char* strviewdup(const symtab_addctx *ctx, upb_strview view) {
   return upb_strdup2(view.data, view.size, ctx->alloc);
@@ -1145,7 +1156,7 @@ static const char *makefullname(const symtab_addctx *ctx, const char *prefix,
   }
 }
 
-static bool finalize_oneofs(symtab_addctx *ctx, upb_msgdef *m) {
+static void finalize_oneofs(symtab_addctx *ctx, upb_msgdef *m) {
   int i;
   int synthetic_count = 0;
   upb_oneofdef *mutable_oneofs = (upb_oneofdef*)m->oneofs;
@@ -1154,19 +1165,15 @@ static bool finalize_oneofs(symtab_addctx *ctx, upb_msgdef *m) {
     upb_oneofdef *o = &mutable_oneofs[i];
 
     if (o->synthetic && o->field_count != 1) {
-      upb_status_seterrf(
-          ctx->status, "Synthetic oneofs must have one field, not %d: %s",
-          o->field_count, upb_oneofdef_name(o));
-      return false;
+      symtab_errf(ctx, "Synthetic oneofs must have one field, not %d: %s",
+                  o->field_count, upb_oneofdef_name(o));
     }
 
     if (o->synthetic) {
       synthetic_count++;
     } else if (synthetic_count != 0) {
-      upb_status_seterrf(
-          ctx->status, "Synthetic oneofs must be after all other oneofs: %s",
-          upb_oneofdef_name(o));
-      return false;
+      symtab_errf(ctx, "Synthetic oneofs must be after all other oneofs: %s",
+                  upb_oneofdef_name(o));
     }
 
     o->fields = upb_malloc(ctx->alloc, sizeof(upb_fielddef*) * o->field_count);
@@ -1182,7 +1189,6 @@ static bool finalize_oneofs(symtab_addctx *ctx, upb_msgdef *m) {
   }
 
   m->real_oneof_count = m->oneof_count - synthetic_count;
-  return true;
 }
 
 size_t getjsonname(const char *name, char *buf, size_t len) {
@@ -1230,44 +1236,38 @@ static char* makejsonname(const char* name, upb_alloc *alloc) {
   return json_name;
 }
 
-static bool symtab_add(const symtab_addctx *ctx, const char *name,
+static void symtab_add(const symtab_addctx *ctx, const char *name,
                        upb_value v) {
   upb_value tmp;
   if (upb_strtable_lookup(ctx->addtab, name, &tmp) ||
       upb_strtable_lookup(&ctx->symtab->syms, name, &tmp)) {
-    upb_status_seterrf(ctx->status, "duplicate symbol '%s'", name);
-    return false;
+    status_errf(ctx, "duplicate symbol '%s'", name);
   }
 
   CHK_OOM(upb_strtable_insert3(ctx->addtab, name, strlen(name), v, ctx->tmp));
-  return true;
 }
 
 /* Given a symbol and the base symbol inside which it is defined, find the
  * symbol's definition in t. */
-static bool resolvename(const upb_strtable *t, const upb_fielddef *f,
-                        const char *base, upb_strview sym,
-                        upb_deftype_t type, upb_status *status,
-                        const void **def) {
+static const void *resolvename(symtab_addctx *ctx, const upb_strtable *t,
+                               const upb_fielddef *f, const char *base,
+                               upb_strview sym, upb_deftype_t type,
+                               const void **def) {
   if(sym.size == 0) return false;
   if(sym.data[0] == '.') {
     /* Symbols starting with '.' are absolute, so we do a single lookup.
      * Slice to omit the leading '.' */
     upb_value v;
     if (!upb_strtable_lookup2(t, sym.data + 1, sym.size - 1, &v)) {
-      return false;
+      return NULL;
     }
 
-    *def = unpack_def(v, type);
-
-    if (!*def) {
-      upb_status_seterrf(status,
-                         "type mismatch when resolving field %s, name %s",
-                         f->full_name, sym.data);
-      return false;
+    const void *ret = unpack_def(v, type);
+    if (ret) {
+      symtab_errf(ctx, "type mismatch when resolving field %s, name %s",
+                  f->full_name, sym.data);
     }
-
-    return true;
+    return ret;
   } else {
     /* Remove components from base until we find an entry or run out.
      * TODO: This branch is totally broken, but currently not used. */
@@ -1281,12 +1281,9 @@ const void *symtab_resolve(const symtab_addctx *ctx, const upb_fielddef *f,
                            const char *base, upb_strview sym,
                            upb_deftype_t type) {
   const void *ret;
-  if (!resolvename(ctx->addtab, f, base, sym, type, ctx->status, &ret) &&
-      !resolvename(&ctx->symtab->syms, f, base, sym, type, ctx->status, &ret)) {
-    if (upb_ok(ctx->status)) {
-      upb_status_seterrf(ctx->status, "couldn't resolve name '%s'", sym.data);
-    }
-    return false;
+  if (!resolvename(ctx, ctx->addtab, f, base, sym, type, &ret) &&
+      !resolvename(ctx, &ctx->symtab->syms, f, base, sym, type, &ret)) {
+    symtab_errf(ctx, "couldn't resolve name '%s'", sym.data);
   }
   return ret;
 }
