@@ -9,9 +9,11 @@
 #include "benchmarks/descriptor_sv.pb.h"
 
 // For for benchmarks of building descriptors.
-#include "google/protobuf/descriptor.upb.h"
+#include "google/ads/googleads/v5/services/google_ads_service.pb.h"
+#include "google/ads/googleads/v5/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
-
+#include "google/protobuf/descriptor.upb.h"
+#include "google/protobuf/descriptor.upbdefs.h"
 #include "upb/def.hpp"
 
 upb_strview descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
@@ -19,6 +21,20 @@ namespace protobuf = ::google::protobuf;
 
 /* A buffer big enough to parse descriptor.proto without going to heap. */
 char buf[65535];
+
+void CollectFileDescriptors(const protobuf::FileDescriptor* file,
+                            std::vector<std::string>& serialized_files,
+                            std::unordered_set<const protobuf::FileDescriptor*>& seen) {
+  if (!seen.insert(file).second) return;
+  for (int i = 0; i < file->dependency_count(); i++) {
+    CollectFileDescriptors(file->dependency(i), serialized_files, seen);
+  }
+  protobuf::FileDescriptorProto file_proto;
+  file->CopyTo(&file_proto);
+  std::string serialized;
+  file_proto.SerializeToString(&serialized);
+  serialized_files.push_back(std::move(serialized));
+}
 
 static void BM_ArenaOneAlloc(benchmark::State& state) {
   for (auto _ : state) {
@@ -39,21 +55,27 @@ static void BM_ArenaInitialBlockOneAlloc(benchmark::State& state) {
 BENCHMARK(BM_ArenaInitialBlockOneAlloc);
 
 static void BM_LoadDescriptor_Upb(benchmark::State& state) {
+  size_t bytes_per_iter;
   for (auto _ : state) {
     upb::SymbolTable symtab;
-    upb::Arena arena;
-    google_protobuf_FileDescriptorProto* file_proto =
-        google_protobuf_FileDescriptorProto_parse(descriptor.data,
-                                                  descriptor.size, arena.ptr());
-    upb::FileDefPtr file_def = symtab.AddFile(file_proto, NULL);
-    if (!file_def) {
-      printf("Failed to add file.\n");
-      exit(1);
-    }
+    google_protobuf_DescriptorProto_getmsgdef(symtab.ptr());
+    bytes_per_iter = _upb_symtab_bytesloaded(symtab.ptr());
   }
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_LoadDescriptor_Upb);
+
+static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
+  size_t bytes_per_iter;
+  for (auto _ : state) {
+    upb::SymbolTable symtab;
+    google_ads_googleads_v5_services_SearchGoogleAdsRequest_getmsgdef(
+        symtab.ptr());
+    bytes_per_iter = _upb_symtab_bytesloaded(symtab.ptr());
+  }
+  state.SetBytesProcessed(state.iterations() * bytes_per_iter);
+}
+BENCHMARK(BM_LoadAdsDescriptor_Upb);
 
 static void BM_LoadDescriptor_Proto2(benchmark::State& state) {
   for (auto _ : state) {
@@ -72,6 +94,34 @@ static void BM_LoadDescriptor_Proto2(benchmark::State& state) {
   state.SetBytesProcessed(state.iterations() * descriptor.size);
 }
 BENCHMARK(BM_LoadDescriptor_Proto2);
+
+static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
+  std::vector<std::string> serialized_files;
+  std::unordered_set<const protobuf::FileDescriptor*> seen_files;
+  CollectFileDescriptors(
+      google::ads::googleads::v5::services::SearchGoogleAdsRequest::descriptor()
+          ->file(),
+      serialized_files, seen_files);
+  size_t bytes_per_iter;
+  for (auto _ : state) {
+    bytes_per_iter = 0;
+    protobuf::Arena arena;
+    protobuf::DescriptorPool pool;
+    for (auto file : serialized_files) {
+      auto proto = protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(
+          &arena);
+      bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(file) &&
+                pool.BuildFile(*proto) != nullptr;
+      if (!ok) {
+        printf("Failed to add file.\n");
+        exit(1);
+      }
+      bytes_per_iter += file.size();
+    }
+  }
+  state.SetBytesProcessed(state.iterations() * bytes_per_iter);
+}
+BENCHMARK(BM_LoadAdsDescriptor_Proto2);
 
 static void BM_Parse_Upb_FileDesc_WithArena(benchmark::State& state) {
   size_t bytes = 0;

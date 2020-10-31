@@ -21,6 +21,16 @@ upb_proto_reflection_library(
     deps = [":benchmark_descriptor_proto"],
 )
 
+upb_proto_reflection_library(
+    name = "ads_upb_proto_reflection",
+    deps = ["@com_google_googleapis//:ads_proto"],
+)
+
+cc_proto_library(
+    name = "ads_cc_proto",
+    deps = ["@com_google_googleapis//:ads_proto"],
+)
+
 cc_proto_library(
     name = "benchmark_descriptor_cc_proto",
     deps = [":benchmark_descriptor_proto"],
@@ -45,6 +55,8 @@ cc_binary(
         ":benchmark_descriptor_sv_cc_proto",
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
+        ":ads_cc_proto",
+        ":ads_upb_proto_reflection",
         "//:descriptor_upb_proto",
         "//:reflection",
         "@com_github_google_benchmark//:benchmark_main",
