@@ -9,7 +9,6 @@
 #include "benchmarks/descriptor_sv.pb.h"
 
 // For for benchmarks of building descriptors.
-#include "google/ads/googleads/v5/services/google_ads_service.pb.h"
 #include "google/ads/googleads/v5/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.upb.h"
@@ -22,18 +21,14 @@ namespace protobuf = ::google::protobuf;
 /* A buffer big enough to parse descriptor.proto without going to heap. */
 char buf[65535];
 
-void CollectFileDescriptors(const protobuf::FileDescriptor* file,
-                            std::vector<std::string>& serialized_files,
-                            std::unordered_set<const protobuf::FileDescriptor*>& seen) {
+void CollectFileDescriptors(const upb_def_init* file,
+                            std::vector<upb_strview>& serialized_files,
+                            std::unordered_set<const upb_def_init*>& seen) {
   if (!seen.insert(file).second) return;
-  for (int i = 0; i < file->dependency_count(); i++) {
-    CollectFileDescriptors(file->dependency(i), serialized_files, seen);
+  for (upb_def_init **deps = file->deps; *deps; deps++) {
+    CollectFileDescriptors(*deps, serialized_files, seen);
   }
-  protobuf::FileDescriptorProto file_proto;
-  file->CopyTo(&file_proto);
-  std::string serialized;
-  file_proto.SerializeToString(&serialized);
-  serialized_files.push_back(std::move(serialized));
+  serialized_files.push_back(file->descriptor);
 }
 
 static void BM_ArenaOneAlloc(benchmark::State& state) {
@@ -96,11 +91,11 @@ static void BM_LoadDescriptor_Proto2(benchmark::State& state) {
 BENCHMARK(BM_LoadDescriptor_Proto2);
 
 static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
-  std::vector<std::string> serialized_files;
-  std::unordered_set<const protobuf::FileDescriptor*> seen_files;
+  extern upb_def_init google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit;
+  std::vector<upb_strview> serialized_files;
+  std::unordered_set<const upb_def_init*> seen_files;
   CollectFileDescriptors(
-      google::ads::googleads::v5::services::SearchGoogleAdsRequest::descriptor()
-          ->file(),
+      &google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit,
       serialized_files, seen_files);
   size_t bytes_per_iter;
   for (auto _ : state) {
@@ -108,15 +103,16 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     protobuf::Arena arena;
     protobuf::DescriptorPool pool;
     for (auto file : serialized_files) {
+      protobuf::StringPiece input(file.data, file.size);
       auto proto = protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(
           &arena);
-      bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(file) &&
+      bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input) &&
                 pool.BuildFile(*proto) != nullptr;
       if (!ok) {
         printf("Failed to add file.\n");
         exit(1);
       }
-      bytes_per_iter += file.size();
+      bytes_per_iter += input.size();
     }
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
