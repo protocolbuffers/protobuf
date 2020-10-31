@@ -118,6 +118,7 @@ struct upb_symtab {
   upb_arena *arena;
   upb_strtable syms;  /* full_name -> packed def ptr */
   upb_strtable files;  /* file_name -> upb_filedef* */
+  size_t bytes_loaded;
 };
 
 /* Inside a symtab we store tagged pointers to specific def types. */
@@ -2081,6 +2082,7 @@ upb_symtab *upb_symtab_new(void) {
   }
 
   s->arena = upb_arena_new();
+  s->bytes_loaded = 0;
   alloc = upb_arena_alloc(s->arena);
 
   if (!upb_strtable_init2(&s->syms, UPB_CTYPE_CONSTPTR, 32, alloc) ||
@@ -2184,6 +2186,7 @@ bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init) {
 
   file = google_protobuf_FileDescriptorProto_parse(
       init->descriptor.data, init->descriptor.size, arena);
+  s->bytes_loaded += init->descriptor.size;
 
   if (!file) {
     upb_status_seterrf(
@@ -2204,6 +2207,10 @@ err:
           upb_status_errmsg(&status));
   upb_arena_free(arena);
   return false;
+}
+
+size_t _upb_symtab_bytesloaded(const upb_symtab *s) {
+  return s->bytes_loaded;
 }
 
 #undef CHK
