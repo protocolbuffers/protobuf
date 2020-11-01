@@ -93,8 +93,8 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://github.com/protobuf-c/protobuf-c
    * Extensions: 1019
 
-1. ScalePB
-   * Website: http://trueaccord.github.io/ScalaPB/
+1. ScalaPB
+   * Website: https://scalapb.github.io/
    * Extensions: 1020
 
 1. protoc-gen-bq-schema
