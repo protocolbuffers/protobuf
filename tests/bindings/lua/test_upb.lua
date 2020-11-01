@@ -512,6 +512,20 @@ function test_foo()
   assert_equal(set.file[1].name, "google/protobuf/descriptor.proto")
 end
 
+function test_descriptor_error()
+  local symtab = upb.SymbolTable()
+  local file = descriptor.FileDescriptorProto()
+  file.name = "test.proto"
+  file.message_type[1] = descriptor.DescriptorProto{
+    name = "ABC"
+  }
+  file.message_type[2] = descriptor.DescriptorProto{
+    name = "BC."
+  }
+  assert_error(function () symtab:add_file(upb.encode(file)) end)
+  assert_nil(symtab:lookup_msg("ABC"))
+end
+
 function test_gc()
   local top = test_messages_proto3.TestAllTypesProto3()
   local n = 100
