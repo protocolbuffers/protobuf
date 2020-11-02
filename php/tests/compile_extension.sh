@@ -4,6 +4,7 @@ set -ex
 
 cd $(dirname $0)
 
+../prepare_c_extension.sh
 pushd  ../ext/google/protobuf
 phpize --clean
 rm -f configure.in configure.ac
