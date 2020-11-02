@@ -182,7 +182,7 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 ** store pointers or integers of at least 32 bits (upb isn't really useful on
 ** systems where sizeof(void*) < 4).
 **
-** The table must be homogenous (all values of the same type).  In debug
+** The table must be homogeneous (all values of the same type).  In debug
 ** mode, we check this on insert and lookup.
 */
 
@@ -3925,7 +3925,7 @@ extern "C" {
 #endif
 
 enum {
-  /* When set, emits 0/default values.  TOOD(haberman): proto3 only? */
+  /* When set, emits 0/default values.  TODO(haberman): proto3 only? */
   UPB_JSONENC_EMITDEFAULTS = 1,
 
   /* When set, use normal (snake_caes) field names instead of JSON (camelCase)
