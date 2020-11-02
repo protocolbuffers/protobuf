@@ -289,7 +289,10 @@ upb_amalgamation(
 
 cc_library(
     name = "amalgamation",
-    srcs = ["upb.c"],
+    srcs = [
+        "upb.c",
+        "third_party/wyhash/wyhash.h",
+    ],
     hdrs = ["upb.h"],
     copts = UPB_DEFAULT_COPTS,
 )
@@ -314,9 +317,13 @@ upb_amalgamation(
 
 cc_library(
     name = "php_amalgamation",
-    srcs = ["php-upb.c"],
+    srcs = [
+        "php-upb.c",
+        "third_party/wyhash/wyhash.h",
+    ],
     hdrs = ["php-upb.h"],
     copts = UPB_DEFAULT_COPTS,
+
 )
 
 upb_amalgamation(
@@ -338,7 +345,10 @@ upb_amalgamation(
 
 cc_library(
     name = "ruby_amalgamation",
-    srcs = ["ruby-upb.c"],
+    srcs = [
+        "ruby-upb.c",
+        "third_party/wyhash/wyhash.h",
+    ],
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
 )

@@ -52,7 +52,7 @@ class Amalgamator:
     include = parse_include(line)
     if not include:
       return False
-    if not (include.startswith("upb") or include.startswith("google") or include.startswith("third_party")):
+    if not (include.startswith("upb") or include.startswith("google")):
       return False
     if include.endswith("hpp"):
       # Skip, we don't support the amalgamation from C++.

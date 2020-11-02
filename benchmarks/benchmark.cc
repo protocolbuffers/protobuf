@@ -56,7 +56,7 @@ static void BM_LoadDescriptor_Upb(benchmark::State& state) {
     google_protobuf_DescriptorProto_getmsgdef(symtab.ptr());
     bytes_per_iter = _upb_symtab_bytesloaded(symtab.ptr());
   }
-  state.SetBytesProcessed(state.iterations() * descriptor.size);
+  state.SetBytesProcessed(state.iterations() * bytes_per_iter);
 }
 BENCHMARK(BM_LoadDescriptor_Upb);
 
