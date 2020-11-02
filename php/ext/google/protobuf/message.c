@@ -298,6 +298,10 @@ static void Message_unset_property(PROTO_VAL *obj, PROTO_STR *member,
 
   if (!f) return;
 
+  if (ZEND_WRONG_PROPERTY_INFO == zend_get_property_info(intern->std.ce, Z_STR_P(member), 0)) {
+    return;
+  }
+
   if (!upb_fielddef_haspresence(f)) {
     zend_throw_exception_ex(
         NULL, 0,
@@ -338,6 +342,10 @@ static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
     return &EG(uninitialized_zval);
   }
 
+  if (ZEND_WRONG_PROPERTY_INFO == zend_get_property_info(intern->std.ce, Z_STR_P(member), 0)) {
+    return &EG(uninitialized_zval);
+  }
+
   Message_get(intern, f, rv);
   return rv;
 }
@@ -368,7 +376,9 @@ static PROTO_RETURN_VAL Message_write_property(
   Message* intern = PROTO_MSG_P(obj);
   const upb_fielddef *f = get_field(intern, member);
 
-  if (f && Message_set(intern, f, val)) {
+  if (f &&
+    ZEND_WRONG_PROPERTY_INFO != zend_get_property_info(intern->std.ce, Z_STR_P(member), 0) &&
+    Message_set(intern, f, val)) {
 #if PHP_VERSION_ID < 70400
     return;
 #else
