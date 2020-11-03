@@ -5,6 +5,7 @@
 #include <float.h>
 #include <inttypes.h>
 #include <limits.h>
+#include <math.h>
 #include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
@@ -395,6 +396,8 @@ static void jsondec_resize(jsondec *d, char **buf, char **end, char **buf_end) {
   size_t size = UPB_MAX(8, 2 * oldsize);
 
   *buf = upb_arena_realloc(d->arena, *buf, len, size);
+  if (!*buf) jsondec_err(d, "Out of memory");
+
   *end = *buf + len;
   *buf_end = *buf + size;
 }
@@ -747,11 +750,11 @@ static upb_msgval jsondec_double(jsondec *d, const upb_fielddef *f) {
     case JD_STRING:
       str = jsondec_string(d);
       if (jsondec_streql(str, "NaN")) {
-        val.double_val = UPB_NAN;
+        val.double_val = NAN;
       } else if (jsondec_streql(str, "Infinity")) {
-        val.double_val = UPB_INFINITY;
+        val.double_val = INFINITY;
       } else if (jsondec_streql(str, "-Infinity")) {
-        val.double_val = -UPB_INFINITY;
+        val.double_val = -INFINITY;
       } else {
         val.double_val = strtod(str.data, NULL);
       }
@@ -761,7 +764,7 @@ static upb_msgval jsondec_double(jsondec *d, const upb_fielddef *f) {
   }
 
   if (upb_fielddef_type(f) == UPB_TYPE_FLOAT) {
-    if (val.double_val != UPB_INFINITY && val.double_val != -UPB_INFINITY &&
+    if (val.double_val != INFINITY && val.double_val != -INFINITY &&
         (val.double_val > FLT_MAX || val.double_val < -FLT_MAX)) {
       jsondec_err(d, "Float out of range");
     }
@@ -909,7 +912,7 @@ static void jsondec_field(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
     return;
   }
 
-  if (upb_fielddef_containingoneof(f) &&
+  if (upb_fielddef_realcontainingoneof(f) &&
       upb_msg_whichoneof(msg, upb_fielddef_containingoneof(f))) {
     jsondec_err(d, "More than one field for this oneof.");
   }

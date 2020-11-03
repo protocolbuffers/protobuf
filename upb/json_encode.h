@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 enum {
-  /* When set, emits 0/default values.  TOOD(haberman): proto3 only? */
+  /* When set, emits 0/default values.  TODO(haberman): proto3 only? */
   UPB_JSONENC_EMITDEFAULTS = 1,
 
   /* When set, use normal (snake_caes) field names instead of JSON (camelCase)

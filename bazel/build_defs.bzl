@@ -18,9 +18,15 @@ UPB_DEFAULT_COPTS = select({
     "//:windows": [],
     "//conditions:default": [
         # copybara:strip_for_google3_begin
+        "-std=c99",
         "-pedantic",
         "-Werror=pedantic",
+        "-Wall",
         "-Wstrict-prototypes",
+        # GCC (at least) emits spurious warnings for this that cannot be fixed
+        # without introducing redundant initialization (with runtime cost):
+        #   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80635
+        #"-Wno-maybe-uninitialized",
         # copybara:strip_end
     ],
 })

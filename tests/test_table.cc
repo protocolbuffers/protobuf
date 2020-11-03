@@ -618,6 +618,16 @@ void test_delete() {
   upb_inttable_uninit(&t);
 }
 
+void test_init() {
+  for (int i = 0; i < 2048; i++) {
+    /* Tests that the size calculations in init() (lg2 size for target load)
+     * work for all expected sizes. */
+    upb_strtable t;
+    upb_strtable_init2(&t, UPB_CTYPE_BOOL, i, &upb_alloc_global);
+    upb_strtable_uninit(&t);
+  }
+}
+
 extern "C" {
 
 int run_tests(int argc, char *argv[]) {

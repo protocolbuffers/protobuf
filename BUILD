@@ -6,6 +6,7 @@ load(
 load(
     "//bazel:upb_proto_library.bzl",
     "upb_proto_library",
+    "upb_proto_library_copts",
     "upb_proto_reflection_library",
 )
 
@@ -35,13 +36,17 @@ config_setting(
     constraint_values = ["@bazel_tools//platforms:windows"],
 )
 
+upb_proto_library_copts(
+    name = "upb_proto_library_copts__for_generated_code_only_do_not_use",
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+)
+
 # Public C/C++ libraries #######################################################
 
 cc_library(
     name = "port",
-    srcs = [
-        "upb/port.c",
-    ],
+    copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         "upb/port_def.inc",
         "upb/port_undef.inc",
@@ -60,6 +65,7 @@ cc_library(
         "upb/table.int.h",
         "upb/upb.c",
         "upb/upb.int.h",
+        "third_party/wyhash/wyhash.h",
     ],
     hdrs = [
         "upb/decode.h",
@@ -250,6 +256,7 @@ genrule(
     outs = ["upb/json/parser.c"],
     cmd = "$(location @ragel//:ragelc) -C -o upb/json/parser.c $< && mv upb/json/parser.c $@",
     tools = ["@ragel//:ragelc"],
+    visibility = ["//cmake:__pkg__"],
 )
 
 # Amalgamation #################################################################
@@ -279,7 +286,10 @@ upb_amalgamation(
 
 cc_library(
     name = "amalgamation",
-    srcs = ["upb.c"],
+    srcs = [
+        "upb.c",
+        "third_party/wyhash/wyhash.h",
+    ],
     hdrs = ["upb.h"],
     copts = UPB_DEFAULT_COPTS,
 )
@@ -304,9 +314,13 @@ upb_amalgamation(
 
 cc_library(
     name = "php_amalgamation",
-    srcs = ["php-upb.c"],
+    srcs = [
+        "php-upb.c",
+        "third_party/wyhash/wyhash.h",
+    ],
     hdrs = ["php-upb.h"],
     copts = UPB_DEFAULT_COPTS,
+
 )
 
 upb_amalgamation(
@@ -328,7 +342,10 @@ upb_amalgamation(
 
 cc_library(
     name = "ruby_amalgamation",
-    srcs = ["ruby-upb.c"],
+    srcs = [
+        "ruby-upb.c",
+        "third_party/wyhash/wyhash.h",
+    ],
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
 )
@@ -360,6 +377,7 @@ filegroup(
         "upbc/**/*",
         "upb/**/*",
         "tests/**/*",
+        "third_party/**/*",
     ]),
     visibility = ["//cmake:__pkg__"],
 )

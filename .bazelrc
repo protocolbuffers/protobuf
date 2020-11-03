@@ -1,0 +1,20 @@
+# Use our custom-configured c++ toolchain.
+
+build:m32 --copt=-m32 --linkopt=-m32
+build:asan --copt=-fsanitize=address --linkopt=-fsanitize=address
+build:valgrind --run_under='valgrind --leak-check=full --error-exitcode=1'
+
+build:ubsan --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+# Workaround for the fact that Bazel links with $CC, not $CXX
+# https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
+build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+
+build:Werror --copt=-Werror
+build:Werror --per_file_copt=json/parser@-Wno-error
+build:Werror --per_file_copt=com_google_protobuf@-Wno-error
+
+# GCC's -fanalyzer, a deeper static analysis than normal warnings.
+build:analyzer --copt=-fanalyzer --copt=-Werror
+build:analyzer --per_file_copt=json/parser@-fno-analyzer
+build:analyzer --per_file_copt=com_google_protobuf@-fno-analyzer
+build:analyzer --per_file_copt=com_github_google_benchmark@-fno-analyzer

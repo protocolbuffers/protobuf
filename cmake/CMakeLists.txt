@@ -12,6 +12,7 @@ cmake_minimum_required (VERSION 3.0)
 cmake_policy(SET CMP0048 NEW)
 
 project(upb)
+set(CMAKE_C_STANDARD 99)
 
 
 # Prevent CMake from setting -rdynamic on Linux (!!).
@@ -60,8 +61,7 @@ endif()
 
 enable_testing()
 
-add_library(port
-  ../upb/port.c)
+add_library(port INTERFACE)
 add_library(upb
   ../upb/decode.c
   ../upb/encode.c
@@ -71,6 +71,7 @@ add_library(upb
   ../upb/table.int.h
   ../upb/upb.c
   ../upb/upb.int.h
+  ../third_party/wyhash/wyhash.h
   ../upb/decode.h
   ../upb/encode.h
   ../upb/upb.h
