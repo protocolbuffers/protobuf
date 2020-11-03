@@ -506,7 +506,7 @@ UPB_INLINE uint64_t _upb_be_swap64(uint64_t val) {
 }
 
 UPB_INLINE int _upb_lg2ceil(int x) {
-  if (x == 0) return 0;
+  if (x <= 1) return 0;
 #ifdef __GNUC__
   return 32 - __builtin_clz(x - 1);
 #else
@@ -1043,7 +1043,8 @@ UPB_INLINE upb_msg *_upb_msg_new_inl(const upb_msglayout *l, upb_arena *a) {
 upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a);
 
 UPB_INLINE upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
-  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
+  ptrdiff_t size = sizeof(upb_msg_internal);
+  return (upb_msg_internal*)((char*)msg - size);
 }
 
 /* Clears the given message. */
@@ -1138,9 +1139,11 @@ typedef struct {
   uintptr_t data;   /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
   size_t len;   /* Measured in elements. */
   size_t size;  /* Measured in elements. */
+  uint64_t junk;
 } upb_array;
 
 UPB_INLINE const void *_upb_array_constptr(const upb_array *arr) {
+  UPB_ASSERT((arr->data & 7) <= 4);
   return (void*)(arr->data & ~(uintptr_t)7);
 }
 
@@ -1150,15 +1153,17 @@ UPB_INLINE void *_upb_array_ptr(upb_array *arr) {
 
 UPB_INLINE uintptr_t _upb_tag_arrptr(void* ptr, int elem_size_lg2) {
   UPB_ASSERT(elem_size_lg2 <= 4);
+  UPB_ASSERT(((uintptr_t)ptr & 7) == 0);
   return (uintptr_t)ptr | (unsigned)elem_size_lg2;
 }
 
 UPB_INLINE upb_array *_upb_array_new(upb_arena *a, size_t init_size,
                                      int elem_size_lg2) {
+  const size_t arr_size = UPB_ALIGN_UP(sizeof(upb_array), 8);
   const size_t bytes = sizeof(upb_array) + (init_size << elem_size_lg2);
   upb_array *arr = (upb_array*)upb_arena_malloc(a, bytes);
   if (!arr) return NULL;
-  arr->data = _upb_tag_arrptr(arr + 1, elem_size_lg2);
+  arr->data = _upb_tag_arrptr(UPB_PTR_AT(arr, arr_size, void), elem_size_lg2);
   arr->len = 0;
   arr->size = init_size;
   return arr;
@@ -1331,17 +1336,17 @@ UPB_INLINE void _upb_map_fromkey(upb_strview key, void* out, size_t size) {
   }
 }
 
-UPB_INLINE upb_value _upb_map_tovalue(const void *val, size_t size,
-                                      upb_arena *a) {
-  upb_value ret = {0};
+UPB_INLINE bool _upb_map_tovalue(const void *val, size_t size, upb_value *msgval,
+                                 upb_arena *a) {
   if (size == UPB_MAPTYPE_STRING) {
     upb_strview *strp = (upb_strview*)upb_arena_malloc(a, sizeof(*strp));
+    if (!strp) return false;
     *strp = *(upb_strview*)val;
-    ret = upb_value_ptr(strp);
+    *msgval = upb_value_ptr(strp);
   } else {
-    memcpy(&ret, val, size);
+    memcpy(msgval, val, size);
   }
-  return ret;
+  return true;
 }
 
 UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
@@ -1383,7 +1388,8 @@ UPB_INLINE void* _upb_map_next(const upb_map *map, size_t *iter) {
 UPB_INLINE bool _upb_map_set(upb_map *map, const void *key, size_t key_size,
                              void *val, size_t val_size, upb_arena *arena) {
   upb_strview strkey = _upb_map_tokey(key, key_size);
-  upb_value tabval = _upb_map_tovalue(val, val_size, arena);
+  upb_value tabval = {0};
+  if (!_upb_map_tovalue(val, val_size, &tabval, arena)) return false;
   upb_alloc *a = upb_arena_alloc(arena);
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */

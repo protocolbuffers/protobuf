@@ -761,7 +761,8 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
         int ndx = field->descriptortype;
         if (_upb_isrepeated(field)) ndx += 18;
         ptr = decode_varint32(d, ptr, &val.size);
-        if (val.size >= INT32_MAX || ptr - d->end + val.size > d->limit) {
+        if (val.size >= INT32_MAX ||
+            ptr - d->end + (int32_t)val.size > d->limit) {
           decode_err(d); /* Length overflow. */
         }
         op = delim_ops[ndx];
@@ -1301,7 +1302,7 @@ static const size_t overhead = sizeof(upb_msg_internal);
 
 static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
   ptrdiff_t size = sizeof(upb_msg_internal);
-  return UPB_PTR_AT(msg, -size, upb_msg_internal);
+  return (upb_msg_internal*)((char*)msg - size);
 }
 
 upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {
@@ -1401,13 +1402,16 @@ void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size,
 bool _upb_array_append_fallback(upb_array **arr_ptr, const void *value,
                                 int elem_size_lg2, upb_arena *arena) {
   upb_array *arr = getorcreate_array(arr_ptr, elem_size_lg2, arena);
-  size_t elem = arr->len;
-  char *data;
+  if (!arr) return false;
 
-  if (!arr || !_upb_array_resize(arr, elem + 1, arena)) return false;
+  size_t elems = arr->len;
 
-  data = _upb_array_ptr(arr);
-  memcpy(data + (elem << elem_size_lg2), value, 1 << elem_size_lg2);
+  if (!_upb_array_resize(arr, elems + 1, arena)) {
+    return false;
+  }
+
+  char *data = _upb_array_ptr(arr);
+  memcpy(data + (elems << elem_size_lg2), value, 1 << elem_size_lg2);
   return true;
 }
 
@@ -5337,9 +5341,13 @@ static const upb_filedef *_upb_symtab_addfile(
     upb_symtab *s, const google_protobuf_FileDescriptorProto *file_proto,
     const upb_msglayout **layouts, upb_status *status) {
   upb_arena *file_arena = upb_arena_new();
-  upb_filedef *file = upb_arena_malloc(file_arena, sizeof(*file));
-  bool ok = true;
+  upb_filedef *file;
   symtab_addctx ctx;
+
+  if (!file_arena) return NULL;
+
+  file = upb_arena_malloc(file_arena, sizeof(*file));
+  if (!file) goto done;
 
   ctx.file = file;
   ctx.symtab = s;
@@ -5354,8 +5362,8 @@ static const upb_filedef *_upb_symtab_addfile(
 
   if (UPB_UNLIKELY(setjmp(ctx.err))) {
     UPB_ASSERT(!upb_ok(status));
-    ok = false;
     remove_filedef(s, file);
+    file = NULL;
   } else {
     build_filedef(&ctx, file, file_proto);
     upb_strtable_insert3(&s->files, file->name, strlen(file->name),
@@ -5364,8 +5372,9 @@ static const upb_filedef *_upb_symtab_addfile(
     upb_arena_fuse(s->arena, file_arena);
   }
 
+done:
   upb_arena_free(file_arena);
-  return ok ? file : NULL;
+  return file;
 }
 
 const upb_filedef *upb_symtab_addfile(
@@ -6246,6 +6255,8 @@ static void jsondec_resize(jsondec *d, char **buf, char **end, char **buf_end) {
   size_t size = UPB_MAX(8, 2 * oldsize);
 
   *buf = upb_arena_realloc(d->arena, *buf, len, size);
+  if (!*buf) jsondec_err(d, "Out of memory");
+
   *end = *buf + len;
   *buf_end = *buf + size;
 }
