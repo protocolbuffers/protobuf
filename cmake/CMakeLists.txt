@@ -61,8 +61,7 @@ endif()
 
 enable_testing()
 
-add_library(port
-  ../upb/port.c)
+add_library(port INTERFACE)
 add_library(upb
   ../upb/decode.c
   ../upb/encode.c

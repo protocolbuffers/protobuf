@@ -46,9 +46,6 @@ upb_proto_library_copts(
 
 cc_library(
     name = "port",
-    srcs = [
-        "upb/port.c",
-    ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         "upb/port_def.inc",
