@@ -907,7 +907,7 @@ PHP_METHOD(Message, whichOneof) {
 /**
  * Message::hasOneof()
  *
- * Returns the presense of the given oneof field, given a field number. Called
+ * Returns the presence of the given oneof field, given a field number. Called
  * from generated code methods such as:
  *
  *    public function hasDoubleValueOneof()
