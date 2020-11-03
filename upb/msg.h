@@ -387,17 +387,17 @@ UPB_INLINE void _upb_map_fromkey(upb_strview key, void* out, size_t size) {
   }
 }
 
-UPB_INLINE upb_value _upb_map_tovalue(const void *val, size_t size,
-                                      upb_arena *a) {
-  upb_value ret = {0};
+UPB_INLINE bool _upb_map_tovalue(const void *val, size_t size, upb_value *msgval,
+                                 upb_arena *a) {
   if (size == UPB_MAPTYPE_STRING) {
     upb_strview *strp = (upb_strview*)upb_arena_malloc(a, sizeof(*strp));
+    if (!strp) return false;
     *strp = *(upb_strview*)val;
-    ret = upb_value_ptr(strp);
+    *msgval = upb_value_ptr(strp);
   } else {
-    memcpy(&ret, val, size);
+    memcpy(msgval, val, size);
   }
-  return ret;
+  return true;
 }
 
 UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
@@ -439,7 +439,8 @@ UPB_INLINE void* _upb_map_next(const upb_map *map, size_t *iter) {
 UPB_INLINE bool _upb_map_set(upb_map *map, const void *key, size_t key_size,
                              void *val, size_t val_size, upb_arena *arena) {
   upb_strview strkey = _upb_map_tokey(key, key_size);
-  upb_value tabval = _upb_map_tovalue(val, val_size, arena);
+  upb_value tabval = {0};
+  if (!_upb_map_tovalue(val, val_size, &tabval, arena)) return false;
   upb_alloc *a = upb_arena_alloc(arena);
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */

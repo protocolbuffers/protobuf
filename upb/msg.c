@@ -111,13 +111,16 @@ void *_upb_array_resize_fallback(upb_array **arr_ptr, size_t size,
 bool _upb_array_append_fallback(upb_array **arr_ptr, const void *value,
                                 int elem_size_lg2, upb_arena *arena) {
   upb_array *arr = getorcreate_array(arr_ptr, elem_size_lg2, arena);
-  size_t elem = arr->len;
-  char *data;
+  if (!arr) return false;
 
-  if (!arr || !_upb_array_resize(arr, elem + 1, arena)) return false;
+  size_t elems = arr->len;
 
-  data = _upb_array_ptr(arr);
-  memcpy(data + (elem << elem_size_lg2), value, 1 << elem_size_lg2);
+  if (!_upb_array_resize(arr, elems + 1, arena)) {
+    return false;
+  }
+
+  char *data = _upb_array_ptr(arr);
+  memcpy(data + (elems << elem_size_lg2), value, 1 << elem_size_lg2);
   return true;
 }
 

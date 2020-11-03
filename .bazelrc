@@ -9,3 +9,12 @@ build:ubsan --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
 
+build:Werror --copt=-Werror
+build:Werror --per_file_copt=json/parser@-Wno-error
+build:Werror --per_file_copt=com_google_protobuf@-Wno-error
+
+# GCC's -fanalyzer, a deeper static analysis than normal warnings.
+build:analyzer --copt=-fanalyzer --copt=-Werror
+build:analyzer --per_file_copt=json/parser@-fno-analyzer
+build:analyzer --per_file_copt=com_google_protobuf@-fno-analyzer
+build:analyzer --per_file_copt=com_github_google_benchmark@-fno-analyzer

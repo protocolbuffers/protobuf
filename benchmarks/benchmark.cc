@@ -50,7 +50,7 @@ static void BM_ArenaInitialBlockOneAlloc(benchmark::State& state) {
 BENCHMARK(BM_ArenaInitialBlockOneAlloc);
 
 static void BM_LoadDescriptor_Upb(benchmark::State& state) {
-  size_t bytes_per_iter;
+  size_t bytes_per_iter = 0;
   for (auto _ : state) {
     upb::SymbolTable symtab;
     google_protobuf_DescriptorProto_getmsgdef(symtab.ptr());
@@ -61,7 +61,7 @@ static void BM_LoadDescriptor_Upb(benchmark::State& state) {
 BENCHMARK(BM_LoadDescriptor_Upb);
 
 static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
-  size_t bytes_per_iter;
+  size_t bytes_per_iter = 0;
   for (auto _ : state) {
     upb::SymbolTable symtab;
     google_ads_googleads_v5_services_SearchGoogleAdsRequest_getmsgdef(
@@ -97,7 +97,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
   CollectFileDescriptors(
       &google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit,
       serialized_files, seen_files);
-  size_t bytes_per_iter;
+  size_t bytes_per_iter = 0;
   for (auto _ : state) {
     bytes_per_iter = 0;
     protobuf::Arena arena;
