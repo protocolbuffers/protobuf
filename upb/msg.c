@@ -11,7 +11,7 @@ static const size_t overhead = sizeof(upb_msg_internal);
 
 static const upb_msg_internal *upb_msg_getinternal_const(const upb_msg *msg) {
   ptrdiff_t size = sizeof(upb_msg_internal);
-  return UPB_PTR_AT(msg, -size, upb_msg_internal);
+  return (upb_msg_internal*)((char*)msg - size);
 }
 
 upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a) {

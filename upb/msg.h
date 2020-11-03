@@ -94,7 +94,8 @@ UPB_INLINE upb_msg *_upb_msg_new_inl(const upb_msglayout *l, upb_arena *a) {
 upb_msg *_upb_msg_new(const upb_msglayout *l, upb_arena *a);
 
 UPB_INLINE upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
-  return UPB_PTR_AT(msg, -sizeof(upb_msg_internal), upb_msg_internal);
+  ptrdiff_t size = sizeof(upb_msg_internal);
+  return (upb_msg_internal*)((char*)msg - size);
 }
 
 /* Clears the given message. */
@@ -189,9 +190,11 @@ typedef struct {
   uintptr_t data;   /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
   size_t len;   /* Measured in elements. */
   size_t size;  /* Measured in elements. */
+  uint64_t junk;
 } upb_array;
 
 UPB_INLINE const void *_upb_array_constptr(const upb_array *arr) {
+  UPB_ASSERT((arr->data & 7) <= 4);
   return (void*)(arr->data & ~(uintptr_t)7);
 }
 
@@ -201,15 +204,17 @@ UPB_INLINE void *_upb_array_ptr(upb_array *arr) {
 
 UPB_INLINE uintptr_t _upb_tag_arrptr(void* ptr, int elem_size_lg2) {
   UPB_ASSERT(elem_size_lg2 <= 4);
+  UPB_ASSERT(((uintptr_t)ptr & 7) == 0);
   return (uintptr_t)ptr | (unsigned)elem_size_lg2;
 }
 
 UPB_INLINE upb_array *_upb_array_new(upb_arena *a, size_t init_size,
                                      int elem_size_lg2) {
+  const size_t arr_size = UPB_ALIGN_UP(sizeof(upb_array), 8);
   const size_t bytes = sizeof(upb_array) + (init_size << elem_size_lg2);
   upb_array *arr = (upb_array*)upb_arena_malloc(a, bytes);
   if (!arr) return NULL;
-  arr->data = _upb_tag_arrptr(arr + 1, elem_size_lg2);
+  arr->data = _upb_tag_arrptr(UPB_PTR_AT(arr, arr_size, void), elem_size_lg2);
   arr->len = 0;
   arr->size = init_size;
   return arr;

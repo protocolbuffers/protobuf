@@ -615,7 +615,8 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
         int ndx = field->descriptortype;
         if (_upb_isrepeated(field)) ndx += 18;
         ptr = decode_varint32(d, ptr, &val.size);
-        if (val.size >= INT32_MAX || ptr - d->end + val.size > d->limit) {
+        if (val.size >= INT32_MAX ||
+            ptr - d->end + (int32_t)val.size > d->limit) {
           decode_err(d); /* Length overflow. */
         }
         op = delim_ops[ndx];

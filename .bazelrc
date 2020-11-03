@@ -1,0 +1,11 @@
+# Use our custom-configured c++ toolchain.
+
+build:m32 --copt=-m32 --linkopt=-m32
+build:asan --copt=-fsanitize=address --linkopt=-fsanitize=address
+build:valgrind --run_under='valgrind --leak-check=full --error-exitcode=1'
+
+build:ubsan --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+# Workaround for the fact that Bazel links with $CC, not $CXX
+# https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
+build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+

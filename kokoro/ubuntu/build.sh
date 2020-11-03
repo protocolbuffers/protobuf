@@ -11,29 +11,31 @@ fi
 echo PATH=$PATH
 ls -l `which cmake`
 cmake --version
-echo CC=${CC:-cc}
-${CC:-cc} --version
 
 # Log the bazel path and version.
 which bazel
 bazel version
 
 cd $(dirname $0)/../..
-bazel test --test_output=errors ...
 
-if [[ $(uname) = "Linux" ]]; then
-  # Verify the ASAN build.  Have to exclude test_conformance_upb as protobuf
-  # currently leaks memory in the conformance test runner.
-  bazel test --copt=-fsanitize=address --linkopt=-fsanitize=address --test_output=errors ...
+if which gcc; then
+  gcc --version
+  CC=gcc bazel test --test_output=errors ...
+fi
 
-  # Verify the UBSan build. Have to exclude Lua as the version we are using
-  # fails some UBSan tests.
+if which clang; then
+  CC=clang bazel test --test_output=errors ...
+  CC=clang bazel test --test_output=errors --config=m32 ...
+  CC=clang bazel test --test_output=errors -c opt ...
 
-  # For some reason kokoro doesn't have Clang available right now.
-  #CC=clang CXX=clang++ bazel test -c dbg --copt=-fsanitize=undefined --copt=-fno-sanitize=function,vptr --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1 -- :all -:test_lua
+  if [[ $(uname) = "Linux" ]]; then
+    CC=clang bazel test --test_output=errors --config=asan ...
 
+    # TODO: update to a newer Lua that hopefully does not trigger UBSAN.
+    CC=clang bazel test --test_output=errors --config=ubsan ... -- -tests/bindings/lua:test_lua
+  fi
 fi
 
 if which valgrind; then
-  bazel test --run_under='valgrind --leak-check=full --error-exitcode=1' ... -- -tests:test_conformance_upb -cmake:cmake_build
+  bazel test --config=valgrind ... -- -tests:test_conformance_upb -cmake:cmake_build
 fi
