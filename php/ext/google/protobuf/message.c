@@ -905,6 +905,39 @@ PHP_METHOD(Message, whichOneof) {
 }
 
 /**
+ * Message::hasOneof()
+ *
+ * Returns the presense of the given oneof field, given a field number. Called
+ * from generated code methods such as:
+ *
+ *    public function hasDoubleValueOneof()
+ *    {
+ *        return $this->hasOneof(10);
+ *    }
+ *
+ * @return boolean
+ */
+PHP_METHOD(Message, hasOneof) {
+  Message* intern = (Message*)Z_OBJ_P(getThis());
+  zend_long field_num;
+  const upb_fielddef* f;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &field_num) == FAILURE) {
+    return;
+  }
+
+  f = upb_msgdef_itof(intern->desc->msgdef, field_num);
+
+  if (!f || !upb_fielddef_realcontainingoneof(f)) {
+    php_error_docref(NULL, E_USER_ERROR,
+                     "Internal error, no such oneof field %d\n",
+                     (int)field_num);
+  }
+
+  RETVAL_BOOL(upb_msg_has(intern->msg, f));
+}
+
+/**
  * Message::readOneof()
  *
  * Returns the contents of the given oneof field, given a field number. Called
@@ -1014,6 +1047,7 @@ static zend_function_entry Message_methods[] = {
   PHP_ME(Message, mergeFrom,             arginfo_mergeFrom, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readWrapperValue,      arginfo_read,      ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeWrapperValue,     arginfo_write,     ZEND_ACC_PROTECTED)
+  PHP_ME(Message, hasOneof,              arginfo_read,      ZEND_ACC_PROTECTED)
   PHP_ME(Message, readOneof,             arginfo_read,      ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof,            arginfo_write,     ZEND_ACC_PROTECTED)
   PHP_ME(Message, whichOneof,            arginfo_read,      ZEND_ACC_PROTECTED)
