@@ -45,6 +45,8 @@
     <file baseinstalldir="/" name="php-upb.h" role="src"/>
     <file baseinstalldir="/" name="protobuf.c" role="src"/>
     <file baseinstalldir="/" name="protobuf.h" role="src"/>
+    <file baseinstalldir="/" name="third_party/wyhash/wyhash.h" role="src"/>
+    <file baseinstalldir="/" name="third_party/wyhash/LICENSE" role="doc"/>
     <file baseinstalldir="/" name="LICENSE" role="doc"/>
   </dir>
  </contents>
