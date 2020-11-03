@@ -56,9 +56,9 @@ static void test_scalars(void) {
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(
              msg2) == 40);
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_float(
-             msg2) == 50.5);
+             msg2) - 50.5 < 0.01);
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_double(
-             msg2) == 60.6);
+             msg2) - 60.6 < 0.01);
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_bool(
              msg2) == 1);
   ASSERT(upb_strview_eql(

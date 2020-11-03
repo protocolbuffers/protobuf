@@ -2068,9 +2068,13 @@ static const upb_filedef *_upb_symtab_addfile(
     upb_symtab *s, const google_protobuf_FileDescriptorProto *file_proto,
     const upb_msglayout **layouts, upb_status *status) {
   upb_arena *file_arena = upb_arena_new();
-  upb_filedef *file = upb_arena_malloc(file_arena, sizeof(*file));
-  bool ok = true;
+  upb_filedef *file;
   symtab_addctx ctx;
+
+  if (!file_arena) return NULL;
+
+  file = upb_arena_malloc(file_arena, sizeof(*file));
+  if (!file) goto done;
 
   ctx.file = file;
   ctx.symtab = s;
@@ -2085,8 +2089,8 @@ static const upb_filedef *_upb_symtab_addfile(
 
   if (UPB_UNLIKELY(setjmp(ctx.err))) {
     UPB_ASSERT(!upb_ok(status));
-    ok = false;
     remove_filedef(s, file);
+    file = NULL;
   } else {
     build_filedef(&ctx, file, file_proto);
     upb_strtable_insert3(&s->files, file->name, strlen(file->name),
@@ -2095,8 +2099,9 @@ static const upb_filedef *_upb_symtab_addfile(
     upb_arena_fuse(s->arena, file_arena);
   }
 
+done:
   upb_arena_free(file_arena);
-  return ok ? file : NULL;
+  return file;
 }
 
 const upb_filedef *upb_symtab_addfile(
