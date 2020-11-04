@@ -29,7 +29,7 @@ esac
 
 [ -f $PHPUNIT ] || wget https://phar.phpunit.de/$PHPUNIT
 
-tests=( ArrayTest.php EncodeDecodeTest.php GeneratedClassTest.php MapFieldTest.php WellKnownTest.php DescriptorsTest.php WrapperTypeSettersTest.php HasOneofTest.php)
+tests=( ArrayTest.php EncodeDecodeTest.php GeneratedClassTest.php MapFieldTest.php WellKnownTest.php DescriptorsTest.php WrapperTypeSettersTest.php)
 
 for t in "${tests[@]}"
 do
