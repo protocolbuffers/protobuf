@@ -65,7 +65,6 @@ cc_library(
         "upb/table.int.h",
         "upb/upb.c",
         "upb/upb.int.h",
-        "third_party/wyhash/wyhash.h",
     ],
     hdrs = [
         "upb/decode.h",
@@ -75,7 +74,10 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
-    deps = [":port"],
+    deps = [
+        ":port",
+        "//third_party/wyhash",
+    ],
 )
 
 # Common support routines used by generated code.  This library has no
@@ -286,12 +288,10 @@ upb_amalgamation(
 
 cc_library(
     name = "amalgamation",
-    srcs = [
-        "upb.c",
-        "third_party/wyhash/wyhash.h",
-    ],
+    srcs = ["upb.c"],
     hdrs = ["upb.h"],
     copts = UPB_DEFAULT_COPTS,
+    deps = ["//third_party/wyhash"],
 )
 
 upb_amalgamation(
@@ -314,13 +314,10 @@ upb_amalgamation(
 
 cc_library(
     name = "php_amalgamation",
-    srcs = [
-        "php-upb.c",
-        "third_party/wyhash/wyhash.h",
-    ],
+    srcs = ["php-upb.c"],
     hdrs = ["php-upb.h"],
     copts = UPB_DEFAULT_COPTS,
-
+    deps = ["//third_party/wyhash"],
 )
 
 upb_amalgamation(
@@ -342,12 +339,10 @@ upb_amalgamation(
 
 cc_library(
     name = "ruby_amalgamation",
-    srcs = [
-        "ruby-upb.c",
-        "third_party/wyhash/wyhash.h",
-    ],
+    srcs = ["ruby-upb.c"],
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
+    deps = ["//third_party/wyhash"],
 )
 
 exports_files(

@@ -280,6 +280,7 @@ globs = GetDict(converter)
 
 exec(open("WORKSPACE").read(), GetDict(WorkspaceFileFunctions(converter)))
 exec(open("BUILD").read(), GetDict(BuildFileFunctions(converter)))
+exec(open("third_party/wyhash/BUILD").read(), GetDict(BuildFileFunctions(converter)))
 
 with open(sys.argv[1], "w") as f:
   f.write(converter.convert())
