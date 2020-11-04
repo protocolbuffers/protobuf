@@ -267,6 +267,7 @@ _upb_proto_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
 )
 
 upb_proto_library = rule(
@@ -329,6 +330,7 @@ _upb_proto_reflection_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
 )
 
 upb_proto_reflection_library = rule(
