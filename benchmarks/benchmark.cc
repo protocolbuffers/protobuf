@@ -2,6 +2,7 @@
 #include <benchmark/benchmark.h>
 #include <string.h>
 
+#include "absl/container/flat_hash_set.h"
 #include "benchmarks/descriptor.pb.h"
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
@@ -18,7 +19,7 @@ char buf[65535];
 
 void CollectFileDescriptors(const upb_def_init* file,
                             std::vector<upb_strview>& serialized_files,
-                            std::unordered_set<const upb_def_init*>& seen) {
+                            absl::flat_hash_set<const upb_def_init*>& seen) {
   if (!seen.insert(file).second) return;
   for (upb_def_init **deps = file->deps; *deps; deps++) {
     CollectFileDescriptors(*deps, serialized_files, seen);
@@ -88,7 +89,7 @@ BENCHMARK(BM_LoadDescriptor_Proto2);
 static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
   extern upb_def_init google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit;
   std::vector<upb_strview> serialized_files;
-  std::unordered_set<const upb_def_init*> seen_files;
+  absl::flat_hash_set<const upb_def_init*> seen_files;
   CollectFileDescriptors(
       &google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit,
       serialized_files, seen_files);
