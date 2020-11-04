@@ -13,7 +13,6 @@
       <file>tests/DescriptorsTest.php</file>
       <file>tests/GeneratedServiceTest.php</file>
       <file>tests/WrapperTypeSettersTest.php</file>
-      <file>tests/HasOneofTest.php</file>
     </testsuite>
   </testsuites>
 </phpunit>
