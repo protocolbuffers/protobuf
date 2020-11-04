@@ -2,17 +2,12 @@
 #include <benchmark/benchmark.h>
 #include <string.h>
 
-// For benchmarks of parsing speed.
 #include "benchmarks/descriptor.pb.h"
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
-
-// For for benchmarks of building descriptors.
 #include "google/ads/googleads/v5/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor.upb.h"
-#include "google/protobuf/descriptor.upbdefs.h"
 #include "upb/def.hpp"
 
 upb_strview descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
@@ -53,7 +48,7 @@ static void BM_LoadDescriptor_Upb(benchmark::State& state) {
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
     upb::SymbolTable symtab;
-    google_protobuf_DescriptorProto_getmsgdef(symtab.ptr());
+    upb_benchmark_DescriptorProto_getmsgdef(symtab.ptr());
     bytes_per_iter = _upb_symtab_bytesloaded(symtab.ptr());
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
