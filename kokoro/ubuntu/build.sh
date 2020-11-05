@@ -20,9 +20,11 @@ cd $(dirname $0)/../..
 
 if which gcc; then
   gcc --version
-  CC=gcc bazel test --test_output=errors ...
   CC=gcc bazel test -c opt --test_output=errors ... -- -benchmarks:benchmark
-  CC=gcc bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files -benchmarks:benchmark
+  if [[ $(uname) = "Linux" ]]; then
+    CC=gcc bazel test --test_output=errors ...
+    CC=gcc bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files -benchmarks:benchmark
+  fi
   # TODO: work through these errors and enable this.
   # if gcc -fanalyzer -x c /dev/null -c -o /dev/null; then
   #   CC=gcc bazel test --copt=-fanalyzer --test_output=errors ...

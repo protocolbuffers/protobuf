@@ -10,7 +10,6 @@
 
 #include "upb/msg.h"
 #include "upb/upb.int.h"
-#include "upb/decode_fast.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"
@@ -68,7 +67,7 @@ UPB_INLINE intptr_t decode_totable(const upb_msglayout *tablep) {
 }
 
 UPB_INLINE const upb_msglayout *decode_totablep(intptr_t table) {
-  return (void*)(table >> 8);
+  return (const upb_msglayout*)(table >> 8);
 }
 
 UPB_INLINE

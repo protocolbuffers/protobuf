@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
@@ -803,7 +804,7 @@ bool TryFillTableEntry(const protobuf::Descriptor* message,
         type = "s";
         break;
       }
-      /* Fallthrough. */
+      ABSL_FALLTHROUGH_INTENDED;
     case protobuf::FieldDescriptor::TYPE_BYTES:
       type = "b";
       break;
