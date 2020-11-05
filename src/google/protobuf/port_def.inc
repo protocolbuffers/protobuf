@@ -318,14 +318,14 @@
 
 // Shared google3/opensource definitions. //////////////////////////////////////
 
-#define PROTOBUF_VERSION 3013000
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3013000
-#define PROTOBUF_MIN_PROTOC_VERSION 3013000
-#define PROTOBUF_VERSION_SUFFIX ""
+#define PROTOBUF_VERSION 3014000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3014000
+#define PROTOBUF_MIN_PROTOC_VERSION 3014000
+#define PROTOBUF_VERSION_SUFFIX "-rc1"
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3013000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3014000
 
 #if defined(GOOGLE_PROTOBUF_NO_RTTI) && GOOGLE_PROTOBUF_NO_RTTI
 #define PROTOBUF_RTTI 0
