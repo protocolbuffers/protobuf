@@ -30,11 +30,11 @@ if which gcc; then
 fi
 
 if which clang; then
-  CC=clang bazel test --test_output=errors ...
-  CC=clang bazel test --test_output=errors -c opt ... -- -benchmarks:benchmark
-  CC=clang bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files
-
   if [[ $(uname) = "Linux" ]]; then
+    CC=clang bazel test --test_output=errors ...
+    CC=clang bazel test --test_output=errors -c opt ... -- -benchmarks:benchmark
+    CC=clang bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files
+
     CC=clang bazel test --test_output=errors --config=m32 ... -- -benchmarks:benchmark
     CC=clang bazel test --test_output=errors --config=asan ... -- -benchmarks:benchmark
 
