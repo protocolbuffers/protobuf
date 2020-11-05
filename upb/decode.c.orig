@@ -155,22 +155,38 @@ const char *fastdecode_err(upb_decstate *d) {
   return NULL;
 }
 
-const uint8_t upb_utf8_offsets[] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
-};
+void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
+  static const uint8_t utf8_offset[] = {
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+      2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
 
-static void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
-  if (!decode_verifyutf8_inl(buf, len)) decode_err(d);
+  int i, j;
+  uint8_t offset;
+
+  i = 0;
+  while (i < len) {
+    offset = utf8_offset[(uint8_t)buf[i]];
+    if (offset == 0 || i + offset > len) {
+      decode_err(d);
+    }
+    for (j = i + 1; j < i + offset; j++) {
+      if ((buf[j] & 0xc0) != 0x80) {
+        decode_err(d);
+      }
+    }
+    i += offset;
+  }
+  if (i != len) decode_err(d);
 }
 
 static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
@@ -275,6 +291,11 @@ static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout *layout,
   return _upb_msg_new_inl(subl, &d->arena);
 }
 
+typedef struct {
+  bool ok;
+  const char *ptr;
+} decode_doneret;
+
 UPB_NOINLINE
 const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
                                   int overrun) {
@@ -299,38 +320,30 @@ static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
   return ptr + size;
 }
 
-UPB_FORCEINLINE
 static const char *decode_tosubmsg(upb_decstate *d, const char *ptr,
                                    upb_msg *submsg, const upb_msglayout *layout,
                                    const upb_msglayout_field *field, int size) {
   const upb_msglayout *subl = layout->submsgs[field->submsg_index];
   int saved_delta = decode_pushlimit(d, ptr, size);
   if (--d->depth < 0) decode_err(d);
-  if (!decode_isdone(d, &ptr)) {
-    ptr = decode_msg(d, ptr, submsg, subl);
-  }
-  if (d->end_group != DECODE_NOGROUP) decode_err(d);
-  decode_poplimit(d, ptr, saved_delta);
+  ptr = decode_msg(d, ptr, submsg, subl);
+  decode_poplimit(d, saved_delta);
+  if (d->end_group != 0) decode_err(d);
   d->depth++;
   return ptr;
 }
 
-UPB_FORCEINLINE
 static const char *decode_group(upb_decstate *d, const char *ptr,
                                 upb_msg *submsg, const upb_msglayout *subl,
                                 uint32_t number) {
   if (--d->depth < 0) decode_err(d);
-  if (decode_isdone(d, &ptr)) {
-    decode_err(d);
-  }
   ptr = decode_msg(d, ptr, submsg, subl);
   if (d->end_group != number) decode_err(d);
-  d->end_group = DECODE_NOGROUP;
+  d->end_group = 0;
   d->depth++;
   return ptr;
 }
 
-UPB_FORCEINLINE
 static const char *decode_togroup(upb_decstate *d, const char *ptr,
                                   upb_msg *submsg, const upb_msglayout *layout,
                                   const upb_msglayout_field *field) {
@@ -338,6 +351,7 @@ static const char *decode_togroup(upb_decstate *d, const char *ptr,
   return decode_group(d, ptr, submsg, subl, field->number);
 }
 
+UPB_FORCEINLINE
 static const char *decode_toarray(upb_decstate *d, const char *ptr,
                                   upb_msg *msg, const upb_msglayout *layout,
                                   const upb_msglayout_field *field, wireval val,
@@ -419,7 +433,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
         memcpy(out, &elem, scale);
         out += scale;
       }
-      decode_poplimit(d, ptr, saved_limit);
+      decode_poplimit(d, saved_limit);
       return ptr;
     }
     default:
@@ -462,6 +476,7 @@ static const char *decode_tomap(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
+UPB_FORCEINLINE
 static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
                                 const upb_msglayout *layout,
                                 const upb_msglayout_field *field, wireval val,
@@ -518,129 +533,139 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
+typedef struct {
+  const char *ptr;
+  bool group_end;
+} decode_parseret;
+
 UPB_FORCEINLINE
-static bool decode_tryfastdispatch(upb_decstate *d, const char **ptr,
-                                   upb_msg *msg, const upb_msglayout *layout) {
-#if UPB_FASTTABLE
-  if (layout && layout->table_mask != (unsigned char)-1) {
-    uint16_t tag = fastdecode_loadtag(*ptr);
-    intptr_t table = decode_totable(layout);
-    *ptr = fastdecode_tagdispatch(d, *ptr, msg, table, 0, tag);
-    return true;
+static decode_parseret decode_field(upb_decstate *d, const char *ptr,
+                                    upb_msg *msg, const upb_msglayout *layout) {
+  uint32_t tag;
+  const upb_msglayout_field *field;
+  int field_number;
+  int wire_type;
+  const char *field_start = ptr;
+  wireval val;
+  int op;
+  decode_parseret ret;
+
+  ptr = decode_varint32(d, ptr, &tag);
+  field_number = tag >> 3;
+  wire_type = tag & 7;
+
+  field = upb_find_field(layout, field_number);
+
+  switch (wire_type) {
+    case UPB_WIRE_TYPE_VARINT:
+      ptr = decode_varint64(d, ptr, &val.uint64_val);
+      op = varint_ops[field->descriptortype];
+      decode_munge(field->descriptortype, &val);
+      break;
+    case UPB_WIRE_TYPE_32BIT:
+      memcpy(&val.uint32_val, ptr, 4);
+      val.uint32_val = _upb_be_swap32(val.uint32_val);
+      ptr += 4;
+      op = OP_SCALAR_LG2(2);
+      if (((1 << field->descriptortype) & fixed32_ok) == 0) goto unknown;
+      break;
+    case UPB_WIRE_TYPE_64BIT:
+      memcpy(&val.uint64_val, ptr, 8);
+      val.uint64_val = _upb_be_swap64(val.uint64_val);
+      ptr += 8;
+      op = OP_SCALAR_LG2(3);
+      if (((1 << field->descriptortype) & fixed64_ok) == 0) goto unknown;
+      break;
+    case UPB_WIRE_TYPE_DELIMITED: {
+      int ndx = field->descriptortype;
+      if (_upb_isrepeated(field)) ndx += 18;
+      ptr = decode_varint32(d, ptr, &val.size);
+      if (val.size >= INT32_MAX || ptr - d->end + val.size > d->limit) {
+        decode_err(d); /* Length overflow. */
+      }
+      op = delim_ops[ndx];
+      break;
+    }
+    case UPB_WIRE_TYPE_START_GROUP:
+      val.uint32_val = field_number;
+      op = OP_SUBMSG;
+      if (field->descriptortype != UPB_DTYPE_GROUP) goto unknown;
+      break;
+    case UPB_WIRE_TYPE_END_GROUP:
+      d->end_group = field_number;
+      ret.ptr = ptr;
+      ret.group_end = true;
+      return ret;
+    default:
+      decode_err(d);
   }
-#endif
-  return false;
+
+  if (op >= 0) {
+    /* Parse, using op for dispatch. */
+    switch (field->label) {
+      case UPB_LABEL_REPEATED:
+      case _UPB_LABEL_PACKED:
+        ptr = decode_toarray(d, ptr, msg, layout, field, val, op);
+        break;
+      case _UPB_LABEL_MAP:
+        ptr = decode_tomap(d, ptr, msg, layout, field, val);
+        break;
+      default:
+        ptr = decode_tomsg(d, ptr, msg, layout, field, val, op);
+        break;
+    }
+  } else {
+  unknown:
+    /* Skip unknown field. */
+    if (field_number == 0) decode_err(d);
+    if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
+      ptr = decode_group(d, ptr, NULL, NULL, field_number);
+    }
+    if (msg) {
+      if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
+      if (!_upb_msg_addunknown(msg, field_start, ptr - field_start,
+                               &d->arena)) {
+        decode_err(d);
+      }
+    }
+  }
+
+  ret.ptr = ptr;
+  ret.group_end = false;
+  return ret;
+}
+
+UPB_NOINLINE
+const char *fastdecode_generic(upb_decstate *d, const char *ptr, upb_msg *msg,
+                               intptr_t table, uint64_t hasbits,
+                               uint64_t data) {
+  decode_parseret ret;
+  *(uint32_t*)msg |= hasbits;  /* Sync hasbits. */
+  (void)data;
+<<<<<<< HEAD
+  if (ptr == d->limit) return ptr;
+  ret = decode_field(d, ptr, msg, decode_totablep(table));
+=======
+  if (decode_isdone(d, &ptr)) return ptr;
+  ret = decode_field(d, ptr, msg, table);
+>>>>>>> fastest-table
+  if (ret.group_end) return ptr;
+  return fastdecode_dispatch(d, ret.ptr, msg, table, hasbits);
 }
 
 UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
-  while (true) {
-    uint32_t tag;
-    const upb_msglayout_field *field;
-    int field_number;
-    int wire_type;
-    const char *field_start = ptr;
-    wireval val;
-    int op;
-
-    UPB_ASSERT(ptr < d->limit_ptr);
-    ptr = decode_varint32(d, ptr, &tag);
-    field_number = tag >> 3;
-    wire_type = tag & 7;
-
-    field = upb_find_field(layout, field_number);
-
-    switch (wire_type) {
-      case UPB_WIRE_TYPE_VARINT:
-        ptr = decode_varint64(d, ptr, &val.uint64_val);
-        op = varint_ops[field->descriptortype];
-        decode_munge(field->descriptortype, &val);
-        break;
-      case UPB_WIRE_TYPE_32BIT:
-        memcpy(&val.uint32_val, ptr, 4);
-        val.uint32_val = _upb_be_swap32(val.uint32_val);
-        ptr += 4;
-        op = OP_SCALAR_LG2(2);
-        if (((1 << field->descriptortype) & fixed32_ok) == 0) goto unknown;
-        break;
-      case UPB_WIRE_TYPE_64BIT:
-        memcpy(&val.uint64_val, ptr, 8);
-        val.uint64_val = _upb_be_swap64(val.uint64_val);
-        ptr += 8;
-        op = OP_SCALAR_LG2(3);
-        if (((1 << field->descriptortype) & fixed64_ok) == 0) goto unknown;
-        break;
-      case UPB_WIRE_TYPE_DELIMITED: {
-        int ndx = field->descriptortype;
-        if (_upb_isrepeated(field)) ndx += 18;
-        ptr = decode_varint32(d, ptr, &val.size);
-        if (val.size >= INT32_MAX ||
-            ptr - d->end + (int32_t)val.size > d->limit) {
-          decode_err(d); /* Length overflow. */
-        }
-        op = delim_ops[ndx];
-        break;
-      }
-      case UPB_WIRE_TYPE_START_GROUP:
-        val.uint32_val = field_number;
-        op = OP_SUBMSG;
-        if (field->descriptortype != UPB_DTYPE_GROUP) goto unknown;
-        break;
-      case UPB_WIRE_TYPE_END_GROUP:
-        d->end_group = field_number;
-        return ptr;
-      default:
-        decode_err(d);
+  if (msg && layout->table_mask != (unsigned char)-1) {
+      ptr = fastdecode_dispatch(d, ptr, msg, decode_totable(layout), 0);
+  } else {
+    while (!decode_isdone(d, &ptr)) {
+      decode_parseret ret = decode_field(d, ptr, msg, layout);
+      ptr = ret.ptr;
+      if (ret.group_end) return ptr;
     }
-
-    if (op >= 0) {
-      /* Parse, using op for dispatch. */
-      switch (field->label) {
-        case UPB_LABEL_REPEATED:
-        case _UPB_LABEL_PACKED:
-          ptr = decode_toarray(d, ptr, msg, layout, field, val, op);
-          break;
-        case _UPB_LABEL_MAP:
-          ptr = decode_tomap(d, ptr, msg, layout, field, val);
-          break;
-        default:
-          ptr = decode_tomsg(d, ptr, msg, layout, field, val, op);
-          break;
-      }
-    } else {
-    unknown:
-      /* Skip unknown field. */
-      if (field_number == 0) decode_err(d);
-      if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
-      if (msg) {
-        if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
-          d->unknown = field_start;
-          d->unknown_msg = msg;
-          ptr = decode_group(d, ptr, NULL, NULL, field_number);
-          d->unknown_msg = NULL;
-          field_start = d->unknown;
-        }
-        if (!_upb_msg_addunknown(msg, field_start, ptr - field_start,
-                                 &d->arena)) {
-          decode_err(d);
-        }
-      } else if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
-        ptr = decode_group(d, ptr, NULL, NULL, field_number);
-      }
-    }
-
-    if (decode_isdone(d, &ptr)) return ptr;
-    if (decode_tryfastdispatch(d, &ptr, msg, layout)) return ptr;
   }
-}
-
-const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
-                               upb_msg *msg, intptr_t table, uint64_t hasbits,
-                               uint64_t data) {
-  (void)data;
-  *(uint32_t*)msg |= hasbits;
-  return decode_msg(d, ptr, msg, decode_totablep(table));
+  return ptr;
 }
 
 bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
@@ -650,7 +675,7 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
 
   if (size == 0) {
     return true;
-  } else if (size <= 16) {
+  } else if (size < 16) {
     memset(&state.patch, 0, 32);
     memcpy(&state.patch, buf, size);
     buf = state.patch;
@@ -664,20 +689,21 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   }
 
   state.limit_ptr = state.end;
-  state.unknown_msg = NULL;
   state.depth = 64;
-  state.end_group = DECODE_NOGROUP;
+  state.end_group = 0;
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;
   state.arena.parent = arena;
 
+#ifdef __APPLE__
+  if (UPB_UNLIKELY(_setjmp(state.err))) {
+#else
   if (UPB_UNLIKELY(setjmp(state.err))) {
+#endif
     ok = false;
   } else {
-    if (!decode_tryfastdispatch(&state, &buf, msg, l)) {
-      decode_msg(&state, buf, msg, l);
-    }
-    ok = state.end_group == DECODE_NOGROUP;
+    decode_msg(&state, buf, msg, l);
+    ok = state.end_group == 0;
   }
 
   arena->head.ptr = state.arena.head.ptr;
