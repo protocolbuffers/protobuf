@@ -988,7 +988,7 @@ again:
   ptr += tagbytes;
   ptr = fastdecode_delimited(d, ptr, fastdecode_tosubmsg, &submsg);
 
-  if (UPB_UNLIKELY(ptr == NULL || d->end_group != 0)) {
+  if (UPB_UNLIKELY(ptr == NULL || d->end_group != DECODE_NOGROUP)) {
     return fastdecode_err(d);
   }
 

@@ -14,6 +14,8 @@
 /* Must be last. */
 #include "upb/port_def.inc"
 
+#define DECODE_NOGROUP -1
+
 typedef struct upb_decstate {
   const char *end;         /* Can read up to 16 bytes slop beyond this. */
   const char *limit_ptr;   /* = end + UPB_MIN(limit, 0) */
@@ -21,7 +23,7 @@ typedef struct upb_decstate {
   const char *unknown;     /* Start of unknown data. */
   int limit;               /* Submessage limit relative to end. */
   int depth;
-  uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
+  uint32_t end_group;   /* field number of END_GROUP tag, else DECODE_NOGROUP */
   bool alias;
   char patch[32];
   upb_arena arena;
@@ -133,20 +135,27 @@ UPB_INLINE uint32_t fastdecode_loadtag(const char* ptr) {
   return tag;
 }
 
+UPB_INLINE void decode_checklimit(upb_decstate *d) {
+  UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
+}
+
 UPB_INLINE int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
   int limit = size + (int)(ptr - d->end);
   int delta = d->limit - limit;
+  decode_checklimit(d);
   d->limit = limit;
   d->limit_ptr = d->end + UPB_MIN(0, limit);
+  decode_checklimit(d);
   return delta;
 }
 
 UPB_INLINE void decode_poplimit(upb_decstate *d, const char *ptr,
                                 int saved_delta) {
   UPB_ASSERT(ptr - d->end == d->limit);
+  decode_checklimit(d);
   d->limit += saved_delta;
   d->limit_ptr = d->end + UPB_MIN(0, d->limit);
-  UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
+  decode_checklimit(d);
 }
 
 #include "upb/port_undef.inc"
