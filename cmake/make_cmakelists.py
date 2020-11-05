@@ -180,6 +180,9 @@ class WorkspaceFileFunctions(object):
   def git_repository(self, **kwargs):
     pass
 
+  def new_git_repository(self, **kwargs):
+    pass
+
   def bazel_version_repository(self, **kwargs):
     pass
 
@@ -280,6 +283,7 @@ globs = GetDict(converter)
 
 exec(open("WORKSPACE").read(), GetDict(WorkspaceFileFunctions(converter)))
 exec(open("BUILD").read(), GetDict(BuildFileFunctions(converter)))
+exec(open("third_party/wyhash/BUILD").read(), GetDict(BuildFileFunctions(converter)))
 
 with open(sys.argv[1], "w") as f:
   f.write(converter.convert())

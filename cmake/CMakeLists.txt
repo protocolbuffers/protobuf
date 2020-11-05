@@ -61,8 +61,7 @@ endif()
 
 enable_testing()
 
-add_library(port
-  ../upb/port.c)
+add_library(port INTERFACE)
 add_library(upb
   ../upb/decode.c
   ../upb/decode.int.h
@@ -79,7 +78,8 @@ add_library(upb
   ../upb/upb.hpp)
 target_link_libraries(upb
   fastdecode
-  port)
+  port
+  /third_party/wyhash)
 add_library(fastdecode
   ../upb/decode.int.h
   ../upb/decode_fast.c
@@ -160,5 +160,6 @@ add_library(upb_json
 target_link_libraries(upb_json
   upb
   upb_pb)
+add_library(wyhash INTERFACE)
 
 

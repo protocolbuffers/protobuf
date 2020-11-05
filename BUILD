@@ -52,9 +52,6 @@ upb_proto_library_copts(
 
 cc_library(
     name = "port",
-    srcs = [
-        "upb/port.c",
-    ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
         "upb/port_def.inc",
@@ -87,6 +84,7 @@ cc_library(
     deps = [
         ":fastdecode",
         ":port",
+        "//third_party/wyhash",
     ],
 )
 
@@ -321,6 +319,7 @@ cc_library(
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
     copts = UPB_DEFAULT_COPTS,
+    deps = ["//third_party/wyhash"],
 )
 
 upb_amalgamation(
@@ -347,6 +346,7 @@ cc_library(
     srcs = ["php-upb.c"],
     hdrs = ["php-upb.h"],
     copts = UPB_DEFAULT_COPTS,
+    deps = ["//third_party/wyhash"],
 )
 
 upb_amalgamation(
@@ -372,6 +372,7 @@ cc_library(
     srcs = ["ruby-upb.c"],
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
+    deps = ["//third_party/wyhash"],
 )
 
 exports_files(
@@ -401,6 +402,7 @@ filegroup(
         "upbc/**/*",
         "upb/**/*",
         "tests/**/*",
+        "third_party/**/*",
     ]),
     visibility = ["//cmake:__pkg__"],
 )

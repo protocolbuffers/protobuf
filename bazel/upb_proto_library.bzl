@@ -207,10 +207,7 @@ def _upb_proto_rule_impl(ctx):
         fail("proto_library rule must generate _UpbWrappedCcInfo or " +
              "_UpbDefsWrappedCcInfo (aspect should have handled this).")
 
-    if type(cc_info.linking_context.libraries_to_link) == "list":
-        lib = cc_info.linking_context.libraries_to_link[0]
-    else:
-        lib = cc_info.linking_context.libraries_to_link.to_list()[0]
+    lib = cc_info.linking_context.linker_inputs.to_list()[0].libraries[0]
     files = _filter_none([
         lib.static_library,
         lib.pic_static_library,
@@ -295,6 +292,7 @@ _upb_proto_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
 )
 
 upb_proto_library = rule(
@@ -358,6 +356,7 @@ _upb_proto_reflection_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
 )
 
 upb_proto_reflection_library = rule(

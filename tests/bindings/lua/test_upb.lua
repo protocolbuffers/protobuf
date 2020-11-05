@@ -104,7 +104,7 @@ function test_utf8()
     upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
   end)
 
-  -- TOOD(haberman): should proto3 accessors also check UTF-8 at set time?
+  -- TODO(haberman): should proto3 accessors also check UTF-8 at set time?
 end
 
 function test_string_double_map()
@@ -585,6 +585,20 @@ function test_foo()
   -- print(set_textformat)
   assert_equal(#set.file, 1)
   assert_equal(set.file[1].name, "google/protobuf/descriptor.proto")
+end
+
+function test_descriptor_error()
+  local symtab = upb.SymbolTable()
+  local file = descriptor.FileDescriptorProto()
+  file.name = "test.proto"
+  file.message_type[1] = descriptor.DescriptorProto{
+    name = "ABC"
+  }
+  file.message_type[2] = descriptor.DescriptorProto{
+    name = "BC."
+  }
+  assert_error(function () symtab:add_file(upb.encode(file)) end)
+  assert_nil(symtab:lookup_msg("ABC"))
 end
 
 function test_gc()

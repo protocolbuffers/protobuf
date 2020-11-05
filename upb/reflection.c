@@ -96,20 +96,17 @@ bool upb_msg_has(const upb_msg *msg, const upb_fielddef *f) {
 
 const upb_fielddef *upb_msg_whichoneof(const upb_msg *msg,
                                        const upb_oneofdef *o) {
-  upb_oneof_iter i;
-  const upb_fielddef *f;
-  const upb_msglayout_field *field;
-  const upb_msgdef *m = upb_oneofdef_containingtype(o);
-  uint32_t oneof_case;
-
-  /* This is far from optimal. */
-  upb_oneof_begin(&i, o);
-  if (upb_oneof_done(&i)) return false;
-  f = upb_oneof_iter_field(&i);
-  field = upb_fielddef_layout(f);
-  oneof_case = _upb_getoneofcase_field(msg, field);
-
-  return oneof_case ? upb_msgdef_itof(m, oneof_case) : NULL;
+  const upb_fielddef *f = upb_oneofdef_field(o, 0);
+  if (upb_oneofdef_issynthetic(o)) {
+    UPB_ASSERT(upb_oneofdef_fieldcount(o) == 1);
+    return upb_msg_has(msg, f) ? f : NULL;
+  } else {
+    const upb_msglayout_field *field = upb_fielddef_layout(f);
+    uint32_t oneof_case = _upb_getoneofcase_field(msg, field);
+    f = oneof_case ? upb_oneofdef_itof(o, oneof_case) : NULL;
+    UPB_ASSERT((f != NULL) == (oneof_case != 0));
+    return f;
+  }
 }
 
 upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
