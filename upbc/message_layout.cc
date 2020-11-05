@@ -24,9 +24,7 @@ MessageLayout::Size MessageLayout::Place(
 }
 
 bool MessageLayout::HasHasbit(const protobuf::FieldDescriptor* field) {
-  return field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2 &&
-         field->label() != protobuf::FieldDescriptor::LABEL_REPEATED &&
-         !field->containing_oneof() &&
+  return field->has_presence() && !field->real_containing_oneof() &&
          !field->containing_type()->options().map_entry();
 }
 
@@ -110,7 +108,7 @@ int64_t MessageLayout::FieldLayoutRank(const protobuf::FieldDescriptor* field) {
 
 void MessageLayout::ComputeLayout(const protobuf::Descriptor* descriptor) {
   size_ = Size{0, 0};
-  maxalign_ = Size{0, 0};
+  maxalign_ = Size{8, 8};
 
   if (descriptor->options().map_entry()) {
     // Map entries aren't actually stored, they are only used during parsing.
@@ -145,7 +143,7 @@ void MessageLayout::PlaceNonOneofFields(
 
   // Place/count hasbits.
   int hasbit_count = 0;
-  for (auto field : field_order) {
+  for (auto field : FieldHotnessOrder(descriptor)) {
     if (HasHasbit(field)) {
       // We don't use hasbit 0, so that 0 can indicate "no presence" in the
       // table. This wastes one hasbit, but we don't worry about it for now.

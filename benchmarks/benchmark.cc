@@ -191,7 +191,7 @@ using FileDescSV = ::upb_benchmark::sv::FileDescriptorProto;
 
 const protobuf::MessageLite::ParseFlags kMergePartial =
     protobuf::MessageLite::ParseFlags::kMergePartial;
-const protobuf::MessageLite::ParseFlags kAliasStrings =
+const protobuf::MessageLite::ParseFlags kAlias =
     protobuf::MessageLite::ParseFlags::kMergePartialWithAliasing;
 
 template <class P, template <class> class Factory,
@@ -217,9 +217,9 @@ BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDesc, WithInitialBlock);
 //BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena);
 //BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena);
 BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock);
-//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena, kAliasStrings);
-//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena, kAliasStrings);
-BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock, kAliasStrings);
+//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena, kAlias);
+//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena, kAlias);
+BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock, kAlias);
 
 static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   size_t bytes = 0;

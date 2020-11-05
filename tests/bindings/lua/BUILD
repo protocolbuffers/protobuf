@@ -12,6 +12,7 @@ licenses(["notice"])
 cc_test(
     name = "test_lua",
     srcs = ["main.c"],
+    copts = UPB_DEFAULT_COPTS,
     data = [
         "test_upb.lua",
         ":descriptor_proto_lua",
@@ -24,7 +25,6 @@ cc_test(
         "@com_google_protobuf//:conformance_proto",
         "@com_google_protobuf//:descriptor_proto",
     ],
-    copts = UPB_DEFAULT_COPTS,
     linkstatic = 1,
     deps = [
         "//upb/bindings/lua:lupb",

@@ -5,6 +5,7 @@ load(
 )
 load(
     "//bazel:upb_proto_library.bzl",
+    "upb_fasttable_enabled",
     "upb_proto_library",
     "upb_proto_library_copts",
     "upb_proto_reflection_library",
@@ -26,14 +27,19 @@ exports_files([
 ])
 
 config_setting(
-    name = "darwin",
-    values = {"cpu": "darwin"},
+    name = "windows",
+    constraint_values = ["@bazel_tools//platforms:windows"],
+)
+
+upb_fasttable_enabled(
+    name = "fasttable_enabled",
+    build_setting_default = False,
     visibility = ["//visibility:public"],
 )
 
 config_setting(
-    name = "windows",
-    constraint_values = ["@bazel_tools//platforms:windows"],
+    name = "fasttable_enabled_setting",
+    flag_values = {"//:fasttable_enabled": "true"},
 )
 
 upb_proto_library_copts(
@@ -58,6 +64,7 @@ cc_library(
     name = "upb",
     srcs = [
         "upb/decode.c",
+        "upb/decode.int.h",
         "upb/encode.c",
         "upb/msg.c",
         "upb/msg.h",
@@ -75,8 +82,25 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":fastdecode",
         ":port",
         "//third_party/wyhash",
+    ],
+)
+
+cc_library(
+    name = "fastdecode",
+    srcs = [
+        "upb/decode.int.h",
+        "upb/decode_fast.c",
+        "upb/decode_fast.h",
+        "upb/msg.h",
+        "upb/upb.int.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    deps = [
+        ":port",
+        ":table",
     ],
 )
 
@@ -89,6 +113,7 @@ cc_library(
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
+        "upb/decode_fast.h",
         "upb/msg.h",
         "upb/port_def.inc",
         "upb/port_undef.inc",
@@ -174,11 +199,13 @@ cc_library(
 
 cc_library(
     name = "table",
-    hdrs = ["upb/table.int.h"],
+    hdrs = [
+        "upb/table.int.h",
+        "upb/upb.h",
+    ],
     visibility = ["//tests:__pkg__"],
     deps = [
         ":port",
-        ":upb",
     ],
 )
 
@@ -277,6 +304,7 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
+        ":fastdecode",
         ":descriptor_upb_proto",
         ":reflection",
         ":handlers",
@@ -303,6 +331,7 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
+        ":fastdecode",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
         ":reflection",
@@ -329,6 +358,7 @@ upb_amalgamation(
     amalgamator = ":amalgamate",
     libs = [
         ":upb",
+        ":fastdecode",
         ":descriptor_upb_proto",
         ":reflection",
         ":port",

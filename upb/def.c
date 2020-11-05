@@ -1031,7 +1031,7 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
   const upb_msglayout **submsgs;
   upb_msglayout_field *fields;
 
-  memset(l, 0, sizeof(*l));
+  memset(l, 0, sizeof(*l) + sizeof(_upb_fasttable_entry));
 
   fields = symtab_alloc(ctx, upb_msgdef_numfields(m) * sizeof(*fields));
   submsgs = symtab_alloc(ctx, submsg_count * sizeof(*submsgs));
@@ -1039,6 +1039,12 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
   l->field_count = upb_msgdef_numfields(m);
   l->fields = fields;
   l->submsgs = submsgs;
+  l->table_mask = 0;
+
+  /* TODO(haberman): initialize fast tables so that reflection-based parsing
+   * can get the same speeds as linked-in types. */
+  l->fasttable[0].field_parser = &fastdecode_generic;
+  l->fasttable[0].field_data = 0;
 
   if (upb_msgdef_mapentry(m)) {
     /* TODO(haberman): refactor this method so this special case is more
@@ -1801,7 +1807,8 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
     ctx->layouts++;
   } else {
     /* Allocate now (to allow cross-linking), populate later. */
-    m->layout = symtab_alloc(ctx, sizeof(*m->layout));
+    m->layout = symtab_alloc(
+        ctx, sizeof(*m->layout) + sizeof(_upb_fasttable_entry));
   }
 
   m->oneof_count = 0;

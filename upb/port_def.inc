@@ -125,6 +125,43 @@
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
 #endif
 
+/* Configure whether fasttable is switched on or not. *************************/
+
+#if defined(__x86_64__) && defined(__GNUC__)
+#define UPB_FASTTABLE_SUPPORTED 1
+#else
+#define UPB_FASTTABLE_SUPPORTED 0
+#endif
+
+/* define UPB_ENABLE_FASTTABLE to force fast table support.
+ * This is useful when we want to ensure we are really getting fasttable,
+ * for example for testing or benchmarking. */
+#if defined(UPB_ENABLE_FASTTABLE)
+#if !UPB_FASTTABLE_SUPPORTED
+#error fasttable is x86-64 + Clang/GCC only
+#endif
+#define UPB_FASTTABLE 1
+/* Define UPB_TRY_ENABLE_FASTTABLE to use fasttable if possible.
+ * This is useful for releasing code that might be used on multiple platforms,
+ * for example the PHP or Ruby C extensions. */
+#elif defined(UPB_TRY_ENABLE_FASTTABLE)
+#define UPB_FASTTABLE UPB_FASTTABLE_SUPPORTED
+#else
+#define UPB_FASTTABLE 0
+#endif
+
+/* UPB_FASTTABLE_INIT() allows protos compiled for fasttable to gracefully
+ * degrade to non-fasttable if we are using UPB_TRY_ENABLE_FASTTABLE. */
+#if !UPB_FASTTABLE && defined(UPB_TRY_ENABLE_FASTTABLE)
+#define UPB_FASTTABLE_INIT(...)
+#else
+#define UPB_FASTTABLE_INIT(...) __VA_ARGS__
+#endif
+
+#undef UPB_FASTTABLE_SUPPORTED
+
+/* ASAN poisoning (for arena) *************************************************/
+
 #if defined(__SANITIZE_ADDRESS__)
 #define UPB_ASAN 1
 #ifdef __cplusplus
