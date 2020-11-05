@@ -381,7 +381,7 @@ again:
       case FD_NEXT_SAMEFIELD:
         dst = ret.dst;
         goto again;
-      case FD_NEXT_OTHERFIELD: 
+      case FD_NEXT_OTHERFIELD:
         return fastdecode_tagdispatch(d, ptr, msg, table, hasbits, ret.tag);
       case FD_NEXT_ATLIMIT:
         return ptr;
