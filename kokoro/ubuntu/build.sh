@@ -20,21 +20,8 @@ cd $(dirname $0)/../..
 
 if which gcc; then
   gcc --version
-  bazel test --test_output=errors ...
-  # The checked-in code is with fasttable not enabled.
-  bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files
-fi
-
-if which clang; then
-  CC=clang bazel test --test_output=errors ...
-  # The checked-in code is with fasttable not enabled.
-  CC=clang bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files
-fi
-
-if which gcc; then
-  gcc --version
   CC=gcc bazel test --test_output=errors ...
-  CC=gcc bazel test -c opt --test_output=errors ...
+  CC=gcc bazel test -c opt --test_output=errors ... -- -benchmarks:benchmark
   CC=gcc bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files
   # TODO: work through these errors and enable this.
   # if gcc -fanalyzer -x c /dev/null -c -o /dev/null; then
@@ -44,12 +31,12 @@ fi
 
 if which clang; then
   CC=clang bazel test --test_output=errors ...
-  CC=clang bazel test --test_output=errors -c opt ...
+  CC=clang bazel test --test_output=errors -c opt ... -- -benchmarks:benchmark
   CC=clang bazel test --test_output=errors ... --//:fasttable_enabled=true -- -cmake:test_generated_files
 
   if [[ $(uname) = "Linux" ]]; then
-    CC=clang bazel test --test_output=errors --config=m32 ...
-    CC=clang bazel test --test_output=errors --config=asan ...
+    CC=clang bazel test --test_output=errors --config=m32 ... -- -benchmarks:benchmark
+    CC=clang bazel test --test_output=errors --config=asan ... -- -benchmarks:benchmark
 
     # TODO: update to a newer Lua that hopefully does not trigger UBSAN.
     CC=clang bazel test --test_output=errors --config=ubsan ... -- -tests/bindings/lua:test_lua
