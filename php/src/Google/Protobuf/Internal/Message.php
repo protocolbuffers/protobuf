@@ -1138,7 +1138,7 @@ class Message
         }
     }
 
-    protected function mergeFromJsonArray($array, $ignore_unknown)
+    protected function mergeFromJsonArray($array, $ignore_unknown = false)
     {
         if (is_a($this, "Google\Protobuf\Any")) {
             $this->clear();
