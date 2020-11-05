@@ -66,11 +66,12 @@ using google::protobuf::io::win32::mkdir;
 using google::protobuf::io::win32::stat;
 #endif
 
-bool File::Exists(const string& name) {
+bool File::Exists(const std::string& name) {
   return access(name.c_str(), F_OK) == 0;
 }
 
-bool File::ReadFileToString(const string& name, string* output, bool text_mode) {
+bool File::ReadFileToString(const std::string& name, std::string* output,
+                            bool text_mode) {
   char buffer[1024];
   FILE* file = fopen(name.c_str(), text_mode ? "rt" : "rb");
   if (file == NULL) return false;
@@ -86,11 +87,12 @@ bool File::ReadFileToString(const string& name, string* output, bool text_mode) 
   return error == 0;
 }
 
-void File::ReadFileToStringOrDie(const string& name, string* output) {
+void File::ReadFileToStringOrDie(const std::string& name, std::string* output) {
   GOOGLE_CHECK(ReadFileToString(name, output)) << "Could not read: " << name;
 }
 
-bool File::WriteStringToFile(const string& contents, const string& name) {
+bool File::WriteStringToFile(const std::string& contents,
+                             const std::string& name) {
   FILE* file = fopen(name.c_str(), "wb");
   if (file == NULL) {
     GOOGLE_LOG(ERROR) << "fopen(" << name << ", \"wb\"): " << strerror(errno);
@@ -109,7 +111,8 @@ bool File::WriteStringToFile(const string& contents, const string& name) {
   return true;
 }
 
-void File::WriteStringToFileOrDie(const string& contents, const string& name) {
+void File::WriteStringToFileOrDie(const std::string& contents,
+                                  const std::string& name) {
   FILE* file = fopen(name.c_str(), "wb");
   GOOGLE_CHECK(file != NULL)
       << "fopen(" << name << ", \"wb\"): " << strerror(errno);
@@ -120,21 +123,21 @@ void File::WriteStringToFileOrDie(const string& contents, const string& name) {
       << "fclose(" << name << "): " << strerror(errno);
 }
 
-bool File::CreateDir(const string& name, int mode) {
+bool File::CreateDir(const std::string& name, int mode) {
   if (!name.empty()) {
     GOOGLE_CHECK_OK(name[name.size() - 1] != '.');
   }
   return mkdir(name.c_str(), mode) == 0;
 }
 
-bool File::RecursivelyCreateDir(const string& path, int mode) {
+bool File::RecursivelyCreateDir(const std::string& path, int mode) {
   if (CreateDir(path, mode)) return true;
 
   if (Exists(path)) return false;
 
   // Try creating the parent.
-  string::size_type slashpos = path.find_last_of('/');
-  if (slashpos == string::npos) {
+  std::string::size_type slashpos = path.find_last_of('/');
+  if (slashpos == std::string::npos) {
     // No parent given.
     return false;
   }
@@ -143,8 +146,8 @@ bool File::RecursivelyCreateDir(const string& path, int mode) {
          CreateDir(path, mode);
 }
 
-void File::DeleteRecursively(const string& name,
-                             void* dummy1, void* dummy2) {
+void File::DeleteRecursively(const std::string& name, void* dummy1,
+                             void* dummy2) {
   if (name.empty()) return;
 
   // We don't care too much about error checking here since this is only used
@@ -162,9 +165,9 @@ void File::DeleteRecursively(const string& name,
   }
 
   do {
-    string entry_name = find_data.cFileName;
+    std::string entry_name = find_data.cFileName;
     if (entry_name != "." && entry_name != "..") {
-      string path = name + "/" + entry_name;
+      std::string path = name + "/" + entry_name;
       if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         DeleteRecursively(path, NULL, NULL);
         RemoveDirectoryA(path.c_str());
@@ -188,7 +191,7 @@ void File::DeleteRecursively(const string& name,
       while (true) {
         struct dirent* entry = readdir(dir);
         if (entry == NULL) break;
-        string entry_name = entry->d_name;
+        std::string entry_name = entry->d_name;
         if (entry_name != "." && entry_name != "..") {
           DeleteRecursively(name + "/" + entry_name, NULL, NULL);
         }
@@ -204,7 +207,7 @@ void File::DeleteRecursively(const string& name,
 #endif
 }
 
-bool File::ChangeWorkingDirectory(const string& new_working_directory) {
+bool File::ChangeWorkingDirectory(const std::string& new_working_directory) {
   return chdir(new_working_directory.c_str()) == 0;
 }
 

@@ -111,6 +111,18 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void CopyFromReadOnlySpanCopiesContents()
+        {
+            byte[] data = new byte[1];
+            data[0] = 10;
+            ReadOnlySpan<byte> byteSpan = data;
+            var bs = ByteString.CopyFrom(byteSpan);
+            Assert.AreEqual(10, bs[0]);
+            data[0] = 5;
+            Assert.AreEqual(10, bs[0]);
+        }
+
+        [Test]
         public void ToByteArrayCopiesContents()
         {
             ByteString bs = ByteString.CopyFromUtf8("Hello");

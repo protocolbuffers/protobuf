@@ -25,7 +25,6 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>

@@ -52,7 +52,7 @@ TEST(StringUtilityTest, ImmuneToLocales) {
   // Remember the old locale.
   char* old_locale_cstr = setlocale(LC_NUMERIC, nullptr);
   ASSERT_TRUE(old_locale_cstr != nullptr);
-  string old_locale = old_locale_cstr;
+  std::string old_locale = old_locale_cstr;
 
   // Set the locale to "C".
   ASSERT_TRUE(setlocale(LC_NUMERIC, "C") != nullptr);
@@ -442,7 +442,7 @@ TEST(Base64, EscapeAndUnescape) {
     char decode_buffer[100];
     int decode_length;
     int cypher_length;
-    string decode_str;
+    std::string decode_str;
 
     const unsigned char* unsigned_plaintext =
       reinterpret_cast<const unsigned char*>(base64_tests[i].plaintext);
@@ -491,13 +491,13 @@ TEST(Base64, EscapeAndUnescape) {
     EXPECT_EQ(plaintext, decode_str);
 
     // Let's try with a pre-populated string.
-    string encoded("this junk should be ignored");
-    Base64Escape(string(base64_tests[i].plaintext,
-                        base64_tests[i].plain_length),
-                 &encoded);
-    EXPECT_EQ(encoded, string(encode_buffer, cypher_length));
+    std::string encoded("this junk should be ignored");
+    Base64Escape(
+        std::string(base64_tests[i].plaintext, base64_tests[i].plain_length),
+        &encoded);
+    EXPECT_EQ(encoded, std::string(encode_buffer, cypher_length));
 
-    string decoded("this junk should be ignored");
+    std::string decoded("this junk should be ignored");
     EXPECT_TRUE(Base64Unescape(
         StringPiece(encode_buffer, cypher_length), &decoded));
     EXPECT_EQ(decoded.size(), base64_tests[i].plain_length);
@@ -514,7 +514,7 @@ TEST(Base64, EscapeAndUnescape) {
 
       // Try chopping off the equals sign(s) entirely.  The decoder
       // should still be okay with this.
-      string decoded2("this junk should also be ignored");
+      std::string decoded2("this junk should also be ignored");
       *first_equals = '\0';
       EXPECT_TRUE(Base64Unescape(
           StringPiece(encode_buffer, first_equals - encode_buffer), &decoded2));
@@ -730,7 +730,7 @@ TEST(Base64, EscapeAndUnescape) {
     EXPECT_STREQ(encode_buffer, websafe);
 
     // Let's try the (other) string version of the encoder
-    string plain(base64_tests[i].plaintext, base64_tests[i].plain_length);
+    std::string plain(base64_tests[i].plaintext, base64_tests[i].plain_length);
     encoded = "this junk should be ignored";
     WebSafeBase64Escape(plain, &encoded);
     EXPECT_EQ(encoded.size(), cypher_length);
@@ -798,7 +798,7 @@ TEST(Base64, EscapeAndUnescape) {
   // Verify the behavior when decoding bad data
   {
     const char* bad_data = "ab-/";
-    string buf;
+    std::string buf;
     EXPECT_FALSE(Base64Unescape(StringPiece(bad_data), &buf));
     EXPECT_TRUE(!WebSafeBase64Unescape(bad_data, &buf));
     EXPECT_TRUE(buf.empty());
@@ -819,7 +819,7 @@ TEST(StrCat, Ints) {
   const size_t size = 10;
   const intptr_t intptr = -12;
   const uintptr_t uintptr = 13;
-  string answer;
+  std::string answer;
   answer = StrCat(s, us);
   EXPECT_EQ(answer, "-12");
   answer = StrCat(i, ui);
@@ -836,12 +836,13 @@ TEST(StrCat, Ints) {
   EXPECT_EQ(answer, "130");
 }
 
-class ReplaceChars : public ::testing::TestWithParam<
-                         std::tuple<string, string, const char*, char>> {};
+class ReplaceChars
+    : public ::testing::TestWithParam<
+          std::tuple<std::string, std::string, const char*, char>> {};
 
 TEST_P(ReplaceChars, ReplacesAllOccurencesOfAnyCharInReplaceWithAReplaceChar) {
-  string expected = std::get<0>(GetParam());
-  string string_to_replace_in = std::get<1>(GetParam());
+  std::string expected = std::get<0>(GetParam());
+  std::string string_to_replace_in = std::get<1>(GetParam());
   const char* what_to_replace = std::get<2>(GetParam());
   char replacement = std::get<3>(GetParam());
   ReplaceCharacters(&string_to_replace_in, what_to_replace, replacement);
@@ -864,11 +865,12 @@ INSTANTIATE_TEST_CASE_P(
         std::make_tuple("qvvvvvng v T", "queueing a T", "aeiou",
                         'v')));  // replace all voewls
 
-class StripWs : public ::testing::TestWithParam<std::tuple<string, string>> {};
+class StripWs
+    : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
 
 TEST_P(StripWs, AlwaysStripsLeadingAndTrailingWhitespace) {
-  string expected = std::get<0>(GetParam());
-  string string_to_strip = std::get<1>(GetParam());
+  std::string expected = std::get<0>(GetParam());
+  std::string string_to_strip = std::get<1>(GetParam());
   StripWhitespace(&string_to_strip);
   ASSERT_EQ(expected, string_to_strip);
 }

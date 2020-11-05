@@ -58,8 +58,10 @@
 
 #include <memory>
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
+#elif defined(__FreeBSD__)
+#include <sys/sysctl.h>
 #endif
 
 #include <google/protobuf/stubs/common.h>
@@ -201,6 +203,13 @@ bool GetProtocAbsolutePath(std::string* path) {
   if (_NSGetExecutablePath(dirtybuffer, &size) == 0) {
     realpath(dirtybuffer, buffer);
     len = strlen(buffer);
+  }
+#elif defined(__FreeBSD__)
+  char buffer[PATH_MAX];
+  size_t len = PATH_MAX;
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+  if (sysctl(mib, 4, &buffer, &len, NULL, 0) != 0) {
+    len = 0;
   }
 #else
   char buffer[PATH_MAX];
@@ -1224,6 +1233,7 @@ bool CommandLineInterface::AllowProto3Optional(
   return false;
 }
 
+
 bool CommandLineInterface::VerifyInputFilesInDescriptors(
     DescriptorDatabase* database) {
   for (const auto& input_file : input_files_) {
@@ -1242,6 +1252,7 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
                 << std::endl;
       return false;
     }
+
   }
   return true;
 }
@@ -1292,6 +1303,7 @@ bool CommandLineInterface::ParseInputFiles(
       break;
     }
 
+
     // Enforce --direct_dependencies
     if (direct_dependencies_explicitly_set_) {
       bool indirect_imports = false;
@@ -1338,6 +1350,7 @@ void CommandLineInterface::Clear() {
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
   allow_proto3_optional_ = false;
+  deterministic_output_ = false;
 }
 
 bool CommandLineInterface::MakeProtoProtoPathRelative(
@@ -1573,6 +1586,11 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
               << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
+  if (mode_ != MODE_ENCODE && deterministic_output_) {
+    std::cerr << "Can only use --deterministic_output with --encode."
+              << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
   if (!dependency_out_name_.empty() && input_files_.size() > 1) {
     std::cerr
         << "Can only process one input file when using --dependency_out=FILE."
@@ -1641,7 +1659,8 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--version" || *name == "--decode_raw" ||
       *name == "--print_free_field_numbers" ||
-      *name == "--experimental_allow_proto3_optional") {
+      *name == "--experimental_allow_proto3_optional" ||
+      *name == "--deterministic_output") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1848,6 +1867,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
 
+
   } else if (name == "--experimental_allow_proto3_optional") {
     allow_proto3_optional_ = true;
 
@@ -1880,6 +1900,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     }
 
     codec_type_ = value;
+
+  } else if (name == "--deterministic_output") {
+    deterministic_output_ = true;
 
   } else if (name == "--error_format") {
     if (value == "gcc") {
@@ -2023,6 +2046,12 @@ void CommandLineInterface::PrintHelpText() {
          "must\n"
          "                              be defined in PROTO_FILES or their "
          "imports.\n"
+         "  --deterministic_output      When using --encode, ensure map fields "
+         "are\n"
+         "                              deterministically ordered. Note that"
+         "this order is not\n"
+         "                              canonical, and changes across builds"
+         "or releases of protoc.\n"
          "  --decode=MESSAGE_TYPE       Read a binary message of the given "
          "type from\n"
          "                              standard input and write it in text "
@@ -2435,7 +2464,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
 
   if (mode_ == MODE_ENCODE) {
     // Output is binary.
-    if (!message->SerializePartialToZeroCopyStream(&out)) {
+    io::CodedOutputStream coded_out(&out);
+    coded_out.SetSerializationDeterministic(deterministic_output_);
+    if (!message->SerializePartialToCodedStream(&coded_out)) {
       std::cerr << "output: I/O error." << std::endl;
       return false;
     }

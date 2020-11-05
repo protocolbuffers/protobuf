@@ -41,6 +41,7 @@
  * using the typed jspb code generator, but if you bypass that you'll need
  * to keep things in sync by hand.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 

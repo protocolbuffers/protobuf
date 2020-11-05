@@ -47,7 +47,7 @@ namespace csharp {
 // is inlined in the relevant code. If more control is required, that code can be moved here.
 
 void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
-    string comments = location.leading_comments.empty() ?
+    std::string comments = location.leading_comments.empty() ?
         location.trailing_comments : location.leading_comments;
     if (comments.empty()) {
         return;
@@ -56,7 +56,7 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
     // node of a summary element, not part of an attribute.
     comments = StringReplace(comments, "&", "&amp;", true);
     comments = StringReplace(comments, "<", "&lt;", true);
-    std::vector<string> lines;
+    std::vector<std::string> lines;
     lines = Split(comments, "\n", false);
     // TODO: We really should work out which part to put in the summary and which to put in the remarks...
     // but that needs to be part of a bigger effort to understand the markdown better anyway.
@@ -66,17 +66,18 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
     // to preserve the blank lines themselves, as this is relevant in the markdown.
     // Note that we can't remove leading or trailing whitespace as *that's* relevant in markdown too.
     // (We don't skip "just whitespace" lines, either.)
-    for (std::vector<string>::iterator it = lines.begin(); it != lines.end(); ++it) {
-        string line = *it;
-        if (line.empty()) {
-            last_was_empty = true;
-        } else {
-            if (last_was_empty) {
-                printer->Print("///\n");
-            }
-            last_was_empty = false;
-            printer->Print("///$line$\n", "line", *it);
+    for (std::vector<std::string>::iterator it = lines.begin();
+         it != lines.end(); ++it) {
+      std::string line = *it;
+      if (line.empty()) {
+        last_was_empty = true;
+      } else {
+        if (last_was_empty) {
+          printer->Print("///\n");
         }
+        last_was_empty = false;
+        printer->Print("///$line$\n", "line", *it);
+      }
     }
     printer->Print("/// </summary>\n");
 }

@@ -50,17 +50,17 @@ bool ObjectiveCGenerator::HasGenerateAll() const {
 }
 
 bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
-                                   const string& parameter,
+                                   const std::string& parameter,
                                    GeneratorContext* context,
-                                   string* error) const {
+                                   std::string* error) const {
   *error = "Unimplemented Generate() method. Call GenerateAll() instead.";
   return false;
 }
 
-bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
-                                      const string& parameter,
-                                      GeneratorContext* context,
-                                      string* error) const {
+bool ObjectiveCGenerator::GenerateAll(
+    const std::vector<const FileDescriptor*>& files,
+    const std::string& parameter, GeneratorContext* context,
+    std::string* error) const {
   // -----------------------------------------------------------------
   // Parse generator options. These options are passed to the compiler using the
   // --objc_opt flag. The options are passed as a comma separated list of
@@ -71,7 +71,7 @@ bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& 
 
   Options generation_options;
 
-  std::vector<std::pair<string, string> > options;
+  std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "expected_prefixes_path") {
@@ -154,7 +154,7 @@ bool ObjectiveCGenerator::GenerateAll(const std::vector<const FileDescriptor*>& 
   for (int i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];
     FileGenerator file_generator(file, generation_options);
-    string filepath = FilePath(file);
+    std::string filepath = FilePath(file);
 
     // Generate header.
     {

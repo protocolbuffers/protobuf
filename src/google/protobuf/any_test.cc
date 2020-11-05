@@ -33,9 +33,17 @@
 #include <gtest/gtest.h>
 
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace {
+
+TEST(AnyMetadataTest, ConstInit) {
+  PROTOBUF_CONSTINIT static internal::AnyMetadata metadata(nullptr, nullptr);
+  (void)metadata;
+}
 
 TEST(AnyTest, TestPackAndUnpack) {
   protobuf_unittest::TestAny submessage;

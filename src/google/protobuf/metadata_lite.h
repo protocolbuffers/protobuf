@@ -58,7 +58,7 @@ namespace internal {
 // pointer.
 class InternalMetadata {
  public:
-  InternalMetadata() : ptr_(nullptr) {}
+  constexpr InternalMetadata() : ptr_(nullptr) {}
   explicit InternalMetadata(Arena* arena) : ptr_(arena) {}
 
   template <typename T>

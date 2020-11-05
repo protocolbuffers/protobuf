@@ -54,7 +54,7 @@ enum { IS_COMPILER_MSVC = 1 };
 enum { IS_COMPILER_MSVC = 0 };
 #endif
 
-void StringAppendV(string* dst, const char* format, va_list ap) {
+void StringAppendV(std::string* dst, const char* format, va_list ap) {
   // First try with a small fixed size buffer
   static const int kSpaceLength = 1024;
   char space[kSpaceLength];
@@ -105,17 +105,16 @@ void StringAppendV(string* dst, const char* format, va_list ap) {
   delete[] buf;
 }
 
-
-string StringPrintf(const char* format, ...) {
+std::string StringPrintf(const char* format, ...) {
   va_list ap;
   va_start(ap, format);
-  string result;
+  std::string result;
   StringAppendV(&result, format, ap);
   va_end(ap);
   return result;
 }
 
-const string& SStringPrintf(string* dst, const char* format, ...) {
+const std::string& SStringPrintf(std::string* dst, const char* format, ...) {
   va_list ap;
   va_start(ap, format);
   dst->clear();
@@ -124,7 +123,7 @@ const string& SStringPrintf(string* dst, const char* format, ...) {
   return *dst;
 }
 
-void StringAppendF(string* dst, const char* format, ...) {
+void StringAppendF(std::string* dst, const char* format, ...) {
   va_list ap;
   va_start(ap, format);
   StringAppendV(dst, format, ap);
@@ -139,7 +138,8 @@ const int kStringPrintfVectorMaxArgs = 32;
 // and we can fix the problem or protect against an attack.
 static const char string_printf_empty_block[256] = { '\0' };
 
-string StringPrintfVector(const char* format, const std::vector<string>& v) {
+std::string StringPrintfVector(const char* format,
+                               const std::vector<std::string>& v) {
   GOOGLE_CHECK_LE(v.size(), kStringPrintfVectorMaxArgs)
       << "StringPrintfVector currently only supports up to "
       << kStringPrintfVectorMaxArgs << " arguments. "

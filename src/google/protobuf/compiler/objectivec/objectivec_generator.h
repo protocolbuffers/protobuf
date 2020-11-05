@@ -58,14 +58,11 @@ class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
 
   // implements CodeGenerator ----------------------------------------
   bool HasGenerateAll() const override;
-  bool Generate(const FileDescriptor* file,
-                const string& parameter,
-                GeneratorContext* context,
-                string* error) const override;
+  bool Generate(const FileDescriptor* file, const std::string& parameter,
+                GeneratorContext* context, std::string* error) const override;
   bool GenerateAll(const std::vector<const FileDescriptor*>& files,
-                   const string& parameter,
-                   GeneratorContext* context,
-                   string* error) const override;
+                   const std::string& parameter, GeneratorContext* context,
+                   std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override {
     return FEATURE_PROTO3_OPTIONAL;

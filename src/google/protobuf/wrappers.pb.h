@@ -25,7 +25,6 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
@@ -1515,7 +1514,7 @@ inline void BoolValue::set_value(bool value) {
 
 // string value = 1;
 inline void StringValue::clear_value() {
-  value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  value_.ClearToEmpty();
 }
 inline const std::string& StringValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.StringValue.value)
@@ -1534,31 +1533,30 @@ inline const std::string& StringValue::_internal_value() const {
 }
 inline void StringValue::_internal_set_value(const std::string& value) {
   
-  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void StringValue::set_value(std::string&& value) {
   
   value_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.StringValue.value)
 }
 inline void StringValue::set_value(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.StringValue.value)
 }
 inline void StringValue::set_value(const char* value,
     size_t size) {
   
-  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.StringValue.value)
 }
 inline std::string* StringValue::_internal_mutable_value() {
   
-  return value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* StringValue::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
@@ -1581,7 +1579,7 @@ inline void StringValue::set_allocated_value(std::string* value) {
 
 // bytes value = 1;
 inline void BytesValue::clear_value() {
-  value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  value_.ClearToEmpty();
 }
 inline const std::string& BytesValue::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.BytesValue.value)
@@ -1600,31 +1598,30 @@ inline const std::string& BytesValue::_internal_value() const {
 }
 inline void BytesValue::_internal_set_value(const std::string& value) {
   
-  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void BytesValue::set_value(std::string&& value) {
   
   value_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.BytesValue.value)
 }
 inline void BytesValue::set_value(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   
-  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.BytesValue.value)
 }
 inline void BytesValue::set_value(const void* value,
     size_t size) {
   
-  value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.BytesValue.value)
 }
 inline std::string* BytesValue::_internal_mutable_value() {
   
-  return value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* BytesValue::release_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)

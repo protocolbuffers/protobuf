@@ -333,7 +333,7 @@ conformance-php-c:
 
 # Targets for actually running tests.
 test_cpp: protoc_middleman conformance-test-runner conformance-cpp
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt ./conformance-cpp
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt --text_format_failure_list text_format_failure_list_cpp.txt ./conformance-cpp
 
 test_java: protoc_middleman conformance-test-runner conformance-java
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_java.txt --text_format_failure_list text_format_failure_list_java.txt ./conformance-java
@@ -353,16 +353,27 @@ test_php: protoc_middleman conformance-test-runner conformance-php $(other_langu
 test_php_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
 
-test_php_c_32: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c_32.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
-
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
 test_python: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python.txt ./conformance_python.py
+	VERSION="$(shell python --version 2>&1)"; \
+	if [[ "$$VERSION"  == "Python 2.7"* ]]; then \
+	  echo "Using Python 2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python_2.7.txt ./conformance_python.py; \
+	else \
+	  echo "Using Python >2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python.txt ./conformance_python.py; \
+	fi
 
 test_python_cpp: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt ./conformance_python.py
+	VERSION="$(shell python --version 2>&1)"; \
+	if [[ "$$VERSION"  == "Python 2.7"* ]]; then \
+	  echo "Using Python 2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp_2.7.txt ./conformance_python.py; \
+	else \
+	  echo "Using Python >2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp.txt ./conformance_python.py; \
+	fi
 
 test_nodejs: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	NODE_PATH=../js:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_js.txt ./conformance_nodejs.js

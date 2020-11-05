@@ -25,7 +25,6 @@
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message.h>
@@ -6623,7 +6622,7 @@ inline bool FileDescriptorProto::has_name() const {
   return _internal_has_name();
 }
 inline void FileDescriptorProto::clear_name() {
-  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& FileDescriptorProto::name() const {
@@ -6643,31 +6642,30 @@ inline const std::string& FileDescriptorProto::_internal_name() const {
 }
 inline void FileDescriptorProto::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileDescriptorProto::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileDescriptorProto.name)
 }
 inline void FileDescriptorProto::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileDescriptorProto.name)
 }
 inline void FileDescriptorProto::set_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.name)
 }
 inline std::string* FileDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.name)
@@ -6697,7 +6695,7 @@ inline bool FileDescriptorProto::has_package() const {
   return _internal_has_package();
 }
 inline void FileDescriptorProto::clear_package() {
-  package_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  package_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& FileDescriptorProto::package() const {
@@ -6717,31 +6715,30 @@ inline const std::string& FileDescriptorProto::_internal_package() const {
 }
 inline void FileDescriptorProto::_internal_set_package(const std::string& value) {
   _has_bits_[0] |= 0x00000002u;
-  package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileDescriptorProto::set_package(std::string&& value) {
   _has_bits_[0] |= 0x00000002u;
   package_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileDescriptorProto.package)
 }
 inline void FileDescriptorProto::set_package(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
-  package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileDescriptorProto.package)
 }
 inline void FileDescriptorProto::set_package(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000002u;
-  package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.package)
 }
 inline std::string* FileDescriptorProto::_internal_mutable_package() {
   _has_bits_[0] |= 0x00000002u;
-  return package_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return package_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileDescriptorProto::release_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.package)
@@ -7261,7 +7258,7 @@ inline bool FileDescriptorProto::has_syntax() const {
   return _internal_has_syntax();
 }
 inline void FileDescriptorProto::clear_syntax() {
-  syntax_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  syntax_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& FileDescriptorProto::syntax() const {
@@ -7281,31 +7278,30 @@ inline const std::string& FileDescriptorProto::_internal_syntax() const {
 }
 inline void FileDescriptorProto::_internal_set_syntax(const std::string& value) {
   _has_bits_[0] |= 0x00000004u;
-  syntax_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  syntax_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileDescriptorProto::set_syntax(std::string&& value) {
   _has_bits_[0] |= 0x00000004u;
   syntax_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileDescriptorProto.syntax)
 }
 inline void FileDescriptorProto::set_syntax(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
-  syntax_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  syntax_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileDescriptorProto.syntax)
 }
 inline void FileDescriptorProto::set_syntax(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000004u;
-  syntax_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  syntax_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.syntax)
 }
 inline std::string* FileDescriptorProto::_internal_mutable_syntax() {
   _has_bits_[0] |= 0x00000004u;
-  return syntax_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return syntax_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileDescriptorProto::release_syntax() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.syntax)
@@ -7542,7 +7538,7 @@ inline bool DescriptorProto::has_name() const {
   return _internal_has_name();
 }
 inline void DescriptorProto::clear_name() {
-  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& DescriptorProto::name() const {
@@ -7562,31 +7558,30 @@ inline const std::string& DescriptorProto::_internal_name() const {
 }
 inline void DescriptorProto::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void DescriptorProto::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.DescriptorProto.name)
 }
 inline void DescriptorProto::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.DescriptorProto.name)
 }
 inline void DescriptorProto::set_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.DescriptorProto.name)
 }
 inline std::string* DescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* DescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.name)
@@ -8093,7 +8088,7 @@ inline bool FieldDescriptorProto::has_name() const {
   return _internal_has_name();
 }
 inline void FieldDescriptorProto::clear_name() {
-  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& FieldDescriptorProto::name() const {
@@ -8113,31 +8108,30 @@ inline const std::string& FieldDescriptorProto::_internal_name() const {
 }
 inline void FieldDescriptorProto::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FieldDescriptorProto::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FieldDescriptorProto.name)
 }
 inline void FieldDescriptorProto::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldDescriptorProto.name)
 }
 inline void FieldDescriptorProto::set_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.name)
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FieldDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.name)
@@ -8253,7 +8247,7 @@ inline bool FieldDescriptorProto::has_type_name() const {
   return _internal_has_type_name();
 }
 inline void FieldDescriptorProto::clear_type_name() {
-  type_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  type_name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& FieldDescriptorProto::type_name() const {
@@ -8273,31 +8267,30 @@ inline const std::string& FieldDescriptorProto::_internal_type_name() const {
 }
 inline void FieldDescriptorProto::_internal_set_type_name(const std::string& value) {
   _has_bits_[0] |= 0x00000004u;
-  type_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  type_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FieldDescriptorProto::set_type_name(std::string&& value) {
   _has_bits_[0] |= 0x00000004u;
   type_name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FieldDescriptorProto.type_name)
 }
 inline void FieldDescriptorProto::set_type_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
-  type_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  type_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldDescriptorProto.type_name)
 }
 inline void FieldDescriptorProto::set_type_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000004u;
-  type_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  type_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.type_name)
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_type_name() {
   _has_bits_[0] |= 0x00000004u;
-  return type_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return type_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FieldDescriptorProto::release_type_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.type_name)
@@ -8327,7 +8320,7 @@ inline bool FieldDescriptorProto::has_extendee() const {
   return _internal_has_extendee();
 }
 inline void FieldDescriptorProto::clear_extendee() {
-  extendee_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  extendee_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& FieldDescriptorProto::extendee() const {
@@ -8347,31 +8340,30 @@ inline const std::string& FieldDescriptorProto::_internal_extendee() const {
 }
 inline void FieldDescriptorProto::_internal_set_extendee(const std::string& value) {
   _has_bits_[0] |= 0x00000002u;
-  extendee_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  extendee_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FieldDescriptorProto::set_extendee(std::string&& value) {
   _has_bits_[0] |= 0x00000002u;
   extendee_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FieldDescriptorProto.extendee)
 }
 inline void FieldDescriptorProto::set_extendee(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
-  extendee_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  extendee_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldDescriptorProto.extendee)
 }
 inline void FieldDescriptorProto::set_extendee(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000002u;
-  extendee_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  extendee_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.extendee)
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_extendee() {
   _has_bits_[0] |= 0x00000002u;
-  return extendee_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return extendee_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FieldDescriptorProto::release_extendee() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.extendee)
@@ -8401,7 +8393,7 @@ inline bool FieldDescriptorProto::has_default_value() const {
   return _internal_has_default_value();
 }
 inline void FieldDescriptorProto::clear_default_value() {
-  default_value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  default_value_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000008u;
 }
 inline const std::string& FieldDescriptorProto::default_value() const {
@@ -8421,31 +8413,30 @@ inline const std::string& FieldDescriptorProto::_internal_default_value() const 
 }
 inline void FieldDescriptorProto::_internal_set_default_value(const std::string& value) {
   _has_bits_[0] |= 0x00000008u;
-  default_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  default_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FieldDescriptorProto::set_default_value(std::string&& value) {
   _has_bits_[0] |= 0x00000008u;
   default_value_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FieldDescriptorProto.default_value)
 }
 inline void FieldDescriptorProto::set_default_value(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000008u;
-  default_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  default_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldDescriptorProto.default_value)
 }
 inline void FieldDescriptorProto::set_default_value(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000008u;
-  default_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  default_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.default_value)
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_default_value() {
   _has_bits_[0] |= 0x00000008u;
-  return default_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return default_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FieldDescriptorProto::release_default_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.default_value)
@@ -8503,7 +8494,7 @@ inline bool FieldDescriptorProto::has_json_name() const {
   return _internal_has_json_name();
 }
 inline void FieldDescriptorProto::clear_json_name() {
-  json_name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  json_name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000010u;
 }
 inline const std::string& FieldDescriptorProto::json_name() const {
@@ -8523,31 +8514,30 @@ inline const std::string& FieldDescriptorProto::_internal_json_name() const {
 }
 inline void FieldDescriptorProto::_internal_set_json_name(const std::string& value) {
   _has_bits_[0] |= 0x00000010u;
-  json_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  json_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FieldDescriptorProto::set_json_name(std::string&& value) {
   _has_bits_[0] |= 0x00000010u;
   json_name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FieldDescriptorProto.json_name)
 }
 inline void FieldDescriptorProto::set_json_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000010u;
-  json_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  json_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldDescriptorProto.json_name)
 }
 inline void FieldDescriptorProto::set_json_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000010u;
-  json_name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  json_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.json_name)
 }
 inline std::string* FieldDescriptorProto::_internal_mutable_json_name() {
   _has_bits_[0] |= 0x00000010u;
-  return json_name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return json_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FieldDescriptorProto::release_json_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.FieldDescriptorProto.json_name)
@@ -8692,7 +8682,7 @@ inline bool OneofDescriptorProto::has_name() const {
   return _internal_has_name();
 }
 inline void OneofDescriptorProto::clear_name() {
-  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& OneofDescriptorProto::name() const {
@@ -8712,31 +8702,30 @@ inline const std::string& OneofDescriptorProto::_internal_name() const {
 }
 inline void OneofDescriptorProto::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void OneofDescriptorProto::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.OneofDescriptorProto.name)
 }
 inline void OneofDescriptorProto::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.OneofDescriptorProto.name)
 }
 inline void OneofDescriptorProto::set_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.OneofDescriptorProto.name)
 }
 inline std::string* OneofDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* OneofDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.name)
@@ -8913,7 +8902,7 @@ inline bool EnumDescriptorProto::has_name() const {
   return _internal_has_name();
 }
 inline void EnumDescriptorProto::clear_name() {
-  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& EnumDescriptorProto::name() const {
@@ -8933,31 +8922,30 @@ inline const std::string& EnumDescriptorProto::_internal_name() const {
 }
 inline void EnumDescriptorProto::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void EnumDescriptorProto::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.EnumDescriptorProto.name)
 }
 inline void EnumDescriptorProto::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.EnumDescriptorProto.name)
 }
 inline void EnumDescriptorProto::set_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.EnumDescriptorProto.name)
 }
 inline std::string* EnumDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* EnumDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumDescriptorProto.name)
@@ -9226,7 +9214,7 @@ inline bool EnumValueDescriptorProto::has_name() const {
   return _internal_has_name();
 }
 inline void EnumValueDescriptorProto::clear_name() {
-  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& EnumValueDescriptorProto::name() const {
@@ -9246,31 +9234,30 @@ inline const std::string& EnumValueDescriptorProto::_internal_name() const {
 }
 inline void EnumValueDescriptorProto::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void EnumValueDescriptorProto::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.EnumValueDescriptorProto.name)
 }
 inline void EnumValueDescriptorProto::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.EnumValueDescriptorProto.name)
 }
 inline void EnumValueDescriptorProto::set_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.EnumValueDescriptorProto.name)
 }
 inline std::string* EnumValueDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* EnumValueDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.EnumValueDescriptorProto.name)
@@ -9415,7 +9402,7 @@ inline bool ServiceDescriptorProto::has_name() const {
   return _internal_has_name();
 }
 inline void ServiceDescriptorProto::clear_name() {
-  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& ServiceDescriptorProto::name() const {
@@ -9435,31 +9422,30 @@ inline const std::string& ServiceDescriptorProto::_internal_name() const {
 }
 inline void ServiceDescriptorProto::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void ServiceDescriptorProto::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.ServiceDescriptorProto.name)
 }
 inline void ServiceDescriptorProto::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.ServiceDescriptorProto.name)
 }
 inline void ServiceDescriptorProto::set_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.ServiceDescriptorProto.name)
 }
 inline std::string* ServiceDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* ServiceDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.ServiceDescriptorProto.name)
@@ -9615,7 +9601,7 @@ inline bool MethodDescriptorProto::has_name() const {
   return _internal_has_name();
 }
 inline void MethodDescriptorProto::clear_name() {
-  name_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& MethodDescriptorProto::name() const {
@@ -9635,31 +9621,30 @@ inline const std::string& MethodDescriptorProto::_internal_name() const {
 }
 inline void MethodDescriptorProto::_internal_set_name(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void MethodDescriptorProto::set_name(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.MethodDescriptorProto.name)
 }
 inline void MethodDescriptorProto::set_name(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.MethodDescriptorProto.name)
 }
 inline void MethodDescriptorProto::set_name(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.MethodDescriptorProto.name)
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
-  return name_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* MethodDescriptorProto::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.name)
@@ -9689,7 +9674,7 @@ inline bool MethodDescriptorProto::has_input_type() const {
   return _internal_has_input_type();
 }
 inline void MethodDescriptorProto::clear_input_type() {
-  input_type_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  input_type_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& MethodDescriptorProto::input_type() const {
@@ -9709,31 +9694,30 @@ inline const std::string& MethodDescriptorProto::_internal_input_type() const {
 }
 inline void MethodDescriptorProto::_internal_set_input_type(const std::string& value) {
   _has_bits_[0] |= 0x00000002u;
-  input_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  input_type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void MethodDescriptorProto::set_input_type(std::string&& value) {
   _has_bits_[0] |= 0x00000002u;
   input_type_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.MethodDescriptorProto.input_type)
 }
 inline void MethodDescriptorProto::set_input_type(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
-  input_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  input_type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.MethodDescriptorProto.input_type)
 }
 inline void MethodDescriptorProto::set_input_type(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000002u;
-  input_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  input_type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.MethodDescriptorProto.input_type)
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_input_type() {
   _has_bits_[0] |= 0x00000002u;
-  return input_type_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return input_type_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* MethodDescriptorProto::release_input_type() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.input_type)
@@ -9763,7 +9747,7 @@ inline bool MethodDescriptorProto::has_output_type() const {
   return _internal_has_output_type();
 }
 inline void MethodDescriptorProto::clear_output_type() {
-  output_type_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  output_type_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& MethodDescriptorProto::output_type() const {
@@ -9783,31 +9767,30 @@ inline const std::string& MethodDescriptorProto::_internal_output_type() const {
 }
 inline void MethodDescriptorProto::_internal_set_output_type(const std::string& value) {
   _has_bits_[0] |= 0x00000004u;
-  output_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  output_type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void MethodDescriptorProto::set_output_type(std::string&& value) {
   _has_bits_[0] |= 0x00000004u;
   output_type_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.MethodDescriptorProto.output_type)
 }
 inline void MethodDescriptorProto::set_output_type(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
-  output_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  output_type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.MethodDescriptorProto.output_type)
 }
 inline void MethodDescriptorProto::set_output_type(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000004u;
-  output_type_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  output_type_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.MethodDescriptorProto.output_type)
 }
 inline std::string* MethodDescriptorProto::_internal_mutable_output_type() {
   _has_bits_[0] |= 0x00000004u;
-  return output_type_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return output_type_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* MethodDescriptorProto::release_output_type() {
   // @@protoc_insertion_point(field_release:google.protobuf.MethodDescriptorProto.output_type)
@@ -9980,7 +9963,7 @@ inline bool FileOptions::has_java_package() const {
   return _internal_has_java_package();
 }
 inline void FileOptions::clear_java_package() {
-  java_package_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  java_package_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& FileOptions::java_package() const {
@@ -10000,31 +9983,30 @@ inline const std::string& FileOptions::_internal_java_package() const {
 }
 inline void FileOptions::_internal_set_java_package(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  java_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  java_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_java_package(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   java_package_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.java_package)
 }
 inline void FileOptions::set_java_package(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  java_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  java_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.java_package)
 }
 inline void FileOptions::set_java_package(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  java_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  java_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.java_package)
 }
 inline std::string* FileOptions::_internal_mutable_java_package() {
   _has_bits_[0] |= 0x00000001u;
-  return java_package_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return java_package_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_java_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_package)
@@ -10054,7 +10036,7 @@ inline bool FileOptions::has_java_outer_classname() const {
   return _internal_has_java_outer_classname();
 }
 inline void FileOptions::clear_java_outer_classname() {
-  java_outer_classname_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  java_outer_classname_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& FileOptions::java_outer_classname() const {
@@ -10074,31 +10056,30 @@ inline const std::string& FileOptions::_internal_java_outer_classname() const {
 }
 inline void FileOptions::_internal_set_java_outer_classname(const std::string& value) {
   _has_bits_[0] |= 0x00000002u;
-  java_outer_classname_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  java_outer_classname_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_java_outer_classname(std::string&& value) {
   _has_bits_[0] |= 0x00000002u;
   java_outer_classname_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.java_outer_classname)
 }
 inline void FileOptions::set_java_outer_classname(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
-  java_outer_classname_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  java_outer_classname_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.java_outer_classname)
 }
 inline void FileOptions::set_java_outer_classname(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000002u;
-  java_outer_classname_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  java_outer_classname_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.java_outer_classname)
 }
 inline std::string* FileOptions::_internal_mutable_java_outer_classname() {
   _has_bits_[0] |= 0x00000002u;
-  return java_outer_classname_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return java_outer_classname_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_java_outer_classname() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.java_outer_classname)
@@ -10241,7 +10222,7 @@ inline bool FileOptions::has_go_package() const {
   return _internal_has_go_package();
 }
 inline void FileOptions::clear_go_package() {
-  go_package_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  go_package_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& FileOptions::go_package() const {
@@ -10261,31 +10242,30 @@ inline const std::string& FileOptions::_internal_go_package() const {
 }
 inline void FileOptions::_internal_set_go_package(const std::string& value) {
   _has_bits_[0] |= 0x00000004u;
-  go_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  go_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_go_package(std::string&& value) {
   _has_bits_[0] |= 0x00000004u;
   go_package_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.go_package)
 }
 inline void FileOptions::set_go_package(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
-  go_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  go_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.go_package)
 }
 inline void FileOptions::set_go_package(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000004u;
-  go_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  go_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.go_package)
 }
 inline std::string* FileOptions::_internal_mutable_go_package() {
   _has_bits_[0] |= 0x00000004u;
-  return go_package_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return go_package_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_go_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.go_package)
@@ -10483,7 +10463,7 @@ inline bool FileOptions::has_objc_class_prefix() const {
   return _internal_has_objc_class_prefix();
 }
 inline void FileOptions::clear_objc_class_prefix() {
-  objc_class_prefix_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  objc_class_prefix_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000008u;
 }
 inline const std::string& FileOptions::objc_class_prefix() const {
@@ -10503,31 +10483,30 @@ inline const std::string& FileOptions::_internal_objc_class_prefix() const {
 }
 inline void FileOptions::_internal_set_objc_class_prefix(const std::string& value) {
   _has_bits_[0] |= 0x00000008u;
-  objc_class_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  objc_class_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_objc_class_prefix(std::string&& value) {
   _has_bits_[0] |= 0x00000008u;
   objc_class_prefix_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.objc_class_prefix)
 }
 inline void FileOptions::set_objc_class_prefix(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000008u;
-  objc_class_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  objc_class_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.objc_class_prefix)
 }
 inline void FileOptions::set_objc_class_prefix(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000008u;
-  objc_class_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  objc_class_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.objc_class_prefix)
 }
 inline std::string* FileOptions::_internal_mutable_objc_class_prefix() {
   _has_bits_[0] |= 0x00000008u;
-  return objc_class_prefix_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return objc_class_prefix_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_objc_class_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.objc_class_prefix)
@@ -10557,7 +10536,7 @@ inline bool FileOptions::has_csharp_namespace() const {
   return _internal_has_csharp_namespace();
 }
 inline void FileOptions::clear_csharp_namespace() {
-  csharp_namespace_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  csharp_namespace_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000010u;
 }
 inline const std::string& FileOptions::csharp_namespace() const {
@@ -10577,31 +10556,30 @@ inline const std::string& FileOptions::_internal_csharp_namespace() const {
 }
 inline void FileOptions::_internal_set_csharp_namespace(const std::string& value) {
   _has_bits_[0] |= 0x00000010u;
-  csharp_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  csharp_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_csharp_namespace(std::string&& value) {
   _has_bits_[0] |= 0x00000010u;
   csharp_namespace_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.csharp_namespace)
 }
 inline void FileOptions::set_csharp_namespace(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000010u;
-  csharp_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  csharp_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.csharp_namespace)
 }
 inline void FileOptions::set_csharp_namespace(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000010u;
-  csharp_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  csharp_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.csharp_namespace)
 }
 inline std::string* FileOptions::_internal_mutable_csharp_namespace() {
   _has_bits_[0] |= 0x00000010u;
-  return csharp_namespace_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return csharp_namespace_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_csharp_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.csharp_namespace)
@@ -10631,7 +10609,7 @@ inline bool FileOptions::has_swift_prefix() const {
   return _internal_has_swift_prefix();
 }
 inline void FileOptions::clear_swift_prefix() {
-  swift_prefix_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  swift_prefix_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000020u;
 }
 inline const std::string& FileOptions::swift_prefix() const {
@@ -10651,31 +10629,30 @@ inline const std::string& FileOptions::_internal_swift_prefix() const {
 }
 inline void FileOptions::_internal_set_swift_prefix(const std::string& value) {
   _has_bits_[0] |= 0x00000020u;
-  swift_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  swift_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_swift_prefix(std::string&& value) {
   _has_bits_[0] |= 0x00000020u;
   swift_prefix_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.swift_prefix)
 }
 inline void FileOptions::set_swift_prefix(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000020u;
-  swift_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  swift_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.swift_prefix)
 }
 inline void FileOptions::set_swift_prefix(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000020u;
-  swift_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  swift_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.swift_prefix)
 }
 inline std::string* FileOptions::_internal_mutable_swift_prefix() {
   _has_bits_[0] |= 0x00000020u;
-  return swift_prefix_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return swift_prefix_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_swift_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.swift_prefix)
@@ -10705,7 +10682,7 @@ inline bool FileOptions::has_php_class_prefix() const {
   return _internal_has_php_class_prefix();
 }
 inline void FileOptions::clear_php_class_prefix() {
-  php_class_prefix_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  php_class_prefix_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000040u;
 }
 inline const std::string& FileOptions::php_class_prefix() const {
@@ -10725,31 +10702,30 @@ inline const std::string& FileOptions::_internal_php_class_prefix() const {
 }
 inline void FileOptions::_internal_set_php_class_prefix(const std::string& value) {
   _has_bits_[0] |= 0x00000040u;
-  php_class_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  php_class_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_php_class_prefix(std::string&& value) {
   _has_bits_[0] |= 0x00000040u;
   php_class_prefix_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.php_class_prefix)
 }
 inline void FileOptions::set_php_class_prefix(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000040u;
-  php_class_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  php_class_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.php_class_prefix)
 }
 inline void FileOptions::set_php_class_prefix(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000040u;
-  php_class_prefix_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  php_class_prefix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.php_class_prefix)
 }
 inline std::string* FileOptions::_internal_mutable_php_class_prefix() {
   _has_bits_[0] |= 0x00000040u;
-  return php_class_prefix_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return php_class_prefix_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_php_class_prefix() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_class_prefix)
@@ -10779,7 +10755,7 @@ inline bool FileOptions::has_php_namespace() const {
   return _internal_has_php_namespace();
 }
 inline void FileOptions::clear_php_namespace() {
-  php_namespace_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  php_namespace_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000080u;
 }
 inline const std::string& FileOptions::php_namespace() const {
@@ -10799,31 +10775,30 @@ inline const std::string& FileOptions::_internal_php_namespace() const {
 }
 inline void FileOptions::_internal_set_php_namespace(const std::string& value) {
   _has_bits_[0] |= 0x00000080u;
-  php_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  php_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_php_namespace(std::string&& value) {
   _has_bits_[0] |= 0x00000080u;
   php_namespace_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.php_namespace)
 }
 inline void FileOptions::set_php_namespace(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000080u;
-  php_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  php_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.php_namespace)
 }
 inline void FileOptions::set_php_namespace(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000080u;
-  php_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  php_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.php_namespace)
 }
 inline std::string* FileOptions::_internal_mutable_php_namespace() {
   _has_bits_[0] |= 0x00000080u;
-  return php_namespace_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return php_namespace_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_php_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_namespace)
@@ -10853,7 +10828,7 @@ inline bool FileOptions::has_php_metadata_namespace() const {
   return _internal_has_php_metadata_namespace();
 }
 inline void FileOptions::clear_php_metadata_namespace() {
-  php_metadata_namespace_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  php_metadata_namespace_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000100u;
 }
 inline const std::string& FileOptions::php_metadata_namespace() const {
@@ -10873,31 +10848,30 @@ inline const std::string& FileOptions::_internal_php_metadata_namespace() const 
 }
 inline void FileOptions::_internal_set_php_metadata_namespace(const std::string& value) {
   _has_bits_[0] |= 0x00000100u;
-  php_metadata_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  php_metadata_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_php_metadata_namespace(std::string&& value) {
   _has_bits_[0] |= 0x00000100u;
   php_metadata_namespace_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.php_metadata_namespace)
 }
 inline void FileOptions::set_php_metadata_namespace(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000100u;
-  php_metadata_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  php_metadata_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.php_metadata_namespace)
 }
 inline void FileOptions::set_php_metadata_namespace(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000100u;
-  php_metadata_namespace_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  php_metadata_namespace_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.php_metadata_namespace)
 }
 inline std::string* FileOptions::_internal_mutable_php_metadata_namespace() {
   _has_bits_[0] |= 0x00000100u;
-  return php_metadata_namespace_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return php_metadata_namespace_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_php_metadata_namespace() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_metadata_namespace)
@@ -10927,7 +10901,7 @@ inline bool FileOptions::has_ruby_package() const {
   return _internal_has_ruby_package();
 }
 inline void FileOptions::clear_ruby_package() {
-  ruby_package_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  ruby_package_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000200u;
 }
 inline const std::string& FileOptions::ruby_package() const {
@@ -10947,31 +10921,30 @@ inline const std::string& FileOptions::_internal_ruby_package() const {
 }
 inline void FileOptions::_internal_set_ruby_package(const std::string& value) {
   _has_bits_[0] |= 0x00000200u;
-  ruby_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  ruby_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void FileOptions::set_ruby_package(std::string&& value) {
   _has_bits_[0] |= 0x00000200u;
   ruby_package_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.ruby_package)
 }
 inline void FileOptions::set_ruby_package(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000200u;
-  ruby_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  ruby_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.ruby_package)
 }
 inline void FileOptions::set_ruby_package(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000200u;
-  ruby_package_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  ruby_package_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.ruby_package)
 }
 inline std::string* FileOptions::_internal_mutable_ruby_package() {
   _has_bits_[0] |= 0x00000200u;
-  return ruby_package_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return ruby_package_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* FileOptions::release_ruby_package() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.ruby_package)
@@ -11796,7 +11769,7 @@ inline bool UninterpretedOption_NamePart::has_name_part() const {
   return _internal_has_name_part();
 }
 inline void UninterpretedOption_NamePart::clear_name_part() {
-  name_part_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  name_part_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& UninterpretedOption_NamePart::name_part() const {
@@ -11816,31 +11789,30 @@ inline const std::string& UninterpretedOption_NamePart::_internal_name_part() co
 }
 inline void UninterpretedOption_NamePart::_internal_set_name_part(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  name_part_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  name_part_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void UninterpretedOption_NamePart::set_name_part(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   name_part_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.UninterpretedOption.NamePart.name_part)
 }
 inline void UninterpretedOption_NamePart::set_name_part(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  name_part_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  name_part_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.UninterpretedOption.NamePart.name_part)
 }
 inline void UninterpretedOption_NamePart::set_name_part(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  name_part_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  name_part_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.UninterpretedOption.NamePart.name_part)
 }
 inline std::string* UninterpretedOption_NamePart::_internal_mutable_name_part() {
   _has_bits_[0] |= 0x00000001u;
-  return name_part_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return name_part_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* UninterpretedOption_NamePart::release_name_part() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.NamePart.name_part)
@@ -11941,7 +11913,7 @@ inline bool UninterpretedOption::has_identifier_value() const {
   return _internal_has_identifier_value();
 }
 inline void UninterpretedOption::clear_identifier_value() {
-  identifier_value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  identifier_value_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& UninterpretedOption::identifier_value() const {
@@ -11961,31 +11933,30 @@ inline const std::string& UninterpretedOption::_internal_identifier_value() cons
 }
 inline void UninterpretedOption::_internal_set_identifier_value(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  identifier_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  identifier_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void UninterpretedOption::set_identifier_value(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   identifier_value_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.UninterpretedOption.identifier_value)
 }
 inline void UninterpretedOption::set_identifier_value(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  identifier_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  identifier_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.UninterpretedOption.identifier_value)
 }
 inline void UninterpretedOption::set_identifier_value(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  identifier_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  identifier_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.UninterpretedOption.identifier_value)
 }
 inline std::string* UninterpretedOption::_internal_mutable_identifier_value() {
   _has_bits_[0] |= 0x00000001u;
-  return identifier_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return identifier_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* UninterpretedOption::release_identifier_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.identifier_value)
@@ -12099,7 +12070,7 @@ inline bool UninterpretedOption::has_string_value() const {
   return _internal_has_string_value();
 }
 inline void UninterpretedOption::clear_string_value() {
-  string_value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  string_value_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& UninterpretedOption::string_value() const {
@@ -12119,31 +12090,30 @@ inline const std::string& UninterpretedOption::_internal_string_value() const {
 }
 inline void UninterpretedOption::_internal_set_string_value(const std::string& value) {
   _has_bits_[0] |= 0x00000002u;
-  string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void UninterpretedOption::set_string_value(std::string&& value) {
   _has_bits_[0] |= 0x00000002u;
   string_value_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.UninterpretedOption.string_value)
 }
 inline void UninterpretedOption::set_string_value(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
-  string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.UninterpretedOption.string_value)
 }
 inline void UninterpretedOption::set_string_value(const void* value,
     size_t size) {
   _has_bits_[0] |= 0x00000002u;
-  string_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.UninterpretedOption.string_value)
 }
 inline std::string* UninterpretedOption::_internal_mutable_string_value() {
   _has_bits_[0] |= 0x00000002u;
-  return string_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return string_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* UninterpretedOption::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.string_value)
@@ -12173,7 +12143,7 @@ inline bool UninterpretedOption::has_aggregate_value() const {
   return _internal_has_aggregate_value();
 }
 inline void UninterpretedOption::clear_aggregate_value() {
-  aggregate_value_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  aggregate_value_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000004u;
 }
 inline const std::string& UninterpretedOption::aggregate_value() const {
@@ -12193,31 +12163,30 @@ inline const std::string& UninterpretedOption::_internal_aggregate_value() const
 }
 inline void UninterpretedOption::_internal_set_aggregate_value(const std::string& value) {
   _has_bits_[0] |= 0x00000004u;
-  aggregate_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  aggregate_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void UninterpretedOption::set_aggregate_value(std::string&& value) {
   _has_bits_[0] |= 0x00000004u;
   aggregate_value_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.UninterpretedOption.aggregate_value)
 }
 inline void UninterpretedOption::set_aggregate_value(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000004u;
-  aggregate_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  aggregate_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.UninterpretedOption.aggregate_value)
 }
 inline void UninterpretedOption::set_aggregate_value(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000004u;
-  aggregate_value_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  aggregate_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.UninterpretedOption.aggregate_value)
 }
 inline std::string* UninterpretedOption::_internal_mutable_aggregate_value() {
   _has_bits_[0] |= 0x00000004u;
-  return aggregate_value_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return aggregate_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* UninterpretedOption::release_aggregate_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.UninterpretedOption.aggregate_value)
@@ -12345,7 +12314,7 @@ inline bool SourceCodeInfo_Location::has_leading_comments() const {
   return _internal_has_leading_comments();
 }
 inline void SourceCodeInfo_Location::clear_leading_comments() {
-  leading_comments_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  leading_comments_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& SourceCodeInfo_Location::leading_comments() const {
@@ -12365,31 +12334,30 @@ inline const std::string& SourceCodeInfo_Location::_internal_leading_comments() 
 }
 inline void SourceCodeInfo_Location::_internal_set_leading_comments(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  leading_comments_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  leading_comments_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void SourceCodeInfo_Location::set_leading_comments(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   leading_comments_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.SourceCodeInfo.Location.leading_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_comments(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  leading_comments_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  leading_comments_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceCodeInfo.Location.leading_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_comments(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  leading_comments_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  leading_comments_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceCodeInfo.Location.leading_comments)
 }
 inline std::string* SourceCodeInfo_Location::_internal_mutable_leading_comments() {
   _has_bits_[0] |= 0x00000001u;
-  return leading_comments_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return leading_comments_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* SourceCodeInfo_Location::release_leading_comments() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.leading_comments)
@@ -12419,7 +12387,7 @@ inline bool SourceCodeInfo_Location::has_trailing_comments() const {
   return _internal_has_trailing_comments();
 }
 inline void SourceCodeInfo_Location::clear_trailing_comments() {
-  trailing_comments_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  trailing_comments_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000002u;
 }
 inline const std::string& SourceCodeInfo_Location::trailing_comments() const {
@@ -12439,31 +12407,30 @@ inline const std::string& SourceCodeInfo_Location::_internal_trailing_comments()
 }
 inline void SourceCodeInfo_Location::_internal_set_trailing_comments(const std::string& value) {
   _has_bits_[0] |= 0x00000002u;
-  trailing_comments_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  trailing_comments_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void SourceCodeInfo_Location::set_trailing_comments(std::string&& value) {
   _has_bits_[0] |= 0x00000002u;
   trailing_comments_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
 inline void SourceCodeInfo_Location::set_trailing_comments(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000002u;
-  trailing_comments_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  trailing_comments_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
 inline void SourceCodeInfo_Location::set_trailing_comments(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000002u;
-  trailing_comments_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  trailing_comments_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
 inline std::string* SourceCodeInfo_Location::_internal_mutable_trailing_comments() {
   _has_bits_[0] |= 0x00000002u;
-  return trailing_comments_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return trailing_comments_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* SourceCodeInfo_Location::release_trailing_comments() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceCodeInfo.Location.trailing_comments)
@@ -12661,7 +12628,7 @@ inline bool GeneratedCodeInfo_Annotation::has_source_file() const {
   return _internal_has_source_file();
 }
 inline void GeneratedCodeInfo_Annotation::clear_source_file() {
-  source_file_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  source_file_.ClearToEmpty();
   _has_bits_[0] &= ~0x00000001u;
 }
 inline const std::string& GeneratedCodeInfo_Annotation::source_file() const {
@@ -12681,31 +12648,30 @@ inline const std::string& GeneratedCodeInfo_Annotation::_internal_source_file() 
 }
 inline void GeneratedCodeInfo_Annotation::_internal_set_source_file(const std::string& value) {
   _has_bits_[0] |= 0x00000001u;
-  source_file_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+  source_file_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
 }
 inline void GeneratedCodeInfo_Annotation::set_source_file(std::string&& value) {
   _has_bits_[0] |= 0x00000001u;
   source_file_.Set(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
   // @@protoc_insertion_point(field_set_rvalue:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
 }
 inline void GeneratedCodeInfo_Annotation::set_source_file(const char* value) {
   GOOGLE_DCHECK(value != nullptr);
   _has_bits_[0] |= 0x00000001u;
-  source_file_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
-              GetArena());
+  source_file_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
   // @@protoc_insertion_point(field_set_char:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
 }
 inline void GeneratedCodeInfo_Annotation::set_source_file(const char* value,
     size_t size) {
   _has_bits_[0] |= 0x00000001u;
-  source_file_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+  source_file_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
 }
 inline std::string* GeneratedCodeInfo_Annotation::_internal_mutable_source_file() {
   _has_bits_[0] |= 0x00000001u;
-  return source_file_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  return source_file_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
 }
 inline std::string* GeneratedCodeInfo_Annotation::release_source_file() {
   // @@protoc_insertion_point(field_release:google.protobuf.GeneratedCodeInfo.Annotation.source_file)

@@ -2572,7 +2572,7 @@ final class MessageSchema<T> implements Schema<T> {
 
       int presenceMaskAndOffset = 0;
       int presenceMask = 0;
-      if (!proto3 && fieldType <= 17) {
+      if (fieldType <= 17) {
         presenceMaskAndOffset = buffer[pos + 2];
         final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
         if (presenceFieldOffset != currentPresenceFieldOffset) {

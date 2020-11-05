@@ -40,7 +40,6 @@ namespace google {
 namespace protobuf {
 namespace util {
 using util::Status;
-using util::StatusOr;
 namespace converter {
 
 namespace {
@@ -49,9 +48,10 @@ namespace {
 // If value is empty or if conversion fails, the default_value is returned.
 template <typename T>
 T ConvertTo(StringPiece value,
-            StatusOr<T> (DataPiece::*converter_fn)() const, T default_value) {
+            util::StatusOr<T> (DataPiece::*converter_fn)() const,
+            T default_value) {
   if (value.empty()) return default_value;
-  StatusOr<T> result = (DataPiece(value, true).*converter_fn)();
+  util::StatusOr<T> result = (DataPiece(value, true).*converter_fn)();
   return result.ok() ? result.value() : default_value;
 }
 }  // namespace

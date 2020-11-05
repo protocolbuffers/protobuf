@@ -63,7 +63,7 @@ class MapFieldLite {
   typedef Map<Key, T> MapType;
   typedef EntryType EntryTypeTrait;
 
-  MapFieldLite() {}
+  constexpr MapFieldLite() {}
 
   explicit MapFieldLite(Arena* arena) : map_(arena) {}
 
