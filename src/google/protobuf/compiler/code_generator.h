@@ -193,6 +193,9 @@ typedef GeneratorContext OutputDirectory;
 PROTOC_EXPORT void ParseGeneratorParameter(
     const std::string&, std::vector<std::pair<std::string, std::string> >*);
 
+// Strips ".proto" or ".protodevel" from the end of a filename.
+PROTOC_EXPORT std::string StripProto(const std::string& filename);
+
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
