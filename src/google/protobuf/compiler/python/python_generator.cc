@@ -69,16 +69,12 @@ namespace python {
 
 namespace {
 
-bool StrEndsWith(StringPiece sp, StringPiece x) {
-  return sp.size() >= x.size() && sp.substr(sp.size() - x.size()) == x;
-}
-
 // Returns a copy of |filename| with any trailing ".protodevel" or ".proto
 // suffix stripped.
 // TODO(robinson): Unify with copy in compiler/cpp/internal/helpers.cc.
 std::string StripProto(const std::string& filename) {
   const char* suffix =
-      StrEndsWith(filename, ".protodevel") ? ".protodevel" : ".proto";
+      HasSuffixString(filename, ".protodevel") ? ".protodevel" : ".proto";
   return StripSuffixString(filename, suffix);
 }
 
