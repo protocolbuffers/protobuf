@@ -19,7 +19,6 @@
     <PackageLicenseUrl>https://github.com/protocolbuffers/protobuf/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/protocolbuffers/protobuf.git</RepositoryUrl>
-    <DefineConstants>$(DefineConstants);GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY</DefineConstants>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <!-- Include PDB in the built .nupkg -->
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>

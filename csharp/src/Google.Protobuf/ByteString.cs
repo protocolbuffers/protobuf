@@ -111,7 +111,6 @@ namespace Google.Protobuf
             get { return Length == 0; }
         }
 
-#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
         /// <summary>
         /// Provides read-only access to the data of this <see cref="ByteString"/>.
         /// No data is copied so this is the most efficient way of accessing.
@@ -137,7 +136,6 @@ namespace Google.Protobuf
                 return new ReadOnlyMemory<byte>(bytes);
             }
         }
-#endif
 
         /// <summary>
         /// Converts this <see cref="ByteString"/> into a byte array.
@@ -239,7 +237,6 @@ namespace Google.Protobuf
             return new ByteString(portion);
         }
 
-#if GOOGLE_PROTOBUF_SUPPORT_SYSTEM_MEMORY
         /// <summary>
         /// Constructs a <see cref="ByteString" /> from a read only span. The contents
         /// are copied, so further modifications to the span will not
@@ -250,7 +247,6 @@ namespace Google.Protobuf
         {
             return new ByteString(bytes.ToArray());
         }
-#endif
 
         /// <summary>
         /// Creates a new <see cref="ByteString" /> by encoding the specified text with
