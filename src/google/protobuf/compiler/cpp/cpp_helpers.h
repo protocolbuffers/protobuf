@@ -205,9 +205,6 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
 std::string FieldMessageTypeName(const FieldDescriptor* field,
                                  const Options& options);
 
-// Strips ".proto" or ".protodevel" from the end of a filename.
-PROTOC_EXPORT std::string StripProto(const std::string& filename);
-
 // Get the C++ type name for a primitive type (e.g. "double", "::google::protobuf::int32", etc.).
 const char* PrimitiveTypeName(FieldDescriptor::CppType type);
 std::string PrimitiveTypeName(const Options& options,

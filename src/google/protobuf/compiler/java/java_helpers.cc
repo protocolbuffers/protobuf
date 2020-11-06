@@ -227,14 +227,6 @@ std::string CamelCaseFieldName(const FieldDescriptor* field) {
   return fieldName;
 }
 
-std::string StripProto(const std::string& filename) {
-  if (HasSuffixString(filename, ".protodevel")) {
-    return StripSuffixString(filename, ".protodevel");
-  } else {
-    return StripSuffixString(filename, ".proto");
-  }
-}
-
 std::string FileClassName(const FileDescriptor* file, bool immutable) {
   ClassNameResolver name_resolver;
   return name_resolver.GetFileClassName(file, immutable);

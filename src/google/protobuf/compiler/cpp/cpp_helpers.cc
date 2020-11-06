@@ -515,14 +515,6 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
   return QualifiedClassName(field->message_type(), options);
 }
 
-std::string StripProto(const std::string& filename) {
-  if (HasSuffixString(filename, ".protodevel")) {
-    return StripSuffixString(filename, ".protodevel");
-  } else {
-    return StripSuffixString(filename, ".proto");
-  }
-}
-
 const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
   switch (type) {
     case FieldDescriptor::CPPTYPE_INT32:
