@@ -18,3 +18,5 @@ build:analyzer --copt=-fanalyzer --copt=-Werror
 build:analyzer --per_file_copt=json/parser@-fno-analyzer
 build:analyzer --per_file_copt=com_google_protobuf@-fno-analyzer
 build:analyzer --per_file_copt=com_github_google_benchmark@-fno-analyzer
+
+build:asan-fuzzer --copt=-fsanitize=address,fuzzer --linkopt=-fsanitize=address,fuzzer --define fuzz=true

@@ -4,6 +4,7 @@
 #include <setjmp.h>
 #include <string.h>
 
+#include "upb/decode.int.h"
 #include "upb/upb.h"
 #include "upb/upb.int.h"
 
@@ -137,19 +138,6 @@ static const int8_t delim_ops[37] = {
     OP_VARPCK_LG2(3), /* REPEATED SINT64 */
 };
 
-/* Data pertaining to the parse. */
-typedef struct {
-  const char *end;         /* Can read up to 16 bytes slop beyond this. */
-  const char *limit_ptr;   /* = end + UPB_MIN(limit, 0) */
-  int limit;               /* Submessage limit relative to end. */
-  int depth;
-  uint32_t end_group; /* Set to field number of END_GROUP tag, if any. */
-  bool alias;
-  char patch[32];
-  upb_arena arena;
-  jmp_buf err;
-} upb_decstate;
-
 typedef union {
   bool bool_val;
   uint32_t uint32_val;
@@ -162,38 +150,27 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 UPB_NORETURN static void decode_err(upb_decstate *d) { longjmp(d->err, 1); }
 
-void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
-  static const uint8_t utf8_offset[] = {
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-      1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-      2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-      4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
-  };
+const char *fastdecode_err(upb_decstate *d) {
+  longjmp(d->err, 1);
+  return NULL;
+}
 
-  int i, j;
-  uint8_t offset;
+const uint8_t upb_utf8_offsets[] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+};
 
-  i = 0;
-  while (i < len) {
-    offset = utf8_offset[(uint8_t)buf[i]];
-    if (offset == 0 || i + offset > len) {
-      decode_err(d);
-    }
-    for (j = i + 1; j < i + offset; j++) {
-      if ((buf[j] & 0xc0) != 0x80) {
-        decode_err(d);
-      }
-    }
-    i += offset;
-  }
-  if (i != len) decode_err(d);
+static void decode_verifyutf8(upb_decstate *d, const char *buf, int len) {
+  if (!decode_verifyutf8_inl(buf, len)) decode_err(d);
 }
 
 static bool decode_reserve(upb_decstate *d, upb_array *arr, size_t elem) {
@@ -298,55 +275,14 @@ static upb_msg *decode_newsubmsg(upb_decstate *d, const upb_msglayout *layout,
   return _upb_msg_new_inl(subl, &d->arena);
 }
 
-static int decode_pushlimit(upb_decstate *d, const char *ptr, int size) {
-  int limit = size + (int)(ptr - d->end);
-  int delta = d->limit - limit;
-  d->limit = limit;
-  d->limit_ptr = d->end + UPB_MIN(0, limit);
-  return delta;
-}
-
-static void decode_poplimit(upb_decstate *d, int saved_delta) {
-  d->limit += saved_delta;
-  d->limit_ptr = d->end + UPB_MIN(0, d->limit);
-}
-
-typedef struct {
-  bool ok;
-  const char *ptr;
-} decode_doneret;
-
 UPB_NOINLINE
-static const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
-                                         int overrun) {
-  if (overrun < d->limit) {
-    /* Need to copy remaining data into patch buffer. */
-    UPB_ASSERT(overrun < 16);
-    memset(d->patch + 16, 0, 16);
-    memcpy(d->patch, d->end, 16);
-    ptr = &d->patch[0] + overrun;
-    d->end = &d->patch[16];
-    d->limit -= 16;
-    d->limit_ptr = d->end + d->limit;
-    d->alias = false;
-    UPB_ASSERT(ptr < d->limit_ptr);
-    return ptr;
-  } else {
+const char *decode_isdonefallback(upb_decstate *d, const char *ptr,
+                                  int overrun) {
+  ptr = decode_isdonefallback_inl(d, ptr, overrun);
+  if (ptr == NULL) {
     decode_err(d);
   }
-}
-
-UPB_FORCEINLINE
-static bool decode_isdone(upb_decstate *d, const char **ptr) {
-  int overrun = *ptr - d->end;
-  if (UPB_LIKELY(*ptr < d->limit_ptr)) {
-    return false;
-  } else if (UPB_LIKELY(overrun == d->limit)) {
-    return true;
-  } else {
-    *ptr = decode_isdonefallback(d, *ptr, overrun);
-    return false;
-  }
+  return ptr;
 }
 
 static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
@@ -363,30 +299,38 @@ static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
   return ptr + size;
 }
 
+UPB_FORCEINLINE
 static const char *decode_tosubmsg(upb_decstate *d, const char *ptr,
                                    upb_msg *submsg, const upb_msglayout *layout,
                                    const upb_msglayout_field *field, int size) {
   const upb_msglayout *subl = layout->submsgs[field->submsg_index];
   int saved_delta = decode_pushlimit(d, ptr, size);
   if (--d->depth < 0) decode_err(d);
-  ptr = decode_msg(d, ptr, submsg, subl);
-  decode_poplimit(d, saved_delta);
-  if (d->end_group != 0) decode_err(d);
+  if (!decode_isdone(d, &ptr)) {
+    ptr = decode_msg(d, ptr, submsg, subl);
+  }
+  if (d->end_group != DECODE_NOGROUP) decode_err(d);
+  decode_poplimit(d, ptr, saved_delta);
   d->depth++;
   return ptr;
 }
 
+UPB_FORCEINLINE
 static const char *decode_group(upb_decstate *d, const char *ptr,
                                 upb_msg *submsg, const upb_msglayout *subl,
                                 uint32_t number) {
   if (--d->depth < 0) decode_err(d);
+  if (decode_isdone(d, &ptr)) {
+    decode_err(d);
+  }
   ptr = decode_msg(d, ptr, submsg, subl);
   if (d->end_group != number) decode_err(d);
-  d->end_group = 0;
+  d->end_group = DECODE_NOGROUP;
   d->depth++;
   return ptr;
 }
 
+UPB_FORCEINLINE
 static const char *decode_togroup(upb_decstate *d, const char *ptr,
                                   upb_msg *submsg, const upb_msglayout *layout,
                                   const upb_msglayout_field *field) {
@@ -475,7 +419,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
         memcpy(out, &elem, scale);
         out += scale;
       }
-      decode_poplimit(d, saved_limit);
+      decode_poplimit(d, ptr, saved_limit);
       return ptr;
     }
     default:
@@ -574,9 +518,24 @@ static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
   return ptr;
 }
 
+UPB_FORCEINLINE
+static bool decode_tryfastdispatch(upb_decstate *d, const char **ptr,
+                                   upb_msg *msg, const upb_msglayout *layout) {
+#if UPB_FASTTABLE
+  if (layout && layout->table_mask != (unsigned char)-1) {
+    uint16_t tag = fastdecode_loadtag(*ptr);
+    intptr_t table = decode_totable(layout);
+    *ptr = fastdecode_tagdispatch(d, *ptr, msg, table, 0, tag);
+    return true;
+  }
+#endif
+  return false;
+}
+
+UPB_NOINLINE
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout) {
-  while (!decode_isdone(d, &ptr)) {
+  while (true) {
     uint32_t tag;
     const upb_msglayout_field *field;
     int field_number;
@@ -585,6 +544,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     wireval val;
     int op;
 
+    UPB_ASSERT(ptr < d->limit_ptr);
     ptr = decode_varint32(d, ptr, &tag);
     field_number = tag >> 3;
     wire_type = tag & 7;
@@ -652,20 +612,35 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     unknown:
       /* Skip unknown field. */
       if (field_number == 0) decode_err(d);
-      if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
-        ptr = decode_group(d, ptr, NULL, NULL, field_number);
-      }
+      if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
       if (msg) {
-        if (wire_type == UPB_WIRE_TYPE_DELIMITED) ptr += val.size;
+        if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
+          d->unknown = field_start;
+          d->unknown_msg = msg;
+          ptr = decode_group(d, ptr, NULL, NULL, field_number);
+          d->unknown_msg = NULL;
+          field_start = d->unknown;
+        }
         if (!_upb_msg_addunknown(msg, field_start, ptr - field_start,
                                  &d->arena)) {
           decode_err(d);
         }
+      } else if (wire_type == UPB_WIRE_TYPE_START_GROUP) {
+        ptr = decode_group(d, ptr, NULL, NULL, field_number);
       }
     }
-  }
 
-  return ptr;
+    if (decode_isdone(d, &ptr)) return ptr;
+    if (decode_tryfastdispatch(d, &ptr, msg, layout)) return ptr;
+  }
+}
+
+const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
+                               upb_msg *msg, intptr_t table, uint64_t hasbits,
+                               uint64_t data) {
+  (void)data;
+  *(uint32_t*)msg |= hasbits;
+  return decode_msg(d, ptr, msg, decode_totablep(table));
 }
 
 bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
@@ -675,7 +650,7 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
 
   if (size == 0) {
     return true;
-  } else if (size < 16) {
+  } else if (size <= 16) {
     memset(&state.patch, 0, 32);
     memcpy(&state.patch, buf, size);
     buf = state.patch;
@@ -689,8 +664,9 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   }
 
   state.limit_ptr = state.end;
+  state.unknown_msg = NULL;
   state.depth = 64;
-  state.end_group = 0;
+  state.end_group = DECODE_NOGROUP;
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;
   state.arena.parent = arena;
@@ -698,8 +674,10 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   if (UPB_UNLIKELY(setjmp(state.err))) {
     ok = false;
   } else {
-    decode_msg(&state, buf, msg, l);
-    ok = state.end_group == 0;
+    if (!decode_tryfastdispatch(&state, &buf, msg, l)) {
+      decode_msg(&state, buf, msg, l);
+    }
+    ok = state.end_group == DECODE_NOGROUP;
   }
 
   arena->head.ptr = state.arena.head.ptr;

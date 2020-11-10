@@ -1,5 +1,5 @@
 
-#include <google/protobuf/compiler/plugin.h>
+#include "google/protobuf/compiler/plugin.h"
 
 #include "upbc/generator.h"
 

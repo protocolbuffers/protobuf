@@ -16,6 +16,7 @@ UPB_DEFAULT_CPPOPTS = select({
 
 UPB_DEFAULT_COPTS = select({
     "//:windows": [],
+    "//:fasttable_enabled_setting": ["-std=gnu99", "-DUPB_ENABLE_FASTTABLE"],
     "//conditions:default": [
         # copybara:strip_for_google3_begin
         "-std=c99",

@@ -6,3 +6,19 @@ package upb_test;
 message MapTest {
   map<string, double> map_string_double = 1;
 }
+
+message PackedTest {
+  repeated bool bool_packed = 1 [packed = true];
+  repeated int32 i32_packed = 2 [packed = true];
+  repeated int64 i64_packed = 3 [packed = true];
+  repeated fixed32 f32_packed = 4 [packed = true];
+  repeated fixed64 f64_packed = 5 [packed = true];
+}
+
+message UnpackedTest {
+  repeated bool bool_packed = 1 [packed = false];
+  repeated int32 i32_packed = 2 [packed = false];
+  repeated int64 i64_packed = 3 [packed = false];
+  repeated fixed32 f32_packed = 4 [packed = false];
+  repeated fixed64 f64_packed = 5 [packed = false];
+}

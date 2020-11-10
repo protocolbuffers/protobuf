@@ -107,6 +107,28 @@ def _cc_library_func(ctx, name, hdrs, srcs, copts, dep_ccinfos):
         linking_context = linking_context,
     )
 
+# Build setting for whether fasttable code generation is enabled ###############
+
+_FastTableEnabled = provider(
+    fields = {
+        "enabled": "whether fasttable is enabled",
+    },
+)
+
+def fasttable_enabled_impl(ctx):
+    raw_setting = ctx.build_setting_value
+
+    if raw_setting:
+        # TODO(haberman): check that the target CPU supports fasttable.
+        pass
+
+    return _FastTableEnabled(enabled = raw_setting)
+
+upb_fasttable_enabled = rule(
+    implementation = fasttable_enabled_impl,
+    build_setting = config.bool(flag = True),
+)
+
 # Dummy rule to expose select() copts to aspects  ##############################
 
 _UpbProtoLibraryCopts = provider(
@@ -144,6 +166,8 @@ def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
     srcs = [_generate_output_file(ctx, name, ext + ".c") for name in proto_sources]
     hdrs = [_generate_output_file(ctx, name, ext + ".h") for name in proto_sources]
     transitive_sets = proto_info.transitive_descriptor_sets.to_list()
+    fasttable_enabled = ctx.attr._fasttable_enabled[_FastTableEnabled].enabled
+    codegen_params = "fasttable:" if fasttable_enabled else ""
     ctx.actions.run(
         inputs = depset(
             direct = [proto_info.direct_descriptor_set],
@@ -153,7 +177,7 @@ def _compile_upb_protos(ctx, proto_info, proto_sources, ext):
         outputs = srcs + hdrs,
         executable = ctx.executable._protoc,
         arguments = [
-                        "--upb_out=" + _get_real_root(srcs[0]),
+                        "--upb_out=" + codegen_params + _get_real_root(srcs[0]),
                         "--plugin=protoc-gen-upb=" + ctx.executable._upbc.path,
                         "--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]),
                     ] +
@@ -258,6 +282,7 @@ _upb_proto_library_aspect = aspect(
             "//:upb",
         ]),
         "_ext": attr.string(default = ".upb"),
+        "_fasttable_enabled": attr.label(default = "//:fasttable_enabled"),
     }),
     implementation = _upb_proto_library_aspect_impl,
     provides = [
@@ -267,6 +292,7 @@ _upb_proto_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
 )
 
 upb_proto_library = rule(
@@ -316,6 +342,7 @@ _upb_proto_reflection_library_aspect = aspect(
             ],
         ),
         "_ext": attr.string(default = ".upbdefs"),
+        "_fasttable_enabled": attr.label(default = "//:fasttable_enabled"),
     }),
     implementation = _upb_proto_reflection_library_aspect_impl,
     provides = [
@@ -329,6 +356,7 @@ _upb_proto_reflection_library_aspect = aspect(
     attr_aspects = ["deps"],
     fragments = ["cpp"],
     toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    incompatible_use_toolchain_transition = True,
 )
 
 upb_proto_reflection_library = rule(

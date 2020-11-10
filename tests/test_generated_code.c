@@ -30,6 +30,7 @@ static void test_scalars(void) {
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
   protobuf_test_messages_proto3_TestAllTypesProto3 *msg2;
   upb_strview serialized;
+  upb_strview val;
 
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 10);
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int64(msg, 20);
@@ -61,9 +62,30 @@ static void test_scalars(void) {
              msg2) - 60.6 < 0.01);
   ASSERT(protobuf_test_messages_proto3_TestAllTypesProto3_optional_bool(
              msg2) == 1);
-  ASSERT(upb_strview_eql(
-      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(msg2),
-      test_str_view));
+  val = protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(msg2);
+  ASSERT(upb_strview_eql(val, test_str_view));
+
+  upb_arena_free(arena);
+}
+
+static void test_utf8(void) {
+  const char invalid_utf8[] = "\xff";
+  const upb_strview invalid_utf8_view = upb_strview_make(invalid_utf8, 1);
+  upb_arena *arena = upb_arena_new();
+  upb_strview serialized;
+  protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena);
+  protobuf_test_messages_proto3_TestAllTypesProto3 *msg2;
+
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
+      msg, invalid_utf8_view);
+
+  serialized.data = protobuf_test_messages_proto3_TestAllTypesProto3_serialize(
+      msg, arena, &serialized.size);
+
+  msg2 = protobuf_test_messages_proto3_TestAllTypesProto3_parse(
+      serialized.data, serialized.size, arena);
+  ASSERT(msg2 == NULL);
 
   upb_arena_free(arena);
 }
@@ -390,6 +412,7 @@ void test_status_truncation(void) {
 
 int run_tests(int argc, char *argv[]) {
   test_scalars();
+  test_utf8();
   test_string_map();
   test_string_double_map();
   test_int32_map();

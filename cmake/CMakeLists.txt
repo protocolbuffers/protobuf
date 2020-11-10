@@ -64,6 +64,7 @@ enable_testing()
 add_library(port INTERFACE)
 add_library(upb
   ../upb/decode.c
+  ../upb/decode.int.h
   ../upb/encode.c
   ../upb/msg.c
   ../upb/msg.h
@@ -71,13 +72,23 @@ add_library(upb
   ../upb/table.int.h
   ../upb/upb.c
   ../upb/upb.int.h
-  ../third_party/wyhash/wyhash.h
   ../upb/decode.h
   ../upb/encode.h
   ../upb/upb.h
   ../upb/upb.hpp)
 target_link_libraries(upb
-  port)
+  fastdecode
+  port
+  /third_party/wyhash)
+add_library(fastdecode
+  ../upb/decode.int.h
+  ../upb/decode_fast.c
+  ../upb/decode_fast.h
+  ../upb/msg.h
+  ../upb/upb.int.h)
+target_link_libraries(fastdecode
+  port
+  table)
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
 target_link_libraries(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
   table
@@ -111,8 +122,7 @@ target_link_libraries(json
   upb)
 add_library(table INTERFACE)
 target_link_libraries(table INTERFACE
-  port
-  upb)
+  port)
 add_library(handlers
   ../upb/handlers.c
   ../upb/handlers-inl.h
@@ -150,5 +160,6 @@ add_library(upb_json
 target_link_libraries(upb_json
   upb
   upb_pb)
+add_library(wyhash INTERFACE)
 
 

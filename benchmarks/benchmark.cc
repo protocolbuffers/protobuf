@@ -2,17 +2,13 @@
 #include <benchmark/benchmark.h>
 #include <string.h>
 
-// For benchmarks of parsing speed.
+#include "absl/container/flat_hash_set.h"
 #include "benchmarks/descriptor.pb.h"
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
-
-// For for benchmarks of building descriptors.
 #include "google/ads/googleads/v5/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/descriptor.upb.h"
-#include "google/protobuf/descriptor.upbdefs.h"
 #include "upb/def.hpp"
 
 upb_strview descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
@@ -23,7 +19,7 @@ char buf[65535];
 
 void CollectFileDescriptors(const upb_def_init* file,
                             std::vector<upb_strview>& serialized_files,
-                            std::unordered_set<const upb_def_init*>& seen) {
+                            absl::flat_hash_set<const upb_def_init*>& seen) {
   if (!seen.insert(file).second) return;
   for (upb_def_init **deps = file->deps; *deps; deps++) {
     CollectFileDescriptors(*deps, serialized_files, seen);
@@ -53,7 +49,7 @@ static void BM_LoadDescriptor_Upb(benchmark::State& state) {
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
     upb::SymbolTable symtab;
-    google_protobuf_DescriptorProto_getmsgdef(symtab.ptr());
+    upb_benchmark_DescriptorProto_getmsgdef(symtab.ptr());
     bytes_per_iter = _upb_symtab_bytesloaded(symtab.ptr());
   }
   state.SetBytesProcessed(state.iterations() * bytes_per_iter);
@@ -93,7 +89,7 @@ BENCHMARK(BM_LoadDescriptor_Proto2);
 static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
   extern upb_def_init google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit;
   std::vector<upb_strview> serialized_files;
-  std::unordered_set<const upb_def_init*> seen_files;
+  absl::flat_hash_set<const upb_def_init*> seen_files;
   CollectFileDescriptors(
       &google_ads_googleads_v5_services_google_ads_service_proto_upbdefinit,
       serialized_files, seen_files);
@@ -195,7 +191,7 @@ using FileDescSV = ::upb_benchmark::sv::FileDescriptorProto;
 
 const protobuf::MessageLite::ParseFlags kMergePartial =
     protobuf::MessageLite::ParseFlags::kMergePartial;
-const protobuf::MessageLite::ParseFlags kAliasStrings =
+const protobuf::MessageLite::ParseFlags kAlias =
     protobuf::MessageLite::ParseFlags::kMergePartialWithAliasing;
 
 template <class P, template <class> class Factory,
@@ -221,9 +217,9 @@ BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDesc, WithInitialBlock);
 //BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena);
 //BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena);
 BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock);
-//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena, kAliasStrings);
-//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena, kAliasStrings);
-BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock, kAliasStrings);
+//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, NoArena, kAlias);
+//BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithArena, kAlias);
+BENCHMARK_TEMPLATE(BM_Parse_Proto2, FileDescSV, WithInitialBlock, kAlias);
 
 static void BM_SerializeDescriptor_Proto2(benchmark::State& state) {
   size_t bytes = 0;

@@ -1,6 +1,9 @@
 
+#include "upbc/generator.h"
+
 #include <memory>
 
+#include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
@@ -9,8 +12,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-
-#include "upbc/generator.h"
+#include "google/protobuf/wire_format.h"
 #include "upbc/message_layout.h"
 
 namespace protoc = ::google::protobuf::compiler;
@@ -140,16 +142,16 @@ std::vector<const protobuf::EnumDescriptor*> SortedEnums(
 
 std::vector<const protobuf::FieldDescriptor*> FieldNumberOrder(
     const protobuf::Descriptor* message) {
-  std::vector<const protobuf::FieldDescriptor*> messages;
+  std::vector<const protobuf::FieldDescriptor*> fields;
   for (int i = 0; i < message->field_count(); i++) {
-    messages.push_back(message->field(i));
+    fields.push_back(message->field(i));
   }
-  std::sort(messages.begin(), messages.end(),
+  std::sort(fields.begin(), fields.end(),
             [](const protobuf::FieldDescriptor* a,
                const protobuf::FieldDescriptor* b) {
               return a->number() < b->number();
             });
-  return messages;
+  return fields;
 }
 
 std::vector<const protobuf::FieldDescriptor*> SortedSubmessages(
@@ -598,6 +600,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
       "#define $0_UPB_H_\n\n"
       "#include \"upb/msg.h\"\n"
       "#include \"upb/decode.h\"\n"
+      "#include \"upb/decode_fast.h\"\n"
       "#include \"upb/encode.h\"\n\n",
       ToPreproc(file->name()));
 
@@ -735,7 +738,200 @@ struct SubmsgArray {
   absl::flat_hash_map<const protobuf::Descriptor*, int> indexes_;
 };
 
-void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
+typedef std::pair<std::string, uint64_t> TableEntry;
+
+uint64_t GetEncodedTag(const protobuf::FieldDescriptor* field) {
+  protobuf::internal::WireFormatLite::WireType wire_type =
+      protobuf::internal::WireFormat::WireTypeForField(field);
+  uint32_t unencoded_tag =
+      protobuf::internal::WireFormatLite::MakeTag(field->number(), wire_type);
+  uint8_t tag_bytes[10] = {0};
+  protobuf::io::CodedOutputStream::WriteVarint32ToArray(unencoded_tag,
+                                                        tag_bytes);
+  uint64_t encoded_tag = 0;
+  memcpy(&encoded_tag, tag_bytes, sizeof(encoded_tag));
+  // TODO: byte-swap for big endian.
+  return encoded_tag;
+}
+
+int GetTableSlot(const protobuf::FieldDescriptor* field) {
+  uint64_t tag = GetEncodedTag(field);
+  if (tag > 0x7fff) {
+    // Tag must fit within a two-byte varint.
+    return -1;
+  }
+  return (tag & 0xf8) >> 3;
+}
+
+bool TryFillTableEntry(const protobuf::Descriptor* message,
+                       const MessageLayout& layout,
+                       const protobuf::FieldDescriptor* field,
+                       TableEntry& ent) {
+  std::string type = "";
+  std::string cardinality = "";
+  switch (field->type()) {
+    case protobuf::FieldDescriptor::TYPE_BOOL:
+      type = "b1";
+      break;
+    case protobuf::FieldDescriptor::TYPE_INT32:
+    case protobuf::FieldDescriptor::TYPE_ENUM:
+    case protobuf::FieldDescriptor::TYPE_UINT32:
+      type = "v4";
+      break;
+    case protobuf::FieldDescriptor::TYPE_INT64:
+    case protobuf::FieldDescriptor::TYPE_UINT64:
+      type = "v8";
+      break;
+    case protobuf::FieldDescriptor::TYPE_FIXED32:
+    case protobuf::FieldDescriptor::TYPE_SFIXED32:
+    case protobuf::FieldDescriptor::TYPE_FLOAT:
+      type = "f4";
+      break;
+    case protobuf::FieldDescriptor::TYPE_FIXED64:
+    case protobuf::FieldDescriptor::TYPE_SFIXED64:
+    case protobuf::FieldDescriptor::TYPE_DOUBLE:
+      type = "f8";
+      break;
+    case protobuf::FieldDescriptor::TYPE_SINT32:
+      type = "z4";
+      break;
+    case protobuf::FieldDescriptor::TYPE_SINT64:
+      type = "z8";
+      break;
+    case protobuf::FieldDescriptor::TYPE_STRING:
+      if (field->file()->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO3) {
+        // Only proto3 validates UTF-8.
+        type = "s";
+        break;
+      }
+      ABSL_FALLTHROUGH_INTENDED;
+    case protobuf::FieldDescriptor::TYPE_BYTES:
+      type = "b";
+      break;
+    case protobuf::FieldDescriptor::TYPE_MESSAGE:
+      if (field->is_map()) {
+        return false;  // Not supported yet (ever?).
+      }
+      type = "m";
+      break;
+    default:
+      return false;  // Not supported yet.
+  }
+
+  switch (field->label()) {
+    case protobuf::FieldDescriptor::LABEL_REPEATED:
+      if (field->is_packed()) {
+        cardinality = "p";
+      } else {
+        cardinality = "r";
+      }
+      break;
+    case protobuf::FieldDescriptor::LABEL_OPTIONAL:
+    case protobuf::FieldDescriptor::LABEL_REQUIRED:
+      if (field->real_containing_oneof()) {
+        cardinality = "o";
+      } else {
+        cardinality = "s";
+      }
+      break;
+  }
+
+  uint64_t expected_tag = GetEncodedTag(field);
+  MessageLayout::Size offset = layout.GetFieldOffset(field);
+
+  // Data is:
+  //
+  //                  48                32                16                 0
+  // |--------|--------|--------|--------|--------|--------|--------|--------|
+  // |   offset (16)   |case offset (16) |presence| submsg |  exp. tag (16)  |
+  // |--------|--------|--------|--------|--------|--------|--------|--------|
+  //
+  // - |presence| is either hasbit index or field number for oneofs.
+
+  uint64_t data = offset.size64 << 48 | expected_tag;
+
+  if (field->is_repeated()) {
+    // No hasbit/oneof-related fields.
+  } if (field->real_containing_oneof()) {
+    MessageLayout::Size case_offset =
+        layout.GetOneofCaseOffset(field->real_containing_oneof());
+    if (case_offset.size64 > 0xffff) return false;
+    assert(field->number() < 256);
+    data |= field->number() << 24;
+    data |= case_offset.size64 << 32;
+  } else {
+    uint64_t hasbit_index = 63;  // No hasbit (set a high, unused bit).
+    if (layout.HasHasbit(field)) {
+      hasbit_index = layout.GetHasbitIndex(field);
+      if (hasbit_index > 31) return false;
+    }
+    data |= hasbit_index << 24;
+  }
+
+  if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
+    SubmsgArray submsg_array(message);
+    uint64_t idx = submsg_array.GetIndex(field);
+    if (idx > 255) return false;
+    data |= idx << 16;
+
+    std::string size_ceil = "max";
+    size_t size = SIZE_MAX;
+    if (field->message_type()->file() == field->file()) {
+      // We can only be guaranteed the size of the sub-message if it is in the
+      // same file as us.  We could relax this to increase the speed of
+      // cross-file sub-message parsing if we are comfortable requiring that
+      // users compile all messages at the same time.
+      MessageLayout sub_layout(field->message_type());
+      size = sub_layout.message_size().size64 + 8;
+    }
+    std::vector<size_t> breaks = {64, 128, 192, 256};
+    for (auto brk : breaks) {
+      if (size <= brk) {
+        size_ceil = std::to_string(brk);
+        break;
+      }
+    }
+    ent.first = absl::Substitute("upb_p$0$1_$2bt_max$3b", cardinality, type,
+                                 expected_tag > 0xff ? "2" : "1", size_ceil);
+
+  } else {
+    ent.first = absl::Substitute("upb_p$0$1_$2bt", cardinality, type,
+                                 expected_tag > 0xff ? "2" : "1");
+  }
+  ent.second = data;
+  return true;
+}
+
+std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
+                                        const MessageLayout& layout) {
+  std::vector<TableEntry> table;
+  for (const auto field : FieldHotnessOrder(message)) {
+    TableEntry ent;
+    int slot = GetTableSlot(field);
+    // std::cerr << "table slot: " << field->number() << ": " << slot << "\n";
+    if (slot < 0) {
+      // Tag can't fit in the table.
+      continue;
+    }
+    if (!TryFillTableEntry(message, layout, field, ent)) {
+      // Unsupported field type or offset, hasbit index, etc. doesn't fit.
+      continue;
+    }
+    while ((size_t)slot >= table.size()) {
+      size_t size = std::max(static_cast<size_t>(1), table.size() * 2);
+      table.resize(size, TableEntry{"fastdecode_generic", 0});
+    }
+    if (table[slot].first != "fastdecode_generic") {
+      // A hotter field already filled this slot.
+      continue;
+    }
+    table[slot] = ent;
+  }
+  return table;
+}
+
+void WriteSource(const protobuf::FileDescriptor* file, Output& output,
+                 bool fasttable_enabled) {
   EmitFileWarning(file, output);
 
   output(
@@ -827,14 +1023,34 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output) {
       output("};\n\n");
     }
 
+    std::vector<TableEntry> table;
+    uint8_t table_mask = -1;
+
+    if (fasttable_enabled) {
+      table = FastDecodeTable(message, layout);
+    }
+
+    if (table.size() > 1) {
+      assert((table.size() & (table.size() - 1)) == 0);
+      table_mask = (table.size() - 1) << 3;
+    }
+
     output("const upb_msglayout $0 = {\n", MessageInit(message));
     output("  $0,\n", submsgs_array_ref);
     output("  $0,\n", fields_array_ref);
-    output("  $0, $1, $2,\n", GetSizeInit(layout.message_size()),
+    output("  $0, $1, $2, $3,\n", GetSizeInit(layout.message_size()),
            field_number_order.size(),
-           "false"  // TODO: extendable
+           "false",  // TODO: extendable
+           table_mask
     );
-
+    if (!table.empty()) {
+      output("  UPB_FASTTABLE_INIT({\n");
+      for (const auto& ent : table) {
+        output("    {0x$1, &$0},\n", ent.first,
+               absl::StrCat(absl::Hex(ent.second, absl::kZeroPad16)));
+      }
+      output("  }),\n");
+    }
     output("};\n\n");
   }
 
@@ -964,14 +1180,15 @@ void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
 }
 
 bool Generator::Generate(const protobuf::FileDescriptor* file,
-                         const std::string& /* parameter */,
+                         const std::string& parameter,
                          protoc::GeneratorContext* context,
                          std::string* /* error */) const {
+  bool fasttable_enabled = parameter == "fasttable";
   Output h_output(context->Open(HeaderFilename(file->name())));
   WriteHeader(file, h_output);
 
   Output c_output(context->Open(SourceFilename(file->name())));
-  WriteSource(file, c_output);
+  WriteSource(file, c_output, fasttable_enabled);
 
   Output h_def_output(context->Open(DefHeaderFilename(file->name())));
   WriteDefHeader(file, h_def_output);

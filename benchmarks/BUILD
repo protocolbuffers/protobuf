@@ -51,14 +51,15 @@ cc_binary(
     testonly = 1,
     srcs = ["benchmark.cc"],
     deps = [
+        ":ads_upb_proto_reflection",
         ":benchmark_descriptor_cc_proto",
         ":benchmark_descriptor_sv_cc_proto",
         ":benchmark_descriptor_upb_proto",
         ":benchmark_descriptor_upb_proto_reflection",
-        ":ads_upb_proto_reflection",
         "//:descriptor_upb_proto",
         "//:reflection",
         "@com_github_google_benchmark//:benchmark_main",
+        "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_protobuf//:protobuf",
     ],
 )
