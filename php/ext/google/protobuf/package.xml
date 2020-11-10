@@ -29,8 +29,6 @@
     <file baseinstalldir="/" name="arena.h" role="src"/>
     <file baseinstalldir="/" name="array.c" role="src"/>
     <file baseinstalldir="/" name="array.h" role="src"/>
-    <file baseinstalldir="/" name="bundled_php.c" role="src"/>
-    <file baseinstalldir="/" name="bundled_php.h" role="src"/>
     <file baseinstalldir="/" name="convert.c" role="src"/>
     <file baseinstalldir="/" name="convert.h" role="src"/>
     <file baseinstalldir="/" name="def.c" role="src"/>
@@ -45,6 +43,7 @@
     <file baseinstalldir="/" name="php-upb.h" role="src"/>
     <file baseinstalldir="/" name="protobuf.c" role="src"/>
     <file baseinstalldir="/" name="protobuf.h" role="src"/>
+    <file baseinstalldir="/" name="wkt.inc" role="src"/>
     <file baseinstalldir="/" name="third_party/wyhash/wyhash.h" role="src"/>
     <file baseinstalldir="/" name="third_party/wyhash/LICENSE" role="doc"/>
     <file baseinstalldir="/" name="LICENSE" role="doc"/>
