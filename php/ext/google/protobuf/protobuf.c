@@ -311,7 +311,7 @@ zend_module_entry protobuf_module_entry = {
   PHP_RINIT(protobuf),      // request shutdown
   PHP_RSHUTDOWN(protobuf),  // request shutdown
   NULL,                     // extension info
-  "3.13.0",                 // extension version
+  PHP_PROTOBUF_VERSION,     // extension version
   PHP_MODULE_GLOBALS(protobuf),  // globals descriptor
   PHP_GINIT(protobuf),      // globals ctor
   PHP_GSHUTDOWN(protobuf),  // globals dtor
