@@ -184,7 +184,7 @@ genrule(
     name = "size_data",
     srcs = expand_suffixes(
         SIZE_BENCHMARKS.keys(),
-        suffixes = ["_upb_binary", "_protobuf_binary"],
+        suffixes = ["_upb_binary", "_protobuf_binary", "_lite_protobuf_binary"],
     ),
     outs = ["size_data.txt"],
     cmd = "size --format=GNU -d $(SRCS) > $@",
