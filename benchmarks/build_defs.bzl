@@ -1,24 +1,16 @@
 
-def tmpl_cc_binary(name, srcs, replacements = [], **kwargs):
-    if len(srcs) != 1:
-        fail("Currently srcs must have exactly 1 element")
-    src = srcs[0]
-    if not src.endswith(".tmpl"):
-        fail("srcs of tmpl_cc_binary must end with .tmpl")
-    outs = [name + "_" + src[:-5]]
-    sed_cmds = ["s,{},{},g".format(k, v) for k, v in replacements.items()]
-    cmd = "sed -e '{}' $< > $@".format("; ".join(sed_cmds))
-
+def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
+    srcs = [name + ".cc"]
     native.genrule(
         name = name + "_gen_srcs",
-        srcs = [src],
-        outs = outs,
-        cmd = cmd,
+        tools = [gen],
+        outs = srcs,
+        cmd = "$(location " + gen + ") " + " ".join(args) + " > $@",
     )
 
     native.cc_binary(
         name = name,
-        srcs = outs,
+        srcs = srcs,
         **kwargs,
     )
 
@@ -42,3 +34,10 @@ def cc_lite_proto_library(name, srcs, outs):
         name = name,
         deps = [":" + name + "_proto"],
     )
+
+def expand_suffixes(vals, suffixes):
+  ret = []
+  for val in vals:
+    for suffix in suffixes:
+      ret.append(val + suffix)
+  return ret

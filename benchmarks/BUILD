@@ -7,23 +7,24 @@ load(
     ":build_defs.bzl",
     "tmpl_cc_binary",
     "cc_lite_proto_library",
+    "expand_suffixes",
 )
 
 licenses(["notice"])
 
 proto_library(
-    name = "benchmark_descriptor_proto",
+    name = "descriptor_proto",
     srcs = ["descriptor.proto"],
 )
 
 upb_proto_library(
     name = "benchmark_descriptor_upb_proto",
-    deps = [":benchmark_descriptor_proto"],
+    deps = [":descriptor_proto"],
 )
 
 upb_proto_reflection_library(
     name = "benchmark_descriptor_upb_proto_reflection",
-    deps = [":benchmark_descriptor_proto"],
+    deps = [":descriptor_proto"],
 )
 
 upb_proto_reflection_library(
@@ -33,7 +34,7 @@ upb_proto_reflection_library(
 
 cc_proto_library(
     name = "benchmark_descriptor_cc_proto",
-    deps = [":benchmark_descriptor_proto"],
+    deps = [":descriptor_proto"],
 )
 
 proto_library(
@@ -69,26 +70,65 @@ cc_binary(
 SIZE_BENCHMARKS = {
     "empty": "Empty",
     "descriptor": "FileDescriptorSet",
-    "100_msgs": "Message99",
+    "100_msgs": "Message100",
+    "200_msgs": "Message200",
+    "100_fields": "Message",
+    "200_fields": "Message",
 }
 
 py_binary(
-    name = "gen_benchmark_proto",
-    srcs = ["gen_benchmark_proto.py"],
+    name = "gen_synthetic_protos",
+    srcs = ["gen_synthetic_protos.py"],
+)
+
+py_binary(
+    name = "gen_upb_binary_c",
+    srcs = ["gen_upb_binary_c.py"],
+)
+
+py_binary(
+    name = "gen_protobuf_binary_cc",
+    srcs = ["gen_protobuf_binary_cc.py"],
 )
 
 genrule(
-    name = "gen_100_msgs",
-    tools = [":gen_benchmark_proto"],
-    outs = ["100_msgs.proto"],
-    cmd = "$(execpath :gen_benchmark_proto) $@",
+    name = "do_gen_synthetic_protos",
+    tools = [":gen_synthetic_protos"],
+    outs = [
+        "100_msgs.proto",
+        "200_msgs.proto",
+        "100_fields.proto",
+        "200_fields.proto",
+    ],
+    cmd = "$(execpath :gen_synthetic_protos) $(GENDIR)",
+)
+
+proto_library(
+    name = "100_msgs_proto",
+    srcs = ["100_msgs.proto"],
+)
+
+proto_library(
+    name = "200_msgs_proto",
+    srcs = ["200_msgs.proto"],
+)
+
+proto_library(
+    name = "100_fields_proto",
+    srcs = ["100_fields.proto"],
+)
+
+proto_library(
+    name = "200_fields_proto",
+    srcs = ["200_fields.proto"],
+)
+
+proto_library(
+    name = "empty_proto",
+    srcs = ["empty.proto"],
 )
 
 [(
-proto_library(
-    name = k + "_proto",
-    srcs = [k + ".proto"],
-),
 upb_proto_library(
     name = k + "_upb_proto",
     deps = [":" + k + "_proto"],
@@ -100,11 +140,11 @@ cc_proto_library(
 tmpl_cc_binary(
     name = k + "_upb_binary",
     testonly = 1,
-    srcs = ["upb_binary.c.tmpl"],
-    replacements = {
-        "PROTO": "upb_benchmark_" + v,
-        "INCLUDE": "benchmarks/" + k + ".upb.h",
-    },
+    gen = ":gen_upb_binary_c",
+    args = [
+        "benchmarks/" + k + ".upb.h", 
+        "upb_benchmark_" + v,
+    ],
     deps = [
         ":" + k + "_upb_proto",
     ],
@@ -112,11 +152,11 @@ tmpl_cc_binary(
 tmpl_cc_binary(
     name = k + "_protobuf_binary",
     testonly = 1,
-    srcs = ["protobuf_binary.cc.tmpl"],
-    replacements = {
-        "PROTO": "upb_benchmark::" + v,
-        "INCLUDE": "benchmarks/" + k + ".pb.h",
-    },
+    gen = ":gen_protobuf_binary_cc",
+    args = [
+        "benchmarks/" + k + ".pb.h",
+        "upb_benchmark::" + v,
+    ],
     deps = [
         ":" + k + "_cc_proto",
     ],
@@ -129,13 +169,23 @@ cc_lite_proto_library(
 tmpl_cc_binary(
     name = k + "_lite_protobuf_binary",
     testonly = 1,
-    srcs = ["protobuf_binary.cc.tmpl"],
-    replacements = {
-        "PROTO": "upb_benchmark::" + v,
-        "INCLUDE": "benchmarks/" + k + "_lite.pb.h",
-    },
+    gen = ":gen_protobuf_binary_cc",
+    args = [
+        "benchmarks/" + k + "_lite.pb.h",
+        "upb_benchmark::" + v,
+    ],
     deps = [
         ":" + k + "_cc_lite_proto",
     ],
 )) for k, v in SIZE_BENCHMARKS.items()]
 
+genrule(
+    testonly = 1,
+    name = "size_data",
+    srcs = expand_suffixes(
+        SIZE_BENCHMARKS.keys(),
+        suffixes = ["_upb_binary", "_protobuf_binary"],
+    ),
+    outs = ["size_data.txt"],
+    cmd = "size --format=GNU -d $(SRCS) > $@",
+)

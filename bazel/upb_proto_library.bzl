@@ -21,22 +21,16 @@ def _get_real_short_path(file):
 
     # Sometimes it has another few prefixes like:
     #   _virtual_imports/any_proto/google/protobuf/any.proto
+    #   benchmarks/_virtual_imports/100_msgs_proto/benchmarks/100_msgs.proto
     # We want just google/protobuf/any.proto.
-    if short_path.startswith("_virtual_imports"):
-        short_path = short_path.split("/", 2)[-1]
+    virtual_imports = "_virtual_imports/"
+    if virtual_imports in short_path:
+        short_path = short_path.split(virtual_imports)[1].split("/", 1)[1]
     return short_path
 
 def _get_real_root(file):
     real_short_path = _get_real_short_path(file)
     return file.path[:-len(real_short_path) - 1]
-
-def _get_real_roots(files):
-    roots = {}
-    for file in files:
-        real_root = _get_real_root(file)
-        if real_root:
-            roots[real_root] = True
-    return roots.keys()
 
 def _generate_output_file(ctx, src, extension):
     real_short_path = _get_real_short_path(src)

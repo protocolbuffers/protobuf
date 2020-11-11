@@ -48,10 +48,6 @@ option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
 option cc_enable_arenas = true;
 
-// descriptor.proto must be optimized for speed because reflection-based
-// algorithms don't work during bootstrapping.
-option optimize_for = SPEED;
-
 // The protocol compiler can output a FileDescriptorSet containing the .proto
 // files it parses.
 message FileDescriptorSet {
