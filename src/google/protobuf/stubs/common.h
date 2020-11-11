@@ -85,7 +85,7 @@ namespace internal {
 #define GOOGLE_PROTOBUF_VERSION 3014000
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
-#define GOOGLE_PROTOBUF_VERSION_SUFFIX "-rc1"
+#define GOOGLE_PROTOBUF_VERSION_SUFFIX "-rc2"
 
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code
