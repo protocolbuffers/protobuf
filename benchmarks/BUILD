@@ -84,11 +84,13 @@ py_binary(
 py_binary(
     name = "gen_upb_binary_c",
     srcs = ["gen_upb_binary_c.py"],
+    python_version = "PY3",
 )
 
 py_binary(
     name = "gen_protobuf_binary_cc",
     srcs = ["gen_protobuf_binary_cc.py"],
+    python_version = "PY3",
 )
 
 genrule(

@@ -11,22 +11,22 @@ if m:
   msg_basename = m.group(1)
   count = int(m.group(2))
 
-print(f'''
+print('''
 #include "{include}"
 
 char buf[1];
 
 int main() {{
-''')
+'''.format(include=include))
 
 def RefMessage(name):
-  print(f'''
+  print('''
   {{
     {name} proto;
     proto.ParseFromArray(buf, 0);
     proto.SerializePartialToArray(&buf[0], 0);
   }}
-  ''')
+  '''.format(name=name))
 
 RefMessage(msg_basename)
 

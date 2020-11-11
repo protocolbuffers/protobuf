@@ -11,7 +11,7 @@ if m:
   msg_basename = m.group(1)
   count = int(m.group(2))
 
-print(f'''
+print('''
 #include "{include}"
 
 char buf[1];
@@ -19,15 +19,15 @@ char buf[1];
 int main() {{
   upb_arena *arena = upb_arena_new();
   size_t size;
-''')
+'''.format(include=include))
 
 def RefMessage(name):
-  print(f'''
+  print('''
   {{
     {name} *proto = {name}_parse(buf, 1, arena);
     {name}_serialize(proto, arena, &size);
   }}
-  ''')
+  '''.format(name=name))
 
 RefMessage(msg_basename)
 
