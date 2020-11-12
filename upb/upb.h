@@ -6,6 +6,7 @@
 #define UPB_H_
 
 #include <assert.h>
+#include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -321,6 +322,23 @@ UPB_INLINE int _upb_lg2ceil(int x) {
   int lg2 = 0;
   while (1 << lg2 < x) lg2++;
   return lg2;
+#endif
+}
+
+/* We want to avoid saving/restoring the signal mask. */
+UPB_INLINE int _upb_setjmp(jmp_buf buf) {
+#ifdef __APPLE__
+  return _setjmp(buf);
+#else
+  return setjmp(buf);
+#endif
+}
+
+UPB_NORETURN UPB_INLINE void _upb_longjmp(jmp_buf buf, int val) {
+#ifdef __APPLE__
+  _longjmp(buf, val);
+#else
+  longjmp(buf, val);
 #endif
 }
 

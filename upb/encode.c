@@ -2,7 +2,6 @@
 
 #include "upb/encode.h"
 
-#include <setjmp.h>
 #include <string.h>
 
 #include "upb/msg.h"
@@ -41,7 +40,9 @@ static size_t upb_roundup_pow2(size_t bytes) {
   return ret;
 }
 
-UPB_NORETURN static void encode_err(upb_encstate *e) { longjmp(e->err, 1); }
+UPB_NORETURN static void encode_err(upb_encstate *e) {
+  _upb_longjmp(e->err, 1);
+}
 
 UPB_NOINLINE
 static void encode_growbuffer(upb_encstate *e, size_t bytes) {
@@ -419,7 +420,7 @@ char *upb_encode(const void *msg, const upb_msglayout *m, upb_arena *arena,
   e.limit = NULL;
   e.ptr = NULL;
 
-  if (setjmp(e.err)) {
+  if (_upb_setjmp(e.err)) {
     *size = 0;
     return NULL;
   }

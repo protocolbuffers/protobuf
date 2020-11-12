@@ -3,7 +3,6 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -2094,7 +2093,7 @@ static const upb_filedef *_upb_symtab_addfile(
   file->enum_count = 0;
   file->ext_count = 0;
 
-  if (UPB_UNLIKELY(setjmp(ctx.err))) {
+  if (UPB_UNLIKELY(_upb_setjmp(ctx.err))) {
     UPB_ASSERT(!upb_ok(status));
     remove_filedef(s, file);
     file = NULL;
