@@ -1,4 +1,17 @@
 
+# copybara:insert_for_google3_begin
+# load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", cc_proto_library="cc_proto_library")
+# def _cc_proto_library(**kwargs):
+#     cc_proto_library(
+#         cc_api_version = 2,
+#         **kwargs,
+#     )
+# copybara:insert_end
+
+# copybara:strip_for_google3_begin
+_cc_proto_library = native.cc_proto_library
+# copybara:strip_end
+
 def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
     srcs = [name + ".cc"]
     native.genrule(
@@ -30,7 +43,7 @@ def cc_lite_proto_library(name, srcs, outs):
         srcs = outs,
     )
 
-    native.cc_proto_library(
+    _cc_proto_library(
         name = name,
         deps = [":" + name + "_proto"],
     )
