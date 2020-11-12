@@ -8,6 +8,7 @@ load(
     "tmpl_cc_binary",
     "cc_lite_proto_library",
     "expand_suffixes",
+    "proto_library",
 )
 
 licenses(["notice"])
