@@ -178,15 +178,14 @@ upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc) {
   }
 
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_arena);
-  n -= sizeof(*a);
 
   a->head.alloc.func = &upb_arena_doalloc;
   a->block_alloc = alloc;
   a->parent = a;
   a->refcount = 1;
-  a->last_size = 128;
+  a->last_size = UPB_MAX(128, n);
   a->head.ptr = mem;
-  a->head.end = UPB_PTR_AT(mem, n, char);
+  a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
   a->freelist = NULL;
   a->cleanups = NULL;
 
