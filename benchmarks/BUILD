@@ -189,5 +189,6 @@ genrule(
         suffixes = ["_upb_binary", "_protobuf_binary", "_lite_protobuf_binary"],
     ),
     outs = ["size_data.txt"],
-    cmd = "size --format=GNU -d $(SRCS) > $@",
+    # We want --format=GNU which counts rodata with data, not text.
+    cmd = "size $$($$OSTYPE == 'linux-gnu' ? '--format=GNU -d' : '') $(SRCS) > $@",
 )
