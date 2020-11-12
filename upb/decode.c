@@ -1,6 +1,7 @@
 
 #include "upb/decode.h"
 
+#include <setjmp.h>
 #include <string.h>
 
 #include "upb/decode.int.h"

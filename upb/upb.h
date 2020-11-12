@@ -6,7 +6,6 @@
 #define UPB_H_
 
 #include <assert.h>
-#include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
