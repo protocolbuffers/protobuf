@@ -129,7 +129,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      *
      * This will also be called for: $ele = $arr[$key]
      *
-     * @param object $key The key of the element to be fetched.
+     * @param int|bool|string $key The key of the element to be fetched.
      * @return object The stored element at given key.
      * @throws \ErrorException Invalid type for index.
      * @throws \ErrorException Non-existing index.
