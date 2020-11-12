@@ -644,10 +644,11 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   return decode_msg(d, ptr, msg, decode_totablep(table));
 }
 
-bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
-                upb_arena *arena) {
+bool _upb_decode(const char *buf, size_t size, void *msg,
+                 const upb_msglayout *l, upb_arena *arena, int options) {
   bool ok;
   upb_decstate state;
+  unsigned depth = (unsigned)options >> 16;
 
   if (size == 0) {
     return true;
@@ -661,12 +662,12 @@ bool upb_decode(const char *buf, size_t size, void *msg, const upb_msglayout *l,
   } else {
     state.end = buf + size - 16;
     state.limit = 16;
-    state.alias = true;
+    state.alias = options & UPB_DECODE_ALIAS;
   }
 
   state.limit_ptr = state.end;
   state.unknown_msg = NULL;
-  state.depth = 64;
+  state.depth = depth ? depth : 64;
   state.end_group = DECODE_NOGROUP;
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;

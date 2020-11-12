@@ -27,13 +27,16 @@ def GitWorktree(commit):
 def Run(cmd):
   subprocess.check_call(cmd, shell=True)
 
-def Benchmark(outbase, bench_cpu=True, runs=12):
+def Benchmark(outbase, bench_cpu=True, runs=12, new=False):
   tmpfile = "/tmp/bench-output.json"
   Run("rm -rf {}".format(tmpfile))
   Run("CC=clang bazel test ...")
 
   if bench_cpu:
-    Run("CC=clang bazel build -c opt --copt=-march=native benchmarks:benchmark")
+    if new:
+      Run("CC=clang bazel build -c opt --copt=-march=native --//:fasttable_enabled=true benchmarks:benchmark")
+    else:
+      Run("CC=clang bazel build -c opt --copt=-march=native benchmarks:benchmark")
 
     Run("./bazel-bin/benchmarks/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={}".format(tmpfile, runs))
     with open(tmpfile) as f:
@@ -48,7 +51,10 @@ def Benchmark(outbase, bench_cpu=True, runs=12):
         values = (name, run["iterations"], run["cpu_time"])
         print("{} {} {} ns/op".format(*values), file=f)
 
-  Run("CC=clang bazel build -c opt --copt=-g tests:conformance_upb")
+  if new:
+    Run("CC=clang bazel build -c opt --copt=-g --//:fasttable_enabled=true tests:conformance_upb")
+  else:
+    Run("CC=clang bazel build -c opt --copt=-g tests:conformance_upb")
   Run("cp -f bazel-bin/tests/conformance_upb {}.bin".format(outbase))
 
 
@@ -63,7 +69,7 @@ if len(sys.argv) > 1:
     pass
 
 # Benchmark our current directory first, since it's more likely to be broken.
-Benchmark("/tmp/new", bench_cpu)
+Benchmark("/tmp/new", bench_cpu, new=True)
 
 # Benchmark the baseline.
 with GitWorktree(baseline):
