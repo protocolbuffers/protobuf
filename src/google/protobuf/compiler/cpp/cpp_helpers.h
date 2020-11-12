@@ -877,6 +877,14 @@ void GenerateParserLoop(const Descriptor* descriptor, int num_hasbits,
                         const Options& options,
                         MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
 
+inline std::string StripProto(const std::string& filename) {
+  /*
+   * TODO(github/georgthegreat) remove this proxy method
+   * once Google's internal codebase will become ready
+   */
+  return compiler::StripProto(filename);
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
