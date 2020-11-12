@@ -27,17 +27,17 @@ def GitWorktree(commit):
 def Run(cmd):
   subprocess.check_call(cmd, shell=True)
 
-def Benchmark(outbase, bench_cpu=True, runs=12, new=False):
+def Benchmark(outbase, bench_cpu=True, runs=12, fasttable=False):
   tmpfile = "/tmp/bench-output.json"
   Run("rm -rf {}".format(tmpfile))
-  Run("CC=clang bazel test ...")
+  #Run("CC=clang bazel test ...")
+  if fasttable:
+    extra_args = " --//:fasttable_enabled=true"
+  else:
+    extra_args = ""
 
   if bench_cpu:
-    if new:
-      Run("CC=clang bazel build -c opt --copt=-march=native --//:fasttable_enabled=true benchmarks:benchmark")
-    else:
-      Run("CC=clang bazel build -c opt --copt=-march=native benchmarks:benchmark")
-
+    Run("CC=clang bazel build -c opt --copt=-march=native benchmarks:benchmark" + extra_args)
     Run("./bazel-bin/benchmarks/benchmark --benchmark_out_format=json --benchmark_out={} --benchmark_repetitions={}".format(tmpfile, runs))
     with open(tmpfile) as f:
       bench_json = json.load(f)
@@ -51,15 +51,13 @@ def Benchmark(outbase, bench_cpu=True, runs=12, new=False):
         values = (name, run["iterations"], run["cpu_time"])
         print("{} {} {} ns/op".format(*values), file=f)
 
-  if new:
-    Run("CC=clang bazel build -c opt --copt=-g --//:fasttable_enabled=true tests:conformance_upb")
-  else:
-    Run("CC=clang bazel build -c opt --copt=-g tests:conformance_upb")
+  Run("CC=clang bazel build -c opt --copt=-g tests:conformance_upb" + extra_args)
   Run("cp -f bazel-bin/tests/conformance_upb {}.bin".format(outbase))
 
 
 baseline = "master"
 bench_cpu = True
+fasttable = False
 
 if len(sys.argv) > 1:
   baseline = sys.argv[1]
@@ -69,11 +67,11 @@ if len(sys.argv) > 1:
     pass
 
 # Benchmark our current directory first, since it's more likely to be broken.
-Benchmark("/tmp/new", bench_cpu, new=True)
+Benchmark("/tmp/new", bench_cpu, fasttable=fasttable)
 
 # Benchmark the baseline.
 with GitWorktree(baseline):
-  Benchmark("/tmp/old", bench_cpu)
+  Benchmark("/tmp/old", bench_cpu, fasttable=fasttable)
 
 print()
 print()

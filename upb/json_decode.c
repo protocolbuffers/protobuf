@@ -59,7 +59,7 @@ static bool jsondec_isvalue(const upb_fielddef *f) {
 UPB_NORETURN static void jsondec_err(jsondec *d, const char *msg) {
   upb_status_seterrf(d->status, "Error parsing JSON @%d:%d: %s", d->line,
                      (int)(d->ptr - d->line_begin), msg);
-  longjmp(d->err, 1);
+  UPB_LONGJMP(d->err, 1);
 }
 
 UPB_NORETURN static void jsondec_errf(jsondec *d, const char *fmt, ...) {
@@ -69,7 +69,7 @@ UPB_NORETURN static void jsondec_errf(jsondec *d, const char *fmt, ...) {
   va_start(argp, fmt);
   upb_status_vappenderrf(d->status, fmt, argp);
   va_end(argp);
-  longjmp(d->err, 1);
+  UPB_LONGJMP(d->err, 1);
 }
 
 static void jsondec_skipws(jsondec *d) {
@@ -1436,7 +1436,7 @@ bool upb_json_decode(const char *buf, size_t size, upb_msg *msg,
   d.debug_field = NULL;
   d.is_first = false;
 
-  if (setjmp(d.err)) return false;
+  if (UPB_SETJMP(d.err)) return false;
 
   jsondec_tomsg(&d, msg, m);
   return true;

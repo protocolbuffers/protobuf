@@ -148,7 +148,7 @@ typedef union {
 static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
                               const upb_msglayout *layout);
 
-UPB_NORETURN static void decode_err(upb_decstate *d) { longjmp(d->err, 1); }
+UPB_NORETURN static void decode_err(upb_decstate *d) { UPB_LONGJMP(d->err, 1); }
 
 const char *fastdecode_err(upb_decstate *d) {
   longjmp(d->err, 1);
@@ -672,7 +672,7 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
   state.arena.last_size = arena->last_size;
   state.arena.parent = arena;
 
-  if (UPB_UNLIKELY(setjmp(state.err))) {
+  if (UPB_UNLIKELY(UPB_SETJMP(state.err))) {
     ok = false;
   } else {
     if (!decode_tryfastdispatch(&state, &buf, msg, l)) {
