@@ -44,6 +44,13 @@ field_freqs = [
 population = [item[0] for item in field_freqs]
 weights = [item[1] for item in field_freqs]
 
+def choices(k):
+  if sys.version_info >= (3, 6):
+    return random.choices(population=population, weights=weights, k=k)
+  else:
+    print("WARNING: old Python version, field types are not properly weighted!")
+    return [random.choice(population) for _ in range(k)]
+
 with open(base + "/benchmarks/100_msgs.proto", "w") as f:
   f.write('syntax = "proto3";\n')
   f.write('package upb_benchmark;\n')
@@ -65,7 +72,7 @@ with open(base + "/benchmarks/100_fields.proto", "w") as f:
   f.write('message Message {\n')
   i = 1
   random.seed(a=0, version=2)
-  for field in random.choices(population=population, weights=weights, k=100):
+  for field in choices(100):
     field_type, label = field
     f.write('  {label} {field_type} field{i} = {i};\n'.format(i=i, label=label, field_type=field_type))
     i += 1
@@ -78,7 +85,7 @@ with open(base + "/benchmarks/200_fields.proto", "w") as f:
   f.write('message Message {\n')
   i = 1
   random.seed(a=0, version=2)
-  for field in random.choices(population=population, weights=weights, k=200):
+  for field in choices(200):
     field_type, label = field
     f.write('  {label} {field_type} field{i} = {i};\n'.format(i=i, label=label,field_type=field_type))
     i += 1
