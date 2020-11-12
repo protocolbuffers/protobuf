@@ -193,4 +193,6 @@ genrule(
     outs = ["size_data.txt"],
     # We want --format=GNU which counts rodata with data, not text.
     cmd = "size $$($$OSTYPE == 'linux-gnu' ? '--format=GNU -d' : '') $(SRCS) > $@",
+    # "size" sometimes isn't available remotely.
+    local = 1,
 )
