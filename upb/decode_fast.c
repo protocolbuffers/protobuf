@@ -763,7 +763,7 @@ again:
   } else if (UPB_LIKELY(size <= 64)) {
     if (UPB_UNLIKELY(common_has < 64)) goto longstr;
     fastdecode_docopy(d, ptr, size, 64, buf, dst);
-  } else if (UPB_LIKELY(size <= 128)) {
+  } else if (UPB_LIKELY(size < 128)) {
     if (UPB_UNLIKELY(common_has < 128)) goto longstr;
     fastdecode_docopy(d, ptr, size, 128, buf, dst);
   } else {
