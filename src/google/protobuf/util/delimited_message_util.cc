@@ -74,12 +74,15 @@ bool ParseDelimitedFromCodedStream(MessageLite* message,
     return false;
   }
 
+  int position_after_size = input->CurrentPosition();
+
   // Tell the stream not to read beyond that size.
   io::CodedInputStream::Limit limit = input->PushLimit(size);
 
   // Parse the message.
   if (!message->MergeFromCodedStream(input)) return false;
   if (!input->ConsumedEntireMessage()) return false;
+  if (input->CurrentPosition() - position_after_size != int{size}) return false;
 
   // Release the limit.
   input->PopLimit(limit);
