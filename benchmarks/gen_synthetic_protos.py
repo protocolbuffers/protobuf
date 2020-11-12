@@ -51,21 +51,21 @@ def choices(k):
     print("WARNING: old Python version, field types are not properly weighted!")
     return [random.choice(population) for _ in range(k)]
 
-with open(base + "/benchmarks/100_msgs.proto", "w") as f:
+with open(base + "/100_msgs.proto", "w") as f:
   f.write('syntax = "proto3";\n')
   f.write('package upb_benchmark;\n')
   f.write('message Message {}\n')
   for i in range(2, 101):
     f.write('message Message{i} {{}}\n'.format(i=i))
 
-with open(base + "/benchmarks/200_msgs.proto", "w") as f:
+with open(base + "/200_msgs.proto", "w") as f:
   f.write('syntax = "proto3";\n')
   f.write('package upb_benchmark;\n')
   f.write('message Message {}\n')
   for i in range(2, 501):
     f.write('message Message{i} {{}}\n'.format(i=i))
 
-with open(base + "/benchmarks/100_fields.proto", "w") as f:
+with open(base + "/100_fields.proto", "w") as f:
   f.write('syntax = "proto2";\n')
   f.write('package upb_benchmark;\n')
   f.write('enum Enum { ZERO = 0; }\n')
@@ -78,7 +78,7 @@ with open(base + "/benchmarks/100_fields.proto", "w") as f:
     i += 1
   f.write('}\n')
 
-with open(base + "/benchmarks/200_fields.proto", "w") as f:
+with open(base + "/200_fields.proto", "w") as f:
   f.write('syntax = "proto2";\n')
   f.write('package upb_benchmark;\n')
   f.write('enum Enum { ZERO = 0; }\n')

@@ -80,6 +80,7 @@ SIZE_BENCHMARKS = {
 py_binary(
     name = "gen_synthetic_protos",
     srcs = ["gen_synthetic_protos.py"],
+    python_version = "PY3",
 )
 
 py_binary(
@@ -103,7 +104,7 @@ genrule(
         "100_fields.proto",
         "200_fields.proto",
     ],
-    cmd = "$(execpath :gen_synthetic_protos) $(GENDIR)",
+    cmd = "$(execpath :gen_synthetic_protos) $(RULEDIR)",
 )
 
 proto_library(
@@ -145,7 +146,7 @@ tmpl_cc_binary(
     testonly = 1,
     gen = ":gen_upb_binary_c",
     args = [
-        "benchmarks/" + k + ".upb.h", 
+        package_name() + "/" + k + ".upb.h",
         "upb_benchmark_" + v,
     ],
     deps = [
@@ -157,7 +158,7 @@ tmpl_cc_binary(
     testonly = 1,
     gen = ":gen_protobuf_binary_cc",
     args = [
-        "benchmarks/" + k + ".pb.h",
+        package_name() + "/" + k + ".pb.h",
         "upb_benchmark::" + v,
     ],
     deps = [
@@ -174,7 +175,7 @@ tmpl_cc_binary(
     testonly = 1,
     gen = ":gen_protobuf_binary_cc",
     args = [
-        "benchmarks/" + k + "_lite.pb.h",
+        package_name() + "/" + k + "_lite.pb.h",
         "upb_benchmark::" + v,
     ],
     deps = [

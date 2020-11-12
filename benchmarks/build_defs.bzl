@@ -25,6 +25,10 @@ def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
     )
 
     native.cc_binary(
+        # copybara:insert_for_google3_begin
+        # malloc="//base:system_malloc",
+        # features = ["-static_linking_mode"],
+        # copybara:insert_end
         name = name,
         srcs = srcs,
         **kwargs,
@@ -41,7 +45,7 @@ def cc_lite_proto_library(name, srcs, outs):
         cmd = "cp $< $@ && chmod a+w $@ && echo 'option optimize_for = LITE_RUNTIME;' >> $@",
     )
 
-    native.proto_library(
+    proto_library(
         name = name + "_proto",
         srcs = outs,
     )
