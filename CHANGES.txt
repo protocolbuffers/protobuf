@@ -52,6 +52,7 @@
   * Remove uses of pkg_resources in non-namespace packages. (#7902)
   * [bazel/py] Omit google/__init__.py from the Protobuf runtime. (#7908)
   * Removed the unnecessary setuptools package dependency for Python package (#7511)
+  * Fix PyUnknownFields memory leak (#7928)
 
   PHP
   * Added support for "==" to the PHP C extension (#7883)
