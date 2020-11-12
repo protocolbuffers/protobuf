@@ -2,12 +2,12 @@
 
 #include "upb/encode.h"
 
+#include <setjmp.h>
 #include <string.h>
 
 #include "upb/msg.h"
-#include "upb/upb.h"
-
 #include "upb/port_def.inc"
+#include "upb/upb.h"
 
 #define UPB_PB_VARINT_MAX_LEN 10
 
@@ -41,7 +41,7 @@ static size_t upb_roundup_pow2(size_t bytes) {
 }
 
 UPB_NORETURN static void encode_err(upb_encstate *e) {
-  _upb_longjmp(e->err, 1);
+  UPB_LONGJMP(e->err, 1);
 }
 
 UPB_NOINLINE
@@ -420,7 +420,7 @@ char *upb_encode(const void *msg, const upb_msglayout *m, upb_arena *arena,
   e.limit = NULL;
   e.ptr = NULL;
 
-  if (_upb_setjmp(e.err)) {
+  if (UPB_SETJMP(e.err)) {
     *size = 0;
     return NULL;
   }

@@ -125,6 +125,15 @@
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
 #endif
 
+/* UPB_SETJMP() / UPB_LONGJMP(): avoid setting/restoring signal mask. */
+#ifdef __APPLE__
+#define UPB_SETJMP(buf) _setjmp(buf)
+#define UPB_LONGJMP(buf, val) _longjmp(buf, val)
+#else
+#define UPB_SETJMP(buf) setjmp(buf)
+#define UPB_LONGJMP(buf, val) longjmp(buf, val)
+#endif
+
 /* Configure whether fasttable is switched on or not. *************************/
 
 #if defined(__x86_64__) && defined(__GNUC__)

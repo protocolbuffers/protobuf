@@ -3,6 +3,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -909,13 +910,13 @@ static void symtab_errf(symtab_addctx *ctx, const char *fmt, ...) {
   va_start(argp, fmt);
   upb_status_vseterrf(ctx->status, fmt, argp);
   va_end(argp);
-  longjmp(ctx->err, 1);
+  UPB_LONGJMP(ctx->err, 1);
 }
 
 UPB_NORETURN UPB_NOINLINE
 static void symtab_oomerr(symtab_addctx *ctx) {
   upb_status_setoom(ctx->status);
-  longjmp(ctx->err, 1);
+  UPB_LONGJMP(ctx->err, 1);
 }
 
 void *symtab_alloc(symtab_addctx *ctx, size_t bytes) {
@@ -2093,7 +2094,7 @@ static const upb_filedef *_upb_symtab_addfile(
   file->enum_count = 0;
   file->ext_count = 0;
 
-  if (UPB_UNLIKELY(_upb_setjmp(ctx.err))) {
+  if (UPB_UNLIKELY(UPB_SETJMP(ctx.err))) {
     UPB_ASSERT(!upb_ok(status));
     remove_filedef(s, file);
     file = NULL;
