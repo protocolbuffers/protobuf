@@ -88,6 +88,28 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         [Test]
+        public void NegativeSingleValues()
+        {
+            var message = new TestWellKnownTypes
+            {
+                FloatField = -12.5f,
+                DoubleField = -12.25d,
+                Int32Field = -1,
+                Int64Field = -2
+            };
+
+            MessageParsingHelpers.AssertWritingMessage(message);
+
+            MessageParsingHelpers.AssertRoundtrip(TestWellKnownTypes.Parser, message, parsed =>
+            {
+                Assert.AreEqual(-12.5f, parsed.FloatField);
+                Assert.AreEqual(-12.25d, parsed.DoubleField);
+                Assert.AreEqual(-1, parsed.Int32Field);
+                Assert.AreEqual(-2L, parsed.Int64Field);
+            });
+        }
+
+        [Test]
         public void NonNullDefaultIsPreservedThroughSerialization()
         {
             var message = new TestWellKnownTypes
