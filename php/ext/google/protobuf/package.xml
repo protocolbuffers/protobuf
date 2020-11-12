@@ -10,15 +10,15 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2020-11-11</date>
- <time>10:35:18</time>
+ <date>2020-11-12</date>
+ <time>14:06:40</time>
  <version>
-  <release>3.14.0RC3</release>
+  <release>3.14.0</release>
   <api>3.14.0</api>
  </version>
  <stability>
-  <release>beta</release>
-  <api>beta</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>PHP protobuf</notes>
@@ -731,6 +731,21 @@ G  A release.
    </stability>
    <date>2020-11-11</date>
    <time>10:35:18</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.14.0</release>
+    <api>3.14.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2020-11-12</date>
+   <time>14:06:40</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>

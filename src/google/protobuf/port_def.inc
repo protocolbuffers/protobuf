@@ -321,7 +321,7 @@
 #define PROTOBUF_VERSION 3014000
 #define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3014000
 #define PROTOBUF_MIN_PROTOC_VERSION 3014000
-#define PROTOBUF_VERSION_SUFFIX "-rc3"
+#define PROTOBUF_VERSION_SUFFIX ""
 
 // The minimum library version which works with the current version of the
 // headers.
