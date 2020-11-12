@@ -344,6 +344,25 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void ReadInt32Wrapper_VariableBlockSizes()
+        {
+            byte[] rawBytes = new byte[] { 202, 1, 11, 8, 254, 255, 255, 255, 255, 255, 255, 255, 255, 1 };
+
+            for (int blockSize = 1; blockSize <= rawBytes.Length; blockSize++)
+            {
+                ReadOnlySequence<byte> data = ReadOnlySequenceFactory.CreateWithContent(rawBytes, blockSize);
+                AssertReadFromParseContext(data, (ref ParseContext ctx) =>
+                {
+                    ctx.ReadTag();
+
+                    var value = ParsingPrimitivesWrappers.ReadInt32Wrapper(ref ctx);
+
+                    Assert.AreEqual(-2, value);
+                }, true);
+            }
+        }
+
+        [Test]
         public void ReadHugeBlob()
         {
             // Allocate and initialize a 1MB blob.
