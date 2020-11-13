@@ -68,6 +68,7 @@
   C#:
   * annotate ByteString.CopyFrom(ReadOnlySpan<byte>) as SecuritySafeCritical (#7701)
   * Fix C# optional field reflection when there are regular fields too (#7705)
+  * Fix parsing negative Int32Value that crosses segment boundary (#8035)
 
   Javascript:
   * JS: parse (un)packed fields conditionally (#7379)
