@@ -14,9 +14,14 @@ class GPBEmpty
         if (static::$is_initialized == true) {
           return;
         }
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0abe010a1b676f6f676c652f70726f746f6275662f656d7074792e70726f746f120f676f6f676c652e70726f746f62756622070a05456d707479427d0a13636f6d2e676f6f676c652e70726f746f627566420a456d70747950726f746f50015a2e676f6f676c652e676f6c616e672e6f72672f70726f746f6275662f74797065732f6b6e6f776e2f656d7074797062f80101a20203475042aa021e476f6f676c652e50726f746f6275662e57656c6c4b6e6f776e5479706573620670726f746f33"
-        ), true);
+        $pool->internalAddGeneratedFile(
+            '
+¾
+google/protobuf/empty.protogoogle.protobuf"
+EmptyB}
+com.google.protobufB
+EmptyProtoPZ.google.golang.org/protobuf/types/known/emptypbø¢GPBªGoogle.Protobuf.WellKnownTypesbproto3'
+        , true);
 
         static::$is_initialized = true;
     }

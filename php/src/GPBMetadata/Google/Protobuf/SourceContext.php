@@ -14,9 +14,14 @@ class SourceContext
         if (static::$is_initialized == true) {
           return;
         }
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0af0010a24676f6f676c652f70726f746f6275662f736f757263655f636f6e746578742e70726f746f120f676f6f676c652e70726f746f62756622220a0d536f75726365436f6e7465787412110a0966696c655f6e616d65180120012809428a010a13636f6d2e676f6f676c652e70726f746f6275664212536f75726365436f6e7465787450726f746f50015a36676f6f676c652e676f6c616e672e6f72672f70726f746f6275662f74797065732f6b6e6f776e2f736f75726365636f6e746578747062a20203475042aa021e476f6f676c652e50726f746f6275662e57656c6c4b6e6f776e5479706573620670726f746f33"
-        ), true);
+        $pool->internalAddGeneratedFile(
+            '
+ð
+$google/protobuf/source_context.protogoogle.protobuf""
+SourceContext
+	file_name (	BŠ
+com.google.protobufBSourceContextProtoPZ6google.golang.org/protobuf/types/known/sourcecontextpb¢GPBªGoogle.Protobuf.WellKnownTypesbproto3'
+        , true);
 
         static::$is_initialized = true;
     }

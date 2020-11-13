@@ -2204,6 +2204,18 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
 }  // namespace
 
+std::string GeneratedClassName(const Descriptor* desc) {
+  return GeneratedClassNameImpl(desc);
+}
+
+std::string GeneratedClassName(const EnumDescriptor* desc) {
+  return GeneratedClassNameImpl(desc);
+}
+
+std::string GeneratedClassName(const ServiceDescriptor* desc) {
+  return GeneratedClassNameImpl(desc);
+}
+
 bool Generator::Generate(const FileDescriptor* file,
                          const std::string& parameter,
                          GeneratorContext* generator_context,
