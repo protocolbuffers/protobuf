@@ -34,7 +34,7 @@ def tmpl_cc_binary(name, gen, args, replacements = [], **kwargs):
         **kwargs,
     )
 
-def cc_lite_proto_library(name, srcs, outs):
+def cc_optimizefor_proto_library(name, srcs, outs, optimize_for):
     if len(srcs) != 1:
         fail("Currently srcs must have exactly 1 element")
 
@@ -42,7 +42,7 @@ def cc_lite_proto_library(name, srcs, outs):
         name = name + "_gen_proto",
         srcs = srcs,
         outs = outs,
-        cmd = "cp $< $@ && chmod a+w $@ && echo 'option optimize_for = LITE_RUNTIME;' >> $@",
+        cmd = "cp $< $@ && chmod a+w $@ && echo 'option optimize_for = " + optimize_for + ";' >> $@",
     )
 
     proto_library(

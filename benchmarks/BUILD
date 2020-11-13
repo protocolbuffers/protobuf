@@ -6,7 +6,7 @@ load(
 load(
     ":build_defs.bzl",
     "tmpl_cc_binary",
-    "cc_lite_proto_library",
+    "cc_optimizefor_proto_library",
     "expand_suffixes",
     "proto_library",
 )
@@ -165,10 +165,11 @@ tmpl_cc_binary(
         ":" + k + "_cc_proto",
     ],
 ),
-cc_lite_proto_library(
+cc_optimizefor_proto_library(
     srcs = [k + ".proto"],
     outs = [k + "_lite.proto"],
     name = k + "_cc_lite_proto",
+    optimize_for = "LITE_RUNTIME",
 ),
 tmpl_cc_binary(
     name = k + "_lite_protobuf_binary",
@@ -181,14 +182,33 @@ tmpl_cc_binary(
     deps = [
         ":" + k + "_cc_lite_proto",
     ],
-)) for k, v in SIZE_BENCHMARKS.items()]
+),
+cc_optimizefor_proto_library(
+    srcs = [k + ".proto"],
+    outs = [k + "_codesize.proto"],
+    name = k + "_cc_codesize_proto",
+    optimize_for = "CODE_SIZE",
+),
+tmpl_cc_binary(
+    name = k + "_codesize_protobuf_binary",
+    testonly = 1,
+    gen = ":gen_protobuf_binary_cc",
+    args = [
+        package_name() + "/" + k + "_codesize.pb.h",
+        "upb_benchmark::" + v,
+    ],
+    deps = [
+        ":" + k + "_cc_codesize_proto",
+    ],
+)
+) for k, v in SIZE_BENCHMARKS.items()]
 
 genrule(
     testonly = 1,
     name = "size_data",
     srcs = expand_suffixes(
         SIZE_BENCHMARKS.keys(),
-        suffixes = ["_upb_binary", "_protobuf_binary", "_lite_protobuf_binary"],
+        suffixes = ["_upb_binary", "_protobuf_binary", "_lite_protobuf_binary", "_codesize_protobuf_binary"],
     ),
     outs = ["size_data.txt"],
     # We want --format=GNU which counts rodata with data, not text.
