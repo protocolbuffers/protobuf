@@ -795,6 +795,77 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       hash(m.repeated_nested_message)
 
+  def testRepeatedFieldResize(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_int32.Resize(10)
+    self.assertEqual(len(m.repeated_int32), 10)
+    self.assertEqual(list(m.repeated_int32), [0] * 10)
+
+  def testRepeatedFieldAssertsNegative(self, message_module):
+    m = message_module.TestAllTypes()
+
+    with self.assertRaises(ValueError):
+        m.repeated_int32.Resize(-1)
+
+  def testRepeatedFieldResizeAssertsType(self, message_module):
+    m = message_module.TestAllTypes()
+
+    with self.assertRaises(AttributeError):
+        m.repeated_nested_message.Resize(10)
+
+  def testRepeatedFieldMemoryviewAttrs(self, message_module):
+    if (api_implementation.Type() != 'cpp'):
+        return
+    m = message_module.TestAllTypes()
+    m.repeated_int32.Resize(10)
+    view = memoryview(m.repeated_int32)
+
+    self.assertEqual(len(view), 10)
+    self.assertEqual(len(view.tobytes()), 40)
+    self.assertEqual(view.shape, (10, ))
+    self.assertEqual(view.format, "i")
+    self.assertEqual(view.itemsize, 4)
+    self.assertEqual(view.obj, m.repeated_int32)
+
+  def testRepeatedFieldMemoryviewAppendWrite(self, message_module):
+    if (api_implementation.Type() != 'cpp'):
+        return
+
+    m = message_module.TestAllTypes()
+    m.repeated_int32.append(2)
+    m.repeated_int32.append(4)
+    m.repeated_int32.append(6)
+    m.repeated_int32.append(8)
+    m.repeated_int32.append(10)
+
+    view = memoryview(m.repeated_int32)
+
+    view[0] = 3
+    view[1] = 9
+    view[2] = 27
+    view[3] = 36
+    view[4] = 54
+
+    self.assertEqual(m.repeated_int32, [3, 9, 27, 36, 54])
+
+
+  def testRepeatedFieldMemoryviewResizeWrite(self, message_module):
+    if (api_implementation.Type() != 'cpp'):
+        return
+
+    m = message_module.TestAllTypes()
+
+    m.repeated_int32.Resize(5)
+    view = memoryview(m.repeated_int32)
+
+    view[0] = 3
+    view[1] = 9
+    view[2] = 27
+    view[3] = 36
+    view[4] = 54
+
+    self.assertEqual(m.repeated_int32, [3, 9, 27, 36, 54])
+
   def testRepeatedFieldInsideNestedMessage(self, message_module):
     m = message_module.NestedTestAllTypes()
     m.payload.repeated_int32.extend([])

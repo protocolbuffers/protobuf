@@ -291,6 +291,20 @@ class RepeatedScalarFieldContainer(BaseContainer):
     self._values.extend(other._values)
     self._message_listener.Modified()
 
+  def Resize(self, count):
+    """Resizes to the specified number of elements in the container. Only valid for primtive types."""
+    if len(self._values) >= count:
+      return
+
+    if count < 0:
+      raise ValueError("resize count was negative %d" % count)
+
+    if not hasattr(self._type_checker, 'DefaultValue'):
+      raise TypeError("resize not supported for this type")
+
+    while len(self._values) < count:
+      self.append(self._type_checker.DefaultValue())
+
   def remove(self, elem):
     """Removes an item from the list. Similar to list.remove()."""
     self._values.remove(elem)

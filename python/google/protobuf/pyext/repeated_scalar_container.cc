@@ -650,6 +650,50 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
   return item;
 }
 
+static PyObject* Resize(PyObject* pself, PyObject* args) {
+  Py_ssize_t count = -1;
+  if (!PyArg_ParseTuple(args, "n", &count)) {
+    return NULL;
+  }
+
+  if (count < 0) {
+    PyErr_Format(PyExc_ValueError, "resize count was negative (%zd)", count);
+    return NULL;
+  }
+
+  RepeatedScalarContainer* self =
+    reinterpret_cast<RepeatedScalarContainer*>(pself);
+  Message* message = self->parent->message;
+  const Reflection* reflection = message->GetReflection();
+  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+
+#define RESIZE_BY_TYPE(type) {                                    \
+    reflection->MutableRepeatedField<type>(message, field_descriptor)->Resize(count, type{}); \
+  }                                                                     \
+  break
+
+  switch (field_descriptor->cpp_type())
+  {
+    case FieldDescriptor::CPPTYPE_INT32: RESIZE_BY_TYPE(int32);
+    case FieldDescriptor::CPPTYPE_INT64: RESIZE_BY_TYPE(int64);
+    case FieldDescriptor::CPPTYPE_UINT32: RESIZE_BY_TYPE(uint32);
+    case FieldDescriptor::CPPTYPE_UINT64: RESIZE_BY_TYPE(uint64);
+    case FieldDescriptor::CPPTYPE_DOUBLE: RESIZE_BY_TYPE(double);
+    case FieldDescriptor::CPPTYPE_FLOAT: RESIZE_BY_TYPE(float);
+    case FieldDescriptor::CPPTYPE_BOOL: RESIZE_BY_TYPE(bool);
+    default: {
+      PyErr_Format(PyExc_TypeError,
+                   "resize not supported for type '%s', use .Append.",
+                   field_descriptor->name());
+      return NULL;
+    }
+  }
+
+  #undef RESIZE_BY_TYPE
+
+  Py_RETURN_NONE;
+}
+
 static PyObject* ToStr(PyObject* pself) {
   ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
   if (full_slice == NULL) {
@@ -664,6 +708,69 @@ static PyObject* ToStr(PyObject* pself) {
 
 static PyObject* MergeFrom(PyObject* pself, PyObject* arg) {
   return Extend(reinterpret_cast<RepeatedScalarContainer*>(pself), arg);
+}
+
+
+int GetBuffer(PyObject *exporter, Py_buffer *view, int flags) {
+  RepeatedScalarContainer* self =
+    reinterpret_cast<RepeatedScalarContainer*>(exporter);
+  Message* message = self->parent->message;
+  const Reflection* reflection = message->GetReflection();
+  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+
+  void* data = NULL;
+  size_t element_size = 0;
+  char* format = "B";
+
+#define GET_BUFFER_GET_DATA(type, format_) {                                    \
+    data = reflection->MutableRepeatedField<type>(message, field_descriptor)->mutable_data(); \
+    element_size = sizeof(type);                                        \
+    format = format_;                                                   \
+  }                                                                     \
+  break
+
+  switch (field_descriptor->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_DOUBLE: GET_BUFFER_GET_DATA(double, "d");
+    case FieldDescriptor::CPPTYPE_FLOAT: GET_BUFFER_GET_DATA(float, "f");
+    case FieldDescriptor::CPPTYPE_INT32: GET_BUFFER_GET_DATA(int32, "i");
+    case FieldDescriptor::CPPTYPE_INT64: GET_BUFFER_GET_DATA(int64, "q");
+    case FieldDescriptor::CPPTYPE_UINT32: GET_BUFFER_GET_DATA(uint32, "I");
+    case FieldDescriptor::CPPTYPE_UINT64: GET_BUFFER_GET_DATA(uint64, "Q");
+    case FieldDescriptor::CPPTYPE_BOOL: GET_BUFFER_GET_DATA(bool, "?");
+    default: {
+      PyErr_Format(PyExc_TypeError,
+                   "cannot convert repeated elements of type '%s' to memory view",
+                   field_descriptor->name());
+      return -1;
+    }
+  }
+
+#undef GET_BUFFER_GET_DATA
+
+  const int result = PyBuffer_FillInfo(view, exporter, data, Len(exporter) * element_size, false, flags);
+  if (result < 0) {
+    return result;
+  }
+  view->len = Len(exporter) * element_size;
+  view->itemsize = element_size;
+  view->format = format;
+  view->shape = PyMem_New(ssize_t, 1);
+  view->shape[0] = Len(exporter);
+  view->strides = &(view->itemsize);
+
+  return result;
+}
+
+
+void ReleaseBuffer(PyObject *exporter, Py_buffer *view)
+
+{
+  PyMem_Free(view->shape);
+  /*
+  From https://github.com/python/cpython/blob/master/Objects/memoryobject.c:
+     PyBuffer_Release() decrements view.obj (if non-NULL), so the
+     releasebufferprocs must NOT decrement view.obj.
+*/
 }
 
 // The private constructor of RepeatedScalarContainer objects.
@@ -710,6 +817,12 @@ static PyMappingMethods MpMethods = {
   AssSubscript, /* mp_ass_subscript */
 };
 
+
+static PyBufferProcs BfMethods = {
+    GetBuffer,
+    ReleaseBuffer,
+};
+
 static PyMethodDef Methods[] = {
   { "__deepcopy__", DeepCopy, METH_VARARGS,
     "Makes a deep copy of the class." },
@@ -729,6 +842,8 @@ static PyMethodDef Methods[] = {
     "Sorts the repeated container."},
   { "MergeFrom", (PyCFunction)MergeFrom, METH_O,
     "Merges a repeated container into the current container." },
+  { "Resize", Resize, METH_VARARGS,
+    "Resizes to the specified number of elements in the container. Only valid for primtive types." },
   { NULL, NULL }
 };
 
@@ -753,7 +868,7 @@ PyTypeObject RepeatedScalarContainer_Type = {
   0,                                   //  tp_str
   0,                                   //  tp_getattro
   0,                                   //  tp_setattro
-  0,                                   //  tp_as_buffer
+  &repeated_scalar_container::BfMethods,   //  tp_as_buffer
   Py_TPFLAGS_DEFAULT,                  //  tp_flags
   "A Repeated scalar container",       //  tp_doc
   0,                                   //  tp_traverse
