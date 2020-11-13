@@ -74,6 +74,8 @@ bool ParseDelimitedFromCodedStream(MessageLite* message,
     return false;
   }
 
+  // Get the position after any size bytes have been read (and only the message
+  // itself remains).
   int position_after_size = input->CurrentPosition();
 
   // Tell the stream not to read beyond that size.
@@ -82,7 +84,8 @@ bool ParseDelimitedFromCodedStream(MessageLite* message,
   // Parse the message.
   if (!message->MergeFromCodedStream(input)) return false;
   if (!input->ConsumedEntireMessage()) return false;
-  if (input->CurrentPosition() - position_after_size != int{size}) return false;
+  if (input->CurrentPosition() - position_after_size != static_cast<int>(size))
+    return false;
 
   // Release the limit.
   input->PopLimit(limit);
