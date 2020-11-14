@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.13.0</version>
+  <version>3.14.0</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>

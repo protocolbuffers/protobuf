@@ -1,4 +1,4 @@
-Unreleased Changes
+2020-11-11 version 3.14.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler
   * The proto compiler no longer requires a .proto filename when it is not
@@ -28,6 +28,8 @@ Unreleased Changes
   * Warn against the use of AllowUnknownExtension.
   * Migrated to C++11 for-range loops instead of index-based loops where
     possible. This fixes a lot of warnings when compiling with -Wsign-compare.
+  * Fix segment fault for proto3 optional (#7805)
+  * Adds a CMake option to build `libprotoc` separately (#7949)
 
   Java
   * Bugfix in mergeFrom() when a oneof has multiple message fields.
@@ -40,15 +42,36 @@ Unreleased Changes
   * Fix FieldMaskUtil.subtract to recursively remove mask.
   * Mark enums with `@java.lang.Deprecated` if the proto enum has option
     `deprecated = true;`.
+  * Adding forgotten duration.proto to the lite library (#7738)
 
   Python
   * Print google.protobuf.NullValue as null instead of "NULL_VALUE" when it is
     used outside WKT Value/Struct.
   * Fix bug occurring when attempting to deep copy an enum type in python 3.
+  * Add a setuptools extension for generating Python protobufs (#7783)
+  * Remove uses of pkg_resources in non-namespace packages. (#7902)
+  * [bazel/py] Omit google/__init__.py from the Protobuf runtime. (#7908)
+  * Removed the unnecessary setuptools package dependency for Python package (#7511)
+  * Fix PyUnknownFields memory leak (#7928)
+
+  PHP
+  * Added support for "==" to the PHP C extension (#7883)
+  * Added `==` operators for Map and Array. (#7900)
+  * Native C well-known types (#7944)
+  * Optimized away hex2bin() call in generated code (#8006)
+  * New version of upb, and a new hash function wyhash in third_party. (#8000)
+  * add missing hasOneof method to check presence of oneof fields (#8003)
 
   Go:
   * Update go_package options to reference google.golang.org/protobuf module.
 
+  C#:
+  * annotate ByteString.CopyFrom(ReadOnlySpan<byte>) as SecuritySafeCritical (#7701)
+  * Fix C# optional field reflection when there are regular fields too (#7705)
+  * Fix parsing negative Int32Value that crosses segment boundary (#8035)
+
+  Javascript:
+  * JS: parse (un)packed fields conditionally (#7379)
 
 2020-07-14 version 3.13.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 

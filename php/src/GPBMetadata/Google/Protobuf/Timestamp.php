@@ -14,9 +14,15 @@ class Timestamp
         if (static::$is_initialized == true) {
           return;
         }
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0aef010a1f676f6f676c652f70726f746f6275662f74696d657374616d702e70726f746f120f676f6f676c652e70726f746f627566222b0a0954696d657374616d70120f0a077365636f6e6473180120012803120d0a056e616e6f731802200128054285010a13636f6d2e676f6f676c652e70726f746f627566420e54696d657374616d7050726f746f50015a32676f6f676c652e676f6c616e672e6f72672f70726f746f6275662f74797065732f6b6e6f776e2f74696d657374616d707062f80101a20203475042aa021e476f6f676c652e50726f746f6275662e57656c6c4b6e6f776e5479706573620670726f746f33"
-        ), true);
+        $pool->internalAddGeneratedFile(
+            '
+ï
+google/protobuf/timestamp.protogoogle.protobuf"+
+	Timestamp
+seconds (
+nanos (B…
+com.google.protobufBTimestampProtoPZ2google.golang.org/protobuf/types/known/timestamppbø¢GPBªGoogle.Protobuf.WellKnownTypesbproto3'
+        , true);
 
         static::$is_initialized = true;
     }

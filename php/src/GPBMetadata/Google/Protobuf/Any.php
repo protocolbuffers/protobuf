@@ -14,9 +14,15 @@ class Any
         if (static::$is_initialized == true) {
           return;
         }
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0ad4010a19676f6f676c652f70726f746f6275662f616e792e70726f746f120f676f6f676c652e70726f746f62756622260a03416e7912100a08747970655f75726c180120012809120d0a0576616c756518022001280c42760a13636f6d2e676f6f676c652e70726f746f6275664208416e7950726f746f50015a2c676f6f676c652e676f6c616e672e6f72672f70726f746f6275662f74797065732f6b6e6f776e2f616e797062a20203475042aa021e476f6f676c652e50726f746f6275662e57656c6c4b6e6f776e5479706573620670726f746f33"
-        ), true);
+        $pool->internalAddGeneratedFile(
+            '
+Ô
+google/protobuf/any.protogoogle.protobuf"&
+Any
+type_url (	
+value (Bv
+com.google.protobufBAnyProtoPZ,google.golang.org/protobuf/types/known/anypb¢GPBªGoogle.Protobuf.WellKnownTypesbproto3'
+        , true);
 
         static::$is_initialized = true;
     }
