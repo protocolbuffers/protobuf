@@ -219,13 +219,20 @@ static const char *decode_varint64(upb_decstate *d, const char *ptr,
 }
 
 UPB_FORCEINLINE
-static const char *decode_varint32(upb_decstate *d, const char *ptr,
+static const char *decode_tag(upb_decstate *d, const char *ptr,
                                    uint32_t *val) {
-  uint64_t u64;
-  ptr = decode_varint64(d, ptr, &u64);
-  if (u64 > UINT32_MAX) decode_err(d);
-  *val = (uint32_t)u64;
-  return ptr;
+  uint64_t byte = (uint8_t)*ptr;
+  if (UPB_LIKELY((byte & 0x80) == 0)) {
+    *val = byte;
+    return ptr + 1;
+  } else {
+    const char *start = ptr;
+    decode_vret res = decode_longvarint64(ptr, byte);
+    ptr = res.ptr;
+    *val = res.val;
+    if (!ptr || *val > UINT32_MAX || ptr - start > 5) decode_err(d);
+    return ptr;
+  }
 }
 
 static void decode_munge(int type, wireval *val) {
@@ -545,7 +552,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
     int op;
 
     UPB_ASSERT(ptr < d->limit_ptr);
-    ptr = decode_varint32(d, ptr, &tag);
+    ptr = decode_tag(d, ptr, &tag);
     field_number = tag >> 3;
     wire_type = tag & 7;
 
@@ -573,13 +580,15 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
         break;
       case UPB_WIRE_TYPE_DELIMITED: {
         int ndx = field->descriptortype;
+        uint64_t size;
         if (_upb_isrepeated(field)) ndx += 18;
-        ptr = decode_varint32(d, ptr, &val.size);
-        if (val.size >= INT32_MAX ||
-            ptr - d->end + (int32_t)val.size > d->limit) {
+        ptr = decode_varint64(d, ptr, &size);
+        if (size >= INT32_MAX ||
+            ptr - d->end + (int32_t)size > d->limit) {
           decode_err(d); /* Length overflow. */
         }
         op = delim_ops[ndx];
+        val.size = size;
         break;
       }
       case UPB_WIRE_TYPE_START_GROUP:
