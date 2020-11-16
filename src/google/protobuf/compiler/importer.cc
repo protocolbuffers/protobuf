@@ -495,7 +495,7 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
   do {
     ret = stat(filename.c_str(), &sb);
   } while (ret != 0 && errno == EINTR);
-  if (ret == 0 && sb.st_mode & S_IFDIR) {
+  if (ret == 0 && S_ISDIR(sb.st_mode)) {
     last_error_message_ = "Input file is a directory.";
     return NULL;
   }
