@@ -490,8 +490,6 @@ VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   return Qnil;
 }
 
-#if 0
-
 /*
  * call-seq:
  *     Message.dup => new_message
@@ -513,6 +511,8 @@ VALUE Message_dup(VALUE _self) {
 
   return new_msg;
 }
+
+#if 0
 
 // Internal only; used by Google::Protobuf.deep_copy.
 VALUE Message_deep_copy(VALUE _self) {

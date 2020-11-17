@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "protobuf.h"
+#include "map.h"
 
 VALUE cError;
 VALUE cParseError;
