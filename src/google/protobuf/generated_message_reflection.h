@@ -236,7 +236,7 @@ struct ReflectionSchema {
 
   // We tag offset values to provide additional data about fields (such as
   // "unused").
-  static uint32 OffsetValue(uint32 v, FieldDescriptor::Type type) {
+  static uint32 OffsetValue(uint32 v, FieldDescriptor::Type /* type */) {
     return v & 0x7FFFFFFFu;
   }
 };
