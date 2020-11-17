@@ -329,6 +329,8 @@ inline void ArenaStringPtr::Swap(ArenaStringPtr* other,
     this_ptr->swap(*other_ptr);
   }
 #else
+  (void) default_value;
+  (void) arena;
   std::swap(tagged_ptr_, other->tagged_ptr_);
 #endif
 }

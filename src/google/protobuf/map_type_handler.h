@@ -569,7 +569,7 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
   }                                                                           \
   template <typename Type>                                                    \
   inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Clear(  \
-      TypeOnMemory* value, Arena* arena) {                                    \
+      TypeOnMemory* value, Arena* /* arena */) {                              \
     value->ClearToEmpty();                                                    \
   }                                                                           \
   template <typename Type>                                                    \
