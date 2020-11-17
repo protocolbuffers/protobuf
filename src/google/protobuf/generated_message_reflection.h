@@ -42,8 +42,6 @@
 #include <vector>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
-// TODO(jasonh): Remove this once the compiler change to directly include this
-// is released to components.
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/stubs/once.h>
@@ -59,7 +57,6 @@
 
 namespace google {
 namespace protobuf {
-class DescriptorPool;
 class MapKey;
 class MapValueRef;
 class MessageLayoutInspector;
@@ -148,17 +145,6 @@ struct ReflectionSchema {
     }
   }
 
-  bool IsFieldInlined(const FieldDescriptor* field) const {
-    if (InRealOneof(field)) {
-      size_t offset =
-          static_cast<size_t>(field->containing_type()->field_count() +
-                              field->containing_oneof()->index());
-      return Inlined(offsets_[offset], field->type());
-    } else {
-      return Inlined(offsets_[field->index()], field->type());
-    }
-  }
-
   uint32 GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
     return static_cast<uint32>(oneof_case_offset_) +
            static_cast<uint32>(static_cast<size_t>(oneof_descriptor->index()) *
@@ -212,11 +198,20 @@ struct ReflectionSchema {
            OffsetValue(offsets_[field->index()], field->type());
   }
 
+  // Returns true if the field's accessor is called by any external code (aka,
+  // non proto library code).
+  bool IsFieldUsed(const FieldDescriptor* field) const {
+    (void)field;
+    return true;
+  }
+
   bool IsFieldStripped(const FieldDescriptor* field) const {
+    (void)field;
     return false;
   }
 
   bool IsMessageStripped(const Descriptor* descriptor) const {
+    (void)descriptor;
     return false;
   }
 
@@ -240,24 +235,9 @@ struct ReflectionSchema {
   int weak_field_map_offset_;
 
   // We tag offset values to provide additional data about fields (such as
-  // inlined).
+  // "unused").
   static uint32 OffsetValue(uint32 v, FieldDescriptor::Type type) {
-    if (type == FieldDescriptor::TYPE_STRING ||
-        type == FieldDescriptor::TYPE_BYTES) {
-      return v & ~1u;
-    } else {
-      return v;
-    }
-  }
-
-  static bool Inlined(uint32 v, FieldDescriptor::Type type) {
-    if (type == FieldDescriptor::TYPE_STRING ||
-        type == FieldDescriptor::TYPE_BYTES) {
-      return v & 1u;
-    } else {
-      // Non string/byte fields are not inlined.
-      return false;
-    }
+    return v & 0x7FFFFFFFu;
   }
 };
 
@@ -294,6 +274,13 @@ struct PROTOBUF_EXPORT DescriptorTable {
   int num_messages;
   const EnumDescriptor** file_level_enum_descriptors;
   const ServiceDescriptor** file_level_service_descriptors;
+};
+
+enum {
+  // Tag used on offsets for fields that don't have a real offset.
+  // For example, weak message fields go into the WeakFieldMap and not in an
+  // actual field.
+  kInvalidFieldOffsetTag = 0x40000000u,
 };
 
 // AssignDescriptors() pulls the compiled FileDescriptor from the DescriptorPool

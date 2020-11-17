@@ -66,7 +66,7 @@ Remember to update any submodules if you are using git clone (you can skip this
 step if you are using a release .tar.gz or .zip package):
 
 ```console
-C:\Path\to\protobuf> git submodule update --init --recursive
+C:\Path\to> git submodule update --init --recursive
 ```
 
 Now go to *cmake* folder in protobuf sources:

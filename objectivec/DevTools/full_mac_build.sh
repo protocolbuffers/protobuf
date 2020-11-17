@@ -285,11 +285,11 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
           -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
           # 10.x also seems to often fail running destinations in parallel (with
-          # 32bit one include atleast)
+          # 32bit one include at least)
           -disable-concurrent-destination-testing
       )
       ;;
-    11.*)
+    11.* | 12.*)
       # Dropped 32bit as Apple doesn't seem support the simulators either.
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" # 64bit
@@ -352,10 +352,8 @@ if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
       echo "ERROR: Xcode 10.0 or higher is required to build the test suite." 1>&2
       exit 11
       ;;
-    10.* | 11.* )
+    10.* | 11.* | 12.*)
       XCODEBUILD_TEST_BASE_TVOS+=(
-        # Test on the oldest and current.
-        -destination "platform=tvOS Simulator,name=Apple TV,OS=11.0"
         -destination "platform=tvOS Simulator,name=Apple TV 4K,OS=latest"
       )
       ;;

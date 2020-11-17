@@ -292,6 +292,13 @@ class DynamicMessage : public Message {
   ~DynamicMessage();
 
   // Called on the prototype after construction to initialize message fields.
+  // Cross linking the default instances allows for fast reflection access of
+  // unset message fields. Without it we would have to go to the MessageFactory
+  // to get the prototype, which is a much more expensive operation.
+  //
+  // Generated messages do not cross-link to avoid dynamic initialization of the
+  // global instances.
+  // Instead, they keep the default instances in the FieldDescriptor objects.
   void CrossLinkPrototypes();
 
   // implements Message ----------------------------------------------
@@ -425,15 +432,10 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
             if (!field->is_repeated()) {
-              const std::string* default_value;
-              if (is_prototype()) {
-                default_value = &field->default_value_string();
-              } else {
-                default_value = &(reinterpret_cast<const ArenaStringPtr*>(
-                                      type_info_->prototype->OffsetToPointer(
-                                          type_info_->offsets[i]))
-                                      ->Get());
-              }
+              const std::string* default_value =
+                  field->default_value_string().empty()
+                      ? &internal::GetEmptyStringAlreadyInited()
+                      : nullptr;
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->UnsafeSetDefault(default_value);
             } else {
@@ -516,10 +518,10 @@ DynamicMessage::~DynamicMessage() {
             default:
             case FieldOptions::STRING: {
               const std::string* default_value =
-                  &(reinterpret_cast<const ArenaStringPtr*>(
-                        reinterpret_cast<const uint8*>(type_info_->prototype) +
-                        type_info_->offsets[i])
-                        ->Get());
+                  reinterpret_cast<const ArenaStringPtr*>(
+                      reinterpret_cast<const uint8*>(type_info_->prototype) +
+                      type_info_->offsets[i])
+                      ->GetPointer();
               reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
                   default_value, NULL);
               break;
@@ -576,10 +578,10 @@ DynamicMessage::~DynamicMessage() {
         default:  // TODO(kenton):  Support other string reps.
         case FieldOptions::STRING: {
           const std::string* default_value =
-              &(reinterpret_cast<const ArenaStringPtr*>(
-                    type_info_->prototype->OffsetToPointer(
-                        type_info_->offsets[i]))
-                    ->Get());
+              reinterpret_cast<const ArenaStringPtr*>(
+                  type_info_->prototype->OffsetToPointer(
+                      type_info_->offsets[i]))
+                  ->GetPointer();
           reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(default_value,
                                                                 NULL);
           break;

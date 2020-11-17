@@ -100,11 +100,18 @@ cd protobuf/php
 composer install
 
 # Remove implementation detail tests.
-tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php )
+# TODO(teboring): Temporarily disable encode_decode_test.php. In 3.13.0-rc1,
+# repeated primitive field encoding is changed to packed, which is a bug fix.
+# However, this fails the compatibility test which hard coded old encoding.
+# Will re-enable the test after making a release. After the version bump, the
+# compatibility test will use the updated test code.
+tests=( array_test.php generated_class_test.php map_field_test.php well_known_test.php )
 sed -i.bak '/php_implementation_test.php/d' phpunit.xml
 sed -i.bak '/generated_phpdoc_test.php/d' phpunit.xml
+sed -i.bak '/encode_decode_test.php/d' phpunit.xml
 sed -i.bak 's/generated_phpdoc_test.php//g' tests/test.sh
 sed -i.bak 's/generated_service_test.php//g' tests/test.sh
+sed -i.bak 's/encode_decode_test.php//g' tests/test.sh
 sed -i.bak '/memory_leak_test.php/d' tests/test.sh
 sed -i.bak '/^    public function testTimestamp()$/,/^    }$/d' tests/well_known_test.php
 sed -i.bak 's/PHPUnit_Framework_TestCase/\\PHPUnit\\Framework\\TestCase/g' tests/array_test.php

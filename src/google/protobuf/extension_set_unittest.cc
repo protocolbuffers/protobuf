@@ -46,12 +46,14 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/wire_format.h>
-
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
+
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 
 namespace google {
@@ -1105,8 +1107,6 @@ TEST(ExtensionSetTest, RepeatedFields) {
     ASSERT_EQ(msg_const_iter->bb(), 1234);
   }
 
-  // Test range-based for as well, but only if compiled as C++11.
-#if __cplusplus >= 201103L
   // Test one primitive field.
   for (auto& x :
        *message.MutableRepeatedExtension(unittest::repeated_int32_extension)) {
@@ -1134,7 +1134,6 @@ TEST(ExtensionSetTest, RepeatedFields) {
            unittest::repeated_nested_message_extension)) {
     ASSERT_EQ(x.bb(), 4321);
   }
-#endif
 }
 
 // From b/12926163
@@ -1325,6 +1324,11 @@ TEST(ExtensionSetTest, BoolExtension) {
   uint8 wire_bytes[2] = {13 * 8, 42 /* out of bounds payload for bool */};
   EXPECT_TRUE(msg.ParseFromArray(wire_bytes, 2));
   EXPECT_TRUE(msg.GetExtension(protobuf_unittest::optional_bool_extension));
+}
+
+TEST(ExtensionSetTest, ConstInit) {
+  PROTOBUF_CONSTINIT static ExtensionSet set{};
+  EXPECT_EQ(set.NumExtensions(), 0);
 }
 
 }  // namespace

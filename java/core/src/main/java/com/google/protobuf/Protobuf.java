@@ -76,11 +76,8 @@ final class Protobuf {
     schemaFor(message).makeImmutable(message);
   }
 
-  /**
-   * Checks if all required fields are set. TODO(xiaofeng): Make this package private when the tests
-   * are moved to protobuf package.
-   */
-  public <T> boolean isInitialized(T message) {
+  /** Checks if all required fields are set. */
+  <T> boolean isInitialized(T message) {
     return schemaFor(message).isInitialized(message);
   }
 

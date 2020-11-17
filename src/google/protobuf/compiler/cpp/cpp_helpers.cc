@@ -515,14 +515,6 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
   return QualifiedClassName(field->message_type(), options);
 }
 
-std::string StripProto(const std::string& filename) {
-  if (HasSuffixString(filename, ".protodevel")) {
-    return StripSuffixString(filename, ".protodevel");
-  } else {
-    return StripSuffixString(filename, ".proto");
-  }
-}
-
 const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
   switch (type) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -785,25 +777,6 @@ std::string SafeFunctionName(const Descriptor* descriptor,
     function_name.append("_");
   }
   return function_name;
-}
-
-bool IsStringInlined(const FieldDescriptor* descriptor,
-                     const Options& options) {
-  if (options.opensource_runtime) return false;
-
-  // TODO(ckennelly): Handle inlining for any.proto.
-  if (IsAnyMessage(descriptor->containing_type(), options)) return false;
-  if (descriptor->containing_type()->options().map_entry()) return false;
-
-  // We rely on has bits to distinguish field presence for release_$name$.  When
-  // there is no hasbit, we cannot use the address of the string instance when
-  // the field has been inlined.
-  if (!HasHasbit(descriptor)) return false;
-
-  if (options.access_info_map) {
-    if (descriptor->is_required()) return true;
-  }
-  return false;
 }
 
 static bool HasLazyFields(const Descriptor* descriptor,
@@ -1388,7 +1361,7 @@ class ParseLoopGenerator {
 
     std::vector<const FieldDescriptor*> ordered_fields;
     for (auto field : FieldRange(descriptor)) {
-      if (IsFieldUsed(field, options_)) {
+      if (!IsFieldStripped(field, options_)) {
         ordered_fields.push_back(field);
       }
     }
@@ -1415,9 +1388,6 @@ class ParseLoopGenerator {
       format_.Set("has_bits", "_has_bits_");
     }
 
-    if (descriptor->file()->options().cc_enable_arenas()) {
-      format_("$p_ns$::Arena* arena = GetArena(); (void)arena;\n");
-    }
     GenerateParseLoop(descriptor, ordered_fields);
     format_.Outdent();
     format_("success:\n");
@@ -1469,13 +1439,11 @@ class ParseLoopGenerator {
       // Open source doesn't support other ctypes;
       ctype = field->options().ctype();
     }
-    if (field->file()->options().cc_enable_arenas() && !field->is_repeated() &&
-        !options_.opensource_runtime &&
+    if (!field->is_repeated() && !options_.opensource_runtime &&
         GetOptimizeFor(field->file(), options_) != FileOptions::LITE_RUNTIME &&
         // For now only use arena string for strings with empty defaults.
         field->default_value_string().empty() &&
-        !IsStringInlined(field, options_) && !field->real_containing_oneof() &&
-        ctype == FieldOptions::STRING) {
+        !field->real_containing_oneof() && ctype == FieldOptions::STRING) {
       GenerateArenaString(field);
     } else {
       std::string name;
@@ -1615,9 +1583,13 @@ class ParseLoopGenerator {
             }
           } else if (IsWeak(field, options_)) {
             format_(
-                "ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($1$,"
-                " _$classname$_default_instance_.$2$_), ptr);\n",
-                field->number(), FieldName(field));
+                "{\n"
+                "  auto* default_ = &reinterpret_cast<const Message&>($1$);\n"
+                "  ptr = ctx->ParseMessage(_weak_field_map_.MutableMessage($2$,"
+                " default_), ptr);\n"
+                "}\n",
+                QualifiedDefaultInstanceName(field->message_type(), options_),
+                field->number());
           } else {
             format_("ptr = ctx->ParseMessage(_internal_$1$_$2$(), ptr);\n",
                     field->is_repeated() ? "add" : "mutable", FieldName(field));

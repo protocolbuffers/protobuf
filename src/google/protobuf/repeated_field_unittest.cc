@@ -65,6 +65,11 @@ namespace {
 using ::protobuf_unittest::TestAllTypes;
 using ::testing::ElementsAre;
 
+TEST(RepeatedField, ConstInit) {
+  PROTOBUF_CONSTINIT static RepeatedField<int> field{};  // NOLINT
+  EXPECT_TRUE(field.empty());
+}
+
 // Test operations on a small RepeatedField.
 TEST(RepeatedField, Small) {
   RepeatedField<int> field;
@@ -328,10 +333,18 @@ TEST(RepeatedField, ReserveHuge) {
   EXPECT_GE(huge_field.Capacity(), min_clamping_size);
   ASSERT_LT(huge_field.Capacity(), std::numeric_limits<int>::max() - 1);
 
+#ifndef ADDRESS_SANITIZER
+  // The array containing all the fields is, in theory, up to MAXINT-1 in size.
+  // However, some compilers can't handle a struct whose size is larger
+  // than 2GB, and the protocol buffer format doesn't handle more than 2GB of
+  // data at once, either.  So we limit it, but the code below accesses beyond
+  // that limit.
+
   // Allocation may return more memory than we requested. However, the updated
   // size must still be clamped to a valid range.
   huge_field.Reserve(huge_field.Capacity() + 1);
   EXPECT_EQ(huge_field.Capacity(), std::numeric_limits<int>::max());
+#endif
 #endif  // PROTOBUF_TEST_ALLOW_LARGE_ALLOC
 }
 
@@ -818,6 +831,11 @@ TEST(RepeatedField, TestSAddFromSelf) {
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField
 // tests above.
+
+TEST(RepeatedPtrField, ConstInit) {
+  PROTOBUF_CONSTINIT static RepeatedPtrField<std::string> field{};  // NOLINT
+  EXPECT_TRUE(field.empty());
+}
 
 TEST(RepeatedPtrField, Small) {
   RepeatedPtrField<std::string> field;

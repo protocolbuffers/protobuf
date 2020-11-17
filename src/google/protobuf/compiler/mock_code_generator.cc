@@ -119,7 +119,7 @@ void MockCodeGenerator::ExpectGenerated(
 
   std::vector<std::string> insertion_list;
   if (!insertions.empty()) {
-    SplitStringUsing(insertions, ",", &insertion_list);
+    insertion_list = Split(insertions, ",", true);
   }
 
   EXPECT_EQ(lines.size(), 3 + insertion_list.size() * 2);
@@ -166,17 +166,36 @@ void MockCodeGenerator::CheckGeneratedAnnotations(
                         &file_content, true));
   std::string meta_content;
   GOOGLE_CHECK_OK(File::GetContents(
-      output_directory + "/" + GetOutputFileName(name, file) + ".meta",
+      output_directory + "/" + GetOutputFileName(name, file) + ".pb.meta",
       &meta_content, true));
   GeneratedCodeInfo annotations;
   GOOGLE_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
-  ASSERT_EQ(3, annotations.annotation_size());
+  ASSERT_EQ(7, annotations.annotation_size());
+
   CheckSingleAnnotation("first_annotation", "first", file_content,
                         annotations.annotation(0));
+  CheckSingleAnnotation("first_path",
+                        "test_generator: first_insert,\n foo.proto,\n "
+                        "MockCodeGenerator_Annotate,\n foo.proto\n",
+                        file_content, annotations.annotation(1));
+  CheckSingleAnnotation("first_path",
+                        "test_plugin: first_insert,\n foo.proto,\n "
+                        "MockCodeGenerator_Annotate,\n foo.proto\n",
+                        file_content, annotations.annotation(2));
   CheckSingleAnnotation("second_annotation", "second", file_content,
-                        annotations.annotation(1));
+                        annotations.annotation(3));
+  // This annotated text has changed because it was inserted at an indented
+  // insertion point.
+  CheckSingleAnnotation("second_path",
+                        "test_generator: second_insert,\n   foo.proto,\n   "
+                        "MockCodeGenerator_Annotate,\n   foo.proto\n",
+                        file_content, annotations.annotation(4));
+  CheckSingleAnnotation("second_path",
+                        "test_plugin: second_insert,\n   foo.proto,\n   "
+                        "MockCodeGenerator_Annotate,\n   foo.proto\n",
+                        file_content, annotations.annotation(5));
   CheckSingleAnnotation("third_annotation", "third", file_content,
-                        annotations.annotation(2));
+                        annotations.annotation(6));
 }
 
 bool MockCodeGenerator::Generate(const FileDescriptor* file,
@@ -229,18 +248,33 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
     }
   }
 
-  if (HasPrefixString(parameter, "insert=")) {
-    std::vector<std::string> insert_into;
-    SplitStringUsing(StripPrefixString(parameter, "insert="), ",",
-                     &insert_into);
+  bool insert_endlines = HasPrefixString(parameter, "insert_endlines=");
+  if (insert_endlines || HasPrefixString(parameter, "insert=")) {
+    std::vector<std::string> insert_into = Split(
+        StripPrefixString(
+            parameter, insert_endlines ? "insert_endlines=" : "insert="),
+        ",", true);
 
     for (size_t i = 0; i < insert_into.size(); i++) {
       {
-        std::unique_ptr<io::ZeroCopyOutputStream> output(context->OpenForInsert(
-            GetOutputFileName(insert_into[i], file), kFirstInsertionPointName));
+        google::protobuf::GeneratedCodeInfo info;
+        std::string content =
+            GetOutputFileContent(name_, "first_insert", file, context);
+        if (insert_endlines) {
+          GlobalReplaceSubstring(",", ",\n", &content);
+        }
+        if (annotate) {
+          auto* annotation = info.add_annotation();
+          annotation->set_begin(0);
+          annotation->set_end(content.size());
+          annotation->set_source_file("first_path");
+        }
+        std::unique_ptr<io::ZeroCopyOutputStream> output(
+            context->OpenForInsertWithGeneratedCodeInfo(
+                GetOutputFileName(insert_into[i], file),
+                kFirstInsertionPointName, info));
         io::Printer printer(output.get(), '$');
-        printer.PrintRaw(
-            GetOutputFileContent(name_, "first_insert", file, context));
+        printer.PrintRaw(content);
         if (printer.failed()) {
           *error = "MockCodeGenerator detected write error.";
           return false;
@@ -248,12 +282,24 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
       }
 
       {
+        google::protobuf::GeneratedCodeInfo info;
+        std::string content =
+            GetOutputFileContent(name_, "second_insert", file, context);
+        if (insert_endlines) {
+          GlobalReplaceSubstring(",", ",\n", &content);
+        }
+        if (annotate) {
+          auto* annotation = info.add_annotation();
+          annotation->set_begin(0);
+          annotation->set_end(content.size());
+          annotation->set_source_file("second_path");
+        }
         std::unique_ptr<io::ZeroCopyOutputStream> output(
-            context->OpenForInsert(GetOutputFileName(insert_into[i], file),
-                                   kSecondInsertionPointName));
+            context->OpenForInsertWithGeneratedCodeInfo(
+                GetOutputFileName(insert_into[i], file),
+                kSecondInsertionPointName, info));
         io::Printer printer(output.get(), '$');
-        printer.PrintRaw(
-            GetOutputFileContent(name_, "second_insert", file, context));
+        printer.PrintRaw(content);
         if (printer.failed()) {
           *error = "MockCodeGenerator detected write error.";
           return false;
@@ -272,17 +318,17 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
     printer.PrintRaw(GetOutputFileContent(name_, parameter, file, context));
     std::string annotate_suffix = "_annotation";
     if (annotate) {
-      printer.Print("$p$", "p", "first");
+      printer.Print("$p$\n", "p", "first");
       printer.Annotate("p", "first" + annotate_suffix);
     }
     printer.PrintRaw(kFirstInsertionPoint);
     if (annotate) {
-      printer.Print("$p$", "p", "second");
+      printer.Print("$p$\n", "p", "second");
       printer.Annotate("p", "second" + annotate_suffix);
     }
     printer.PrintRaw(kSecondInsertionPoint);
     if (annotate) {
-      printer.Print("$p$", "p", "third");
+      printer.Print("$p$\n", "p", "third");
       printer.Annotate("p", "third" + annotate_suffix);
     }
 
@@ -292,9 +338,9 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
     }
     if (annotate) {
       std::unique_ptr<io::ZeroCopyOutputStream> meta_output(
-          context->Open(GetOutputFileName(name_, file) + ".meta"));
+          context->Open(GetOutputFileName(name_, file) + ".pb.meta"));
       if (!TextFormat::Print(annotations, meta_output.get())) {
-        *error = "MockCodeGenerator couldn't write .meta";
+        *error = "MockCodeGenerator couldn't write .pb.meta";
         return false;
       }
     }

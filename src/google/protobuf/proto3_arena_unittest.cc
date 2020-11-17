@@ -293,6 +293,47 @@ TEST(Proto3OptionalTest, OptionalFieldReflection) {
   EXPECT_TRUE(r->GetOneofFieldDescriptor(msg, o) == nullptr);
 }
 
+// It's a regression test for b/160665543.
+TEST(Proto3OptionalTest, ClearNonOptionalMessageField) {
+  protobuf_unittest::TestProto3OptionalMessage msg;
+  msg.mutable_nested_message();
+  const google::protobuf::Descriptor* d = msg.GetDescriptor();
+  const google::protobuf::Reflection* r = msg.GetReflection();
+  const google::protobuf::FieldDescriptor* f = d->FindFieldByName("nested_message");
+  r->ClearField(&msg, f);
+}
+
+TEST(Proto3OptionalTest, ClearOptionalMessageField) {
+  protobuf_unittest::TestProto3OptionalMessage msg;
+  msg.mutable_optional_nested_message();
+  const google::protobuf::Descriptor* d = msg.GetDescriptor();
+  const google::protobuf::Reflection* r = msg.GetReflection();
+  const google::protobuf::FieldDescriptor* f =
+      d->FindFieldByName("optional_nested_message");
+  r->ClearField(&msg, f);
+}
+
+TEST(Proto3OptionalTest, SwapNonOptionalMessageField) {
+  protobuf_unittest::TestProto3OptionalMessage msg1;
+  protobuf_unittest::TestProto3OptionalMessage msg2;
+  msg1.mutable_nested_message();
+  const google::protobuf::Descriptor* d = msg1.GetDescriptor();
+  const google::protobuf::Reflection* r = msg1.GetReflection();
+  const google::protobuf::FieldDescriptor* f = d->FindFieldByName("nested_message");
+  r->SwapFields(&msg1, &msg2, {f});
+}
+
+TEST(Proto3OptionalTest, SwapOptionalMessageField) {
+  protobuf_unittest::TestProto3OptionalMessage msg1;
+  protobuf_unittest::TestProto3OptionalMessage msg2;
+  msg1.mutable_optional_nested_message();
+  const google::protobuf::Descriptor* d = msg1.GetDescriptor();
+  const google::protobuf::Reflection* r = msg1.GetReflection();
+  const google::protobuf::FieldDescriptor* f =
+      d->FindFieldByName("optional_nested_message");
+  r->SwapFields(&msg1, &msg2, {f});
+}
+
 void SetAllFieldsZero(protobuf_unittest::TestProto3Optional* msg) {
   msg->set_optional_int32(0);
   msg->set_optional_int64(0);

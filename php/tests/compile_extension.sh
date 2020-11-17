@@ -4,17 +4,17 @@ set -ex
 
 cd $(dirname $0)
 
-if [ "$1" = "--release" ]; then
-  CFLAGS="-Wall"
-else
-  # To get debugging symbols in PHP itself, build PHP with:
-  #   $ ./configure --enable-debug CFLAGS='-g -O0'
-  CFLAGS="-g -O0 -Wall"
-fi
-
+../prepare_c_extension.sh
 pushd  ../ext/google/protobuf
 phpize --clean
 rm -f configure.in configure.ac
-php make-preload.php
-phpize && ./configure --with-php-config=$(which php-config) CFLAGS="$CFLAGS" && make
+phpize
+if [ "$1" = "--release" ]; then
+  ./configure --with-php-config=$(which php-config)
+else
+  # To get debugging symbols in PHP itself, build PHP with:
+  #   $ ./configure --enable-debug CFLAGS='-g -O0'
+  ./configure --with-php-config=$(which php-config) CFLAGS="-g -O0 -Wall"
+fi
+make
 popd

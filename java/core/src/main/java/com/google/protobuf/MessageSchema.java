@@ -1402,8 +1402,10 @@ final class MessageSchema<T> implements Schema<T> {
     if (!isOneofPresent(other, number, pos)) {
       return;
     }
-
-    Object mine = UnsafeUtil.getObject(message, offset);
+    Object mine = null;
+    if (isOneofPresent(message, number, pos)) {
+      mine = UnsafeUtil.getObject(message, offset);
+    }
     Object theirs = UnsafeUtil.getObject(other, offset);
     if (mine != null && theirs != null) {
       Object merged = Internal.mergeMessage(mine, theirs);
@@ -2570,7 +2572,7 @@ final class MessageSchema<T> implements Schema<T> {
 
       int presenceMaskAndOffset = 0;
       int presenceMask = 0;
-      if (!proto3 && fieldType <= 17) {
+      if (fieldType <= 17) {
         presenceMaskAndOffset = buffer[pos + 2];
         final int presenceFieldOffset = presenceMaskAndOffset & OFFSET_MASK;
         if (presenceFieldOffset != currentPresenceFieldOffset) {

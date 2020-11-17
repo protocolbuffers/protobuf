@@ -58,8 +58,10 @@
 
 #include <memory>
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
+#elif defined(__FreeBSD__)
+#include <sys/sysctl.h>
 #endif
 
 #include <google/protobuf/stubs/common.h>
@@ -201,6 +203,13 @@ bool GetProtocAbsolutePath(std::string* path) {
   if (_NSGetExecutablePath(dirtybuffer, &size) == 0) {
     realpath(dirtybuffer, buffer);
     len = strlen(buffer);
+  }
+#elif defined(__FreeBSD__)
+  char buffer[PATH_MAX];
+  size_t len = PATH_MAX;
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+  if (sysctl(mib, 4, &buffer, &len, NULL, 0) != 0) {
+    len = 0;
   }
 #else
   char buffer[PATH_MAX];
@@ -386,6 +395,9 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename);
   io::ZeroCopyOutputStream* OpenForInsert(const std::string& filename,
                                           const std::string& insertion_point);
+  io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
+      const std::string& filename, const std::string& insertion_point,
+      const google::protobuf::GeneratedCodeInfo& info);
   void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
     *output = parsed_files_;
   }
@@ -393,7 +405,8 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
  private:
   friend class MemoryOutputStream;
 
-  // map instead of unordered_map so that files are written in order (good when
+  // The files_ field maps from path keys to file content values. It's a map
+  // instead of an unordered_map so that files are written in order (good when
   // writing zips).
   std::map<std::string, std::string> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
@@ -408,6 +421,10 @@ class CommandLineInterface::MemoryOutputStream
   MemoryOutputStream(GeneratorContextImpl* directory,
                      const std::string& filename,
                      const std::string& insertion_point);
+  MemoryOutputStream(GeneratorContextImpl* directory,
+                     const std::string& filename,
+                     const std::string& insertion_point,
+                     const google::protobuf::GeneratedCodeInfo& info);
   virtual ~MemoryOutputStream();
 
   // implements ZeroCopyOutputStream ---------------------------------
@@ -418,12 +435,23 @@ class CommandLineInterface::MemoryOutputStream
   int64_t ByteCount() const override { return inner_->ByteCount(); }
 
  private:
-  // Checks to see if "filename_.meta" exists in directory_; if so, fixes the
+  // Checks to see if "filename_.pb.meta" exists in directory_; if so, fixes the
   // offsets in that GeneratedCodeInfo record to reflect bytes inserted in
   // filename_ at original offset insertion_offset with length insertion_length.
-  // We assume that insertions will not occur within any given annotated span
-  // of text.
-  void UpdateMetadata(size_t insertion_offset, size_t insertion_length);
+  // Also adds in the data from info_to_insert_ with updated offsets governed by
+  // insertion_offset and indent_length. We assume that insertions will not
+  // occur within any given annotated span of text. insertion_content must end
+  // with an endline.
+  void UpdateMetadata(const std::string& insertion_content,
+                      size_t insertion_offset, size_t insertion_length,
+                      size_t indent_length);
+
+  // Inserts info_to_insert_ into target_info, assuming that the relevant
+  // insertion was made at insertion_offset in file_content with the given
+  // indent_length. insertion_content must end with an endline.
+  void InsertShiftedInfo(const std::string& insertion_content,
+                         size_t insertion_offset, size_t indent_length,
+                         google::protobuf::GeneratedCodeInfo& target_info);
 
   // Where to insert the string when it's done.
   GeneratorContextImpl* directory_;
@@ -438,6 +466,9 @@ class CommandLineInterface::MemoryOutputStream
 
   // StringOutputStream writing to data_.
   std::unique_ptr<io::StringOutputStream> inner_;
+
+  // The GeneratedCodeInfo to insert at the insertion point.
+  google::protobuf::GeneratedCodeInfo info_to_insert_;
 };
 
 // -------------------------------------------------------------------
@@ -594,6 +625,13 @@ CommandLineInterface::GeneratorContextImpl::OpenForInsert(
   return new MemoryOutputStream(this, filename, insertion_point);
 }
 
+io::ZeroCopyOutputStream*
+CommandLineInterface::GeneratorContextImpl::OpenForInsertWithGeneratedCodeInfo(
+    const std::string& filename, const std::string& insertion_point,
+    const google::protobuf::GeneratedCodeInfo& info) {
+  return new MemoryOutputStream(this, filename, insertion_point, info);
+}
+
 // -------------------------------------------------------------------
 
 CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
@@ -612,40 +650,114 @@ CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
       insertion_point_(insertion_point),
       inner_(new io::StringOutputStream(&data_)) {}
 
+CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
+    GeneratorContextImpl* directory, const std::string& filename,
+    const std::string& insertion_point, const google::protobuf::GeneratedCodeInfo& info)
+    : directory_(directory),
+      filename_(filename),
+      insertion_point_(insertion_point),
+      inner_(new io::StringOutputStream(&data_)),
+      info_to_insert_(info) {}
+
+void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
+    const std::string& insertion_content, size_t insertion_offset,
+    size_t indent_length, google::protobuf::GeneratedCodeInfo& target_info) {
+  // Keep track of how much extra data was added for indents before the
+  // current annotation being inserted. `pos` and `source_annotation.begin()`
+  // are offsets in `insertion_content`. `insertion_offset` is updated so that
+  // it can be added to an annotation's `begin` field to reflect that
+  // annotation's updated location after `insertion_content` was inserted into
+  // the target file.
+  size_t pos = 0;
+  insertion_offset += indent_length;
+  for (const auto& source_annotation : info_to_insert_.annotation()) {
+    GeneratedCodeInfo::Annotation* annotation = target_info.add_annotation();
+    int inner_indent = 0;
+    // insertion_content is guaranteed to end in an endline. This last endline
+    // has no effect on indentation.
+    for (; pos < source_annotation.end() && pos < insertion_content.size() - 1;
+         ++pos) {
+      if (insertion_content[pos] == '\n') {
+        if (pos >= source_annotation.begin()) {
+          // The beginning of the annotation is at insertion_offset, but the end
+          // can still move further in the target file.
+          inner_indent += indent_length;
+        } else {
+          insertion_offset += indent_length;
+        }
+      }
+    }
+    *annotation = source_annotation;
+    annotation->set_begin(annotation->begin() + insertion_offset);
+    insertion_offset += inner_indent;
+    annotation->set_end(annotation->end() + insertion_offset);
+  }
+}
+
 void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
-    size_t insertion_offset, size_t insertion_length) {
-  auto it = directory_->files_.find(filename_ + ".meta");
-  if (it == directory_->files_.end()) {
+    const std::string& insertion_content, size_t insertion_offset,
+    size_t insertion_length, size_t indent_length) {
+  auto it = directory_->files_.find(filename_ + ".pb.meta");
+  if (it == directory_->files_.end() && info_to_insert_.annotation().empty()) {
     // No metadata was recorded for this file.
     return;
   }
-  std::string& encoded_data = it->second;
   GeneratedCodeInfo metadata;
   bool is_text_format = false;
-  if (!metadata.ParseFromString(encoded_data)) {
-    if (!TextFormat::ParseFromString(encoded_data, &metadata)) {
-      // The metadata is invalid.
-      std::cerr << filename_
-                << ".meta: Could not parse metadata as wire or text format."
-                << std::endl;
-      return;
+  std::string* encoded_data = nullptr;
+  if (it != directory_->files_.end()) {
+    encoded_data = &it->second;
+    // Try to decode a GeneratedCodeInfo proto from the .pb.meta file. It may be
+    // in wire or text format. Keep the same format when the data is written out
+    // later.
+    if (!metadata.ParseFromString(*encoded_data)) {
+      if (!TextFormat::ParseFromString(*encoded_data, &metadata)) {
+        // The metadata is invalid.
+        std::cerr
+            << filename_
+            << ".pb.meta: Could not parse metadata as wire or text format."
+            << std::endl;
+        return;
+      }
+      // Generators that use the public plugin interface emit text-format
+      // metadata (because in the public plugin protocol, file content must be
+      // UTF8-encoded strings).
+      is_text_format = true;
     }
-    // Generators that use the public plugin interface emit text-format
-    // metadata (because in the public plugin protocol, file content must be
-    // UTF8-encoded strings).
-    is_text_format = true;
+  } else {
+    // Create a new file to store the new metadata in info_to_insert_.
+    encoded_data =
+        &directory_->files_.insert({filename_ + ".pb.meta", ""}).first->second;
   }
-  for (int i = 0; i < metadata.annotation_size(); ++i) {
-    GeneratedCodeInfo::Annotation* annotation = metadata.mutable_annotation(i);
-    if (annotation->begin() >= insertion_offset) {
-      annotation->set_begin(annotation->begin() + insertion_length);
-      annotation->set_end(annotation->end() + insertion_length);
+  GeneratedCodeInfo new_metadata;
+  bool crossed_offset = false;
+  size_t to_add = 0;
+  for (const auto& source_annotation : metadata.annotation()) {
+    // The first time an annotation at or after the insertion point is found,
+    // insert the new metadata from info_to_insert_. Shift all annotations
+    // after the new metadata by the length of the text that was inserted
+    // (including any additional indent length).
+    if (source_annotation.begin() >= insertion_offset && !crossed_offset) {
+      crossed_offset = true;
+      InsertShiftedInfo(insertion_content, insertion_offset, indent_length,
+                        new_metadata);
+      to_add += insertion_length;
     }
+    GeneratedCodeInfo::Annotation* annotation = new_metadata.add_annotation();
+    *annotation = source_annotation;
+    annotation->set_begin(annotation->begin() + to_add);
+    annotation->set_end(annotation->end() + to_add);
+  }
+  // If there were never any annotations at or after the insertion point,
+  // make sure to still insert the new metadata from info_to_insert_.
+  if (!crossed_offset) {
+    InsertShiftedInfo(insertion_content, insertion_offset, indent_length,
+                      new_metadata);
   }
   if (is_text_format) {
-    TextFormat::PrintToString(metadata, &encoded_data);
+    TextFormat::PrintToString(new_metadata, encoded_data);
   } else {
-    metadata.SerializeToString(&encoded_data);
+    new_metadata.SerializeToString(encoded_data);
   }
 }
 
@@ -728,7 +840,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     if (indent_.empty()) {
       // No indent.  This makes things easier.
       target->insert(pos, data_);
-      UpdateMetadata(pos, data_.size());
+      UpdateMetadata(data_, pos, data_.size(), 0);
     } else {
       // Calculate how much space we need.
       int indent_size = 0;
@@ -738,7 +850,6 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
       // Make a hole for it.
       target->insert(pos, data_.size() + indent_size, '\0');
-      UpdateMetadata(pos, data_.size() + indent_size);
 
       // Now copy in the data.
       std::string::size_type data_pos = 0;
@@ -757,6 +868,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
         target_ptr += line_length;
         data_pos += line_length;
       }
+      UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 
       GOOGLE_CHECK_EQ(target_ptr,
                ::google::protobuf::string_as_array(target) + pos + data_.size() + indent_size);
@@ -1121,6 +1233,7 @@ bool CommandLineInterface::AllowProto3Optional(
   return false;
 }
 
+
 bool CommandLineInterface::VerifyInputFilesInDescriptors(
     DescriptorDatabase* database) {
   for (const auto& input_file : input_files_) {
@@ -1139,6 +1252,7 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
                 << std::endl;
       return false;
     }
+
   }
   return true;
 }
@@ -1189,6 +1303,7 @@ bool CommandLineInterface::ParseInputFiles(
       break;
     }
 
+
     // Enforce --direct_dependencies
     if (direct_dependencies_explicitly_set_) {
       bool indirect_imports = false;
@@ -1235,6 +1350,7 @@ void CommandLineInterface::Clear() {
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
   allow_proto3_optional_ = false;
+  deterministic_output_ = false;
 }
 
 bool CommandLineInterface::MakeProtoProtoPathRelative(
@@ -1278,8 +1394,9 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
       if (in_fallback_database) {
         return true;
       }
-      std::string error_str = source_tree->GetLastErrorMessage().empty() ?
-        strerror(errno) : source_tree->GetLastErrorMessage();
+      std::string error_str = source_tree->GetLastErrorMessage().empty()
+                                  ? strerror(errno)
+                                  : source_tree->GetLastErrorMessage();
       std::cerr << "Could not map to virtual file: " << *proto << ": "
                 << error_str << std::endl;
       return false;
@@ -1426,13 +1543,36 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     proto_path_.push_back(std::pair<std::string, std::string>("", "."));
   }
 
-  // Check some error cases.
-  bool decoding_raw = (mode_ == MODE_DECODE) && codec_type_.empty();
-  if (decoding_raw && !input_files_.empty()) {
-    std::cerr << "When using --decode_raw, no input files should be given."
+  // Check error cases that span multiple flag values.
+  bool missing_proto_definitions = false;
+  switch (mode_) {
+    case MODE_COMPILE:
+      missing_proto_definitions = input_files_.empty();
+      break;
+    case MODE_DECODE:
+      // Handle --decode_raw separately, since it requires that no proto
+      // definitions are specified.
+      if (codec_type_.empty()) {
+        if (!input_files_.empty() || !descriptor_set_in_names_.empty()) {
+          std::cerr
+              << "When using --decode_raw, no input files should be given."
               << std::endl;
-    return PARSE_ARGUMENT_FAIL;
-  } else if (!decoding_raw && input_files_.empty()) {
+          return PARSE_ARGUMENT_FAIL;
+        }
+        missing_proto_definitions = false;
+        break;  // only for --decode_raw
+      }
+      // --decode (not raw) is handled the same way as the rest of the modes.
+      PROTOBUF_FALLTHROUGH_INTENDED;
+    case MODE_ENCODE:
+    case MODE_PRINT:
+      missing_proto_definitions =
+          input_files_.empty() && descriptor_set_in_names_.empty();
+      break;
+    default:
+      GOOGLE_LOG(FATAL) << "Unexpected mode: " << mode_;
+  }
+  if (missing_proto_definitions) {
     std::cerr << "Missing input file." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -1443,6 +1583,11 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
   }
   if (mode_ != MODE_COMPILE && !dependency_out_name_.empty()) {
     std::cerr << "Can only use --dependency_out=FILE when generating code."
+              << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
+  if (mode_ != MODE_ENCODE && deterministic_output_) {
+    std::cerr << "Can only use --deterministic_output with --encode."
               << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -1514,7 +1659,8 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--version" || *name == "--decode_raw" ||
       *name == "--print_free_field_numbers" ||
-      *name == "--experimental_allow_proto3_optional") {
+      *name == "--experimental_allow_proto3_optional" ||
+      *name == "--deterministic_output") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1715,11 +1861,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       std::cout << version_info_ << std::endl;
     }
     std::cout << "libprotoc " << internal::VersionString(PROTOBUF_VERSION)
-              << std::endl;
+              << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
+
 
   } else if (name == "--experimental_allow_proto3_optional") {
     allow_proto3_optional_ = true;
@@ -1753,6 +1900,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     }
 
     codec_type_ = value;
+
+  } else if (name == "--deterministic_output") {
+    deterministic_output_ = true;
 
   } else if (name == "--error_format") {
     if (value == "gcc") {
@@ -1896,6 +2046,12 @@ void CommandLineInterface::PrintHelpText() {
          "must\n"
          "                              be defined in PROTO_FILES or their "
          "imports.\n"
+         "  --deterministic_output      When using --encode, ensure map fields "
+         "are\n"
+         "                              deterministically ordered. Note that"
+         "this order is not\n"
+         "                              canonical, and changes across builds"
+         "or releases of protoc.\n"
          "  --decode=MESSAGE_TYPE       Read a binary message of the given "
          "type from\n"
          "                              standard input and write it in text "
@@ -2223,8 +2379,10 @@ bool CommandLineInterface::GeneratePluginOutput(
       // We reset current_output to NULL first so that the old file is closed
       // before the new one is opened.
       current_output.reset();
-      current_output.reset(generator_context->OpenForInsert(
-          filename, output_file.insertion_point()));
+      current_output.reset(
+          generator_context->OpenForInsertWithGeneratedCodeInfo(
+              filename, output_file.insertion_point(),
+              output_file.generated_code_info()));
     } else if (!output_file.name().empty()) {
       // Starting a new file.  Open it.
       // We reset current_output to NULL first so that the old file is closed
@@ -2306,7 +2464,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
 
   if (mode_ == MODE_ENCODE) {
     // Output is binary.
-    if (!message->SerializePartialToZeroCopyStream(&out)) {
+    io::CodedOutputStream coded_out(&out);
+    coded_out.SetSerializationDeterministic(deterministic_output_);
+    if (!message->SerializePartialToCodedStream(&coded_out)) {
       std::cerr << "output: I/O error." << std::endl;
       return false;
     }

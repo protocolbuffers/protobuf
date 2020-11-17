@@ -2813,7 +2813,7 @@ class SerializationTest(unittest.TestCase):
         proto2.MergeFromString(serialized))
 
   def _CheckRaises(self, exc_class, callable_obj, exception):
-    """This method checks if the excpetion type and message are as expected."""
+    """This method checks if the exception type and message are as expected."""
     try:
       callable_obj()
     except exc_class as ex:
@@ -3267,7 +3267,7 @@ class ClassAPITest(unittest.TestCase):
   # conflicting message descriptors.
   def testParsingFlatClassWithExplicitClassDeclaration(self):
     """Test that the generated class can parse a flat message."""
-    # TODO(xiaofeng): This test fails with cpp implemetnation in the call
+    # TODO(xiaofeng): This test fails with cpp implementation in the call
     # of six.with_metaclass(). The other two callsites of with_metaclass
     # in this file are both excluded from cpp test, so it might be expected
     # to fail. Need someone more familiar with the python code to take a

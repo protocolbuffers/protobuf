@@ -29,7 +29,7 @@ else()
 endif()
 
 # The Intel compiler isn't able to deal with noinline member functions of
-# template classses defined in headers.  As such it spams the output with
+# template classes defined in headers.  As such it spams the output with
 #   warning #2196: routine is both "inline" and "noinline"
 # This silences that warning.
 if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
@@ -44,6 +44,7 @@ option(protobuf_BUILD_TESTS "Build tests" ON)
 option(protobuf_BUILD_CONFORMANCE "Build conformance tests" OFF)
 option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
 option(protobuf_BUILD_PROTOC_BINARIES "Build libprotoc and protoc compiler" ON)
+option(protobuf_BUILD_LIBPROTOC "Build libprotoc" OFF)
 if (BUILD_SHARED_LIBS)
   set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
 else (BUILD_SHARED_LIBS)
@@ -64,8 +65,6 @@ include(protobuf-options.cmake)
 # Overrides for option dependencies
 if (protobuf_BUILD_PROTOC_BINARIES OR protobuf_BUILD_TESTS)
   set(protobuf_BUILD_LIBPROTOC ON)
-else()
-  set(protobuf_BUILD_LIBPROTOC OFF)
 endif ()
 # Path to main configure script
 set(protobuf_CONFIGURE_SCRIPT "../configure.ac")

@@ -93,8 +93,8 @@ with info about your project (name and website) so we can add an entry for you.
    * Website: https://github.com/protobuf-c/protobuf-c
    * Extensions: 1019
 
-1. ScalePB
-   * Website: http://trueaccord.github.io/ScalaPB/
+1. ScalaPB
+   * Website: https://scalapb.github.io/
    * Extensions: 1020
 
 1. protoc-gen-bq-schema
@@ -244,3 +244,11 @@ with info about your project (name and website) so we can add an entry for you.
 1. ADLINK EdgeSDK
    * Website: https://www.adlinktech.com/en/Edge-SDK-IoT
    * Extensions: 1086
+
+1. Wire wire_package
+   * Website: https://square.github.io/wire/
+   * Extensions: 1087
+
+1. Confluent Schema Registry
+   * Website: https://github.com/confluentinc/schema-registry
+   * Extensions: 1088

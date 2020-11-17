@@ -1059,7 +1059,7 @@ class MessageTest(unittest.TestCase):
     self.assertIsInstance(m.optional_string, six.text_type)
 
   def testLongValuedSlice(self, message_module):
-    """It should be possible to use long-valued indicies in slices
+    """It should be possible to use long-valued indices in slices.
 
     This didn't used to work in the v2 C++ implementation.
     """
@@ -2106,6 +2106,11 @@ class Proto3Test(unittest.TestCase):
     msg.MergeFromString(msg2.SerializeToString())
     self.assertEqual(msg.map_int32_foreign_message[222].d, 20)
     self.assertNotEqual(msg.map_int32_foreign_message[222].c, 123)
+
+    # Merge a dict to map field is not accepted
+    with self.assertRaises(AttributeError):
+      m1.map_int32_all_types.MergeFrom(
+          {1: unittest_proto3_arena_pb2.TestAllTypes()})
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()

@@ -37,6 +37,7 @@
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/utility.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathutil.h>
 
@@ -46,7 +47,6 @@ namespace util {
 namespace converter {
 
 using util::Status;
-using util::StatusOr;
 using util::error::Code;
 
 namespace {
@@ -56,7 +56,7 @@ inline Status InvalidArgument(StringPiece value_str) {
 }
 
 template <typename To, typename From>
-StatusOr<To> ValidateNumberConversion(To after, From before) {
+util::StatusOr<To> ValidateNumberConversion(To after, From before) {
   if (after == before &&
       MathUtil::Sign<From>(before) == MathUtil::Sign<To>(after)) {
     return after;
@@ -73,7 +73,7 @@ StatusOr<To> ValidateNumberConversion(To after, From before) {
 //     int32, int64, uint32, uint64, double and float
 // except conversion between double and float.
 template <typename To, typename From>
-StatusOr<To> NumberConvertAndCheck(From before) {
+util::StatusOr<To> NumberConvertAndCheck(From before) {
   if (std::is_same<From, To>::value) return before;
 
   To after = static_cast<To>(before);
@@ -83,7 +83,7 @@ StatusOr<To> NumberConvertAndCheck(From before) {
 // For conversion to integer types (int32, int64, uint32, uint64) from floating
 // point types (double, float) only.
 template <typename To, typename From>
-StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
+util::StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
   if (std::is_same<From, To>::value) return before;
 
   To after = static_cast<To>(before);
@@ -91,13 +91,13 @@ StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
 }
 
 // For conversion between double and float only.
-StatusOr<double> FloatToDouble(float before) {
+util::StatusOr<double> FloatToDouble(float before) {
   // Casting float to double should just work as double has more precision
   // than float.
   return static_cast<double>(before);
 }
 
-StatusOr<float> DoubleToFloat(double before) {
+util::StatusOr<float> DoubleToFloat(double before) {
   if (std::isnan(before)) {
     return std::numeric_limits<float>::quiet_NaN();
   } else if (!std::isfinite(before)) {
@@ -114,7 +114,7 @@ StatusOr<float> DoubleToFloat(double before) {
 
 }  // namespace
 
-StatusOr<int32> DataPiece::ToInt32() const {
+util::StatusOr<int32> DataPiece::ToInt32() const {
   if (type_ == TYPE_STRING) return StringToNumber<int32>(safe_strto32);
 
   if (type_ == TYPE_DOUBLE)
@@ -126,7 +126,7 @@ StatusOr<int32> DataPiece::ToInt32() const {
   return GenericConvert<int32>();
 }
 
-StatusOr<uint32> DataPiece::ToUint32() const {
+util::StatusOr<uint32> DataPiece::ToUint32() const {
   if (type_ == TYPE_STRING)
     return StringToNumber<uint32>(safe_strtou32);
 
@@ -139,7 +139,7 @@ StatusOr<uint32> DataPiece::ToUint32() const {
   return GenericConvert<uint32>();
 }
 
-StatusOr<int64> DataPiece::ToInt64() const {
+util::StatusOr<int64> DataPiece::ToInt64() const {
   if (type_ == TYPE_STRING) return StringToNumber<int64>(safe_strto64);
 
   if (type_ == TYPE_DOUBLE)
@@ -151,7 +151,7 @@ StatusOr<int64> DataPiece::ToInt64() const {
   return GenericConvert<int64>();
 }
 
-StatusOr<uint64> DataPiece::ToUint64() const {
+util::StatusOr<uint64> DataPiece::ToUint64() const {
   if (type_ == TYPE_STRING)
     return StringToNumber<uint64>(safe_strtou64);
 
@@ -164,7 +164,7 @@ StatusOr<uint64> DataPiece::ToUint64() const {
   return GenericConvert<uint64>();
 }
 
-StatusOr<double> DataPiece::ToDouble() const {
+util::StatusOr<double> DataPiece::ToDouble() const {
   if (type_ == TYPE_FLOAT) {
     return FloatToDouble(float_);
   }
@@ -172,7 +172,7 @@ StatusOr<double> DataPiece::ToDouble() const {
     if (str_ == "Infinity") return std::numeric_limits<double>::infinity();
     if (str_ == "-Infinity") return -std::numeric_limits<double>::infinity();
     if (str_ == "NaN") return std::numeric_limits<double>::quiet_NaN();
-    StatusOr<double> value = StringToNumber<double>(safe_strtod);
+    util::StatusOr<double> value = StringToNumber<double>(safe_strtod);
     if (value.ok() && !std::isfinite(value.value())) {
       // safe_strtod converts out-of-range values to +inf/-inf, but we want
       // to report them as errors.
@@ -184,7 +184,7 @@ StatusOr<double> DataPiece::ToDouble() const {
   return GenericConvert<double>();
 }
 
-StatusOr<float> DataPiece::ToFloat() const {
+util::StatusOr<float> DataPiece::ToFloat() const {
   if (type_ == TYPE_DOUBLE) {
     return DoubleToFloat(double_);
   }
@@ -199,7 +199,7 @@ StatusOr<float> DataPiece::ToFloat() const {
   return GenericConvert<float>();
 }
 
-StatusOr<bool> DataPiece::ToBool() const {
+util::StatusOr<bool> DataPiece::ToBool() const {
   switch (type_) {
     case TYPE_BOOL:
       return bool_;
@@ -211,7 +211,7 @@ StatusOr<bool> DataPiece::ToBool() const {
   }
 }
 
-StatusOr<std::string> DataPiece::ToString() const {
+util::StatusOr<std::string> DataPiece::ToString() const {
   switch (type_) {
     case TYPE_STRING:
       return std::string(str_);
@@ -257,7 +257,7 @@ std::string DataPiece::ValueAsStringOrDefault(
   }
 }
 
-StatusOr<std::string> DataPiece::ToBytes() const {
+util::StatusOr<std::string> DataPiece::ToBytes() const {
   if (type_ == TYPE_BYTES) return str_.ToString();
   if (type_ == TYPE_STRING) {
     std::string decoded;
@@ -271,11 +271,11 @@ StatusOr<std::string> DataPiece::ToBytes() const {
   }
 }
 
-StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
-                                bool use_lower_camel_for_enums,
-                                bool case_insensitive_enum_parsing,
-                                bool ignore_unknown_enum_values,
-                                bool* is_unknown_enum_value) const {
+util::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
+                                      bool use_lower_camel_for_enums,
+                                      bool case_insensitive_enum_parsing,
+                                      bool ignore_unknown_enum_values,
+                                      bool* is_unknown_enum_value) const {
   if (type_ == TYPE_NULL) return google::protobuf::NULL_VALUE;
 
   if (type_ == TYPE_STRING) {
@@ -286,7 +286,7 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     if (value != nullptr) return value->number();
 
     // Check if int version of enum is sent as string.
-    StatusOr<int32> int_value = ToInt32();
+    util::StatusOr<int32> int_value = ToInt32();
     if (int_value.ok()) {
       if (const google::protobuf::EnumValue* enum_value =
               FindEnumValueByNumberOrNull(enum_type, int_value.value())) {
@@ -331,7 +331,7 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
 }
 
 template <typename To>
-StatusOr<To> DataPiece::GenericConvert() const {
+util::StatusOr<To> DataPiece::GenericConvert() const {
   switch (type_) {
     case TYPE_INT32:
       return NumberConvertAndCheck<To, int32>(i32_);
@@ -353,8 +353,8 @@ StatusOr<To> DataPiece::GenericConvert() const {
 }
 
 template <typename To>
-StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece,
-                                                    To*)) const {
+util::StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece,
+                                                          To*)) const {
   if (str_.size() > 0 && (str_[0] == ' ' || str_[str_.size() - 1] == ' ')) {
     return InvalidArgument(StrCat("\"", str_, "\""));
   }

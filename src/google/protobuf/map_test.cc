@@ -80,6 +80,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -194,6 +195,62 @@ TEST_F(MapImplTest, OperatorBracket) {
   ExpectSingleElement(key, value2);
 }
 
+struct MoveTestKey {
+  MoveTestKey(int data, int* copies) : data(data), copies(copies) {}
+
+  MoveTestKey(const MoveTestKey& other)
+      : data(other.data), copies(other.copies) {
+    ++*copies;
+  }
+
+  MoveTestKey(MoveTestKey&& other) noexcept
+      : data(other.data), copies(other.copies) {}
+
+  friend bool operator==(const MoveTestKey& lhs, const MoveTestKey& rhs) {
+    return lhs.data == rhs.data;
+  }
+  friend bool operator<(const MoveTestKey& lhs, const MoveTestKey& rhs) {
+    return lhs.data < rhs.data;
+  }
+
+  int data;
+  int* copies;
+};
+
+}  // namespace
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+namespace std {
+
+template <>  // NOLINT
+struct hash<google::protobuf::internal::MoveTestKey> {
+  size_t operator()(const google::protobuf::internal::MoveTestKey& key) const {
+    return hash<int>{}(key.data);
+  }
+};
+}  // namespace std
+
+namespace google {
+namespace protobuf {
+namespace internal {
+namespace {
+
+TEST_F(MapImplTest, OperatorBracketRValue) {
+  Arena arena;
+  for (Arena* arena_to_use : {&arena, static_cast<Arena*>(nullptr)}) {
+    int copies = 0;
+    Map<MoveTestKey, int> map(arena_to_use);
+    MoveTestKey key1(1, &copies);
+    EXPECT_EQ(copies, 0);
+    map[key1] = 0;
+    EXPECT_EQ(copies, 1);
+    map[MoveTestKey(2, &copies)] = 2;
+    EXPECT_EQ(copies, 1);
+  }
+}
+
 TEST_F(MapImplTest, OperatorBracketNonExist) {
   int32 key = 0;
   int32 default_value = 0;
@@ -234,9 +291,10 @@ TEST_F(MapImplTest, UsageErrors) {
                "  Actual   : int64");
 
   MapValueRef value;
-  EXPECT_DEATH(value.SetFloatValue(0.1),
-               "Protocol Buffer map usage error:\n"
-               "MapValueRef::type MapValueRef is not initialized.");
+  EXPECT_DEATH(
+      value.SetFloatValue(0.1),
+      "Protocol Buffer map usage error:\n"
+      "MapValue[Const]*Ref::type MapValue[Const]*Ref is not initialized.");
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
@@ -980,6 +1038,43 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
   EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }
 
+TEST_F(MapImplTest, SpaceUsed) {
+  constexpr size_t kMinCap = 8;
+
+  Map<int32, int32> m;
+  // An newly constructed map should have no space used.
+  EXPECT_EQ(m.SpaceUsedExcludingSelfLong(), 0);
+
+  size_t capacity = kMinCap;
+  for (int i = 0; i < 100; ++i) {
+    m[i];
+    static constexpr double kMaxLoadFactor = .75;
+    if (m.size() >= capacity * kMaxLoadFactor) {
+      capacity *= 2;
+    }
+    EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
+              sizeof(void*) * capacity +
+                  m.size() * sizeof(std::pair<std::pair<int32, int32>, void*>));
+  }
+
+  // Test string, and non-scalar keys.
+  Map<std::string, int32> m2;
+  std::string str = "Some arbitrarily large string";
+  m2[str] = 1;
+  EXPECT_EQ(m2.SpaceUsedExcludingSelfLong(),
+            sizeof(void*) * kMinCap +
+                sizeof(std::pair<std::pair<std::string, int32>, void*>) +
+                internal::StringSpaceUsedExcludingSelfLong(str));
+
+  // Test messages, and non-scalar values.
+  Map<int32, TestAllTypes> m3;
+  m3[0].set_optional_string(str);
+  EXPECT_EQ(m3.SpaceUsedExcludingSelfLong(),
+            sizeof(void*) * kMinCap +
+                sizeof(std::pair<std::pair<int32, TestAllTypes>, void*>) +
+                m3[0].SpaceUsedLong() - sizeof(m3[0]));
+}
+
 // Attempts to verify that a map with keys a and b has a random ordering. This
 // function returns true if it succeeds in observing both possible orderings.
 bool MapOrderingIsRandom(int a, int b) {
@@ -1066,6 +1161,11 @@ void TestTransparent(const Key& key, const Key& miss_key) {
   EXPECT_EQ(m.erase(key), 0);
   EXPECT_EQ(m.erase(miss_key), 0);
   EXPECT_THAT(m, UnorderedElementsAre(Pair("DEF", 2)));
+
+  m[key];
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 0), Pair("DEF", 2)));
+  m[key] = 1;
+  EXPECT_THAT(m, UnorderedElementsAre(Pair("ABC", 1), Pair("DEF", 2)));
 }
 
 TEST_F(MapImplTest, TransparentLookupForString) {
@@ -1079,6 +1179,11 @@ TEST_F(MapImplTest, TransparentLookupForString) {
   std::string abc = "ABC", lkj = "LKJ";
   TestTransparent(std::ref(abc), std::ref(lkj));
   TestTransparent(std::cref(abc), std::cref(lkj));
+}
+
+TEST_F(MapImplTest, ConstInit) {
+  PROTOBUF_CONSTINIT static Map<int, int> map;  // NOLINT
+  EXPECT_TRUE(map.empty());
 }
 
 // Map Field Reflection Test ========================================
@@ -1948,6 +2053,39 @@ TEST_F(MapFieldReflectionTest, UninitializedEntry) {
   EXPECT_FALSE(message.IsInitialized());
 }
 
+class MyMapEntry
+    : public internal::MapEntry<MyMapEntry, ::google::protobuf::int32, ::google::protobuf::int32,
+                                internal::WireFormatLite::TYPE_INT32,
+                                internal::WireFormatLite::TYPE_INT32> {
+ public:
+  constexpr MyMapEntry() {}
+  MyMapEntry(Arena*) { std::abort(); }
+  Metadata GetMetadata() const override { std::abort(); }
+  static bool ValidateKey(void*) { return true; }
+  static bool ValidateValue(void*) { return true; }
+};
+
+class MyMapEntryLite
+    : public internal::MapEntryLite<MyMapEntryLite, ::google::protobuf::int32, ::google::protobuf::int32,
+                                    internal::WireFormatLite::TYPE_INT32,
+                                    internal::WireFormatLite::TYPE_INT32> {
+ public:
+  constexpr MyMapEntryLite() {}
+  explicit MyMapEntryLite(Arena*) { std::abort(); }
+  static bool ValidateKey(void*) { return true; }
+  static bool ValidateValue(void*) { return true; }
+};
+
+TEST(MapEntryTest, ConstInit) {
+  // This verifies that `MapEntry`, `MapEntryLite` and `MapEntryImpl` can be
+  // constant initialized.
+  PROTOBUF_CONSTINIT static MyMapEntry entry{};
+  EXPECT_NE(entry.SpaceUsed(), 0);
+
+  PROTOBUF_CONSTINIT static MyMapEntryLite entry_lite{};  // NOLINT
+  EXPECT_TRUE(entry_lite.IsInitialized());
+}
+
 // Generated Message Test ===========================================
 
 TEST(GeneratedMapFieldTest, Accessors) {
@@ -2505,6 +2643,27 @@ TEST(GeneratedMapFieldTest, IsInitialized) {
   (*map_message.mutable_map_field())[0].set_b(0);
   (*map_message.mutable_map_field())[0].set_c(0);
   EXPECT_TRUE(map_message.IsInitialized());
+}
+
+TEST(GeneratedMapFieldTest, SpaceUsed) {
+  unittest::TestRequiredMessageMap map_message;
+  const size_t initial = map_message.SpaceUsed();
+  const size_t space_used_message = unittest::TestRequired().SpaceUsed();
+
+  auto& m = *map_message.mutable_map_field();
+  constexpr int kNumValues = 100;
+  for (int i = 0; i < kNumValues; ++i) {
+    m[i];
+  }
+
+  // The exact value will depend on internal state, like collisions,
+  // so we can't predict it. But we can predict a lower bound.
+  size_t lower_bound =
+      initial + kNumValues * (space_used_message + sizeof(int32) +
+                              /* Node::next */ sizeof(void*) +
+                              /* table entry */ sizeof(void*));
+
+  EXPECT_LE(lower_bound, map_message.SpaceUsed());
 }
 
 TEST(GeneratedMapFieldTest, MessagesMustMerge) {
@@ -3158,9 +3317,9 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
   // repeated field to calculate ByteSizeLong but use map to serialize the real
   // data, thus the ByteSizeLong may bigger than real serialized size. A crash
-  // might be happen at SerializeToString(). Or an "unexpect end group" warning
-  // was raised at parse back if user use SerializeWithCachedSizes() which
-  // avoids size check at serialize.
+  // might be happen at SerializeToString(). Or an "unexpected end group"
+  // warning was raised at parse back if user use SerializeWithCachedSizes()
+  // which avoids size check at serialize.
   std::string serialized_data;
   dynamic_message->SerializeToString(&serialized_data);
   EXPECT_EQ(serialized_data, expected_serialized_data);

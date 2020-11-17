@@ -55,12 +55,19 @@ namespace ProtobufUnittest {
             "X2Jvb2xCEgoQX29wdGlvbmFsX3N0cmluZ0IRCg9fb3B0aW9uYWxfYnl0ZXNC",
             "EAoOX29wdGlvbmFsX2NvcmRCGgoYX29wdGlvbmFsX25lc3RlZF9tZXNzYWdl",
             "QhYKFF9sYXp5X25lc3RlZF9tZXNzYWdlQhcKFV9vcHRpb25hbF9uZXN0ZWRf",
-            "ZW51bUIlCiFjb20uZ29vZ2xlLnByb3RvYnVmLnRlc3RpbmcucHJvdG9QAWIG",
-            "cHJvdG8z"));
+            "ZW51bSKJAgoZVGVzdFByb3RvM09wdGlvbmFsTWVzc2FnZRJSCg5uZXN0ZWRf",
+            "bWVzc2FnZRgBIAEoCzI6LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQcm90bzNP",
+            "cHRpb25hbE1lc3NhZ2UuTmVzdGVkTWVzc2FnZRJgChdvcHRpb25hbF9uZXN0",
+            "ZWRfbWVzc2FnZRgCIAEoCzI6LnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RQcm90",
+            "bzNPcHRpb25hbE1lc3NhZ2UuTmVzdGVkTWVzc2FnZUgAiAEBGhoKDU5lc3Rl",
+            "ZE1lc3NhZ2USCQoBcxgBIAEoCUIaChhfb3B0aW9uYWxfbmVzdGVkX21lc3Nh",
+            "Z2VCJQohY29tLmdvb2dsZS5wcm90b2J1Zi50ZXN0aW5nLnByb3RvUAFiBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufUnittest.TestProto3Optional), global::ProtobufUnittest.TestProto3Optional.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalCord", "OptionalNestedMessage", "LazyNestedMessage", "OptionalNestedEnum", "SingularInt32", "SingularInt64" }, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalCord", "OptionalNestedMessage", "LazyNestedMessage", "OptionalNestedEnum" }, new[]{ typeof(global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufUnittest.TestProto3Optional.Types.NestedMessage), global::ProtobufUnittest.TestProto3Optional.Types.NestedMessage.Parser, new[]{ "Bb" }, new[]{ "Bb" }, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufUnittest.TestProto3Optional), global::ProtobufUnittest.TestProto3Optional.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalCord", "OptionalNestedMessage", "LazyNestedMessage", "OptionalNestedEnum", "SingularInt32", "SingularInt64" }, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalCord", "OptionalNestedMessage", "LazyNestedMessage", "OptionalNestedEnum" }, new[]{ typeof(global::ProtobufUnittest.TestProto3Optional.Types.NestedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufUnittest.TestProto3Optional.Types.NestedMessage), global::ProtobufUnittest.TestProto3Optional.Types.NestedMessage.Parser, new[]{ "Bb" }, new[]{ "Bb" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufUnittest.TestProto3OptionalMessage), global::ProtobufUnittest.TestProto3OptionalMessage.Parser, new[]{ "NestedMessage", "OptionalNestedMessage" }, new[]{ "OptionalNestedMessage" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage), global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage.Parser, new[]{ "S" }, null, null, null, null)})
           }));
     }
     #endregion
@@ -1363,6 +1370,411 @@ namespace ProtobufUnittest {
                 break;
               case 8: {
                 Bb = input.ReadInt32();
+                break;
+              }
+            }
+          }
+        }
+        #endif
+
+      }
+
+    }
+    #endregion
+
+  }
+
+  public sealed partial class TestProto3OptionalMessage : pb::IMessage<TestProto3OptionalMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<TestProto3OptionalMessage> _parser = new pb::MessageParser<TestProto3OptionalMessage>(() => new TestProto3OptionalMessage());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<TestProto3OptionalMessage> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ProtobufUnittest.UnittestProto3OptionalReflection.Descriptor.MessageTypes[1]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestProto3OptionalMessage() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestProto3OptionalMessage(TestProto3OptionalMessage other) : this() {
+      nestedMessage_ = other.nestedMessage_ != null ? other.nestedMessage_.Clone() : null;
+      optionalNestedMessage_ = other.optionalNestedMessage_ != null ? other.optionalNestedMessage_.Clone() : null;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestProto3OptionalMessage Clone() {
+      return new TestProto3OptionalMessage(this);
+    }
+
+    /// <summary>Field number for the "nested_message" field.</summary>
+    public const int NestedMessageFieldNumber = 1;
+    private global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage nestedMessage_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage NestedMessage {
+      get { return nestedMessage_; }
+      set {
+        nestedMessage_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_nested_message" field.</summary>
+    public const int OptionalNestedMessageFieldNumber = 2;
+    private global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage optionalNestedMessage_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage OptionalNestedMessage {
+      get { return optionalNestedMessage_; }
+      set {
+        optionalNestedMessage_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as TestProto3OptionalMessage);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(TestProto3OptionalMessage other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (!object.Equals(NestedMessage, other.NestedMessage)) return false;
+      if (!object.Equals(OptionalNestedMessage, other.OptionalNestedMessage)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (nestedMessage_ != null) hash ^= NestedMessage.GetHashCode();
+      if (optionalNestedMessage_ != null) hash ^= OptionalNestedMessage.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (nestedMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(NestedMessage);
+      }
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (nestedMessage_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(NestedMessage);
+      }
+      if (optionalNestedMessage_ != null) {
+        output.WriteRawTag(18);
+        output.WriteMessage(OptionalNestedMessage);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (nestedMessage_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(NestedMessage);
+      }
+      if (optionalNestedMessage_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(OptionalNestedMessage);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(TestProto3OptionalMessage other) {
+      if (other == null) {
+        return;
+      }
+      if (other.nestedMessage_ != null) {
+        if (nestedMessage_ == null) {
+          NestedMessage = new global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage();
+        }
+        NestedMessage.MergeFrom(other.NestedMessage);
+      }
+      if (other.optionalNestedMessage_ != null) {
+        if (optionalNestedMessage_ == null) {
+          OptionalNestedMessage = new global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage();
+        }
+        OptionalNestedMessage.MergeFrom(other.OptionalNestedMessage);
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 10: {
+            if (nestedMessage_ == null) {
+              NestedMessage = new global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage();
+            }
+            input.ReadMessage(NestedMessage);
+            break;
+          }
+          case 18: {
+            if (optionalNestedMessage_ == null) {
+              OptionalNestedMessage = new global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalNestedMessage);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (nestedMessage_ == null) {
+              NestedMessage = new global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage();
+            }
+            input.ReadMessage(NestedMessage);
+            break;
+          }
+          case 18: {
+            if (optionalNestedMessage_ == null) {
+              OptionalNestedMessage = new global::ProtobufUnittest.TestProto3OptionalMessage.Types.NestedMessage();
+            }
+            input.ReadMessage(OptionalNestedMessage);
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the TestProto3OptionalMessage message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      public sealed partial class NestedMessage : pb::IMessage<NestedMessage>
+      #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          , pb::IBufferMessage
+      #endif
+      {
+        private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
+        private pb::UnknownFieldSet _unknownFields;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pbr::MessageDescriptor Descriptor {
+          get { return global::ProtobufUnittest.TestProto3OptionalMessage.Descriptor.NestedTypes[0]; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        pbr::MessageDescriptor pb::IMessage.Descriptor {
+          get { return Descriptor; }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public NestedMessage() {
+          OnConstruction();
+        }
+
+        partial void OnConstruction();
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public NestedMessage(NestedMessage other) : this() {
+          s_ = other.s_;
+          _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public NestedMessage Clone() {
+          return new NestedMessage(this);
+        }
+
+        /// <summary>Field number for the "s" field.</summary>
+        public const int SFieldNumber = 1;
+        private string s_ = "";
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public string S {
+          get { return s_; }
+          set {
+            s_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override bool Equals(object other) {
+          return Equals(other as NestedMessage);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public bool Equals(NestedMessage other) {
+          if (ReferenceEquals(other, null)) {
+            return false;
+          }
+          if (ReferenceEquals(other, this)) {
+            return true;
+          }
+          if (S != other.S) return false;
+          return Equals(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override int GetHashCode() {
+          int hash = 1;
+          if (S.Length != 0) hash ^= S.GetHashCode();
+          if (_unknownFields != null) {
+            hash ^= _unknownFields.GetHashCode();
+          }
+          return hash;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public override string ToString() {
+          return pb::JsonFormatter.ToDiagnosticString(this);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void WriteTo(pb::CodedOutputStream output) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          output.WriteRawMessage(this);
+        #else
+          if (S.Length != 0) {
+            output.WriteRawTag(10);
+            output.WriteString(S);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(output);
+          }
+        #endif
+        }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+          if (S.Length != 0) {
+            output.WriteRawTag(10);
+            output.WriteString(S);
+          }
+          if (_unknownFields != null) {
+            _unknownFields.WriteTo(ref output);
+          }
+        }
+        #endif
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public int CalculateSize() {
+          int size = 0;
+          if (S.Length != 0) {
+            size += 1 + pb::CodedOutputStream.ComputeStringSize(S);
+          }
+          if (_unknownFields != null) {
+            size += _unknownFields.CalculateSize();
+          }
+          return size;
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(NestedMessage other) {
+          if (other == null) {
+            return;
+          }
+          if (other.S.Length != 0) {
+            S = other.S;
+          }
+          _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public void MergeFrom(pb::CodedInputStream input) {
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+          input.ReadRawMessage(this);
+        #else
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+                break;
+              case 10: {
+                S = input.ReadString();
+                break;
+              }
+            }
+          }
+        #endif
+        }
+
+        #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+          uint tag;
+          while ((tag = input.ReadTag()) != 0) {
+            switch(tag) {
+              default:
+                _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+                break;
+              case 10: {
+                S = input.ReadString();
                 break;
               }
             }

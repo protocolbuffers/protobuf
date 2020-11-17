@@ -51,7 +51,7 @@ namespace compiler {
 namespace csharp {
 
 void FieldGeneratorBase::SetCommonFieldVariables(
-    std::map<string, string>* variables) {
+    std::map<std::string, std::string>* variables) {
   // Note: this will be valid even though the tag emitted for packed and unpacked versions of
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
@@ -63,7 +63,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   uint tag = internal::WireFormat::MakeTag(descriptor_);
   uint8 tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-  string tag_bytes = StrCat(tag_array[0]);
+  std::string tag_bytes = StrCat(tag_array[0]);
   for (int i = 1; i < part_tag_size; i++) {
     tag_bytes += ", " + StrCat(tag_array[i]);
   }
@@ -108,8 +108,8 @@ void FieldGeneratorBase::SetCommonFieldVariables(
     (*variables)["has_not_property_check"] = "!" + (*variables)["has_property_check"];
     (*variables)["other_has_not_property_check"] = "!" + (*variables)["other_has_property_check"];
     if (presenceIndex_ != -1) {
-      string hasBitsNumber = StrCat(presenceIndex_ / 32);
-      string hasBitsMask = StrCat(1 << (presenceIndex_ % 32));
+      std::string hasBitsNumber = StrCat(presenceIndex_ / 32);
+      std::string hasBitsMask = StrCat(1 << (presenceIndex_ % 32));
       (*variables)["has_field_check"] = "(_hasBits" + hasBitsNumber + " & " + hasBitsMask + ") != 0";
       (*variables)["set_has_field"] = "_hasBits" + hasBitsNumber + " |= " + hasBitsMask;
       (*variables)["clear_has_field"] = "_hasBits" + hasBitsNumber + " &= ~" + hasBitsMask;
@@ -123,7 +123,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 }
 
 void FieldGeneratorBase::SetCommonOneofFieldVariables(
-    std::map<string, string>* variables) {
+    std::map<std::string, std::string>* variables) {
   (*variables)["oneof_name"] = oneof_name();
   if (SupportsPresenceApi(descriptor_)) {
     (*variables)["has_property_check"] = "Has" + property_name();
@@ -216,7 +216,7 @@ std::string FieldGeneratorBase::type_name(const FieldDescriptor* descriptor) {
       if (IsWrapperType(descriptor)) {
         const FieldDescriptor* wrapped_field =
             descriptor->message_type()->field(0);
-        string wrapped_field_type_name = type_name(wrapped_field);
+        std::string wrapped_field_type_name = type_name(wrapped_field);
         // String and ByteString go to the same type; other wrapped types
         // go to the nullable equivalent.
         if (wrapped_field->type() == FieldDescriptor::TYPE_STRING ||

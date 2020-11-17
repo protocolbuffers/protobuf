@@ -130,8 +130,8 @@ describe('proto3Test', function() {
     assertEquals(msg.getSingularBytes_asU8().length, 0);
     assertEquals(msg.getSingularBytes_asB64(), '');
 
-    assertEquals(msg.getSingularForeignEnum(),
-                 proto.jspb.test.Proto3Enum.PROTO3_FOO);
+    assertEquals(
+        msg.getSingularForeignEnum(), proto.jspb.test.Proto3Enum.PROTO3_FOO);
     assertEquals(msg.getSingularForeignMessage(), undefined);
     assertEquals(msg.getSingularForeignMessage(), undefined);
 
@@ -201,7 +201,7 @@ describe('proto3Test', function() {
     assertTrue(msg.hasOptionalInt64());
 
     assertFalse(msg.hasOptionalString());
-    msg.setOptionalString("");
+    msg.setOptionalString('');
     assertTrue(msg.hasOptionalString());
 
     // Now the proto will have a non-zero size, even though its values are 0.
@@ -224,7 +224,7 @@ describe('proto3Test', function() {
   /**
    * Test that all fields can be set ,and read via a serialization roundtrip.
    */
-  it('testProto3FieldSetGet', function () {
+  it('testProto3FieldSetGet', function() {
     var msg = new proto.jspb.test.TestProto3();
 
     msg.setSingularInt32(-42);
@@ -288,8 +288,8 @@ describe('proto3Test', function() {
     assertEquals(msg.getSingularString(), 'hello world');
     assertEquals(true, bytesCompare(msg.getSingularBytes(), BYTES));
     assertEquals(msg.getSingularForeignMessage().getC(), 16);
-    assertEquals(msg.getSingularForeignEnum(),
-        proto.jspb.test.Proto3Enum.PROTO3_BAR);
+    assertEquals(
+        msg.getSingularForeignEnum(), proto.jspb.test.Proto3Enum.PROTO3_BAR);
 
     assertElementsEquals(msg.getRepeatedInt32List(), [-42]);
     assertElementsEquals(msg.getRepeatedInt64List(), [-0x7fffffff00000000]);

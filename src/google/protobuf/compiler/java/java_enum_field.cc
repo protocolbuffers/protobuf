@@ -81,7 +81,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   // with v2.5.0/v2.6.1, and remove the @SuppressWarnings annotations.
   (*variables)["for_number"] = "valueOf";
 
-  if (SupportFieldPresence(descriptor)) {
+  if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
@@ -145,7 +145,7 @@ ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
 ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() {}
 
 int ImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
-  return SupportFieldPresence(descriptor_) ? 1 : 0;
+  return HasHasbit(descriptor_) ? 1 : 0;
 }
 
 int ImmutableEnumFieldGenerator::GetNumBitsForBuilder() const {
@@ -712,7 +712,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       // list is immutable. If it's immutable, the invariant is that it must
       // either an instance of Collections.emptyList() or it's an ArrayList
       // wrapped in a Collections.unmodifiableList() wrapper and nobody else has
-      // a refererence to the underlying ArrayList. This invariant allows us to
+      // a reference to the underlying ArrayList. This invariant allows us to
       // share instances of lists between protocol buffers avoiding expensive
       // memory allocations. Note, immutable is a strong guarantee here -- not
       // just that the list cannot be modified via the reference but that the

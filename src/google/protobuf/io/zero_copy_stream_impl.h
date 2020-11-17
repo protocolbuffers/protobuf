@@ -48,7 +48,6 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
-
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -140,24 +139,20 @@ class PROTOBUF_EXPORT FileInputStream : public ZeroCopyInputStream {
 // harming performance.  Also, it's conceivable that FileOutputStream could
 // someday be enhanced to use zero-copy file descriptors on OSs which
 // support them.
-class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
+class PROTOBUF_EXPORT FileOutputStream : public CopyingOutputStreamAdaptor {
  public:
   // Creates a stream that writes to the given Unix file descriptor.
   // If a block_size is given, it specifies the size of the buffers
   // that should be returned by Next().  Otherwise, a reasonable default
   // is used.
   explicit FileOutputStream(int file_descriptor, int block_size = -1);
+
   ~FileOutputStream() override;
 
   // Flushes any buffers and closes the underlying file.  Returns false if
   // an error occurs during the process; use GetErrno() to examine the error.
   // Even if an error occurs, the file descriptor is closed when this returns.
   bool Close();
-
-  // Flushes FileOutputStream's buffers but does not close the
-  // underlying file. No special measures are taken to ensure that
-  // underlying operating system file object is synchronized to disk.
-  bool Flush();
 
   // By default, the file descriptor is not closed when the stream is
   // destroyed.  Call SetCloseOnDelete(true) to change that.  WARNING:
@@ -171,11 +166,6 @@ class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
   // occurs, the stream is broken and all subsequent operations will
   // fail.
   int GetErrno() const { return copying_output_.GetErrno(); }
-
-  // implements ZeroCopyOutputStream ---------------------------------
-  bool Next(void** data, int* size) override;
-  void BackUp(int count) override;
-  int64_t ByteCount() const override;
 
  private:
   class PROTOBUF_EXPORT CopyingFileOutputStream : public CopyingOutputStream {
@@ -203,7 +193,6 @@ class PROTOBUF_EXPORT FileOutputStream : public ZeroCopyOutputStream {
   };
 
   CopyingFileOutputStream copying_output_;
-  CopyingOutputStreamAdaptor impl_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileOutputStream);
 };

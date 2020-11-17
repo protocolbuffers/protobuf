@@ -54,6 +54,7 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+#include <atomic>
 #include <map>
 #include <memory>
 #include <set>
@@ -839,6 +840,7 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
+  friend class Reflection;
 
   // Fill the json_name field of FieldDescriptorProto.
   void CopyJsonNameTo(FieldDescriptorProto* proto) const;
@@ -906,6 +908,7 @@ class PROTOBUF_EXPORT FieldDescriptor {
 
     mutable const EnumValueDescriptor* default_value_enum_;
     const std::string* default_value_string_;
+    mutable std::atomic<const Message*> default_generated_instance_;
   };
 
   static const CppType kTypeToCppTypeMap[MAX_TYPE + 1];
@@ -1235,6 +1238,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   friend class EnumDescriptor;
   friend class DescriptorPool;
   friend class FileDescriptorTables;
+  friend class Reflection;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumValueDescriptor);
 };
 
@@ -1857,7 +1861,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Delay the building of dependencies of a file descriptor until absolutely
   // necessary, like when message_type() is called on a field that is defined
   // in that dependency's file. This will cause functional issues if a proto
-  // or one of it's dependencies has errors. Should only be enabled for the
+  // or one of its dependencies has errors. Should only be enabled for the
   // generated_pool_ (because no descriptor build errors are guaranteed by
   // the compilation generation process), testing, or if a lack of descriptor
   // build errors can be guaranteed for a pool.

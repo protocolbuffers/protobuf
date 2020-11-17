@@ -55,11 +55,11 @@ namespace protobuf {
 namespace internal {
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
+          WireFormatLite::FieldType kValueFieldType>
 class MapEntry;
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
+          WireFormatLite::FieldType kValueFieldType>
 class MapFieldLite;
 }  // namespace internal
 }  // namespace protobuf
@@ -93,11 +93,7 @@ struct MoveHelper<false, true, is_stringlike, T> {  // messages
 template <typename T>
 struct MoveHelper<false, false, true, T> {  // strings and similar
   static void Move(T* src, T* dest) {
-#if __cplusplus >= 201103L
     *dest = std::move(*src);
-#else
-    dest->swap(*src);
-#endif
   }
 };
 
@@ -144,7 +140,7 @@ struct MapEntryFuncs {
 // the eventual code to the template code.
 template <typename Derived, typename Base, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
+          WireFormatLite::FieldType kValueFieldType>
 class MapEntryImpl : public Base {
  public:
   typedef MapEntryFuncs<Key, Value, kKeyFieldType, kValueFieldType> Funcs;
@@ -185,21 +181,17 @@ class MapEntryImpl : public Base {
   typedef Value EntryValueType;
   static const WireFormatLite::FieldType kEntryKeyFieldType = kKeyFieldType;
   static const WireFormatLite::FieldType kEntryValueFieldType = kValueFieldType;
-  static const int kEntryDefaultEnumValue = default_enum_value;
 
-  MapEntryImpl() {
-    KeyTypeHandler::Initialize(&key_, NULL);
-    ValueTypeHandler::InitializeMaybeByDefaultEnum(&value_, default_enum_value,
-                                                   NULL);
-    _has_bits_[0] = 0;
-  }
+  constexpr MapEntryImpl()
+      : key_(KeyTypeHandler::Constinit()),
+        value_(ValueTypeHandler::Constinit()),
+        _has_bits_{} {}
 
-  explicit MapEntryImpl(Arena* arena) : Base(arena) {
-    KeyTypeHandler::Initialize(&key_, arena);
-    ValueTypeHandler::InitializeMaybeByDefaultEnum(&value_, default_enum_value,
-                                                   arena);
-    _has_bits_[0] = 0;
-  }
+  explicit MapEntryImpl(Arena* arena)
+      : Base(arena),
+        key_(KeyTypeHandler::Constinit()),
+        value_(ValueTypeHandler::Constinit()),
+        _has_bits_{} {}
 
   ~MapEntryImpl() {
     if (Base::GetArena() != NULL) return;
@@ -213,8 +205,7 @@ class MapEntryImpl : public Base {
     return KeyTypeHandler::GetExternalReference(key_);
   }
   virtual inline const ValueMapEntryAccessorType& value() const {
-    return ValueTypeHandler::DefaultIfNotInitialized(
-        value_, Derived::internal_default_instance()->value_);
+    return ValueTypeHandler::DefaultIfNotInitialized(value_);
   }
   inline KeyMapEntryAccessorType* mutable_key() {
     set_has_key();
@@ -325,16 +316,9 @@ class MapEntryImpl : public Base {
  public:
   void Clear() override {
     KeyTypeHandler::Clear(&key_, Base::GetArena());
-    ValueTypeHandler::ClearMaybeByDefaultEnum(&value_, Base::GetArena(),
-                                              default_enum_value);
+    ValueTypeHandler::Clear(&value_, Base::GetArena());
     clear_has_key();
     clear_has_value();
-  }
-
-  static void InitAsDefaultInstance() {
-    Derived* d = const_cast<Derived*>(Derived::internal_default_instance());
-    KeyTypeHandler::AssignDefaultValue(&d->key_);
-    ValueTypeHandler::AssignDefaultValue(&d->value_);
   }
 
   // Parsing using MergePartialFromCodedStream, above, is not as
@@ -520,10 +504,10 @@ class MapEntryImpl : public Base {
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   template <typename C, typename K, typename V, WireFormatLite::FieldType,
-            WireFormatLite::FieldType, int>
+            WireFormatLite::FieldType>
   friend class internal::MapEntry;
   template <typename C, typename K, typename V, WireFormatLite::FieldType,
-            WireFormatLite::FieldType, int>
+            WireFormatLite::FieldType>
   friend class internal::MapFieldLite;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryImpl);
@@ -531,15 +515,14 @@ class MapEntryImpl : public Base {
 
 template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-class MapEntryLite
-    : public MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType,
-                          kValueFieldType, default_enum_value> {
+          WireFormatLite::FieldType kValueFieldType>
+class MapEntryLite : public MapEntryImpl<T, MessageLite, Key, Value,
+                                         kKeyFieldType, kValueFieldType> {
  public:
   typedef MapEntryImpl<T, MessageLite, Key, Value, kKeyFieldType,
-                       kValueFieldType, default_enum_value>
+                       kValueFieldType>
       SuperType;
-  MapEntryLite() {}
+  constexpr MapEntryLite() {}
   explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
   ~MapEntryLite() { MessageLite::_internal_metadata_.Delete<std::string>(); }
   void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }
@@ -554,13 +537,12 @@ template <typename Derived>
 struct DeconstructMapEntry;
 
 template <typename T, typename K, typename V, WireFormatLite::FieldType key,
-          WireFormatLite::FieldType value, int default_enum>
-struct DeconstructMapEntry<MapEntryLite<T, K, V, key, value, default_enum> > {
+          WireFormatLite::FieldType value>
+struct DeconstructMapEntry<MapEntryLite<T, K, V, key, value> > {
   typedef K Key;
   typedef V Value;
   static const WireFormatLite::FieldType kKeyFieldType = key;
   static const WireFormatLite::FieldType kValueFieldType = value;
-  static const int default_enum_value = default_enum;
 };
 
 // Helpers for deterministic serialization =============================
@@ -631,9 +613,9 @@ struct MapEntryHelper;
 
 template <typename T, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-struct MapEntryHelper<MapEntryLite<T, Key, Value, kKeyFieldType,
-                                   kValueFieldType, default_enum_value> > {
+          WireFormatLite::FieldType kValueFieldType>
+struct MapEntryHelper<
+    MapEntryLite<T, Key, Value, kKeyFieldType, kValueFieldType> > {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
   typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;

@@ -137,11 +137,19 @@ final class FieldMaskTree {
   }
 
   /**
-   * Remove {@code path} from the tree.
+   * Removes {@code path} from the tree.
    *
-   * <p>When removing a field path from the tree, all sub-paths will be removed. That is, after
-   * removing "foo.bar" from the tree, "foo.bar.baz" will be removed. Likewise, if the field path to
-   * remove is a non-exist sub-path, nothing will be changed.
+   * <ul>
+   *   When removing a field path from the tree:
+   *   <li>All sub-paths will be removed. That is, after removing "foo.bar" from the tree,
+   *       "foo.bar.baz" will be removed.
+   *   <li>If all children of a node has been removed, the node itself will be removed as well.
+   *       That is, if "foo" only has one child "bar" and "foo.bar" only has one child "baz",
+   *       removing "foo.bar.barz" would remove both "foo" and "foo.bar".
+   *       If "foo" has both "bar" and "qux" as children, removing "foo.bar" would leave the path
+   *       "foo.qux" intact.
+   *   <li>If the field path to remove is a non-exist sub-path, nothing will be changed.
+   * </ul>
    */
   @CanIgnoreReturnValue
   FieldMaskTree removeFieldPath(String path) {
@@ -149,21 +157,33 @@ final class FieldMaskTree {
     if (parts.isEmpty()) {
       return this;
     }
-    Node node = root;
-    for (int i = 0; i < parts.size(); i++) {
-      String key = parts.get(i);
-      if (!node.children.containsKey(key)) {
-        // Path does not exist.
-        return this;
-      }
-      if (i == parts.size() - 1) {
-        // Remove path.
-        node.children.remove(key);
-        return this;
-      }
-      node = node.children.get(key);
-    }
+    removeFieldPath(root, parts, 0);
     return this;
+  }
+
+  /**
+   * Removes {@code parts} from {@code node} recursively.
+   *
+   * @return a boolean value indicating whether current {@code node} should be removed.
+   */
+  @CanIgnoreReturnValue
+  private static boolean removeFieldPath(Node node, List<String> parts, int index) {
+    String key = parts.get(index);
+
+    // Base case 1: path not match.
+    if (!node.children.containsKey(key)) {
+      return false;
+    }
+    // Base case 2: last element in parts.
+    if (index == parts.size() - 1) {
+      node.children.remove(key);
+      return node.children.isEmpty();
+    }
+    // Recursive remove sub-path.
+    if (removeFieldPath(node.children.get(key), parts, index + 1)) {
+      node.children.remove(key);
+    }
+    return node.children.isEmpty();
   }
 
   /** Removes all field paths in {@code mask} from this tree. */
@@ -187,10 +207,8 @@ final class FieldMaskTree {
     return FieldMask.newBuilder().addAllPaths(paths).build();
   }
 
-  /**
-   * Gathers all field paths in a sub-tree.
-   */
-  private void getFieldPaths(Node node, String path, List<String> paths) {
+  /** Gathers all field paths in a sub-tree. */
+  private static void getFieldPaths(Node node, String path, List<String> paths) {
     if (node.children.isEmpty()) {
       paths.add(path);
       return;
@@ -247,10 +265,8 @@ final class FieldMaskTree {
     merge(root, "", source, destination, options);
   }
 
-  /**
-   * Merges all fields specified by a sub-tree from {@code source} to {@code destination}.
-   */
-  private void merge(
+  /** Merges all fields specified by a sub-tree from {@code source} to {@code destination}. */
+  private static void merge(
       Node node,
       String path,
       Message source,

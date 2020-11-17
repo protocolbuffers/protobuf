@@ -127,7 +127,7 @@ The _no presence_ serialization discipline results in visible differences from t
 
 ### Considerations for merging
 
-Under the _no presence_ rules, it is effectively impossible for a target field to merge-from its default value (using the protobuf's API merging functions). This is because default values are skipped, simliar to the _no presence_ serialization discipline. Merging only updates the target (merged-to) message using the non-skipped values from the update (merged-from) message.
+Under the _no presence_ rules, it is effectively impossible for a target field to merge-from its default value (using the protobuf's API merging functions). This is because default values are skipped, similar to the _no presence_ serialization discipline. Merging only updates the target (merged-to) message using the non-skipped values from the update (merged-from) message.
 
 The difference in merging behavior has further implications for protocols which rely on partial "patch" updates. If field presence is not tracked, then an update patch alone cannot represent an update to the default value, because only non-default values are merged-from.
 

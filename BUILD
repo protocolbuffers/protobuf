@@ -14,10 +14,10 @@ exports_files(["LICENSE"])
 # build configuration
 ################################################################################
 
+# TODO(yannic): Remove in 3.14.0.
 string_flag(
     name = "incompatible_use_com_google_googletest",
-    # TODO(yannic): Flip to `true` for `3.13.0`.
-    build_setting_default = "false",
+    build_setting_default = "true",
     values = ["true", "false"]
 )
 
@@ -164,6 +164,7 @@ cc_library(
         # AUTOGEN(protobuf_lite_srcs)
         "src/google/protobuf/any_lite.cc",
         "src/google/protobuf/arena.cc",
+        "src/google/protobuf/arenastring.cc",
         "src/google/protobuf/extension_set.cc",
         "src/google/protobuf/generated_enum_util.cc",
         "src/google/protobuf/generated_message_table_driven_lite.cc",
@@ -175,6 +176,7 @@ cc_library(
         "src/google/protobuf/io/zero_copy_stream.cc",
         "src/google/protobuf/io/zero_copy_stream_impl.cc",
         "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
+        "src/google/protobuf/map.cc",
         "src/google/protobuf/message_lite.cc",
         "src/google/protobuf/parse_context.cc",
         "src/google/protobuf/repeated_field.cc",
@@ -367,7 +369,15 @@ cc_library(
 
 cc_proto_blacklist_test(
     name = "cc_proto_blacklist_test",
-    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()]
+    deps = [proto + "_cc_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    tags = [
+        # Exclude this target from wildcard expansion (//...). Due to
+        # https://github.com/bazelbuild/bazel/issues/10590, this test has to
+        # be nominated using the `@com_google_protobuf//` prefix. We do that,
+        # e.g., in kokoro/linux/bazel/build.sh.
+        # See also https://github.com/protocolbuffers/protobuf/pull/7096.
+        "manual",
+    ],
 )
 
 ################################################################################
@@ -738,10 +748,9 @@ py_library(
     name = "python_srcs",
     srcs = glob(
         [
-            "python/google/**/*.py",
+            "python/google/protobuf/**/*.py",
         ],
         exclude = [
-            "python/google/protobuf/**/__init__.py",
             "python/google/protobuf/internal/*_test.py",
             "python/google/protobuf/internal/test_util.py",
         ],
@@ -755,6 +764,13 @@ cc_binary(
     srcs = ["python/google/protobuf/internal/api_implementation.cc"],
     copts = COPTS + [
         "-DPYTHON_PROTO2_CPP_IMPL_V2",
+    ],
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # not even be buildable. It will be built if it is needed according
+        # to :use_fast_cpp_protos.
+        # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
+        "manual",
     ],
     linkshared = 1,
     linkstatic = 1,
@@ -779,6 +795,13 @@ cc_binary(
     includes = [
         "python/",
         "src/",
+    ],
+    tags = [
+        # Exclude this target from wildcard expansion (//...) because it may
+        # not even be buildable. It will be built if it is needed according
+        # to :use_fast_cpp_protos.
+        # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
+        "manual",
     ],
     linkshared = 1,
     linkstatic = 1,
@@ -842,7 +865,6 @@ py_proto_library(
     }),
     default_runtime = "",
     protoc = ":protoc",
-    py_extra_srcs = glob(["python/**/__init__.py"]),
     py_libs = [
         ":python_srcs",
         "@six//:six",

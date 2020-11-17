@@ -636,6 +636,20 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestListValue()
     self.CheckParseBack(message, parsed_message)
 
+  def testNullValue(self):
+    message = json_format_proto3_pb2.TestOneof()
+    message.oneof_null_value = 0
+    self.assertEqual(json_format.MessageToJson(message),
+                     '{\n  "oneofNullValue": null\n}')
+    parsed_message = json_format_proto3_pb2.TestOneof()
+    self.CheckParseBack(message, parsed_message)
+    # Check old format is also accepted
+    new_message = json_format_proto3_pb2.TestOneof()
+    json_format.Parse('{\n  "oneofNullValue": "NULL_VALUE"\n}',
+                      new_message)
+    self.assertEqual(json_format.MessageToJson(new_message),
+                     '{\n  "oneofNullValue": null\n}')
+
   def testAnyMessage(self):
     message = json_format_proto3_pb2.TestAny()
     value1 = json_format_proto3_pb2.MessageType()
@@ -1064,7 +1078,7 @@ class JsonFormatTest(JsonFormatBase):
         json_format.ParseError,
         'Failed to parse value field: year (0 )?is out of range.',
         json_format.Parse, text, message)
-    # Time bigger than maxinum time.
+    # Time bigger than maximum time.
     message.value.seconds = 253402300800
     self.assertRaisesRegexp(
         OverflowError,

@@ -90,7 +90,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["on_changed"] = "onChanged();";
 
-  if (SupportFieldPresence(descriptor)) {
+  if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
     (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
@@ -147,7 +147,7 @@ ImmutableStringFieldGenerator::ImmutableStringFieldGenerator(
 ImmutableStringFieldGenerator::~ImmutableStringFieldGenerator() {}
 
 int ImmutableStringFieldGenerator::GetNumBitsForMessage() const {
-  return SupportFieldPresence(descriptor_) ? 1 : 0;
+  return HasHasbit(descriptor_) ? 1 : 0;
 }
 
 int ImmutableStringFieldGenerator::GetNumBitsForBuilder() const {
@@ -801,7 +801,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
   // list is immutable. If it's immutable, the invariant is that it must
   // either an instance of Collections.emptyList() or it's an ArrayList
   // wrapped in a Collections.unmodifiableList() wrapper and nobody else has
-  // a refererence to the underlying ArrayList. This invariant allows us to
+  // a reference to the underlying ArrayList. This invariant allows us to
   // share instances of lists between protocol buffers avoiding expensive
   // memory allocations. Note, immutable is a strong guarantee here -- not
   // just that the list cannot be modified via the reference but that the

@@ -219,7 +219,7 @@ void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
     // Library is too old for headers.
     [NSException raise:NSInternalInconsistencyException
                 format:@"Linked to ProtocolBuffer runtime version %d,"
-                       @" but code compiled needing atleast %d!",
+                       @" but code compiled needing at least %d!",
                        GOOGLE_PROTOBUF_OBJC_VERSION, objcRuntimeVersion];
   }
   if (objcRuntimeVersion < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
@@ -503,15 +503,6 @@ static void GPBMaybeClearOneofPrivate(GPBMessage *self,
 
 // Object types are handled slightly differently, they need to be released
 // and retained.
-
-void GPBSetAutocreatedRetainedObjectIvarWithField(
-    GPBMessage *self, GPBFieldDescriptor *field,
-    id __attribute__((ns_consumed)) value) {
-  uint8_t *storage = (uint8_t *)self->messageStorage_;
-  id *typePtr = (id *)&storage[field->description_->offset];
-  NSCAssert(*typePtr == NULL, @"Can't set autocreated object more than once.");
-  *typePtr = value;
-}
 
 void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
                                              GPBFieldDescriptor *field) {

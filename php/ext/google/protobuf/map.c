@@ -37,6 +37,7 @@
 
 #include "arena.h"
 #include "convert.h"
+#include "message.h"
 #include "php-upb.h"
 #include "protobuf.h"
 
@@ -90,12 +91,34 @@ static void MapField_destructor(zend_object* obj) {
   zend_object_std_dtor(&intern->std);
 }
 
-static zval *Map_GetPropertyPtrPtr(zval *object, zval *member, int type,
-                                      void **cache_slot) {
+/**
+ * MapField_compare_objects()
+ *
+ * Object handler for comparing two repeated field objects. Called whenever PHP
+ * code does:
+ *
+ *   $map1 == $map2
+ */
+static int MapField_compare_objects(zval *map1, zval *map2) {
+  MapField* intern1 = (MapField*)Z_OBJ_P(map1);
+  MapField* intern2 = (MapField*)Z_OBJ_P(map2);
+  const upb_msgdef *m = intern1->desc ? intern1->desc->msgdef : NULL;
+  upb_fieldtype_t key_type = intern1->key_type;
+  upb_fieldtype_t val_type = intern1->val_type;
+
+  if (key_type != intern2->key_type) return 1;
+  if (val_type != intern2->val_type) return 1;
+  if (intern1->desc != intern2->desc) return 1;
+
+  return MapEq(intern1->map, intern2->map, key_type, val_type, m) ? 0 : 1;
+}
+
+static zval *Map_GetPropertyPtrPtr(PROTO_VAL *object, PROTO_STR *member,
+                                   int type, void **cache_slot) {
   return NULL;  // We don't offer direct references to our properties.
 }
 
-static HashTable *map_get_properties(zval *object TSRMLS_DC) {
+static HashTable *Map_GetProperties(PROTO_VAL *object) {
   return NULL;  // We do not have a properties table.
 }
 
@@ -184,6 +207,27 @@ upb_map *MapField_GetUpbMap(zval *val, const upb_fielddef *f, upb_arena *arena) 
     return NULL;
   }
 }
+
+bool MapEq(const upb_map *m1, const upb_map *m2, upb_fieldtype_t key_type,
+           upb_fieldtype_t val_type, const upb_msgdef *m) {
+  size_t iter = UPB_MAP_BEGIN;
+
+  if ((m1 == NULL) != (m2 == NULL)) return false;
+  if (m1 == NULL) return true;
+  if (upb_map_size(m1) != upb_map_size(m2)) return false;
+
+  while (upb_mapiter_next(m1, &iter)) {
+    upb_msgval key = upb_mapiter_key(m1, iter);
+    upb_msgval val1 = upb_mapiter_value(m1, iter);
+    upb_msgval val2;
+
+    if (!upb_map_get(m2, key, &val2)) return false;
+    if (!ValueEq(val1, val2, val_type, m)) return false;
+  }
+
+  return true;
+}
+
 
 // MapField PHP methods ////////////////////////////////////////////////////////
 
@@ -378,6 +422,12 @@ PHP_METHOD(MapField, getIterator) {
   RETURN_ZVAL(&ret, 0, 1);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_construct, 0, 0, 2)
+  ZEND_ARG_INFO(0, key_type)
+  ZEND_ARG_INFO(0, value_type)
+  ZEND_ARG_INFO(0, value_class)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
   ZEND_ARG_INFO(0, index)
 ZEND_END_ARG_INFO()
@@ -391,7 +441,7 @@ ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry MapField_methods[] = {
-  PHP_ME(MapField, __construct,  NULL,              ZEND_ACC_PUBLIC)
+  PHP_ME(MapField, __construct,  arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, offsetExists, arginfo_offsetGet, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, offsetGet,    arginfo_offsetGet, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, offsetSet,    arginfo_offsetSet, ZEND_ACC_PUBLIC)
@@ -572,7 +622,8 @@ void Map_ModuleInit() {
   h = &MapField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = MapField_destructor;
-  h->get_properties = map_get_properties;
+  h->compare_objects = MapField_compare_objects;
+  h->get_properties = Map_GetProperties;
   h->get_property_ptr_ptr = Map_GetPropertyPtrPtr;
 
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\MapFieldIter",

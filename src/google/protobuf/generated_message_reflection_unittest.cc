@@ -486,6 +486,7 @@ TEST(GeneratedMessageReflectionTest, FindKnownExtensionByName) {
                   ->FindKnownExtensionByName(extension1->full_name()) == NULL);
 }
 
+
 TEST(GeneratedMessageReflectionTest, SetAllocatedMessageTest) {
   unittest::TestAllTypes from_message1;
   unittest::TestAllTypes from_message2;

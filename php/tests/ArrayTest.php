@@ -7,7 +7,7 @@ use Google\Protobuf\Internal\GPBType;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 
-class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
+class ArrayTest extends \PHPUnit\Framework\TestCase
 {
 
     #########################################################
@@ -589,5 +589,36 @@ class RepeatedFieldTest extends \PHPUnit\Framework\TestCase
 
         $end = memory_get_usage();
         $this->assertLessThan($start, $end);
+    }
+
+    #########################################################
+    # Test equality
+    #########################################################
+
+    public function testEquality()
+    {
+        $arr = new RepeatedField(GPBType::INT32);
+        $arr2 = new RepeatedField(GPBType::INT32);
+
+        $this->assertTrue($arr == $arr2);
+
+        $arr[] = 0;
+        $arr[] = 1;
+        $arr[] = 2;
+
+        $this->assertFalse($arr == $arr2);
+
+        $arr2[] = 0;
+        $arr2[] = 1;
+        $arr2[] = 2;
+
+        $this->assertTrue($arr == $arr2);
+
+        // Arrays of different types always compare false.
+        $this->assertFalse(new RepeatedField(GPBType::INT32) ==
+                           new RepeatedField(GPBType::INT64));
+        $this->assertFalse(
+            new RepeatedField(GPBType::MESSAGE, TestMessage::class) ==
+            new RepeatedField(GPBType::MESSAGE, Sub::class));
     }
 }

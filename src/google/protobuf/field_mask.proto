@@ -37,7 +37,7 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "FieldMaskProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
-option go_package = "google.golang.org/genproto/protobuf/field_mask;field_mask";
+option go_package = "google.golang.org/protobuf/types/known/fieldmaskpb";
 option cc_enable_arenas = true;
 
 // `FieldMask` represents a set of symbolic field paths, for example:

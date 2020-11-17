@@ -95,9 +95,6 @@ std::string CamelCaseFieldName(const FieldDescriptor* field);
 // outermost file scope.
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
 
-// Strips ".proto" or ".protodevel" from the end of a filename.
-std::string StripProto(const std::string& filename);
-
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another
 // Java class containing all the mutable messages.

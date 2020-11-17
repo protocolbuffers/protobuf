@@ -25,10 +25,10 @@ namespace Google.Protobuf.WellKnownTypes {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Chlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvEg9nb29nbGUucHJvdG9idWYi",
-            "JgoDQW55EhAKCHR5cGVfdXJsGAEgASgJEg0KBXZhbHVlGAIgASgMQm8KE2Nv",
-            "bS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAFaJWdpdGh1Yi5jb20vZ29s",
-            "YW5nL3Byb3RvYnVmL3B0eXBlcy9hbnmiAgNHUEKqAh5Hb29nbGUuUHJvdG9i",
-            "dWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
+            "JgoDQW55EhAKCHR5cGVfdXJsGAEgASgJEg0KBXZhbHVlGAIgASgMQnYKE2Nv",
+            "bS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAFaLGdvb2dsZS5nb2xhbmcu",
+            "b3JnL3Byb3RvYnVmL3R5cGVzL2tub3duL2FueXBiogIDR1BCqgIeR29vZ2xl",
+            "LlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -78,10 +78,13 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  Example 4: Pack and unpack a message in Go
   ///
   ///      foo := &amp;pb.Foo{...}
-  ///      any, err := ptypes.MarshalAny(foo)
+  ///      any, err := anypb.New(foo)
+  ///      if err != nil {
+  ///        ...
+  ///      }
   ///      ...
   ///      foo := &amp;pb.Foo{}
-  ///      if err := ptypes.UnmarshalAny(any, foo); err != nil {
+  ///      if err := any.UnmarshalTo(foo); err != nil {
   ///        ...
   ///      }
   ///

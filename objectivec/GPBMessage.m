@@ -71,6 +71,8 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
  @package
   GPBUnknownFieldSet *unknownFields_;
   NSMutableDictionary *extensionMap_;
+  // Readonly access to autocreatedExtensionMap_ is protected via
+  // readOnlySemaphore_.
   NSMutableDictionary *autocreatedExtensionMap_;
 
   // If the object was autocreated, we remember the creator so that if we get
@@ -79,10 +81,10 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
   GPBFieldDescriptor *autocreatorField_;
   GPBExtensionDescriptor *autocreatorExtension_;
 
-  // A lock to provide mutual exclusion from internal data that can be modified
-  // by *read* operations such as getters (autocreation of message fields and
-  // message extensions, not setting of values). Used to guarantee thread safety
-  // for concurrent reads on the message.
+  // Message can only be mutated from one thread. But some *readonly* operations
+  // modifify internal state because they autocreate things. The
+  // autocreatedExtensionMap_ is one such structure. Access during readonly
+  // operations is protected via this semaphore.
   // NOTE: OSSpinLock may seem like a good fit here but Apple engineers have
   // pointed out that they are vulnerable to live locking on iOS in cases of
   // priority inversion:
@@ -583,19 +585,30 @@ static id GetOrCreateArrayIvarWithField(GPBMessage *self,
 // This is like GPBGetObjectIvarWithField(), but for arrays, it should
 // only be used to wire the method into the class.
 static id GetArrayIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
-  id array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-  if (!array) {
-    // Check again after getting the lock.
-    GPBPrepareReadOnlySemaphore(self);
-    dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
-    array = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-    if (!array) {
-      array = CreateArrayForField(field, self);
-      GPBSetAutocreatedRetainedObjectIvarWithField(self, field, array);
-    }
-    dispatch_semaphore_signal(self->readOnlySemaphore_);
+  uint8_t *storage = (uint8_t *)self->messageStorage_;
+  _Atomic(id) *typePtr = (_Atomic(id) *)&storage[field->description_->offset];
+  id array = atomic_load(typePtr);
+  if (array) {
+    return array;
   }
-  return array;
+
+  id expected = nil;
+  id autocreated = CreateArrayForField(field, self);
+  if (atomic_compare_exchange_strong(typePtr, &expected, autocreated)) {
+    // Value was set, return it.
+    return autocreated;
+  }
+
+  // Some other thread set it, release the one created and return what got set.
+  if (GPBFieldDataTypeIsObject(field)) {
+    GPBAutocreatedArray *autoArray = autocreated;
+    autoArray->_autocreator = nil;
+  } else {
+    GPBInt32Array *gpbArray = autocreated;
+    gpbArray->_autocreator = nil;
+  }
+  [autocreated release];
+  return expected;
 }
 
 static id GetOrCreateMapIvarWithField(GPBMessage *self,
@@ -613,19 +626,31 @@ static id GetOrCreateMapIvarWithField(GPBMessage *self,
 // This is like GPBGetObjectIvarWithField(), but for maps, it should
 // only be used to wire the method into the class.
 static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
-  id dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-  if (!dict) {
-    // Check again after getting the lock.
-    GPBPrepareReadOnlySemaphore(self);
-    dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
-    dict = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-    if (!dict) {
-      dict = CreateMapForField(field, self);
-      GPBSetAutocreatedRetainedObjectIvarWithField(self, field, dict);
-    }
-    dispatch_semaphore_signal(self->readOnlySemaphore_);
+  uint8_t *storage = (uint8_t *)self->messageStorage_;
+  _Atomic(id) *typePtr = (_Atomic(id) *)&storage[field->description_->offset];
+  id dict = atomic_load(typePtr);
+  if (dict) {
+    return dict;
   }
-  return dict;
+
+  id expected = nil;
+  id autocreated = CreateMapForField(field, self);
+  if (atomic_compare_exchange_strong(typePtr, &expected, autocreated)) {
+    // Value was set, return it.
+    return autocreated;
+  }
+
+  // Some other thread set it, release the one created and return what got set.
+  if ((field.mapKeyDataType == GPBDataTypeString) &&
+      GPBFieldDataTypeIsObject(field)) {
+    GPBAutocreatedDictionary *autoDict = autocreated;
+    autoDict->_autocreator = nil;
+  } else {
+    GPBInt32Int32Dictionary *gpbDict = autocreated;
+    gpbDict->_autocreator = nil;
+  }
+  [autocreated release];
+  return expected;
 }
 
 #endif  // !defined(__clang_analyzer__)
@@ -3286,7 +3311,7 @@ static void ResolveIvarSet(__unsafe_unretained GPBFieldDescriptor *field,
     // if a sub message in a field has extensions, the issue still exists. A
     // recursive check could be done here (like the work in
     // GPBMessageDropUnknownFieldsRecursively()), but that has the potential to
-    // be expensive and could slow down serialization in DEBUG enought to cause
+    // be expensive and could slow down serialization in DEBUG enough to cause
     // developers other problems.
     NSLog(@"Warning: writing out a GPBMessage (%@) via NSCoding and it"
           @" has %ld extensions; when read back in, those fields will be"
@@ -3337,30 +3362,34 @@ id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
 
 id GPBGetObjectIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
   NSCAssert(!GPBFieldIsMapOrArray(field), @"Shouldn't get here");
-  if (GPBGetHasIvarField(self, field)) {
-    uint8_t *storage = (uint8_t *)self->messageStorage_;
-    id *typePtr = (id *)&storage[field->description_->offset];
-    return *typePtr;
-  }
-  // Not set...
-
-  // Non messages (string/data), get their default.
   if (!GPBFieldDataTypeIsMessage(field)) {
+    if (GPBGetHasIvarField(self, field)) {
+      uint8_t *storage = (uint8_t *)self->messageStorage_;
+      id *typePtr = (id *)&storage[field->description_->offset];
+      return *typePtr;
+    }
+    // Not set...non messages (string/data), get their default.
     return field.defaultValue.valueMessage;
   }
 
-  GPBPrepareReadOnlySemaphore(self);
-  dispatch_semaphore_wait(self->readOnlySemaphore_, DISPATCH_TIME_FOREVER);
-  GPBMessage *result = GPBGetObjectIvarWithFieldNoAutocreate(self, field);
-  if (!result) {
-    // For non repeated messages, create the object, set it and return it.
-    // This object will not initially be visible via GPBGetHasIvar, so
-    // we save its creator so it can become visible if it's mutated later.
-    result = GPBCreateMessageWithAutocreator(field.msgClass, self, field);
-    GPBSetAutocreatedRetainedObjectIvarWithField(self, field, result);
+  uint8_t *storage = (uint8_t *)self->messageStorage_;
+  _Atomic(id) *typePtr = (_Atomic(id) *)&storage[field->description_->offset];
+  id msg = atomic_load(typePtr);
+  if (msg) {
+    return msg;
   }
-  dispatch_semaphore_signal(self->readOnlySemaphore_);
-  return result;
+
+  id expected = nil;
+  id autocreated = GPBCreateMessageWithAutocreator(field.msgClass, self, field);
+  if (atomic_compare_exchange_strong(typePtr, &expected, autocreated)) {
+    // Value was set, return it.
+    return autocreated;
+  }
+
+  // Some other thread set it, release the one created and return what got set.
+  GPBClearMessageAutocreator(autocreated);
+  [autocreated release];
+  return expected;
 }
 
 #pragma clang diagnostic pop

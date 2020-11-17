@@ -286,6 +286,8 @@ class _Printer(object):
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
       if self.use_integers_for_enums:
         return value
+      if field.enum_type.full_name == 'google.protobuf.NullValue':
+        return None
       enum_value = field.enum_type.values_by_number.get(value, None)
       if enum_value is not None:
         return enum_value.name
@@ -544,6 +546,9 @@ class _Parser(object):
               and field.message_type.full_name == 'google.protobuf.Value'):
             sub_message = getattr(message, field.name)
             sub_message.null_value = 0
+          elif (field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM
+                and field.enum_type.full_name == 'google.protobuf.NullValue'):
+            setattr(message, field.name, 0)
           else:
             message.ClearField(field.name)
           continue

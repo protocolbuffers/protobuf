@@ -352,6 +352,7 @@ def _internal_gen_well_known_protos_java_impl(ctx):
         inputs = descriptors,
         outputs = [srcjar],
         arguments = [args],
+        use_default_shell_env = True,
     )
 
     return [

@@ -289,10 +289,6 @@ void GPBSetRetainedObjectIvarWithFieldPrivate(GPBMessage *self,
 id GPBGetObjectIvarWithFieldNoAutocreate(GPBMessage *self,
                                          GPBFieldDescriptor *field);
 
-void GPBSetAutocreatedRetainedObjectIvarWithField(
-    GPBMessage *self, GPBFieldDescriptor *field,
-    id __attribute__((ns_consumed)) value);
-
 // Clears and releases the autocreated message ivar, if it's autocreated. If
 // it's not set as autocreated, this method does nothing.
 void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
@@ -304,7 +300,7 @@ void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,
 const char *GPBMessageEncodingForSelector(SEL selector, BOOL instanceSel);
 
 // Helper for text format name encoding.
-// decodeData is the data describing the sepecial decodes.
+// decodeData is the data describing the special decodes.
 // key and inputString are the input that needs decoding.
 NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
                                   NSString *inputString);

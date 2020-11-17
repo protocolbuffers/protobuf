@@ -1371,7 +1371,7 @@ public:
    */
   std::string getFormattedErrorMessages() const;
 
-  /** \brief Returns a vector of structured errors encounted while parsing.
+  /** \brief Returns a vector of structured errors encountered while parsing.
    * \return A (possibly empty) vector of StructuredError objects. Currently
    *         only one error can be returned, but the caller should tolerate
    * multiple
@@ -1867,7 +1867,7 @@ private:
  *     - otherwise, it the values do not fit on one line, or the array contains
  *       object or non empty array, then print one value per line.
  *
- * If the Value have comments then they are outputed according to their
+ * If the Value have comments then they are outputted according to their
  *#CommentPlacement.
  *
  * \sa Reader, Value, Value::setComment()
@@ -1928,7 +1928,7 @@ private:
  *     - otherwise, it the values do not fit on one line, or the array contains
  *       object or non empty array, then print one value per line.
  *
- * If the Value have comments then they are outputed according to their
+ * If the Value have comments then they are outputted according to their
  #CommentPlacement.
  *
  * \param indentation Each level will be indented by this amount extra.

@@ -39,21 +39,21 @@ namespace objectivec {
 namespace {
 
 TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_RawStrings) {
-  string input_for_decode("abcdefghIJ");
-  string desired_output_for_decode;
-  string expected;
-  string result;
+  std::string input_for_decode("abcdefghIJ");
+  std::string desired_output_for_decode;
+  std::string expected;
+  std::string result;
 
   // Different data, can't transform.
 
   desired_output_for_decode = "zbcdefghIJ";
-  expected = string("\0zbcdefghIJ\0", 12);
+  expected = std::string("\0zbcdefghIJ\0", 12);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
 
   desired_output_for_decode = "abcdezghIJ";
-  expected = string("\0abcdezghIJ\0", 12);
+  expected = std::string("\0abcdezghIJ\0", 12);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
@@ -61,7 +61,7 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_RawStrings) {
   // Shortened data, can't transform.
 
   desired_output_for_decode = "abcdefghI";
-  expected = string("\0abcdefghI\0", 11);
+  expected = std::string("\0abcdefghI\0", 11);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
@@ -69,32 +69,32 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_RawStrings) {
   // Extra data, can't transform.
 
   desired_output_for_decode = "abcdefghIJz";
-  expected = string("\0abcdefghIJz\0", 13);
+  expected = std::string("\0abcdefghIJz\0", 13);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
 }
 
 TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
-  string input_for_decode("abcdefghIJ");
-  string desired_output_for_decode;
-  string expected;
-  string result;
+  std::string input_for_decode("abcdefghIJ");
+  std::string desired_output_for_decode;
+  std::string expected;
+  std::string result;
 
   desired_output_for_decode = "abcdefghIJ";
-  expected = string("\x0A\x0", 2);
+  expected = std::string("\x0A\x0", 2);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
 
   desired_output_for_decode = "_AbcdefghIJ";
-  expected = string("\xCA\x0", 2);
+  expected = std::string("\xCA\x0", 2);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
 
   desired_output_for_decode = "ABCD__EfghI_j";
-  expected = string("\x64\x80\xC5\xA1\x0", 5);
+  expected = std::string("\x64\x80\xC5\xA1\x0", 5);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
@@ -105,7 +105,7 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
       "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000";
   desired_output_for_decode =
       "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000";
-  expected = string("\x04\xA5\xA4\xA2\xBF\x1F\x0E\x84\x0", 9);
+  expected = std::string("\x04\xA5\xA4\xA2\xBF\x1F\x0E\x84\x0", 9);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
   EXPECT_EQ(expected, result);
@@ -128,7 +128,7 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_DecodeDataForString_Failures) {
 
   // Null char in the string.
 
-  string str_with_null_char("ab\0c", 4);
+  std::string str_with_null_char("ab\0c", 4);
   EXPECT_EXIT(
       TextFormatDecodeData::DecodeDataForString(str_with_null_char, "def"),
       ::testing::KilledBySignal(SIGABRT),
@@ -160,7 +160,7 @@ TEST(ObjCHelper, TextFormatDecodeData_RawStrings) {
       0x2, 0x0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 0x0,
       0x4, 0x0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 'J', 'z', 0x0,
   };
-  string expected((const char*)expected_data, sizeof(expected_data));
+  std::string expected((const char*)expected_data, sizeof(expected_data));
 
   EXPECT_EQ(expected, decode_data.Data());
 }
@@ -196,7 +196,7 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
       //   underscore, as is + 3 (00 op)
       0xE8, 0x07, 0x04, 0xA5, 0xA4, 0xA2, 0xBF, 0x1F, 0x0E, 0x84, 0x0,
   };
-  string expected((const char*)expected_data, sizeof(expected_data));
+  std::string expected((const char*)expected_data, sizeof(expected_data));
 
   EXPECT_EQ(expected, decode_data.Data());
 }
@@ -221,7 +221,7 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
 
   // Null char in the string.
 
-  string str_with_null_char("ab\0c", 4);
+  std::string str_with_null_char("ab\0c", 4);
   EXPECT_EXIT(
       decode_data.AddString(1, str_with_null_char, "def"),
       ::testing::KilledBySignal(SIGABRT),

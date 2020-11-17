@@ -152,7 +152,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       return false;
     }
 
-    // Whether we are currently renderring inside a JSON object (i.e., between
+    // Whether we are currently rendering inside a JSON object (i.e., between
     // StartObject() and EndObject()).
     bool is_json_object() const { return is_json_object_; }
 

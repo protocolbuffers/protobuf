@@ -160,6 +160,29 @@ TEST(MessageDifferencerTest, MapFieldEqualityTest) {
 
   // Compare
   EXPECT_TRUE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Get map entries by index will sync map to repeated field
+  MapTestUtil::GetMapEntries(msg1, 0);
+  EXPECT_TRUE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare values not match
+  (*msg1.mutable_map_int32_int32())[1] = 2;
+  (*msg2.mutable_map_int32_int32())[1] = 3;
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare keys not match
+  msg1.Clear();
+  msg2.Clear();
+  (*msg1.mutable_map_string_string())["1"] = "";
+  (*msg2.mutable_map_string_string())["2"] = "";
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare message values not match
+  msg1.Clear();
+  msg2.Clear();
+  (*msg1.mutable_map_int32_foreign_message())[1].set_c(1);
+  (*msg2.mutable_map_int32_foreign_message())[1].set_c(2);
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
 }
 
 TEST(MessageDifferencerTest, BasicPartialEqualityTest) {

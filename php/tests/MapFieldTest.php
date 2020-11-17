@@ -480,6 +480,35 @@ class MapFieldTest extends \PHPUnit\Framework\TestCase {
     }
 
     #########################################################
+    # Test equality
+    #########################################################
+
+    public function testEquality()
+    {
+        $map = new MapField(GPBType::INT32, GPBType::INT32);
+        $map2 = new MapField(GPBType::INT32, GPBType::INT32);
+
+        $this->assertTrue($map == $map2);
+
+        $map[1] = 2;
+
+        $this->assertFalse($map == $map2);
+
+        $map2[1] = 2;
+
+        $this->assertTrue($map == $map2);
+
+        // Arrays of different types always compare false.
+        $this->assertFalse(new MapField(GPBType::INT32, GPBType::INT32) ==
+                           new MapField(GPBType::INT32, GPBType::INT64));
+        $this->assertFalse(new MapField(GPBType::INT32, GPBType::INT32) ==
+                           new MapField(GPBType::INT64, GPBType::INT32));
+        $this->assertFalse(
+            new MapField(GPBType::INT32, GPBType::MESSAGE, TestMessage::class) ==
+            new MapField(GPBType::INT32, GPBType::MESSAGE, Sub::class));
+    }
+
+    #########################################################
     # Test memory leak
     #########################################################
 

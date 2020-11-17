@@ -772,13 +772,11 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/arena.h                                     \
   php/ext/google/protobuf/array.c                                     \
   php/ext/google/protobuf/array.h                                     \
-  php/ext/google/protobuf/bundled_php.h                               \
   php/ext/google/protobuf/config.m4                                   \
   php/ext/google/protobuf/convert.c                                   \
   php/ext/google/protobuf/convert.h                                   \
   php/ext/google/protobuf/def.c                                       \
   php/ext/google/protobuf/def.h                                       \
-  php/ext/google/protobuf/make-preload.php                            \
   php/ext/google/protobuf/map.c                                       \
   php/ext/google/protobuf/map.h                                       \
   php/ext/google/protobuf/message.c                                   \
@@ -790,8 +788,10 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/php-upb.h                                   \
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
+  php/ext/google/protobuf/wkt.inc                                     \
   php/generate_descriptor_protos.sh                                   \
   php/phpunit.xml                                                     \
+  php/prepare_c_extension.sh                                          \
   php/release.sh                                                      \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
   php/src/GPBMetadata/Google/Protobuf/Api.php                         \
@@ -827,6 +827,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/GPBEmpty.php                                \
   php/src/Google/Protobuf/Int32Value.php                              \
   php/src/Google/Protobuf/Int64Value.php                              \
+  php/src/Google/Protobuf/Internal/AnyBase.php                        \
   php/src/Google/Protobuf/Internal/CodedInputStream.php               \
   php/src/Google/Protobuf/Internal/CodedOutputStream.php              \
   php/src/Google/Protobuf/Internal/Descriptor.php                     \
@@ -886,6 +887,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/ServiceOptions.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo/Location.php        \
+  php/src/Google/Protobuf/Internal/TimestampBase.php                  \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php   \
   php/src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php \
@@ -916,23 +918,23 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/UInt64Value.php                             \
   php/src/Google/Protobuf/Value.php                                   \
   php/src/phpdoc.dist.xml                                             \
-  php/tests/array_test.php                                            \
+  php/tests/ArrayTest.php                                             \
   php/tests/autoload.php                                              \
   php/tests/bootstrap_phpunit.php                                     \
   php/tests/compatibility_test.sh                                     \
   php/tests/compile_extension.sh                                      \
-  php/tests/descriptors_test.php                                      \
-  php/tests/encode_decode_test.php                                    \
+  php/tests/DescriptorsTest.php                                       \
+  php/tests/EncodeDecodeTest.php                                      \
   php/tests/gdb_test.sh                                               \
   php/tests/generate_protos.sh                                        \
-  php/tests/generated_class_test.php                                  \
-  php/tests/generated_phpdoc_test.php                                 \
-  php/tests/generated_service_test.php                                \
-  php/tests/map_field_test.php                                        \
+  php/tests/GeneratedClassTest.php                                    \
+  php/tests/GeneratedPhpdocTest.php                                   \
+  php/tests/GeneratedServiceTest.php                                  \
+  php/tests/MapFieldTest.php                                          \
   php/tests/memory_leak_test.php                                      \
   php/tests/multirequest.php                                          \
   php/tests/multirequest.sh                                           \
-  php/tests/php_implementation_test.php                               \
+  php/tests/PhpImplementationTest.php                                 \
   php/tests/proto/empty/echo.proto                                    \
   php/tests/proto/test.proto                                          \
   php/tests/proto/test_descriptors.proto                              \
@@ -955,8 +957,9 @@ php_EXTRA_DIST=                                                       \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
   php/tests/undefined_test.php                                        \
-  php/tests/well_known_test.php                                       \
-  php/tests/wrapper_type_setters_test.php
+  php/tests/valgrind.supp                                             \
+  php/tests/WellKnownTest.php                                         \
+  php/tests/WrapperTypeSettersTest.php
 
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
@@ -1389,6 +1392,8 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   python/release/wheel/README.md         \
   third_party/six.BUILD                  \
   third_party/zlib.BUILD                 \
+  third_party/wyhash/LICENSE             \
+  third_party/wyhash/wyhash.h            \
   util/python/BUILD
 
 

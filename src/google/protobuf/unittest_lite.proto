@@ -49,6 +49,10 @@ message TestAllTypesLite {
     optional int64 cc = 2;
   }
 
+  message NestedMessage2 {
+    optional int32 dd = 1;
+  }
+
   enum NestedEnum {
     FOO = 1;
     BAR = 2;
@@ -163,6 +167,7 @@ message TestAllTypesLite {
     string oneof_string = 113;
     bytes oneof_bytes = 114;
     NestedMessage oneof_lazy_nested_message = 115 [lazy = true];
+    NestedMessage2 oneof_nested_message2 = 117;
   }
 
   // Tests toString for non-repeated fields with a list suffix

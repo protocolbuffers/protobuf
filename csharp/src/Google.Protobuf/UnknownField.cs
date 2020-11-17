@@ -209,13 +209,13 @@ namespace Google.Protobuf
         /// <summary>
         /// Returns a new list containing all of the given specified values from
         /// both the <paramref name="current"/> and <paramref name="extras"/> lists.
-        /// If <paramref name="current" /> is null and <paramref name="extras"/> is empty,
+        /// If <paramref name="current" /> is null and <paramref name="extras"/> is null or empty,
         /// null is returned. Otherwise, either a new list is created (if <paramref name="current" />
         /// is null) or the elements of <paramref name="extras"/> are added to <paramref name="current" />.
         /// </summary>
         private static List<T> AddAll<T>(List<T> current, IList<T> extras)
         {
-            if (extras.Count == 0)
+            if (extras == null || extras.Count == 0)
             {
                 return current;
             }

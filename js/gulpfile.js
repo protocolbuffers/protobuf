@@ -71,13 +71,16 @@ gulp.task('genproto_group1_closure', function (cb) {
   });
 });
 
-gulp.task('genproto_group2_closure', function (cb) {
-  exec(protoc + ' --experimental_allow_proto3_optional --js_out=library=testproto_libs2,binary:.  -I ../src -I . -I commonjs ' + group2Protos.join(' '),
-       function (err, stdout, stderr) {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
+gulp.task('genproto_group2_closure', function(cb) {
+  exec(
+      protoc +
+          ' --experimental_allow_proto3_optional --js_out=library=testproto_libs2,binary:.  -I ../src -I . -I commonjs ' +
+          group2Protos.join(' '),
+      function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
+      });
 });
 
 gulp.task('genproto_well_known_types_commonjs', function (cb) {
@@ -98,13 +101,16 @@ gulp.task('genproto_group1_commonjs', function (cb) {
   });
 });
 
-gulp.task('genproto_group2_commonjs', function (cb) {
-  exec('mkdir -p commonjs_out && ' + protoc + ' --experimental_allow_proto3_optional --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . ' + group2Protos.join(' '),
-       function (err, stdout, stderr) {
-    console.log(stdout);
-    console.log(stderr);
-    cb(err);
-  });
+gulp.task('genproto_group2_commonjs', function(cb) {
+  exec(
+      'mkdir -p commonjs_out && ' + protoc +
+          ' --experimental_allow_proto3_optional --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . ' +
+          group2Protos.join(' '),
+      function(err, stdout, stderr) {
+        console.log(stdout);
+        console.log(stderr);
+        cb(err);
+      });
 });
 
 gulp.task('genproto_commonjs_wellknowntypes', function (cb) {

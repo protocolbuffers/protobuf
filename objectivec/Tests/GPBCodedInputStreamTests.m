@@ -422,7 +422,7 @@
 - (void)testBOMWithinStrings {
   // We've seen servers that end up with BOMs within strings (not always at the
   // start, and sometimes in multiple places), make sure they always parse
-  // correctly. (Again, this is inpart incase a custom string class is ever
+  // correctly. (Again, this is inpart in case a custom string class is ever
   // used again.)
   const char* strs[] = {
     "\xEF\xBB\xBF String with BOM",

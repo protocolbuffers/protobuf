@@ -58,4 +58,9 @@ upb_array *RepeatedField_GetUpbArray(zval *val, const upb_fielddef *f, upb_arena
 void RepeatedField_GetPhpWrapper(zval *val, upb_array *arr,
                                  const upb_fielddef *f, zval *arena);
 
+// Returns true if the given arrays are equal. Both arrays must be of this
+// |type| and, if the type is |UPB_TYPE_MESSAGE|, must have the same |m|.
+bool ArrayEq(const upb_array *a1, const upb_array *a2, upb_fieldtype_t type,
+             const upb_msgdef *m);
+
 #endif  // PHP_PROTOBUF_ARRAY_H_

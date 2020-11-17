@@ -108,7 +108,7 @@ class DescriptorsTest extends TestBase
 
     public function testEnumDescriptor()
     {
-        // WARNINIG - we need to do this so that TestDescriptorsEnum is registered!!?
+        // WARNING - we need to do this so that TestDescriptorsEnum is registered!!?
         new TestDescriptorsMessage();
 
         $pool = DescriptorPool::getGeneratedPool();

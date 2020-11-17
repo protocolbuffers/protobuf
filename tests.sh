@@ -64,7 +64,7 @@ build_cpp_distcheck() {
   git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
     grep -v ".gitignore" | grep -v "java/compatibility_tests" | grep -v "java/lite/proguard.pgcfg" |\
     grep -v "python/compatibility_tests" | grep -v "python/docs" | grep -v "python/.repo-metadata.json" |\
-    grep -v "csharp/compatibility_tests" > dist.lst
+    grep -v "python/protobuf_distutils" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
   DIST=`ls *.tar.gz`
   tar -xf $DIST
@@ -314,9 +314,9 @@ build_python() {
   if [ $(uname -s) == "Linux" ]; then
     envlist=py\{27,33,34,35,36\}-python
   else
-    envlist=py27-python
+    envlist=py\{27,36\}-python
   fi
-  tox -e $envlist
+  python -m tox -e $envlist
   cd ..
 }
 
@@ -324,7 +324,7 @@ build_python_version() {
   internal_build_cpp
   cd python
   envlist=$1
-  tox -e $envlist
+  python -m tox -e $envlist
   cd ..
 }
 
@@ -364,7 +364,7 @@ build_python_cpp() {
   if [ $(uname -s) == "Linux" ]; then
     envlist=py\{27,33,34,35,36\}-cpp
   else
-    envlist=py27-cpp
+    envlist=py\{27,36\}-cpp
   fi
   tox -e $envlist
   cd ..
@@ -467,45 +467,6 @@ use_php_zts() {
   internal_build_cpp
 }
 
-build_php5.5() {
-  use_php 5.5
-
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
-}
-
-build_php5.6() {
-  use_php 5.6
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
-}
-
-build_php5.6_mac() {
-  # Install PHP
-  curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
-  PHP_FOLDER=`find /usr/local -type d -name "php5-5.6*"`  # The folder name may change upon time
-  test ! -z "$PHP_FOLDER"
-  export PATH="$PHP_FOLDER/bin:$PATH"
-
-  internal_build_cpp
-
-  # Run pure-PHP tests only.
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
-}
-
 build_php7.0() {
   use_php 7.0
   pushd php
@@ -517,16 +478,10 @@ build_php7.0() {
 }
 
 build_php7.0_c() {
-  IS_64BIT=$1
   use_php 7.0
   php/tests/test.sh
   pushd conformance
-  if [ "$IS_64BIT" = "true" ]
-  then
-    make test_php_c
-  else
-    make test_php_c_32
-  fi
+  make test_php_c
   popd
 }
 
@@ -542,16 +497,10 @@ build_php7.0_mixed() {
 }
 
 build_php7.0_zts_c() {
-  IS_64BIT=$1
   use_php_zts 7.0
   php/tests/test.sh
   pushd conformance
-  if [ "$IS_64BIT" = "true" ]
-  then
-    make test_php_c
-  else
-    make test_php_c_32
-  fi
+  make test_php_c
   popd
 }
 
@@ -614,16 +563,10 @@ build_php7.1() {
 }
 
 build_php7.1_c() {
-  IS_64BIT=$1
   use_php 7.1
   php/tests/test.sh
   pushd conformance
-  if [ "$IS_64BIT" = "true" ]
-  then
-    make test_php_c
-  else
-    make test_php_c_32
-  fi
+  make test_php_c
   popd
 }
 
@@ -639,16 +582,10 @@ build_php7.1_mixed() {
 }
 
 build_php7.1_zts_c() {
-  IS_64BIT=$1
   use_php_zts 7.1
   php/tests/test.sh
   pushd conformance
-  if [ "$IS_64BIT" = "true" ]
-  then
-    make test_php_c
-  else
-    make test_php_c_32
-  fi
+  make test_php_c
   popd
 }
 
@@ -663,16 +600,10 @@ build_php7.4() {
 }
 
 build_php7.4_c() {
-  IS_64BIT=$1
   use_php 7.4
   php/tests/test.sh
   pushd conformance
-  if [ "$IS_64BIT" = "true" ]
-  then
-    make test_php_c
-  else
-    make test_php_c_32
-  fi
+  make test_php_c
   popd
 }
 
@@ -688,22 +619,53 @@ build_php7.4_mixed() {
 }
 
 build_php7.4_zts_c() {
-  IS_64BIT=$1
   use_php_zts 7.4
   php/tests/test.sh
   pushd conformance
-  if [ "$IS_64BIT" = "true" ]
-  then
-    make test_php_c
-  else
-    make test_php_c_32
-  fi
+  make test_php_c
   popd
 }
 
+build_php8.0() {
+  use_php 8.0
+  pushd php
+  rm -rf vendor
+  composer update
+  composer test
+  popd
+  (cd conformance && make test_php)
+}
+
+build_php8.0_c() {
+  use_php 8.0
+  php/tests/test.sh
+  pushd conformance
+  make test_php_c
+  popd
+}
+
+build_php8.0_c_64() {
+  build_php8.0_c true
+}
+
+build_php8.0_mixed() {
+  use_php 8.0
+  pushd php
+  rm -rf vendor
+  composer update
+  tests/compile_extension.sh
+  tests/generate_protos.sh
+  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
+  popd
+}
+
+build_php8.0_all() {
+  build_php8.0
+  build_php8.0_c_64
+  build_php8.0_mixed
+}
+
 build_php_all_32() {
-  build_php5.5
-  build_php5.6
   build_php7.0
   build_php7.1
   build_php7.4
@@ -758,8 +720,6 @@ Usage: $0 { cpp |
             ruby27 |
             jruby |
             ruby_all |
-            php5.5   |
-            php5.6   |
             php7.0   |
             php7.0_c |
             php_compatibility |

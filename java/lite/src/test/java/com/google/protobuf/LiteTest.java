@@ -42,6 +42,7 @@ import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.NestedEnum;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.NestedMessage;
+import com.google.protobuf.UnittestLite.TestAllTypesLite.NestedMessage2;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.OneofFieldCase;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.OptionalGroup;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.RepeatedGroup;
@@ -1352,6 +1353,45 @@ public class LiteTest extends TestCase {
     builder.mergeFrom(message.toByteArray());
     NestedMessage result = builder.build();
     assertEquals(message.getSerializedSize() * 2, result.getSerializedSize());
+  }
+
+  public void testMergeFrom_differentFieldsSetWithinOneField() throws Exception {
+    TestAllTypesLite result =
+        TestAllTypesLite.newBuilder()
+            .setOneofNestedMessage(NestedMessage.newBuilder().setBb(2))
+            .mergeFrom(
+                TestAllTypesLite.newBuilder()
+                    .setOneofNestedMessage2(NestedMessage2.newBuilder().setDd(3))
+                    .build())
+            .build();
+
+    assertToStringEquals("oneof_nested_message2 {\n  dd: 3\n}", result);
+  }
+
+  public void testMergeFrom_differentFieldsOfSameTypeSetWithinOneField() throws Exception {
+    TestAllTypesLite result =
+        TestAllTypesLite.newBuilder()
+            .setOneofNestedMessage(NestedMessage.newBuilder().setBb(2))
+            .mergeFrom(
+                TestAllTypesLite.newBuilder()
+                    .setOneofLazyNestedMessage(NestedMessage.newBuilder().setCc(3))
+                    .build())
+            .build();
+
+    assertToStringEquals("oneof_lazy_nested_message {\n  cc: 3\n}", result);
+  }
+
+  public void testMergeFrom_sameFieldSetWithinOneofField() throws Exception {
+    TestAllTypesLite result =
+        TestAllTypesLite.newBuilder()
+            .setOneofNestedMessage(NestedMessage.newBuilder().setBb(2))
+            .mergeFrom(
+                TestAllTypesLite.newBuilder()
+                    .setOneofNestedMessage(NestedMessage.newBuilder().setCc(4))
+                    .build())
+            .build();
+
+    assertToStringEquals("oneof_nested_message {\n  bb: 2\n  cc: 4\n}", result);
   }
 
   public void testToStringDefaultInstance() throws Exception {

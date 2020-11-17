@@ -11,7 +11,10 @@ function run_install_test() {
   local PYTHON=$2
   local PYPI=$3
 
-  virtualenv --no-site-packages -p `which $PYTHON` test-venv
+  # Setuptools 45.0 removed support for Python 2, so to test with Python 2 we
+  # pass --no-setuptools here and then install an older setuptools version
+  # below.
+  virtualenv -p `which $PYTHON` --no-setuptools test-venv
 
   # Intentionally put a broken protoc in the path to make sure installation
   # doesn't require protoc installed.
@@ -19,6 +22,7 @@ function run_install_test() {
   chmod +x test-venv/bin/protoc
 
   source test-venv/bin/activate
+  pip install "setuptools<45"
   pip install -i ${PYPI} protobuf==${VERSION} --no-cache-dir
   deactivate
   rm -fr test-venv
@@ -76,11 +80,11 @@ fi
 cd python
 
 # Run tests locally.
-python setup.py build
-python setup.py test
+python3 setup.py build
+python3 setup.py test
 
 # Deploy source package to testing PyPI
-python setup.py sdist
+python3 setup.py sdist
 twine upload --skip-existing -r testpypi -u protobuf-wheel-test dist/*
 
 # Test locally with different python versions.
@@ -88,7 +92,7 @@ run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
 run_install_test ${TESTING_VERSION} python3 https://test.pypi.org/simple
 
 # Deploy egg/wheel packages to testing PyPI and test again.
-python setup.py clean build bdist_wheel
+python3 setup.py clean build bdist_wheel
 twine upload --skip-existing -r testpypi -u protobuf-wheel-test dist/*
 
 run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
@@ -105,14 +109,14 @@ if [ $TESTING_ONLY -eq 0 ]; then
   echo "Publishing to PyPI..."
   # Be sure to run build before sdist, because otherwise sdist will not include
   # well-known types.
-  python setup.py clean build sdist
+  python3 setup.py clean build sdist
   twine upload --skip-existing -u protobuf-packages dist/*
   # Be sure to run clean before bdist_xxx, because otherwise bdist_xxx will
   # include files you may not want in the package. E.g., if you have built
   # and tested with --cpp_implemenation, bdist_xxx will include the _message.so
   # file even when you no longer pass the --cpp_implemenation flag. See:
   #   https://github.com/protocolbuffers/protobuf/issues/3042
-  python setup.py clean build bdist_wheel
+  python3 setup.py clean build bdist_wheel
   twine upload --skip-existing -u protobuf-packages dist/*
 else
   # Set the version number back (i.e., remove dev suffix).

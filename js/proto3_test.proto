@@ -30,9 +30,9 @@
 
 syntax = "proto3";
 
-import "testbinary.proto";
-
 package jspb.test;
+
+import "testbinary.proto";
 
 message TestProto3 {
   int32 singular_int32 = 1;
@@ -71,7 +71,7 @@ message TestProto3 {
   optional bytes optional_bytes = 135;
 
   optional ForeignMessage optional_foreign_message = 136;
-  optional Proto3Enum optional_foreign_enum =137;
+  optional Proto3Enum optional_foreign_enum = 137;
 
   repeated int32 repeated_int32 = 31;
   repeated int64 repeated_int64 = 32;
@@ -91,7 +91,6 @@ message TestProto3 {
 
   repeated ForeignMessage repeated_foreign_message = 49;
   repeated Proto3Enum repeated_foreign_enum = 52;
-
 
   oneof oneof_field {
     uint32 oneof_uint32 = 111;

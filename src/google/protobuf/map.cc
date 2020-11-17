@@ -28,19 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef PHP_PROTOBUF_BUNDLED_PHP_H_
-#define PHP_PROTOBUF_BUNDLED_PHP_H_
+#include <google/protobuf/map.h>
 
-// We embed PHP source code into the binary for things we don't want to
-// implement in C. This struct serves as a table of contents for all of
-// the embedded files.
-typedef struct {
-  const char *filename;
-  const char *contents;
-} BundledPhp_File;
+namespace google {
+namespace protobuf {
+namespace internal {
 
-// An array of all the embedded file structs. This array is terminated with a
-// {NULL, NULL} entry.
-extern BundledPhp_File *bundled_files;
+void* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {nullptr};
 
-#endif  // PHP_PROTOBUF_BUNDLED_PHP_H_
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google

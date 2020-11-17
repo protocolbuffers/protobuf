@@ -84,7 +84,7 @@ class NoHeapChecker {
  private:
   class NewDeleteCapture {
    public:
-    // TOOD(xiaofeng): Implement this for opensource protobuf.
+    // TODO(xiaofeng): Implement this for opensource protobuf.
     void Hook() {}
     void Unhook() {}
     int alloc_count() { return 0; }

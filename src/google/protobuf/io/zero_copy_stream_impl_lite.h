@@ -150,7 +150,7 @@ class PROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   int64_t ByteCount() const override;
 
  private:
-  static const int kMinimumSize = 16;
+  static constexpr size_t kMinimumSize = 16;
 
   std::string* target_;
 
@@ -307,6 +307,8 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
   bool Next(void** data, int* size) override;
   void BackUp(int count) override;
   int64_t ByteCount() const override;
+  bool WriteAliasedRaw(const void* data, int size) override;
+  bool AllowsAliasing() const override { return true; }
 
  private:
   // Write the current buffer, if it is present.

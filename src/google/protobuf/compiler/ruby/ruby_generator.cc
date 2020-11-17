@@ -413,7 +413,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
 
     // If :: is in the package use the Ruby formatted name as-is
     //    -> A::B::C
-    // otherwise, use the dot seperator
+    // otherwise, use the dot separator
     //    -> A.B.C
     if (package_name.find("::") != std::string::npos) {
       need_change_to_module = false;

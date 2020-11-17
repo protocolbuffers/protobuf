@@ -227,7 +227,8 @@ class _NestedDescriptorBase(DescriptorBase):
       proto: An empty proto instance from descriptor_pb2.
 
     Raises:
-      Error: If self couldnt be serialized, due to to few constructor arguments.
+      Error: If self couldn't be serialized, due to to few constructor
+        arguments.
     """
     if (self.file is not None and
         self._serialized_start is not None and
@@ -827,7 +828,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
     Args:
       name (str): Name of the method.
     Returns:
-      MethodDescriptor or None: the desctiptor for the requested method, if
+      MethodDescriptor or None: the descriptor for the requested method, if
       found.
     """
     return self.methods_by_name.get(name, None)

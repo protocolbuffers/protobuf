@@ -29,7 +29,7 @@ namespace ProtobufTestMessages.Proto3 {
             "dWYvYW55LnByb3RvGh5nb29nbGUvcHJvdG9idWYvZHVyYXRpb24ucHJvdG8a",
             "IGdvb2dsZS9wcm90b2J1Zi9maWVsZF9tYXNrLnByb3RvGhxnb29nbGUvcHJv",
             "dG9idWYvc3RydWN0LnByb3RvGh9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1w",
-            "LnByb3RvGh5nb29nbGUvcHJvdG9idWYvd3JhcHBlcnMucHJvdG8iv0QKElRl",
+            "LnByb3RvGh5nb29nbGUvcHJvdG9idWYvd3JhcHBlcnMucHJvdG8isUUKElRl",
             "c3RBbGxUeXBlc1Byb3RvMxIWCg5vcHRpb25hbF9pbnQzMhgBIAEoBRIWCg5v",
             "cHRpb25hbF9pbnQ2NBgCIAEoAxIXCg9vcHRpb25hbF91aW50MzIYAyABKA0S",
             "FwoPb3B0aW9uYWxfdWludDY0GAQgASgEEhcKD29wdGlvbmFsX3NpbnQzMhgF",
@@ -140,99 +140,101 @@ namespace ProtobufTestMessages.Proto3 {
             "IAEoBEgAEhUKC29uZW9mX2Zsb2F0GHUgASgCSAASFgoMb25lb2ZfZG91Ymxl",
             "GHYgASgBSAASUgoKb25lb2ZfZW51bRh3IAEoDjI8LnByb3RvYnVmX3Rlc3Rf",
             "bWVzc2FnZXMucHJvdG8zLlRlc3RBbGxUeXBlc1Byb3RvMy5OZXN0ZWRFbnVt",
-            "SAASOgoVb3B0aW9uYWxfYm9vbF93cmFwcGVyGMkBIAEoCzIaLmdvb2dsZS5w",
-            "cm90b2J1Zi5Cb29sVmFsdWUSPAoWb3B0aW9uYWxfaW50MzJfd3JhcHBlchjK",
-            "ASABKAsyGy5nb29nbGUucHJvdG9idWYuSW50MzJWYWx1ZRI8ChZvcHRpb25h",
-            "bF9pbnQ2NF93cmFwcGVyGMsBIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQ2",
-            "NFZhbHVlEj4KF29wdGlvbmFsX3VpbnQzMl93cmFwcGVyGMwBIAEoCzIcLmdv",
-            "b2dsZS5wcm90b2J1Zi5VSW50MzJWYWx1ZRI+ChdvcHRpb25hbF91aW50NjRf",
-            "d3JhcHBlchjNASABKAsyHC5nb29nbGUucHJvdG9idWYuVUludDY0VmFsdWUS",
-            "PAoWb3B0aW9uYWxfZmxvYXRfd3JhcHBlchjOASABKAsyGy5nb29nbGUucHJv",
-            "dG9idWYuRmxvYXRWYWx1ZRI+ChdvcHRpb25hbF9kb3VibGVfd3JhcHBlchjP",
-            "ASABKAsyHC5nb29nbGUucHJvdG9idWYuRG91YmxlVmFsdWUSPgoXb3B0aW9u",
-            "YWxfc3RyaW5nX3dyYXBwZXIY0AEgASgLMhwuZ29vZ2xlLnByb3RvYnVmLlN0",
-            "cmluZ1ZhbHVlEjwKFm9wdGlvbmFsX2J5dGVzX3dyYXBwZXIY0QEgASgLMhsu",
-            "Z29vZ2xlLnByb3RvYnVmLkJ5dGVzVmFsdWUSOgoVcmVwZWF0ZWRfYm9vbF93",
-            "cmFwcGVyGNMBIAMoCzIaLmdvb2dsZS5wcm90b2J1Zi5Cb29sVmFsdWUSPAoW",
-            "cmVwZWF0ZWRfaW50MzJfd3JhcHBlchjUASADKAsyGy5nb29nbGUucHJvdG9i",
-            "dWYuSW50MzJWYWx1ZRI8ChZyZXBlYXRlZF9pbnQ2NF93cmFwcGVyGNUBIAMo",
-            "CzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQ2NFZhbHVlEj4KF3JlcGVhdGVkX3Vp",
-            "bnQzMl93cmFwcGVyGNYBIAMoCzIcLmdvb2dsZS5wcm90b2J1Zi5VSW50MzJW",
-            "YWx1ZRI+ChdyZXBlYXRlZF91aW50NjRfd3JhcHBlchjXASADKAsyHC5nb29n",
-            "bGUucHJvdG9idWYuVUludDY0VmFsdWUSPAoWcmVwZWF0ZWRfZmxvYXRfd3Jh",
-            "cHBlchjYASADKAsyGy5nb29nbGUucHJvdG9idWYuRmxvYXRWYWx1ZRI+Chdy",
-            "ZXBlYXRlZF9kb3VibGVfd3JhcHBlchjZASADKAsyHC5nb29nbGUucHJvdG9i",
-            "dWYuRG91YmxlVmFsdWUSPgoXcmVwZWF0ZWRfc3RyaW5nX3dyYXBwZXIY2gEg",
-            "AygLMhwuZ29vZ2xlLnByb3RvYnVmLlN0cmluZ1ZhbHVlEjwKFnJlcGVhdGVk",
-            "X2J5dGVzX3dyYXBwZXIY2wEgAygLMhsuZ29vZ2xlLnByb3RvYnVmLkJ5dGVz",
-            "VmFsdWUSNQoRb3B0aW9uYWxfZHVyYXRpb24YrQIgASgLMhkuZ29vZ2xlLnBy",
-            "b3RvYnVmLkR1cmF0aW9uEjcKEm9wdGlvbmFsX3RpbWVzdGFtcBiuAiABKAsy",
-            "Gi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjgKE29wdGlvbmFsX2ZpZWxk",
-            "X21hc2sYrwIgASgLMhouZ29vZ2xlLnByb3RvYnVmLkZpZWxkTWFzaxIxCg9v",
-            "cHRpb25hbF9zdHJ1Y3QYsAIgASgLMhcuZ29vZ2xlLnByb3RvYnVmLlN0cnVj",
-            "dBIrCgxvcHRpb25hbF9hbnkYsQIgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFu",
-            "eRIvCg5vcHRpb25hbF92YWx1ZRiyAiABKAsyFi5nb29nbGUucHJvdG9idWYu",
-            "VmFsdWUSNQoRcmVwZWF0ZWRfZHVyYXRpb24YtwIgAygLMhkuZ29vZ2xlLnBy",
-            "b3RvYnVmLkR1cmF0aW9uEjcKEnJlcGVhdGVkX3RpbWVzdGFtcBi4AiADKAsy",
-            "Gi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjcKEnJlcGVhdGVkX2ZpZWxk",
-            "bWFzaxi5AiADKAsyGi5nb29nbGUucHJvdG9idWYuRmllbGRNYXNrEjEKD3Jl",
-            "cGVhdGVkX3N0cnVjdBjEAiADKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0",
-            "EisKDHJlcGVhdGVkX2FueRi7AiADKAsyFC5nb29nbGUucHJvdG9idWYuQW55",
-            "Ei8KDnJlcGVhdGVkX3ZhbHVlGLwCIAMoCzIWLmdvb2dsZS5wcm90b2J1Zi5W",
-            "YWx1ZRI4ChNyZXBlYXRlZF9saXN0X3ZhbHVlGL0CIAMoCzIaLmdvb2dsZS5w",
-            "cm90b2J1Zi5MaXN0VmFsdWUSEwoKZmllbGRuYW1lMRiRAyABKAUSFAoLZmll",
-            "bGRfbmFtZTIYkgMgASgFEhUKDF9maWVsZF9uYW1lMxiTAyABKAUSFgoNZmll",
-            "bGRfX25hbWU0XxiUAyABKAUSFAoLZmllbGQwbmFtZTUYlQMgASgFEhYKDWZp",
-            "ZWxkXzBfbmFtZTYYlgMgASgFEhMKCmZpZWxkTmFtZTcYlwMgASgFEhMKCkZp",
-            "ZWxkTmFtZTgYmAMgASgFEhQKC2ZpZWxkX05hbWU5GJkDIAEoBRIVCgxGaWVs",
-            "ZF9OYW1lMTAYmgMgASgFEhUKDEZJRUxEX05BTUUxMRibAyABKAUSFQoMRklF",
-            "TERfbmFtZTEyGJwDIAEoBRIXCg5fX2ZpZWxkX25hbWUxMxidAyABKAUSFwoO",
-            "X19GaWVsZF9uYW1lMTQYngMgASgFEhYKDWZpZWxkX19uYW1lMTUYnwMgASgF",
-            "EhYKDWZpZWxkX19OYW1lMTYYoAMgASgFEhcKDmZpZWxkX25hbWUxN19fGKED",
-            "IAEoBRIXCg5GaWVsZF9uYW1lMThfXxiiAyABKAUaYgoNTmVzdGVkTWVzc2Fn",
-            "ZRIJCgFhGAEgASgFEkYKC2NvcmVjdXJzaXZlGAIgASgLMjEucHJvdG9idWZf",
-            "dGVzdF9tZXNzYWdlcy5wcm90bzMuVGVzdEFsbFR5cGVzUHJvdG8zGjQKEk1h",
-            "cEludDMySW50MzJFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6",
-            "AjgBGjQKEk1hcEludDY0SW50NjRFbnRyeRILCgNrZXkYASABKAMSDQoFdmFs",
-            "dWUYAiABKAM6AjgBGjYKFE1hcFVpbnQzMlVpbnQzMkVudHJ5EgsKA2tleRgB",
-            "IAEoDRINCgV2YWx1ZRgCIAEoDToCOAEaNgoUTWFwVWludDY0VWludDY0RW50",
-            "cnkSCwoDa2V5GAEgASgEEg0KBXZhbHVlGAIgASgEOgI4ARo2ChRNYXBTaW50",
-            "MzJTaW50MzJFbnRyeRILCgNrZXkYASABKBESDQoFdmFsdWUYAiABKBE6AjgB",
-            "GjYKFE1hcFNpbnQ2NFNpbnQ2NEVudHJ5EgsKA2tleRgBIAEoEhINCgV2YWx1",
-            "ZRgCIAEoEjoCOAEaOAoWTWFwRml4ZWQzMkZpeGVkMzJFbnRyeRILCgNrZXkY",
-            "ASABKAcSDQoFdmFsdWUYAiABKAc6AjgBGjgKFk1hcEZpeGVkNjRGaXhlZDY0",
-            "RW50cnkSCwoDa2V5GAEgASgGEg0KBXZhbHVlGAIgASgGOgI4ARo6ChhNYXBT",
-            "Zml4ZWQzMlNmaXhlZDMyRW50cnkSCwoDa2V5GAEgASgPEg0KBXZhbHVlGAIg",
-            "ASgPOgI4ARo6ChhNYXBTZml4ZWQ2NFNmaXhlZDY0RW50cnkSCwoDa2V5GAEg",
-            "ASgQEg0KBXZhbHVlGAIgASgQOgI4ARo0ChJNYXBJbnQzMkZsb2F0RW50cnkS",
-            "CwoDa2V5GAEgASgFEg0KBXZhbHVlGAIgASgCOgI4ARo1ChNNYXBJbnQzMkRv",
-            "dWJsZUVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoAToCOAEaMgoQ",
-            "TWFwQm9vbEJvb2xFbnRyeRILCgNrZXkYASABKAgSDQoFdmFsdWUYAiABKAg6",
-            "AjgBGjYKFE1hcFN0cmluZ1N0cmluZ0VudHJ5EgsKA2tleRgBIAEoCRINCgV2",
-            "YWx1ZRgCIAEoCToCOAEaNQoTTWFwU3RyaW5nQnl0ZXNFbnRyeRILCgNrZXkY",
-            "ASABKAkSDQoFdmFsdWUYAiABKAw6AjgBGn4KG01hcFN0cmluZ05lc3RlZE1l",
-            "c3NhZ2VFbnRyeRILCgNrZXkYASABKAkSTgoFdmFsdWUYAiABKAsyPy5wcm90",
-            "b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMy5UZXN0QWxsVHlwZXNQcm90bzMu",
-            "TmVzdGVkTWVzc2FnZToCOAEabQocTWFwU3RyaW5nRm9yZWlnbk1lc3NhZ2VF",
-            "bnRyeRILCgNrZXkYASABKAkSPAoFdmFsdWUYAiABKAsyLS5wcm90b2J1Zl90",
-            "ZXN0X21lc3NhZ2VzLnByb3RvMy5Gb3JlaWduTWVzc2FnZToCOAEaeAoYTWFw",
-            "U3RyaW5nTmVzdGVkRW51bUVudHJ5EgsKA2tleRgBIAEoCRJLCgV2YWx1ZRgC",
-            "IAEoDjI8LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8zLlRlc3RBbGxU",
-            "eXBlc1Byb3RvMy5OZXN0ZWRFbnVtOgI4ARpnChlNYXBTdHJpbmdGb3JlaWdu",
-            "RW51bUVudHJ5EgsKA2tleRgBIAEoCRI5CgV2YWx1ZRgCIAEoDjIqLnByb3Rv",
-            "YnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8zLkZvcmVpZ25FbnVtOgI4ASI5CgpO",
-            "ZXN0ZWRFbnVtEgcKA0ZPTxAAEgcKA0JBUhABEgcKA0JBWhACEhAKA05FRxD/",
-            "//////////8BIlkKC0FsaWFzZWRFbnVtEg0KCUFMSUFTX0ZPTxAAEg0KCUFM",
-            "SUFTX0JBUhABEg0KCUFMSUFTX0JBWhACEgcKA1FVWBACEgcKA3F1eBACEgcK",
-            "A2JBehACGgIQAUINCgtvbmVvZl9maWVsZEoGCPUDEP8DIhsKDkZvcmVpZ25N",
-            "ZXNzYWdlEgkKAWMYASABKAUqQAoLRm9yZWlnbkVudW0SDwoLRk9SRUlHTl9G",
-            "T08QABIPCgtGT1JFSUdOX0JBUhABEg8KC0ZPUkVJR05fQkFaEAJCOAooY29t",
-            "Lmdvb2dsZS5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvM0gB+AEBogIG",
-            "UHJvdG8zYgZwcm90bzM="));
+            "SAASNgoQb25lb2ZfbnVsbF92YWx1ZRh4IAEoDjIaLmdvb2dsZS5wcm90b2J1",
+            "Zi5OdWxsVmFsdWVIABI6ChVvcHRpb25hbF9ib29sX3dyYXBwZXIYyQEgASgL",
+            "MhouZ29vZ2xlLnByb3RvYnVmLkJvb2xWYWx1ZRI8ChZvcHRpb25hbF9pbnQz",
+            "Ml93cmFwcGVyGMoBIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQzMlZhbHVl",
+            "EjwKFm9wdGlvbmFsX2ludDY0X3dyYXBwZXIYywEgASgLMhsuZ29vZ2xlLnBy",
+            "b3RvYnVmLkludDY0VmFsdWUSPgoXb3B0aW9uYWxfdWludDMyX3dyYXBwZXIY",
+            "zAEgASgLMhwuZ29vZ2xlLnByb3RvYnVmLlVJbnQzMlZhbHVlEj4KF29wdGlv",
+            "bmFsX3VpbnQ2NF93cmFwcGVyGM0BIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5V",
+            "SW50NjRWYWx1ZRI8ChZvcHRpb25hbF9mbG9hdF93cmFwcGVyGM4BIAEoCzIb",
+            "Lmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEj4KF29wdGlvbmFsX2RvdWJs",
+            "ZV93cmFwcGVyGM8BIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5Eb3VibGVWYWx1",
+            "ZRI+ChdvcHRpb25hbF9zdHJpbmdfd3JhcHBlchjQASABKAsyHC5nb29nbGUu",
+            "cHJvdG9idWYuU3RyaW5nVmFsdWUSPAoWb3B0aW9uYWxfYnl0ZXNfd3JhcHBl",
+            "chjRASABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZRI6ChVyZXBl",
+            "YXRlZF9ib29sX3dyYXBwZXIY0wEgAygLMhouZ29vZ2xlLnByb3RvYnVmLkJv",
+            "b2xWYWx1ZRI8ChZyZXBlYXRlZF9pbnQzMl93cmFwcGVyGNQBIAMoCzIbLmdv",
+            "b2dsZS5wcm90b2J1Zi5JbnQzMlZhbHVlEjwKFnJlcGVhdGVkX2ludDY0X3dy",
+            "YXBwZXIY1QEgAygLMhsuZ29vZ2xlLnByb3RvYnVmLkludDY0VmFsdWUSPgoX",
+            "cmVwZWF0ZWRfdWludDMyX3dyYXBwZXIY1gEgAygLMhwuZ29vZ2xlLnByb3Rv",
+            "YnVmLlVJbnQzMlZhbHVlEj4KF3JlcGVhdGVkX3VpbnQ2NF93cmFwcGVyGNcB",
+            "IAMoCzIcLmdvb2dsZS5wcm90b2J1Zi5VSW50NjRWYWx1ZRI8ChZyZXBlYXRl",
+            "ZF9mbG9hdF93cmFwcGVyGNgBIAMoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9h",
+            "dFZhbHVlEj4KF3JlcGVhdGVkX2RvdWJsZV93cmFwcGVyGNkBIAMoCzIcLmdv",
+            "b2dsZS5wcm90b2J1Zi5Eb3VibGVWYWx1ZRI+ChdyZXBlYXRlZF9zdHJpbmdf",
+            "d3JhcHBlchjaASADKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUS",
+            "PAoWcmVwZWF0ZWRfYnl0ZXNfd3JhcHBlchjbASADKAsyGy5nb29nbGUucHJv",
+            "dG9idWYuQnl0ZXNWYWx1ZRI1ChFvcHRpb25hbF9kdXJhdGlvbhitAiABKAsy",
+            "GS5nb29nbGUucHJvdG9idWYuRHVyYXRpb24SNwoSb3B0aW9uYWxfdGltZXN0",
+            "YW1wGK4CIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASOAoTb3B0",
+            "aW9uYWxfZmllbGRfbWFzaxivAiABKAsyGi5nb29nbGUucHJvdG9idWYuRmll",
+            "bGRNYXNrEjEKD29wdGlvbmFsX3N0cnVjdBiwAiABKAsyFy5nb29nbGUucHJv",
+            "dG9idWYuU3RydWN0EisKDG9wdGlvbmFsX2FueRixAiABKAsyFC5nb29nbGUu",
+            "cHJvdG9idWYuQW55Ei8KDm9wdGlvbmFsX3ZhbHVlGLICIAEoCzIWLmdvb2ds",
+            "ZS5wcm90b2J1Zi5WYWx1ZRI4ChNvcHRpb25hbF9udWxsX3ZhbHVlGLMCIAEo",
+            "DjIaLmdvb2dsZS5wcm90b2J1Zi5OdWxsVmFsdWUSNQoRcmVwZWF0ZWRfZHVy",
+            "YXRpb24YtwIgAygLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uEjcKEnJl",
+            "cGVhdGVkX3RpbWVzdGFtcBi4AiADKAsyGi5nb29nbGUucHJvdG9idWYuVGlt",
+            "ZXN0YW1wEjcKEnJlcGVhdGVkX2ZpZWxkbWFzaxi5AiADKAsyGi5nb29nbGUu",
+            "cHJvdG9idWYuRmllbGRNYXNrEjEKD3JlcGVhdGVkX3N0cnVjdBjEAiADKAsy",
+            "Fy5nb29nbGUucHJvdG9idWYuU3RydWN0EisKDHJlcGVhdGVkX2FueRi7AiAD",
+            "KAsyFC5nb29nbGUucHJvdG9idWYuQW55Ei8KDnJlcGVhdGVkX3ZhbHVlGLwC",
+            "IAMoCzIWLmdvb2dsZS5wcm90b2J1Zi5WYWx1ZRI4ChNyZXBlYXRlZF9saXN0",
+            "X3ZhbHVlGL0CIAMoCzIaLmdvb2dsZS5wcm90b2J1Zi5MaXN0VmFsdWUSEwoK",
+            "ZmllbGRuYW1lMRiRAyABKAUSFAoLZmllbGRfbmFtZTIYkgMgASgFEhUKDF9m",
+            "aWVsZF9uYW1lMxiTAyABKAUSFgoNZmllbGRfX25hbWU0XxiUAyABKAUSFAoL",
+            "ZmllbGQwbmFtZTUYlQMgASgFEhYKDWZpZWxkXzBfbmFtZTYYlgMgASgFEhMK",
+            "CmZpZWxkTmFtZTcYlwMgASgFEhMKCkZpZWxkTmFtZTgYmAMgASgFEhQKC2Zp",
+            "ZWxkX05hbWU5GJkDIAEoBRIVCgxGaWVsZF9OYW1lMTAYmgMgASgFEhUKDEZJ",
+            "RUxEX05BTUUxMRibAyABKAUSFQoMRklFTERfbmFtZTEyGJwDIAEoBRIXCg5f",
+            "X2ZpZWxkX25hbWUxMxidAyABKAUSFwoOX19GaWVsZF9uYW1lMTQYngMgASgF",
+            "EhYKDWZpZWxkX19uYW1lMTUYnwMgASgFEhYKDWZpZWxkX19OYW1lMTYYoAMg",
+            "ASgFEhcKDmZpZWxkX25hbWUxN19fGKEDIAEoBRIXCg5GaWVsZF9uYW1lMThf",
+            "XxiiAyABKAUaYgoNTmVzdGVkTWVzc2FnZRIJCgFhGAEgASgFEkYKC2NvcmVj",
+            "dXJzaXZlGAIgASgLMjEucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzMu",
+            "VGVzdEFsbFR5cGVzUHJvdG8zGjQKEk1hcEludDMySW50MzJFbnRyeRILCgNr",
+            "ZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgBGjQKEk1hcEludDY0SW50NjRF",
+            "bnRyeRILCgNrZXkYASABKAMSDQoFdmFsdWUYAiABKAM6AjgBGjYKFE1hcFVp",
+            "bnQzMlVpbnQzMkVudHJ5EgsKA2tleRgBIAEoDRINCgV2YWx1ZRgCIAEoDToC",
+            "OAEaNgoUTWFwVWludDY0VWludDY0RW50cnkSCwoDa2V5GAEgASgEEg0KBXZh",
+            "bHVlGAIgASgEOgI4ARo2ChRNYXBTaW50MzJTaW50MzJFbnRyeRILCgNrZXkY",
+            "ASABKBESDQoFdmFsdWUYAiABKBE6AjgBGjYKFE1hcFNpbnQ2NFNpbnQ2NEVu",
+            "dHJ5EgsKA2tleRgBIAEoEhINCgV2YWx1ZRgCIAEoEjoCOAEaOAoWTWFwRml4",
+            "ZWQzMkZpeGVkMzJFbnRyeRILCgNrZXkYASABKAcSDQoFdmFsdWUYAiABKAc6",
+            "AjgBGjgKFk1hcEZpeGVkNjRGaXhlZDY0RW50cnkSCwoDa2V5GAEgASgGEg0K",
+            "BXZhbHVlGAIgASgGOgI4ARo6ChhNYXBTZml4ZWQzMlNmaXhlZDMyRW50cnkS",
+            "CwoDa2V5GAEgASgPEg0KBXZhbHVlGAIgASgPOgI4ARo6ChhNYXBTZml4ZWQ2",
+            "NFNmaXhlZDY0RW50cnkSCwoDa2V5GAEgASgQEg0KBXZhbHVlGAIgASgQOgI4",
+            "ARo0ChJNYXBJbnQzMkZsb2F0RW50cnkSCwoDa2V5GAEgASgFEg0KBXZhbHVl",
+            "GAIgASgCOgI4ARo1ChNNYXBJbnQzMkRvdWJsZUVudHJ5EgsKA2tleRgBIAEo",
+            "BRINCgV2YWx1ZRgCIAEoAToCOAEaMgoQTWFwQm9vbEJvb2xFbnRyeRILCgNr",
+            "ZXkYASABKAgSDQoFdmFsdWUYAiABKAg6AjgBGjYKFE1hcFN0cmluZ1N0cmlu",
+            "Z0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaNQoTTWFw",
+            "U3RyaW5nQnl0ZXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAw6",
+            "AjgBGn4KG01hcFN0cmluZ05lc3RlZE1lc3NhZ2VFbnRyeRILCgNrZXkYASAB",
+            "KAkSTgoFdmFsdWUYAiABKAsyPy5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnBy",
+            "b3RvMy5UZXN0QWxsVHlwZXNQcm90bzMuTmVzdGVkTWVzc2FnZToCOAEabQoc",
+            "TWFwU3RyaW5nRm9yZWlnbk1lc3NhZ2VFbnRyeRILCgNrZXkYASABKAkSPAoF",
+            "dmFsdWUYAiABKAsyLS5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLnByb3RvMy5G",
+            "b3JlaWduTWVzc2FnZToCOAEaeAoYTWFwU3RyaW5nTmVzdGVkRW51bUVudHJ5",
+            "EgsKA2tleRgBIAEoCRJLCgV2YWx1ZRgCIAEoDjI8LnByb3RvYnVmX3Rlc3Rf",
+            "bWVzc2FnZXMucHJvdG8zLlRlc3RBbGxUeXBlc1Byb3RvMy5OZXN0ZWRFbnVt",
+            "OgI4ARpnChlNYXBTdHJpbmdGb3JlaWduRW51bUVudHJ5EgsKA2tleRgBIAEo",
+            "CRI5CgV2YWx1ZRgCIAEoDjIqLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJv",
+            "dG8zLkZvcmVpZ25FbnVtOgI4ASI5CgpOZXN0ZWRFbnVtEgcKA0ZPTxAAEgcK",
+            "A0JBUhABEgcKA0JBWhACEhAKA05FRxD///////////8BIlkKC0FsaWFzZWRF",
+            "bnVtEg0KCUFMSUFTX0ZPTxAAEg0KCUFMSUFTX0JBUhABEg0KCUFMSUFTX0JB",
+            "WhACEgcKA1FVWBACEgcKA3F1eBACEgcKA2JBehACGgIQAUINCgtvbmVvZl9m",
+            "aWVsZEoGCPUDEP8DIhsKDkZvcmVpZ25NZXNzYWdlEgkKAWMYASABKAUqQAoL",
+            "Rm9yZWlnbkVudW0SDwoLRk9SRUlHTl9GT08QABIPCgtGT1JFSUdOX0JBUhAB",
+            "Eg8KC0ZPUkVJR05fQkFaEAJCOAooY29tLmdvb2dsZS5wcm90b2J1Zl90ZXN0",
+            "X21lc3NhZ2VzLnByb3RvM0gB+AEBogIGUHJvdG8zYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Proto3.ForeignEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3), global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalAliasedEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedNestedEnum", "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedNestedEnum", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "RepeatedListValue", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12", "FieldName13", "FieldName14", "FieldName15", "FieldName16", "FieldName17", "FieldName18" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum), typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage), global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3), global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalAliasedEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedNestedEnum", "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedNestedEnum", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "OneofNullValue", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "OptionalNullValue", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "RepeatedListValue", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12", "FieldName13", "FieldName14", "FieldName15", "FieldName16", "FieldName17", "FieldName18" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum), typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage), global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto3.ForeignMessage), global::ProtobufTestMessages.Proto3.ForeignMessage.Parser, new[]{ "C" }, null, null, null, null)
           }));
@@ -403,6 +405,7 @@ namespace ProtobufTestMessages.Proto3 {
       optionalStruct_ = other.optionalStruct_ != null ? other.optionalStruct_.Clone() : null;
       optionalAny_ = other.optionalAny_ != null ? other.optionalAny_.Clone() : null;
       optionalValue_ = other.optionalValue_ != null ? other.optionalValue_.Clone() : null;
+      optionalNullValue_ = other.optionalNullValue_;
       repeatedDuration_ = other.repeatedDuration_.Clone();
       repeatedTimestamp_ = other.repeatedTimestamp_.Clone();
       repeatedFieldmask_ = other.repeatedFieldmask_.Clone();
@@ -455,6 +458,9 @@ namespace ProtobufTestMessages.Proto3 {
           break;
         case OneofFieldOneofCase.OneofEnum:
           OneofEnum = other.OneofEnum;
+          break;
+        case OneofFieldOneofCase.OneofNullValue:
+          OneofNullValue = other.OneofNullValue;
           break;
       }
 
@@ -1513,6 +1519,17 @@ namespace ProtobufTestMessages.Proto3 {
       }
     }
 
+    /// <summary>Field number for the "oneof_null_value" field.</summary>
+    public const int OneofNullValueFieldNumber = 120;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.NullValue OneofNullValue {
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNullValue ? (global::Google.Protobuf.WellKnownTypes.NullValue) oneofField_ : global::Google.Protobuf.WellKnownTypes.NullValue.NullValue; }
+      set {
+        oneofField_ = value;
+        oneofFieldCase_ = OneofFieldOneofCase.OneofNullValue;
+      }
+    }
+
     /// <summary>Field number for the "optional_bool_wrapper" field.</summary>
     public const int OptionalBoolWrapperFieldNumber = 201;
     private static readonly pb::FieldCodec<bool?> _single_optionalBoolWrapper_codec = pb::FieldCodec.ForStructWrapper<bool>(1610);
@@ -1786,6 +1803,17 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalValue_; }
       set {
         optionalValue_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "optional_null_value" field.</summary>
+    public const int OptionalNullValueFieldNumber = 307;
+    private global::Google.Protobuf.WellKnownTypes.NullValue optionalNullValue_ = global::Google.Protobuf.WellKnownTypes.NullValue.NullValue;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.WellKnownTypes.NullValue OptionalNullValue {
+      get { return optionalNullValue_; }
+      set {
+        optionalNullValue_ = value;
       }
     }
 
@@ -2074,6 +2102,7 @@ namespace ProtobufTestMessages.Proto3 {
       OneofFloat = 117,
       OneofDouble = 118,
       OneofEnum = 119,
+      OneofNullValue = 120,
     }
     private OneofFieldOneofCase oneofFieldCase_ = OneofFieldOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2200,6 +2229,7 @@ namespace ProtobufTestMessages.Proto3 {
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(OneofFloat, other.OneofFloat)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.Equals(OneofDouble, other.OneofDouble)) return false;
       if (OneofEnum != other.OneofEnum) return false;
+      if (OneofNullValue != other.OneofNullValue) return false;
       if (OptionalBoolWrapper != other.OptionalBoolWrapper) return false;
       if (OptionalInt32Wrapper != other.OptionalInt32Wrapper) return false;
       if (OptionalInt64Wrapper != other.OptionalInt64Wrapper) return false;
@@ -2224,6 +2254,7 @@ namespace ProtobufTestMessages.Proto3 {
       if (!object.Equals(OptionalStruct, other.OptionalStruct)) return false;
       if (!object.Equals(OptionalAny, other.OptionalAny)) return false;
       if (!object.Equals(OptionalValue, other.OptionalValue)) return false;
+      if (OptionalNullValue != other.OptionalNullValue) return false;
       if(!repeatedDuration_.Equals(other.repeatedDuration_)) return false;
       if(!repeatedTimestamp_.Equals(other.repeatedTimestamp_)) return false;
       if(!repeatedFieldmask_.Equals(other.repeatedFieldmask_)) return false;
@@ -2356,6 +2387,7 @@ namespace ProtobufTestMessages.Proto3 {
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofFloat) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(OneofFloat);
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofDouble) hash ^= pbc::ProtobufEqualityComparers.BitwiseDoubleEqualityComparer.GetHashCode(OneofDouble);
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) hash ^= OneofEnum.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNullValue) hash ^= OneofNullValue.GetHashCode();
       if (optionalBoolWrapper_ != null) hash ^= OptionalBoolWrapper.GetHashCode();
       if (optionalInt32Wrapper_ != null) hash ^= OptionalInt32Wrapper.GetHashCode();
       if (optionalInt64Wrapper_ != null) hash ^= OptionalInt64Wrapper.GetHashCode();
@@ -2380,6 +2412,7 @@ namespace ProtobufTestMessages.Proto3 {
       if (optionalStruct_ != null) hash ^= OptionalStruct.GetHashCode();
       if (optionalAny_ != null) hash ^= OptionalAny.GetHashCode();
       if (optionalValue_ != null) hash ^= OptionalValue.GetHashCode();
+      if (OptionalNullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) hash ^= OptionalNullValue.GetHashCode();
       hash ^= repeatedDuration_.GetHashCode();
       hash ^= repeatedTimestamp_.GetHashCode();
       hash ^= repeatedFieldmask_.GetHashCode();
@@ -2618,6 +2651,10 @@ namespace ProtobufTestMessages.Proto3 {
         output.WriteRawTag(184, 7);
         output.WriteEnum((int) OneofEnum);
       }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNullValue) {
+        output.WriteRawTag(192, 7);
+        output.WriteEnum((int) OneofNullValue);
+      }
       if (optionalBoolWrapper_ != null) {
         _single_optionalBoolWrapper_codec.WriteTagAndValue(output, OptionalBoolWrapper);
       }
@@ -2677,6 +2714,10 @@ namespace ProtobufTestMessages.Proto3 {
       if (optionalValue_ != null) {
         output.WriteRawTag(146, 19);
         output.WriteMessage(OptionalValue);
+      }
+      if (OptionalNullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        output.WriteRawTag(152, 19);
+        output.WriteEnum((int) OptionalNullValue);
       }
       repeatedDuration_.WriteTo(output, _repeated_repeatedDuration_codec);
       repeatedTimestamp_.WriteTo(output, _repeated_repeatedTimestamp_codec);
@@ -2962,6 +3003,10 @@ namespace ProtobufTestMessages.Proto3 {
         output.WriteRawTag(184, 7);
         output.WriteEnum((int) OneofEnum);
       }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNullValue) {
+        output.WriteRawTag(192, 7);
+        output.WriteEnum((int) OneofNullValue);
+      }
       if (optionalBoolWrapper_ != null) {
         _single_optionalBoolWrapper_codec.WriteTagAndValue(ref output, OptionalBoolWrapper);
       }
@@ -3021,6 +3066,10 @@ namespace ProtobufTestMessages.Proto3 {
       if (optionalValue_ != null) {
         output.WriteRawTag(146, 19);
         output.WriteMessage(OptionalValue);
+      }
+      if (OptionalNullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        output.WriteRawTag(152, 19);
+        output.WriteEnum((int) OptionalNullValue);
       }
       repeatedDuration_.WriteTo(ref output, _repeated_repeatedDuration_codec);
       repeatedTimestamp_.WriteTo(ref output, _repeated_repeatedTimestamp_codec);
@@ -3274,6 +3323,9 @@ namespace ProtobufTestMessages.Proto3 {
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) OneofEnum);
       }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofNullValue) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) OneofNullValue);
+      }
       if (optionalBoolWrapper_ != null) {
         size += _single_optionalBoolWrapper_codec.CalculateSizeWithTag(OptionalBoolWrapper);
       }
@@ -3327,6 +3379,9 @@ namespace ProtobufTestMessages.Proto3 {
       }
       if (optionalValue_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(OptionalValue);
+      }
+      if (OptionalNullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) OptionalNullValue);
       }
       size += repeatedDuration_.CalculateSize(_repeated_repeatedDuration_codec);
       size += repeatedTimestamp_.CalculateSize(_repeated_repeatedTimestamp_codec);
@@ -3636,6 +3691,9 @@ namespace ProtobufTestMessages.Proto3 {
         }
         OptionalValue.MergeFrom(other.OptionalValue);
       }
+      if (other.OptionalNullValue != global::Google.Protobuf.WellKnownTypes.NullValue.NullValue) {
+        OptionalNullValue = other.OptionalNullValue;
+      }
       repeatedDuration_.Add(other.repeatedDuration_);
       repeatedTimestamp_.Add(other.repeatedTimestamp_);
       repeatedFieldmask_.Add(other.repeatedFieldmask_);
@@ -3727,6 +3785,9 @@ namespace ProtobufTestMessages.Proto3 {
           break;
         case OneofFieldOneofCase.OneofEnum:
           OneofEnum = other.OneofEnum;
+          break;
+        case OneofFieldOneofCase.OneofNullValue:
+          OneofNullValue = other.OneofNullValue;
           break;
       }
 
@@ -4202,6 +4263,11 @@ namespace ProtobufTestMessages.Proto3 {
             oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
             break;
           }
+          case 960: {
+            oneofField_ = input.ReadEnum();
+            oneofFieldCase_ = OneofFieldOneofCase.OneofNullValue;
+            break;
+          }
           case 1610: {
             bool? value = _single_optionalBoolWrapper_codec.Read(input);
             if (optionalBoolWrapper_ == null || value != false) {
@@ -4341,6 +4407,10 @@ namespace ProtobufTestMessages.Proto3 {
               OptionalValue = new global::Google.Protobuf.WellKnownTypes.Value();
             }
             input.ReadMessage(OptionalValue);
+            break;
+          }
+          case 2456: {
+            OptionalNullValue = (global::Google.Protobuf.WellKnownTypes.NullValue) input.ReadEnum();
             break;
           }
           case 2490: {
@@ -4915,6 +4985,11 @@ namespace ProtobufTestMessages.Proto3 {
             oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
             break;
           }
+          case 960: {
+            oneofField_ = input.ReadEnum();
+            oneofFieldCase_ = OneofFieldOneofCase.OneofNullValue;
+            break;
+          }
           case 1610: {
             bool? value = _single_optionalBoolWrapper_codec.Read(ref input);
             if (optionalBoolWrapper_ == null || value != false) {
@@ -5054,6 +5129,10 @@ namespace ProtobufTestMessages.Proto3 {
               OptionalValue = new global::Google.Protobuf.WellKnownTypes.Value();
             }
             input.ReadMessage(OptionalValue);
+            break;
+          }
+          case 2456: {
+            OptionalNullValue = (global::Google.Protobuf.WellKnownTypes.NullValue) input.ReadEnum();
             break;
           }
           case 2490: {

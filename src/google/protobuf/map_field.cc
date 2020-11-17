@@ -44,20 +44,24 @@ MapFieldBase::~MapFieldBase() {
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
+  ConstAccess();
   SyncRepeatedFieldWithMap();
   return *reinterpret_cast<RepeatedPtrFieldBase*>(repeated_field_);
 }
 
 RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
+  MutableAccess();
   SyncRepeatedFieldWithMap();
   SetRepeatedDirty();
   return reinterpret_cast<RepeatedPtrFieldBase*>(repeated_field_);
 }
 
 size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
+  ConstAccess();
   mutex_.Lock();
   size_t size = SpaceUsedExcludingSelfNoLock();
   mutex_.Unlock();
+  ConstAccess();
   return size;
 }
 
@@ -70,6 +74,7 @@ size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
 }
 
 bool MapFieldBase::IsMapValid() const {
+  ConstAccess();
   // "Acquire" insures the operation after SyncRepeatedFieldWithMap won't get
   // executed before state_ is checked.
   int state = state_.load(std::memory_order_acquire);
@@ -77,23 +82,27 @@ bool MapFieldBase::IsMapValid() const {
 }
 
 bool MapFieldBase::IsRepeatedFieldValid() const {
+  ConstAccess();
   int state = state_.load(std::memory_order_acquire);
   return state != STATE_MODIFIED_MAP;
 }
 
 void MapFieldBase::SetMapDirty() {
+  MutableAccess();
   // These are called by (non-const) mutator functions. So by our API it's the
   // callers responsibility to have these calls properly ordered.
   state_.store(STATE_MODIFIED_MAP, std::memory_order_relaxed);
 }
 
 void MapFieldBase::SetRepeatedDirty() {
+  MutableAccess();
   // These are called by (non-const) mutator functions. So by our API it's the
   // callers responsibility to have these calls properly ordered.
   state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
 }
 
 void MapFieldBase::SyncRepeatedFieldWithMap() const {
+  ConstAccess();
   // acquire here matches with release below to ensure that we can only see a
   // value of CLEAN after all previous changes have been synced.
   switch (state_.load(std::memory_order_acquire)) {
@@ -106,6 +115,7 @@ void MapFieldBase::SyncRepeatedFieldWithMap() const {
         state_.store(CLEAN, std::memory_order_release);
       }
       mutex_.Unlock();
+      ConstAccess();
       break;
     case CLEAN:
       mutex_.Lock();
@@ -122,6 +132,7 @@ void MapFieldBase::SyncRepeatedFieldWithMap() const {
         state_.store(CLEAN, std::memory_order_release);
       }
       mutex_.Unlock();
+      ConstAccess();
       break;
     default:
       break;
@@ -135,6 +146,7 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() const {
 }
 
 void MapFieldBase::SyncMapWithRepeatedField() const {
+  ConstAccess();
   // acquire here matches with release below to ensure that we can only see a
   // value of CLEAN after all previous changes have been synced.
   if (state_.load(std::memory_order_acquire) == STATE_MODIFIED_REPEATED) {
@@ -146,6 +158,7 @@ void MapFieldBase::SyncMapWithRepeatedField() const {
       state_.store(CLEAN, std::memory_order_release);
     }
     mutex_.Unlock();
+    ConstAccess();
   }
 }
 
@@ -243,6 +256,19 @@ bool DynamicMapField::InsertOrLookupMapValue(const MapKey& map_key,
   // [] may reorder the map and iterators.
   val->CopyFrom(iter->second);
   return false;
+}
+
+bool DynamicMapField::LookupMapValue(const MapKey& map_key,
+                                     MapValueConstRef* val) const {
+  const Map<MapKey, MapValueRef>& map = GetMap();
+  Map<MapKey, MapValueRef>::const_iterator iter = map.find(map_key);
+  if (iter == map.end()) {
+    return false;
+  }
+  // map_key is already in the map. Make sure (*map)[map_key] is not called.
+  // [] may reorder the map and iterators.
+  val->CopyFrom(iter->second);
+  return true;
 }
 
 bool DynamicMapField::DeleteMapValue(const MapKey& map_key) {

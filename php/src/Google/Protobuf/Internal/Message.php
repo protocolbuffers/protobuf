@@ -225,6 +225,15 @@ class Message
         }
     }
 
+    protected function hasOneof($number)
+    {
+        $field = $this->desc->getFieldByNumber($number);
+        $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
+        $oneof_name = $oneof->getName();
+        $oneof_field = $this->$oneof_name;
+        return $number === $oneof_field->getNumber();
+    }
+
     protected function writeOneof($number, $value)
     {
         $field = $this->desc->getFieldByNumber($number);
@@ -1559,14 +1568,19 @@ class Message
      */
     private function existField($field)
     {
-        $oneof_index = $field->getOneofIndex();
-        if ($oneof_index !== -1) {
-            $oneof = $this->desc->getOneofDecl()[$oneof_index];
-            $oneof_name = $oneof->getName();
-            return $this->$oneof_name->getNumber() === $field->getNumber();
+        $getter = $field->getGetter();
+        $hazzer = "has" . substr($getter, 3);
+
+        if (method_exists($this, $hazzer)) {
+          return $this->$hazzer();
+        } else if ($field->getOneofIndex() !== -1) {
+          // For old generated code, which does not have hazzers for oneof
+          // fields.
+          $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
+          $oneof_name = $oneof->getName();
+          return $this->$oneof_name->getNumber() === $field->getNumber();
         }
 
-        $getter = $field->getGetter();
         $values = $this->$getter();
         if ($field->isMap()) {
             return count($values) !== 0;

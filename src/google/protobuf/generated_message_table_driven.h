@@ -73,9 +73,7 @@ enum ProcessingTypes {
   TYPE_STRING_STRING_PIECE = 20,
   TYPE_BYTES_CORD = 21,
   TYPE_BYTES_STRING_PIECE = 22,
-  TYPE_STRING_INLINED = 23,
-  TYPE_BYTES_INLINED = 24,
-  TYPE_MAP = 25,
+  TYPE_MAP = 23,
 };
 
 static_assert(TYPE_MAP < kRepeatedMask, "Invalid enum");
@@ -102,12 +100,11 @@ struct PROTOBUF_EXPORT FieldMetadata {
     kNumTypeClasses  // must be last enum
   };
   // C++ protobuf has 20 fundamental types, were we added Cord and StringPiece
-  // and also distinquish the same types if they have different wire format.
+  // and also distinguish the same types if they have different wire format.
   enum {
     kCordType = 19,
     kStringPieceType = 20,
-    kInlinedType = 21,
-    kNumTypes = 21,
+    kNumTypes = 20,
     kSpecial = kNumTypes * kNumTypeClasses,
   };
 

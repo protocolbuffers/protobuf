@@ -8,6 +8,9 @@ Recommended.Proto3.JsonInput.DurationHas3FractionalDigits.Validator
 Recommended.Proto3.JsonInput.DurationHas6FractionalDigits.Validator
 Recommended.Proto3.JsonInput.FieldMaskInvalidCharacter
 Recommended.Proto3.JsonInput.MapFieldValueIsNull
+Recommended.Proto3.JsonInput.NullValueInNormalMessage.Validator
+Recommended.Proto3.JsonInput.NullValueInOtherOneofNewFormat.Validator
+Recommended.Proto3.JsonInput.NullValueInOtherOneofOldFormat.Validator
 Recommended.Proto3.JsonInput.RepeatedFieldMessageElementIsNull
 Recommended.Proto3.JsonInput.RepeatedFieldPrimitiveElementIsNull
 Recommended.Proto3.JsonInput.StringEndsWithEscapeChar

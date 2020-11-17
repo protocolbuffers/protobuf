@@ -93,12 +93,6 @@ std::string GetTypeUrl(const Descriptor* descriptor) {
 }
 }  // namespace
 
-#if __cplusplus >= 201103L
-using std::get;
-#else
-using std::tr1::get;
-#endif
-
 class BaseProtoStreamObjectWriterTest
     : public ::testing::TestWithParam<testing::TypeInfoSource> {
  protected:
@@ -171,7 +165,7 @@ class BaseProtoStreamObjectWriterTest
 
 MATCHER_P(HasObjectLocation, expected,
           "Verifies the expected object location") {
-  std::string actual = get<0>(arg).ToString();
+  std::string actual = std::get<0>(arg).ToString();
   if (actual == expected) return true;
   *result_listener << "actual location is: " << actual;
   return false;
@@ -1006,7 +1000,10 @@ TEST_P(ProtoStreamObjectWriterTest,
   Proto3Message expected;
   EXPECT_CALL(
       listener_,
-      InvalidValue(_, StringPiece("TYPE_ENUM"),
+      InvalidValue(_,
+                   StringPiece(
+                       "type.googleapis.com/"
+                       "proto_util_converter.testing.Proto3Message.NestedEnum"),
                    StringPiece("\"someunknownvalueyouwillneverknow\"")))
       .With(Args<0>(HasObjectLocation("enum_value")));
   ow_->StartObject("")

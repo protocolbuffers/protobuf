@@ -74,14 +74,15 @@ class FieldGeneratorBase : public SourceGeneratorBase {
  protected:
   const FieldDescriptor* descriptor_;
   const int presenceIndex_;
-  std::map<string, string> variables_;
+  std::map<std::string, std::string> variables_;
 
   void AddDeprecatedFlag(io::Printer* printer);
   void AddNullCheck(io::Printer* printer);
   void AddNullCheck(io::Printer* printer, const std::string& name);
 
   void AddPublicMemberAttributes(io::Printer* printer);
-  void SetCommonOneofFieldVariables(std::map<string, string>* variables);
+  void SetCommonOneofFieldVariables(
+      std::map<std::string, std::string>* variables);
 
   std::string oneof_property_name();
   std::string oneof_name();
@@ -96,7 +97,7 @@ class FieldGeneratorBase : public SourceGeneratorBase {
   std::string capitalized_type_name();
 
  private:
-  void SetCommonFieldVariables(std::map<string, string>* variables);
+  void SetCommonFieldVariables(std::map<std::string, std::string>* variables);
   std::string GetStringDefaultValueInternal(const FieldDescriptor* descriptor);
   std::string GetBytesDefaultValueInternal(const FieldDescriptor* descriptor);
 };
