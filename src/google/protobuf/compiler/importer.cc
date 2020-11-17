@@ -500,7 +500,7 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
       last_error_message_ = "Input file is a directory.";
       return NULL;
   }
-#elif
+#else
   if (ret == 0 && S_ISDIR(sb.st_mode)) {
     last_error_message_ = "Input file is a directory.";
     return NULL;
