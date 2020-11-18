@@ -277,7 +277,7 @@
 
 // Copied from ABSL.
 #if defined(__clang__) && defined(__has_warning)
-#if __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
+#if __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough") || defined (__MVS__)
 #define PROTOBUF_FALLTHROUGH_INTENDED [[clang::fallthrough]]
 #endif
 #elif defined(__GNUC__) && __GNUC__ >= 7
