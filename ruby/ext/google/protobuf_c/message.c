@@ -387,18 +387,22 @@ VALUE create_submsg_from_hash(const MessageLayout* layout,
 
 #endif
 
-void Array_InitFromValue(upb_array *arr, const upb_msgdef *m, VALUE val) {
+void Array_InitFromValue(upb_array* arr, const upb_fielddef* f, VALUE val,
+                         upb_arena* arena) {
   VALUE ary;
+  TypeInfo *type_info = TypeInfo_get(f);
   int i;
 
   if (TYPE(val) != T_ARRAY) {
     rb_raise(rb_eArgError,
              "Expected array as initializer value for repeated field '%s' (given %s).",
-             name, rb_class2name(CLASS_OF(val)));
+             upb_fielddef_name(f), rb_class2name(CLASS_OF(val)));
   }
-  ary = layout_get(self->descriptor->layout, Message_data(self), f);
+
   for (i = 0; i < RARRAY_LEN(val); i++) {
     VALUE entry = rb_ary_entry(val, i);
+    upb_msgval msgval =
+        Convert_RubyToUpb(val, upb_fielddef_name(f), type_info, arena);
     if (TYPE(entry) == T_HASH && upb_fielddef_issubmsg(f)) {
       entry = create_submsg_from_hash(self->descriptor->layout, f, entry);
     }
@@ -407,7 +411,44 @@ void Array_InitFromValue(upb_array *arr, const upb_msgdef *m, VALUE val) {
   }
 }
 
-int Message_InitFromValue(upb_msg *msg, const upb_msgdef *m, VALUE val) {
+void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
+                           upb_arena* arena);
+
+void Message_InitFieldFromValue(upb_msg* msg, const upb_fielddef* f, VALUE val,
+                                upb_arena* arena) {
+  if (TYPE(val) == T_NIL) return;
+
+  if (upb_fielddef_ismap(f)) {
+    upb_map *map = upb_msg_mutable(msg, f, arena).map_val;
+    const upb_fielddef *key_f = upb_fielddef_itof(m, 1);
+    const upb_fielddef *val_f = upb_fielddef_itof(m, 2);
+    upb_fieldtype_t key_type = upb_fielddef_type(key_f);
+    upb_fieldtype_t val_type = upb_fielddef_type(val_f);
+    const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
+    Map_InitFromValue(map, key_type, val_type, val_m, val);
+  } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
+    upb_array *arr = upb_msg_mutable(msg, f, arena).arr_val;
+    Array_InitFromValue(arr, f, val, arena);
+  } else if (upb_fielddef_issubmsg(f)) {
+    upb_msg *submsg = upb_msg_mutable(msg, f, arena).msg_val;
+    Message_InitFromValue(submsg, upb_fielddef_msgsubdef(f), val, arena);
+  } else {
+    upb_msgval msgval =
+        Convert_RubyToUpb(val, upb_fielddef_name(f), TypeInfo_get(f), arena);
+    upb_msg_set(msg, f, msgval, arena);
+  }
+}
+
+typedef struct {
+  upb_msg *msg;
+  const upb_msgdef *msgdef;
+  upb_arena *arena;
+} MsgInit;
+
+int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
+  MsgInit *msg_init = (MsgInit*)_self;
+  upb_msg *msg = msg_and_type.msg;
+
   if (TYPE(key) == T_STRING) {
     name = RSTRING_PTR(key);
   } else if (TYPE(key) == T_SYMBOL) {
@@ -417,43 +458,25 @@ int Message_InitFromValue(upb_msg *msg, const upb_msgdef *m, VALUE val) {
              "Expected string or symbols as hash keys when initializing proto from hash.");
   }
 
-  f = upb_msgdef_ntofz(m, name);
+  const upb_fielddef* f = upb_msgdef_ntofz(msg_init->msgdef, name);
 
   if (f == NULL) {
     rb_raise(rb_eArgError,
              "Unknown field name '%s' in initialization map entry.", name);
   }
 
-  if (TYPE(val) == T_NIL) {
-    return 0;
-  }
-
-  if (upb_fielddef_ismap(f)) {
-    upb_map *map = upb_msg_mutable(msg->msg, f, arena).map_val;
-    const upb_fielddef *key_f = upb_fielddef_itof(m, 1);
-    const upb_fielddef *val_f = upb_fielddef_itof(m, 2);
-    upb_fieldtype_t key_type = upb_fielddef_type(key_f);
-    upb_fieldtype_t val_type = upb_fielddef_type(val_f);
-    const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
-    Map_InitFromValue(map, key_type, val_type, val_m, val);
-  } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
-    upb_map *map = upb_msg_mutable(msg->msg, f, arena).map_val;
-    Array_InitFromValue(map, val);
-  } else {
-    if (TYPE(val) == T_HASH && upb_fielddef_issubmsg(f)) {
-      val = create_submsg_from_hash(self->descriptor->layout, f, val);
-    }
-
-    layout_set(self->descriptor->layout, Message_data(self), f, val);
-  }
+  Message_InitFromValue(msg_init->msg, f, val, msg_init->arena);
+  return ST_CONTINUE;
 }
 
-int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
-  Message *msg = (Message*)_self;
-  char *name;
-  const upb_fielddef* f;
+void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
+                           upb_arena* arena) {
+  MessageAndType msg_and_type = {msg, m, arena};
+  if (TYPE(hash_args) != T_HASH) {
+    rb_raise(rb_eArgError, "Expected hash arguments.");
+  }
 
-  return 0;
+  rb_hash_foreach(hash_args, Message_initialize_kwarg, (VALUE)&msg_and_type);
 }
 
 /*
@@ -482,11 +505,6 @@ VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
     rb_raise(rb_eArgError, "Expected 0 or 1 arguments.");
   }
   hash_args = argv[0];
-  if (TYPE(hash_args) != T_HASH) {
-    rb_raise(rb_eArgError, "Expected hash arguments.");
-  }
-
-  rb_hash_foreach(hash_args, Message_initialize_kwarg, _self);
   return Qnil;
 }
 

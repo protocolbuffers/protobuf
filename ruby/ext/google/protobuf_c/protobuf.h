@@ -40,7 +40,7 @@
 // Forward decls.
 struct DescriptorPool;
 struct Descriptor;
-union TypeInfo;
+struct TypeInfo;
 struct FileDescriptor;
 struct FieldDescriptor;
 struct EnumDescriptor;
@@ -54,7 +54,7 @@ struct Builder;
 
 typedef struct DescriptorPool DescriptorPool;
 typedef struct Descriptor Descriptor;
-typedef union TypeInfo TypeInfo;
+typedef struct TypeInfo TypeInfo;
 typedef struct FileDescriptor FileDescriptor;
 typedef struct FieldDescriptor FieldDescriptor;
 typedef struct OneofDescriptor OneofDescriptor;
@@ -120,7 +120,7 @@ struct Descriptor {
   VALUE descriptor_pool;
 };
 
-union TypeInfo {
+struct TypeInfo {
   upb_fieldtype_t type;
   union {
     const Descriptor* msgdef;  // When type == UPB_TYPE_MESSAGE
