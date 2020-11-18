@@ -307,4 +307,4 @@ install: protoc
 	cp $< $(BIN_DIR)
 	export PATH=$(PATH):$(BIN_DIR)
 clean:
-	-@rm *.a *.d *.o protoc 2>/dev/null
+	-@rm -f *.d *.lst *.a *.d *.o protoc 2>/dev/null
