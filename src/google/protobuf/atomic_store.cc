@@ -67,7 +67,7 @@ void __atomic_store_real(int size, void* ptr, void* val, int memorder) {
     }
   } else {
     fprintf(stderr,
-            "%s:%s:%d size=%d target=%p source=%p not implimented\n",
+            "%s:%s:%d size=%d target=%p source=%p not implemented\n",
             __FILE__,
             __FUNCTION__,
             __LINE__,
