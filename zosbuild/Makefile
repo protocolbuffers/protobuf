@@ -2,12 +2,14 @@ all: protoc
 
 AR=ar
 ARFLAGS=rc
-RANLIB=ranlib
-ifdef XLCPP
-	CPP=$(XLCPP)
-else
-	CPP:=/bin/xlclang++
+
+ifdef XLCLANG 
+	CC=$(XLCLANG)
+	CPP=$(XLCLANG)++
 endif
+
+$(XLCLANG) $(XLCLANG)++:
+	$(error Environment variable XLCLANG should be set to the path of the xlclang compiler on your system)
 
 CPPFLAGS_ALL=\
 	     -+ \
@@ -48,12 +50,6 @@ CPPFLAGS_SPEC=\
 	      -DGOOGLE_PROTOBUF_CMAKE_BUILD \
 	      -DHAVE_PTHREAD \
 	      -DHAVE_ZLIB
-
-ifdef XLC
-	CC = $(XLC)
-else
-	CC:=/bin/xlclang
-endif
 
 CFLAGS=-O3 -D_LARGEFILE64_SOURCE=1 -qrent
 
@@ -284,7 +280,7 @@ vpath %.cc $(SRC_DIR)/ $(SRC_DIR)/google/protobuf/ $(SRC_DIR)/google/protobuf/io
 vpath %.cpp $(SRC_DIR)/ 
 vpath %.c $(ZLIB_PATH)/  
 
-protoc:  libz.a main.o libprotoc.a libprotobuf.a 
+protoc: $(XLCLANG) $(XLCLANG)++ libz.a main.o libprotoc.a libprotobuf.a 
 	 $(CPP) $(CPPFLAGS_ALL) $(CPPFLAGS_SPEC) -qmakedep -o $@ $^ 
 
 %.o: %.cc $(ME)
@@ -297,16 +293,15 @@ libprotoc.a: $(OBJ_PROTOC)
 	$(AR) $(ARFLAGS) $@ $(OBJ_PROTOC)
 
 
-$(ZLIB_PATH)/%.o: %.c
+$(ZLIB_PATH)/%.o: %.c $(ME)
 	$(CC) $(CFLAGS) $< -o $@	
 
 $(SRC_LIBZ):
 	git clone https://github.com/madler/zlib
 	-@echo "zlib cloned successfully"
 
-libz.a: $(SRC_LIBZ) $(OBJ_LIBZ)
+libz.a: $(SRC_LIBZ) $(OBJ_LIBZ) $(ME)
 	$(AR) $(ARFLAGS) $@ $(OBJ_LIBZ)
-	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
 
 install: protoc
 	cp $< $(BIN_DIR)
