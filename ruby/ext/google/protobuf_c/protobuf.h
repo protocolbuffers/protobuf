@@ -183,7 +183,6 @@ extern VALUE cEnumBuilderContext;
 extern VALUE cFileBuilderContext;
 extern VALUE cBuilder;
 
-extern VALUE cError;
 extern VALUE cParseError;
 extern VALUE cTypeError;
 
