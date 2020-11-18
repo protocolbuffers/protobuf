@@ -66,6 +66,16 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Internal use only. Ensure that the provided memory is not mutated and belongs to this instance.
+        /// This method encapsulates converting array to memory. Reduces need for SecuritySafeCritical
+        /// in .NET Framework.
+        /// </summary>
+        internal static ByteString AttachBytes(byte[] bytes)
+        {
+            return AttachBytes(bytes.AsMemory());
+        }
+
+        /// <summary>
         /// Constructs a new ByteString from the given memory. The memory is
         /// *not* copied, and must not be modified after this constructor is called.
         /// </summary>

@@ -37,6 +37,10 @@ using System.IO;
 using System.Collections.Generic;
 using System.Collections;
 using System.Linq;
+using System.Buffers;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Runtime.CompilerServices;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -219,6 +223,25 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void WriteToStream_Stackalloc()
+        {
+            byte[] data = Encoding.UTF8.GetBytes("Hello world");
+            Span<byte> s = stackalloc byte[data.Length];
+            data.CopyTo(s);
+
+            MemoryStream ms = new MemoryStream();
+
+            using (UnmanagedMemoryManager<byte> manager = new UnmanagedMemoryManager<byte>(s))
+            {
+                ByteString bs = ByteString.AttachBytes(manager.Memory);
+
+                bs.WriteTo(ms);
+            }
+
+            CollectionAssert.AreEqual(data, ms.ToArray());
+        }
+
+        [Test]
         public void ToStringUtf8()
         {
             ByteString bs = ByteString.CopyFromUtf8("\u20ac");
@@ -230,6 +253,21 @@ namespace Google.Protobuf
         {
             ByteString bs = ByteString.CopyFrom("\u20ac", Encoding.Unicode);
             Assert.AreEqual("\u20ac", bs.ToString(Encoding.Unicode));
+        }
+
+        [Test]
+        public void ToString_Stackalloc()
+        {
+            byte[] data = Encoding.UTF8.GetBytes("Hello world");
+            Span<byte> s = stackalloc byte[data.Length];
+            data.CopyTo(s);
+
+            using (UnmanagedMemoryManager<byte> manager = new UnmanagedMemoryManager<byte>(s))
+            {
+                ByteString bs = ByteString.AttachBytes(manager.Memory);
+
+                Assert.AreEqual("Hello world", bs.ToString(Encoding.UTF8));
+            }
         }
 
         [Test]
@@ -246,6 +284,29 @@ namespace Google.Protobuf
         {
             // Optimization which also fixes issue 61.
             Assert.AreSame(ByteString.Empty, ByteString.FromBase64(""));
+        }
+
+        [Test]
+        public void ToBase64_Array()
+        {
+            ByteString bs = ByteString.CopyFrom(Encoding.UTF8.GetBytes("Hello world"));
+
+            Assert.AreEqual("SGVsbG8gd29ybGQ=", bs.ToBase64());
+        }
+
+        [Test]
+        public void ToBase64_Stackalloc()
+        {
+            byte[] data = Encoding.UTF8.GetBytes("Hello world");
+            Span<byte> s = stackalloc byte[data.Length];
+            data.CopyTo(s);
+
+            using (UnmanagedMemoryManager<byte> manager = new UnmanagedMemoryManager<byte>(s))
+            {
+                ByteString bs = ByteString.AttachBytes(manager.Memory);
+
+                Assert.AreEqual("SGVsbG8gd29ybGQ=", bs.ToBase64());
+            }
         }
 
         [Test]
@@ -324,6 +385,39 @@ namespace Google.Protobuf
             var byteString = ByteString.CopyFrom(1, 2, 3, 4, 5);
             var copied = byteString.Memory.ToArray();
             CollectionAssert.AreEqual(byteString, copied);
+        }
+
+        // Create Memory<byte> from non-array source.
+        // Use by ByteString tests that have optimized path for array backed Memory<byte>.
+        private sealed unsafe class UnmanagedMemoryManager<T> : MemoryManager<T> where T : unmanaged
+        {
+            private readonly T* _pointer;
+            private readonly int _length;
+
+            public UnmanagedMemoryManager(Span<T> span)
+            {
+                fixed (T* ptr = &MemoryMarshal.GetReference(span))
+                {
+                    _pointer = ptr;
+                    _length = span.Length;
+                }
+            }
+
+            public override Span<T> GetSpan() => new Span<T>(_pointer, _length);
+
+            public override MemoryHandle Pin(int elementIndex = 0)
+            {
+                if (elementIndex < 0 || elementIndex >= _length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(elementIndex));
+                }
+
+                return new MemoryHandle(_pointer + elementIndex);
+            }
+
+            public override void Unpin() { }
+
+            protected override void Dispose(bool disposing) { }
         }
     }
 }

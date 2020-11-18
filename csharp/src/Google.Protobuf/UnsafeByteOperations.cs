@@ -58,7 +58,7 @@ namespace Google.Protobuf
     /// <description>serialization may succeed but the wrong bytes may be written out</description>
     /// </item>
     /// <item>
-    /// <description>messages are no longer threadsafe</description>
+    /// <description>objects that are normally immutable (such as ByteString) are no longer immutable</description>
     /// </item>
     /// <item>
     /// <description>hashCode may be incorrect</description>
