@@ -6,7 +6,7 @@ RANLIB=ranlib
 ifdef XLCPP
 	CPP=$(XLCPP)
 else
-	CPP:=/home/opnzos/local/xlcpp/bin/xlclang++
+	CPP:=/bin/xlclang++
 endif
 
 CPPFLAGS_ALL=\
