@@ -184,7 +184,7 @@ Also, you will need to use GNU `make` (`gmake`) instead of AIX `make`.
 
 **Note for zOS users**
 
-First export XLC and XLCPP and set them to IBM xlclang and xlcang++ respectively. set also BIN_DIR for you desire installtion path.
+First export XLC and XLCPP and set them to IBM xlclang and xlcang++ path respectively. Set also BIN_DIR for you desire installation path.
 
 Enter zosbuild directory and run `make`
 
