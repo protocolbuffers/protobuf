@@ -107,6 +107,9 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
       UniqueName("file_level_service_descriptors", file_, options_);
   variables_["filename"] = file_->name();
   variables_["package_ns"] = Namespace(file_, options);
+  variables_["schemas"] = UniqueName("schemas", file_, options_);
+  variables_["file_default_instances"] = 
+      UniqueName("file_default_instances", file_, options_);
 
   std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
   for (int i = 0; i < msgs.size(); i++) {
@@ -776,7 +779,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
     format.Outdent();
     format(
         "};\n"
-        "static const ::$proto_ns$::internal::MigrationSchema schemas[] "
+        "static const ::$proto_ns$::internal::MigrationSchema $schemas$[] "
         "PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {\n");
     format.Indent();
     {
@@ -791,7 +794,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
     format(
         "};\n"
         "\nstatic "
-        "::$proto_ns$::Message const * const file_default_instances[] = {\n");
+        "::$proto_ns$::Message const * const $file_default_instances$[] = {\n");
     format.Indent();
     for (int i = 0; i < message_generators_.size(); i++) {
       const Descriptor* descriptor = message_generators_[i]->descriptor_;
@@ -810,11 +813,11 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
     format(
         // MSVC doesn't like empty arrays, so we add a dummy.
         "const $uint32$ $tablename$::offsets[1] = {};\n"
-        "static constexpr ::$proto_ns$::internal::MigrationSchema* schemas = "
+        "static constexpr ::$proto_ns$::internal::MigrationSchema* $schemas$ = "
         "nullptr;"
         "\n"
         "static constexpr ::$proto_ns$::Message* const* "
-        "file_default_instances = nullptr;\n"
+        "$file_default_instances$ = nullptr;\n"
         "\n");
   }
 
@@ -902,7 +905,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       "const ::$proto_ns$::internal::DescriptorTable $desc_table$ = {\n"
       "  false, $1$, $2$, \"$filename$\", $3$,\n"
       "  &$desc_table$_once, $desc_table$_sccs, $desc_table$_deps, $4$, $5$,\n"
-      "  schemas, file_default_instances, $tablename$::offsets,\n"
+      "  $schemas$, $file_default_instances$, $tablename$::offsets,\n"
       "  $file_level_metadata$, $6$, $file_level_enum_descriptors$, "
       "$file_level_service_descriptors$,\n"
       "};\n\n",
