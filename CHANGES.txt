@@ -1,3 +1,26 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * MessageDifferencer: fixed bug when using custom ignore with multiple
+    unknown fields
+  * Use init_seg in MSVC to push initialization to an earlier phase.
+  * Runtime no longer triggers -Wsign-compare warnings.
+  * Fixed -Wtautological-constant-out-of-range-compare warning.
+  * DynamicCastToGenerated works for nullptr input for even if RTTI is disabled
+  * Arena is refactored and optimized.
+  * Change the signature of Any::PackFrom() to return false on error.
+
+  Java
+  * Avoid possible UnsupportedOperationException when using CodedInputSteam
+    with a direct ByteBuffer.
+  * Make Durations.comparator() and Timestamps.comparator() Serializable.
+  * Add more detailed error information for dynamic message field type
+    validation failure
+
+  Python
+  * Provided an override for the reverse() method that will reverse the internal
+    collection directly instead of using the other methods of the BaseContainer.
+
 2020-11-11 version 3.14.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler
