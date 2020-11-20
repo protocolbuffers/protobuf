@@ -229,7 +229,7 @@ class PROTOBUF_EXPORT SerialArena {
   char* ptr_;
   char* limit_;
 
-  // contructor private as to only New should be used.
+  // Constructor is private as only New() should be used.
   inline SerialArena(Block* b, void* owner);
   void* AllocateAlignedFallback(size_t n, const AllocationPolicy* policy);
   std::pair<void*, CleanupNode*> AllocateAlignedWithCleanupFallback(
