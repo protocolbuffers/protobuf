@@ -52,9 +52,13 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/stubs/mutex.h>
-#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
+
+// Must be included last
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 
 
 namespace google {
@@ -68,8 +72,9 @@ void DestroyString(const void* s) {
   static_cast<const std::string*>(s)->~basic_string();
 }
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EmptyString
-    fixed_address_empty_string;  // NOLINT
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY EmptyString
+        fixed_address_empty_string;  // NOLINT
 
 
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
@@ -90,6 +95,11 @@ void InitProtobufDefaultsSlow() {
   static bool is_inited = InitProtobufDefaultsImpl();
   (void)is_inited;
 }
+// Force the initialization of the empty string.
+// Normally, registration would do it, but we don't have any guarantee that
+// there is any object with reflection.
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY static std::true_type init_empty_string =
+    (InitProtobufDefaultsSlow(), std::true_type{});
 
 size_t StringSpaceUsedExcludingSelfLong(const std::string& str) {
   const void* start = &str;
@@ -802,3 +812,5 @@ void InitSCCImpl(SCCInfoBase* scc) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

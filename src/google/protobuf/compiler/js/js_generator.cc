@@ -3162,8 +3162,7 @@ void Generator::GenerateClassDeserializeBinaryField(
           "fieldtype",
           JSFieldTypeAnnotation(options, field, false, true,
                                 /* singular_if_not_packed */ false, BYTES_U8),
-          "reader",
-          JSBinaryReaderMethodType(field));
+          "reader", JSBinaryReaderMethodType(field));
     } else {
       printer->Print(
           "      var value = /** @type {$fieldtype$} */ "
@@ -3179,7 +3178,8 @@ void Generator::GenerateClassDeserializeBinaryField(
       printer->Print(
           "      for (var i = 0; i < values.length; i++) {\n"
           "        msg.add$name$(values[i]);\n"
-          "      }\n", "name",
+          "      }\n",
+          "name",
           JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));
     } else if (field->is_repeated()) {
       printer->Print(

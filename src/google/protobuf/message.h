@@ -1252,7 +1252,8 @@ const T* DynamicCastToGenerated(const Message* from) {
 #if PROTOBUF_RTTI
   return dynamic_cast<const T*>(from);
 #else
-  bool ok = T::default_instance().GetReflection() == from->GetReflection();
+  bool ok = from != nullptr &&
+            T::default_instance().GetReflection() == from->GetReflection();
   return ok ? down_cast<const T*>(from) : nullptr;
 #endif
 }

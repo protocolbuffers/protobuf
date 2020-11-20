@@ -1851,12 +1851,17 @@ class ExtensionDescriptorTest : public testing::Test {
     //     extensions 10 to 19;
     //     extensions 30 to 39;
     //   }
-    //   extends Foo with optional int32 foo_int32 = 10;
-    //   extends Foo with repeated TestEnum foo_enum = 19;
+    //   extend Foo {
+    //     optional int32 foo_int32 = 10;
+    //   }
+    //   extend Foo {
+    //     repeated TestEnum foo_enum = 19;
+    //   }
     //   message Bar {
-    //     extends Foo with optional Qux foo_message = 30;
-    //     // (using Qux as the group type)
-    //     extends Foo with repeated group foo_group = 39;
+    //     extend Foo {
+    //       optional Qux foo_message = 30;
+    //       repeated Qux foo_group = 39;  // (but internally set to TYPE_GROUP)
+    //     }
     //   }
 
     FileDescriptorProto foo_file;
@@ -8110,3 +8115,5 @@ TEST_F(LazilyBuildDependenciesTest, Dependency) {
 }  // namespace descriptor_unittest
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

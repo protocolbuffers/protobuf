@@ -436,3 +436,5 @@ void GenericSwap(Message* m1, Message* m2) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

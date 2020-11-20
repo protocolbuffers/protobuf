@@ -82,6 +82,35 @@ TEST(DelimitedMessageUtilTest, DelimitedMessages) {
   }
 }
 
+TEST(DelimitedMessageUtilTest, FailsAtEndOfStream) {
+  std::stringstream full_stream;
+  std::stringstream partial_stream;
+
+  {
+    protobuf_unittest::ForeignMessage message;
+    message.set_c(42);
+    message.set_d(24);
+    EXPECT_TRUE(SerializeDelimitedToOstream(message, &full_stream));
+
+    std::string full_output = full_stream.str();
+    ASSERT_GT(full_output.size(), size_t{2});
+    ASSERT_EQ(full_output[0], 4);
+
+    partial_stream << full_output[0] << full_output[1] << full_output[2];
+  }
+
+  {
+    bool clean_eof;
+    io::IstreamInputStream zstream(&partial_stream);
+
+    protobuf_unittest::ForeignMessage message;
+    clean_eof = true;
+    EXPECT_FALSE(ParseDelimitedFromZeroCopyStream(&message,
+        &zstream, &clean_eof));
+    EXPECT_FALSE(clean_eof);
+  }
+}
+
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google

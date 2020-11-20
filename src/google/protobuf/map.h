@@ -838,7 +838,7 @@ class Map {
     // non-determinism to the map ordering.
     bool ShouldInsertAfterHead(void* node) {
 #ifdef NDEBUG
-      (void) node;
+      (void)node;
       return false;
 #else
       // Doing modulo with a prime mixes the bits more.

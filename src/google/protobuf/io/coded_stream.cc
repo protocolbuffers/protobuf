@@ -312,7 +312,7 @@ bool CodedInputStream::ReadLittleEndian32Fallback(uint32* value) {
   uint8 bytes[sizeof(*value)];
 
   const uint8* ptr;
-  if (BufferSize() >= sizeof(*value)) {
+  if (BufferSize() >= static_cast<int64>(sizeof(*value))) {
     // Fast path:  Enough bytes in the buffer to read directly.
     ptr = buffer_;
     Advance(sizeof(*value));
@@ -329,7 +329,7 @@ bool CodedInputStream::ReadLittleEndian64Fallback(uint64* value) {
   uint8 bytes[sizeof(*value)];
 
   const uint8* ptr;
-  if (BufferSize() >= sizeof(*value)) {
+  if (BufferSize() >= static_cast<int64>(sizeof(*value))) {
     // Fast path:  Enough bytes in the buffer to read directly.
     ptr = buffer_;
     Advance(sizeof(*value));
@@ -351,7 +351,7 @@ template <size_t N>
 const uint8* DecodeVarint64KnownSize(const uint8* buffer, uint64* value) {
   GOOGLE_DCHECK_GT(N, 0);
   uint64 result = static_cast<uint64>(buffer[N - 1]) << (7 * (N - 1));
-  for (int i = 0, offset = 0; i < N - 1; i++, offset += 7) {
+  for (size_t i = 0, offset = 0; i < N - 1; i++, offset += 7) {
     result += static_cast<uint64>(buffer[i] - 0x80) << offset;
   }
   *value = result;
@@ -954,3 +954,5 @@ uint8* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

@@ -1491,7 +1491,8 @@ class PROTOBUF_EXPORT FileDescriptor {
   Syntax syntax() const;
   static const char* SyntaxName(Syntax syntax);
 
-  // Find a top-level message type by name.  Returns nullptr if not found.
+  // Find a top-level message type by name (not full_name).  Returns nullptr if
+  // not found.
   const Descriptor* FindMessageTypeByName(ConstStringParam name) const;
   // Find a top-level enum type by name.  Returns nullptr if not found.
   const EnumDescriptor* FindEnumTypeByName(ConstStringParam name) const;
