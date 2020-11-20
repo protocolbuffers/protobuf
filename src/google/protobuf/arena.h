@@ -348,7 +348,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  // The following are routines are for monitoring. They will aproximate the
+  // The following are routines are for monitoring. They will approximate the
   // total sum allocated and used memory, but the exact value is an
   // implementation deal. For instance allocated space depends on growth
   // policies. Do not use these in unit tests.
