@@ -567,7 +567,7 @@ PyTypeObject RepeatedCompositeContainer_Type = {
     sizeof(RepeatedCompositeContainer),         // tp_basicsize
     0,                                          //  tp_itemsize
     repeated_composite_container::Dealloc,      //  tp_dealloc
-    nullptr,                                    //  tp_print
+    0,                                          //  tp_print, in Python >=3.8: Py_ssize_t tp_vectorcall_offset
     nullptr,                                    //  tp_getattr
     nullptr,                                    //  tp_setattr
     nullptr,                                    //  tp_compare
