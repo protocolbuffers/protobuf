@@ -15,8 +15,13 @@ function build_wheel() {
   PYTHON_VERSION=$1
   PYTHON_BIN=/opt/python/${PYTHON_VERSION}/bin/python
 
+  PLAT=x86_64
+  if [ `uname -m` = 'aarch64' ]; then
+    PLAT=aarch64
+  fi
+
   $PYTHON_BIN setup.py bdist_wheel --cpp_implementation --compile_static_extension
-  auditwheel repair dist/protobuf-${PROTOBUF_VERSION}-${PYTHON_VERSION}-linux_x86_64.whl
+  auditwheel repair dist/protobuf-${PROTOBUF_VERSION}-${PYTHON_VERSION}-linux_${PLAT}.whl
 }
 
 # Validate arguments.
@@ -36,6 +41,9 @@ PYPI_PASSWORD=$3
 
 DIR=${PWD}/'protobuf-python-build'
 PYTHON_VERSIONS=('cp27-cp27mu' 'cp33-cp33m' 'cp34-cp34m' 'cp35-cp35m' 'cp36-cp36m')
+if [ `uname -m` = 'aarch64' ]; then
+  PYTHON_VERSIONS=('cp36-cp36m' 'cp37-cp37m' 'cp38-cp38')
+fi
 
 mkdir -p ${DIR}
 cd ${DIR}
@@ -63,4 +71,4 @@ do
   build_wheel $PYTHON_VERSION
 done
 
-/opt/python/cp27-cp27mu/bin/twine upload wheelhouse/*
+/opt/python/cp36-cp36m/bin/twine upload wheelhouse/*

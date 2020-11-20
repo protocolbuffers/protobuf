@@ -20,8 +20,12 @@ fi
 PROTOBUF_VERSION=$1
 PYPI_USERNAME=$2
 PYPI_PASSWORD=$3
+PLAT=x86_64
+if [ `uname -m` = 'aarch64' ]; then
+  PLAT=AArch64
+fi
 
 docker rmi protobuf-python-wheel
-docker build . -t protobuf-python-wheel
+docker build . -f Dockerfile-${PLAT} -t protobuf-python-wheel
 docker run --rm protobuf-python-wheel ./protobuf_optimized_pip.sh $PROTOBUF_VERSION $PYPI_USERNAME $PYPI_PASSWORD
 docker rmi protobuf-python-wheel
