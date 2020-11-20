@@ -20,45 +20,45 @@ class Field extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>.google.protobuf.Field.Kind kind = 1;</code>
      */
-    private $kind = 0;
+    protected $kind = 0;
     /**
      * The field cardinality.
      *
      * Generated from protobuf field <code>.google.protobuf.Field.Cardinality cardinality = 2;</code>
      */
-    private $cardinality = 0;
+    protected $cardinality = 0;
     /**
      * The field number.
      *
      * Generated from protobuf field <code>int32 number = 3;</code>
      */
-    private $number = 0;
+    protected $number = 0;
     /**
      * The field name.
      *
      * Generated from protobuf field <code>string name = 4;</code>
      */
-    private $name = '';
+    protected $name = '';
     /**
      * The field type URL, without the scheme, for message or enumeration
      * types. Example: `"type.googleapis.com/google.protobuf.Timestamp"`.
      *
      * Generated from protobuf field <code>string type_url = 6;</code>
      */
-    private $type_url = '';
+    protected $type_url = '';
     /**
      * The index of the field type in `Type.oneofs`, for message or enumeration
      * types. The first type has index 1; zero means the type is not in the list.
      *
      * Generated from protobuf field <code>int32 oneof_index = 7;</code>
      */
-    private $oneof_index = 0;
+    protected $oneof_index = 0;
     /**
      * Whether to use alternative packed wire representation.
      *
      * Generated from protobuf field <code>bool packed = 8;</code>
      */
-    private $packed = false;
+    protected $packed = false;
     /**
      * The protocol buffer options.
      *
@@ -70,13 +70,13 @@ class Field extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>string json_name = 10;</code>
      */
-    private $json_name = '';
+    protected $json_name = '';
     /**
      * The string value of the default value of this field. Proto2 syntax only.
      *
      * Generated from protobuf field <code>string default_value = 11;</code>
      */
-    private $default_value = '';
+    protected $default_value = '';
 
     /**
      * Constructor.
@@ -133,7 +133,7 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     public function setKind($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Field_Kind::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Field\Kind::class);
         $this->kind = $var;
 
         return $this;
@@ -159,7 +159,7 @@ class Field extends \Google\Protobuf\Internal\Message
      */
     public function setCardinality($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Field_Cardinality::class);
+        GPBUtil::checkEnum($var, \Google\Protobuf\Field\Cardinality::class);
         $this->cardinality = $var;
 
         return $this;

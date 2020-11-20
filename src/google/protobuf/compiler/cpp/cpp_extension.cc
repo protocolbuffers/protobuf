@@ -99,8 +99,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   std::string scope =
       IsScoped() ? ClassName(descriptor_->extension_scope(), false) + "::" : "";
   variables_["scope"] = scope;
-  std::string scoped_name = scope + ResolveKeyword(name);
-  variables_["scoped_name"] = scoped_name;
+  variables_["scoped_name"] = ExtensionName(descriptor_);
   variables_["number"] = StrCat(descriptor_->number());
 }
 
@@ -175,6 +174,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   }
 
   format(
+      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
       "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
       "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
       "  $scoped_name$($constant_name$, $1$);\n",

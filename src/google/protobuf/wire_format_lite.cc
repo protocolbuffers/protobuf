@@ -479,7 +479,7 @@ void WireFormatLite::WriteString(int field_number, const std::string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kint32max);
+  GOOGLE_CHECK_LE(value.size(), static_cast<size_t>(kint32max));
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -488,14 +488,14 @@ void WireFormatLite::WriteStringMaybeAliased(int field_number,
                                              io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kint32max);
+  GOOGLE_CHECK_LE(value.size(), static_cast<size_t>(kint32max));
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 void WireFormatLite::WriteBytes(int field_number, const std::string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kint32max);
+  GOOGLE_CHECK_LE(value.size(), static_cast<size_t>(kint32max));
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -503,7 +503,7 @@ void WireFormatLite::WriteBytesMaybeAliased(int field_number,
                                             const std::string& value,
                                             io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kint32max);
+  GOOGLE_CHECK_LE(value.size(), static_cast<size_t>(kint32max));
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
@@ -776,3 +776,5 @@ size_t WireFormatLite::SInt64Size(const RepeatedField<int64>& value) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

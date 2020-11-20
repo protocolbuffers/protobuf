@@ -388,7 +388,7 @@ final class UnsafeUtil {
       }
 
       if (Android.isOnAndroidDevice()) {
-        return true;
+        return false;
       }
       clazz.getMethod("getByte", long.class);
       clazz.getMethod("putByte", long.class, byte.class);

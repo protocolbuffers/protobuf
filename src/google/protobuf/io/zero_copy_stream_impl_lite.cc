@@ -168,7 +168,7 @@ bool StringOutputStream::Next(void** data, int* size) {
 void StringOutputStream::BackUp(int count) {
   GOOGLE_CHECK_GE(count, 0);
   GOOGLE_CHECK(target_ != NULL);
-  GOOGLE_CHECK_LE(count, target_->size());
+  GOOGLE_CHECK_LE(static_cast<size_t>(count), target_->size());
   target_->resize(target_->size() - count);
 }
 

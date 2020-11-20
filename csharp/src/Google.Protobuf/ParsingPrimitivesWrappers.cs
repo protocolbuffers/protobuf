@@ -160,8 +160,11 @@ namespace Google.Protobuf
 
         internal static uint? ReadUInt32Wrapper(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
-            // length:1 + tag:1 + value:5(varint32-max) = 7 bytes
-            if (state.bufferPos + 7 <= state.bufferSize)
+            // field=1, type=varint = tag of 8
+            const int expectedTag = 8;
+            // length:1 + tag:1 + value:10(varint64-max) = 12 bytes
+            // Value can be 64 bits for negative integers
+            if (state.bufferPos + 12 <= state.bufferSize)
             {
                 // The entire wrapper message is already contained in `buffer`.
                 int pos0 = state.bufferPos;
@@ -177,8 +180,7 @@ namespace Google.Protobuf
                     return ReadUInt32WrapperSlow(ref buffer, ref state);
                 }
                 int finalBufferPos = state.bufferPos + length;
-                // field=1, type=varint = tag of 8
-                if (buffer[state.bufferPos++] != 8)
+                if (buffer[state.bufferPos++] != expectedTag)
                 {
                     state.bufferPos = pos0;
                     return ReadUInt32WrapperSlow(ref buffer, ref state);

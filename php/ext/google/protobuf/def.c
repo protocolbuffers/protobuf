@@ -772,6 +772,7 @@ upb_symtab *DescriptorPool_GetSymbolTable() {
   return intern->symtab;
 }
 
+
 /*
  * DescriptorPool::getGeneratedPool()
  *
@@ -906,13 +907,38 @@ static void add_name_mappings(const upb_filedef *file) {
   }
 }
 
+static void add_descriptor(DescriptorPool *pool,
+                           const google_protobuf_FileDescriptorProto *file) {
+  upb_strview name = google_protobuf_FileDescriptorProto_name(file);
+  upb_status status;
+  const upb_filedef *file_def;
+  upb_status_clear(&status);
+
+  if (upb_symtab_lookupfile2(pool->symtab, name.data, name.size)) {
+    // Already added.
+    fprintf(stderr, "WARNING: file was already added\n");
+    return;
+  }
+
+  // The PHP code generator currently special-cases descriptor.proto.  It
+  // doesn't add it as a dependency even if the proto file actually does
+  // depend on it.
+  if (depends_on_descriptor(file)) {
+    google_protobuf_FileDescriptorProto_getmsgdef(pool->symtab);
+  }
+
+  file_def = upb_symtab_addfile(pool->symtab, file, &status);
+  CheckUpbStatus(&status, "Unable to load descriptor");
+  add_name_mappings(file_def);
+}
+
 /*
- * add_name_mappings()
+ * add_descriptor()
  *
  * Adds the given descriptor data to this DescriptorPool.
  */
-static void add_descriptor(DescriptorPool *pool, const char *data,
-                           int data_len, upb_arena *arena) {
+static void add_descriptor_set(DescriptorPool *pool, const char *data,
+                               int data_len, upb_arena *arena) {
   size_t i, n;
   google_protobuf_FileDescriptorSet *set;
   const google_protobuf_FileDescriptorProto* const* files;
@@ -928,27 +954,28 @@ static void add_descriptor(DescriptorPool *pool, const char *data,
 
   for (i = 0; i < n; i++) {
     const google_protobuf_FileDescriptorProto* file = files[i];
-    upb_strview name = google_protobuf_FileDescriptorProto_name(file);
-    upb_status status;
-    const upb_filedef *file_def;
-    upb_status_clear(&status);
-
-    if (upb_symtab_lookupfile2(pool->symtab, name.data, name.size)) {
-      // Already added.
-      continue;
-    }
-
-    // The PHP code generator currently special-cases descriptor.proto.  It
-    // doesn't add it as a dependency even if the proto file actually does
-    // depend on it.
-    if (depends_on_descriptor(file)) {
-      google_protobuf_FileDescriptorProto_getmsgdef(pool->symtab);
-    }
-
-    file_def = upb_symtab_addfile(pool->symtab, file, &status);
-    CheckUpbStatus(&status, "Unable to load descriptor");
-    add_name_mappings(file_def);
+    add_descriptor(pool, file);
   }
+}
+
+bool DescriptorPool_HasFile(const char *filename) {
+  DescriptorPool *intern = GetPool(get_generated_pool());
+  return upb_symtab_lookupfile(intern->symtab, filename) != NULL;
+}
+
+void DescriptorPool_AddDescriptor(const char *filename, const char *data,
+                                  int size) {
+  upb_arena *arena = upb_arena_new();
+  const google_protobuf_FileDescriptorProto *file =
+      google_protobuf_FileDescriptorProto_parse(data, size, arena);
+
+  if (!file) {
+    zend_error(E_ERROR, "Failed to parse binary descriptor for %s\n", filename);
+    return;
+  }
+
+  add_descriptor(GetPool(get_generated_pool()), file);
+  upb_arena_free(arena);
 }
 
 /*
@@ -969,7 +996,7 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
   }
 
   arena = upb_arena_new();
-  add_descriptor(intern, data, data_len, arena);
+  add_descriptor_set(intern, data, data_len, arena);
   upb_arena_free(arena);
 }
 
@@ -980,6 +1007,35 @@ static zend_function_entry DescriptorPool_methods[] = {
   PHP_ME(DescriptorPool, getDescriptorByProtoName, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(DescriptorPool, getEnumDescriptorByClassName, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(DescriptorPool, internalAddGeneratedFile, NULL, ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+
+// -----------------------------------------------------------------------------
+// InternalDescriptorPool
+// -----------------------------------------------------------------------------
+
+// For the C extension, Google\Protobuf\Internal\DescriptorPool is not a
+// separate instantiable object, it just returns a
+// Google\Protobuf\DescriptorPool.
+
+zend_class_entry *InternalDescriptorPool_class_entry;
+
+/*
+ * InternalDescriptorPool::getGeneratedPool()
+ *
+ * Returns the generated DescriptorPool. Note that this is identical to
+ * DescriptorPool::getGeneratedPool(), and in fact returns a DescriptorPool
+ * instance.
+ */
+PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
+  zval ret;
+  ZVAL_COPY(&ret, get_generated_pool());
+  RETURN_ZVAL(&ret, 0, 1);
+}
+
+static zend_function_entry InternalDescriptorPool_methods[] = {
+  PHP_ME(InternalDescriptorPool, getGeneratedPool, NULL,
+         ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   ZEND_FE_END
 };
 
@@ -1044,7 +1100,7 @@ void Def_ModuleInit() {
   h = &FieldDescriptor_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
 
-  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\DescriptorPool",
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\DescriptorPool",
                    DescriptorPool_methods);
   DescriptorPool_class_entry = zend_register_internal_class(&tmp_ce);
   DescriptorPool_class_entry->ce_flags |= ZEND_ACC_FINAL;
@@ -1052,6 +1108,10 @@ void Def_ModuleInit() {
   h = &DescriptorPool_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = DescriptorPool_destructor;
+
+  INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Internal\\DescriptorPool",
+                   InternalDescriptorPool_methods);
+  InternalDescriptorPool_class_entry = zend_register_internal_class(&tmp_ce);
 
   // GPBType.
 #define STR(str) (str), strlen(str)

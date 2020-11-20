@@ -44,6 +44,7 @@ import static com.google.protobuf.util.Timestamps.NANOS_PER_SECOND;
 
 import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.protobuf.Duration;
+import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Comparator;
 
@@ -72,23 +73,25 @@ public final class Durations {
 
   private Durations() {}
 
-  private static final Comparator<Duration> COMPARATOR =
-      new Comparator<Duration>() {
-        @Override
-        public int compare(Duration d1, Duration d2) {
-          checkValid(d1);
-          checkValid(d2);
-          int secDiff = Long.compare(d1.getSeconds(), d2.getSeconds());
-          return (secDiff != 0) ? secDiff : Integer.compare(d1.getNanos(), d2.getNanos());
-        }
-      };
+  private static enum DurationComparator implements Comparator<Duration>, Serializable {
+    INSTANCE;
+
+    @Override
+    public int compare(Duration d1, Duration d2) {
+      checkValid(d1);
+      checkValid(d2);
+      int secDiff = Long.compare(d1.getSeconds(), d2.getSeconds());
+      return (secDiff != 0) ? secDiff : Integer.compare(d1.getNanos(), d2.getNanos());
+    }
+  }
 
   /**
    * Returns a {@link Comparator} for {@link Duration}s which sorts in increasing chronological
-   * order. Nulls and invalid {@link Duration}s are not allowed (see {@link #isValid}).
+   * order. Nulls and invalid {@link Duration}s are not allowed (see {@link #isValid}). The returned
+   * comparator is serializable.
    */
   public static Comparator<Duration> comparator() {
-    return COMPARATOR;
+    return DurationComparator.INSTANCE;
   }
 
   /**
@@ -99,7 +102,7 @@ public final class Durations {
    *     and a value greater than {@code 0} if {@code x > y}
    */
   public static int compare(Duration x, Duration y) {
-    return COMPARATOR.compare(x, y);
+    return DurationComparator.INSTANCE.compare(x, y);
   }
 
   /**

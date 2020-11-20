@@ -591,3 +591,5 @@ const char* UnknownFieldParse(uint32 tag, std::string* unknown, const char* ptr,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

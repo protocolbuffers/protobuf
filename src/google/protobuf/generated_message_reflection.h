@@ -291,17 +291,14 @@ enum {
 void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
                                        bool eager = false);
 
-// AddDescriptors() is a file-level procedure which adds the encoded
-// FileDescriptorProto for this .proto file to the global DescriptorPool for
-// generated files (DescriptorPool::generated_pool()). It ordinarily runs at
-// static initialization time, but is not used at all in LITE_RUNTIME mode.
-// AddDescriptors() is *not* thread-safe.
-void PROTOBUF_EXPORT AddDescriptors(const DescriptorTable* table);
-
 // These cannot be in lite so we put them in the reflection.
 PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset,
                                                uint32 tag, uint32 has_offset,
                                                io::CodedOutputStream* output);
+
+struct PROTOBUF_EXPORT AddDescriptorsRunner {
+  explicit AddDescriptorsRunner(const DescriptorTable* table);
+};
 
 }  // namespace internal
 }  // namespace protobuf

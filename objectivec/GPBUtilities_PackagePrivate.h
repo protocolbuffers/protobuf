@@ -289,10 +289,6 @@ void GPBSetRetainedObjectIvarWithFieldPrivate(GPBMessage *self,
 id GPBGetObjectIvarWithFieldNoAutocreate(GPBMessage *self,
                                          GPBFieldDescriptor *field);
 
-void GPBSetAutocreatedRetainedObjectIvarWithField(
-    GPBMessage *self, GPBFieldDescriptor *field,
-    id __attribute__((ns_consumed)) value);
-
 // Clears and releases the autocreated message ivar, if it's autocreated. If
 // it's not set as autocreated, this method does nothing.
 void GPBClearAutocreatedMessageIvarWithField(GPBMessage *self,

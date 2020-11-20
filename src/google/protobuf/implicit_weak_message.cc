@@ -63,3 +63,5 @@ const ImplicitWeakMessage* ImplicitWeakMessage::default_instance() {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

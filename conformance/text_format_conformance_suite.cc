@@ -259,8 +259,7 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
                          "optional_float: 18446744073709551616");
 
   // String literals x {Strings, Bytes}
-  for (const auto& field_type :
-       std::vector<const std::string>{"String", "Bytes"}) {
+  for (const auto& field_type : std::vector<std::string>{"String", "Bytes"}) {
     const std::string field_name =
         field_type == "String" ? "optional_string" : "optional_bytes";
     RunValidTextFormatTest(

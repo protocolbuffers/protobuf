@@ -389,7 +389,7 @@ bool MessageLite::SerializePartialToCodedStream(
   }
   int final_byte_count = output->ByteCount();
 
-  if (final_byte_count - original_byte_count != size) {
+  if (final_byte_count - original_byte_count != static_cast<int64>(size)) {
     ByteSizeConsistencyError(size, ByteSizeLong(),
                              final_byte_count - original_byte_count, *this);
   }
@@ -488,7 +488,7 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
                << " exceeded maximum protobuf size of 2GB: " << byte_size;
     return false;
   }
-  if (size < byte_size) return false;
+  if (size < static_cast<int64>(byte_size)) return false;
   uint8* start = reinterpret_cast<uint8*>(data);
   SerializeToArrayImpl(*this, start, byte_size);
   return true;
@@ -581,3 +581,5 @@ void ShutdownProtobufLibrary() {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

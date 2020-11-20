@@ -141,7 +141,7 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
       int path_index) const {
     const FieldDescriptor* field = key_field_path[path_index];
     std::vector<SpecificField> current_parent_fields(parent_fields);
-    if (path_index == key_field_path.size() - 1) {
+    if (path_index == static_cast<int64>(key_field_path.size() - 1)) {
       if (field->is_repeated()) {
         if (!message_differencer_->CompareRepeatedField(
                 message1, message2, field, &current_parent_fields)) {
@@ -187,7 +187,7 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
 void MatchIndicesPostProcessorForSmartList(
     std::vector<int>* match_list1, std::vector<int>* match_list2) {
   int last_matched_index = -1;
-  for (int i = 0; i < match_list1->size(); ++i) {
+  for (size_t i = 0; i < match_list1->size(); ++i) {
     if (match_list1->at(i) < 0) {
       continue;
     }
@@ -395,7 +395,7 @@ void MessageDifferencer::TreatAsMapWithMultipleFieldPathsAsKey(
   GOOGLE_CHECK_EQ(FieldDescriptor::CPPTYPE_MESSAGE, field->cpp_type())
       << "Field has to be message type.  Field name is: " << field->full_name();
   for (const auto& key_field_path : key_field_paths) {
-    for (int j = 0; j < key_field_path.size(); ++j) {
+    for (size_t j = 0; j < key_field_path.size(); ++j) {
       const FieldDescriptor* parent_field =
           j == 0 ? field : key_field_path[j - 1];
       const FieldDescriptor* child_field = key_field_path[j];
@@ -669,8 +669,8 @@ bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
 FieldDescriptorArray MessageDifferencer::CombineFields(
     const FieldDescriptorArray& fields1, Scope fields1_scope,
     const FieldDescriptorArray& fields2, Scope fields2_scope) {
-  int index1 = 0;
-  int index2 = 0;
+  size_t index1 = 0;
+  size_t index2 = 0;
 
   tmp_message_fields_.clear();
 
@@ -1417,8 +1417,8 @@ bool MessageDifferencer::CompareUnknownFields(
 
   // Now that we have two sorted lists, we can detect fields which appear only
   // in one list or the other by traversing them simultaneously.
-  int index1 = 0;
-  int index2 = 0;
+  size_t index1 = 0;
+  size_t index2 = 0;
   while (index1 < fields1.size() || index2 < fields2.size()) {
     enum {
       ADDITION,
@@ -1523,12 +1523,14 @@ bool MessageDifferencer::CompareUnknownFields(
 
     if (IsUnknownFieldIgnored(message1, message2, specific_field,
                               *parent_field)) {
-      if (reporter_ != NULL) {
+      if (report_ignores_ && reporter_ != NULL) {
         parent_field->push_back(specific_field);
         reporter_->ReportUnknownFieldIgnored(message1, message2, *parent_field);
         parent_field->pop_back();
       }
-      return true;
+      if (change_type != ADDITION) ++index1;
+      if (change_type != DELETION) ++index2;
+      continue;
     }
 
     if (change_type == ADDITION || change_type == DELETION ||
@@ -1881,7 +1883,7 @@ MessageDifferencer::StreamReporter::~StreamReporter() {
 
 void MessageDifferencer::StreamReporter::PrintPath(
     const std::vector<SpecificField>& field_path, bool left_side) {
-  for (int i = 0; i < field_path.size(); ++i) {
+  for (size_t i = 0; i < field_path.size(); ++i) {
     if (i > 0) {
       printer_->Print(".");
     }

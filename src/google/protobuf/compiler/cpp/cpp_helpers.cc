@@ -362,10 +362,16 @@ std::string QualifiedClassName(const EnumDescriptor* d) {
   return QualifiedClassName(d, Options());
 }
 
+std::string ExtensionName(const FieldDescriptor* d) {
+  if (const Descriptor* scope = d->extension_scope())
+    return StrCat(ClassName(scope), "::", ResolveKeyword(d->name()));
+  return ResolveKeyword(d->name());
+}
+
 std::string QualifiedExtensionName(const FieldDescriptor* d,
                                    const Options& options) {
   GOOGLE_DCHECK(d->is_extension());
-  return QualifiedFileLevelSymbol(d->file(), FieldName(d), options);
+  return QualifiedFileLevelSymbol(d->file(), ExtensionName(d), options);
 }
 
 std::string QualifiedExtensionName(const FieldDescriptor* d) {
@@ -1396,7 +1402,6 @@ class ParseLoopGenerator {
       format_.Set("has_bits", "_has_bits_");
     }
 
-    format_("$p_ns$::Arena* arena = GetArena(); (void)arena;\n");
     GenerateParseLoop(descriptor, ordered_fields);
     format_.Outdent();
     format_("success:\n");

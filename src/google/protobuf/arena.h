@@ -93,11 +93,28 @@ class EpsCopyInputStream;  // defined in parse_context.h
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
+PROTOBUF_ALWAYS_INLINE
+inline void* AlignTo(void* ptr, size_t align) {
+  return reinterpret_cast<void*>(
+      (reinterpret_cast<uintptr_t>(ptr) + align - 1) & (~align + 1));
+}
+
 // Templated cleanup methods.
 template <typename T>
 void arena_destruct_object(void* object) {
   reinterpret_cast<T*>(object)->~T();
 }
+
+template <bool destructor_skippable, typename T>
+struct ObjectDestructor {
+  constexpr static void (*destructor)(void*) = &arena_destruct_object<T>;
+};
+
+template <typename T>
+struct ObjectDestructor<true, T> {
+  constexpr static void (*destructor)(void*) = nullptr;
+};
+
 template <typename T>
 void arena_delete_object(void* object) {
   delete reinterpret_cast<T*>(object);
@@ -138,15 +155,13 @@ struct ArenaOptions {
   void (*block_dealloc)(void*, size_t);
 
   ArenaOptions()
-      : start_block_size(kDefaultStartBlockSize),
-        max_block_size(kDefaultMaxBlockSize),
+      : start_block_size(internal::AllocationPolicy::kDefaultStartBlockSize),
+        max_block_size(internal::AllocationPolicy::kDefaultMaxBlockSize),
         initial_block(NULL),
         initial_block_size(0),
-        block_alloc(kDefaultBlockAlloc),
-        block_dealloc(&internal::ArenaFree),
+        block_alloc(nullptr),
+        block_dealloc(nullptr),
         make_metrics_collector(nullptr) {}
-
-  PROTOBUF_EXPORT static void* (*const kDefaultBlockAlloc)(size_t);
 
  private:
   // If make_metrics_collector is not nullptr, it will be called at Arena init
@@ -154,18 +169,24 @@ struct ArenaOptions {
   // of interesting events related to the arena.
   internal::ArenaMetricsCollector* (*make_metrics_collector)();
 
-  // Constants define default starting block size and max block size for
-  // arena allocator behavior -- see descriptions above.
-  static const size_t kDefaultStartBlockSize =
-      internal::ArenaImpl::kDefaultStartBlockSize;
-  static const size_t kDefaultMaxBlockSize =
-      internal::ArenaImpl::kDefaultMaxBlockSize;
+  internal::ArenaMetricsCollector* MetricsCollector() const {
+    return make_metrics_collector ? (*make_metrics_collector)() : nullptr;
+  }
+
+  internal::AllocationPolicy AllocationPolicy() const {
+    internal::AllocationPolicy res;
+    res.start_block_size = start_block_size;
+    res.max_block_size = max_block_size;
+    res.block_alloc = block_alloc;
+    res.block_dealloc = block_dealloc;
+    res.metrics_collector = MetricsCollector();
+    return res;
+  }
 
   friend void arena_metrics::EnableArenaMetrics(ArenaOptions*);
 
   friend class Arena;
   friend class ArenaOptionsTestFriend;
-  friend class internal::ArenaImpl;
 };
 
 // Support for non-RTTI environments. (The metrics hooks API uses type
@@ -236,7 +257,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   // Arena constructor taking custom options. See ArenaOptions above for
   // descriptions of the options available.
-  explicit Arena(const ArenaOptions& options) : impl_(options) {}
+  explicit Arena(const ArenaOptions& options)
+      : impl_(options.initial_block, options.initial_block_size,
+              options.AllocationPolicy()) {}
 
   // Block overhead.  Use this as a guide for how much to over-allocate the
   // initial block if you want an allocation of size N to fit inside it.
@@ -244,8 +267,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // WARNING: if you allocate multiple objects, it is difficult to guarantee
   // that a series of allocations will fit in the initial block, especially if
   // Arena changes its alignment guarantees in the future!
-  static const size_t kBlockOverhead = internal::ArenaImpl::kBlockHeaderSize +
-                                       internal::ArenaImpl::kSerialArenaSize;
+  static const size_t kBlockOverhead =
+      internal::ThreadSafeArena::kBlockHeaderSize +
+      internal::ThreadSafeArena::kSerialArenaSize;
 
   inline ~Arena() {}
 
@@ -290,8 +314,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // is obtained from the arena).
   template <typename T, typename... Args>
   PROTOBUF_ALWAYS_INLINE static T* Create(Arena* arena, Args&&... args) {
-    return CreateNoMessage<T>(arena, is_arena_constructable<T>(),
-                              std::forward<Args>(args)...);
+    if (arena == NULL) {
+      return new T(std::forward<Args>(args)...);
+    } else {
+      auto destructor =
+          internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
+                                     T>::destructor;
+      return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor,
+                                          RTTI_TYPE_ID(T)))
+          T(std::forward<Args>(args)...);
+    }
   }
 
   // Create an array of object type T on the arena *without* invoking the
@@ -316,9 +348,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
+  // The following are routines are for monitoring. They will aproximate the
+  // total sum allocated and used memory, but the exact value is an
+  // implementation deal. For instance allocated space depends on growth
+  // policies. Do not use these in unit tests.
   // Returns the total space allocated by the arena, which is the sum of the
-  // sizes of the underlying blocks. This method is relatively fast; a counter
-  // is kept as blocks are allocated.
+  // sizes of the underlying blocks.
   uint64 SpaceAllocated() const { return impl_.SpaceAllocated(); }
   // Returns the total space used by the arena. Similar to SpaceAllocated but
   // does not include free space and block overhead. The total space returned
@@ -336,8 +371,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // Adds |object| to a list of heap-allocated objects to be freed with |delete|
   // when the arena is destroyed or reset.
   template <typename T>
-  PROTOBUF_NOINLINE void Own(T* object) {
-    OwnInternal(object, std::is_convertible<T*, Message*>());
+  PROTOBUF_ALWAYS_INLINE void Own(T* object) {
+    OwnInternal(object, std::is_convertible<T*, MessageLite*>());
   }
 
   // Adds |object| to a list of objects whose destructors will be manually
@@ -346,7 +381,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // normally only used for objects that are placement-newed into
   // arena-allocated memory.
   template <typename T>
-  PROTOBUF_NOINLINE void OwnDestructor(T* object) {
+  PROTOBUF_ALWAYS_INLINE void OwnDestructor(T* object) {
     if (object != NULL) {
       impl_.AddCleanup(object, &internal::arena_destruct_object<T>);
     }
@@ -356,8 +391,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // will be manually called when the arena is destroyed or reset. This differs
   // from OwnDestructor() in that any member function may be specified, not only
   // the class destructor.
-  PROTOBUF_NOINLINE void OwnCustomDestructor(void* object,
-                                             void (*destruct)(void*)) {
+  PROTOBUF_ALWAYS_INLINE void OwnCustomDestructor(void* object,
+                                                  void (*destruct)(void*)) {
     impl_.AddCleanup(object, destruct);
   }
 
@@ -436,6 +471,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   };
 
  private:
+  internal::ThreadSafeArena impl_;
+
   template <typename T>
   struct has_get_arena : InternalHelper<T>::has_get_arena {};
 
@@ -467,41 +504,26 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* CreateInternal(Arena* arena,
-                                                  Args&&... args) {
-    if (arena == NULL) {
-      return new T(std::forward<Args>(args)...);
-    } else {
-      return arena->DoCreate<T>(std::is_trivially_destructible<T>::value,
-                                std::forward<Args>(args)...);
-    }
-  }
-
-  inline void AllocHook(const std::type_info* allocated_type, size_t n) const {
-    impl_.RecordAlloc(allocated_type, n);
-  }
-
   // Allocate and also optionally call collector with the allocated type info
   // when allocation recording is enabled.
-  template <typename T>
-  PROTOBUF_ALWAYS_INLINE void* AllocateInternal(bool skip_explicit_ownership) {
-    const size_t n = internal::AlignUpTo8(sizeof(T));
+  PROTOBUF_ALWAYS_INLINE void* AllocateInternal(size_t size, size_t align,
+                                                void (*destructor)(void*),
+                                                const std::type_info* type) {
     // Monitor allocation if needed.
-    impl_.RecordAlloc(RTTI_TYPE_ID(T), n);
-    if (skip_explicit_ownership) {
-      return AllocateAlignedTo<alignof(T)>(sizeof(T));
+    if (destructor == nullptr) {
+      return AllocateAlignedWithHook(size, align, type);
     } else {
-      if (alignof(T) <= 8) {
-        return impl_.AllocateAlignedAndAddCleanup(
-            n, &internal::arena_destruct_object<T>);
+      if (align <= 8) {
+        auto res = AllocateAlignedWithCleanup(internal::AlignUpTo8(size), type);
+        res.second->elem = res.first;
+        res.second->cleanup = destructor;
+        return res.first;
       } else {
-        auto ptr =
-            reinterpret_cast<uintptr_t>(impl_.AllocateAlignedAndAddCleanup(
-                sizeof(T) + alignof(T) - 8,
-                &internal::arena_destruct_object<T>));
-        return reinterpret_cast<void*>((ptr + alignof(T) - 8) &
-                                       (~alignof(T) + 1));
+        auto res = AllocateAlignedWithCleanup(size + align - 8, type);
+        auto ptr = internal::AlignTo(res.first, align);
+        res.second->elem = ptr;
+        res.second->cleanup = destructor;
+        return ptr;
       }
     }
   }
@@ -522,7 +544,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   PROTOBUF_ALWAYS_INLINE static T* DoCreateMaybeMessage(Arena* arena,
                                                         std::false_type,
                                                         Args&&... args) {
-    return CreateInternal<T>(arena, std::forward<Args>(args)...);
+    return Create<T>(arena, std::forward<Args>(args)...);
   }
 
   template <typename T, typename... Args>
@@ -530,25 +552,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                                       Args&&... args) {
     return DoCreateMaybeMessage<T>(arena, is_arena_constructable<T>(),
                                    std::forward<Args>(args)...);
-  }
-
-  template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* CreateNoMessage(Arena* arena, std::true_type,
-                                                   Args&&... args) {
-    // User is constructing with Create() despite the fact that T supports arena
-    // construction.  In this case we have to delegate to CreateInternal(), and
-    // we can't use any CreateMaybeMessage() specialization that may be defined.
-    return CreateInternal<T>(arena, std::forward<Args>(args)...);
-  }
-
-  template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* CreateNoMessage(Arena* arena,
-                                                   std::false_type,
-                                                   Args&&... args) {
-    // User is constructing with Create() and the type does not support arena
-    // construction.  In this case we can delegate to CreateMaybeMessage() and
-    // use any specialization that may be available for that.
-    return CreateMaybeMessage<T>(arena, std::forward<Args>(args)...);
   }
 
   // Just allocate the required size for the given type assuming the
@@ -559,22 +562,19 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         << "Requested size is too large to fit into size_t.";
     // We count on compiler to realize that if sizeof(T) is a multiple of
     // 8 AlignUpTo can be elided.
-    const size_t n = internal::AlignUpTo8(sizeof(T) * num_elements);
-    // Monitor allocation if needed.
-    impl_.RecordAlloc(RTTI_TYPE_ID(T), n);
-    return static_cast<T*>(AllocateAlignedTo<alignof(T)>(n));
+    const size_t n = sizeof(T) * num_elements;
+    return static_cast<T*>(
+        AllocateAlignedWithHook(n, alignof(T), RTTI_TYPE_ID(T)));
   }
 
   template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE T* DoCreate(bool skip_explicit_ownership,
-                                     Args&&... args) {
-    return new (AllocateInternal<T>(skip_explicit_ownership))
-        T(std::forward<Args>(args)...);
-  }
-  template <typename T, typename... Args>
   PROTOBUF_ALWAYS_INLINE T* DoCreateMessage(Args&&... args) {
     return InternalHelper<T>::Construct(
-        AllocateInternal<T>(InternalHelper<T>::is_destructor_skippable::value),
+        AllocateInternal(sizeof(T), alignof(T),
+                         internal::ObjectDestructor<
+                             InternalHelper<T>::is_destructor_skippable::value,
+                             T>::destructor,
+                         RTTI_TYPE_ID(T)),
         this, std::forward<Args>(args)...);
   }
 
@@ -619,7 +619,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::true_type) {
     if (object != NULL) {
-      impl_.AddCleanup(object, &internal::arena_delete_object<Message>);
+      impl_.AddCleanup(object, &internal::arena_delete_object<MessageLite>);
     }
   }
   template <typename T>
@@ -654,24 +654,38 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   }
 
   // For friends of arena.
-  void* AllocateAligned(size_t n) {
-    return AllocateAlignedNoHook(internal::AlignUpTo8(n));
+  void* AllocateAligned(size_t n, size_t align = 8) {
+    if (align <= 8) {
+      return AllocateAlignedNoHook(internal::AlignUpTo8(n));
+    } else {
+      // We are wasting space by over allocating align - 8 bytes. Compared
+      // to a dedicated function that takes current alignment in consideration.
+      // Such a scheme would only waste (align - 8)/2 bytes on average, but
+      // requires a dedicated function in the outline arena allocation
+      // functions. Possibly re-evaluate tradeoffs later.
+      return internal::AlignTo(AllocateAlignedNoHook(n + align - 8), align);
+    }
   }
-  template<size_t Align>
-  void* AllocateAlignedTo(size_t n) {
-    static_assert(Align > 0, "Alignment must be greater than 0");
-    static_assert((Align & (Align - 1)) == 0, "Alignment must be power of two");
-    if (Align <= 8) return AllocateAligned(n);
-    // TODO(b/151247138): if the pointer would have been aligned already,
-    // this is wasting space. We should pass the alignment down.
-    uintptr_t ptr = reinterpret_cast<uintptr_t>(AllocateAligned(n + Align - 8));
-    ptr = (ptr + Align - 1) & (~Align + 1);
-    return reinterpret_cast<void*>(ptr);
+
+  void* AllocateAlignedWithHook(size_t n, size_t align,
+                                const std::type_info* type) {
+    if (align <= 8) {
+      return AllocateAlignedWithHook(internal::AlignUpTo8(n), type);
+    } else {
+      // We are wasting space by over allocating align - 8 bytes. Compared
+      // to a dedicated function that takes current alignment in consideration.
+      // Such a schemee would only waste (align - 8)/2 bytes on average, but
+      // requires a dedicated function in the outline arena allocation
+      // functions. Possibly re-evaluate tradeoffs later.
+      return internal::AlignTo(AllocateAlignedWithHook(n + align - 8, type),
+                               align);
+    }
   }
 
   void* AllocateAlignedNoHook(size_t n);
-
-  internal::ArenaImpl impl_;
+  void* AllocateAlignedWithHook(size_t n, const std::type_info* type);
+  std::pair<void*, internal::SerialArena::CleanupNode*>
+  AllocateAlignedWithCleanup(size_t n, const std::type_info* type);
 
   template <typename Type>
   friend class internal::GenericTypeHandler;

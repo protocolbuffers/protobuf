@@ -2090,3 +2090,5 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

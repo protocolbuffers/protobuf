@@ -1045,7 +1045,7 @@ class PROTOBUF_EXPORT Reflection final {
                              const OneofDescriptor* oneof_descriptor) const;
   inline uint32* MutableOneofCase(
       Message* message, const OneofDescriptor* oneof_descriptor) const;
-  inline bool HasExtensionSet(const Message& message) const {
+  inline bool HasExtensionSet(const Message& /* message */) const {
     return schema_.HasExtensionSet();
   }
   const internal::ExtensionSet& GetExtensionSet(const Message& message) const;
@@ -1252,7 +1252,8 @@ const T* DynamicCastToGenerated(const Message* from) {
 #if PROTOBUF_RTTI
   return dynamic_cast<const T*>(from);
 #else
-  bool ok = T::default_instance().GetReflection() == from->GetReflection();
+  bool ok = from != nullptr &&
+            T::default_instance().GetReflection() == from->GetReflection();
   return ok ? down_cast<const T*>(from) : nullptr;
 #endif
 }

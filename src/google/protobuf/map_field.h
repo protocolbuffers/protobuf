@@ -72,8 +72,8 @@ class MapIterator;
 // map key.
 class PROTOBUF_EXPORT MapKey {
  public:
-  MapKey() : type_(0) {}
-  MapKey(const MapKey& other) : type_(0) { CopyFrom(other); }
+  MapKey() : type_() {}
+  MapKey(const MapKey& other) : type_() { CopyFrom(other); }
 
   MapKey& operator=(const MapKey& other) {
     CopyFrom(other);
@@ -87,12 +87,12 @@ class PROTOBUF_EXPORT MapKey {
   }
 
   FieldDescriptor::CppType type() const {
-    if (type_ == 0) {
+    if (type_ == FieldDescriptor::CppType()) {
       GOOGLE_LOG(FATAL) << "Protocol Buffer map usage error:\n"
                  << "MapKey::type MapKey is not initialized. "
                  << "Call set methods to initialize MapKey.";
     }
-    return (FieldDescriptor::CppType)type_;
+    return type_;
   }
 
   void SetInt64Value(int64 value) {
@@ -261,7 +261,8 @@ class PROTOBUF_EXPORT MapKey {
   }
 
   // type_ is 0 or a valid FieldDescriptor::CppType.
-  int type_;
+  // Use "CppType()" to indicate zero.
+  FieldDescriptor::CppType type_;
 };
 
 }  // namespace protobuf
@@ -329,7 +330,7 @@ class PROTOBUF_EXPORT MapFieldBase {
   // It uses a linker initialized mutex, so it is not compatible with regular
   // runtime instances.
   // Except in MSVC, where we can't have a constinit mutex.
-  explicit PROTOBUF_MAYBE_CONSTEXPR MapFieldBase(ConstantInitialized)
+  explicit constexpr MapFieldBase(ConstantInitialized)
       : arena_(nullptr),
         repeated_field_(nullptr),
         mutex_(GOOGLE_PROTOBUF_LINKER_INITIALIZED),
@@ -678,7 +679,7 @@ class PROTOBUF_EXPORT DynamicMapField
 // the map value.
 class PROTOBUF_EXPORT MapValueConstRef {
  public:
-  MapValueConstRef() : data_(nullptr), type_(0) {}
+  MapValueConstRef() : data_(nullptr), type_() {}
 
   int64 GetInt64Value() const {
     TYPE_CHECK(FieldDescriptor::CPPTYPE_INT64,
@@ -735,15 +736,16 @@ class PROTOBUF_EXPORT MapValueConstRef {
   // own this value.
   void* data_;
   // type_ is 0 or a valid FieldDescriptor::CppType.
-  int type_;
+  // Use "CppType()" to indicate zero.
+  FieldDescriptor::CppType type_;
 
   FieldDescriptor::CppType type() const {
-    if (type_ == 0 || data_ == nullptr) {
+    if (type_ == FieldDescriptor::CppType() || data_ == nullptr) {
       GOOGLE_LOG(FATAL)
           << "Protocol Buffer map usage error:\n"
           << "MapValueConstRef::type MapValueConstRef is not initialized.";
     }
-    return static_cast<FieldDescriptor::CppType>(type_);
+    return type_;
   }
 
  private:

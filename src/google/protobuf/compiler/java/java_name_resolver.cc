@@ -67,6 +67,7 @@ std::string ClassNameWithoutPackage(const Descriptor* descriptor,
   return StripPackageName(descriptor->full_name(), descriptor->file());
 }
 
+
 // Get the name of an enum's Java class without package name prefix.
 std::string ClassNameWithoutPackage(const EnumDescriptor* descriptor,
                                     bool immutable) {

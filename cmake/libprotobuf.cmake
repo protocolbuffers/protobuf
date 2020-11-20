@@ -2,7 +2,6 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/any.cc
   ${protobuf_source_dir}/src/google/protobuf/any.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/api.pb.cc
-  ${protobuf_source_dir}/src/google/protobuf/arenastring.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/importer.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser.cc
   ${protobuf_source_dir}/src/google/protobuf/descriptor.cc
@@ -121,6 +120,9 @@ if(protobuf_WITH_ZLIB)
 endif()
 if(protobuf_LINK_LIBATOMIC)
   target_link_libraries(libprotobuf atomic)
+endif()
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+	target_link_libraries(libprotobuf log)
 endif()
 target_include_directories(libprotobuf PUBLIC ${protobuf_source_dir}/src)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)

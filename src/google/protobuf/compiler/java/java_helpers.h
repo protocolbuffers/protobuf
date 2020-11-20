@@ -51,6 +51,7 @@ namespace java {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
+
 // If annotation_file is non-empty, prints a javax.annotation.Generated
 // annotation to the given Printer. annotation_file will be referenced in the
 // annotation's comments field. delimiter should be the Printer's delimiter
