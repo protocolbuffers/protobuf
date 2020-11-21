@@ -101,6 +101,7 @@ def MessageToJson(
     message,
     including_default_value_fields=False,
     preserving_proto_field_name=False,
+    use_field_number=False,
     indent=2,
     sort_keys=False,
     use_integers_for_enums=False,
@@ -117,6 +118,8 @@ def MessageToJson(
     preserving_proto_field_name: If True, use the original proto field
         names as defined in the .proto file. If False, convert the field
         names to lowerCamelCase.
+    use_field_number: If True, use the original proto field number as defined
+        in the .proto file.
     indent: The JSON object will be pretty-printed with this indent level.
         An indent level of 0 or negative will only insert newlines.
     sort_keys: If True, then the output will be sorted by field names.
@@ -131,6 +134,7 @@ def MessageToJson(
   printer = _Printer(
       including_default_value_fields,
       preserving_proto_field_name,
+      use_field_number,
       use_integers_for_enums,
       descriptor_pool,
       float_precision=float_precision)
@@ -141,6 +145,7 @@ def MessageToDict(
     message,
     including_default_value_fields=False,
     preserving_proto_field_name=False,
+    use_field_number=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
     float_precision=None):
@@ -157,6 +162,8 @@ def MessageToDict(
     preserving_proto_field_name: If True, use the original proto field
         names as defined in the .proto file. If False, convert the field
         names to lowerCamelCase.
+    use_field_number: If True, use the original proto field number as defined
+        in the .proto file.
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
         default.
@@ -168,6 +175,7 @@ def MessageToDict(
   printer = _Printer(
       including_default_value_fields,
       preserving_proto_field_name,
+      use_field_number,
       use_integers_for_enums,
       descriptor_pool,
       float_precision=float_precision)
@@ -188,11 +196,13 @@ class _Printer(object):
       self,
       including_default_value_fields=False,
       preserving_proto_field_name=False,
+      use_field_number=False,
       use_integers_for_enums=False,
       descriptor_pool=None,
       float_precision=None):
     self.including_default_value_fields = including_default_value_fields
     self.preserving_proto_field_name = preserving_proto_field_name
+    self.use_field_number = use_field_number
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
     if float_precision:
@@ -223,6 +233,8 @@ class _Printer(object):
       for field, value in fields:
         if self.preserving_proto_field_name:
           name = field.name
+        elif self.use_field_number:
+          name = field.number
         else:
           name = field.json_name
         if _IsMapEntry(field):
@@ -261,6 +273,8 @@ class _Printer(object):
             continue
           if self.preserving_proto_field_name:
             name = field.name
+          elif self.use_field_number:
+            name = field.number
           else:
             name = field.json_name
           if name in js:
