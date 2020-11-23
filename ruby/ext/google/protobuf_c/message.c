@@ -387,11 +387,27 @@ VALUE create_submsg_from_hash(const MessageLayout* layout,
 
 #endif
 
+void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
+                           upb_arena* arena);
+
+void Map_InitFromValue(upb_map* map, upb_fieldtype_t key_type,
+                       TypeInfo val_type, VALUE val, upb_arena* arena);
+
+upb_msgval MessageValue_FromValue(VALUE val, TypeInfo info, upb_arena *arena) {
+  if (info.type == UPB_TYPE_MESSAGE) {
+    upb_msgval msgval;
+    upb_msg *msg = upb_msg_new(info.def.msgdef->msgdef, arena);
+    Message_InitFromValue(msg, info.def.msgdef->msgdef, val, arena);
+    msgval.msg_val = msg;
+    return msgval;
+  } else {
+    return Convert_RubyToUpb(val, "", info, arena);
+  }
+}
+
 void Array_InitFromValue(upb_array* arr, const upb_fielddef* f, VALUE val,
                          upb_arena* arena) {
-  VALUE ary;
-  TypeInfo *type_info = TypeInfo_get(f);
-  int i;
+  TypeInfo type_info = TypeInfo_get(f);
 
   if (TYPE(val) != T_ARRAY) {
     rb_raise(rb_eArgError,
@@ -399,38 +415,29 @@ void Array_InitFromValue(upb_array* arr, const upb_fielddef* f, VALUE val,
              upb_fielddef_name(f), rb_class2name(CLASS_OF(val)));
   }
 
-  for (i = 0; i < RARRAY_LEN(val); i++) {
+  for (int i = 0; i < RARRAY_LEN(val); i++) {
     VALUE entry = rb_ary_entry(val, i);
-    upb_msgval msgval =
-        Convert_RubyToUpb(val, upb_fielddef_name(f), type_info, arena);
-    if (TYPE(entry) == T_HASH && upb_fielddef_issubmsg(f)) {
-      entry = create_submsg_from_hash(self->descriptor->layout, f, entry);
-    }
-
-    RepeatedField_push(ary, entry);
+    upb_msgval msgval = MessageValue_FromValue(entry, type_info, arena);
+    upb_array_append(arr, msgval, arena);
   }
 }
-
-void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
-                           upb_arena* arena);
 
 void Message_InitFieldFromValue(upb_msg* msg, const upb_fielddef* f, VALUE val,
                                 upb_arena* arena) {
   if (TYPE(val) == T_NIL) return;
 
   if (upb_fielddef_ismap(f)) {
-    upb_map *map = upb_msg_mutable(msg, f, arena).map_val;
-    const upb_fielddef *key_f = upb_fielddef_itof(m, 1);
-    const upb_fielddef *val_f = upb_fielddef_itof(m, 2);
+    upb_map *map = upb_msg_mutable(msg, f, arena).map;
+    const upb_msgdef *entry_m = upb_fielddef_msgsubdef(f);
+    const upb_fielddef *key_f = upb_msgdef_itof(entry_m, 1);
+    const upb_fielddef *val_f = upb_msgdef_itof(entry_m, 2);
     upb_fieldtype_t key_type = upb_fielddef_type(key_f);
-    upb_fieldtype_t val_type = upb_fielddef_type(val_f);
-    const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
-    Map_InitFromValue(map, key_type, val_type, val_m, val);
+    Map_InitFromValue(map, key_type, TypeInfo_get(val_f), val, arena);
   } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
-    upb_array *arr = upb_msg_mutable(msg, f, arena).arr_val;
+    upb_array *arr = upb_msg_mutable(msg, f, arena).array;
     Array_InitFromValue(arr, f, val, arena);
   } else if (upb_fielddef_issubmsg(f)) {
-    upb_msg *submsg = upb_msg_mutable(msg, f, arena).msg_val;
+    upb_msg *submsg = upb_msg_mutable(msg, f, arena).msg;
     Message_InitFromValue(submsg, upb_fielddef_msgsubdef(f), val, arena);
   } else {
     upb_msgval msgval =
@@ -447,7 +454,7 @@ typedef struct {
 
 int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   MsgInit *msg_init = (MsgInit*)_self;
-  upb_msg *msg = msg_and_type.msg;
+  const char *name;
 
   if (TYPE(key) == T_STRING) {
     name = RSTRING_PTR(key);
@@ -465,18 +472,19 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Unknown field name '%s' in initialization map entry.", name);
   }
 
-  Message_InitFromValue(msg_init->msg, f, val, msg_init->arena);
+  Message_InitFromValue(msg_init->msg, upb_fielddef_msgsubdef(f), val,
+                        msg_init->arena);
   return ST_CONTINUE;
 }
 
 void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
                            upb_arena* arena) {
-  MessageAndType msg_and_type = {msg, m, arena};
-  if (TYPE(hash_args) != T_HASH) {
+  MsgInit msg_init = {msg, m, arena};
+  if (TYPE(val) != T_HASH) {
     rb_raise(rb_eArgError, "Expected hash arguments.");
   }
 
-  rb_hash_foreach(hash_args, Message_initialize_kwarg, (VALUE)&msg_and_type);
+  rb_hash_foreach(val, Message_initialize_kwarg, (VALUE)&msg_init);
 }
 
 /*
@@ -493,10 +501,10 @@ void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
  */
 VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   Message* self;
-  VALUE hash_args;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
+  upb_arena *arena = Arena_get(self->arena);
 
-  self->msg = upb_msg_new(self->descriptor->msgdef);
+  self->msg = upb_msg_new(self->descriptor->msgdef, arena);
 
   if (argc == 0) {
     return Qnil;
@@ -504,7 +512,7 @@ VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   if (argc != 1) {
     rb_raise(rb_eArgError, "Expected 0 or 1 arguments.");
   }
-  hash_args = argv[0];
+  Message_InitFromValue(self->msg, self->descriptor->msgdef, argv[0], arena);
   return Qnil;
 }
 
@@ -519,14 +527,14 @@ VALUE Message_dup(VALUE _self) {
   VALUE new_msg;
   Message* new_msg_self;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
+  size_t size = upb_msgdef_layout(self->descriptor->msgdef)->size;
 
   new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
   TypedData_Get_Struct(new_msg, Message, &Message_type, new_msg_self);
 
-  layout_dup(self->descriptor->layout,
-             Message_data(new_msg_self),
-             Message_data(self));
-
+  // TODO(copy unknown fields?)
+  // TODO(use official function)
+  memcpy(new_msg_self->msg, self->msg, size);
   return new_msg;
 }
 
@@ -659,17 +667,17 @@ VALUE Message_hash(VALUE _self) {
 VALUE Message_inspect(VALUE _self) {
   Message* self;
   VALUE str = rb_str_new2("");
-  upb_msg_field_iter it;
   bool first = true;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
+  const upb_msgdef *m = self->descriptor->msgdef;
+  int n = upb_msgdef_fieldcount(m);
 
   str = rb_str_new2("<");
   str = rb_str_append(str, rb_str_new2(rb_class2name(CLASS_OF(_self))));
   str = rb_str_cat2(str, ": ");
 
-  for (upb_msg_field_begin(&it, self->descriptor->msgdef);
-       !upb_msg_field_done(&it); upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
+  for (int i = 0; i < n; i++) {
+    const upb_fielddef* field = upb_msgdef_field(m, i);
     // OPT: this would be more efficient if we didn't create Ruby objects for
     // the whole tree. But to maintain backward-compatibility, we would need to
     // make sure we are printing all values in the same way that #inspect
