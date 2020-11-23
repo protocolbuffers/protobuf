@@ -308,12 +308,7 @@ bool ShouldMarkIsInitializedAsFinal(const Descriptor* descriptor,
 
 bool ShouldMarkNewAsFinal(const Descriptor* descriptor,
                           const Options& options) {
-  static std::set<std::string> exclusions{
-  };
-
-  const std::string name = ClassName(descriptor, true);
-  return exclusions.find(name) == exclusions.end() ||
-         options.opensource_runtime;
+  return true;
 }
 
 // Returns true to make the message serialize in order, decided by the following
@@ -1232,13 +1227,13 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
-          "void PackFrom(const ::$proto_ns$::Message& message) {\n"
-          "  _any_metadata_.PackFrom(message);\n"
+          "bool PackFrom(const ::$proto_ns$::Message& message) {\n"
+          "  return _any_metadata_.PackFrom(message);\n"
           "}\n"
-          "void PackFrom(const ::$proto_ns$::Message& message,\n"
+          "bool PackFrom(const ::$proto_ns$::Message& message,\n"
           "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
           "type_url_prefix) {\n"
-          "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
+          "  return _any_metadata_.PackFrom(message, type_url_prefix);\n"
           "}\n"
           "bool UnpackTo(::$proto_ns$::Message* message) const {\n"
           "  return _any_metadata_.UnpackTo(message);\n"
@@ -1250,16 +1245,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "template <typename T, class = typename std::enable_if<"
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
           "::value>::type>\n"
-          "void PackFrom(const T& message) {\n"
-          "  _any_metadata_.PackFrom<T>(message);\n"
+          "bool PackFrom(const T& message) {\n"
+          "  return _any_metadata_.PackFrom<T>(message);\n"
           "}\n"
           "template <typename T, class = typename std::enable_if<"
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
           "::value>::type>\n"
-          "void PackFrom(const T& message,\n"
+          "bool PackFrom(const T& message,\n"
           "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
           "type_url_prefix) {\n"
-          "  _any_metadata_.PackFrom<T>(message, type_url_prefix);"
+          "  return _any_metadata_.PackFrom<T>(message, type_url_prefix);"
           "}\n"
           "template <typename T, class = typename std::enable_if<"
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
@@ -1270,14 +1265,14 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     } else {
       format(
           "template <typename T>\n"
-          "void PackFrom(const T& message) {\n"
-          "  _any_metadata_.PackFrom(message);\n"
+          "bool PackFrom(const T& message) {\n"
+          "  return _any_metadata_.PackFrom(message);\n"
           "}\n"
           "template <typename T>\n"
-          "void PackFrom(const T& message,\n"
+          "bool PackFrom(const T& message,\n"
           "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
           "type_url_prefix) {\n"
-          "  _any_metadata_.PackFrom(message, type_url_prefix);\n"
+          "  return _any_metadata_.PackFrom(message, type_url_prefix);\n"
           "}\n"
           "template <typename T>\n"
           "bool UnpackTo(T* message) const {\n"
@@ -2464,7 +2459,8 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
   } else {
     pod_template =
         "::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(\n"
-        "    reinterpret_cast<char*>(&$first$_) - reinterpret_cast<char*>(this)),\n"
+        "    reinterpret_cast<char*>(&$first$_) - "
+        "reinterpret_cast<char*>(this)),\n"
         "    0, static_cast<size_t>(reinterpret_cast<char*>(&$last$_) -\n"
         "    reinterpret_cast<char*>(&$first$_)) + sizeof($last$_));\n";
   }
@@ -3603,28 +3599,16 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
         "_weak_field_map_);\n");
   }
 
-  format(
-      "static const int kStart = GetInvariantPerBuild($1$UL) % $2$;\n"
-      "bool first_pass = true;\n"
-      "for (int i = kStart; i != kStart || first_pass; i = ((i + $3$) % $2$)) "
-      "{\n",
-      0,
-      num_fields, kLargePrime);
+  format("for (int i = $1$; i >= 0; i-- ) {\n", num_fields - 1);
 
   format.Indent();
   format("switch(i) {\n");
   format.Indent();
 
-  bool first_pass_set = false;
   int index = 0;
   for (const auto* f : ordered_fields) {
     format("case $1$: {\n", index++);
     format.Indent();
-
-    if (!first_pass_set) {
-      first_pass_set = true;
-      format("first_pass = false;\n");
-    }
 
     GenerateSerializeOneField(printer, f, -1);
 
@@ -3636,11 +3620,6 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   for (const auto* r : sorted_extensions) {
     format("case $1$: {\n", index++);
     format.Indent();
-
-    if (!first_pass_set) {
-      first_pass_set = true;
-      format("first_pass = false;\n");
-    }
 
     GenerateSerializeOneExtensionRange(printer, r);
 

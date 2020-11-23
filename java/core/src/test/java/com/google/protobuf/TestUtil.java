@@ -260,8 +260,8 @@ public final class TestUtil {
       TestRequired.newBuilder().setA(1).setB(2).setC(3).build();
 
   /** Helper to convert a String to ByteString. */
-  static ByteString toBytes(String str) {
-    return ByteString.copyFrom(str.getBytes(Internal.UTF_8));
+  public static ByteString toBytes(String str) {
+    return ByteString.copyFromUtf8(str);
   }
 
   // BEGIN FULL-RUNTIME

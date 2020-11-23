@@ -429,6 +429,12 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
 
   format("// @@protoc_insertion_point(includes)\n");
   IncludeFile("net/proto2/public/port_def.inc", printer);
+
+  // For MSVC builds, we use #pragma init_seg to move the initialization of our
+  // libraries to happen before the user code.
+  // This worksaround the fact that MSVC does not do constant initializers when
+  // required by the standard.
+  format("\nPROTOBUF_PRAGMA_INIT_SEG\n");
 }
 
 void FileGenerator::GenerateSourceDefaultInstance(int idx,
@@ -916,8 +922,9 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   if (file_->name() != "net/proto2/proto/descriptor.proto") {
     format(
         "// Force running AddDescriptors() at dynamic initialization time.\n"
-        "static bool $1$ = (static_cast<void>("
-        "::$proto_ns$::internal::AddDescriptors(&$desc_table$)), true);\n",
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
+        "static ::$proto_ns$::internal::AddDescriptorsRunner "
+        "$1$(&$desc_table$);\n",
         UniqueName("dynamic_init_dummy", file_, options_));
   }
 }

@@ -2160,3 +2160,5 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
 }  // namespace text_format_unittest
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

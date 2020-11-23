@@ -515,3 +515,5 @@ TEST(Int128, OStream) {
 }
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

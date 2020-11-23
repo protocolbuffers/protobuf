@@ -90,12 +90,33 @@ class PROTOBUF_EXPORT CriticalSectionLock {
 
 #endif
 
+// In MSVC std::mutex does not have a constexpr constructor.
+// This wrapper makes the constructor constexpr.
+template <typename T>
+class CallOnceInitializedMutex {
+ public:
+  constexpr CallOnceInitializedMutex() : flag_{}, buf_{} {}
+  ~CallOnceInitializedMutex() { get().~T(); }
+
+  void lock() { get().lock(); }
+  void unlock() { get().unlock(); }
+
+ private:
+  T& get() {
+    std::call_once(flag_, [&] { ::new (static_cast<void*>(&buf_)) T(); });
+    return reinterpret_cast<T&>(buf_);
+  }
+
+  std::once_flag flag_;
+  alignas(T) char buf_[sizeof(T)];
+};
+
 // Mutex is a natural type to wrap. As both google and other organization have
 // specialized mutexes. gRPC also provides an injection mechanism for custom
 // mutexes.
 class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
  public:
-  WrappedMutex() = default;
+  constexpr WrappedMutex() = default;
   void Lock() GOOGLE_PROTOBUF_ACQUIRE() { mu_.lock(); }
   void Unlock() GOOGLE_PROTOBUF_RELEASE() { mu_.unlock(); }
   // Crash if this Mutex is not held exclusively by this thread.
@@ -103,11 +124,13 @@ class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
   void AssertHeld() const {}
 
  private:
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+#if defined(GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP)
+  CallOnceInitializedMutex<CriticalSectionLock> mu_;
+#elif defined(_MSC_VER)
+  CallOnceInitializedMutex<std::mutex> mu_;
+#else
   std::mutex mu_;
-#else  // ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-  CriticalSectionLock mu_;
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
+#endif
 };
 
 using Mutex = WrappedMutex;

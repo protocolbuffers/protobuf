@@ -75,8 +75,9 @@
 #undef PROTOBUF_DISABLE_MSVC_UNION_WARNING
 #undef PROTOBUF_ENABLE_MSVC_UNION_WARNING
 #undef PROTOBUF_CONSTINIT
-#undef PROTOBUF_MAYBE_CONSTEXPR
 #undef PROTOBUF_ATTRIBUTE_NO_DESTROY
+#undef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#undef PROTOBUF_PRAGMA_INIT_SEG
 
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER
@@ -105,12 +106,15 @@
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #pragma pop_macro("DEBUG")
-#pragma pop_macro("TRUE")
-#pragma pop_macro("FALSE")
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop
+#endif
+
+// Pop the warning(push) from port_def.inc
+#if _MSC_VER
+#pragma warning(pop)
 #endif

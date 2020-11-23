@@ -962,14 +962,14 @@ bool MergedDescriptorDatabase::FindFileByName(const std::string& filename,
 
 bool MergedDescriptorDatabase::FindFileContainingSymbol(
     const std::string& symbol_name, FileDescriptorProto* output) {
-  for (int i = 0; i < sources_.size(); i++) {
+  for (size_t i = 0; i < sources_.size(); i++) {
     if (sources_[i]->FindFileContainingSymbol(symbol_name, output)) {
       // The symbol was found in source i.  However, if one of the previous
       // sources defines a file with the same name (which presumably doesn't
       // contain the symbol, since it wasn't found in that source), then we
       // must hide it from the caller.
       FileDescriptorProto temp;
-      for (int j = 0; j < i; j++) {
+      for (size_t j = 0; j < i; j++) {
         if (sources_[j]->FindFileByName(output->name(), &temp)) {
           // Found conflicting file in a previous source.
           return false;
@@ -984,7 +984,7 @@ bool MergedDescriptorDatabase::FindFileContainingSymbol(
 bool MergedDescriptorDatabase::FindFileContainingExtension(
     const std::string& containing_type, int field_number,
     FileDescriptorProto* output) {
-  for (int i = 0; i < sources_.size(); i++) {
+  for (size_t i = 0; i < sources_.size(); i++) {
     if (sources_[i]->FindFileContainingExtension(containing_type, field_number,
                                                  output)) {
       // The symbol was found in source i.  However, if one of the previous
@@ -992,7 +992,7 @@ bool MergedDescriptorDatabase::FindFileContainingExtension(
       // contain the symbol, since it wasn't found in that source), then we
       // must hide it from the caller.
       FileDescriptorProto temp;
-      for (int j = 0; j < i; j++) {
+      for (size_t j = 0; j < i; j++) {
         if (sources_[j]->FindFileByName(output->name(), &temp)) {
           // Found conflicting file in a previous source.
           return false;

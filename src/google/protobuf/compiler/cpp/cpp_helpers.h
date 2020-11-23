@@ -134,6 +134,10 @@ inline std::string ClassName(const EnumDescriptor* descriptor, bool qualified) {
                    : ClassName(descriptor);
 }
 
+// Returns the extension name prefixed with the class name if nested but without
+// the package name.
+std::string ExtensionName(const FieldDescriptor* d);
+
 std::string QualifiedExtensionName(const FieldDescriptor* d,
                                    const Options& options);
 std::string QualifiedExtensionName(const FieldDescriptor* d);

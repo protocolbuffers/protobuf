@@ -139,20 +139,20 @@
 #ifdef PROTOBUF_FINAL
 #error PROTOBUF_FINAL was previously defined
 #endif
-#ifdef PROTOBUF_DISABLE_MSVC_UNION_WARNING
-#error PROTOBUF_DISABLE_MSVC_UNION_WARNING was previously defined
-#endif
 #ifdef PROTOBUF_ENABLE_MSVC_UNION_WARNING
 #error PROTOBUF_ENABLE_MSVC_UNION_WARNING was previously defined
 #endif
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#ifdef PROTOBUF_MAYBE_CONSTEXPR
-#error PROTOBUF_MAYBE_CONSTEXPR was previously defined
-#endif
 #ifdef PROTOBUF_ATTRIBUTE_NO_DESTROY
 #error PROTOBUF_ATTRIBUTE_NO_DESTROY was previously defined
+#endif
+#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY was previously defined
+#endif
+#ifdef PROTOBUF_PRAGMA_INIT_SEG
+#error PROTOBUF_PRAGMA_INIT_SEG was previously defined
 #endif
 
 
@@ -464,10 +464,6 @@
 // name.
 #pragma push_macro("DEBUG")
 #undef DEBUG
-#pragma push_macro("TRUE")
-#undef TRUE
-#pragma push_macro("FALSE")
-#undef FALSE
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
 #if defined(__clang__)
@@ -560,28 +556,6 @@
 #define PROTOBUF_CONSTINIT
 #endif
 
-// Some constructors can't be constexpr under MSVC, but given that MSVC will not
-// do constant initialization of globals anyway we can omit `constexpr` from
-// them. These constructors are marked with PROTOBUF_MAYBE_CONSTEXPR
-#if defined(_MSC_VER)
-#define PROTOBUF_MAYBE_CONSTEXPR
-#else
-#define PROTOBUF_MAYBE_CONSTEXPR constexpr
-#endif
-
-#if _MSC_VER
-#define PROTOBUF_DISABLE_MSVC_UNION_WARNING \
-  __pragma(warning(push)) \
-  __pragma(warning(disable : 4582)) \
-  __pragma(warning(disable : 4583))
-
-#define PROTOBUF_ENABLE_MSVC_UNION_WARNING \
-  __pragma(warning(pop))
-#else
-#define PROTOBUF_DISABLE_MSVC_UNION_WARNING
-#define PROTOBUF_ENABLE_MSVC_UNION_WARNING
-#endif
-
 #if defined(__cpp_constinit)
 #define PROTOBUF_CONSTINIT constinit
 #elif defined(__has_cpp_attribute)
@@ -603,4 +577,35 @@
 #endif
 #if !defined(PROTOBUF_ATTRIBUTE_NO_DESTROY)
 #define PROTOBUF_ATTRIBUTE_NO_DESTROY
+#endif
+
+#if defined(__GNUC__)
+// Protobuf extensions and reflection require registration of the protos linked
+// in the binary. Not until everything is registered does the runtime have a
+// complete view on all protos. When code is using reflection or extensions
+// in between registration calls this can lead to surprising behavior. By
+// having the registration run first we mitigate this scenario.
+// Highest priority is 101. We use 102 to allow code that really wants to
+// higher priority to still beat us.
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY __attribute__((init_priority((102))))
+#else
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#endif
+
+#if _MSC_VER
+#define PROTOBUF_PRAGMA_INIT_SEG __pragma(init_seg(lib))
+#else
+#define PROTOBUF_PRAGMA_INIT_SEG
+#endif
+
+// Silence some MSVC warnings in all our code.
+#if _MSC_VER
+#pragma warning(push)
+// For non-trivial unions
+#pragma warning(disable : 4582)
+#pragma warning(disable : 4583)
+// For init_seg(lib)
+#pragma warning(disable : 4073)
+// To silence the fact that we will pop this push from another file
+#pragma warning(disable : 5031)
 #endif

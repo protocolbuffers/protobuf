@@ -172,7 +172,7 @@ template <ProcessingType field_type>
 inline void ResetOneofField(const ParseTable& table, int field_number,
                             Arena* arena, MessageLite* msg, uint32* oneof_case,
                             int64 offset, const void* default_ptr) {
-  if (*oneof_case == field_number) {
+  if (static_cast<int64>(*oneof_case) == field_number) {
     // The oneof is already set to the right type, so there is no need to clear
     // it.
     return;

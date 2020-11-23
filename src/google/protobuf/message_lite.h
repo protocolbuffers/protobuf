@@ -151,7 +151,6 @@ class ExplicitlyConstructed {
   } union_;
 };
 
-PROTOBUF_DISABLE_MSVC_UNION_WARNING
 // We need a publicly accessible `value` object to allow constexpr
 // support in C++11.
 // A constexpr accessor does not work portably.
@@ -163,7 +162,6 @@ union EmptyString {
   std::false_type dummy;
   std::string value;
 };
-PROTOBUF_ENABLE_MSVC_UNION_WARNING
 
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.

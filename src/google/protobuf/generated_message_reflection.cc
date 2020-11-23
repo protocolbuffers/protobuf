@@ -836,7 +836,7 @@ void Reflection::ClearField(Message* message,
         }
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (schema_.HasBitIndex(field) == -1) {
+          if (schema_.HasBitIndex(field) == static_cast<uint32>(-1)) {
             // Proto3 does not have has-bits and we need to set a message field
             // to nullptr in order to indicate its un-presence.
             if (GetArena(message) == nullptr) {
@@ -1046,7 +1046,8 @@ void Reflection::ListFieldsMayFailOnStripped(
       schema_.HasHasbits() ? GetHasBits(message) : nullptr;
   const uint32* const has_bits_indices = schema_.has_bit_indices_;
   output->reserve(descriptor_->field_count());
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
+  const int last_non_weak_field_index = last_non_weak_field_index_;
+  for (int i = 0; i <= last_non_weak_field_index; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (!should_fail && schema_.IsFieldStripped(field)) {
       continue;
@@ -1061,10 +1062,11 @@ void Reflection::ListFieldsMayFailOnStripped(
         const uint32* const oneof_case_array = GetConstPointerAtOffset<uint32>(
             &message, schema_.oneof_case_offset_);
         // Equivalent to: HasOneofField(message, field)
-        if (oneof_case_array[containing_oneof->index()] == field->number()) {
+        if (static_cast<int64>(oneof_case_array[containing_oneof->index()]) ==
+            field->number()) {
           output->push_back(field);
         }
-      } else if (has_bits && has_bits_indices[i] != -1) {
+      } else if (has_bits && has_bits_indices[i] != static_cast<uint32>(-1)) {
         CheckInvalidAccess(schema_, field);
         // Equivalent to: HasBit(message, field)
         if (IsIndexInHasBitSet(has_bits, has_bits_indices[i])) {
@@ -2005,7 +2007,7 @@ InternalMetadata* Reflection::MutableInternalMetadata(Message* message) const {
 bool Reflection::HasBit(const Message& message,
                         const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
-  if (schema_.HasBitIndex(field) != -1) {
+  if (schema_.HasBitIndex(field) != static_cast<uint32>(-1)) {
     return IsIndexInHasBitSet(GetHasBits(message), schema_.HasBitIndex(field));
   }
 
@@ -2064,7 +2066,7 @@ bool Reflection::HasBit(const Message& message,
 void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
   const uint32 index = schema_.HasBitIndex(field);
-  if (index == -1) return;
+  if (index == static_cast<uint32>(-1)) return;
   MutableHasBits(message)[index / 32] |=
       (static_cast<uint32>(1) << (index % 32));
 }
@@ -2073,7 +2075,7 @@ void Reflection::ClearBit(Message* message,
                           const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!field->options().weak());
   const uint32 index = schema_.HasBitIndex(field);
-  if (index == -1) return;
+  if (index == static_cast<uint32>(-1)) return;
   MutableHasBits(message)[index / 32] &=
       ~(static_cast<uint32>(1) << (index % 32));
 }
@@ -2107,7 +2109,8 @@ bool Reflection::HasOneof(const Message& message,
 
 bool Reflection::HasOneofField(const Message& message,
                                const FieldDescriptor* field) const {
-  return (GetOneofCase(message, field->containing_oneof()) == field->number());
+  return (GetOneofCase(message, field->containing_oneof()) ==
+          static_cast<uint32>(field->number()));
 }
 
 void Reflection::SetOneofCase(Message* message,
@@ -2416,6 +2419,8 @@ struct MetadataOwner {
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
+void AddDescriptors(const DescriptorTable* table);
+
 void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   // Ensure the file descriptor is added to the pool.
   {
@@ -2493,6 +2498,16 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   MessageFactory::InternalRegisterGeneratedFile(table);
 }
 
+void AddDescriptors(const DescriptorTable* table) {
+  // AddDescriptors is not thread safe. Callers need to ensure calls are
+  // properly serialized. This function is only called pre-main by global
+  // descriptors and we can assume single threaded access or it's called
+  // by AssignDescriptorImpl which uses a mutex to sequence calls.
+  if (table->is_initialized) return;
+  table->is_initialized = true;
+  AddDescriptorsImpl(table);
+}
+
 }  // namespace
 
 // Separate function because it needs to be a friend of
@@ -2513,14 +2528,8 @@ void AssignDescriptors(const DescriptorTable* table, bool eager) {
   call_once(*table->once, AssignDescriptorsImpl, table, eager);
 }
 
-void AddDescriptors(const DescriptorTable* table) {
-  // AddDescriptors is not thread safe. Callers need to ensure calls are
-  // properly serialized. This function is only called pre-main by global
-  // descriptors and we can assume single threaded access or it's called
-  // by AssignDescriptorImpl which uses a mutex to sequence calls.
-  if (table->is_initialized) return;
-  table->is_initialized = true;
-  AddDescriptorsImpl(table);
+AddDescriptorsRunner::AddDescriptorsRunner(const DescriptorTable* table) {
+  AddDescriptors(table);
 }
 
 void RegisterFileLevelMetadata(const DescriptorTable* table) {
@@ -2544,3 +2553,5 @@ void UnknownFieldSetSerializer(const uint8* base, uint32 offset, uint32 tag,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

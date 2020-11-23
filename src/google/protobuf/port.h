@@ -39,5 +39,9 @@
 
 #include <google/protobuf/stubs/port.h>
 
+// Protobuf intends to move into the pb:: namespace.
+namespace protobuf_future_namespace_placeholder {}
+namespace pb = ::protobuf_future_namespace_placeholder;
+
 
 #endif  // GOOGLE_PROTOBUF_PORT_H__
