@@ -209,7 +209,8 @@ def _SimpleDecoder(wire_type, decode_value):
         _DecodeVarint()
   """
 
-  def SpecificDecoder(field_number, is_repeated, is_packed, key, new_default):
+  def SpecificDecoder(field_number, is_repeated, is_packed, key, new_default,
+                      clear_if_default=False):
     if is_packed:
       local_DecodeVarint = _DecodeVarint
       def DecodePackedField(buffer, pos, end, message, field_dict):
@@ -249,10 +250,13 @@ def _SimpleDecoder(wire_type, decode_value):
       return DecodeRepeatedField
     else:
       def DecodeField(buffer, pos, end, message, field_dict):
-        (field_dict[key], pos) = decode_value(buffer, pos)
+        (new_value, pos) = decode_value(buffer, pos)
         if pos > end:
-          del field_dict[key]  # Discard corrupt value.
           raise _DecodeError('Truncated message.')
+        if clear_if_default and not new_value:
+          field_dict.pop(key, None)
+        else:
+          field_dict[key] = new_value
         return pos
       return DecodeField
 
@@ -383,7 +387,9 @@ def _DoubleDecoder():
   return _SimpleDecoder(wire_format.WIRETYPE_FIXED64, InnerDecode)
 
 
-def EnumDecoder(field_number, is_repeated, is_packed, key, new_default):
+def EnumDecoder(field_number, is_repeated, is_packed, key, new_default,
+                clear_if_default=False):
+  """Returns a decoder for enum field."""
   enum_type = key.enum_type
   if is_packed:
     local_DecodeVarint = _DecodeVarint
@@ -498,6 +504,9 @@ def EnumDecoder(field_number, is_repeated, is_packed, key, new_default):
       (enum_value, pos) = _DecodeSignedVarint32(buffer, pos)
       if pos > end:
         raise _DecodeError('Truncated message.')
+      if clear_if_default and not enum_value:
+        field_dict.pop(key, None)
+        return pos
       # pylint: disable=protected-access
       if enum_value in enum_type.values_by_number:
         field_dict[key] = enum_value
@@ -550,7 +559,7 @@ BoolDecoder = _ModifiedDecoder(
 
 
 def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
-                  is_strict_utf8=False):
+                  is_strict_utf8=False, clear_if_default=False):
   """Returns a decoder for a string field."""
 
   local_DecodeVarint = _DecodeVarint
@@ -604,12 +613,16 @@ def StringDecoder(field_number, is_repeated, is_packed, key, new_default,
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      field_dict[key] = _ConvertToUnicode(buffer[pos:new_pos])
+      if clear_if_default and not size:
+        field_dict.pop(key, None)
+      else:
+        field_dict[key] = _ConvertToUnicode(buffer[pos:new_pos])
       return new_pos
     return DecodeField
 
 
-def BytesDecoder(field_number, is_repeated, is_packed, key, new_default):
+def BytesDecoder(field_number, is_repeated, is_packed, key, new_default,
+                 clear_if_default=False):
   """Returns a decoder for a bytes field."""
 
   local_DecodeVarint = _DecodeVarint
@@ -641,7 +654,10 @@ def BytesDecoder(field_number, is_repeated, is_packed, key, new_default):
       new_pos = pos + size
       if new_pos > end:
         raise _DecodeError('Truncated string.')
-      field_dict[key] = buffer[pos:new_pos].tobytes()
+      if clear_if_default and not size:
+        field_dict.pop(key, None)
+      else:
+        field_dict[key] = buffer[pos:new_pos].tobytes()
       return new_pos
     return DecodeField
 
@@ -816,8 +832,12 @@ def MessageSetItemDecoder(descriptor):
     if extension is not None:
       value = field_dict.get(extension)
       if value is None:
+        message_type = extension.message_type
+        if not hasattr(message_type, '_concrete_class'):
+          # pylint: disable=protected-access
+          message._FACTORY.GetPrototype(message_type)
         value = field_dict.setdefault(
-            extension, extension.message_type._concrete_class())
+            extension, message_type._concrete_class())
       if value._InternalParse(buffer, message_start,message_end) != message_end:
         # The only reason _InternalParse would return early is if it encountered
         # an end-group tag.

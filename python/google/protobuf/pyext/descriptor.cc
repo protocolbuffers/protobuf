@@ -1690,7 +1690,7 @@ static PyObject* FindMethodByName(PyBaseDescriptor *self, PyObject* arg) {
   }
 
   const MethodDescriptor* method_descriptor =
-      _GetDescriptor(self)->FindMethodByName(std::string(name, name_size));
+      _GetDescriptor(self)->FindMethodByName(StringParam(name, name_size));
   if (method_descriptor == NULL) {
     PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
     return NULL;

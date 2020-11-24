@@ -180,14 +180,17 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
         "inline bool $classname$_Parse(\n"
-        "    const std::string& name, $classname$* value) {\n"
+        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "value) "
+        "{\n"
         "  return ::$proto_ns$::internal::ParseNamedEnum<$classname$>(\n"
         "    $classname$_descriptor(), name, value);\n"
         "}\n");
   } else {
     format(
         "bool $classname$_Parse(\n"
-        "    const std::string& name, $classname$* value);\n");
+        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "value);\n");
   }
 }
 
@@ -253,7 +256,8 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       "  return $classname$_Name(enum_t_value);\n"
       "}\n");
   format(
-      "static inline bool $nested_name$_Parse(const std::string& name,\n"
+      "static inline bool "
+      "$nested_name$_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,\n"
       "    $resolved_name$* value) {\n"
       "  return $classname$_Parse(name, value);\n"
       "}\n");
@@ -383,7 +387,9 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
         CountUniqueValues(descriptor_));
     format(
         "bool $classname$_Parse(\n"
-        "    const std::string& name, $classname$* value) {\n"
+        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "value) "
+        "{\n"
         "  int int_value;\n"
         "  bool success = ::$proto_ns$::internal::LookUpEnumValue(\n"
         "      $classname$_entries, $1$, name, &int_value);\n"

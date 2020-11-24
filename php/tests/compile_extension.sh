@@ -1,14 +1,20 @@
 #!/bin/bash
 
-VERSION=$2
+set -ex
 
-export PATH=/usr/local/php-$VERSION/bin:$PATH
-export C_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$C_INCLUDE_PATH
-export CPLUS_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$CPLUS_INCLUDE_PATH
+cd $(dirname $0)
 
+../prepare_c_extension.sh
 pushd  ../ext/google/protobuf
-make clean || true
-set -e
-# Add following in configure for debug: --enable-debug CFLAGS='-g -O0'
-phpize && ./configure CFLAGS='-g -O0 -Wall' && make
+phpize --clean
+rm -f configure.in configure.ac
+phpize
+if [ "$1" = "--release" ]; then
+  ./configure --with-php-config=$(which php-config)
+else
+  # To get debugging symbols in PHP itself, build PHP with:
+  #   $ ./configure --enable-debug CFLAGS='-g -O0'
+  ./configure --with-php-config=$(which php-config) CFLAGS="-g -O0 -Wall"
+fi
+make
 popd

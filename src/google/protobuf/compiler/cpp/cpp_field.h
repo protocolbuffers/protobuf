@@ -164,10 +164,6 @@ class FieldGenerator {
     return false;
   }
 
-  // Generate code that allocates the fields's default instance.
-  virtual void GenerateDefaultInstanceAllocator(
-      io::Printer* /*printer*/) const {}
-
   // Generate lines to serialize this field directly to the array "target",
   // which are placed within the message's SerializeWithCachedSizesToArray()
   // method. This must also advance "target" past the written bytes.
@@ -177,11 +173,6 @@ class FieldGenerator {
   // Generate lines to compute the serialized size of this field, which
   // are placed in the message's ByteSize() method.
   virtual void GenerateByteSize(io::Printer* printer) const = 0;
-
-  // Any tags about field layout decisions (such as inlining) to embed in the
-  // offset.
-  virtual uint32 CalculateFieldTag() const { return 0; }
-  virtual bool IsInlined() const { return false; }
 
   void SetHasBitIndex(int32 has_bit_index);
 

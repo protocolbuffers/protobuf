@@ -41,6 +41,7 @@ import static com.google.protobuf.WireFormat.MAX_VARINT_SIZE;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -484,7 +485,7 @@ public abstract class CodedInputStream {
    * Returns true if the stream has reached the end of the input. This is the case if either the end
    * of the underlying input source has been reached or if the stream has reached a limit created
    * using {@link #pushLimit(int)}. This function may get blocked when using StreamDecoder as it
-   * invokes {@link #StreamDecoder.tryRefillBuffer(int)} in this function which will try to read
+   * invokes {@link StreamDecoder#tryRefillBuffer(int)} in this function which will try to read
    * bytes from input.
    */
   public abstract boolean isAtEnd() throws IOException;
@@ -2009,14 +2010,14 @@ public abstract class CodedInputStream {
       int prevPos = buffer.position();
       int prevLimit = buffer.limit();
       try {
-        buffer.position(bufferPos(begin));
-        buffer.limit(bufferPos(end));
+        ((Buffer) buffer).position(bufferPos(begin));
+        ((Buffer) buffer).limit(bufferPos(end));
         return buffer.slice();
       } catch (IllegalArgumentException e) {
         throw InvalidProtocolBufferException.truncatedMessage();
       } finally {
-        buffer.position(prevPos);
-        buffer.limit(prevLimit);
+        ((Buffer) buffer).position(prevPos);
+        ((Buffer) buffer).limit(prevLimit);
       }
     }
   }
@@ -3910,14 +3911,14 @@ public abstract class CodedInputStream {
       int prevPos = currentByteBuffer.position();
       int prevLimit = currentByteBuffer.limit();
       try {
-        currentByteBuffer.position(begin);
-        currentByteBuffer.limit(end);
+        ((Buffer) currentByteBuffer).position(begin);
+        ((Buffer) currentByteBuffer).limit(end);
         return currentByteBuffer.slice();
       } catch (IllegalArgumentException e) {
         throw InvalidProtocolBufferException.truncatedMessage();
       } finally {
-        currentByteBuffer.position(prevPos);
-        currentByteBuffer.limit(prevLimit);
+        ((Buffer) currentByteBuffer).position(prevPos);
+        ((Buffer) currentByteBuffer).limit(prevLimit);
       }
     }
   }

@@ -96,7 +96,7 @@ void VerifyVersion(int headerVersion,
   }
 }
 
-string VersionString(int version) {
+std::string VersionString(int version) {
   int major = version / 1000000;
   int minor = (version / 1000) % 1000;
   int micro = version % 1000;
@@ -127,7 +127,7 @@ namespace internal {
 
 #if defined(__ANDROID__)
 inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                              const string& message) {
+                              const std::string& message) {
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
@@ -162,7 +162,7 @@ inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
 
 #else
 void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                       const string& message) {
+                       const std::string& message) {
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
@@ -177,14 +177,14 @@ void DefaultLogHandler(LogLevel level, const char* filename, int line,
 #endif
 
 void NullLogHandler(LogLevel /* level */, const char* /* filename */,
-                    int /* line */, const string& /* message */) {
+                    int /* line */, const std::string& /* message */) {
   // Nothing.
 }
 
 static LogHandler* log_handler_ = &DefaultLogHandler;
 static std::atomic<int> log_silencer_count_ = ATOMIC_VAR_INIT(0);
 
-LogMessage& LogMessage::operator<<(const string& value) {
+LogMessage& LogMessage::operator<<(const std::string& value) {
   message_ += value;
   return *this;
 }
@@ -304,7 +304,7 @@ void DoNothing() {}
 //
 // TODO(xiaofeng): PROTOBUF_LITTLE_ENDIAN is unfortunately defined in
 // google/protobuf/io/coded_stream.h and therefore can not be used here.
-// Maybe move that macro definition here in the furture.
+// Maybe move that macro definition here in the future.
 uint32 ghtonl(uint32 x) {
   union {
     uint32 result;
@@ -327,3 +327,5 @@ const char* FatalException::what() const throw() {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

@@ -130,7 +130,7 @@ class PROTOBUF_EXPORT JsonStreamParser {
   };
 
   // Parses a single chunk of JSON, returning an error if the JSON was invalid.
-  util::Status ParseChunk(StringPiece json);
+  util::Status ParseChunk(StringPiece chunk);
 
   // Runs the parser based on stack_ and p_, until the stack is empty or p_ runs
   // out of data. If we unexpectedly run out of p_ we push the latest back onto
@@ -268,6 +268,9 @@ class PROTOBUF_EXPORT JsonStreamParser {
 
   // Whether to allow non UTF-8 encoded input and replace invalid code points.
   bool coerce_to_utf8_;
+
+  // Replacement character for invalid UTF-8 code points.
+  std::string utf8_replacement_character_;
 
   // Whether allows empty string represented null array value or object entry
   // value.

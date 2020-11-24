@@ -1,6 +1,6 @@
 """Creates config_setting that allows selecting based on 'compiler' value."""
 
-def create_compiler_config_setting(name, value):
+def create_compiler_config_setting(name, value, visibility = None):
     # The "do_not_use_tools_cpp_compiler_present" attribute exists to
     # distinguish between older versions of Bazel that do not support
     # "@bazel_tools//tools/cpp:compiler" flag_value, and newer ones that do.
@@ -13,9 +13,11 @@ def create_compiler_config_setting(name, value):
             flag_values = {
                 "@bazel_tools//tools/cpp:compiler": value,
             },
+            visibility = visibility,
         )
     else:
         native.config_setting(
             name = name,
             values = {"compiler": value},
+            visibility = visibility,
         )

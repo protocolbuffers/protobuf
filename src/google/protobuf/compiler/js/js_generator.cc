@@ -99,15 +99,6 @@ bool StrEndsWith(StringPiece sp, StringPiece x) {
   return sp.size() >= x.size() && sp.substr(sp.size() - x.size()) == x;
 }
 
-// Returns a copy of |filename| with any trailing ".protodevel" or ".proto
-// suffix stripped.
-// TODO(haberman): Unify with copy in compiler/cpp/internal/helpers.cc.
-std::string StripProto(const std::string& filename) {
-  const char* suffix =
-      StrEndsWith(filename, ".protodevel") ? ".protodevel" : ".proto";
-  return StripSuffixString(filename, suffix);
-}
-
 std::string GetSnakeFilename(const std::string& filename) {
   std::string snake_name = filename;
   ReplaceCharacters(&snake_name, "/", '_');
@@ -467,6 +458,7 @@ bool IgnoreMessage(const Descriptor* d) { return d->options().map_entry(); }
 
 // Does JSPB ignore this entire oneof? True only if all fields are ignored.
 bool IgnoreOneof(const OneofDescriptor* oneof) {
+  if (oneof->is_synthetic()) return true;
   for (int i = 0; i < oneof->field_count(); i++) {
     if (!IgnoreField(oneof->field(i))) {
       return false;
@@ -576,6 +568,7 @@ std::string JSOneofIndex(const OneofDescriptor* oneof) {
   int index = -1;
   for (int i = 0; i < oneof->containing_type()->oneof_decl_count(); i++) {
     const OneofDescriptor* o = oneof->containing_type()->oneof_decl(i);
+    if (o->is_synthetic()) continue;
     // If at least one field in this oneof is not JSPB-ignored, count the oneof.
     for (int j = 0; j < o->field_count(); j++) {
       const FieldDescriptor* f = o->field(j);
@@ -792,6 +785,11 @@ std::string FloatToString(float value) {
 std::string DoubleToString(double value) {
   std::string result = SimpleDtoa(value);
   return PostProcessFloat(result);
+}
+
+bool InRealOneof(const FieldDescriptor* field) {
+  return field->containing_oneof() &&
+         !field->containing_oneof()->is_synthetic();
 }
 
 // Return true if this is an integral field that should be represented as string
@@ -1173,7 +1171,7 @@ std::string RepeatedFieldsArrayName(const GeneratorOptions& options,
 
 bool HasOneofFields(const Descriptor* desc) {
   for (int i = 0; i < desc->field_count(); i++) {
-    if (desc->field(i)->containing_oneof()) {
+    if (InRealOneof(desc->field(i))) {
       return true;
     }
   }
@@ -1411,15 +1409,9 @@ std::string GetPivot(const Descriptor* desc) {
 // generate extra methods (clearFoo() and hasFoo()) for this field.
 bool HasFieldPresence(const GeneratorOptions& options,
                       const FieldDescriptor* field) {
-  if (field->is_repeated() || field->is_map()) {
-    // We say repeated fields and maps don't have presence, but we still do
-    // generate clearFoo() methods for them through a special case elsewhere.
-    return false;
-  }
-
-  return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-         field->containing_oneof() != NULL ||
-         field->file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
+  // This returns false for repeated fields and maps, but we still do
+  // generate clearFoo() methods for these through a special case elsewhere.
+  return field->has_presence();
 }
 
 // We use this to implement the semantics that same file can be generated
@@ -1653,6 +1645,8 @@ void Generator::GenerateHeader(const GeneratorOptions& options,
       " * @public\n"
       " */\n"
       "// GENERATED CODE -- DO NOT EDIT!\n"
+      "/* eslint-disable */\n"
+      "// @ts-nocheck\n"
       "\n");
 }
 
@@ -2676,7 +2670,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
                               /* singular_if_not_packed = */ false),
         "class", GetMessagePath(options, field->containing_type()),
         "settername", "set" + JSGetterName(options, field), "oneoftag",
-        (field->containing_oneof() ? "Oneof" : ""), "repeatedtag",
+        (InRealOneof(field) ? "Oneof" : ""), "repeatedtag",
         (field->is_repeated() ? "Repeated" : ""));
     printer->Annotate("settername", field);
 
@@ -2686,8 +2680,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         "\n"
         "\n",
         "index", JSFieldIndex(field), "oneofgroup",
-        (field->containing_oneof() ? (", " + JSOneofArray(options, field))
-                                   : ""));
+        (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""));
 
     if (field->is_repeated()) {
       GenerateRepeatedMessageHelperMethods(options, printer, field);
@@ -2811,8 +2804,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "  return jspb.Message.set$oneoftag$Field(this, $index$",
           "class", GetMessagePath(options, field->containing_type()),
           "settername", "set" + JSGetterName(options, field), "oneoftag",
-          (field->containing_oneof() ? "Oneof" : ""), "index",
-          JSFieldIndex(field));
+          (InRealOneof(field) ? "Oneof" : ""), "index", JSFieldIndex(field));
       printer->Annotate("settername", field);
       printer->Print(
           "$oneofgroup$, $type$value$rptvalueinit$$typeclose$);\n"
@@ -2822,8 +2814,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "type",
           untyped ? "/** @type{string|number|boolean|Array|undefined} */(" : "",
           "typeclose", untyped ? ")" : "", "oneofgroup",
-          (field->containing_oneof() ? (", " + JSOneofArray(options, field))
-                                     : ""),
+          (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""),
           "rptvalueinit", (field->is_repeated() ? " || []" : ""));
     }
 
@@ -2899,8 +2890,8 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
             "$index$$maybeoneofgroup$, ",
         "class", GetMessagePath(options, field->containing_type()),
         "clearername", "clear" + JSGetterName(options, field),
-        "maybeoneof", (field->containing_oneof() ? "Oneof" : ""),
-        "maybeoneofgroup", (field->containing_oneof()
+        "maybeoneof", (InRealOneof(field) ? "Oneof" : ""),
+        "maybeoneofgroup", (InRealOneof(field)
                             ? (", " + JSOneofArray(options, field))
                             : ""),
         "index", JSFieldIndex(field));
@@ -2965,7 +2956,7 @@ void Generator::GenerateRepeatedPrimitiveHelperMethods(
       "\n",
       "type", untyped ? "/** @type{string|number|boolean|!Uint8Array} */(" : "",
       "typeclose", untyped ? ")" : "", "oneofgroup",
-      (field->containing_oneof() ? (", " + JSOneofArray(options, field)) : ""),
+      (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""),
       "rptvalueinit", "");
   // clang-format on
 }
@@ -2994,8 +2985,8 @@ void Generator::GenerateRepeatedMessageHelperMethods(
       "\n"
       "\n",
       "index", JSFieldIndex(field), "oneofgroup",
-      (field->containing_oneof() ? (", " + JSOneofArray(options, field)) : ""),
-      "ctor", GetMessagePath(options, field->message_type()));
+      (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""), "ctor",
+      GetMessagePath(options, field->message_type()));
 }
 
 void Generator::GenerateClassExtensionFieldInfo(const GeneratorOptions& options,
@@ -3163,6 +3154,15 @@ void Generator::GenerateClassDeserializeBinaryField(
           (field->type() == FieldDescriptor::TYPE_GROUP)
               ? (StrCat(field->number()) + ", ")
               : "");
+    } else if (field->is_packable()) {
+      printer->Print(
+          "      var values = /** @type {$fieldtype$} */ "
+          "(reader.isDelimited() "
+          "? reader.readPacked$reader$() : [reader.read$reader$()]);\n",
+          "fieldtype",
+          JSFieldTypeAnnotation(options, field, false, true,
+                                /* singular_if_not_packed */ false, BYTES_U8),
+          "reader", JSBinaryReaderMethodType(field));
     } else {
       printer->Print(
           "      var value = /** @type {$fieldtype$} */ "
@@ -3174,7 +3174,14 @@ void Generator::GenerateClassDeserializeBinaryField(
           JSBinaryReadWriteMethodName(field, /* is_writer = */ false));
     }
 
-    if (field->is_repeated() && !field->is_packed()) {
+    if (field->is_packable()) {
+      printer->Print(
+          "      for (var i = 0; i < values.length; i++) {\n"
+          "        msg.add$name$(values[i]);\n"
+          "      }\n",
+          "name",
+          JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));
+    } else if (field->is_repeated()) {
       printer->Print(
           "      msg.add$name$(value);\n", "name",
           JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));

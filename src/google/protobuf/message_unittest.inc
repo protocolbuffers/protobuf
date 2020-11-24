@@ -35,11 +35,11 @@
 // This file needs to be included as .inc as it depends on certain macros being
 // defined prior to its inclusion.
 
-#include <google/protobuf/message.h>
-
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#include <google/protobuf/message.h>
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -48,7 +48,6 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -59,6 +58,7 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/io/io_win32.h>
 
 
@@ -235,6 +235,10 @@ TEST(MESSAGE_TEST_NAME, DynamicCastToGenerated) {
                 test_all_types_pointer_const));
   EXPECT_EQ(nullptr, DynamicCastToGenerated<const UNITTEST::TestRequired>(
                          test_all_types_pointer_const));
+
+  Message* test_all_types_pointer_nullptr = nullptr;
+  EXPECT_EQ(nullptr, DynamicCastToGenerated<UNITTEST::TestAllTypes>(
+                         test_all_types_pointer_nullptr));
 }
 
 #ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.

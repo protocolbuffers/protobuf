@@ -190,3 +190,5 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>  // NOLINT

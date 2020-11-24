@@ -31,7 +31,9 @@
 #endregion
 
 using System;
+using System.Buffers;
 using System.IO;
+using System.Security;
 
 namespace Google.Protobuf
 {
@@ -110,6 +112,19 @@ namespace Google.Protobuf
         {
             IMessage message = factory();
             message.MergeFrom(input, DiscardUnknownFields, Extensions);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from the given sequence.
+        /// </summary>
+        /// <param name="data">The data to parse.</param>
+        /// <returns>The parsed message.</returns>
+        [SecuritySafeCritical]
+        public IMessage ParseFrom(ReadOnlySequence<byte> data)
+        {
+            IMessage message = factory();
+            message.MergeFrom(data, DiscardUnknownFields, Extensions);
             return message;
         }
 
@@ -284,6 +299,19 @@ namespace Google.Protobuf
         {
             T message = factory();
             message.MergeFrom(input, DiscardUnknownFields, Extensions);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from the given sequence.
+        /// </summary>
+        /// <param name="data">The data to parse.</param>
+        /// <returns>The parsed message.</returns>
+        [SecuritySafeCritical]
+        public new T ParseFrom(ReadOnlySequence<byte> data)
+        {
+            T message = factory();
+            message.MergeFrom(data, DiscardUnknownFields, Extensions);
             return message;
         }
 

@@ -194,8 +194,8 @@ class PROTOBUF_EXPORT Printer {
 
   ~Printer();
 
-  // Link a substitution variable emitted by the last call to Print to the object
-  // described by descriptor.
+  // Link a substitution variable emitted by the last call to Print to the
+  // object described by descriptor.
   template <typename SomeDescriptor>
   void Annotate(const char* varname, const SomeDescriptor* descriptor) {
     Annotate(varname, varname, descriptor);

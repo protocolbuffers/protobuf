@@ -14,6 +14,8 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 PROTOBUF_NAMESPACE_OPEN
 class TimestampDefaultTypeInternal {
  public:
@@ -28,7 +30,6 @@ static void InitDefaultsscc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto
     new (ptr) PROTOBUF_NAMESPACE_ID::Timestamp();
     ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
   }
-  PROTOBUF_NAMESPACE_ID::Timestamp::InitAsDefaultInstance();
 }
 
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto =
@@ -58,10 +59,10 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\037google/protobuf/timestamp.proto\022\017googl"
   "e.protobuf\"+\n\tTimestamp\022\017\n\007seconds\030\001 \001(\003"
-  "\022\r\n\005nanos\030\002 \001(\005B~\n\023com.google.protobufB\016"
-  "TimestampProtoP\001Z+github.com/golang/prot"
-  "obuf/ptypes/timestamp\370\001\001\242\002\003GPB\252\002\036Google."
-  "Protobuf.WellKnownTypesb\006proto3"
+  "\022\r\n\005nanos\030\002 \001(\005B\205\001\n\023com.google.protobufB"
+  "\016TimestampProtoP\001Z2google.golang.org/pro"
+  "tobuf/types/known/timestamppb\370\001\001\242\002\003GPB\252\002"
+  "\036Google.Protobuf.WellKnownTypesb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_deps[1] = {
 };
@@ -69,42 +70,32 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_goo
   &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once;
-static bool descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftimestamp_2eproto = {
-  &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_initialized, descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto, "google/protobuf/timestamp.proto", 231,
+  false, false, descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto, "google/protobuf/timestamp.proto", 239,
   &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once, descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_sccs, descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_deps, 1, 0,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto, file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2ftimestamp_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2ftimestamp_2eproto)), true);
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2ftimestamp_2eproto(&descriptor_table_google_2fprotobuf_2ftimestamp_2eproto);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void Timestamp::InitAsDefaultInstance() {
-}
 class Timestamp::_Internal {
  public:
 };
 
-Timestamp::Timestamp()
-  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
-  SharedCtor();
-  // @@protoc_insertion_point(constructor:google.protobuf.Timestamp)
-}
 Timestamp::Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-  _internal_metadata_(arena) {
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
   SharedCtor();
   RegisterArenaDtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
 Timestamp::Timestamp(const Timestamp& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _internal_metadata_(nullptr) {
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::memcpy(&seconds_, &from.seconds_,
     static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
     reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
@@ -112,18 +103,20 @@ Timestamp::Timestamp(const Timestamp& from)
 }
 
 void Timestamp::SharedCtor() {
-  ::memset(&seconds_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&nanos_) -
+  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+      reinterpret_cast<char*>(&seconds_) - reinterpret_cast<char*>(this)),
+      0, static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
       reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
 }
 
 Timestamp::~Timestamp() {
   // @@protoc_insertion_point(destructor:google.protobuf.Timestamp)
   SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 void Timestamp::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
+  GOOGLE_DCHECK(GetArena() == nullptr);
 }
 
 void Timestamp::ArenaDtor(void* object) {
@@ -150,12 +143,11 @@ void Timestamp::Clear() {
   ::memset(&seconds_, 0, static_cast<size_t>(
       reinterpret_cast<char*>(&nanos_) -
       reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
-  _internal_metadata_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* Timestamp::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
@@ -181,7 +173,9 @@ const char* Timestamp::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
           ctx->SetLastTag(tag);
           goto success;
         }
-        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
         CHK_(ptr != nullptr);
         continue;
       }
@@ -215,7 +209,7 @@ failure:
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target, stream);
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Timestamp)
   return target;
@@ -270,7 +264,7 @@ void Timestamp::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 void Timestamp::MergeFrom(const Timestamp& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -302,9 +296,13 @@ bool Timestamp::IsInitialized() const {
 
 void Timestamp::InternalSwap(Timestamp* other) {
   using std::swap;
-  _internal_metadata_.Swap(&other->_internal_metadata_);
-  swap(seconds_, other->seconds_);
-  swap(nanos_, other->nanos_);
+  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Timestamp, nanos_)
+      + sizeof(Timestamp::nanos_)
+      - PROTOBUF_FIELD_OFFSET(Timestamp, seconds_)>(
+          reinterpret_cast<char*>(&seconds_),
+          reinterpret_cast<char*>(&other->seconds_));
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Timestamp::GetMetadata() const {

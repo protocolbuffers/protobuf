@@ -178,7 +178,8 @@ class PROTOBUF_EXPORT Importer {
   // contents are stored.
   inline const DescriptorPool* pool() const { return &pool_; }
 
-  void AddUnusedImportTrackFile(const std::string& file_name);
+  void AddUnusedImportTrackFile(const std::string& file_name,
+                                bool is_error = false);
   void ClearUnusedImportTrackFiles();
 
 

@@ -139,6 +139,68 @@ public class IntArrayListTest extends TestCase {
     }
   }
 
+  public void testIndexOf_nullElement() {
+    assertEquals(-1, TERTIARY_LIST.indexOf(null));
+  }
+
+  public void testIndexOf_incompatibleElementType() {
+    assertEquals(-1, TERTIARY_LIST.indexOf(new Object()));
+  }
+
+  public void testIndexOf_notInList() {
+    assertEquals(-1, UNARY_LIST.indexOf(2));
+  }
+
+  public void testIndexOf_notInListWithDuplicates() {
+    IntArrayList listWithDupes = newImmutableIntArrayList(1, 1);
+    assertEquals(-1, listWithDupes.indexOf(2));
+  }
+
+  public void testIndexOf_inList() {
+    assertEquals(1, TERTIARY_LIST.indexOf(2));
+  }
+
+  public void testIndexOf_inListWithDuplicates_matchAtHead() {
+    IntArrayList listWithDupes = newImmutableIntArrayList(1, 1, 2);
+    assertEquals(0, listWithDupes.indexOf(1));
+  }
+
+  public void testIndexOf_inListWithDuplicates_matchMidList() {
+    IntArrayList listWithDupes = newImmutableIntArrayList(2, 1, 1, 2);
+    assertEquals(1, listWithDupes.indexOf(1));
+  }
+
+  public void testContains_nullElement() {
+    assertEquals(false, TERTIARY_LIST.contains(null));
+  }
+
+  public void testContains_incompatibleElementType() {
+    assertEquals(false, TERTIARY_LIST.contains(new Object()));
+  }
+
+  public void testContains_notInList() {
+    assertEquals(false, UNARY_LIST.contains(2));
+  }
+
+  public void testContains_notInListWithDuplicates() {
+    IntArrayList listWithDupes = newImmutableIntArrayList(1, 1);
+    assertEquals(false, listWithDupes.contains(2));
+  }
+
+  public void testContains_inList() {
+    assertEquals(true, TERTIARY_LIST.contains(2));
+  }
+
+  public void testContains_inListWithDuplicates_matchAtHead() {
+    IntArrayList listWithDupes = newImmutableIntArrayList(1, 1, 2);
+    assertEquals(true, listWithDupes.contains(1));
+  }
+
+  public void testContains_inListWithDuplicates_matchMidList() {
+    IntArrayList listWithDupes = newImmutableIntArrayList(2, 1, 1, 2);
+    assertEquals(true, listWithDupes.contains(1));
+  }
+
   public void testSize() {
     assertEquals(0, IntArrayList.emptyList().size());
     assertEquals(1, UNARY_LIST.size());

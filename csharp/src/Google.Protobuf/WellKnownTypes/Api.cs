@@ -37,10 +37,10 @@ namespace Google.Protobuf.WellKnownTypes {
             "ChFyZXNwb25zZV90eXBlX3VybBgEIAEoCRIaChJyZXNwb25zZV9zdHJlYW1p",
             "bmcYBSABKAgSKAoHb3B0aW9ucxgGIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5P",
             "cHRpb24SJwoGc3ludGF4GAcgASgOMhcuZ29vZ2xlLnByb3RvYnVmLlN5bnRh",
-            "eCIjCgVNaXhpbhIMCgRuYW1lGAEgASgJEgwKBHJvb3QYAiABKAlCdQoTY29t",
-            "Lmdvb2dsZS5wcm90b2J1ZkIIQXBpUHJvdG9QAVorZ29vZ2xlLmdvbGFuZy5v",
-            "cmcvZ2VucHJvdG8vcHJvdG9idWYvYXBpO2FwaaICA0dQQqoCHkdvb2dsZS5Q",
-            "cm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJvdG8z"));
+            "eCIjCgVNaXhpbhIMCgRuYW1lGAEgASgJEgwKBHJvb3QYAiABKAlCdgoTY29t",
+            "Lmdvb2dsZS5wcm90b2J1ZkIIQXBpUHJvdG9QAVosZ29vZ2xlLmdvbGFuZy5v",
+            "cmcvcHJvdG9idWYvdHlwZXMva25vd24vYXBpcGKiAgNHUEKqAh5Hb29nbGUu",
+            "UHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -64,7 +64,11 @@ namespace Google.Protobuf.WellKnownTypes {
   /// this message itself. See https://cloud.google.com/apis/design/glossary for
   /// detailed terminology.
   /// </summary>
-  public sealed partial class Api : pb::IMessage<Api> {
+  public sealed partial class Api : pb::IMessage<Api>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Api> _parser = new pb::MessageParser<Api>(() => new Api());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -265,6 +269,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -287,7 +294,36 @@ namespace Google.Protobuf.WellKnownTypes {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      methods_.WriteTo(ref output, _repeated_methods_codec);
+      options_.WriteTo(ref output, _repeated_options_codec);
+      if (Version.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Version);
+      }
+      if (sourceContext_ != null) {
+        output.WriteRawTag(42);
+        output.WriteMessage(SourceContext);
+      }
+      mixins_.WriteTo(ref output, _repeated_mixins_codec);
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
+        output.WriteRawTag(56);
+        output.WriteEnum((int) Syntax);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -341,6 +377,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -380,14 +419,64 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            methods_.AddEntriesFrom(ref input, _repeated_methods_codec);
+            break;
+          }
+          case 26: {
+            options_.AddEntriesFrom(ref input, _repeated_options_codec);
+            break;
+          }
+          case 34: {
+            Version = input.ReadString();
+            break;
+          }
+          case 42: {
+            if (sourceContext_ == null) {
+              SourceContext = new global::Google.Protobuf.WellKnownTypes.SourceContext();
+            }
+            input.ReadMessage(SourceContext);
+            break;
+          }
+          case 50: {
+            mixins_.AddEntriesFrom(ref input, _repeated_mixins_codec);
+            break;
+          }
+          case 56: {
+            Syntax = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
   /// <summary>
   /// Method represents a method of an API interface.
   /// </summary>
-  public sealed partial class Method : pb::IMessage<Method> {
+  public sealed partial class Method : pb::IMessage<Method>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Method> _parser = new pb::MessageParser<Method>(() => new Method());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -570,6 +659,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -598,7 +690,42 @@ namespace Google.Protobuf.WellKnownTypes {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (RequestTypeUrl.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(RequestTypeUrl);
+      }
+      if (RequestStreaming != false) {
+        output.WriteRawTag(24);
+        output.WriteBool(RequestStreaming);
+      }
+      if (ResponseTypeUrl.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(ResponseTypeUrl);
+      }
+      if (ResponseStreaming != false) {
+        output.WriteRawTag(40);
+        output.WriteBool(ResponseStreaming);
+      }
+      options_.WriteTo(ref output, _repeated_options_codec);
+      if (Syntax != global::Google.Protobuf.WellKnownTypes.Syntax.Proto2) {
+        output.WriteRawTag(56);
+        output.WriteEnum((int) Syntax);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -657,6 +784,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -693,7 +823,50 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            RequestTypeUrl = input.ReadString();
+            break;
+          }
+          case 24: {
+            RequestStreaming = input.ReadBool();
+            break;
+          }
+          case 34: {
+            ResponseTypeUrl = input.ReadString();
+            break;
+          }
+          case 40: {
+            ResponseStreaming = input.ReadBool();
+            break;
+          }
+          case 50: {
+            options_.AddEntriesFrom(ref input, _repeated_options_codec);
+            break;
+          }
+          case 56: {
+            Syntax = (global::Google.Protobuf.WellKnownTypes.Syntax) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
@@ -745,7 +918,7 @@ namespace Google.Protobuf.WellKnownTypes {
   /// The mixin construct implies that all methods in `AccessControl` are
   /// also declared with same name and request/response types in
   /// `Storage`. A documentation generator or annotation processor will
-  /// see the effective `Storage.GetAcl` method after inherting
+  /// see the effective `Storage.GetAcl` method after inheriting
   /// documentation and annotations as follows:
   ///
   ///     service Storage {
@@ -777,7 +950,11 @@ namespace Google.Protobuf.WellKnownTypes {
   ///       ...
   ///     }
   /// </summary>
-  public sealed partial class Mixin : pb::IMessage<Mixin> {
+  public sealed partial class Mixin : pb::IMessage<Mixin>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Mixin> _parser = new pb::MessageParser<Mixin>(() => new Mixin());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -877,6 +1054,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -888,7 +1068,25 @@ namespace Google.Protobuf.WellKnownTypes {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (Root.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Root);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -921,6 +1119,9 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -937,7 +1138,30 @@ namespace Google.Protobuf.WellKnownTypes {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            Root = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

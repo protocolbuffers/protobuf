@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.11.2</version>
+    <version>3.14.0</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -52,6 +52,7 @@
         <includes>
           <include>google/protobuf/any.proto</include>
           <include>google/protobuf/api.proto</include>
+          <include>google/protobuf/duration.proto</include>
           <include>google/protobuf/empty.proto</include>
           <include>google/protobuf/field_mask.proto</include>
           <include>google/protobuf/source_context.proto</include>
@@ -89,7 +90,7 @@
                 <resource>
                   <directory>${basedir}/../core/src/main/java/com/google/protobuf</directory>
                   <includes>
-                    <!-- Keep in sync with //:BUILD  -->
+                    <!-- Keep in sync with //java/core:BUILD  -->
                     <include>AbstractMessageLite.java</include>
                     <include>AbstractParser.java</include>
                     <include>AbstractProtobufList.java</include>

@@ -60,7 +60,7 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-class InternalMetadataWithArena;  // metadata.h
+class InternalMetadata;           // metadata_lite.h
 class WireFormat;                 // wire_format.h
 class MessageSetFieldSkipperUsingCord;
 // extension_set_heavy.cc
@@ -104,9 +104,8 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Merge the contents an UnknownFieldSet with the UnknownFieldSet in
   // *metadata, if there is one.  If *metadata doesn't have an UnknownFieldSet
   // then add one to it and make it be a copy of the first arg.
-  static void MergeToInternalMetdata(
-      const UnknownFieldSet& other,
-      internal::InternalMetadataWithArena* metadata);
+  static void MergeToInternalMetadata(const UnknownFieldSet& other,
+                                      internal::InternalMetadata* metadata);
 
   // Swaps the contents of some other UnknownFieldSet with this one.
   inline void Swap(UnknownFieldSet* x);
@@ -173,7 +172,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   template <typename MessageType>
   bool MergeFromMessage(const MessageType& message);
 
-  static const UnknownFieldSet* default_instance();
+  static const UnknownFieldSet& default_instance();
 
  private:
   // For InternalMergeFrom
@@ -219,25 +218,10 @@ inline void WriteLengthDelimited(uint32 num, StringPiece val,
 }
 
 PROTOBUF_EXPORT
-const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx,
-                             bool (*is_valid)(int),
-                             InternalMetadataWithArena* unknown, int field_num);
-PROTOBUF_EXPORT
-const char* PackedEnumParserArg(void* object, const char* ptr,
-                                ParseContext* ctx,
-                                bool (*is_valid)(const void*, int),
-                                const void* data,
-                                InternalMetadataWithArena* unknown,
-                                int field_num);
-
-PROTOBUF_EXPORT
 const char* UnknownGroupParse(UnknownFieldSet* unknown, const char* ptr,
                               ParseContext* ctx);
 PROTOBUF_EXPORT
 const char* UnknownFieldParse(uint64 tag, UnknownFieldSet* unknown,
-                              const char* ptr, ParseContext* ctx);
-PROTOBUF_EXPORT
-const char* UnknownFieldParse(uint32 tag, InternalMetadataWithArena* metadata,
                               const char* ptr, ParseContext* ctx);
 
 }  // namespace internal

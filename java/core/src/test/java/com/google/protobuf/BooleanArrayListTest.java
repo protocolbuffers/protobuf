@@ -140,6 +140,68 @@ public class BooleanArrayListTest extends TestCase {
     }
   }
 
+  public void testIndexOf_nullElement() {
+    assertEquals(-1, TERTIARY_LIST.indexOf(null));
+  }
+
+  public void testIndexOf_incompatibleElementType() {
+    assertEquals(-1, TERTIARY_LIST.indexOf(new Object()));
+  }
+
+  public void testIndexOf_notInList() {
+    assertEquals(-1, UNARY_LIST.indexOf(false));
+  }
+
+  public void testIndexOf_notInListWithDuplicates() {
+    BooleanArrayList listWithDupes = newImmutableBooleanArrayList(true, true);
+    assertEquals(-1, listWithDupes.indexOf(false));
+  }
+
+  public void testIndexOf_inList() {
+    assertEquals(1, TERTIARY_LIST.indexOf(false));
+  }
+
+  public void testIndexOf_inListWithDuplicates_matchAtHead() {
+    BooleanArrayList listWithDupes = newImmutableBooleanArrayList(true, true, false);
+    assertEquals(0, listWithDupes.indexOf(true));
+  }
+
+  public void testIndexOf_inListWithDuplicates_matchMidList() {
+    BooleanArrayList listWithDupes = newImmutableBooleanArrayList(false, true, true, false);
+    assertEquals(1, listWithDupes.indexOf(true));
+  }
+
+  public void testContains_nullElement() {
+    assertEquals(false, TERTIARY_LIST.contains(null));
+  }
+
+  public void testContains_incompatibleElementType() {
+    assertEquals(false, TERTIARY_LIST.contains(new Object()));
+  }
+
+  public void testContains_notInList() {
+    assertEquals(false, UNARY_LIST.contains(false));
+  }
+
+  public void testContains_notInListWithDuplicates() {
+    BooleanArrayList listWithDupes = newImmutableBooleanArrayList(true, true);
+    assertEquals(false, listWithDupes.contains(false));
+  }
+
+  public void testContains_inList() {
+    assertEquals(true, TERTIARY_LIST.contains(false));
+  }
+
+  public void testContains_inListWithDuplicates_matchAtHead() {
+    BooleanArrayList listWithDupes = newImmutableBooleanArrayList(true, true, false);
+    assertEquals(true, listWithDupes.contains(true));
+  }
+
+  public void testContains_inListWithDuplicates_matchMidList() {
+    BooleanArrayList listWithDupes = newImmutableBooleanArrayList(false, true, true, false);
+    assertEquals(true, listWithDupes.contains(true));
+  }
+
   public void testSize() {
     assertEquals(0, BooleanArrayList.emptyList().size());
     assertEquals(1, UNARY_LIST.size());

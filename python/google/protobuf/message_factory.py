@@ -83,6 +83,8 @@ class MessageFactory(object):
           descriptor_name,
           (message.Message,),
           {'DESCRIPTOR': descriptor, '__module__': None})
+      # pylint: disable=protected-access
+      result_class._FACTORY = self
       # If module not set, it wrongly points to message_factory module.
       self._classes[descriptor] = result_class
       for field in descriptor.fields:

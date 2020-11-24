@@ -83,6 +83,7 @@ from google.protobuf.internal import encoder
 from google.protobuf.internal import more_extensions_pb2
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_util
+from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import testing_refleaks
 from google.protobuf import message
 from google.protobuf.internal import _parameterized
@@ -104,6 +105,9 @@ def IsPosInf(val):
   return isinf(val) and (val > 0)
 def IsNegInf(val):
   return isinf(val) and (val < 0)
+
+
+warnings.simplefilter('error', DeprecationWarning)
 
 
 @_parameterized.named_parameters(
@@ -438,12 +442,19 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(str(message), 'optional_float: 2.0\n')
 
   def testHighPrecisionFloatPrinting(self, message_module):
-    message = message_module.TestAllTypes()
-    message.optional_double = 0.12345678912345678
+    msg = message_module.TestAllTypes()
+    msg.optional_float = 0.12345678912345678
+    old_float = msg.optional_float
+    msg.ParseFromString(msg.SerializeToString())
+    self.assertEqual(old_float, msg.optional_float)
+
+  def testHighPrecisionDoublePrinting(self, message_module):
+    msg = message_module.TestAllTypes()
+    msg.optional_double = 0.12345678912345678
     if sys.version_info >= (3,):
-      self.assertEqual(str(message), 'optional_double: 0.12345678912345678\n')
+      self.assertEqual(str(msg), 'optional_double: 0.12345678912345678\n')
     else:
-      self.assertEqual(str(message), 'optional_double: 0.123456789123\n')
+      self.assertEqual(str(msg), 'optional_double: 0.123456789123\n')
 
   def testUnknownFieldPrinting(self, message_module):
     populated = message_module.TestAllTypes()
@@ -885,11 +896,13 @@ class MessageTest(unittest.TestCase):
   def testOneofDefaultValues(self, message_module):
     m = message_module.TestAllTypes()
     self.assertIs(None, m.WhichOneof('oneof_field'))
+    self.assertFalse(m.HasField('oneof_field'))
     self.assertFalse(m.HasField('oneof_uint32'))
 
     # Oneof is set even when setting it to a default value.
     m.oneof_uint32 = 0
     self.assertEqual('oneof_uint32', m.WhichOneof('oneof_field'))
+    self.assertTrue(m.HasField('oneof_field'))
     self.assertTrue(m.HasField('oneof_uint32'))
     self.assertFalse(m.HasField('oneof_string'))
 
@@ -1046,7 +1059,7 @@ class MessageTest(unittest.TestCase):
     self.assertIsInstance(m.optional_string, six.text_type)
 
   def testLongValuedSlice(self, message_module):
-    """It should be possible to use long-valued indicies in slices
+    """It should be possible to use long-valued indices in slices.
 
     This didn't used to work in the v2 C++ implementation.
     """
@@ -1662,6 +1675,70 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(False, message.optional_bool)
     self.assertEqual(0, message.optional_nested_message.bb)
 
+  def testProto3ParserDropDefaultScalar(self):
+    message_proto2 = unittest_pb2.TestAllTypes()
+    message_proto2.optional_int32 = 0
+    message_proto2.optional_string = ''
+    message_proto2.optional_bytes = b''
+    self.assertEqual(len(message_proto2.ListFields()), 3)
+
+    message_proto3 = unittest_proto3_arena_pb2.TestAllTypes()
+    message_proto3.ParseFromString(message_proto2.SerializeToString())
+    self.assertEqual(len(message_proto3.ListFields()), 0)
+
+  def testProto3Optional(self):
+    msg = test_proto3_optional_pb2.TestProto3Optional()
+    self.assertFalse(msg.HasField('optional_int32'))
+    self.assertFalse(msg.HasField('optional_float'))
+    self.assertFalse(msg.HasField('optional_string'))
+    self.assertFalse(msg.HasField('optional_nested_message'))
+    self.assertFalse(msg.optional_nested_message.HasField('bb'))
+
+    # Set fields.
+    msg.optional_int32 = 1
+    msg.optional_float = 1.0
+    msg.optional_string = '123'
+    msg.optional_nested_message.bb = 1
+    self.assertTrue(msg.HasField('optional_int32'))
+    self.assertTrue(msg.HasField('optional_float'))
+    self.assertTrue(msg.HasField('optional_string'))
+    self.assertTrue(msg.HasField('optional_nested_message'))
+    self.assertTrue(msg.optional_nested_message.HasField('bb'))
+    # Set to default value does not clear the fields
+    msg.optional_int32 = 0
+    msg.optional_float = 0.0
+    msg.optional_string = ''
+    msg.optional_nested_message.bb = 0
+    self.assertTrue(msg.HasField('optional_int32'))
+    self.assertTrue(msg.HasField('optional_float'))
+    self.assertTrue(msg.HasField('optional_string'))
+    self.assertTrue(msg.HasField('optional_nested_message'))
+    self.assertTrue(msg.optional_nested_message.HasField('bb'))
+
+    # Test serialize
+    msg2 = test_proto3_optional_pb2.TestProto3Optional()
+    msg2.ParseFromString(msg.SerializeToString())
+    self.assertTrue(msg2.HasField('optional_int32'))
+    self.assertTrue(msg2.HasField('optional_float'))
+    self.assertTrue(msg2.HasField('optional_string'))
+    self.assertTrue(msg2.HasField('optional_nested_message'))
+    self.assertTrue(msg2.optional_nested_message.HasField('bb'))
+
+    self.assertEqual(msg.WhichOneof('_optional_int32'), 'optional_int32')
+
+    # Clear these fields.
+    msg.ClearField('optional_int32')
+    msg.ClearField('optional_float')
+    msg.ClearField('optional_string')
+    msg.ClearField('optional_nested_message')
+    self.assertFalse(msg.HasField('optional_int32'))
+    self.assertFalse(msg.HasField('optional_float'))
+    self.assertFalse(msg.HasField('optional_string'))
+    self.assertFalse(msg.HasField('optional_nested_message'))
+    self.assertFalse(msg.optional_nested_message.HasField('bb'))
+
+    self.assertEqual(msg.WhichOneof('_optional_int32'), None)
+
   def testAssignUnknownEnum(self):
     """Assigning an unknown enum value is allowed and preserves the value."""
     m = unittest_proto3_arena_pb2.TestAllTypes()
@@ -2029,6 +2106,11 @@ class Proto3Test(unittest.TestCase):
     msg.MergeFromString(msg2.SerializeToString())
     self.assertEqual(msg.map_int32_foreign_message[222].d, 20)
     self.assertNotEqual(msg.map_int32_foreign_message[222].c, 123)
+
+    # Merge a dict to map field is not accepted
+    with self.assertRaises(AttributeError):
+      m1.map_int32_all_types.MergeFrom(
+          {1: unittest_proto3_arena_pb2.TestAllTypes()})
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()

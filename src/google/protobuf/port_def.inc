@@ -136,6 +136,24 @@
 #ifdef PROTOBUF_UNUSED
 #error PROTOBUF_UNUSED was previously defined
 #endif
+#ifdef PROTOBUF_FINAL
+#error PROTOBUF_FINAL was previously defined
+#endif
+#ifdef PROTOBUF_ENABLE_MSVC_UNION_WARNING
+#error PROTOBUF_ENABLE_MSVC_UNION_WARNING was previously defined
+#endif
+#ifdef PROTOBUF_CONSTINIT
+#error PROTOBUF_CONSTINIT was previously defined
+#endif
+#ifdef PROTOBUF_ATTRIBUTE_NO_DESTROY
+#error PROTOBUF_ATTRIBUTE_NO_DESTROY was previously defined
+#endif
+#ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#error PROTOBUF_ATTRIBUTE_INIT_PRIORITY was previously defined
+#endif
+#ifdef PROTOBUF_PRAGMA_INIT_SEG
+#error PROTOBUF_PRAGMA_INIT_SEG was previously defined
+#endif
 
 
 #define PROTOBUF_NAMESPACE "google::protobuf"
@@ -235,11 +253,14 @@
 #ifdef GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
 #define PROTOBUF_RETURNS_NONNULL GOOGLE_PROTOBUF_ATTRIBUTE_RETURNS_NONNULL
 #else
-#ifdef __GNUC__
+#if defined(__has_attribute)
+#if __has_attribute(returns_nonnull)
 #define PROTOBUF_RETURNS_NONNULL __attribute__((returns_nonnull))
-#else
-#define PROTOBUF_RETURNS_NONNULL
 #endif
+#endif
+#endif
+#ifndef PROTOBUF_RETURNS_NONNULL
+#define PROTOBUF_RETURNS_NONNULL
 #endif
 
 #if defined(__has_cpp_attribute)
@@ -297,16 +318,25 @@
 
 // Shared google3/opensource definitions. //////////////////////////////////////
 
-#define PROTOBUF_VERSION 3011002
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3011000
-#define PROTOBUF_MIN_PROTOC_VERSION 3011000
+#define PROTOBUF_VERSION 3014000
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3014000
+#define PROTOBUF_MIN_PROTOC_VERSION 3014000
 #define PROTOBUF_VERSION_SUFFIX ""
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3011000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3014000
 
 #if defined(GOOGLE_PROTOBUF_NO_RTTI) && GOOGLE_PROTOBUF_NO_RTTI
+#define PROTOBUF_RTTI 0
+#elif defined(__has_feature)
+// https://clang.llvm.org/docs/LanguageExtensions.html#has-feature-and-has-extension
+#define PROTOBUF_RTTI __has_feature(cxx_rtti)
+#elif !defined(__cxx_rtti)
+// https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros#C.2B.2B98
+#define PROTOBUF_RTTI 0
+#elif defined(__GNUC__) && !defined(__GXX_RTTI)
+#https:  // gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 #define PROTOBUF_RTTI 0
 #else
 #define PROTOBUF_RTTI 1
@@ -329,7 +359,10 @@
   _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
   __builtin_offsetof(TYPE, FIELD)                            \
   _Pragma("clang diagnostic pop")
-#else
+#elif defined(__GNUC__) && \
+          (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+#define PROTOBUF_FIELD_OFFSET(TYPE, FIELD) __builtin_offsetof(TYPE, FIELD)
+#else  // defined(__clang__)
 // Note that we calculate relative to the pointer value 16 here since if we
 // just use zero, GCC complains about dereferencing a NULL pointer.  We
 // choose 16 rather than some other number just in case the compiler would
@@ -341,53 +374,67 @@
 #endif
 
 #if defined(PROTOBUF_USE_DLLS)
-  #if defined(_MSC_VER)
-    #ifdef LIBPROTOBUF_EXPORTS
-      #define PROTOBUF_EXPORT __declspec(dllexport)
-      #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
-      #define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllexport)
-    #else
-      #define PROTOBUF_EXPORT __declspec(dllimport)
-      #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
-      #define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllimport)
-    #endif
-    #ifdef LIBPROTOC_EXPORTS
-      #define PROTOC_EXPORT __declspec(dllexport)
-    #else
-      #define PROTOC_EXPORT __declspec(dllimport)
-    #endif
-  #else  // defined(_MSC_VER)
-    #ifdef LIBPROTOBUF_EXPORTS
-      #define PROTOBUF_EXPORT __attribute__((visibility("default")))
-      #define PROTOBUF_EXPORT_TEMPLATE_DECLARE __attribute__((visibility("default")))
-      #define PROTOBUF_EXPORT_TEMPLATE_DEFINE
-    #else
-      #define PROTOBUF_EXPORT
-      #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
-      #define PROTOBUF_EXPORT_TEMPLATE_DEFINE
-    #endif
-    #ifdef LIBPROTOC_EXPORTS
-      #define PROTOC_EXPORT   __attribute__((visibility("default")))
-    #else
-      #define PROTOC_EXPORT
-    #endif
-  #endif
+#if defined(_MSC_VER)
+#ifdef LIBPROTOBUF_EXPORTS
+#define PROTOBUF_EXPORT __declspec(dllexport)
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllexport)
+#else
+#define PROTOBUF_EXPORT __declspec(dllimport)
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE __declspec(dllimport)
+#endif
+#ifdef LIBPROTOC_EXPORTS
+#define PROTOC_EXPORT __declspec(dllexport)
+#else
+#define PROTOC_EXPORT __declspec(dllimport)
+#endif
+#else  // defined(_MSC_VER)
+#ifdef LIBPROTOBUF_EXPORTS
+#define PROTOBUF_EXPORT __attribute__((visibility("default")))
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE __attribute__((visibility("default")))
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE
+#else
+#define PROTOBUF_EXPORT
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE
+#endif
+#ifdef LIBPROTOC_EXPORTS
+#define PROTOC_EXPORT __attribute__((visibility("default")))
+#else
+#define PROTOC_EXPORT
+#endif
+#endif
 #else  // defined(PROTOBUF_USE_DLLS)
-  #define PROTOBUF_EXPORT
-  #define PROTOC_EXPORT
-  #define PROTOBUF_EXPORT_TEMPLATE_DECLARE
-  #define PROTOBUF_EXPORT_TEMPLATE_DEFINE
+#define PROTOBUF_EXPORT
+#define PROTOC_EXPORT
+#define PROTOBUF_EXPORT_TEMPLATE_DECLARE
+#define PROTOBUF_EXPORT_TEMPLATE_DEFINE
 #endif
 
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _MSC_VER
+#pragma push_macro("CREATE_NEW")
+#undef CREATE_NEW
+#pragma push_macro("DOUBLE_CLICK")
+#undef DOUBLE_CLICK
+#pragma push_macro("ERROR")
+#undef ERROR
+#pragma push_macro("ERROR_BUSY")
+#undef ERROR_BUSY
+#pragma push_macro("ERROR_NOT_FOUND")
+#undef ERROR_NOT_FOUND
 #pragma push_macro("GetMessage")
 #undef GetMessage
 #pragma push_macro("IGNORE")
 #undef IGNORE
 #pragma push_macro("IN")
 #undef IN
+#pragma push_macro("INPUT_KEYBOARD")
+#undef INPUT_KEYBOARD
+#pragma push_macro("NO_ERROR")
+#undef NO_ERROR
 #pragma push_macro("OUT")
 #undef OUT
 #pragma push_macro("OPTIONAL")
@@ -396,13 +443,40 @@
 #undef min
 #pragma push_macro("max")
 #undef max
+#pragma push_macro("NEAR")
+#undef NEAR
+#pragma push_macro("NO_DATA")
+#undef NO_DATA
+#pragma push_macro("REASON_UNKNOWN")
+#undef REASON_UNKNOWN
+#pragma push_macro("SERVICE_DISABLED")
+#undef SERVICE_DISABLED
+#pragma push_macro("SEVERITY_ERROR")
+#undef SEVERITY_ERROR
+#pragma push_macro("STRICT")
+#undef STRICT
+#pragma push_macro("timezone")
+#undef timezone
 #endif  // _MSC_VER
+
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
+// Don't let Objective-C Macros interfere with proto identifiers with the same 
+// name.
+#pragma push_macro("DEBUG")
+#undef DEBUG
+#endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
 #if defined(__clang__)
 #pragma clang diagnostic push
 // TODO(gerbens) ideally we cleanup the code. But a cursory try shows many
 // violations. So let's ignore for now.
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#elif defined(__GNUC__)
+// GCC does not allow disabling diagnostics within an expression:
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60875, so we disable this one
+// globally even though it's only used for PROTOBUF_FIELD_OFFSET.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #endif
 
 // PROTOBUF_ASSUME(pred) tells the compiler that it can assume pred is true. To
@@ -419,4 +493,119 @@
 #endif
 #else
 #define PROTOBUF_ASSUME(pred) GOOGLE_DCHECK(pred)
+#endif
+
+// Specify memory alignment for structs, classes, etc.
+// Use like:
+//   class PROTOBUF_ALIGNAS(16) MyClass { ... }
+//   PROTOBUF_ALIGNAS(16) int array[4];
+//
+// In most places you can use the C++11 keyword "alignas", which is preferred.
+//
+// But compilers have trouble mixing __attribute__((...)) syntax with
+// alignas(...) syntax.
+//
+// Doesn't work in clang or gcc:
+//   struct alignas(16) __attribute__((packed)) S { char c; };
+// Works in clang but not gcc:
+//   struct __attribute__((packed)) alignas(16) S2 { char c; };
+// Works in clang and gcc:
+//   struct alignas(16) S3 { char c; } __attribute__((packed));
+//
+// There are also some attributes that must be specified *before* a class
+// definition: visibility (used for exporting functions/classes) is one of
+// these attributes. This means that it is not possible to use alignas() with a
+// class that is marked as exported.
+#if defined(_MSC_VER)
+#define PROTOBUF_ALIGNAS(byte_alignment) __declspec(align(byte_alignment))
+#elif defined(__GNUC__)
+#define PROTOBUF_ALIGNAS(byte_alignment) \
+  __attribute__((aligned(byte_alignment)))
+#else
+#define PROTOBUF_ALIGNAS(byte_alignment) alignas(byte_alignment)
+#endif
+
+#define PROTOBUF_FINAL final
+
+#if defined(_MSC_VER)
+#define PROTOBUF_THREAD_LOCAL __declspec(thread)
+#else
+#define PROTOBUF_THREAD_LOCAL __thread
+#endif
+
+// For enabling message owned arena, one major blocker is semantic change from
+// moving to copying when there is ownership transfer (e.g., move ctor, swap,
+// set allocated, release). This change not only causes performance regression
+// but also breaks users code (e.g., dangling reference). For top-level
+// messages, since it owns the arena, we can mitigate the issue by transferring
+// ownership of arena. However, we cannot do that for nested messages. In order
+// to tell how many usages of nested messages affected by message owned arena,
+// we need to simulate the arena ownership.
+// This experiment is purely for the purpose of gathering data. All code guarded
+// by this flag is supposed to be removed after this experiment.
+// #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
+
+#if defined(__cpp_constinit)
+#define PROTOBUF_CONSTINIT constinit
+#elif defined(__has_cpp_attribute)
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#endif
+#endif
+#ifndef PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTINIT
+#endif
+
+#if defined(__cpp_constinit)
+#define PROTOBUF_CONSTINIT constinit
+#elif defined(__has_cpp_attribute)
+#if __has_cpp_attribute(clang::require_constant_initialization)
+#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#endif
+#endif
+#ifndef PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTINIT
+#endif
+
+// Some globals with an empty non-trivial destructor are annotated with
+// no_destroy for performance reasons. It reduces the cost of these globals in
+// non-opt mode and under sanitizers.
+#if defined(__has_cpp_attribute)
+#if __has_cpp_attribute(clang::no_destroy)
+#define PROTOBUF_ATTRIBUTE_NO_DESTROY [[clang::no_destroy]]
+#endif
+#endif
+#if !defined(PROTOBUF_ATTRIBUTE_NO_DESTROY)
+#define PROTOBUF_ATTRIBUTE_NO_DESTROY
+#endif
+
+#if defined(__GNUC__)
+// Protobuf extensions and reflection require registration of the protos linked
+// in the binary. Not until everything is registered does the runtime have a
+// complete view on all protos. When code is using reflection or extensions
+// in between registration calls this can lead to surprising behavior. By
+// having the registration run first we mitigate this scenario.
+// Highest priority is 101. We use 102 to allow code that really wants to
+// higher priority to still beat us.
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY __attribute__((init_priority((102))))
+#else
+#define PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#endif
+
+#if _MSC_VER
+#define PROTOBUF_PRAGMA_INIT_SEG __pragma(init_seg(lib))
+#else
+#define PROTOBUF_PRAGMA_INIT_SEG
+#endif
+
+// Silence some MSVC warnings in all our code.
+#if _MSC_VER
+#pragma warning(push)
+// For non-trivial unions
+#pragma warning(disable : 4582)
+#pragma warning(disable : 4583)
+// For init_seg(lib)
+#pragma warning(disable : 4073)
+// To silence the fact that we will pop this push from another file
+#pragma warning(disable : 5031)
 #endif

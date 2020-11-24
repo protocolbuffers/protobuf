@@ -82,17 +82,6 @@ class MessageGenerator {
 
   // Source file stuff.
 
-  // Generate extra fields
-  void GenerateExtraDefaultFields(io::Printer* printer);
-
-  // Generates code that creates default instances for fields.
-  void GenerateFieldDefaultInstances(io::Printer* printer);
-
-  // Generates code that initializes the message's default instance.  This
-  // is separate from allocating because all default instances must be
-  // allocated before any can be initialized.
-  void GenerateDefaultInstanceInitializer(io::Printer* printer);
-
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* printer);
 
@@ -113,7 +102,7 @@ class MessageGenerator {
   bool GenerateParseTable(io::Printer* printer, size_t offset,
                           size_t aux_offset);
 
-  // Generate the field offsets array.  Returns the a pair of the total numer
+  // Generate the field offsets array.  Returns the a pair of the total number
   // of entries generated and the index of the first has_bit entry.
   std::pair<size_t, size_t> GenerateOffsets(io::Printer* printer);
   void GenerateSchema(io::Printer* printer, int offset, int has_offset);
@@ -142,8 +131,10 @@ class MessageGenerator {
   void GenerateSerializeWithCachedSizes(io::Printer* printer);
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer);
   void GenerateSerializeWithCachedSizesBody(io::Printer* printer);
+  void GenerateSerializeWithCachedSizesBodyShuffled(io::Printer* printer);
   void GenerateByteSize(io::Printer* printer);
   void GenerateMergeFrom(io::Printer* printer);
+  void GenerateClassSpecificMergeFrom(io::Printer* printer);
   void GenerateCopyFrom(io::Printer* printer);
   void GenerateSwap(io::Printer* printer);
   void GenerateIsInitialized(io::Printer* printer);
@@ -180,6 +171,10 @@ class MessageGenerator {
                                bool copy_constructor) const;
 
   size_t HasBitsSize() const;
+  int HasBitIndex(const FieldDescriptor* a) const;
+  int HasByteIndex(const FieldDescriptor* a) const;
+  int HasWordIndex(const FieldDescriptor* a) const;
+  bool SameHasByte(const FieldDescriptor* a, const FieldDescriptor* b) const;
   std::vector<uint32> RequiredFieldsBitMask() const;
 
   const Descriptor* descriptor_;

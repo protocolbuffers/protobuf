@@ -4,7 +4,7 @@
 goog.module('proto.conformance.TestAllTypesProto3');
 
 const InternalMessage = goog.require('protobuf.binary.InternalMessage');
-const LazyAccessor = goog.require('protobuf.binary.LazyAccessor');
+const Kernel = goog.require('protobuf.runtime.Kernel');
 
 /**
  * Handwritten code of conformance.TestAllTypesProto3.
@@ -14,18 +14,18 @@ const LazyAccessor = goog.require('protobuf.binary.LazyAccessor');
  */
 class TestAllTypesProto3 {
   /**
-   * @param {!LazyAccessor=} accessor
+   * @param {!Kernel=} accessor
    * @private
    */
-  constructor(accessor = LazyAccessor.createEmpty()) {
-    /** @private @const {!LazyAccessor} */
+  constructor(accessor = Kernel.createEmpty()) {
+    /** @private @const {!Kernel} */
     this.accessor_ = accessor;
   }
 
   /**
    * @override
    * @package
-   * @return {!LazyAccessor}
+   * @return {!Kernel}
    */
   internalGetKernel() {
     return this.accessor_;
@@ -34,7 +34,7 @@ class TestAllTypesProto3 {
   /**
    * Create a request instance with the given bytes data.
    * If we directly use the accessor created by the binary decoding, the
-   * LazyAccessor instance will only copy the same data over for encoding.  By
+   * Kernel instance will only copy the same data over for encoding.  By
    * explicitly fetching data from the previous accessor and setting all fields
    * into a new accessor, we will actually test encoding/decoding for the binary
    * format.
@@ -43,7 +43,7 @@ class TestAllTypesProto3 {
    */
   static deserialize(bytes) {
     const msg = new TestAllTypesProto3();
-    const requestAccessor = LazyAccessor.fromArrayBuffer(bytes);
+    const requestAccessor = Kernel.fromArrayBuffer(bytes);
 
     if (requestAccessor.hasFieldNumber(1)) {
       const value = requestAccessor.getInt32WithDefault(1);

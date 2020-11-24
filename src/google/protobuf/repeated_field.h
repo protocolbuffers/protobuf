@@ -66,6 +66,7 @@
 #include <type_traits>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -85,7 +86,16 @@ namespace internal {
 
 class MergePartialFromCodedStreamHelper;
 
-static const int kMinRepeatedFieldAllocationSize = 4;
+// kRepeatedFieldLowerClampLimit is the smallest size that will be allocated
+// when growing a repeated field.
+constexpr int kRepeatedFieldLowerClampLimit = 4;
+
+// kRepeatedFieldUpperClampLimit is the lowest signed integer value that
+// overflows when multiplied by 2 (which is undefined behavior). Sizes above
+// this will clamp to the maximum int value instead of following exponential
+// growth when growing a repeated field.
+constexpr int kRepeatedFieldUpperClampLimit =
+    (std::numeric_limits<int>::max() / 2) + 1;
 
 // A utility function for logging that doesn't need any template types.
 void LogIndexOutOfBounds(int index, int size);
@@ -106,6 +116,46 @@ inline int CalculateReserve(Iter begin, Iter end) {
   typedef typename std::iterator_traits<Iter>::iterator_category Category;
   return CalculateReserve(begin, end, Category());
 }
+
+// Swaps two blocks of memory of size sizeof(T).
+template <typename T>
+inline void SwapBlock(char* p, char* q) {
+  T tmp;
+  memcpy(&tmp, p, sizeof(T));
+  memcpy(p, q, sizeof(T));
+  memcpy(q, &tmp, sizeof(T));
+}
+
+// Swaps two blocks of memory of size kSize:
+//  template <int kSize> void memswap(char* p, char* q);
+
+template <int kSize>
+inline typename std::enable_if<(kSize == 0), void>::type memswap(char*, char*) {
+}
+
+#define PROTO_MEMSWAP_DEF_SIZE(reg_type, max_size)                           \
+  template <int kSize>                                                       \
+  typename std::enable_if<(kSize >= sizeof(reg_type) && kSize < (max_size)), \
+                          void>::type                                        \
+  memswap(char* p, char* q) {                                                \
+    SwapBlock<reg_type>(p, q);                                               \
+    memswap<kSize - sizeof(reg_type)>(p + sizeof(reg_type),                  \
+                                      q + sizeof(reg_type));                 \
+  }
+
+PROTO_MEMSWAP_DEF_SIZE(uint8, 2)
+PROTO_MEMSWAP_DEF_SIZE(uint16, 4)
+PROTO_MEMSWAP_DEF_SIZE(uint32, 8)
+
+#ifdef __SIZEOF_INT128__
+PROTO_MEMSWAP_DEF_SIZE(uint64, 16)
+PROTO_MEMSWAP_DEF_SIZE(__uint128_t, (1u << 31))
+#else
+PROTO_MEMSWAP_DEF_SIZE(uint64, (1u << 31))
+#endif
+
+#undef PROTO_MEMSWAP_DEF_SIZE
+
 }  // namespace internal
 
 // RepeatedField is used to represent repeated fields of a primitive type (in
@@ -119,7 +169,7 @@ class RepeatedField final {
       "We only support types that have an alignment smaller than Arena");
 
  public:
-  RepeatedField();
+  constexpr RepeatedField();
   explicit RepeatedField(Arena* arena);
   RepeatedField(const RepeatedField& other);
   template <typename Iter>
@@ -258,7 +308,10 @@ class RepeatedField final {
   iterator erase(const_iterator first, const_iterator last);
 
   // Get the Arena on which this RepeatedField stores its elements.
-  Arena* GetArena() const { return GetArenaNoVirtual(); }
+  inline Arena* GetArena() const {
+    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
+                              : rep()->arena;
+  }
 
   // For internal use only.
   //
@@ -266,7 +319,7 @@ class RepeatedField final {
   inline void InternalSwap(RepeatedField* other);
 
  private:
-  static const int kInitialSize = 0;
+  static constexpr int kInitialSize = 0;
   // A note on the representation here (see also comment below for
   // RepeatedPtrFieldBase's struct Rep):
   //
@@ -281,13 +334,12 @@ class RepeatedField final {
   int total_size_;
   struct Rep {
     Arena* arena;
-    Element elements[1];
+    // Here we declare a huge array as a way of approximating C's "flexible
+    // array member" feature without relying on undefined behavior.
+    Element elements[(std::numeric_limits<int>::max() - 2 * sizeof(Arena*)) /
+                     sizeof(Element)];
   };
-  // We can not use sizeof(Rep) - sizeof(Element) due to the trailing padding on
-  // the struct. We can not use sizeof(Arena*) as well because there might be
-  // a "gap" after the field arena and before the field elements (e.g., when
-  // Element is double and pointer is 32bit).
-  static const size_t kRepHeaderSize;
+  static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
 
   // If total_size_ == 0 this points to an Arena otherwise it points to the
   // elements member of a Rep struct. Using this invariant allows the storage of
@@ -327,21 +379,15 @@ class RepeatedField final {
   // Copy the elements of |from| into |to|.
   void CopyArray(Element* to, const Element* from, int size);
 
-  // Internal helper expected by Arena methods.
-  inline Arena* GetArenaNoVirtual() const {
-    return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
-                              : rep()->arena;
-  }
-
   // Internal helper to delete all elements and deallocate the storage.
-  // If Element has a trivial destructor (for example, if it's a fundamental
-  // type, like int32), the loop will be removed by the optimizer.
   void InternalDeallocate(Rep* rep, int size) {
     if (rep != NULL) {
       Element* e = &rep->elements[0];
-      Element* limit = &rep->elements[size];
-      for (; e < limit; e++) {
-        e->~Element();
+      if (!std::is_trivial<Element>::value) {
+        Element* limit = &rep->elements[size];
+        for (; e < limit; e++) {
+          e->~Element();
+        }
       }
       if (rep->arena == NULL) {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
@@ -353,11 +399,92 @@ class RepeatedField final {
       }
     }
   }
-};
 
-template <typename Element>
-const size_t RepeatedField<Element>::kRepHeaderSize =
-    reinterpret_cast<size_t>(&reinterpret_cast<Rep*>(16)->elements[0]) - 16;
+  // This class is a performance wrapper around RepeatedField::Add(const T&)
+  // function. In general unless a RepeatedField is a local stack variable LLVM
+  // has a hard time optimizing Add. The machine code tends to be
+  // loop:
+  // mov %size, dword ptr [%repeated_field]       // load
+  // cmp %size, dword ptr [%repeated_field + 4]
+  // jae fallback
+  // mov %buffer, qword ptr [%repeated_field + 8]
+  // mov dword [%buffer + %size * 4], %value
+  // inc %size                                    // increment
+  // mov dword ptr [%repeated_field], %size       // store
+  // jmp loop
+  //
+  // This puts a load/store in each iteration of the important loop variable
+  // size. It's a pretty bad compile that happens even in simple cases, but
+  // largely the presence of the fallback path disturbs the compilers mem-to-reg
+  // analysis.
+  //
+  // This class takes ownership of a repeated field for the duration of it's
+  // lifetime. The repeated field should not be accessed during this time, ie.
+  // only access through this class is allowed. This class should always be a
+  // function local stack variable. Intended use
+  //
+  // void AddSequence(const int* begin, const int* end, RepeatedField<int>* out)
+  // {
+  //   RepeatedFieldAdder<int> adder(out);  // Take ownership of out
+  //   for (auto it = begin; it != end; ++it) {
+  //     adder.Add(*it);
+  //   }
+  // }
+  //
+  // Typically due to the fact adder is a local stack variable. The compiler
+  // will be successful in mem-to-reg transformation and the machine code will
+  // be loop: cmp %size, %capacity jae fallback mov dword ptr [%buffer + %size *
+  // 4], %val inc %size jmp loop
+  //
+  // The first version executes at 7 cycles per iteration while the second
+  // version near 1 or 2 cycles.
+  template <int = 0, bool = std::is_pod<Element>::value>
+  class FastAdderImpl {
+   public:
+    explicit FastAdderImpl(RepeatedField* rf) : repeated_field_(rf) {
+      index_ = repeated_field_->current_size_;
+      capacity_ = repeated_field_->total_size_;
+      buffer_ = repeated_field_->unsafe_elements();
+    }
+    ~FastAdderImpl() { repeated_field_->current_size_ = index_; }
+
+    void Add(Element val) {
+      if (index_ == capacity_) {
+        repeated_field_->current_size_ = index_;
+        repeated_field_->Reserve(index_ + 1);
+        capacity_ = repeated_field_->total_size_;
+        buffer_ = repeated_field_->unsafe_elements();
+      }
+      buffer_[index_++] = val;
+    }
+
+   private:
+    RepeatedField* repeated_field_;
+    int index_;
+    int capacity_;
+    Element* buffer_;
+
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastAdderImpl);
+  };
+
+  // FastAdder is a wrapper for adding fields. The specialization above handles
+  // POD types more efficiently than RepeatedField.
+  template <int I>
+  class FastAdderImpl<I, false> {
+   public:
+    explicit FastAdderImpl(RepeatedField* rf) : repeated_field_(rf) {}
+    void Add(const Element& val) { repeated_field_->Add(val); }
+
+   private:
+    RepeatedField* repeated_field_;
+    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastAdderImpl);
+  };
+
+  using FastAdder = FastAdderImpl<>;
+
+  friend class TestRepeatedFieldHelper;
+  friend class ::google::protobuf::internal::ParseContext;
+};
 
 namespace internal {
 template <typename It>
@@ -450,7 +577,7 @@ struct IsMovable
 //   };
 class PROTOBUF_EXPORT RepeatedPtrFieldBase {
  protected:
-  RepeatedPtrFieldBase();
+  constexpr RepeatedPtrFieldBase();
   explicit RepeatedPtrFieldBase(Arena* arena);
   ~RepeatedPtrFieldBase() {
 #ifndef NDEBUG
@@ -589,10 +716,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   PROTOBUF_NOINLINE void SwapFallback(RepeatedPtrFieldBase* other);
 
-  inline Arena* GetArenaNoVirtual() const { return arena_; }
+  inline Arena* GetArena() const { return arena_; }
 
  private:
-  static const int kInitialSize = 0;
+  static constexpr int kInitialSize = 0;
   // A few notes on internal representation:
   //
   // We use an indirected approach, with struct Rep, to keep
@@ -609,9 +736,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   int total_size_;
   struct Rep {
     int allocated_size;
-    void* elements[1];
+    // Here we declare a huge array as a way of approximating C's "flexible
+    // array member" feature without relying on undefined behavior.
+    void* elements[(std::numeric_limits<int>::max() - 2 * sizeof(int)) /
+                   sizeof(void*)];
   };
-  static const size_t kRepHeaderSize = sizeof(Rep) - sizeof(void*);
+  static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
   Rep* rep_;
 
   template <typename TypeHandler>
@@ -790,7 +920,7 @@ class StringTypeHandler {
 template <typename Element>
 class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
  public:
-  RepeatedPtrField();
+  constexpr RepeatedPtrField();
   explicit RepeatedPtrField(Arena* arena);
 
   RepeatedPtrField(const RepeatedPtrField& other);
@@ -1016,7 +1146,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   iterator erase(const_iterator first, const_iterator last);
 
   // Gets the arena on which this RepeatedPtrField stores its elements.
-  Arena* GetArena() const { return GetArenaNoVirtual(); }
+  inline Arena* GetArena() const;
 
   // For internal use only.
   //
@@ -1028,9 +1158,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
  private:
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   class TypeHandler;
-
-  // Internal arena accessor expected by helpers in Arena.
-  inline Arena* GetArenaNoVirtual() const;
 
   // Implementations for ExtractSubrange(). The copying behavior must be
   // included only if the type supports the necessary operations (e.g.,
@@ -1053,7 +1180,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 // implementation ====================================================
 
 template <typename Element>
-inline RepeatedField<Element>::RepeatedField()
+constexpr RepeatedField<Element>::RepeatedField()
     : current_size_(0), total_size_(0), arena_or_elements_(nullptr) {}
 
 template <typename Element>
@@ -1079,6 +1206,12 @@ RepeatedField<Element>::RepeatedField(Iter begin, const Iter& end)
 
 template <typename Element>
 RepeatedField<Element>::~RepeatedField() {
+#ifndef NDEBUG
+  // Try to trigger segfault / asan failure in non-opt builds. If arena_
+  // lifetime has ended before the destructor.
+  auto arena = GetArena();
+  if (arena) (void)arena->SpaceAllocated();
+#endif
   if (total_size_ > 0) {
     InternalDeallocate(rep(), total_size_);
   }
@@ -1097,7 +1230,7 @@ inline RepeatedField<Element>::RepeatedField(RepeatedField&& other) noexcept
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // other is on an arena. This field can't be on an arena because arena
   // construction always uses the Arena* accepting constructor.
-  if (other.GetArenaNoVirtual()) {
+  if (other.GetArena()) {
     CopyFrom(other);
   } else {
     InternalSwap(&other);
@@ -1110,7 +1243,7 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (this->GetArenaNoVirtual() != other.GetArenaNoVirtual()) {
+    if (this->GetArena() != other.GetArena()) {
       CopyFrom(other);
     } else {
       InternalSwap(&other);
@@ -1206,14 +1339,26 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Add(const Element& value) {
-  if (current_size_ == total_size_) Reserve(total_size_ + 1);
-  elements()[current_size_++] = value;
+  uint32 size = current_size_;
+  if (static_cast<int>(size) == total_size_) {
+    // value could reference an element of the array. Reserving new space will
+    // invalidate the reference. So we must make a copy first.
+    auto tmp = value;
+    Reserve(total_size_ + 1);
+    elements()[size] = std::move(tmp);
+  } else {
+    elements()[size] = value;
+  }
+  current_size_ = size + 1;
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() {
-  if (current_size_ == total_size_) Reserve(total_size_ + 1);
-  return &elements()[current_size_++];
+  uint32 size = current_size_;
+  if (static_cast<int>(size) == total_size_) Reserve(total_size_ + 1);
+  auto ptr = &elements()[size];
+  current_size_ = size + 1;
+  return ptr;
 }
 
 template <typename Element>
@@ -1235,9 +1380,8 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
     std::copy(begin, end, elements() + size());
     current_size_ = reserve + size();
   } else {
-    for (; begin != end; ++begin) {
-      Add(*begin);
-    }
+    FastAdder fast_adder(this);
+    for (; begin != end; ++begin) fast_adder.Add(*begin);
   }
 }
 
@@ -1319,20 +1463,25 @@ inline const Element* RepeatedField<Element>::data() const {
 template <typename Element>
 inline void RepeatedField<Element>::InternalSwap(RepeatedField* other) {
   GOOGLE_DCHECK(this != other);
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+  GOOGLE_DCHECK(GetArena() == other->GetArena());
 
-  std::swap(arena_or_elements_, other->arena_or_elements_);
-  std::swap(current_size_, other->current_size_);
-  std::swap(total_size_, other->total_size_);
+  // Swap all fields at once.
+  static_assert(std::is_standard_layout<RepeatedField<Element>>::value,
+                "offsetof() requires standard layout before c++17");
+  internal::memswap<offsetof(RepeatedField, arena_or_elements_) +
+                    sizeof(this->arena_or_elements_) -
+                    offsetof(RepeatedField, current_size_)>(
+      reinterpret_cast<char*>(this) + offsetof(RepeatedField, current_size_),
+      reinterpret_cast<char*>(other) + offsetof(RepeatedField, current_size_));
 }
 
 template <typename Element>
 void RepeatedField<Element>::Swap(RepeatedField* other) {
   if (this == other) return;
-  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+  if (GetArena() == other->GetArena()) {
     InternalSwap(other);
   } else {
-    RepeatedField<Element> temp(other->GetArenaNoVirtual());
+    RepeatedField<Element> temp(other->GetArena());
     temp.MergeFrom(*this);
     CopyFrom(*other);
     other->UnsafeArenaSwap(&temp);
@@ -1386,6 +1535,30 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
   return total_size_ > 0 ? (total_size_ * sizeof(Element) + kRepHeaderSize) : 0;
 }
 
+namespace internal {
+// Returns the new size for a reserved field based on its 'total_size' and the
+// requested 'new_size'. The result is clamped to the closed interval:
+//   [internal::kMinRepeatedFieldAllocationSize,
+//    std::numeric_limits<int>::max()]
+// Requires:
+//     new_size > total_size &&
+//     (total_size == 0 ||
+//      total_size >= kRepeatedFieldLowerClampLimit)
+inline int CalculateReserveSize(int total_size, int new_size) {
+  if (new_size < kRepeatedFieldLowerClampLimit) {
+    // Clamp to smallest allowed size.
+    return kRepeatedFieldLowerClampLimit;
+  }
+  if (total_size < kRepeatedFieldUpperClampLimit) {
+    return std::max(total_size * 2, new_size);
+  } else {
+    // Clamp to largest allowed size.
+    GOOGLE_DCHECK_GT(new_size, kRepeatedFieldUpperClampLimit);
+    return std::numeric_limits<int>::max();
+  }
+}
+}  // namespace internal
+
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
@@ -1393,9 +1566,8 @@ void RepeatedField<Element>::Reserve(int new_size) {
   if (total_size_ >= new_size) return;
   Rep* old_rep = total_size_ > 0 ? rep() : NULL;
   Rep* new_rep;
-  Arena* arena = GetArenaNoVirtual();
-  new_size = std::max(internal::kMinRepeatedFieldAllocationSize,
-                      std::max(total_size_ * 2, new_size));
+  Arena* arena = GetArena();
+  new_size = internal::CalculateReserveSize(total_size_, new_size);
   GOOGLE_DCHECK_LE(
       static_cast<size_t>(new_size),
       (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
@@ -1409,6 +1581,10 @@ void RepeatedField<Element>::Reserve(int new_size) {
   }
   new_rep->arena = arena;
   int old_total_size = total_size_;
+  // Already known: new_size >= internal::kMinRepeatedFieldAllocationSize
+  // Maintain invariant:
+  //     total_size_ == 0 ||
+  //     total_size_ >= internal::kMinRepeatedFieldAllocationSize
   total_size_ = new_size;
   arena_or_elements_ = new_rep->elements;
   // Invoke placement-new on newly allocated elements. We shouldn't have to do
@@ -1477,7 +1653,7 @@ struct ElementCopier<Element, true> {
 
 namespace internal {
 
-inline RepeatedPtrFieldBase::RepeatedPtrFieldBase()
+constexpr RepeatedPtrFieldBase::RepeatedPtrFieldBase()
     : arena_(NULL), current_size_(0), total_size_(0), rep_(NULL) {}
 
 inline RepeatedPtrFieldBase::RepeatedPtrFieldBase(Arena* arena)
@@ -1503,7 +1679,7 @@ void RepeatedPtrFieldBase::Destroy() {
 
 template <typename TypeHandler>
 inline void RepeatedPtrFieldBase::Swap(RepeatedPtrFieldBase* other) {
-  if (other->GetArenaNoVirtual() == GetArenaNoVirtual()) {
+  if (other->GetArena() == GetArena()) {
     InternalSwap(other);
   } else {
     SwapFallback<TypeHandler>(other);
@@ -1512,16 +1688,15 @@ inline void RepeatedPtrFieldBase::Swap(RepeatedPtrFieldBase* other) {
 
 template <typename TypeHandler>
 void RepeatedPtrFieldBase::SwapFallback(RepeatedPtrFieldBase* other) {
-  GOOGLE_DCHECK(other->GetArenaNoVirtual() != GetArenaNoVirtual());
+  GOOGLE_DCHECK(other->GetArena() != GetArena());
 
   // Copy semantics in this case. We try to improve efficiency by placing the
-  // temporary on |other|'s arena so that messages are copied cross-arena only
-  // once, not twice.
-  RepeatedPtrFieldBase temp(other->GetArenaNoVirtual());
+  // temporary on |other|'s arena so that messages are copied twice rather than
+  // three times.
+  RepeatedPtrFieldBase temp(other->GetArena());
   temp.MergeFrom<TypeHandler>(*this);
   this->Clear<TypeHandler>();
   this->MergeFrom<TypeHandler>(*other);
-  other->Clear<TypeHandler>();
   other->InternalSwap(&temp);
   temp.Destroy<TypeHandler>();  // Frees rep_ if `other` had no arena.
 }
@@ -1664,7 +1839,7 @@ void RepeatedPtrFieldBase::MergeFromInnerLoop(void** our_elems,
         reinterpret_cast<typename TypeHandler::Type*>(our_elems[i]);
     TypeHandler::Merge(*other_elem, new_elem);
   }
-  Arena* arena = GetArenaNoVirtual();
+  Arena* arena = GetArena();
   for (int i = already_allocated; i < length; i++) {
     // Not allocated: alloc a new element first, then merge it.
     typename TypeHandler::Type* other_elem =
@@ -1741,7 +1916,7 @@ void RepeatedPtrFieldBase::AddAllocatedInternal(
     typename TypeHandler::Type* value, std::true_type) {
   Arena* element_arena =
       reinterpret_cast<Arena*>(TypeHandler::GetMaybeArenaPointer(value));
-  Arena* arena = GetArenaNoVirtual();
+  Arena* arena = GetArena();
   if (arena == element_arena && rep_ && rep_->allocated_size < total_size_) {
     // Fast path: underlying arena representation (tagged pointer) is equal to
     // our arena pointer, and we can add to array without resizing it (at least
@@ -1840,7 +2015,7 @@ inline typename TypeHandler::Type* RepeatedPtrFieldBase::ReleaseLastInternal(
   // First, release an element.
   typename TypeHandler::Type* result = UnsafeArenaReleaseLast<TypeHandler>();
   // Now perform a copy if we're on an arena.
-  Arena* arena = GetArenaNoVirtual();
+  Arena* arena = GetArena();
   if (arena == NULL) {
     return result;
   } else {
@@ -1858,7 +2033,7 @@ inline typename TypeHandler::Type* RepeatedPtrFieldBase::ReleaseLastInternal(
 template <typename TypeHandler>
 inline typename TypeHandler::Type* RepeatedPtrFieldBase::ReleaseLastInternal(
     std::false_type) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL)
+  GOOGLE_DCHECK(GetArena() == NULL)
       << "ReleaseLast() called on a RepeatedPtrField that is on an arena, "
       << "with a type that does not implement MergeFrom. This is unsafe; "
       << "please implement MergeFrom for your type.";
@@ -1887,7 +2062,7 @@ inline int RepeatedPtrFieldBase::ClearedCount() const {
 template <typename TypeHandler>
 inline void RepeatedPtrFieldBase::AddCleared(
     typename TypeHandler::Type* value) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL)
+  GOOGLE_DCHECK(GetArena() == NULL)
       << "AddCleared() can only be used on a RepeatedPtrField not on an arena.";
   GOOGLE_DCHECK(TypeHandler::GetArena(value) == NULL)
       << "AddCleared() can only accept values not on an arena.";
@@ -1899,10 +2074,10 @@ inline void RepeatedPtrFieldBase::AddCleared(
 
 template <typename TypeHandler>
 inline typename TypeHandler::Type* RepeatedPtrFieldBase::ReleaseCleared() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL)
+  GOOGLE_DCHECK(GetArena() == NULL)
       << "ReleaseCleared() can only be used on a RepeatedPtrField not on "
       << "an arena.";
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL);
+  GOOGLE_DCHECK(GetArena() == NULL);
   GOOGLE_DCHECK(rep_ != NULL);
   GOOGLE_DCHECK_GT(rep_->allocated_size, current_size_);
   return cast<TypeHandler>(rep_->elements[--rep_->allocated_size]);
@@ -1921,7 +2096,8 @@ class RepeatedPtrField<std::string>::TypeHandler
     : public internal::StringTypeHandler {};
 
 template <typename Element>
-inline RepeatedPtrField<Element>::RepeatedPtrField() : RepeatedPtrFieldBase() {}
+constexpr RepeatedPtrField<Element>::RepeatedPtrField()
+    : RepeatedPtrFieldBase() {}
 
 template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Arena* arena)
@@ -1966,7 +2142,7 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // other is on an arena. This field can't be on an arena because arena
   // construction always uses the Arena* accepting constructor.
-  if (other.GetArenaNoVirtual()) {
+  if (other.GetArena()) {
     CopyFrom(other);
   } else {
     InternalSwap(&other);
@@ -1979,7 +2155,7 @@ inline RepeatedPtrField<Element>& RepeatedPtrField<Element>::operator=(
   // We don't just call Swap(&other) here because it would perform 3 copies if
   // the two fields are on different arenas.
   if (this != &other) {
-    if (this->GetArenaNoVirtual() != other.GetArenaNoVirtual()) {
+    if (this->GetArena() != other.GetArena()) {
       CopyFrom(other);
     } else {
       InternalSwap(&other);
@@ -2065,7 +2241,7 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
   if (num > 0) {
     // Save the values of the removed elements if requested.
     if (elements != NULL) {
-      if (GetArenaNoVirtual() != NULL) {
+      if (GetArena() != NULL) {
         // If we're on an arena, we perform a copy for each element so that the
         // returned elements are heap-allocated.
         for (int i = 0; i < num; ++i) {
@@ -2095,7 +2271,7 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
   // ExtractSubrange() must return heap-allocated objects by contract, and we
   // cannot fulfill this contract if we are an on arena, we must GOOGLE_DCHECK() that
   // we are not on an arena.
-  GOOGLE_DCHECK(GetArenaNoVirtual() == NULL)
+  GOOGLE_DCHECK(GetArena() == NULL)
       << "ExtractSubrange() when arena is non-NULL is only supported when "
       << "the Element type supplies a MergeFrom() operation to make copies.";
   UnsafeArenaExtractSubrange(start, num, elements);
@@ -2179,8 +2355,8 @@ inline void RepeatedPtrField<Element>::SwapElements(int index1, int index2) {
 }
 
 template <typename Element>
-inline Arena* RepeatedPtrField<Element>::GetArenaNoVirtual() const {
-  return RepeatedPtrFieldBase::GetArenaNoVirtual();
+inline Arena* RepeatedPtrField<Element>::GetArena() const {
+  return RepeatedPtrFieldBase::GetArena();
 }
 
 template <typename Element>
@@ -2418,11 +2594,17 @@ class RepeatedPtrOverPtrsIterator {
 
 void RepeatedPtrFieldBase::InternalSwap(RepeatedPtrFieldBase* other) {
   GOOGLE_DCHECK(this != other);
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+  GOOGLE_DCHECK(GetArena() == other->GetArena());
 
-  std::swap(rep_, other->rep_);
-  std::swap(current_size_, other->current_size_);
-  std::swap(total_size_, other->total_size_);
+  // Swap all fields at once.
+  static_assert(std::is_standard_layout<RepeatedPtrFieldBase>::value,
+                "offsetof() requires standard layout before c++17");
+  internal::memswap<offsetof(RepeatedPtrFieldBase, rep_) + sizeof(this->rep_) -
+                    offsetof(RepeatedPtrFieldBase, current_size_)>(
+      reinterpret_cast<char*>(this) +
+          offsetof(RepeatedPtrFieldBase, current_size_),
+      reinterpret_cast<char*>(other) +
+          offsetof(RepeatedPtrFieldBase, current_size_));
 }
 
 }  // namespace internal

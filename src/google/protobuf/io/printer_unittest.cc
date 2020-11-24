@@ -573,7 +573,7 @@ TEST(Printer, WriteFailurePartial) {
   EXPECT_TRUE(printer.failed());
 
   // Buffer should contain the first 17 bytes written.
-  EXPECT_EQ("0123456789abcdef<", string(buffer, sizeof(buffer)));
+  EXPECT_EQ("0123456789abcdef<", std::string(buffer, sizeof(buffer)));
 }
 
 TEST(Printer, WriteFailureExact) {
@@ -595,7 +595,7 @@ TEST(Printer, WriteFailureExact) {
   EXPECT_TRUE(printer.failed());
 
   // Buffer should contain the first 16 bytes written.
-  EXPECT_EQ("0123456789abcdef", string(buffer, sizeof(buffer)));
+  EXPECT_EQ("0123456789abcdef", std::string(buffer, sizeof(buffer)));
 }
 
 TEST(Printer, FormatInternal) {

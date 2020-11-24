@@ -100,6 +100,20 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // If true, accepts repeated key/value pair for a map proto field.
     bool use_legacy_json_map_format;
 
+    // If true, disable implicitly creating message list.
+    bool disable_implicit_message_list;
+
+    // If true, suppress the error of implicitly creating message list when it
+    // is disabled.
+    bool suppress_implicit_message_list_error;
+
+    // If true, suppress the error of rendering scalar field if the source is an
+    // object.
+    bool suppress_object_to_scalar_error;
+
+    // If true, use the json name in missing fields errors.
+    bool use_json_name_in_missing_fields;
+
     Options()
         : struct_integers_as_strings(false),
           ignore_unknown_fields(false),
@@ -107,7 +121,11 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
           use_lower_camel_for_enums(false),
           case_insensitive_enum_parsing(false),
           ignore_null_value_map_entry(false),
-          use_legacy_json_map_format(false) {}
+          use_legacy_json_map_format(false),
+          disable_implicit_message_list(false),
+          suppress_implicit_message_list_error(false),
+          suppress_object_to_scalar_error(false),
+          use_json_name_in_missing_fields(false) {}
 
     // Default instance of Options with all options set to defaults.
     static const Options& Defaults() {
@@ -116,7 +134,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     }
   };
 
-// Constructor. Does not take ownership of any parameter passed in.
+  // Constructor. Does not take ownership of any parameter passed in.
   ProtoStreamObjectWriter(TypeResolver* type_resolver,
                           const google::protobuf::Type& type,
                           strings::ByteSink* output, ErrorListener* listener,
@@ -241,7 +259,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     int depth_;
 
     // True if the type is a well-known type. Well-known types in Any
-    // has a special formating:
+    // has a special formatting:
     // {
     //   "@type": "type.googleapis.com/google.protobuf.XXX",
     //   "value": <JSON representation of the type>,
@@ -347,24 +365,24 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // Renders google.protobuf.Value in struct.proto. It picks the right oneof
   // type based on value's type.
   static util::Status RenderStructValue(ProtoStreamObjectWriter* ow,
-                                          const DataPiece& value);
+                                          const DataPiece& data);
 
   // Renders google.protobuf.Timestamp value.
   static util::Status RenderTimestamp(ProtoStreamObjectWriter* ow,
-                                        const DataPiece& value);
+                                        const DataPiece& data);
 
   // Renders google.protobuf.FieldMask value.
   static util::Status RenderFieldMask(ProtoStreamObjectWriter* ow,
-                                        const DataPiece& value);
+                                        const DataPiece& data);
 
   // Renders google.protobuf.Duration value.
   static util::Status RenderDuration(ProtoStreamObjectWriter* ow,
-                                       const DataPiece& value);
+                                       const DataPiece& data);
 
   // Renders wrapper message types for primitive types in
   // google/protobuf/wrappers.proto.
   static util::Status RenderWrapperType(ProtoStreamObjectWriter* ow,
-                                          const DataPiece& value);
+                                          const DataPiece& data);
 
   static void InitRendererMap();
   static void DeleteRendererMap();
@@ -386,6 +404,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // StartList calls.
   void Push(StringPiece name, Item::ItemType item_type,
             bool is_placeholder, bool is_list);
+
 
   // Pops items from the stack. All placeholder items are popped until a
   // non-placeholder item is found.

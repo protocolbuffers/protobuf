@@ -29,7 +29,7 @@ RUN apt-get update && apt-get install -y libunwind8 libicu57 && apt-get clean
 RUN wget -q https://dot.net/v1/dotnet-install.sh && \
     chmod u+x dotnet-install.sh && \
     ./dotnet-install.sh --version 2.1.802 && \
-    ./dotnet-install.sh --version 3.0.100 && \
+    ./dotnet-install.sh --version 3.1.301 && \
     ln -s /root/.dotnet/dotnet /usr/local/bin
 
 RUN wget -q www.nuget.org/NuGet.exe -O /usr/local/bin/nuget.exe

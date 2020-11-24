@@ -52,9 +52,13 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/stubs/mutex.h>
-#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
+
+// Must be included last
+#include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 
 
 namespace google {
@@ -65,22 +69,37 @@ void DestroyMessage(const void* message) {
   static_cast<const MessageLite*>(message)->~MessageLite();
 }
 void DestroyString(const void* s) {
-  static_cast<const std::string*>(s)->~string();
+  static_cast<const std::string*>(s)->~basic_string();
 }
 
-ExplicitlyConstructed<std::string> fixed_address_empty_string;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY EmptyString
+        fixed_address_empty_string;  // NOLINT
 
 
+PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
-  fixed_address_empty_string.DefaultConstruct();
-  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
+  ::new (static_cast<void*>(&fixed_address_empty_string.value)) std::string();
+  OnShutdownDestroyString(&fixed_address_empty_string.value);
+
+  // Verify that we can indeed get the address during constant evaluation.
+  PROTOBUF_CONSTINIT static const std::string& fixed_address_empty_string_test =
+      GetEmptyStringAlreadyInited();
+  (void)fixed_address_empty_string_test;
+
+  init_protobuf_defaults_state.store(true, std::memory_order_release);
   return true;
 }
 
-void InitProtobufDefaults() {
+void InitProtobufDefaultsSlow() {
   static bool is_inited = InitProtobufDefaultsImpl();
   (void)is_inited;
 }
+// Force the initialization of the empty string.
+// Normally, registration would do it, but we don't have any guarantee that
+// there is any object with reflection.
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY static std::true_type init_empty_string =
+    (InitProtobufDefaultsSlow(), std::true_type{});
 
 size_t StringSpaceUsedExcludingSelfLong(const std::string& str) {
   const void* start = &str;
@@ -246,10 +265,6 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_BYTES>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {};
 
 
-template <>
-struct PrimitiveTypeHelper<FieldMetadata::kInlinedType>
-    : PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {};
-
 // We want to serialize to both CodedOutputStream and directly into byte arrays
 // without duplicating the code. In fact we might want extra output channels in
 // the future.
@@ -408,15 +423,6 @@ struct SingularFieldHelper<WireFormatLite::TYPE_MESSAGE> {
   }
 };
 
-template <>
-struct SingularFieldHelper<FieldMetadata::kInlinedType> {
-  template <typename O>
-  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
-    WriteTagTo(md.tag, output);
-    SerializeTo<FieldMetadata::kInlinedType>(&Get<std::string>(field), output);
-  }
-};
-
 template <int type>
 struct RepeatedFieldHelper {
   template <typename O>
@@ -489,10 +495,6 @@ struct RepeatedFieldHelper<WireFormatLite::TYPE_MESSAGE> {
 };
 
 
-template <>
-struct RepeatedFieldHelper<FieldMetadata::kInlinedType>
-    : RepeatedFieldHelper<WireFormatLite::TYPE_STRING> {};
-
 template <int type>
 struct PackedFieldHelper {
   template <typename O>
@@ -528,9 +530,6 @@ struct PackedFieldHelper<WireFormatLite::TYPE_GROUP>
 template <>
 struct PackedFieldHelper<WireFormatLite::TYPE_MESSAGE>
     : PackedFieldHelper<WireFormatLite::TYPE_STRING> {};
-template <>
-struct PackedFieldHelper<FieldMetadata::kInlinedType>
-    : PackedFieldHelper<WireFormatLite::TYPE_STRING> {};
 
 template <int type>
 struct OneOfFieldHelper {
@@ -540,15 +539,6 @@ struct OneOfFieldHelper {
   }
 };
 
-
-template <>
-struct OneOfFieldHelper<FieldMetadata::kInlinedType> {
-  template <typename O>
-  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
-    SingularFieldHelper<FieldMetadata::kInlinedType>::Serialize(
-        Get<const std::string*>(field), md, output);
-  }
-};
 
 void SerializeNotImplemented(int field) {
   GOOGLE_LOG(FATAL) << "Not implemented field number " << field;
@@ -589,11 +579,6 @@ bool IsNull<WireFormatLite::TYPE_MESSAGE>(const void* ptr) {
   return Get<const MessageLite*>(ptr) == NULL;
 }
 
-
-template <>
-bool IsNull<FieldMetadata::kInlinedType>(const void* ptr) {
-  return static_cast<const std::string*>(ptr)->empty();
-}
 
 #define SERIALIZERS_FOR_TYPE(type)                                            \
   case SERIALIZE_TABLE_OP(type, FieldMetadata::kPresence):                    \
@@ -642,7 +627,6 @@ void SerializeInternal(const uint8* base,
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SFIXED64);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT32);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT64);
-      SERIALIZERS_FOR_TYPE(FieldMetadata::kInlinedType);
 
       // Special cases
       case FieldMetadata::kSpecial:
@@ -687,7 +671,6 @@ uint8* SerializeInternalToArray(const uint8* base,
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SFIXED64);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT32);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT64);
-      SERIALIZERS_FOR_TYPE(FieldMetadata::kInlinedType);
       // Special cases
       case FieldMetadata::kSpecial: {
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
@@ -718,8 +701,8 @@ void UnknownFieldSerializerLite(const uint8* ptr, uint32 offset, uint32 tag,
                                 uint32 has_offset,
                                 io::CodedOutputStream* output) {
   output->WriteString(
-      reinterpret_cast<const InternalMetadataWithArenaLite*>(ptr + offset)
-          ->unknown_fields());
+      reinterpret_cast<const InternalMetadata*>(ptr + offset)
+          ->unknown_fields<std::string>(&internal::GetEmptyString));
 }
 
 MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
@@ -829,3 +812,5 @@ void InitSCCImpl(SCCInfoBase* scc) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

@@ -128,6 +128,8 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
       (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
   BOOL usesClassRefs =
       (flags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0;
+  BOOL proto3OptionalKnown =
+      (flags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) != 0;
 
   void *desc;
   for (uint32_t i = 0; i < fieldCount; ++i) {
@@ -146,6 +148,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
         [[GPBFieldDescriptor alloc] initWithFieldDescription:desc
                                              includesDefault:fieldsIncludeDefault
                                                usesClassRefs:usesClassRefs
+                                         proto3OptionalKnown:proto3OptionalKnown
                                                       syntax:syntax];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
@@ -488,6 +491,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 - (instancetype)initWithFieldDescription:(void *)description
                          includesDefault:(BOOL)includesDefault
                            usesClassRefs:(BOOL)usesClassRefs
+                     proto3OptionalKnown:(BOOL)proto3OptionalKnown
                                   syntax:(GPBFileSyntax)syntax {
   if ((self = [super init])) {
     GPBMessageFieldDescription *coreDesc;
@@ -504,20 +508,34 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     BOOL isMessage = GPBDataTypeIsMessage(dataType);
     BOOL isMapOrArray = GPBFieldIsMapOrArray(self);
 
+    // If proto3 optionals weren't known (i.e. generated code from an
+    // older version), compute the flag for the rest of the runtime.
+    if (!proto3OptionalKnown) {
+      // If it was...
+      //  - proto3 syntax
+      //  - not repeated/map
+      //  - not in a oneof (negative has index)
+      //  - not a message (the flag doesn't make sense for messages)
+      BOOL clearOnZero = ((syntax == GPBFileSyntaxProto3) &&
+                          !isMapOrArray &&
+                          (coreDesc->hasIndex >= 0) &&
+                          !isMessage);
+      if (clearOnZero) {
+        coreDesc->flags |= GPBFieldClearHasIvarOnZero;
+      }
+    }
+
     if (isMapOrArray) {
       // map<>/repeated fields get a *Count property (inplace of a has*) to
       // support checking if there are any entries without triggering
       // autocreation.
       hasOrCountSel_ = SelFromStrings(NULL, coreDesc->name, "_Count", NO);
     } else {
-      // If there is a positive hasIndex, then:
-      //   - All fields types for proto2 messages get has* selectors.
-      //   - Only message fields for proto3 messages get has* selectors.
-      // Note: the positive check is to handle oneOfs, we can't check
-      // containingOneof_ because it isn't set until after initialization.
+      // It is a single field; it gets has/setHas selectors if...
+      //  - not in a oneof (negative has index)
+      //  - not clearing on zero
       if ((coreDesc->hasIndex >= 0) &&
-          (coreDesc->hasIndex != GPBNoHasBit) &&
-          ((syntax != GPBFileSyntaxProto3) || isMessage)) {
+          ((coreDesc->flags & GPBFieldClearHasIvarOnZero) == 0)) {
         hasOrCountSel_ = SelFromStrings("has", coreDesc->name, NULL, NO);
         setHasSel_ = SelFromStrings("setHas", coreDesc->name, NULL, YES);
       }
@@ -565,15 +583,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     }
   }
   return self;
-}
-
-- (instancetype)initWithFieldDescription:(void *)description
-                         includesDefault:(BOOL)includesDefault
-                                  syntax:(GPBFileSyntax)syntax {
-  return [self initWithFieldDescription:description
-                        includesDefault:includesDefault
-                          usesClassRefs:NO
-                                 syntax:syntax];
 }
 
 - (void)dealloc {

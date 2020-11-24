@@ -12,7 +12,7 @@ goog.setTestOnly();
 const BufferDecoder = goog.require('protobuf.binary.BufferDecoder');
 const ByteString = goog.require('protobuf.ByteString');
 const reader = goog.require('protobuf.binary.reader');
-const {CHECK_STATE} = goog.require('protobuf.internal.checks');
+const {CHECK_CRITICAL_STATE} = goog.require('protobuf.internal.checks');
 const {createBufferDecoder} = goog.require('protobuf.binary.bufferDecoderHelper');
 const {encode} = goog.require('protobuf.binary.textencoding');
 const {getBoolPairs} = goog.require('protobuf.binary.boolTestPairs');
@@ -45,7 +45,7 @@ const {getUint32Pairs} = goog.require('protobuf.binary.uint32TestPairs');
 describe('Read bool does', () => {
   for (const pair of getBoolPairs()) {
     it(`decode ${pair.name}`, () => {
-      if (pair.error && CHECK_STATE) {
+      if (pair.error && CHECK_CRITICAL_STATE) {
         expect(() => reader.readBool(pair.bufferDecoder, 0)).toThrow();
       } else {
         const d = reader.readBool(
@@ -120,7 +120,7 @@ describe('readInt32 does', () => {
 
   for (const pair of getInt32Pairs()) {
     it(`decode ${pair.name}`, () => {
-      if (pair.error && CHECK_STATE) {
+      if (pair.error && CHECK_CRITICAL_STATE) {
         expect(() => reader.readInt32(pair.bufferDecoder, 0)).toThrow();
       } else {
         const d = reader.readInt32(pair.bufferDecoder, 0);
@@ -166,7 +166,7 @@ describe('readSint32 does', () => {
 
   for (const pair of getSint32Pairs()) {
     it(`decode ${pair.name}`, () => {
-      if (pair.error && CHECK_STATE) {
+      if (pair.error && CHECK_CRITICAL_STATE) {
         expect(() => reader.readSint32(pair.bufferDecoder, 0)).toThrow();
       } else {
         const d = reader.readSint32(pair.bufferDecoder, 0);
@@ -184,7 +184,7 @@ describe('readInt64 does', () => {
 
   for (const pair of getInt64Pairs()) {
     it(`decode ${pair.name}`, () => {
-      if (pair.error && CHECK_STATE) {
+      if (pair.error && CHECK_CRITICAL_STATE) {
         expect(() => reader.readInt64(pair.bufferDecoder, 0)).toThrow();
       } else {
         const d = reader.readInt64(pair.bufferDecoder, 0);
@@ -202,7 +202,7 @@ describe('readSint64 does', () => {
 
   for (const pair of getSint64Pairs()) {
     it(`decode ${pair.name}`, () => {
-      if (pair.error && CHECK_STATE) {
+      if (pair.error && CHECK_CRITICAL_STATE) {
         expect(() => reader.readSint64(pair.bufferDecoder, 0)).toThrow();
       } else {
         const d = reader.readSint64(pair.bufferDecoder, 0);
@@ -219,14 +219,16 @@ describe('readUint32 does', () => {
   });
 
   for (const pair of getUint32Pairs()) {
-    it(`decode ${pair.name}`, () => {
-      if (pair.error && CHECK_STATE) {
-        expect(() => reader.readUint32(pair.bufferDecoder, 0)).toThrow();
-      } else {
-        const d = reader.readUint32(pair.bufferDecoder, 0);
-        expect(d).toEqual(pair.intValue);
-      }
-    });
+    if (!pair.skip_reader) {
+      it(`decode ${pair.name}`, () => {
+        if (pair.error && CHECK_CRITICAL_STATE) {
+          expect(() => reader.readUint32(pair.bufferDecoder, 0)).toThrow();
+        } else {
+          const d = reader.readUint32(pair.bufferDecoder, 0);
+          expect(d).toEqual(pair.intValue);
+        }
+      });
+    }
   }
 });
 

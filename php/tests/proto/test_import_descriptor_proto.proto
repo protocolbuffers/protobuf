@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package foo;
+
 import "google/protobuf/descriptor.proto";
 
 message TestImportDescriptorProto {

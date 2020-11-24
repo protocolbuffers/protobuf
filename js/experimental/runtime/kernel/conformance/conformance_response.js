@@ -4,7 +4,7 @@
 goog.module('proto.conformance.ConformanceResponse');
 
 const ByteString = goog.require('protobuf.ByteString');
-const LazyAccessor = goog.require('protobuf.binary.LazyAccessor');
+const Kernel = goog.require('protobuf.runtime.Kernel');
 
 /**
  * Handwritten code of conformance.ConformanceResponse.
@@ -19,8 +19,8 @@ class ConformanceResponse {
    * @private
    */
   constructor(bytes) {
-    /** @private @const {!LazyAccessor} */
-    this.accessor_ = LazyAccessor.fromArrayBuffer(bytes);
+    /** @private @const {!Kernel} */
+    this.accessor_ = Kernel.fromArrayBuffer(bytes);
   }
 
   /**

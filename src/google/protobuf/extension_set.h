@@ -79,8 +79,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-class InternalMetadataWithArenaLite;
-class InternalMetadataWithArena;
+class InternalMetadata;
 
 // Used to store values of type WireFormatLite::FieldType without having to
 // #include wire_format_lite.h.  Also, ensures that we use only one byte to
@@ -174,7 +173,7 @@ class MessageSetFieldSkipper;
 // off to the ExtensionSet for parsing.  Etc.
 class PROTOBUF_EXPORT ExtensionSet {
  public:
-  ExtensionSet();
+  constexpr ExtensionSet();
   explicit ExtensionSet(Arena* arena);
   ~ExtensionSet();
 
@@ -292,7 +291,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   MessageLite* UnsafeArenaReleaseMessage(const FieldDescriptor* descriptor,
                                          MessageFactory* factory);
 #undef desc
-  Arena* GetArenaNoVirtual() const { return arena_; }
+  Arena* GetArena() const { return arena_; }
 
   // repeated fields -------------------------------------------------
 
@@ -397,23 +396,24 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Lite parser
   const char* ParseField(uint64 tag, const char* ptr,
                          const MessageLite* containing_type,
-                         internal::InternalMetadataWithArenaLite* metadata,
+                         internal::InternalMetadata* metadata,
                          internal::ParseContext* ctx);
   // Full parser
   const char* ParseField(uint64 tag, const char* ptr,
                          const Message* containing_type,
-                         internal::InternalMetadataWithArena* metadata,
+                         internal::InternalMetadata* metadata,
                          internal::ParseContext* ctx);
-  template <typename Msg, typename Metadata>
+  template <typename Msg>
   const char* ParseMessageSet(const char* ptr, const Msg* containing_type,
-                              Metadata* metadata, internal::ParseContext* ctx) {
+                              InternalMetadata* metadata,
+                              internal::ParseContext* ctx) {
     struct MessageSetItem {
       const char* _InternalParse(const char* ptr, ParseContext* ctx) {
         return me->ParseMessageSetItem(ptr, containing_type, metadata, ctx);
       }
       ExtensionSet* me;
       const Msg* containing_type;
-      Metadata* metadata;
+      InternalMetadata* metadata;
     } item{this, containing_type, metadata};
     while (!ctx->Done(&ptr)) {
       uint32 tag;
@@ -770,36 +770,37 @@ class PROTOBUF_EXPORT ExtensionSet {
                             const internal::ParseContext* ctx,
                             ExtensionInfo* extension, bool* was_packed_on_wire);
   // Used for MessageSet only
-  const char* ParseFieldMaybeLazily(
-      uint64 tag, const char* ptr, const MessageLite* containing_type,
-      internal::InternalMetadataWithArenaLite* metadata,
-      internal::ParseContext* ctx) {
+  const char* ParseFieldMaybeLazily(uint64 tag, const char* ptr,
+                                    const MessageLite* containing_type,
+                                    internal::InternalMetadata* metadata,
+                                    internal::ParseContext* ctx) {
     // Lite MessageSet doesn't implement lazy.
     return ParseField(tag, ptr, containing_type, metadata, ctx);
   }
-  const char* ParseFieldMaybeLazily(
-      uint64 tag, const char* ptr, const Message* containing_type,
-      internal::InternalMetadataWithArena* metadata,
-      internal::ParseContext* ctx);
-  const char* ParseMessageSetItem(
-      const char* ptr, const MessageLite* containing_type,
-      internal::InternalMetadataWithArenaLite* metadata,
-      internal::ParseContext* ctx);
+  const char* ParseFieldMaybeLazily(uint64 tag, const char* ptr,
+                                    const Message* containing_type,
+                                    internal::InternalMetadata* metadata,
+                                    internal::ParseContext* ctx);
+  const char* ParseMessageSetItem(const char* ptr,
+                                  const MessageLite* containing_type,
+                                  internal::InternalMetadata* metadata,
+                                  internal::ParseContext* ctx);
   const char* ParseMessageSetItem(const char* ptr,
                                   const Message* containing_type,
-                                  internal::InternalMetadataWithArena* metadata,
+                                  internal::InternalMetadata* metadata,
                                   internal::ParseContext* ctx);
 
   // Implemented in extension_set_inl.h to keep code out of the header file.
   template <typename T>
   const char* ParseFieldWithExtensionInfo(int number, bool was_packed_on_wire,
                                           const ExtensionInfo& info,
-                                          T* metadata, const char* ptr,
+                                          internal::InternalMetadata* metadata,
+                                          const char* ptr,
                                           internal::ParseContext* ctx);
-  template <typename Msg, typename Metadata>
+  template <typename Msg, typename T>
   const char* ParseMessageSetItemTmpl(const char* ptr,
                                       const Msg* containing_type,
-                                      Metadata* metadata,
+                                      internal::InternalMetadata* metadata,
                                       internal::ParseContext* ctx);
 
   // Hack:  RepeatedPtrFieldBase declares ExtensionSet as a friend.  This
@@ -848,6 +849,9 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
+
+constexpr ExtensionSet::ExtensionSet()
+    : arena_(nullptr), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
 
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,
@@ -1324,7 +1328,9 @@ RepeatedMessageTypeTraits<Type>::GetDefaultRepeatedField() {
 // ExtensionIdentifier
 
 // This is the type of actual extension objects.  E.g. if you have:
-//   extends Foo with optional int32 bar = 1234;
+//   extend Foo {
+//     optional int32 bar = 1234;
+//   }
 // then "bar" will be defined in C++ as:
 //   ExtensionIdentifier<Foo, PrimitiveTypeTraits<int32>, 5, false> bar(1234);
 //

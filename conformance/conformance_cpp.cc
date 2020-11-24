@@ -36,6 +36,7 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
+#include <google/protobuf/stubs/status.h>
 #include "conformance.pb.h"
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
@@ -125,9 +126,9 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       options.ignore_unknown_fields =
           (request.test_category() ==
               conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
-      Status status = JsonToBinaryString(type_resolver, *type_url,
-                                         request.json_payload(), &proto_binary,
-                                         options);
+      util::Status status =
+          JsonToBinaryString(type_resolver, *type_url, request.json_payload(),
+                             &proto_binary, options);
       if (!status.ok()) {
         response->set_parse_error(string("Parse error: ") +
                                   std::string(status.error_message()));
@@ -179,8 +180,9 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
     case conformance::JSON: {
       string proto_binary;
       GOOGLE_CHECK(test_message->SerializeToString(&proto_binary));
-      Status status = BinaryToJsonString(type_resolver, *type_url, proto_binary,
-                                         response->mutable_json_payload());
+      util::Status status =
+          BinaryToJsonString(type_resolver, *type_url, proto_binary,
+                             response->mutable_json_payload());
       if (!status.ok()) {
         response->set_serialize_error(
             string("Failed to serialize JSON output: ") +

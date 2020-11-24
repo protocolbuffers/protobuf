@@ -6,23 +6,12 @@ goog.module('protobuf.binary.reader');
 const BufferDecoder = goog.require('protobuf.binary.BufferDecoder');
 const ByteString = goog.require('protobuf.ByteString');
 const Int64 = goog.require('protobuf.Int64');
+const {checkState} = goog.require('protobuf.internal.checks');
 
 
 /******************************************************************************
  *                        OPTIONAL FUNCTIONS
  ******************************************************************************/
-
-/**
- * Reads a boolean from the binary bytes.
- * Also returns the first position after the boolean.
- * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
- * @param {number} index Start of the data.
- * @return {{value: boolean, nextCursor: number}}
- */
-function readBoolValue(bufferDecoder, index) {
-  const {lowBits, highBits, dataStart} = bufferDecoder.getVarint(index);
-  return {value: lowBits !== 0 || highBits !== 0, nextCursor: dataStart};
-}
 
 /**
  * Reads a boolean value from the binary bytes.
@@ -32,11 +21,12 @@ function readBoolValue(bufferDecoder, index) {
  * @package
  */
 function readBool(bufferDecoder, start) {
-  return readBoolValue(bufferDecoder, start).value;
+  const {lowBits, highBits} = bufferDecoder.getVarint(start);
+  return lowBits !== 0 || highBits !== 0;
 }
 
 /**
- * Reads a double value from the binary bytes.
+ * Reads a ByteString value from the binary bytes.
  * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
  * @param {number} start Start of the data.
  * @return {!ByteString}
@@ -49,39 +39,15 @@ function readBytes(bufferDecoder, start) {
 /**
  * Reads a int32 value from the binary bytes encoded as varint.
  * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
- * @param {number} index Start of the data.
- * @return {{value: number, nextCursor: number}}
- * @package
- */
-function readInt32Value(bufferDecoder, index) {
-  const {lowBits, dataStart} = bufferDecoder.getVarint(index);
-  // Negative 32 bit integers are encoded with 64 bit values.
-  // Clients are expected to truncate back to 32 bits.
-  // This is why we are dropping the upper bytes here.
-  return {value: lowBits | 0, nextCursor: dataStart};
-}
-
-/**
- * Reads a int32 value from the binary bytes encoded as varint.
- * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
  * @param {number} start Start of the data.
  * @return {number}
  * @package
  */
 function readInt32(bufferDecoder, start) {
-  return readInt32Value(bufferDecoder, start).value;
-}
-
-/**
- * Reads a int32 value from the binary bytes encoded as varint.
- * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
- * @param {number} index Start of the data.
- * @return {{ value: !Int64, nextCursor: number}}
- * @package
- */
-function readInt64Value(bufferDecoder, index) {
-  const {lowBits, highBits, dataStart} = bufferDecoder.getVarint(index);
-  return {value: Int64.fromBits(lowBits, highBits), nextCursor: dataStart};
+  // Negative 32 bit integers are encoded with 64 bit values.
+  // Clients are expected to truncate back to 32 bits.
+  // This is why we are dropping the upper bytes here.
+  return bufferDecoder.getUnsignedVarint32At(start) | 0;
 }
 
 /**
@@ -92,7 +58,8 @@ function readInt64Value(bufferDecoder, index) {
  * @package
  */
 function readInt64(bufferDecoder, start) {
-  return readInt64Value(bufferDecoder, start).value;
+  const {lowBits, highBits} = bufferDecoder.getVarint(start);
+  return Int64.fromBits(lowBits, highBits);
 }
 
 /**
@@ -132,45 +99,15 @@ function readSfixed64(bufferDecoder, start) {
 
 /**
  * Reads a sint32 value from the binary bytes encoded as varint.
- * Also returns the first position after the boolean.
- * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
- * @param {number} index Start of the data.
- * @return {{value: number, nextCursor: number}}
- */
-function readSint32Value(bufferDecoder, index) {
-  const {lowBits, dataStart} = bufferDecoder.getVarint(index);
-  // Truncate upper bits and convert from zig zag to signd int
-  return {value: (lowBits >>> 1) ^ -(lowBits & 0x01), nextCursor: dataStart};
-}
-
-/**
- * Reads a sint32 value from the binary bytes encoded as varint.
  * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
  * @param {number} start Start of the data.
  * @return {number}
  * @package
  */
 function readSint32(bufferDecoder, start) {
-  return readSint32Value(bufferDecoder, start).value;
-}
-
-/**
- * Reads a sint64 value from the binary bytes encoded as varint.
- * Also returns the first position after the value.
- * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
- * @param {number} index Start of the data.
- * @return {{value: !Int64, nextCursor: number}}
- * @package
- */
-function readSint64Value(bufferDecoder, index) {
-  const {lowBits, highBits, dataStart} = bufferDecoder.getVarint(index);
-  const sign = -(lowBits & 0x01);
-  const decodedLowerBits = ((lowBits >>> 1) | (highBits & 0x01) << 31) ^ sign;
-  const decodedUpperBits = (highBits >>> 1) ^ sign;
-  return {
-    value: Int64.fromBits(decodedLowerBits, decodedUpperBits),
-    nextCursor: dataStart
-  };
+  const bits = bufferDecoder.getUnsignedVarint32At(start);
+  // Truncate upper bits and convert from zig zag to signd int
+  return (bits >>> 1) ^ -(bits & 0x01);
 }
 
 /**
@@ -181,7 +118,11 @@ function readSint64Value(bufferDecoder, index) {
  * @package
  */
 function readSint64(bufferDecoder, start) {
-  return readSint64Value(bufferDecoder, start).value;
+  const {lowBits, highBits} = bufferDecoder.getVarint(start);
+  const sign = -(lowBits & 0x01);
+  const decodedLowerBits = ((lowBits >>> 1) | (highBits & 0x01) << 31) ^ sign;
+  const decodedUpperBits = (highBits >>> 1) ^ sign;
+  return Int64.fromBits(decodedLowerBits, decodedUpperBits);
 }
 
 /**
@@ -192,9 +133,8 @@ function readSint64(bufferDecoder, start) {
  * @package
  */
 function readDelimited(bufferDecoder, start) {
-  const {lowBits, dataStart} = bufferDecoder.getVarint(start);
-  const unsignedLength = lowBits >>> 0;
-  return bufferDecoder.subBufferDecoder(dataStart, unsignedLength);
+  const unsignedLength = bufferDecoder.getUnsignedVarint32At(start);
+  return bufferDecoder.subBufferDecoder(bufferDecoder.cursor(), unsignedLength);
 }
 
 /**
@@ -210,25 +150,13 @@ function readString(bufferDecoder, start) {
 
 /**
  * Reads a uint32 value from the binary bytes encoded as varint.
- * Also returns the first position after the value.
- * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
- * @param {number} index Start of the data.
- * @return {{value: number, nextCursor: number}}
- */
-function readUint32Value(bufferDecoder, index) {
-  const {lowBits, dataStart} = bufferDecoder.getVarint(index);
-  return {value: lowBits >>> 0, nextCursor: dataStart};
-}
-
-/**
- * Reads a uint32 value from the binary bytes encoded as varint.
  * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
  * @param {number} start Start of the data.
  * @return {number}
  * @package
  */
 function readUint32(bufferDecoder, start) {
-  return readUint32Value(bufferDecoder, start).value;
+  return bufferDecoder.getUnsignedVarint32At(start);
 }
 
 /**
@@ -266,7 +194,7 @@ function readSfixed32(bufferDecoder, start) {
  * @package
  */
 function readPackedBool(bufferDecoder, start) {
-  return readPackedVariableLength(bufferDecoder, start, readBoolValue);
+  return readPacked(bufferDecoder, start, readBool);
 }
 
 /**
@@ -278,7 +206,7 @@ function readPackedBool(bufferDecoder, start) {
  * @package
  */
 function readPackedDouble(bufferDecoder, start) {
-  return readPackedFixed(bufferDecoder, start, 8, readDouble);
+  return readPacked(bufferDecoder, start, readDouble);
 }
 
 /**
@@ -290,7 +218,7 @@ function readPackedDouble(bufferDecoder, start) {
  * @package
  */
 function readPackedFixed32(bufferDecoder, start) {
-  return readPackedFixed(bufferDecoder, start, 4, readFixed32);
+  return readPacked(bufferDecoder, start, readFixed32);
 }
 
 /**
@@ -302,7 +230,7 @@ function readPackedFixed32(bufferDecoder, start) {
  * @package
  */
 function readPackedFloat(bufferDecoder, start) {
-  return readPackedFixed(bufferDecoder, start, 4, readFloat);
+  return readPacked(bufferDecoder, start, readFloat);
 }
 
 /**
@@ -314,7 +242,7 @@ function readPackedFloat(bufferDecoder, start) {
  * @package
  */
 function readPackedInt32(bufferDecoder, start) {
-  return readPackedVariableLength(bufferDecoder, start, readInt32Value);
+  return readPacked(bufferDecoder, start, readInt32);
 }
 
 /**
@@ -326,7 +254,7 @@ function readPackedInt32(bufferDecoder, start) {
  * @package
  */
 function readPackedInt64(bufferDecoder, start) {
-  return readPackedVariableLength(bufferDecoder, start, readInt64Value);
+  return readPacked(bufferDecoder, start, readInt64);
 }
 
 /**
@@ -338,7 +266,7 @@ function readPackedInt64(bufferDecoder, start) {
  * @package
  */
 function readPackedSfixed32(bufferDecoder, start) {
-  return readPackedFixed(bufferDecoder, start, 4, readSfixed32);
+  return readPacked(bufferDecoder, start, readSfixed32);
 }
 
 /**
@@ -350,7 +278,7 @@ function readPackedSfixed32(bufferDecoder, start) {
  * @package
  */
 function readPackedSfixed64(bufferDecoder, start) {
-  return readPackedFixed(bufferDecoder, start, 8, readSfixed64);
+  return readPacked(bufferDecoder, start, readSfixed64);
 }
 
 /**
@@ -362,7 +290,7 @@ function readPackedSfixed64(bufferDecoder, start) {
  * @package
  */
 function readPackedSint32(bufferDecoder, start) {
-  return readPackedVariableLength(bufferDecoder, start, readSint32Value);
+  return readPacked(bufferDecoder, start, readSint32);
 }
 
 /**
@@ -374,7 +302,7 @@ function readPackedSint32(bufferDecoder, start) {
  * @package
  */
 function readPackedSint64(bufferDecoder, start) {
-  return readPackedVariableLength(bufferDecoder, start, readSint64Value);
+  return readPacked(bufferDecoder, start, readSint64);
 }
 
 /**
@@ -386,51 +314,25 @@ function readPackedSint64(bufferDecoder, start) {
  * @package
  */
 function readPackedUint32(bufferDecoder, start) {
-  return readPackedVariableLength(bufferDecoder, start, readUint32Value);
+  return readPacked(bufferDecoder, start, readUint32);
 }
 
 /**
- * Read packed variable length values.
+ * Read packed values.
  * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
  * @param {number} start Start of the data.
- * @param {function(!BufferDecoder, number):{value:T, nextCursor: number}}
- *     valueFunction
- * @return {!Array<T>}
- * @package
- * @template T
- */
-function readPackedVariableLength(bufferDecoder, start, valueFunction) {
-  const /** !Array<T> */ result = [];
-  const {lowBits, dataStart} = bufferDecoder.getVarint(start);
-  let cursor = dataStart;
-  const unsignedLength = lowBits >>> 0;
-  while (cursor < dataStart + unsignedLength) {
-    const {value, nextCursor} = valueFunction(bufferDecoder, cursor);
-    cursor = nextCursor;
-    result.push(value);
-  }
-  return result;
-}
-
-/**
- * Read a packed fixed values.
- * @param {!BufferDecoder} bufferDecoder Binary format encoded bytes.
- * @param {number} start Start of the data.
- * @param {number} size End of the data.
  * @param {function(!BufferDecoder, number):T} valueFunction
  * @return {!Array<T>}
  * @package
  * @template T
  */
-function readPackedFixed(bufferDecoder, start, size, valueFunction) {
-  const {lowBits, dataStart} = bufferDecoder.getVarint(start);
-  const unsignedLength = lowBits >>> 0;
-  const noOfEntries = unsignedLength / size;
-  const /** !Array<T> */ result = new Array(noOfEntries);
-  let cursor = dataStart;
-  for (let i = 0; i < noOfEntries; i++) {
-    result[i] = valueFunction(bufferDecoder, cursor);
-    cursor += size;
+function readPacked(bufferDecoder, start, valueFunction) {
+  const /** !Array<T> */ result = [];
+  const unsignedLength = bufferDecoder.getUnsignedVarint32At(start);
+  const dataStart = bufferDecoder.cursor();
+  while (bufferDecoder.cursor() < dataStart + unsignedLength) {
+    checkState(bufferDecoder.cursor() > 0);
+    result.push(valueFunction(bufferDecoder, bufferDecoder.cursor()));
   }
   return result;
 }

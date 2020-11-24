@@ -52,11 +52,7 @@ namespace {
 
 static int Func(int i, int j) { return i * j; }
 
-static std::string StrFunc(int i, int j) {
-  std::string str;
-  SStringPrintf(&str, "%d", Func(i, 4));
-  return str;
-}
+static std::string StrFunc(int i, int j) { return StrCat(Func(i, 4)); }
 
 TEST(RepeatedFieldReflectionTest, RegularFields) {
   TestAllTypes message;

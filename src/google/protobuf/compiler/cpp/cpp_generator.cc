@@ -93,6 +93,8 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.annotation_guard_name = options[i].second;
     } else if (options[i].first == "speed") {
       file_options.enforce_mode = EnforceOptimizeMode::kSpeed;
+    } else if (options[i].first == "code_size") {
+      file_options.enforce_mode = EnforceOptimizeMode::kCodeSize;
     } else if (options[i].first == "lite") {
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
     } else if (options[i].first == "lite_implicit_weak_fields") {

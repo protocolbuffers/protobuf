@@ -64,7 +64,7 @@ class MockByteSource : public ByteSource {
 TEST(ByteSourceTest, CopyTo) {
   StringPiece data("Hello world!");
   MockByteSource source(data, 3);
-  string str;
+  std::string str;
   StringByteSink sink(&str);
 
   source.CopyTo(&sink, data.size());
@@ -75,7 +75,7 @@ TEST(ByteSourceTest, CopySubstringTo) {
   StringPiece data("Hello world!");
   MockByteSource source(data, 3);
   source.Skip(1);
-  string str;
+  std::string str;
   StringByteSink sink(&str);
 
   source.CopyTo(&sink, data.size() - 2);
@@ -92,7 +92,7 @@ TEST(ByteSourceTest, LimitByteSource) {
   EXPECT_EQ(5, limit_source.Available());
 
   {
-    string str;
+    std::string str;
     StringByteSink sink(&str);
     limit_source.CopyTo(&sink, limit_source.Available());
     EXPECT_EQ("ello ", str);
@@ -101,7 +101,7 @@ TEST(ByteSourceTest, LimitByteSource) {
   }
 
   {
-    string str;
+    std::string str;
     StringByteSink sink(&str);
     source.CopyTo(&sink, source.Available());
     EXPECT_EQ("world!", str);
@@ -112,7 +112,7 @@ TEST(ByteSourceTest, LimitByteSource) {
 TEST(ByteSourceTest, CopyToStringByteSink) {
   StringPiece data("Hello world!");
   MockByteSource source(data, 3);
-  string str;
+  std::string str;
   StringByteSink sink(&str);
   source.CopyTo(&sink, data.size());
   EXPECT_EQ(data, str);
@@ -121,7 +121,7 @@ TEST(ByteSourceTest, CopyToStringByteSink) {
 // Verify that ByteSink is subclassable and Flush() overridable.
 class FlushingByteSink : public StringByteSink {
  public:
-  explicit FlushingByteSink(string* dest) : StringByteSink(dest) {}
+  explicit FlushingByteSink(std::string* dest) : StringByteSink(dest) {}
   virtual void Flush() { Append("z", 1); }
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FlushingByteSink);
@@ -134,7 +134,7 @@ void WriteAndFlush(ByteSink* s) {
 }
 
 TEST(ByteSinkTest, Flush) {
-  string str;
+  std::string str;
   FlushingByteSink f_sink(&str);
   WriteAndFlush(&f_sink);
   EXPECT_STREQ("abcz", str.c_str());

@@ -57,6 +57,7 @@ from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import any_test_pb2 as test_extend_any
 from google.protobuf.internal import message_set_extensions_pb2
+from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import descriptor_pool
 from google.protobuf import text_format
@@ -124,6 +125,114 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'repeated_string:'
         ' "\\000\\001\\007\\010\\014\\n\\r\\t\\013\\\\\\\'\\""\n'
         'repeated_string: "\\303\\274\\352\\234\\237"\n')
+
+  def testPrintFloatPrecision(self, message_module):
+    message = message_module.TestAllTypes()
+
+    message.repeated_float.append(0.0)
+    message.repeated_float.append(0.8)
+    message.repeated_float.append(1.0)
+    message.repeated_float.append(1.2)
+    message.repeated_float.append(1.23)
+    message.repeated_float.append(1.234)
+    message.repeated_float.append(1.2345)
+    message.repeated_float.append(1.23456)
+    message.repeated_float.append(1.2e10)
+    message.repeated_float.append(1.23e10)
+    message.repeated_float.append(1.234e10)
+    message.repeated_float.append(1.2345e10)
+    message.repeated_float.append(1.23456e10)
+    message.repeated_float.append(float('NaN'))
+    message.repeated_float.append(float('inf'))
+    message.repeated_double.append(0.0)
+    message.repeated_double.append(0.8)
+    message.repeated_double.append(1.0)
+    message.repeated_double.append(1.2)
+    message.repeated_double.append(1.23)
+    message.repeated_double.append(1.234)
+    message.repeated_double.append(1.2345)
+    message.repeated_double.append(1.23456)
+    message.repeated_double.append(1.234567)
+    message.repeated_double.append(1.2345678)
+    message.repeated_double.append(1.23456789)
+    message.repeated_double.append(1.234567898)
+    message.repeated_double.append(1.2345678987)
+    message.repeated_double.append(1.23456789876)
+    message.repeated_double.append(1.234567898765)
+    message.repeated_double.append(1.2345678987654)
+    message.repeated_double.append(1.23456789876543)
+    message.repeated_double.append(1.2e100)
+    message.repeated_double.append(1.23e100)
+    message.repeated_double.append(1.234e100)
+    message.repeated_double.append(1.2345e100)
+    message.repeated_double.append(1.23456e100)
+    message.repeated_double.append(1.234567e100)
+    message.repeated_double.append(1.2345678e100)
+    message.repeated_double.append(1.23456789e100)
+    message.repeated_double.append(1.234567898e100)
+    message.repeated_double.append(1.2345678987e100)
+    message.repeated_double.append(1.23456789876e100)
+    message.repeated_double.append(1.234567898765e100)
+    message.repeated_double.append(1.2345678987654e100)
+    message.repeated_double.append(1.23456789876543e100)
+    # pylint: disable=g-long-ternary
+    self.CompareToGoldenText(
+        self.RemoveRedundantZeros(text_format.MessageToString(message)),
+        'repeated_float: 0\n'
+        'repeated_float: 0.8\n'
+        'repeated_float: 1\n'
+        'repeated_float: 1.2\n'
+        'repeated_float: 1.23\n'
+        'repeated_float: 1.234\n'
+        'repeated_float: 1.2345\n'
+        'repeated_float: 1.23456\n'
+        # Note that these don't use scientific notation.
+        'repeated_float: 12000000000\n'
+        'repeated_float: 12300000000\n'
+        'repeated_float: 12340000000\n'
+        'repeated_float: 12345000000\n'
+        'repeated_float: 12345600000\n'
+        'repeated_float: nan\n'
+        'repeated_float: inf\n'
+        'repeated_double: 0\n'
+        'repeated_double: 0.8\n'
+        'repeated_double: 1\n'
+        'repeated_double: 1.2\n'
+        'repeated_double: 1.23\n'
+        'repeated_double: 1.234\n'
+        'repeated_double: 1.2345\n'
+        'repeated_double: 1.23456\n'
+        'repeated_double: 1.234567\n'
+        'repeated_double: 1.2345678\n'
+        'repeated_double: 1.23456789\n'
+        'repeated_double: 1.234567898\n'
+        'repeated_double: 1.2345678987\n'
+        'repeated_double: 1.23456789876\n' +
+        ('repeated_double: 1.23456789876\n'
+         'repeated_double: 1.23456789877\n'
+         'repeated_double: 1.23456789877\n'
+         if six.PY2 else
+         'repeated_double: 1.234567898765\n'
+         'repeated_double: 1.2345678987654\n'
+         'repeated_double: 1.23456789876543\n') +
+        'repeated_double: 1.2e+100\n'
+        'repeated_double: 1.23e+100\n'
+        'repeated_double: 1.234e+100\n'
+        'repeated_double: 1.2345e+100\n'
+        'repeated_double: 1.23456e+100\n'
+        'repeated_double: 1.234567e+100\n'
+        'repeated_double: 1.2345678e+100\n'
+        'repeated_double: 1.23456789e+100\n'
+        'repeated_double: 1.234567898e+100\n'
+        'repeated_double: 1.2345678987e+100\n'
+        'repeated_double: 1.23456789876e+100\n' +
+        ('repeated_double: 1.23456789877e+100\n'
+         'repeated_double: 1.23456789877e+100\n'
+         'repeated_double: 1.23456789877e+100\n'
+         if six.PY2 else
+         'repeated_double: 1.234567898765e+100\n'
+         'repeated_double: 1.2345678987654e+100\n'
+         'repeated_double: 1.23456789876543e+100\n'))
 
   def testPrintExoticUnicodeSubclass(self, message_module):
 
@@ -294,8 +403,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
     # 32-bit 1.2 is noisy when extended to 64-bit:
     #  >>> struct.unpack('f', struct.pack('f', 1.2))[0]
     #  1.2000000476837158
-    # TODO(jieluo): change to 1.2 with cl/241634942.
-    message.payload.optional_float = 1.2000000476837158
+    message.payload.optional_float = 1.2
     formatted_fields = ['optional_float: 1.2',
                         'optional_double: -3.45678901234568e-6',
                         'repeated_float: -5642', 'repeated_double: 7.89e-5']
@@ -316,7 +424,7 @@ class TextFormatMessageToStringTests(TextFormatBase):
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
 
-    # Test default float_format has 8 valid digits.
+    # Test default float_format will automatic print shortest float.
     message.payload.optional_float = 1.2345678912
     message.payload.optional_double = 1.2345678912
     formatted_fields = ['optional_float: 1.2345679',
@@ -327,6 +435,17 @@ class TextFormatMessageToStringTests(TextFormatBase):
         self.RemoveRedundantZeros(text_message),
         'payload {{\n  {0}\n  {1}\n  {2}\n  {3}\n}}\n'.format(
             *formatted_fields))
+
+    message.Clear()
+    message.payload.optional_float = 1.1000000000011
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.1\n}\n')
+    message.payload.optional_float = 1.00000075e-36
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.00000075e-36\n}\n')
+    message.payload.optional_float = 12345678912345e+11
+    self.assertEqual(text_format.MessageToString(message),
+                     'payload {\n  optional_float: 1.234568e+24\n}\n')
 
   def testMessageToString(self, message_module):
     message = message_module.ForeignMessage()
@@ -1744,6 +1863,24 @@ class Proto3Tests(unittest.TestCase):
       text_format.Merge(text, message)
     self.assertEqual(str(e.exception), '3:11 : Expected "}".')
 
+  def testProto3Optional(self):
+    msg = test_proto3_optional_pb2.TestProto3Optional()
+    self.assertEqual(text_format.MessageToString(msg), '')
+    msg.optional_int32 = 0
+    msg.optional_float = 0.0
+    msg.optional_string = ''
+    msg.optional_nested_message.bb = 0
+    text = ('optional_int32: 0\n'
+            'optional_float: 0.0\n'
+            'optional_string: ""\n'
+            'optional_nested_message {\n'
+            '  bb: 0\n'
+            '}\n')
+    self.assertEqual(text_format.MessageToString(msg), text)
+    msg2 = test_proto3_optional_pb2.TestProto3Optional()
+    text_format.Parse(text, msg2)
+    self.assertEqual(text_format.MessageToString(msg2), text)
+
 
 class TokenizerTest(unittest.TestCase):
 
@@ -2192,6 +2329,24 @@ class WhitespaceTest(TextFormatBase):
                 optional_string: "value"
               }
             }"""))
+
+
+class OptionalColonMessageToStringTest(unittest.TestCase):
+
+  def testForcePrintOptionalColon(self):
+    packed_message = unittest_pb2.OneString()
+    packed_message.data = 'string'
+    message = any_test_pb2.TestAny()
+    message.any_value.Pack(packed_message)
+    output = text_format.MessageToString(
+        message,
+        force_colon=True)
+    expected = ('any_value: {\n'
+                '  [type.googleapis.com/protobuf_unittest.OneString]: {\n'
+                '    data: "string"\n'
+                '  }\n'
+                '}\n')
+    self.assertEqual(expected, output)
 
 
 if __name__ == '__main__':

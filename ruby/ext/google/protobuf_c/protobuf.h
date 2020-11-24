@@ -285,6 +285,7 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
                                        VALUE _file_builder,
                                        VALUE name);
 VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self);
+VALUE MessageBuilderContext_proto3_optional(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self);
 VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self);

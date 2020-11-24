@@ -44,8 +44,8 @@ namespace objectivec {
 namespace {
 
 void SetEnumVariables(const FieldDescriptor* descriptor,
-                      std::map<string, string>* variables) {
-  string type = EnumName(descriptor->enum_type());
+                      std::map<std::string, std::string>* variables) {
+  std::string type = EnumName(descriptor->enum_type());
   (*variables)["storage_type"] = type;
   // For non repeated fields, if it was defined in a different file, the
   // property decls need to use "enum NAME" rather than just "NAME" to support
@@ -104,26 +104,26 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
       "int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message) {\n"
       "  GPBDescriptor *descriptor = [$owning_message_class$ descriptor];\n"
       "  GPBFieldDescriptor *field = [descriptor fieldWithNumber:$field_number_name$];\n"
-      "  return GPBGetMessageInt32Field(message, field);\n"
+      "  return GPBGetMessageRawEnumField(message, field);\n"
       "}\n"
       "\n"
       "void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value) {\n"
       "  GPBDescriptor *descriptor = [$owning_message_class$ descriptor];\n"
       "  GPBFieldDescriptor *field = [descriptor fieldWithNumber:$field_number_name$];\n"
-      "  GPBSetInt32IvarWithFieldInternal(message, field, value, descriptor.file.syntax);\n"
+      "  GPBSetMessageRawEnumField(message, field, value);\n"
       "}\n"
       "\n");
 }
 
 void EnumFieldGenerator::DetermineForwardDeclarations(
-    std::set<string>* fwd_decls) const {
+    std::set<std::string>* fwd_decls) const {
   SingleFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   // If it is an enum defined in a different file, then we'll need a forward
   // declaration for it.  When it is in our file, all the enums are output
   // before the message, so it will be declared before it is needed.
   if (descriptor_->file() != descriptor_->enum_type()->file()) {
     // Enum name is already in "storage_type".
-    const string& name = variable("storage_type");
+    const std::string& name = variable("storage_type");
     fwd_decls->insert("GPB_ENUM_FWD_DECLARE(" + name + ")");
   }
 }

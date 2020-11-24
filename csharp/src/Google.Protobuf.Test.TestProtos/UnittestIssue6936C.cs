@@ -39,7 +39,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
   #region Messages
-  public sealed partial class Bar : pb::IMessage<Bar> {
+  public sealed partial class Bar : pb::IMessage<Bar>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<Bar> _parser = new pb::MessageParser<Bar>(() => new Bar());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -118,6 +122,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (foo_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Foo);
@@ -125,7 +132,21 @@ namespace UnitTest.Issues.TestProtos {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (foo_ != null) {
+        output.WriteRawTag(10);
+        output.WriteMessage(Foo);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -155,6 +176,9 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -170,7 +194,29 @@ namespace UnitTest.Issues.TestProtos {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            if (foo_ == null) {
+              Foo = new global::UnitTest.Issues.TestProtos.Foo();
+            }
+            input.ReadMessage(Foo);
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

@@ -55,6 +55,21 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   static std::string ToString(const FieldMask& mask);
   static void FromString(StringPiece str, FieldMask* out);
 
+  // Populates the FieldMask with the paths corresponding to the fields with the
+  // given numbers, after checking that all field numbers are valid.
+  template <typename T>
+  static void FromFieldNumbers(const std::vector<int64>& field_numbers,
+                               FieldMask* out) {
+    for (const auto field_number : field_numbers) {
+      const FieldDescriptor* field_desc =
+          T::descriptor()->FindFieldByNumber(field_number);
+      GOOGLE_CHECK(field_desc != nullptr)
+          << "Invalid field number for " << T::descriptor()->full_name() << ": "
+          << field_number;
+      AddPathToFieldMask<T>(field_desc->lowercase_name(), out);
+    }
+  }
+
   // Converts FieldMask to/from string, formatted according to proto3 JSON
   // spec for FieldMask (e.g., "fooBar,baz.quz"). If the field name is not
   // style conforming (i.e., not snake_case when converted to string, or not
@@ -90,8 +105,8 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   // This method check-fails if the path is not a valid path for type T.
   template <typename T>
   static void AddPathToFieldMask(StringPiece path, FieldMask* mask) {
-    GOOGLE_CHECK(IsValidPath<T>(path));
-    mask->add_paths(path);
+    GOOGLE_CHECK(IsValidPath<T>(path)) << path;
+    mask->add_paths(std::string(path));
   }
 
   // Creates a FieldMask with all fields of type T. This FieldMask only
@@ -180,8 +195,8 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   static bool SnakeCaseToCamelCase(StringPiece input,
                                    std::string* output);
   // Converts a field name from camelCase to snake_case:
-  //   1. Every uppercase letter is converted to lowercase with a additional
-  //      preceding "-".
+  //   1. Every uppercase letter is converted to lowercase with an additional
+  //      preceding "_".
   // The conversion will fail if:
   //   1. The field name contains "_"s.
   // If the conversion succeeds, it's guaranteed that the resulted

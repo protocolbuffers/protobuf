@@ -64,11 +64,11 @@ StringPiece::StringPiece(StringPiece x,
   GOOGLE_DCHECK_GE(len, 0);
 }
 
-void StringPiece::CopyToString(string* target) const {
+void StringPiece::CopyToString(std::string* target) const {
   target->assign(ptr_, length_);
 }
 
-void StringPiece::AppendToString(string* target) const {
+void StringPiece::AppendToString(std::string* target) const {
   target->append(ptr_, length_);
 }
 

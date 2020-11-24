@@ -104,7 +104,7 @@ class DiskSourceTree;    // importer.h
 //   2. protoc --proto_path=src foo.proto (virtual path relative to src)
 //
 // If a file path can be interpreted both as a physical file path and as a
-// relative virtual path, the physical file path takes precendence.
+// relative virtual path, the physical file path takes precedence.
 //
 // For a full description of the command-line syntax, invoke it with --help.
 class PROTOC_EXPORT CommandLineInterface {
@@ -226,6 +226,17 @@ class PROTOC_EXPORT CommandLineInterface {
   bool MakeInputsBeProtoPathRelative(DiskSourceTree* source_tree,
                                      DescriptorDatabase* fallback_database);
 
+  // Is this .proto file whitelisted, or do we have a command-line flag allowing
+  // us to use proto3 optional? This is a temporary control to avoid people from
+  // using proto3 optional until code generators have implemented it.
+  bool AllowProto3Optional(const FileDescriptor& file) const;
+
+  // Fails if these files use proto3 optional and the code generator doesn't
+  // support it. This is a permanent check.
+  bool EnforceProto3OptionalSupport(
+      const std::string& codegen_name, uint64 supported_features,
+      const std::vector<const FileDescriptor*>& parsed_files) const;
+
 
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {
@@ -268,9 +279,6 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // Verify that all the input files exist in the given database.
   bool VerifyInputFilesInDescriptors(DescriptorDatabase* fallback_database);
-
-  // Loads descriptor_set_in into the provided database
-  bool PopulateSimpleDescriptorDatabase(SimpleDescriptorDatabase* database);
 
   // Parses input_files_ into parsed_files
   bool ParseInputFiles(DescriptorPool* descriptor_pool,
@@ -373,21 +381,21 @@ class PROTOC_EXPORT CommandLineInterface {
     MODE_PRINT,    // Print mode: print info of the given .proto files and exit.
   };
 
-  Mode mode_;
+  Mode mode_ = MODE_COMPILE;
 
   enum PrintMode {
     PRINT_NONE,         // Not in MODE_PRINT
     PRINT_FREE_FIELDS,  // --print_free_fields
   };
 
-  PrintMode print_mode_;
+  PrintMode print_mode_ = PRINT_NONE;
 
   enum ErrorFormat {
     ERROR_FORMAT_GCC,  // GCC error output format (default).
     ERROR_FORMAT_MSVS  // Visual Studio output (--error_format=msvs).
   };
 
-  ErrorFormat error_format_;
+  ErrorFormat error_format_ = ERROR_FORMAT_GCC;
 
   std::vector<std::pair<std::string, std::string> >
       proto_path_;                        // Search path for proto files.
@@ -396,7 +404,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // Names of proto files which are allowed to be imported. Used by build
   // systems to enforce depend-on-what-you-import.
   std::set<std::string> direct_dependencies_;
-  bool direct_dependencies_explicitly_set_;
+  bool direct_dependencies_explicitly_set_ = false;
 
   // If there's a violation of depend-on-what-you-import, this string will be
   // presented to the user. "%s" will be replaced with the violating import.
@@ -435,10 +443,16 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // True if --include_source_info was given, meaning that we should not strip
   // SourceCodeInfo from the DescriptorSet.
-  bool source_info_in_descriptor_set_;
+  bool source_info_in_descriptor_set_ = false;
 
   // Was the --disallow_services flag used?
-  bool disallow_services_;
+  bool disallow_services_ = false;
+
+  // Was the --experimental_allow_proto3_optional flag used?
+  bool allow_proto3_optional_ = false;
+
+  // When using --encode, this will be passed to SetSerializationDeterministic.
+  bool deterministic_output_ = false;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CommandLineInterface);
 };
