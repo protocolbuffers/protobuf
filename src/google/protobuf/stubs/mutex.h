@@ -47,7 +47,7 @@
 
 // Define thread-safety annotations for use below, if we are building with
 // Clang.
-#if defined(__clang__) && !defined(SWIG)
+#if defined(__clang__) && !defined(SWIG) && !defined(__MVS__)
 #define GOOGLE_PROTOBUF_ACQUIRE(...) \
   __attribute__((acquire_capability(__VA_ARGS__)))
 #define GOOGLE_PROTOBUF_RELEASE(...) \

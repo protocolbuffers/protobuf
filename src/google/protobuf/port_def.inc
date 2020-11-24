@@ -276,12 +276,14 @@
 #define PROTOBUF_COLD
 
 // Copied from ABSL.
-#if defined(__clang__) && defined(__has_warning)
+#if defined(__clang__) && defined(__has_warning) && !defined (__MVS__)
 #if __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
 #define PROTOBUF_FALLTHROUGH_INTENDED [[clang::fallthrough]]
 #endif
 #elif defined(__GNUC__) && __GNUC__ >= 7
 #define PROTOBUF_FALLTHROUGH_INTENDED [[gnu::fallthrough]]
+#elif defined (__MVS__)
+#define PROTOBUF_FALLTHROUGH_INTENDED [[clang::fallthrough]]
 #endif
 
 #ifndef PROTOBUF_FALLTHROUGH_INTENDED
