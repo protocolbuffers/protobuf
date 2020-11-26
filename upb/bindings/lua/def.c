@@ -53,12 +53,12 @@ static void lupb_wrapper_pushwrapper(lua_State *L, int narg, const void *def,
 /* lupb_msgdef_pushsubmsgdef()
  *
  * Pops the msgdef wrapper at the top of the stack and replaces it with a msgdef
- * wrapper for field |f| of this msgdef.
+ * wrapper for field |f| of this msgdef (submsg may not be direct, for example it
+ * may be the submessage of the map value).
  */
 void lupb_msgdef_pushsubmsgdef(lua_State *L, const upb_fielddef *f) {
   const upb_msgdef *m = upb_fielddef_msgsubdef(f);
   assert(m);
-  assert(upb_fielddef_containingtype(f) == lupb_msgdef_check(L, -1));
   lupb_wrapper_pushwrapper(L, -1, m, LUPB_MSGDEF);
   lua_replace(L, -2);  /* Replace msgdef with submsgdef. */
 }
@@ -337,6 +337,26 @@ static int lupb_msgdef_oneofcount(lua_State *L) {
   return 1;
 }
 
+static bool lupb_msgdef_pushnested(lua_State *L, int msgdef, int name) {
+  const upb_msgdef *m = lupb_msgdef_check(L, msgdef);
+  lupb_wrapper_pushsymtab(L, msgdef);
+  upb_symtab *symtab = lupb_symtab_check(L, -1);
+  lua_pop(L, 1);
+
+  /* Construct full package.Message.SubMessage name. */
+  lua_pushstring(L, upb_msgdef_fullname(m));
+  lua_pushstring(L, ".");
+  lua_pushvalue(L, name);
+  lua_concat(L, 3);
+  const char *nested_name = lua_tostring(L, -1);
+
+  /* Try lookup. */
+  const upb_msgdef *nested = upb_symtab_lookupmsg(symtab, nested_name);
+  if (!nested) return false;
+  lupb_wrapper_pushwrapper(L, msgdef, nested, LUPB_MSGDEF);
+  return true;
+}
+
 /* lupb_msgdef_field()
  *
  * Handles:
@@ -430,6 +450,13 @@ static int lupb_msgdef_fullname(lua_State *L) {
   return 1;
 }
 
+static int lupb_msgdef_index(lua_State *L) {
+  if (!lupb_msgdef_pushnested(L, 1, 2)) {
+    luaL_error(L, "No such nested message");
+  }
+  return 1;
+}
+
 static int lupb_msgoneofiter_next(lua_State *L) {
   const upb_msgdef *m = lupb_msgdef_check(L, lua_upvalueindex(1));
   int *index = lua_touserdata(L, lua_upvalueindex(2));
@@ -471,6 +498,7 @@ static int lupb_msgdef_tostring(lua_State *L) {
 
 static const struct luaL_Reg lupb_msgdef_mm[] = {
   {"__call", lupb_msg_pushnew},
+  {"__index", lupb_msgdef_index},
   {"__len", lupb_msgdef_fieldcount},
   {"__tostring", lupb_msgdef_tostring},
   {NULL, NULL}

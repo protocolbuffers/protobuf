@@ -324,6 +324,10 @@ UPB_INLINE int _upb_lg2ceil(int x) {
 #endif
 }
 
+UPB_INLINE int _upb_lg2ceilsize(int x) {
+  return 1 << _upb_lg2ceil(x);
+}
+
 #include "upb/port_undef.inc"
 
 #ifdef __cplusplus
