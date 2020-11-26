@@ -15,6 +15,8 @@ extern "C" {
 #endif
 
 enum {
+  /* If set, strings will alias the input buffer instead of copying into the
+   * arena. */
   UPB_DECODE_ALIAS = 1,
 };
 

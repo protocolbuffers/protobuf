@@ -91,6 +91,69 @@ function test_msg_map()
   assert_equal(12, msg2.map_int32_int32[6])
 end
 
+function test_map_sorting()
+  function msg_with_int32_entries(start, expand)
+    local msg = test_messages_proto3.TestAllTypesProto3()
+    for i=start,start + 8 do
+      msg.map_int32_int32[i] = i * 2
+    end
+
+    if expand then
+      for i=start+20,200 do
+        msg.map_int32_int32[i] = i
+      end
+      for i=start+20,200 do
+        msg.map_int32_int32[i] = nil
+      end
+    end
+    return msg
+  end
+
+  function msg_with_msg_entries(expand)
+    local msg = test_messages_proto3.TestAllTypesProto3()
+    -- 8! = 40320 possible orderings makes it overwhelmingly likely that two
+    -- random orderings will be different.
+    for i=1,8 do
+      local submsg = test_messages_proto3.TestAllTypesProto3.NestedMessage()
+      submsg.corecursive = msg_with_int32_entries(i, expand)
+      msg.map_string_nested_message[tostring(i)] = submsg
+    end
+
+    expand = false
+    if expand then
+      for i=21,2000 do
+        local submsg = test_messages_proto3.TestAllTypesProto3.NestedMessage()
+        submsg.corecursive = msg_with_int32_entries(i, expand)
+        msg.map_string_nested_message[tostring(i)] = submsg
+      end
+      for i=21,2000 do
+        msg.map_string_nested_message[tostring(i)] = nil
+      end
+    end
+    return msg
+  end
+
+  -- Create two messages with the same contents but (hopefully) different
+  -- map table orderings.
+  local msg = msg_with_msg_entries(false)
+  local msg2 = msg_with_msg_entries(true)
+
+  local text1 = upb.text_encode(msg)
+  local text2 = upb.text_encode(msg2)
+  assert_equal(text1, text2)
+
+  local binary1 = upb.encode(msg, {upb.ENCODE_DETERMINISTIC})
+  local binary2 = upb.encode(msg2, {upb.ENCODE_DETERMINISTIC})
+  assert_equal(binary1, binary2)
+
+  -- Non-sorted map should compare different.
+  local text3 = upb.text_encode(msg, {upb.TXTENC_NOSORT})
+  assert_not_equal(text1, text3)
+
+  local binary3 = upb.encode(msg)
+  assert_not_equal(binary1, binary3)
+end
+
 function test_utf8()
   local proto2_msg = test_messages_proto2.TestAllTypesProto2()
   proto2_msg.optional_string = "\xff"

@@ -147,10 +147,17 @@ UPB_INLINE char *upb_tabstr(upb_tabkey key, uint32_t *len) {
   return mem + sizeof(*len);
 }
 
+UPB_INLINE upb_strview upb_tabstrview(upb_tabkey key) {
+  upb_strview ret;
+  uint32_t len;
+  ret.data = upb_tabstr(key, &len);
+  ret.size = len;
+  return ret;
+}
 
 /* upb_tabval *****************************************************************/
 
-typedef struct {
+typedef struct upb_tabval {
   uint64_t val;
 } upb_tabval;
 

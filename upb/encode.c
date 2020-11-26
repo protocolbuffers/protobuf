@@ -32,6 +32,8 @@ typedef struct {
   jmp_buf err;
   upb_alloc *alloc;
   char *buf, *ptr, *limit;
+  int options;
+  _upb_mapsorter sorter;
 } upb_encstate;
 
 static size_t upb_roundup_pow2(size_t bytes) {
@@ -341,31 +343,48 @@ static void encode_array(upb_encstate *e, const char *field_mem,
   }
 }
 
+static void encode_mapentry(upb_encstate *e, uint32_t number,
+                            const upb_msglayout *layout,
+                            const upb_map_entry *ent) {
+  const upb_msglayout_field *key_field = &layout->fields[0];
+  const upb_msglayout_field *val_field = &layout->fields[1];
+  size_t pre_len = e->limit - e->ptr;
+  size_t size;
+  encode_scalar(e, &ent->v, layout, val_field, false);
+  encode_scalar(e, &ent->k, layout, key_field, false);
+  size = (e->limit - e->ptr) - pre_len;
+  encode_varint(e, size);
+  encode_tag(e, number, UPB_WIRE_TYPE_DELIMITED);
+}
+
 static void encode_map(upb_encstate *e, const char *field_mem,
                        const upb_msglayout *m, const upb_msglayout_field *f) {
   const upb_map *map = *(const upb_map**)field_mem;
-  const upb_msglayout *entry = m->submsgs[f->submsg_index];
-  const upb_msglayout_field *key_field = &entry->fields[0];
-  const upb_msglayout_field *val_field = &entry->fields[1];
-  upb_strtable_iter i;
-  if (map == NULL) {
-    return;
-  }
+  const upb_msglayout *layout = m->submsgs[f->submsg_index];
+  UPB_ASSERT(layout->field_count == 2);
 
-  upb_strtable_begin(&i, &map->table);
-  for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
-    size_t pre_len = e->limit - e->ptr;
-    size_t size;
-    upb_strview key = upb_strtable_iter_key(&i);
-    const upb_value val = upb_strtable_iter_value(&i);
+  if (map == NULL) return;
+
+  if (e->options & UPB_ENCODE_DETERMINISTIC) {
+    _upb_sortedmap sorted;
+    _upb_mapsorter_pushmap(&e->sorter, layout->fields[0].descriptortype, map,
+                           &sorted);
     upb_map_entry ent;
-    _upb_map_fromkey(key, &ent.k, map->key_size);
-    _upb_map_fromvalue(val, &ent.v, map->val_size);
-    encode_scalar(e, &ent.v, entry, val_field, false);
-    encode_scalar(e, &ent.k, entry, key_field, false);
-    size = (e->limit - e->ptr) - pre_len;
-    encode_varint(e, size);
-    encode_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
+    while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
+      encode_mapentry(e, f->number, layout, &ent);
+    }
+    _upb_mapsorter_popmap(&e->sorter, &sorted);
+  } else {
+    upb_strtable_iter i;
+    upb_strtable_begin(&i, &map->table);
+    for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+      upb_strview key = upb_strtable_iter_key(&i);
+      const upb_value val = upb_strtable_iter_value(&i);
+      upb_map_entry ent;
+      _upb_map_fromkey(key, &ent.k, map->key_size);
+      _upb_map_fromvalue(val, &ent.v, map->val_size);
+      encode_mapentry(e, f->number, layout, &ent);
+    }
   }
 }
 
@@ -414,28 +433,32 @@ static void encode_message(upb_encstate *e, const char *msg,
   *size = (e->limit - e->ptr) - pre_len;
 }
 
-char *upb_encode(const void *msg, const upb_msglayout *m, upb_arena *arena,
-                 size_t *size) {
+char *upb_encode_ex(const void *msg, const upb_msglayout *m, int options,
+                    upb_arena *arena, size_t *size) {
   upb_encstate e;
   e.alloc = upb_arena_alloc(arena);
   e.buf = NULL;
   e.limit = NULL;
   e.ptr = NULL;
+  e.options = options;
+  _upb_mapsorter_init(&e.sorter);
+  char *ret = NULL;
 
   if (UPB_SETJMP(e.err)) {
     *size = 0;
-    return NULL;
-  }
-
-  encode_message(&e, msg, m, size);
-
-  *size = e.limit - e.ptr;
-
-  if (*size == 0) {
-    static char ch;
-    return &ch;
+    ret = NULL;
   } else {
-    UPB_ASSERT(e.ptr);
-    return e.ptr;
+    encode_message(&e, msg, m, size);
+    *size = e.limit - e.ptr;
+    if (*size == 0) {
+      static char ch;
+      ret = &ch;
+    } else {
+      UPB_ASSERT(e.ptr);
+      ret = e.ptr;
+    }
   }
+
+  _upb_mapsorter_destroy(&e.sorter);
+  return ret;
 }

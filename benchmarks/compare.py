@@ -58,7 +58,7 @@ def Benchmark(outbase, bench_cpu=True, runs=12, fasttable=False):
 
 
 baseline = "master"
-bench_cpu = True
+bench_cpu = False
 fasttable = False
 
 if len(sys.argv) > 1:

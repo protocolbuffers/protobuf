@@ -187,6 +187,13 @@ static void lupb_arena_fuse(lua_State *L, int to, int from) {
   upb_arena_fuse(to_arena, from_arena);
 }
 
+static void lupb_arena_fuseobjs(lua_State *L, int to, int from) {
+  lua_getiuservalue(L, to, LUPB_ARENA_INDEX);
+  lua_getiuservalue(L, from, LUPB_ARENA_INDEX);
+  lupb_arena_fuse(L, lua_absindex(L, -2), lua_absindex(L, -1));
+  lua_pop(L, 2);
+}
+
 static int lupb_arena_gc(lua_State *L) {
   upb_arena *a = lupb_arena_check(L, 1);
   upb_arena_free(a);
@@ -398,6 +405,10 @@ static int lupb_array_newindex(lua_State *L) {
     upb_array_set(larray->arr, n, msgval);
   }
 
+  if (larray->type == UPB_TYPE_MESSAGE) {
+    lupb_arena_fuseobjs(L, 1, 3);
+  }
+
   return 0;  /* 1 for chained assignments? */
 }
 
@@ -535,6 +546,9 @@ static int lupb_map_newindex(lua_State *L) {
   } else {
     upb_msgval val = lupb_tomsgval(L, lmap->value_type, 3, 1, LUPB_COPY);
     upb_map_set(map, key, val, lupb_arenaget(L, 1));
+    if (lmap->value_type == UPB_TYPE_MESSAGE) {
+      lupb_arena_fuseobjs(L, 1, 3);
+    }
   }
 
   return 0;
@@ -600,21 +614,26 @@ static upb_msg *lupb_msg_check(lua_State *L, int narg) {
   return msg->msg;
 }
 
-static const upb_fielddef *lupb_msg_checkfield(lua_State *L, int msg,
-                                               int field) {
+static const upb_msgdef *lupb_msg_getmsgdef(lua_State *L, int msg) {
+  lua_getiuservalue(L, msg, LUPB_MSGDEF_INDEX);
+  const upb_msgdef *m = lupb_msgdef_check(L, -1);
+  lua_pop(L, 1);
+  return m;
+}
+
+static const upb_fielddef *lupb_msg_tofield(lua_State *L, int msg, int field) {
   size_t len;
   const char *fieldname = luaL_checklstring(L, field, &len);
-  const upb_msgdef *m;
-  const upb_fielddef *f;
+  const upb_msgdef *m = lupb_msg_getmsgdef(L, msg);
+  return upb_msgdef_ntof(m, fieldname, len);
+}
 
-  lua_getiuservalue(L, msg, LUPB_MSGDEF_INDEX);
-  m = lupb_msgdef_check(L, -1);
-  f = upb_msgdef_ntof(m, fieldname, len);
+static const upb_fielddef *lupb_msg_checkfield(lua_State *L, int msg,
+                                               int field) {
+  const upb_fielddef *f = lupb_msg_tofield(L, msg, field);
   if (f == NULL) {
-    luaL_error(L, "no such field '%s'", fieldname);
+    luaL_error(L, "no such field '%s'", lua_tostring(L, field));
   }
-  lua_pop(L, 1);
-
   return f;
 }
 
@@ -813,10 +832,7 @@ static int lupb_msg_newindex(lua_State *L) {
   }
 
   if (merge_arenas) {
-    lua_getiuservalue(L, 1, LUPB_ARENA_INDEX);
-    lua_getiuservalue(L, 3, LUPB_ARENA_INDEX);
-    lupb_arena_fuse(L, lua_absindex(L, -2), lua_absindex(L, -1));
-    lua_pop(L, 2);
+    lupb_arena_fuseobjs(L, 1, 3);
   }
 
   upb_msg_set(msg, f, msgval, lupb_arenaget(L, 1));
@@ -908,23 +924,74 @@ static int lupb_decode(lua_State *L) {
 }
 
 /**
+ * lupb_msg_textencode()
+ *
+ * Handles:
+ *   text_string = upb.text_encode(msg, {upb.TXTENC_SINGLELINE})
+ */
+static int lupb_textencode(lua_State *L) {
+  int argcount = lua_gettop(L);
+  upb_msg *msg = lupb_msg_check(L, 1);
+  const upb_msgdef *m;
+  char buf[1024];
+  size_t size;
+  int options = 0;
+
+  lua_getiuservalue(L, 1, LUPB_MSGDEF_INDEX);
+  m = lupb_msgdef_check(L, -1);
+
+  if (argcount > 1) {
+    size_t len = lua_rawlen(L, 2);
+    for (size_t i = 1; i <= len; i++) {
+      lua_rawgeti(L, 2, i);
+      options |= lupb_checkuint32(L, -1);
+      lua_pop(L, 1);
+    }
+  }
+
+  size = upb_text_encode(msg, m, NULL, options, buf, sizeof(buf));
+
+  if (size < sizeof(buf)) {
+    lua_pushlstring(L, buf, size);
+  } else {
+    char *ptr = malloc(size + 1);
+    upb_text_encode(msg, m, NULL, options, ptr, size + 1);
+    lua_pushlstring(L, ptr, size);
+    free(ptr);
+  }
+
+  return 1;
+}
+
+/**
  * lupb_encode()
  *
  * Handles:
  *   bin_string = upb.encode(msg)
  */
 static int lupb_encode(lua_State *L) {
+  int argcount = lua_gettop(L);
   const upb_msg *msg = lupb_msg_check(L, 1);
   const upb_msglayout *layout;
   upb_arena *arena = lupb_arena_pushnew(L);
   size_t size;
   char *result;
+  int options = 0;
+
+  if (argcount > 1) {
+    size_t len = lua_rawlen(L, 2);
+    for (size_t i = 1; i <= len; i++) {
+      lua_rawgeti(L, 2, i);
+      options |= lupb_checkuint32(L, -1);
+      lua_pop(L, 1);
+    }
+  }
 
   lua_getiuservalue(L, 1, LUPB_MSGDEF_INDEX);
   layout = upb_msgdef_layout(lupb_msgdef_check(L, -1));
   lua_pop(L, 1);
 
-  result = upb_encode(msg, (const void*)layout, arena, &size);
+  result = upb_encode_ex(msg, (const void*)layout, options, arena, &size);
 
   if (!result) {
     lua_pushstring(L, "Error encoding protobuf.");
@@ -936,11 +1003,17 @@ static int lupb_encode(lua_State *L) {
   return 1;
 }
 
+static void lupb_setfieldi(lua_State *L, const char *field, int i) {
+  lua_pushinteger(L, i);
+  lua_setfield(L, -2, field);
+}
+
 static const struct luaL_Reg lupb_msg_toplevel_m[] = {
   {"Array", lupb_array_new},
   {"Map", lupb_map_new},
   {"decode", lupb_decode},
   {"encode", lupb_encode},
+  {"text_encode", lupb_textencode},
   {NULL, NULL}
 };
 
@@ -951,6 +1024,12 @@ void lupb_msg_registertypes(lua_State *L) {
   lupb_register_type(L, LUPB_ARRAY, NULL, lupb_array_mm);
   lupb_register_type(L, LUPB_MAP,   NULL, lupb_map_mm);
   lupb_register_type(L, LUPB_MSG,   NULL, lupb_msg_mm);
+
+  lupb_setfieldi(L, "TXTENC_SINGLELINE", UPB_TXTENC_SINGLELINE);
+  lupb_setfieldi(L, "TXTENC_SKIPUNKNOWN", UPB_TXTENC_SKIPUNKNOWN);
+  lupb_setfieldi(L, "TXTENC_NOSORT", UPB_TXTENC_NOSORT);
+
+  lupb_setfieldi(L, "ENCODE_DETERMINISTIC", UPB_ENCODE_DETERMINISTIC);
 
   lupb_cacheinit(L);
 }
