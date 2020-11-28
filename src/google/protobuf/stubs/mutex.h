@@ -124,12 +124,12 @@ class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
   void AssertHeld() const {}
 
  private:
-#if defined(_MSC_VER)
-  CallOnceInitializedMutex<std::mutex> mu_;
-#elif defined(GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP)
-  CallOnceInitializedMutex<CriticalSectionLock> mu_;
+#if defined(GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP)
+  CallOnceInitializedMutex<CriticalSectionLock> mu_ {};
+#elif defined(_MSC_VER)
+  CallOnceInitializedMutex<std::mutex> mu_ {};
 #else
-  std::mutex mu_;
+  std::mutex mu_ {};
 #endif
 };
 
