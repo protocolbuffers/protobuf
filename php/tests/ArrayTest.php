@@ -566,6 +566,8 @@ class ArrayTest extends \PHPUnit\Framework\TestCase
             $sub = new Sub(['a' => $sub]);
         }
         $m->setRepeatedMessage($subs);
+
+        $this->assertTrue(true);
     }
 
     #########################################################

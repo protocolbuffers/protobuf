@@ -477,6 +477,8 @@ class MapFieldTest extends \PHPUnit\Framework\TestCase {
         array_walk($values, function (&$value) {});
         $m = new TestMessage();
         $m->setMapInt32Message($values);
+
+        $this->assertTrue(true);
     }
 
     #########################################################

@@ -13,15 +13,15 @@ class GeneratedPhpdocTest extends TestBase
     {
         $class = new ReflectionClass('Foo\TestMessage');
         $doc = $class->getDocComment();
-        $this->assertContains('foo.TestMessage', $doc);
+        $this->assertStringContainsString('foo.TestMessage', $doc);
     }
 
     public function testPhpDocForConstructor()
     {
         $class = new ReflectionClass('Foo\TestMessage');
         $doc = $class->getMethod('__construct')->getDocComment();
-        $this->assertContains('@param array $data', $doc);
-        $this->assertContains('@type int $optional_int32', $doc);
+        $this->assertStringContainsString('@param array $data', $doc);
+        $this->assertStringContainsString('@type int $optional_int32', $doc);
     }
 
     /**
@@ -32,7 +32,7 @@ class GeneratedPhpdocTest extends TestBase
         $class = new ReflectionClass('Foo\TestMessage');
         foreach ($methods as $method) {
             $doc = $class->getMethod($method)->getDocComment();
-            $this->assertContains($expectedDoc, $doc);
+            $this->assertStringContainsString($expectedDoc, $doc);
         }
     }
 
