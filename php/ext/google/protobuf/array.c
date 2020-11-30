@@ -453,9 +453,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetSet, 0, 0, 2)
   ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
-ZEND_END_ARG_INFO()
-
 static zend_function_entry repeated_field_methods[] = {
   PHP_ME(RepeatedField, __construct,  arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(RepeatedField, append,       arginfo_append,    ZEND_ACC_PUBLIC)
@@ -636,7 +633,11 @@ void Array_ModuleInit() {
   h = &RepeatedField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = RepeatedField_destructor;
+#if PHP_VERSION_ID < 80000
   h->compare_objects = RepeatedField_compare_objects;
+#else
+  h->compare = RepeatedField_compare_objects;
+#endif
   h->get_properties = RepeatedField_GetProperties;
   h->get_property_ptr_ptr = RepeatedField_GetPropertyPtrPtr;
 
