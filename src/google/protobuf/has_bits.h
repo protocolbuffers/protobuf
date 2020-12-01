@@ -47,7 +47,7 @@ namespace internal {
 template <size_t doublewords>
 class HasBits {
  public:
-  HasBits() PROTOBUF_ALWAYS_INLINE { Clear(); }
+  constexpr HasBits() PROTOBUF_ALWAYS_INLINE : has_bits_{} {}
 
   void Clear() PROTOBUF_ALWAYS_INLINE {
     memset(has_bits_, 0, sizeof(has_bits_));

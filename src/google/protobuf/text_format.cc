@@ -54,7 +54,6 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/port_def.inc>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -62,6 +61,9 @@
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
+
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 
 namespace google {
@@ -161,7 +163,7 @@ TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
 
   const std::vector<TextFormat::ParseLocation>* locations =
       FindOrNull(locations_, field);
-  if (locations == nullptr || index >= locations->size()) {
+  if (locations == nullptr || index >= static_cast<int64>(locations->size())) {
     return TextFormat::ParseLocation();
   }
 
@@ -176,7 +178,7 @@ TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::GetTreeForNested(
   }
 
   auto it = nested_.find(field);
-  if (it == nested_.end() || index >= it->second.size()) {
+  if (it == nested_.end() || index >= static_cast<int64>(it->second.size())) {
     return nullptr;
   }
 
@@ -456,8 +458,7 @@ class TextFormat::Parser::ParserImpl {
       DO(ConsumeIdentifier(&field_name));
 
       int32 field_number;
-      if (allow_field_number_ &&
-          safe_strto32(field_name, &field_number)) {
+      if (allow_field_number_ && safe_strto32(field_name, &field_number)) {
         if (descriptor->IsExtensionNumber(field_number)) {
           field = finder_
                       ? finder_->FindExtensionByNumber(descriptor, field_number)
@@ -1322,7 +1323,7 @@ class TextFormat::Printer::TextGenerator
       if (failed_) return;
     }
 
-    while (size > buffer_size_) {
+    while (static_cast<int64>(size) > buffer_size_) {
       // Data exceeds space in the buffer.  Copy what we can and request a
       // new buffer.
       if (buffer_size_ > 0) {
@@ -1473,7 +1474,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
   return MergeUsingImpl(input, output, &parser);
 }
 
-bool TextFormat::Parser::MergeFromString(const std::string& input,
+bool TextFormat::Parser::MergeFromString(ConstStringParam input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
   io::ArrayInputStream input_stream(input.data(), input.size());
@@ -1524,7 +1525,7 @@ bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
   return Parser().ParseFromString(input, output);
 }
 
-/* static */ bool TextFormat::MergeFromString(const std::string& input,
+/* static */ bool TextFormat::MergeFromString(ConstStringParam input,
                                               Message* output) {
   return Parser().MergeFromString(input, output);
 }
@@ -2053,8 +2054,8 @@ void TextFormat::Printer::Print(const Message& message,
   if (print_message_fields_in_index_order_) {
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
-  for (int i = 0; i < fields.size(); i++) {
-    PrintField(message, reflection, fields[i], generator);
+  for (const FieldDescriptor* field : fields) {
+    PrintField(message, reflection, field, generator);
   }
   if (!hide_unknown_fields_) {
     PrintUnknownFields(reflection->GetUnknownFields(message), generator,
@@ -2313,8 +2314,8 @@ void TextFormat::Printer::PrintField(const Message& message,
   }
 
   if (need_release) {
-    for (int j = 0; j < sorted_map_field.size(); ++j) {
-      delete sorted_map_field[j];
+    for (const Message* message_to_delete : sorted_map_field) {
+      delete message_to_delete;
     }
   }
 }
@@ -2394,7 +2395,8 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       const std::string* value_to_print = &value;
       std::string truncated_value;
       if (truncate_string_field_longer_than_ > 0 &&
-          truncate_string_field_longer_than_ < value.size()) {
+          static_cast<size_t>(truncate_string_field_longer_than_) <
+              value.size()) {
         truncated_value = value.substr(0, truncate_string_field_longer_than_) +
                           "...<truncated>...";
         value_to_print = &truncated_value;
@@ -2577,3 +2579,5 @@ void TextFormat::Printer::PrintUnknownFields(
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

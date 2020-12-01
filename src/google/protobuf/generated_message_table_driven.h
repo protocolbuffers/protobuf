@@ -73,9 +73,7 @@ enum ProcessingTypes {
   TYPE_STRING_STRING_PIECE = 20,
   TYPE_BYTES_CORD = 21,
   TYPE_BYTES_STRING_PIECE = 22,
-  TYPE_STRING_INLINED = 23,
-  TYPE_BYTES_INLINED = 24,
-  TYPE_MAP = 25,
+  TYPE_MAP = 23,
 };
 
 static_assert(TYPE_MAP < kRepeatedMask, "Invalid enum");
@@ -106,8 +104,7 @@ struct PROTOBUF_EXPORT FieldMetadata {
   enum {
     kCordType = 19,
     kStringPieceType = 20,
-    kInlinedType = 21,
-    kNumTypes = 21,
+    kNumTypes = 20,
     kSpecial = kNumTypes * kNumTypeClasses,
   };
 
@@ -206,12 +203,18 @@ struct ParseTable {
 static_assert(sizeof(ParseTableField) <= 16, "ParseTableField is too large");
 // The tables must be composed of POD components to ensure link-time
 // initialization.
-static_assert(std::is_pod<ParseTableField>::value, "");
-static_assert(std::is_pod<AuxiliaryParseTableField>::value, "");
-static_assert(std::is_pod<AuxiliaryParseTableField::enum_aux>::value, "");
-static_assert(std::is_pod<AuxiliaryParseTableField::message_aux>::value, "");
-static_assert(std::is_pod<AuxiliaryParseTableField::string_aux>::value, "");
-static_assert(std::is_pod<ParseTable>::value, "");
+static_assert(std::is_standard_layout<ParseTableField>::value, "");
+static_assert(std::is_trivial<ParseTableField>::value, "");
+static_assert(std::is_standard_layout<AuxiliaryParseTableField>::value, "");
+static_assert(std::is_trivial<AuxiliaryParseTableField>::value, "");
+static_assert(std::is_standard_layout<AuxiliaryParseTableField::enum_aux>::value, "");
+static_assert(std::is_trivial<AuxiliaryParseTableField::enum_aux>::value, "");
+static_assert(std::is_standard_layout<AuxiliaryParseTableField::message_aux>::value, "");
+static_assert(std::is_trivial<AuxiliaryParseTableField::message_aux>::value, "");
+static_assert(std::is_standard_layout<AuxiliaryParseTableField::string_aux>::value, "");
+static_assert(std::is_trivial<AuxiliaryParseTableField::string_aux>::value, "");
+static_assert(std::is_standard_layout<ParseTable>::value, "");
+static_assert(std::is_trivial<ParseTable>::value, "");
 
 // TODO(ckennelly): Consolidate these implementations into a single one, using
 // dynamic dispatch to the appropriate unknown field handler.

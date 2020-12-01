@@ -46,12 +46,14 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/wire_format.h>
-
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
+
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 
 namespace google {
@@ -1324,7 +1326,14 @@ TEST(ExtensionSetTest, BoolExtension) {
   EXPECT_TRUE(msg.GetExtension(protobuf_unittest::optional_bool_extension));
 }
 
+TEST(ExtensionSetTest, ConstInit) {
+  PROTOBUF_CONSTINIT static ExtensionSet set{};
+  EXPECT_EQ(set.NumExtensions(), 0);
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

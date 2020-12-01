@@ -52,26 +52,24 @@ static int CountSubstituteArgs(const SubstituteArg* const* args_array) {
   return count;
 }
 
-string Substitute(
-    const char* format,
-    const SubstituteArg& arg0, const SubstituteArg& arg1,
-    const SubstituteArg& arg2, const SubstituteArg& arg3,
-    const SubstituteArg& arg4, const SubstituteArg& arg5,
-    const SubstituteArg& arg6, const SubstituteArg& arg7,
-    const SubstituteArg& arg8, const SubstituteArg& arg9) {
-  string result;
+std::string Substitute(const char* format, const SubstituteArg& arg0,
+                       const SubstituteArg& arg1, const SubstituteArg& arg2,
+                       const SubstituteArg& arg3, const SubstituteArg& arg4,
+                       const SubstituteArg& arg5, const SubstituteArg& arg6,
+                       const SubstituteArg& arg7, const SubstituteArg& arg8,
+                       const SubstituteArg& arg9) {
+  std::string result;
   SubstituteAndAppend(&result, format, arg0, arg1, arg2, arg3, arg4,
                                        arg5, arg6, arg7, arg8, arg9);
   return result;
 }
 
-void SubstituteAndAppend(
-    string* output, const char* format,
-    const SubstituteArg& arg0, const SubstituteArg& arg1,
-    const SubstituteArg& arg2, const SubstituteArg& arg3,
-    const SubstituteArg& arg4, const SubstituteArg& arg5,
-    const SubstituteArg& arg6, const SubstituteArg& arg7,
-    const SubstituteArg& arg8, const SubstituteArg& arg9) {
+void SubstituteAndAppend(std::string* output, const char* format,
+                         const SubstituteArg& arg0, const SubstituteArg& arg1,
+                         const SubstituteArg& arg2, const SubstituteArg& arg3,
+                         const SubstituteArg& arg4, const SubstituteArg& arg5,
+                         const SubstituteArg& arg6, const SubstituteArg& arg7,
+                         const SubstituteArg& arg8, const SubstituteArg& arg9) {
   const SubstituteArg* const args_array[] = {
     &arg0, &arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arg7, &arg8, &arg9, nullptr
   };

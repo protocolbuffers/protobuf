@@ -58,7 +58,6 @@ namespace converter {
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using std::placeholders::_1;
 using util::Status;
-using util::StatusOr;
 using util::error::INVALID_ARGUMENT;
 
 
@@ -74,6 +73,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
   set_ignore_unknown_enum_values(options_.ignore_unknown_enum_values);
   set_use_lower_camel_for_enums(options_.use_lower_camel_for_enums);
   set_case_insensitive_enum_parsing(options_.case_insensitive_enum_parsing);
+  set_use_json_name_in_missing_fields(options.use_json_name_in_missing_fields);
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -87,6 +87,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
   set_use_lower_camel_for_enums(options.use_lower_camel_for_enums);
   set_case_insensitive_enum_parsing(options_.case_insensitive_enum_parsing);
+  set_use_json_name_in_missing_fields(options.use_json_name_in_missing_fields);
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -329,7 +330,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
   if (value.type() == DataPiece::TYPE_STRING) {
     type_url_ = std::string(value.str());
   } else {
-    StatusOr<std::string> s = value.ToString();
+    util::StatusOr<std::string> s = value.ToString();
     if (!s.ok()) {
       parent_->InvalidValue("String", s.status().message());
       invalid_ = true;
@@ -338,7 +339,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
     type_url_ = s.value();
   }
   // Resolve the type url, and report an error if we failed to resolve it.
-  StatusOr<const google::protobuf::Type*> resolved_type =
+  util::StatusOr<const google::protobuf::Type*> resolved_type =
       parent_->typeinfo()->ResolveTypeUrl(type_url_);
   if (!resolved_type.ok()) {
     parent_->InvalidValue("Any", resolved_type.status().message());
@@ -643,6 +644,16 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     return this;
   }
 
+  if (field->kind() != google::protobuf::Field::TYPE_GROUP &&
+      field->kind() != google::protobuf::Field::TYPE_MESSAGE) {
+    IncrementInvalidDepth();
+    if (!options_.suppress_object_to_scalar_error) {
+      InvalidValue(field->name(), "Starting an object on a scalar field");
+    }
+
+    return this;
+  }
+
   // A regular message type. Pass it directly to ProtoWriter.
   // Render
   // "<name>": {
@@ -910,7 +921,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
   switch (data.type()) {
     case DataPiece::TYPE_INT32: {
       if (ow->options_.struct_integers_as_strings) {
-        StatusOr<int32> int_value = data.ToInt32();
+        util::StatusOr<int32> int_value = data.ToInt32();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
@@ -923,7 +934,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
     }
     case DataPiece::TYPE_UINT32: {
       if (ow->options_.struct_integers_as_strings) {
-        StatusOr<uint32> int_value = data.ToUint32();
+        util::StatusOr<uint32> int_value = data.ToUint32();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
@@ -938,7 +949,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
       // If the option to treat integers as strings is set, then render them as
       // strings. Otherwise, fallback to rendering them as double.
       if (ow->options_.struct_integers_as_strings) {
-        StatusOr<int64> int_value = data.ToInt64();
+        util::StatusOr<int64> int_value = data.ToInt64();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value", DataPiece(StrCat(int_value.value()), true));
@@ -952,7 +963,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
       // If the option to treat integers as strings is set, then render them as
       // strings. Otherwise, fallback to rendering them as double.
       if (ow->options_.struct_integers_as_strings) {
-        StatusOr<uint64> int_value = data.ToUint64();
+        util::StatusOr<uint64> int_value = data.ToUint64();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value", DataPiece(StrCat(int_value.value()), true));
@@ -964,7 +975,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
     }
     case DataPiece::TYPE_FLOAT: {
       if (ow->options_.struct_integers_as_strings) {
-        StatusOr<float> float_value = data.ToFloat();
+        util::StatusOr<float> float_value = data.ToFloat();
         if (float_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
@@ -977,7 +988,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
     }
     case DataPiece::TYPE_DOUBLE: {
       if (ow->options_.struct_integers_as_strings) {
-        StatusOr<double> double_value = data.ToDouble();
+        util::StatusOr<double> double_value = data.ToDouble();
         if (double_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
@@ -1035,7 +1046,7 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
 }
 
 static inline util::Status RenderOneFieldPath(ProtoStreamObjectWriter* ow,
-                                                StringPiece path) {
+                                              StringPiece path) {
   ow->ProtoWriter::RenderDataPiece(
       "paths", DataPiece(ConvertFieldMaskPath(path, &ToSnakeCase), true));
   return Status();

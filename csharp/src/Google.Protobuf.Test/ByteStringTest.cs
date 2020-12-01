@@ -34,6 +34,13 @@ using System;
 using System.Text;
 using NUnit.Framework;
 using System.IO;
+using System.Collections.Generic;
+using System.Collections;
+using System.Linq;
+using System.Buffers;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Runtime.CompilerServices;
 #if !NET35
 using System.Threading.Tasks;
 #endif
@@ -54,6 +61,7 @@ namespace Google.Protobuf
             EqualityTester.AssertInequality(b1, b3);
             EqualityTester.AssertInequality(b1, b4);
             EqualityTester.AssertInequality(b1, null);
+            EqualityTester.AssertEquality(ByteString.Empty, ByteString.Empty);
 #pragma warning disable 1718 // Deliberately calling ==(b1, b1) and !=(b1, b1)
             Assert.IsTrue(b1 == b1);
             Assert.IsTrue(b1 == b2);
@@ -63,6 +71,7 @@ namespace Google.Protobuf
             Assert.IsTrue((ByteString) null == null);
             Assert.IsFalse(b1 != b1);
             Assert.IsFalse(b1 != b2);
+            Assert.IsTrue(ByteString.Empty == ByteString.Empty);
 #pragma warning disable 1718
             Assert.IsTrue(b1 != b3);
             Assert.IsTrue(b1 != b4);
@@ -111,6 +120,18 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void CopyFromReadOnlySpanCopiesContents()
+        {
+            byte[] data = new byte[1];
+            data[0] = 10;
+            ReadOnlySpan<byte> byteSpan = data;
+            var bs = ByteString.CopyFrom(byteSpan);
+            Assert.AreEqual(10, bs[0]);
+            data[0] = 5;
+            Assert.AreEqual(10, bs[0]);
+        }
+
+        [Test]
         public void ToByteArrayCopiesContents()
         {
             ByteString bs = ByteString.CopyFromUtf8("Hello");
@@ -143,6 +164,84 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void CopyTo()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = ByteString.CopyFrom(data);
+
+            byte[] dest = new byte[data.Length];
+            bs.CopyTo(dest, 0);
+
+            CollectionAssert.AreEqual(data, dest);
+        }
+
+        [Test]
+        public void GetEnumerator()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = ByteString.CopyFrom(data);
+
+            IEnumerator<byte> genericEnumerator = bs.GetEnumerator();
+            Assert.IsTrue(genericEnumerator.MoveNext());
+            Assert.AreEqual(0, genericEnumerator.Current);
+
+            IEnumerator enumerator = ((IEnumerable)bs).GetEnumerator();
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual(0, enumerator.Current);
+
+            // Call via LINQ
+            CollectionAssert.AreEqual(bs.Span.ToArray(), bs.ToArray());
+        }
+
+        [Test]
+        public void UnsafeWrap()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = UnsafeByteOperations.UnsafeWrap(data.AsMemory(2, 3));
+            ReadOnlySpan<byte> s = bs.Span;
+
+            Assert.AreEqual(3, s.Length);
+            Assert.AreEqual(2, s[0]);
+            Assert.AreEqual(3, s[1]);
+            Assert.AreEqual(4, s[2]);
+
+            // Check that the value is not a copy
+            data[2] = byte.MaxValue;
+            Assert.AreEqual(byte.MaxValue, s[0]);
+        }
+
+        [Test]
+        public void WriteToStream()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = ByteString.CopyFrom(data);
+
+            MemoryStream ms = new MemoryStream();
+            bs.WriteTo(ms);
+
+            CollectionAssert.AreEqual(data, ms.ToArray());
+        }
+
+        [Test]
+        public void WriteToStream_Stackalloc()
+        {
+            byte[] data = Encoding.UTF8.GetBytes("Hello world");
+            Span<byte> s = stackalloc byte[data.Length];
+            data.CopyTo(s);
+
+            MemoryStream ms = new MemoryStream();
+
+            using (UnmanagedMemoryManager<byte> manager = new UnmanagedMemoryManager<byte>(s))
+            {
+                ByteString bs = ByteString.AttachBytes(manager.Memory);
+
+                bs.WriteTo(ms);
+            }
+
+            CollectionAssert.AreEqual(data, ms.ToArray());
+        }
+
+        [Test]
         public void ToStringUtf8()
         {
             ByteString bs = ByteString.CopyFromUtf8("\u20ac");
@@ -154,6 +253,21 @@ namespace Google.Protobuf
         {
             ByteString bs = ByteString.CopyFrom("\u20ac", Encoding.Unicode);
             Assert.AreEqual("\u20ac", bs.ToString(Encoding.Unicode));
+        }
+
+        [Test]
+        public void ToString_Stackalloc()
+        {
+            byte[] data = Encoding.UTF8.GetBytes("Hello world");
+            Span<byte> s = stackalloc byte[data.Length];
+            data.CopyTo(s);
+
+            using (UnmanagedMemoryManager<byte> manager = new UnmanagedMemoryManager<byte>(s))
+            {
+                ByteString bs = ByteString.AttachBytes(manager.Memory);
+
+                Assert.AreEqual("Hello world", bs.ToString(Encoding.UTF8));
+            }
         }
 
         [Test]
@@ -170,6 +284,29 @@ namespace Google.Protobuf
         {
             // Optimization which also fixes issue 61.
             Assert.AreSame(ByteString.Empty, ByteString.FromBase64(""));
+        }
+
+        [Test]
+        public void ToBase64_Array()
+        {
+            ByteString bs = ByteString.CopyFrom(Encoding.UTF8.GetBytes("Hello world"));
+
+            Assert.AreEqual("SGVsbG8gd29ybGQ=", bs.ToBase64());
+        }
+
+        [Test]
+        public void ToBase64_Stackalloc()
+        {
+            byte[] data = Encoding.UTF8.GetBytes("Hello world");
+            Span<byte> s = stackalloc byte[data.Length];
+            data.CopyTo(s);
+
+            using (UnmanagedMemoryManager<byte> manager = new UnmanagedMemoryManager<byte>(s))
+            {
+                ByteString bs = ByteString.AttachBytes(manager.Memory);
+
+                Assert.AreEqual("SGVsbG8gd29ybGQ=", bs.ToBase64());
+            }
         }
 
         [Test]
@@ -248,6 +385,39 @@ namespace Google.Protobuf
             var byteString = ByteString.CopyFrom(1, 2, 3, 4, 5);
             var copied = byteString.Memory.ToArray();
             CollectionAssert.AreEqual(byteString, copied);
+        }
+
+        // Create Memory<byte> from non-array source.
+        // Use by ByteString tests that have optimized path for array backed Memory<byte>.
+        private sealed unsafe class UnmanagedMemoryManager<T> : MemoryManager<T> where T : unmanaged
+        {
+            private readonly T* _pointer;
+            private readonly int _length;
+
+            public UnmanagedMemoryManager(Span<T> span)
+            {
+                fixed (T* ptr = &MemoryMarshal.GetReference(span))
+                {
+                    _pointer = ptr;
+                    _length = span.Length;
+                }
+            }
+
+            public override Span<T> GetSpan() => new Span<T>(_pointer, _length);
+
+            public override MemoryHandle Pin(int elementIndex = 0)
+            {
+                if (elementIndex < 0 || elementIndex >= _length)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(elementIndex));
+                }
+
+                return new MemoryHandle(_pointer + elementIndex);
+            }
+
+            public override void Unpin() { }
+
+            protected override void Dispose(bool disposing) { }
         }
     }
 }

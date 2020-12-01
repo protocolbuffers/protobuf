@@ -87,7 +87,7 @@ TEST(StringPiece, Ctor) {
 #if defined(HAS_GLOBAL_STRING)
   {
     // ::string
-    string bonjour = "bonjour";
+    std::string bonjour = "bonjour";
     StringPiece s40(bonjour);
     EXPECT_TRUE(s40.data() == bonjour.data());
     EXPECT_EQ(7, s40.length());
@@ -100,9 +100,9 @@ TEST(StringPiece, Ctor) {
 }
 
 TEST(StringPiece, STLComparator) {
-  string s1("foo");
-  string s2("bar");
-  string s3("baz");
+  std::string s1("foo");
+  std::string s2("bar");
+  std::string s3("baz");
 
   StringPiece p1(s1);
   StringPiece p2(s2);
@@ -207,13 +207,13 @@ TEST(StringPiece, ComparisonOperators) {
   COMPARE(true, >, "b",  "aa");
   COMPARE(true, >, "bb", "aa");
 
-  string x;
+  std::string x;
   for (int i = 0; i < 256; i++) {
     x += 'a';
-    string y = x;
+    std::string y = x;
     COMPARE(true, ==, x, y);
     for (int j = 0; j < i; j++) {
-      string z = x;
+      std::string z = x;
       z[j] = 'b';       // Differs in position 'j'
       COMPARE(false, ==, x, z);
       COMPARE(true, <, x, z);
@@ -240,7 +240,7 @@ TEST(StringPiece, STL1) {
   const StringPiece c("xyz");
   const StringPiece d("foobar");
   const StringPiece e;
-  string temp("123");
+  std::string temp("123");
   temp += '\0';
   temp += "456";
   const StringPiece f(temp);
@@ -315,7 +315,7 @@ TEST(StringPiece, STL2) {
   EXPECT_TRUE(d.data() == nullptr);
   EXPECT_TRUE(d.begin() == d.end());
 
-  EXPECT_EQ(StringPiece::npos, string::npos);
+  EXPECT_EQ(StringPiece::npos, std::string::npos);
 
   EXPECT_EQ(a.find(b), 0);
   EXPECT_EQ(a.find(b, 1), StringPiece::npos);
@@ -336,15 +336,15 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(d.find(b, 4), StringPiece::npos);
   EXPECT_EQ(e.find(b, 7), StringPiece::npos);
 
-  size_t empty_search_pos = string().find(string());
+  size_t empty_search_pos = std::string().find(std::string());
   EXPECT_EQ(d.find(d), empty_search_pos);
   EXPECT_EQ(d.find(e), empty_search_pos);
   EXPECT_EQ(e.find(d), empty_search_pos);
   EXPECT_EQ(e.find(e), empty_search_pos);
-  EXPECT_EQ(d.find(d, 4), string().find(string(), 4));
-  EXPECT_EQ(d.find(e, 4), string().find(string(), 4));
-  EXPECT_EQ(e.find(d, 4), string().find(string(), 4));
-  EXPECT_EQ(e.find(e, 4), string().find(string(), 4));
+  EXPECT_EQ(d.find(d, 4), std::string().find(std::string(), 4));
+  EXPECT_EQ(d.find(e, 4), std::string().find(std::string(), 4));
+  EXPECT_EQ(e.find(d, 4), std::string().find(std::string(), 4));
+  EXPECT_EQ(e.find(e, 4), std::string().find(std::string(), 4));
 
   EXPECT_EQ(a.find('a'), 0);
   EXPECT_EQ(a.find('c'), 2);
@@ -376,8 +376,8 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(a.rfind(c, 0), StringPiece::npos);
   EXPECT_EQ(b.rfind(c), StringPiece::npos);
   EXPECT_EQ(b.rfind(c, 0), StringPiece::npos);
-  EXPECT_EQ(a.rfind(d), a.as_string().rfind(string()));
-  EXPECT_EQ(a.rfind(e), a.as_string().rfind(string()));
+  EXPECT_EQ(a.rfind(d), a.as_string().rfind(std::string()));
+  EXPECT_EQ(a.rfind(e), a.as_string().rfind(std::string()));
   EXPECT_EQ(a.rfind(d, 12), 12);
   EXPECT_EQ(a.rfind(e, 17), 17);
   EXPECT_EQ(a.rfind(g), StringPiece::npos);
@@ -386,14 +386,14 @@ TEST(StringPiece, STL2) {
   EXPECT_EQ(d.rfind(b, 4), StringPiece::npos);
   EXPECT_EQ(e.rfind(b, 7), StringPiece::npos);
   // empty string nonsense
-  EXPECT_EQ(d.rfind(d, 4), string().rfind(string()));
-  EXPECT_EQ(e.rfind(d, 7), string().rfind(string()));
-  EXPECT_EQ(d.rfind(e, 4), string().rfind(string()));
-  EXPECT_EQ(e.rfind(e, 7), string().rfind(string()));
-  EXPECT_EQ(d.rfind(d), string().rfind(string()));
-  EXPECT_EQ(e.rfind(d), string().rfind(string()));
-  EXPECT_EQ(d.rfind(e), string().rfind(string()));
-  EXPECT_EQ(e.rfind(e), string().rfind(string()));
+  EXPECT_EQ(d.rfind(d, 4), std::string().rfind(std::string()));
+  EXPECT_EQ(e.rfind(d, 7), std::string().rfind(std::string()));
+  EXPECT_EQ(d.rfind(e, 4), std::string().rfind(std::string()));
+  EXPECT_EQ(e.rfind(e, 7), std::string().rfind(std::string()));
+  EXPECT_EQ(d.rfind(d), std::string().rfind(std::string()));
+  EXPECT_EQ(e.rfind(d), std::string().rfind(std::string()));
+  EXPECT_EQ(d.rfind(e), std::string().rfind(std::string()));
+  EXPECT_EQ(e.rfind(e), std::string().rfind(std::string()));
 
   EXPECT_EQ(g.rfind('o'), 8);
   EXPECT_EQ(g.rfind('q'), StringPiece::npos);
@@ -566,7 +566,7 @@ TEST(StringPiece, STL2) {
   // empty string nonsense
   EXPECT_EQ(StringPiece(d, 0, 99), e);
   // Verify that they work taking an actual string, not just a StringPiece.
-  string a2 = a.as_string();
+  std::string a2 = a.as_string();
   EXPECT_EQ(StringPiece(a2, 0, 3), b);
   EXPECT_EQ(StringPiece(a2, 23), c);
   EXPECT_EQ(StringPiece(a2, 23, 3), c);
@@ -577,12 +577,12 @@ TEST(StringPiece, STL2) {
 
 TEST(StringPiece, Custom) {
   StringPiece a("foobar");
-  string s1("123");
+  std::string s1("123");
   s1 += '\0';
   s1 += "456";
   StringPiece b(s1);
   StringPiece e;
-  string s2;
+  std::string s2;
 
   // CopyToString
   a.CopyToString(&s2);
@@ -666,16 +666,16 @@ TEST(StringPiece, Custom) {
   EXPECT_NE(c, a);
 
   // as_string
-  string s3(a.as_string().c_str(), 7);
+  std::string s3(a.as_string().c_str(), 7);
   EXPECT_EQ(c, s3);
-  string s4(e.as_string());
+  std::string s4(e.as_string());
   EXPECT_TRUE(s4.empty());
 
   // ToString
   {
-    string s5(a.ToString().c_str(), 7);
+    std::string s5(a.ToString().c_str(), 7);
     EXPECT_EQ(c, s5);
-    string s6(e.ToString());
+    std::string s6(e.ToString());
     EXPECT_TRUE(s6.empty());
   }
 
@@ -747,12 +747,12 @@ TEST(StringPiece, Comparisons2) {
 }
 
 TEST(ComparisonOpsTest, StringCompareNotAmbiguous) {
-  EXPECT_EQ("hello", string("hello"));
-  EXPECT_LT("hello", string("world"));
+  EXPECT_EQ("hello", std::string("hello"));
+  EXPECT_LT("hello", std::string("world"));
 }
 
 TEST(ComparisonOpsTest, HeterogenousStringPieceEquals) {
-  EXPECT_EQ(StringPiece("hello"), string("hello"));
+  EXPECT_EQ(StringPiece("hello"), std::string("hello"));
   EXPECT_EQ("hello", StringPiece("hello"));
 }
 

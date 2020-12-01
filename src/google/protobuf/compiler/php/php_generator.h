@@ -43,13 +43,15 @@ namespace protobuf {
 namespace compiler {
 namespace php {
 
+struct Options;
+
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   virtual bool Generate(
       const FileDescriptor* file,
-      const string& parameter,
+      const std::string& parameter,
       GeneratorContext* generator_context,
-      string* error) const override;
+      std::string* error) const override;
 
   bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                    const std::string& parameter,
@@ -63,11 +65,9 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
  private:
   bool Generate(
       const FileDescriptor* file,
-      bool is_descriptor,
-      bool aggregate_metadata,
-      const std::set<string>& aggregate_metadata_prefixes,
+      const Options& options,
       GeneratorContext* generator_context,
-      string* error) const;
+      std::string* error) const;
 };
 
 // To skip reserved keywords in php, some generated classname are prefixed.

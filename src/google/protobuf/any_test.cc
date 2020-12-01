@@ -33,15 +33,23 @@
 #include <gtest/gtest.h>
 
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace {
+
+TEST(AnyMetadataTest, ConstInit) {
+  PROTOBUF_CONSTINIT static internal::AnyMetadata metadata(nullptr, nullptr);
+  (void)metadata;
+}
 
 TEST(AnyTest, TestPackAndUnpack) {
   protobuf_unittest::TestAny submessage;
   submessage.set_int32_value(12345);
   protobuf_unittest::TestAny message;
-  message.mutable_any_value()->PackFrom(submessage);
+  ASSERT_TRUE(message.mutable_any_value()->PackFrom(submessage));
 
   std::string data = message.SerializeAsString();
 
@@ -50,6 +58,13 @@ TEST(AnyTest, TestPackAndUnpack) {
   submessage.Clear();
   ASSERT_TRUE(message.any_value().UnpackTo(&submessage));
   EXPECT_EQ(12345, submessage.int32_value());
+}
+
+TEST(AnyTest, TestPackFromSerializationExceedsSizeLimit) {
+  protobuf_unittest::TestAny submessage;
+  submessage.mutable_text()->resize(INT_MAX, 'a');
+  protobuf_unittest::TestAny message;
+  EXPECT_FALSE(message.mutable_any_value()->PackFrom(submessage));
 }
 
 TEST(AnyTest, TestUnpackWithTypeMismatch) {
@@ -165,3 +180,5 @@ TEST(AnyTest, MoveAssignment) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

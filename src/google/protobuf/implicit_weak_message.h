@@ -129,7 +129,7 @@ class ImplicitWeakTypeHandler {
 template <typename T>
 struct WeakRepeatedPtrField {
   using TypeHandler = internal::ImplicitWeakTypeHandler<T>;
-  WeakRepeatedPtrField() : weak() {}
+  constexpr WeakRepeatedPtrField() : weak() {}
   explicit WeakRepeatedPtrField(Arena* arena) : weak(arena) {}
   ~WeakRepeatedPtrField() { weak.template Destroy<TypeHandler>(); }
 

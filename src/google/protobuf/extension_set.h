@@ -173,7 +173,7 @@ class MessageSetFieldSkipper;
 // off to the ExtensionSet for parsing.  Etc.
 class PROTOBUF_EXPORT ExtensionSet {
  public:
-  ExtensionSet();
+  constexpr ExtensionSet();
   explicit ExtensionSet(Arena* arena);
   ~ExtensionSet();
 
@@ -850,6 +850,9 @@ class PROTOBUF_EXPORT ExtensionSet {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
 
+constexpr ExtensionSet::ExtensionSet()
+    : arena_(nullptr), flat_capacity_(0), flat_size_(0), map_{nullptr} {}
+
 // These are just for convenience...
 inline void ExtensionSet::SetString(int number, FieldType type,
                                     std::string value,
@@ -1325,7 +1328,9 @@ RepeatedMessageTypeTraits<Type>::GetDefaultRepeatedField() {
 // ExtensionIdentifier
 
 // This is the type of actual extension objects.  E.g. if you have:
-//   extends Foo with optional int32 bar = 1234;
+//   extend Foo {
+//     optional int32 bar = 1234;
+//   }
 // then "bar" will be defined in C++ as:
 //   ExtensionIdentifier<Foo, PrimitiveTypeTraits<int32>, 5, false> bar(1234);
 //

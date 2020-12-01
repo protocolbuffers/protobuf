@@ -99,15 +99,6 @@ bool StrEndsWith(StringPiece sp, StringPiece x) {
   return sp.size() >= x.size() && sp.substr(sp.size() - x.size()) == x;
 }
 
-// Returns a copy of |filename| with any trailing ".protodevel" or ".proto
-// suffix stripped.
-// TODO(haberman): Unify with copy in compiler/cpp/internal/helpers.cc.
-std::string StripProto(const std::string& filename) {
-  const char* suffix =
-      StrEndsWith(filename, ".protodevel") ? ".protodevel" : ".proto";
-  return StripSuffixString(filename, suffix);
-}
-
 std::string GetSnakeFilename(const std::string& filename) {
   std::string snake_name = filename;
   ReplaceCharacters(&snake_name, "/", '_');
@@ -3171,8 +3162,7 @@ void Generator::GenerateClassDeserializeBinaryField(
           "fieldtype",
           JSFieldTypeAnnotation(options, field, false, true,
                                 /* singular_if_not_packed */ false, BYTES_U8),
-          "reader",
-          JSBinaryReaderMethodType(field));
+          "reader", JSBinaryReaderMethodType(field));
     } else {
       printer->Print(
           "      var value = /** @type {$fieldtype$} */ "
@@ -3188,7 +3178,8 @@ void Generator::GenerateClassDeserializeBinaryField(
       printer->Print(
           "      for (var i = 0; i < values.length; i++) {\n"
           "        msg.add$name$(values[i]);\n"
-          "      }\n", "name",
+          "      }\n",
+          "name",
           JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));
     } else if (field->is_repeated()) {
       printer->Print(

@@ -59,7 +59,7 @@ RUN git clone https://github.com/php/php-src
 
 # php 8.0
 RUN cd php-src \
-  && git checkout php-8.0.0alpha3 \
+  && git checkout php-8.0.0 \
   && ./buildconf --force
 RUN cd php-src \
   && ./configure \

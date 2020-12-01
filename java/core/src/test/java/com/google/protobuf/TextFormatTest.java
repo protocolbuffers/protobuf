@@ -30,6 +30,7 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_INITIALIZED;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
 
@@ -866,6 +867,12 @@ public class TextFormatTest extends TestCase {
     assertEquals(bytes(0xe1, 0x88, 0xb4), TextFormat.unescapeBytes("\\341\\210\\264"));
     assertEquals("\u1234", TextFormat.unescapeText("\\xe1\\x88\\xb4"));
     assertEquals(bytes(0xe1, 0x88, 0xb4), TextFormat.unescapeBytes("\\xe1\\x88\\xb4"));
+    assertEquals("\u1234", TextFormat.unescapeText("\\u1234"));
+    assertEquals(bytes(0xe1, 0x88, 0xb4), TextFormat.unescapeBytes("\\u1234"));
+    assertEquals(bytes(0xe1, 0x88, 0xb4), TextFormat.unescapeBytes("\\U00001234"));
+    assertEquals(
+        new String(new int[] {0x10437}, 0, 1), TextFormat.unescapeText("\\xf0\\x90\\x90\\xb7"));
+    assertEquals(bytes(0xf0, 0x90, 0x90, 0xb7), TextFormat.unescapeBytes("\\U00010437"));
 
     // Handling of strings with unescaped Unicode characters > 255.
     final String zh = "\u9999\u6e2f\u4e0a\u6d77\ud84f\udf80\u8c50\u9280\u884c";
@@ -892,6 +899,87 @@ public class TextFormatTest extends TestCase {
       fail("Should have thrown an exception.");
     } catch (TextFormat.InvalidEscapeSequenceException e) {
       // success
+    }
+
+    try {
+      TextFormat.unescapeText("\\u");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\u' with too few hex chars");
+    }
+
+    try {
+      TextFormat.unescapeText("\\ud800");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\u' refers to a surrogate");
+    }
+
+    try {
+      TextFormat.unescapeText("\\ud800\\u1234");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\u' refers to a surrogate");
+    }
+
+    try {
+      TextFormat.unescapeText("\\udc00");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\u' refers to a surrogate");
+    }
+
+    try {
+      TextFormat.unescapeText("\\ud801\\udc37");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\u' refers to a surrogate");
+    }
+
+    try {
+      TextFormat.unescapeText("\\U1234");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\U' with too few hex chars");
+    }
+
+    try {
+      TextFormat.unescapeText("\\U1234no more hex");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\U' with too few hex chars");
+    }
+
+    try {
+      TextFormat.unescapeText("\\U00110000");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\U00110000' is not a valid code point value");
+    }
+
+    try {
+      TextFormat.unescapeText("\\U0000d801\\U00000dc37");
+      fail("Should have thrown an exception.");
+    } catch (TextFormat.InvalidEscapeSequenceException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("Invalid escape sequence: '\\U0000d801' refers to a surrogate code unit");
     }
   }
 

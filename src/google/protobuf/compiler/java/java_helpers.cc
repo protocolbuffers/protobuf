@@ -89,6 +89,17 @@ const std::unordered_set<std::string>* kReservedNames =
         "transient",  "try",          "void",      "volatile",   "while",
     });
 
+// Names that should be avoided as field names in Kotlin.
+// All Kotlin hard keywords are in this list.
+const std::unordered_set<std::string>* kKotlinForbiddenNames =
+    new std::unordered_set<std::string>({
+        "as",    "as?",   "break", "class",  "continue",  "do",     "else",
+        "false", "for",   "fun",   "if",     "in",        "!in",    "interface",
+        "is",    "!is",   "null",  "object", "package",   "return", "super",
+        "this",  "throw", "true",  "try",    "typealias", "typeof", "val",
+        "var",   "when",  "while",
+    });
+
 bool IsForbidden(const std::string& field_name) {
   for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
     if (field_name == kForbiddenWordList[i]) {
@@ -215,6 +226,7 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   return name;
 }
 
+
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
   return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
 }
@@ -225,14 +237,6 @@ std::string CamelCaseFieldName(const FieldDescriptor* field) {
     return '_' + fieldName;
   }
   return fieldName;
-}
-
-std::string StripProto(const std::string& filename) {
-  if (HasSuffixString(filename, ".protodevel")) {
-    return StripSuffixString(filename, ".protodevel");
-  } else {
-    return StripSuffixString(filename, ".proto");
-  }
 }
 
 std::string FileClassName(const FileDescriptor* file, bool immutable) {

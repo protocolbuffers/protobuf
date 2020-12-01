@@ -1462,8 +1462,8 @@ size_t WireFormat::ByteSize(const Message& message) {
     message_reflection->ListFields(message, &fields);
   }
 
-  for (int i = 0; i < fields.size(); i++) {
-    our_size += FieldByteSize(fields[i], message);
+  for (const FieldDescriptor* field : fields) {
+    our_size += FieldByteSize(field, message);
   }
 
   if (descriptor->options().message_set_wire_format()) {
@@ -1645,7 +1645,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
 #define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE_METHOD)                      \
   case FieldDescriptor::TYPE_##TYPE:                                        \
     if (field->is_repeated()) {                                             \
-      for (int j = 0; j < count; j++) {                                     \
+      for (size_t j = 0; j < count; j++) {                                  \
         data_size += WireFormatLite::TYPE_METHOD##Size(                     \
             message_reflection->GetRepeated##CPPTYPE_METHOD(message, field, \
                                                             j));            \
@@ -1685,7 +1685,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
 
     case FieldDescriptor::TYPE_ENUM: {
       if (field->is_repeated()) {
-        for (int j = 0; j < count; j++) {
+        for (size_t j = 0; j < count; j++) {
           data_size += WireFormatLite::EnumSize(
               message_reflection->GetRepeatedEnum(message, field, j)->number());
         }
@@ -1700,7 +1700,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     // instead of copying.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: {
-      for (int j = 0; j < count; j++) {
+      for (size_t j = 0; j < count; j++) {
         std::string scratch;
         const std::string& value =
             field->is_repeated()
@@ -1748,3 +1748,5 @@ size_t ComputeUnknownFieldsSize(const InternalMetadata& metadata,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

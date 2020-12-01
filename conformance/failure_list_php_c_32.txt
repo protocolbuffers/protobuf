@@ -1,4 +1,0 @@
-Recommended.Proto2.JsonInput.FieldNameExtension.Validator
-Recommended.Proto3.JsonInput.NullValueInOtherOneofNewFormat.Validator
-Recommended.Proto3.JsonInput.NullValueInOtherOneofOldFormat.Validator
-Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator

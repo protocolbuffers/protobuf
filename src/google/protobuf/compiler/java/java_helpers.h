@@ -51,6 +51,7 @@ namespace java {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
+
 // If annotation_file is non-empty, prints a javax.annotation.Generated
 // annotation to the given Printer. annotation_file will be referenced in the
 // annotation's comments field. delimiter should be the Printer's delimiter
@@ -94,9 +95,6 @@ std::string CamelCaseFieldName(const FieldDescriptor* field);
 // This is used to declare static variables related to this type at the
 // outermost file scope.
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
-
-// Strips ".proto" or ".protodevel" from the end of a filename.
-std::string StripProto(const std::string& filename);
 
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another

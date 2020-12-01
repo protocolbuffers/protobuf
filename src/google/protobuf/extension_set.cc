@@ -180,20 +180,11 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* containing_type,
   Register(containing_type, number, info);
 }
 
-
 // ===================================================================
 // Constructors and basic methods.
 
 ExtensionSet::ExtensionSet(Arena* arena)
     : arena_(arena),
-      flat_capacity_(0),
-      flat_size_(0),
-      map_{flat_capacity_ == 0
-               ? NULL
-               : Arena::CreateArray<KeyValue>(arena_, flat_capacity_)} {}
-
-ExtensionSet::ExtensionSet()
-    : arena_(NULL),
       flat_capacity_(0),
       flat_size_(0),
       map_{flat_capacity_ == 0
@@ -2149,3 +2140,5 @@ size_t ExtensionSet::MessageSetByteSize() const {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

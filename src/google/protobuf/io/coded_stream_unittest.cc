@@ -1344,3 +1344,5 @@ TEST_F(CodedStreamTest, InputOver2G) {
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

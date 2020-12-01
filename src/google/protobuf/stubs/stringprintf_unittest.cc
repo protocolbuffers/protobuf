@@ -49,7 +49,7 @@ TEST(StringPrintfTest, Empty) {
   // so we do not allow them in google3.
   EXPECT_EQ("", StringPrintf(""));
 #endif
-  EXPECT_EQ("", StringPrintf("%s", string().c_str()));
+  EXPECT_EQ("", StringPrintf("%s", std::string().c_str()));
   EXPECT_EQ("", StringPrintf("%s", ""));
 }
 
@@ -61,26 +61,26 @@ TEST(StringPrintfTest, Misc) {
 }
 
 TEST(StringAppendFTest, Empty) {
-  string value("Hello");
+  std::string value("Hello");
   const char* empty = "";
   StringAppendF(&value, "%s", empty);
   EXPECT_EQ("Hello", value);
 }
 
 TEST(StringAppendFTest, EmptyString) {
-  string value("Hello");
+  std::string value("Hello");
   StringAppendF(&value, "%s", "");
   EXPECT_EQ("Hello", value);
 }
 
 TEST(StringAppendFTest, String) {
-  string value("Hello");
+  std::string value("Hello");
   StringAppendF(&value, " %s", "World");
   EXPECT_EQ("Hello World", value);
 }
 
 TEST(StringAppendFTest, Int) {
-  string value("Hello");
+  std::string value("Hello");
   StringAppendF(&value, " %d", 123);
   EXPECT_EQ("Hello 123", value);
 }
@@ -96,7 +96,7 @@ TEST(StringPrintfTest, Multibyte) {
   setlocale(LC_CTYPE, "en_US.utf8");
 
   const char kInvalidCodePoint[] = "\375\067s";
-  string value = StringPrintf("%.*s", 3, kInvalidCodePoint);
+  std::string value = StringPrintf("%.*s", 3, kInvalidCodePoint);
 
   // In some versions of glibc (e.g. eglibc-2.11.1, aka GRTEv2), snprintf
   // returns error given an invalid codepoint. Other versions
@@ -122,7 +122,7 @@ TEST(StringPrintfTest, NoMultibyte) {
   // No multibyte handling, but the string contains funny chars.
   char* old_locale = setlocale(LC_CTYPE, nullptr);
   setlocale(LC_CTYPE, "POSIX");
-  string value = StringPrintf("%.*s", 3, "\375\067s");
+  std::string value = StringPrintf("%.*s", 3, "\375\067s");
   setlocale(LC_CTYPE, old_locale);
   EXPECT_EQ("\375\067s", value);
 }
@@ -132,7 +132,7 @@ TEST(StringPrintfTest, DontOverwriteErrno) {
   // something significantly larger than what people are normally
   // printing in their badly written PLOG() statements.
   errno = ECHILD;
-  string value = StringPrintf("Hello, %s!", "World");
+  std::string value = StringPrintf("Hello, %s!", "World");
   EXPECT_EQ(ECHILD, errno);
 }
 
@@ -142,7 +142,7 @@ TEST(StringPrintfTest, LargeBuf) {
   char* buf = new char[n+1];
   memset(buf, ' ', n);
   buf[n] = 0;
-  string value = StringPrintf("%s", buf);
+  std::string value = StringPrintf("%s", buf);
   EXPECT_EQ(buf, value);
   delete[] buf;
 }

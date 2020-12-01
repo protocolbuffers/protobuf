@@ -1355,7 +1355,6 @@ void ImmutableMessageGenerator::GenerateInitializers(io::Printer* printer) {
   }
 }
 
-
 void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
   printer->Print(
       "private static String getTypeUrl(\n"
