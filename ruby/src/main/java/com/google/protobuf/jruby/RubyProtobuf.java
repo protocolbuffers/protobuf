@@ -75,7 +75,7 @@ public class RubyProtobuf {
      * unknown fields in submessages.
      */
     @JRubyMethod(name = "discard_unknown", meta = true)
-    public static IRubyObject discardUnkown(ThreadContext context, IRubyObject self, IRubyObject message) {
+    public static IRubyObject discardUnknown(ThreadContext context, IRubyObject self, IRubyObject message) {
         ((RubyMessage) message).discardUnknownFields(context);
         return context.nil;
     }
