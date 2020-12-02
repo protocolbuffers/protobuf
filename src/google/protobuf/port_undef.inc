@@ -75,7 +75,6 @@
 #undef PROTOBUF_DISABLE_MSVC_UNION_WARNING
 #undef PROTOBUF_ENABLE_MSVC_UNION_WARNING
 #undef PROTOBUF_CONSTINIT
-#undef PROTOBUF_MAYBE_CONSTEXPR
 #undef PROTOBUF_ATTRIBUTE_NO_DESTROY
 
 // Restore macro that may have been #undef'd in port_def.inc.
