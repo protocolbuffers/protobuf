@@ -329,7 +329,7 @@ class PROTOBUF_EXPORT MapFieldBase {
   // It uses a linker initialized mutex, so it is not compatible with regular
   // runtime instances.
   // Except in MSVC, where we can't have a constinit mutex.
-  explicit PROTOBUF_MAYBE_CONSTEXPR MapFieldBase(ConstantInitialized)
+  explicit constexpr MapFieldBase(ConstantInitialized)
       : arena_(nullptr),
         repeated_field_(nullptr),
         mutex_(GOOGLE_PROTOBUF_LINKER_INITIALIZED),

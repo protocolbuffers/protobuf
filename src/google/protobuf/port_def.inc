@@ -148,9 +148,6 @@
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#ifdef PROTOBUF_MAYBE_CONSTEXPR
-#error PROTOBUF_MAYBE_CONSTEXPR was previously defined
-#endif
 #ifdef PROTOBUF_ATTRIBUTE_NO_DESTROY
 #error PROTOBUF_ATTRIBUTE_NO_DESTROY was previously defined
 #endif
@@ -558,15 +555,6 @@
 #endif
 #ifndef PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTINIT
-#endif
-
-// Some constructors can't be constexpr under MSVC, but given that MSVC will not
-// do constant initialization of globals anyway we can omit `constexpr` from
-// them. These constructors are marked with PROTOBUF_MAYBE_CONSTEXPR
-#if defined(_MSC_VER)
-#define PROTOBUF_MAYBE_CONSTEXPR
-#else
-#define PROTOBUF_MAYBE_CONSTEXPR constexpr
 #endif
 
 #if _MSC_VER
