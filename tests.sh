@@ -467,43 +467,6 @@ use_php_zts() {
   internal_build_cpp
 }
 
-build_php7.0() {
-  use_php 7.0
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
-}
-
-build_php7.0_c() {
-  use_php 7.0
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
-  popd
-}
-
-build_php7.0_mixed() {
-  use_php 7.0
-  pushd php
-  rm -rf vendor
-  composer update
-  tests/compile_extension.sh
-  tests/generate_protos.sh
-  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
-  popd
-}
-
-build_php7.0_zts_c() {
-  use_php_zts 7.0
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
-  popd
-}
-
 build_php7.0_mac() {
   internal_build_cpp
   # Install PHP
@@ -666,16 +629,12 @@ build_php8.0_all() {
 }
 
 build_php_all_32() {
-  build_php7.0
   build_php7.1
   build_php7.4
-  build_php7.0_c $1
   build_php7.1_c $1
   build_php7.4_c $1
-  build_php7.0_mixed
   build_php7.1_mixed
   build_php7.4_mixed
-  build_php7.0_zts_c $1
   build_php7.1_zts_c $1
   build_php7.4_zts_c $1
 }
@@ -720,12 +679,11 @@ Usage: $0 { cpp |
             ruby27 |
             jruby |
             ruby_all |
-            php7.0   |
-            php7.0_c |
             php_compatibility |
             php7.1   |
             php7.1_c |
             php_all |
+            php8.0_all |
             dist_install |
             benchmark)
 "
