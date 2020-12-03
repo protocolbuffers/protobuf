@@ -20,7 +20,11 @@ use Google\Protobuf\Internal\CodedOutputStream;
  */
 class ImplementationTest extends TestBase
 {
-    public function setUp() : void
+    /**
+     * Avoid calling setUp, which has void return type (not avalialbe in php7.0).
+     * @before
+     */
+    public function skipTestsForExtension()
     {
         if (extension_loaded('protobuf')) {
             $this->markTestSkipped();
