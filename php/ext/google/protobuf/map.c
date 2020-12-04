@@ -437,9 +437,6 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetSet, 0, 0, 2)
   ZEND_ARG_INFO(0, newval)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
-ZEND_END_ARG_INFO()
-
 static zend_function_entry MapField_methods[] = {
   PHP_ME(MapField, __construct,  arginfo_construct, ZEND_ACC_PUBLIC)
   PHP_ME(MapField, offsetExists, arginfo_offsetGet, ZEND_ACC_PUBLIC)
@@ -622,7 +619,11 @@ void Map_ModuleInit() {
   h = &MapField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = MapField_destructor;
+#if PHP_VERSION_ID < 80000
   h->compare_objects = MapField_compare_objects;
+#else
+  h->compare = MapField_compare_objects;
+#endif
   h->get_properties = Map_GetProperties;
   h->get_property_ptr_ptr = Map_GetPropertyPtrPtr;
 

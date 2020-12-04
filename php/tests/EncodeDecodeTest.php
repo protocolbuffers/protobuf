@@ -212,7 +212,7 @@ class EncodeDecodeTest extends TestBase
     public function generateRandomString($length = 10) {
         $randomString = str_repeat("+", $length);
         for ($i = 0; $i < $length; $i++) {
-            $randomString[$i] = rand(0, 255);
+            $randomString[$i] = chr(rand(0, 255));
         }
         return $randomString;
     }
@@ -529,200 +529,178 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("", $data);
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidInt32()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('08'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidSubMessage()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('9A010108'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidInt64()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('10'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidUInt32()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('18'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidUInt64()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('20'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidSInt32()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('28'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidSInt64()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('30'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidFixed32()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('3D'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidFixed64()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('41'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidSFixed32()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('4D'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidSFixed64()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('51'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidFloat()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('5D'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidDouble()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('61'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidBool()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('68'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidStringLengthMiss()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('72'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidStringDataMiss()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('7201'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidBytesLengthMiss()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('7A'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidBytesDataMiss()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('7A01'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidEnum()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('8001'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidMessageLengthMiss()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('8A01'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidMessageDataMiss()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestMessage();
         $m->mergeFromString(hex2bin('8A0101'));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeInvalidPackedMessageLength()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestPackedMessage();
         $m->mergeFromString(hex2bin('D205'));
     }
@@ -1143,11 +1121,10 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("0801", bin2hex($m1->getAny()->getValue()));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testDecodeAnyWithUnknownPacked()
     {
+        $this->expectException(Exception::class);
+
         $m = new TestAny();
         $m->mergeFromJsonString(
             "{\"any\":" .
