@@ -672,10 +672,12 @@ function test_encode_skipunknown()
     optional_uint32 = 20,
     optional_int64 = 30,
   }
-  local serialized = upb.encode(msg)
+  -- SKIPUNKNOWN here tests that it does *not* affect regular fields.
+  local serialized = upb.encode(msg, {upb.ENCODE_SKIPUNKNOWN})
   assert_true(#serialized > 0)
   local empty_with_unknown = upb.decode(empty.Empty, serialized)
   assert_true(#upb.encode(empty_with_unknown) > 0)
+  -- Verify that unknown fields are not serialized.
   assert_true(#upb.encode(empty_with_unknown, {upb.ENCODE_SKIPUNKNOWN}) == 0)
 end
 
