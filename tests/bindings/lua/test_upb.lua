@@ -676,7 +676,6 @@ function test_encode_skipunknown()
   assert_true(#serialized > 0)
   local empty_with_unknown = upb.decode(empty.Empty, serialized)
   assert_true(#upb.encode(empty_with_unknown) > 0)
-  print(upb.encode(empty_with_unknown, upb.ENCODE_SKIPUNKNOWN))
   assert_true(#upb.encode(empty_with_unknown, {upb.ENCODE_SKIPUNKNOWN}) == 0)
 end
 
