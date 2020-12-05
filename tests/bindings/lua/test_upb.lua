@@ -5,6 +5,7 @@ local upb_test = require "tests.bindings.lua.test_pb"
 local test_messages_proto3 = require "google.protobuf.test_messages_proto3_pb"
 local test_messages_proto2 = require "google.protobuf.test_messages_proto2_pb"
 local descriptor = require "google.protobuf.descriptor_pb"
+local empty = require "google.protobuf.empty_pb"
 
 if _VERSION >= 'Lua 5.2' then
   _ENV = lunit.module("testupb", "seeall")
@@ -662,6 +663,21 @@ function test_descriptor_error()
   }
   assert_error(function () symtab:add_file(upb.encode(file)) end)
   assert_nil(symtab:lookup_msg("ABC"))
+end
+
+function test_encode_skipunknown()
+  -- Test that upb.ENCODE_SKIPUNKNOWN does not encode unknown fields.
+  local msg = test_messages_proto3.TestAllTypesProto3{
+    optional_int32 = 10,
+    optional_uint32 = 20,
+    optional_int64 = 30,
+  }
+  local serialized = upb.encode(msg)
+  assert_true(#serialized > 0)
+  local empty_with_unknown = upb.decode(empty.Empty, serialized)
+  assert_true(#upb.encode(empty_with_unknown) > 0)
+  print(upb.encode(empty_with_unknown, upb.ENCODE_SKIPUNKNOWN))
+  assert_true(#upb.encode(empty_with_unknown, {upb.ENCODE_SKIPUNKNOWN}) == 0)
 end
 
 function test_gc()

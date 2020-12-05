@@ -1030,6 +1030,7 @@ void lupb_msg_registertypes(lua_State *L) {
   lupb_setfieldi(L, "TXTENC_NOSORT", UPB_TXTENC_NOSORT);
 
   lupb_setfieldi(L, "ENCODE_DETERMINISTIC", UPB_ENCODE_DETERMINISTIC);
+  lupb_setfieldi(L, "ENCODE_SKIPUNKNOWN", UPB_ENCODE_SKIPUNKNOWN);
 
   lupb_cacheinit(L);
 }

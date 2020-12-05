@@ -22,6 +22,9 @@ enum {
    * If your proto contains maps, the encoder will need to malloc()/free()
    * memory during encode. */
   UPB_ENCODE_DETERMINISTIC = 1,
+
+  /* When set, unknown fields are not printed. */
+  UPB_ENCODE_SKIPUNKNOWN = 2,
 };
 
 char *upb_encode_ex(const void *msg, const upb_msglayout *l, int options,
