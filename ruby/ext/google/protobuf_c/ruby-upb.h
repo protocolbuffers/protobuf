@@ -209,6 +209,7 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_MSG_H_
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 /*
@@ -560,6 +561,10 @@ UPB_INLINE int _upb_lg2ceil(int x) {
 #endif
 }
 
+UPB_INLINE int _upb_lg2ceilsize(int x) {
+  return 1 << _upb_lg2ceil(x);
+}
+
 
 #ifdef __cplusplus
 }  /* extern "C" */
@@ -689,10 +694,17 @@ UPB_INLINE char *upb_tabstr(upb_tabkey key, uint32_t *len) {
   return mem + sizeof(*len);
 }
 
+UPB_INLINE upb_strview upb_tabstrview(upb_tabkey key) {
+  upb_strview ret;
+  uint32_t len;
+  ret.data = upb_tabstr(key, &len);
+  ret.size = len;
+  return ret;
+}
 
 /* upb_tabval *****************************************************************/
 
-typedef struct {
+typedef struct upb_tabval {
   uint64_t val;
 } upb_tabval;
 
@@ -1008,6 +1020,7 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
 
 #endif  /* UPB_TABLE_H_ */
 
+/* Must be last. */
 
 #ifdef __cplusplus
 extern "C" {
@@ -1546,6 +1559,53 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val, size_t size) 
   }
 }
 
+/** _upb_mapsorter *************************************************************/
+
+/* _upb_mapsorter sorts maps and provides ordered iteration over the entries.
+ * Since maps can be recursive (map values can be messages which contain other maps).
+ * _upb_mapsorter can contain a stack of maps. */
+
+typedef struct {
+  upb_tabent const**entries;
+  int size;
+  int cap;
+} _upb_mapsorter;
+
+typedef struct {
+  int start;
+  int pos;
+  int end;
+} _upb_sortedmap;
+
+UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter *s) {
+  s->entries = NULL;
+  s->size = 0;
+  s->cap = 0;
+}
+
+UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter *s) {
+  if (s->entries) free(s->entries);
+}
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
+                            const upb_map *map, _upb_sortedmap *sorted);
+
+UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter *s, _upb_sortedmap *sorted) {
+  s->size = sorted->start;
+}
+
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter *s, const upb_map *map,
+                                    _upb_sortedmap *sorted,
+                                    upb_map_entry *ent) {
+  if (sorted->pos == sorted->end) return false;
+  const upb_tabent *tabent = s->entries[sorted->pos++];
+  upb_strview key = upb_tabstrview(tabent->key);
+  _upb_map_fromkey(key, &ent->k, map->key_size);
+  upb_value val = {tabent->val.val};
+  _upb_map_fromvalue(val, &ent->v, map->val_size);
+  return true;
+}
+
 #undef PTR_AT
 
 #ifdef __cplusplus
@@ -1562,6 +1622,8 @@ extern "C" {
 #endif
 
 enum {
+  /* If set, strings will alias the input buffer instead of copying into the
+   * arena. */
   UPB_DECODE_ALIAS = 1,
 };
 
@@ -1777,12 +1839,33 @@ UPB_INLINE void decode_poplimit(upb_decstate *d, const char *ptr,
 #define UPB_ENCODE_H_
 
 
+/* Must be last. */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-char *upb_encode(const void *msg, const upb_msglayout *l, upb_arena *arena,
-                 size_t *size);
+enum {
+  /* If set, the results of serializing will be deterministic across all
+   * instances of this binary. There are no guarantees across different
+   * binary builds.
+   *
+   * If your proto contains maps, the encoder will need to malloc()/free()
+   * memory during encode. */
+  UPB_ENCODE_DETERMINISTIC = 1,
+
+  /* When set, unknown fields are not printed. */
+  UPB_ENCODE_SKIPUNKNOWN = 2,
+};
+
+char *upb_encode_ex(const void *msg, const upb_msglayout *l, int options,
+                    upb_arena *arena, size_t *size);
+
+UPB_INLINE char *upb_encode(const void *msg, const upb_msglayout *l,
+                            upb_arena *arena, size_t *size) {
+  return upb_encode_ex(msg, l, 0, arena, size);
+}
+
 
 #ifdef __cplusplus
 }  /* extern "C" */

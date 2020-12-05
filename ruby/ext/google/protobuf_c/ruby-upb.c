@@ -919,6 +919,8 @@ typedef struct {
   jmp_buf err;
   upb_alloc *alloc;
   char *buf, *ptr, *limit;
+  int options;
+  _upb_mapsorter sorter;
 } upb_encstate;
 
 static size_t upb_roundup_pow2(size_t bytes) {
@@ -1228,31 +1230,48 @@ static void encode_array(upb_encstate *e, const char *field_mem,
   }
 }
 
+static void encode_mapentry(upb_encstate *e, uint32_t number,
+                            const upb_msglayout *layout,
+                            const upb_map_entry *ent) {
+  const upb_msglayout_field *key_field = &layout->fields[0];
+  const upb_msglayout_field *val_field = &layout->fields[1];
+  size_t pre_len = e->limit - e->ptr;
+  size_t size;
+  encode_scalar(e, &ent->v, layout, val_field, false);
+  encode_scalar(e, &ent->k, layout, key_field, false);
+  size = (e->limit - e->ptr) - pre_len;
+  encode_varint(e, size);
+  encode_tag(e, number, UPB_WIRE_TYPE_DELIMITED);
+}
+
 static void encode_map(upb_encstate *e, const char *field_mem,
                        const upb_msglayout *m, const upb_msglayout_field *f) {
   const upb_map *map = *(const upb_map**)field_mem;
-  const upb_msglayout *entry = m->submsgs[f->submsg_index];
-  const upb_msglayout_field *key_field = &entry->fields[0];
-  const upb_msglayout_field *val_field = &entry->fields[1];
-  upb_strtable_iter i;
-  if (map == NULL) {
-    return;
-  }
+  const upb_msglayout *layout = m->submsgs[f->submsg_index];
+  UPB_ASSERT(layout->field_count == 2);
 
-  upb_strtable_begin(&i, &map->table);
-  for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
-    size_t pre_len = e->limit - e->ptr;
-    size_t size;
-    upb_strview key = upb_strtable_iter_key(&i);
-    const upb_value val = upb_strtable_iter_value(&i);
+  if (map == NULL) return;
+
+  if (e->options & UPB_ENCODE_DETERMINISTIC) {
+    _upb_sortedmap sorted;
+    _upb_mapsorter_pushmap(&e->sorter, layout->fields[0].descriptortype, map,
+                           &sorted);
     upb_map_entry ent;
-    _upb_map_fromkey(key, &ent.k, map->key_size);
-    _upb_map_fromvalue(val, &ent.v, map->val_size);
-    encode_scalar(e, &ent.v, entry, val_field, false);
-    encode_scalar(e, &ent.k, entry, key_field, false);
-    size = (e->limit - e->ptr) - pre_len;
-    encode_varint(e, size);
-    encode_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
+    while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
+      encode_mapentry(e, f->number, layout, &ent);
+    }
+    _upb_mapsorter_popmap(&e->sorter, &sorted);
+  } else {
+    upb_strtable_iter i;
+    upb_strtable_begin(&i, &map->table);
+    for(; !upb_strtable_done(&i); upb_strtable_next(&i)) {
+      upb_strview key = upb_strtable_iter_key(&i);
+      const upb_value val = upb_strtable_iter_value(&i);
+      upb_map_entry ent;
+      _upb_map_fromkey(key, &ent.k, map->key_size);
+      _upb_map_fromvalue(val, &ent.v, map->val_size);
+      encode_mapentry(e, f->number, layout, &ent);
+    }
   }
 }
 
@@ -1276,15 +1295,16 @@ static void encode_scalarfield(upb_encstate *e, const char *msg,
 static void encode_message(upb_encstate *e, const char *msg,
                            const upb_msglayout *m, size_t *size) {
   size_t pre_len = e->limit - e->ptr;
-  const char *unknown;
-  size_t unknown_size;
   const upb_msglayout_field *f = &m->fields[m->field_count];
   const upb_msglayout_field *first = &m->fields[0];
 
-  unknown = upb_msg_getunknown(msg, &unknown_size);
+  if ((e->options & UPB_ENCODE_SKIPUNKNOWN) == 0) {
+    size_t unknown_size;
+    const char *unknown = upb_msg_getunknown(msg, &unknown_size);
 
-  if (unknown) {
-    encode_bytes(e, unknown, unknown_size);
+    if (unknown) {
+      encode_bytes(e, unknown, unknown_size);
+    }
   }
 
   while (f != first) {
@@ -1301,30 +1321,34 @@ static void encode_message(upb_encstate *e, const char *msg,
   *size = (e->limit - e->ptr) - pre_len;
 }
 
-char *upb_encode(const void *msg, const upb_msglayout *m, upb_arena *arena,
-                 size_t *size) {
+char *upb_encode_ex(const void *msg, const upb_msglayout *m, int options,
+                    upb_arena *arena, size_t *size) {
   upb_encstate e;
   e.alloc = upb_arena_alloc(arena);
   e.buf = NULL;
   e.limit = NULL;
   e.ptr = NULL;
+  e.options = options;
+  _upb_mapsorter_init(&e.sorter);
+  char *ret = NULL;
 
   if (UPB_SETJMP(e.err)) {
     *size = 0;
-    return NULL;
-  }
-
-  encode_message(&e, msg, m, size);
-
-  *size = e.limit - e.ptr;
-
-  if (*size == 0) {
-    static char ch;
-    return &ch;
+    ret = NULL;
   } else {
-    UPB_ASSERT(e.ptr);
-    return e.ptr;
+    encode_message(&e, msg, m, size);
+    *size = e.limit - e.ptr;
+    if (*size == 0) {
+      static char ch;
+      ret = &ch;
+    } else {
+      UPB_ASSERT(e.ptr);
+      ret = e.ptr;
+    }
   }
+
+  _upb_mapsorter_destroy(&e.sorter);
+  return ret;
 }
 
 
@@ -1463,6 +1487,121 @@ upb_map *_upb_map_new(upb_arena *a, size_t key_size, size_t value_size) {
   map->val_size = value_size;
 
   return map;
+}
+
+static void _upb_mapsorter_getkeys(const void *_a, const void *_b, void *a_key,
+                                   void *b_key, size_t size) {
+  const upb_tabent *const*a = _a;
+  const upb_tabent *const*b = _b;
+  upb_strview a_tabkey = upb_tabstrview((*a)->key);
+  upb_strview b_tabkey = upb_tabstrview((*b)->key);
+  _upb_map_fromkey(a_tabkey, a_key, size);
+  _upb_map_fromkey(b_tabkey, b_key, size);
+}
+
+static int _upb_mapsorter_cmpi64(const void *_a, const void *_b) {
+  int64_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
+  return a - b;
+}
+
+static int _upb_mapsorter_cmpu64(const void *_a, const void *_b) {
+  uint64_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
+  return a - b;
+}
+
+static int _upb_mapsorter_cmpi32(const void *_a, const void *_b) {
+  int32_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
+  return a - b;
+}
+
+static int _upb_mapsorter_cmpu32(const void *_a, const void *_b) {
+  uint32_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
+  return a - b;
+}
+
+static int _upb_mapsorter_cmpbool(const void *_a, const void *_b) {
+  bool a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 1);
+  return a - b;
+}
+
+static int _upb_mapsorter_cmpstr(const void *_a, const void *_b) {
+  upb_strview a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, UPB_MAPTYPE_STRING);
+  size_t common_size = UPB_MIN(a.size, b.size);
+  int cmp = memcmp(a.data, b.data, common_size);
+  if (cmp) return cmp;
+  return a.size - b.size;
+}
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
+                            const upb_map *map, _upb_sortedmap *sorted) {
+  int map_size = _upb_map_size(map);
+  sorted->start = s->size;
+  sorted->pos = sorted->start;
+  sorted->end = sorted->start + map_size;
+
+  /* Grow s->entries if necessary. */
+  if (sorted->end > s->cap) {
+    s->cap = _upb_lg2ceilsize(sorted->end);
+    s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
+    if (!s->entries) return false;
+  }
+
+  s->size = sorted->end;
+
+  /* Copy non-empty entries from the table to s->entries. */
+  upb_tabent const**dst = &s->entries[sorted->start];
+  const upb_tabent *src = map->table.t.entries;
+  const upb_tabent *end = src + upb_table_size(&map->table.t);
+  for (; src < end; src++) {
+    if (!upb_tabent_isempty(src)) {
+      *dst = src;
+      dst++;
+    }
+  }
+  UPB_ASSERT(dst == &s->entries[sorted->end]);
+
+  /* Sort entries according to the key type. */
+
+  int (*compar)(const void *, const void *);
+
+  switch (key_type) {
+    case UPB_DESCRIPTOR_TYPE_INT64:
+    case UPB_DESCRIPTOR_TYPE_SFIXED64:
+    case UPB_DESCRIPTOR_TYPE_SINT64:
+      compar = _upb_mapsorter_cmpi64;
+      break;
+    case UPB_DESCRIPTOR_TYPE_UINT64:
+    case UPB_DESCRIPTOR_TYPE_FIXED64:
+      compar = _upb_mapsorter_cmpu64;
+      break;
+    case UPB_DESCRIPTOR_TYPE_INT32:
+    case UPB_DESCRIPTOR_TYPE_SINT32:
+    case UPB_DESCRIPTOR_TYPE_SFIXED32:
+    case UPB_DESCRIPTOR_TYPE_ENUM:
+      compar = _upb_mapsorter_cmpi32;
+      break;
+    case UPB_DESCRIPTOR_TYPE_UINT32:
+    case UPB_DESCRIPTOR_TYPE_FIXED32:
+      compar = _upb_mapsorter_cmpu32;
+      break;
+    case UPB_DESCRIPTOR_TYPE_BOOL:
+      compar = _upb_mapsorter_cmpbool;
+      break;
+    case UPB_DESCRIPTOR_TYPE_STRING:
+      compar = _upb_mapsorter_cmpstr;
+      break;
+    default:
+      UPB_UNREACHABLE();
+  }
+
+  qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries), compar);
+  return true;
 }
 /*
 ** upb_table Implementation
