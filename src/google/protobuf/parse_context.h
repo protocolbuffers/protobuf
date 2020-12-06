@@ -208,7 +208,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   bool DoneWithCheck(const char** ptr, int d) {
     GOOGLE_DCHECK(*ptr);
     if (PROTOBUF_PREDICT_TRUE(*ptr < limit_end_)) return false;
-    int overrun = *ptr - buffer_end_;
+    int overrun = static_cast<int>(*ptr - buffer_end_);
     GOOGLE_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
     if (overrun ==
         limit_) {  //  No need to flip buffers if we ended on a limit.
@@ -347,7 +347,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* AppendUntilEnd(const char* ptr, const A& append) {
     if (ptr - buffer_end_ > limit_) return nullptr;
     while (limit_ > kSlopBytes) {
-      int chunk_size = buffer_end_ + kSlopBytes - ptr;
+      size_t chunk_size = buffer_end_ + kSlopBytes - ptr;
       GOOGLE_DCHECK_GE(chunk_size, 0);
       append(ptr, chunk_size);
       ptr = Next();
