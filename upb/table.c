@@ -184,7 +184,7 @@ static void insert(upb_table *t, lookupkey_t key, upb_tabkey tabkey,
     /* Head of collider's chain. */
     upb_tabent *chain = getentry_mutable(t, hashfunc(mainpos_e->key));
     if (chain == mainpos_e) {
-      /* Existing ent is in its main posisiton (it has the same hash as us, and
+      /* Existing ent is in its main position (it has the same hash as us, and
        * is the head of our chain).  Insert to new ent and append to this chain. */
       new_e->next = mainpos_e->next;
       mainpos_e->next = new_e;
