@@ -89,6 +89,42 @@ const char* kDescriptorInstanceVar = "descriptor";
 ID descriptor_instancevar_interned;
 
 // -----------------------------------------------------------------------------
+// Arena
+// -----------------------------------------------------------------------------
+
+void Arena_free(void* data) { upb_arena_free(data); }
+
+static VALUE cArena;
+
+const rb_data_type_t Arena_type = {
+  "Google::Protobuf::Internal::Arena",
+  { NULL, Arena_free, NULL },
+};
+
+static VALUE Arena_alloc(VALUE klass) {
+  upb_arena *arena = upb_arena_new();
+  return TypedData_Wrap_Struct(klass, &Arena_type, arena);
+}
+
+upb_arena *Arena_get(VALUE _arena) {
+  upb_arena *arena;
+  TypedData_Get_Struct(_arena, upb_arena, &Arena_type, arena);
+  return arena;
+}
+
+VALUE Arena_new() {
+  return Arena_alloc(cArena);
+}
+
+void Arena_register() {
+  VALUE internal = rb_eval_string("Google::Protobuf::Internal");
+  VALUE klass = rb_define_class_under(internal, "Arena", rb_cObject);
+  rb_define_alloc_func(klass, Arena_alloc);
+  rb_gc_register_address(&cArena);
+  cArena = klass;
+}
+
+// -----------------------------------------------------------------------------
 // Initialization/entry point.
 // -----------------------------------------------------------------------------
 
@@ -100,6 +136,7 @@ void Init_protobuf_c() {
   VALUE internal = rb_define_module_under(protobuf, "Internal");
 
   descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
+  Arena_register();
   DescriptorPool_register(protobuf);
   Descriptor_register(protobuf);
   FileDescriptor_register(protobuf);

@@ -208,6 +208,11 @@ VALUE DescriptorPool_generated_pool(VALUE _self);
 extern VALUE generated_pool;
 
 TypeInfo TypeInfo_get(const upb_fielddef *f);
+static inline TypeInfo TypeInfo_from_type(upb_fieldtype_t type) {
+  TypeInfo ret = {type};
+  assert(type != UPB_TYPE_MESSAGE && type != UPB_TYPE_ENUM);
+  return ret;
+}
 
 void Descriptor_mark(void* _self);
 void Descriptor_free(void* _self);

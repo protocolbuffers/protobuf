@@ -496,31 +496,6 @@ VALUE RepeatedField_concat(VALUE _self, VALUE list) {
   return _self;
 }
 
-void validate_type_class(upb_fieldtype_t type, VALUE klass) {
-  if (rb_ivar_get(klass, descriptor_instancevar_interned) == Qnil) {
-    rb_raise(rb_eArgError,
-             "Type class has no descriptor. Please pass a "
-             "class or enum as returned by the DescriptorPool.");
-  }
-  if (type == UPB_TYPE_MESSAGE) {
-    VALUE desc = rb_ivar_get(klass, descriptor_instancevar_interned);
-    if (!RB_TYPE_P(desc, T_DATA) || !RTYPEDDATA_P(desc) ||
-        RTYPEDDATA_TYPE(desc) != &_Descriptor_type) {
-      rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
-    }
-    if (rb_get_alloc_func(klass) != &Message_alloc) {
-      rb_raise(rb_eArgError,
-               "Message class was not returned by the DescriptorPool.");
-    }
-  } else if (type == UPB_TYPE_ENUM) {
-    VALUE enumdesc = rb_ivar_get(klass, descriptor_instancevar_interned);
-    if (!RB_TYPE_P(enumdesc, T_DATA) || !RTYPEDDATA_P(enumdesc) ||
-        RTYPEDDATA_TYPE(enumdesc) != &_EnumDescriptor_type) {
-      rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
-    }
-  }
-}
-
 VALUE RepeatedField_alloc(VALUE klass) {
   RepeatedField* self = ALLOC(RepeatedField);
   self->arena = Qnil;

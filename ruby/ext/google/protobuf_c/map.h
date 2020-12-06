@@ -32,5 +32,6 @@
 #define RUBY_PROTOBUF_MAP_H_
 
 void Map_register(VALUE module);
+VALUE Map_deep_copy(VALUE obj);
 
 #endif  // RUBY_PROTOBUF_MAP_H_

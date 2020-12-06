@@ -32,7 +32,9 @@
 
 #include "convert.h"
 #include "map.h"
+#include "repeated_field.h"
 #include "protobuf.h"
+#include "third_party/wyhash/wyhash.h"
 
 static VALUE initialize_rb_class_with_no_args(VALUE klass) {
     return rb_funcall(klass, rb_intern("new"), 0);
@@ -112,6 +114,31 @@ VALUE ruby_wrapper_type(VALUE type_class, VALUE value) {
     }
   }
   return Qnil;
+}
+
+void validate_type_class(upb_fieldtype_t type, VALUE klass) {
+  if (rb_ivar_get(klass, descriptor_instancevar_interned) == Qnil) {
+    rb_raise(rb_eArgError,
+             "Type class has no descriptor. Please pass a "
+             "class or enum as returned by the DescriptorPool.");
+  }
+  if (type == UPB_TYPE_MESSAGE) {
+    VALUE desc = rb_ivar_get(klass, descriptor_instancevar_interned);
+    if (!RB_TYPE_P(desc, T_DATA) || !RTYPEDDATA_P(desc) ||
+        RTYPEDDATA_TYPE(desc) != &_Descriptor_type) {
+      rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
+    }
+    if (rb_get_alloc_func(klass) != &Message_alloc) {
+      rb_raise(rb_eArgError,
+               "Message class was not returned by the DescriptorPool.");
+    }
+  } else if (type == UPB_TYPE_ENUM) {
+    VALUE enumdesc = rb_ivar_get(klass, descriptor_instancevar_interned);
+    if (!RB_TYPE_P(enumdesc, T_DATA) || !RTYPEDDATA_P(enumdesc) ||
+        RTYPEDDATA_TYPE(enumdesc) != &_EnumDescriptor_type) {
+      rb_raise(rb_eArgError, "Descriptor has an incorrect type.");
+    }
+  }
 }
 
 static bool match(const upb_msgdef* m, const char* name, const upb_fielddef** f,
@@ -377,15 +404,6 @@ VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
     return Qtrue;
   }
 }
-#if 0
-
-VALUE create_submsg_from_hash(const MessageLayout* layout,
-                              const upb_fielddef* f, VALUE hash) {
-  VALUE args[1] = { hash };
-  return rb_class_new_instance(1, args, field_type_class(layout, f));
-}
-
-#endif
 
 void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
                            upb_arena* arena);
@@ -535,13 +553,12 @@ VALUE Message_dup(VALUE _self) {
   // TODO(copy unknown fields?)
   // TODO(use official function)
   memcpy(new_msg_self->msg, self->msg, size);
+  upb_arena_fuse(Arena_get(new_msg_self->arena), Arena_get(self->arena));
   return new_msg;
 }
 
-#if 0
-
 // Internal only; used by Google::Protobuf.deep_copy.
-VALUE Message_deep_copy(VALUE _self) {
+static VALUE Message_deep_copy(VALUE _self) {
   Message* self;
   Message* new_msg_self;
   VALUE new_msg;
@@ -550,10 +567,21 @@ VALUE Message_deep_copy(VALUE _self) {
   new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
   TypedData_Get_Struct(new_msg, Message, &Message_type, new_msg_self);
 
-  layout_deep_copy(self->descriptor->layout,
-                   Message_data(new_msg_self),
-                   Message_data(self));
+  const char *data;
+  size_t size;
 
+  // Serialize and parse.
+  upb_arena *arena = upb_arena_new();
+  data = upb_encode_ex(self->msg, upb_msgdef_layout(self->descriptor->msgdef),
+                       0, arena, &size);
+  if (!data || !upb_decode(data, size, new_msg_self->msg,
+                           upb_msgdef_layout(new_msg_self->descriptor->msgdef),
+                           Arena_get(new_msg_self->arena))) {
+    upb_arena_free(arena);
+    rb_raise(cParseError, "Error occurred copying proto");
+  }
+
+  upb_arena_free(arena);
   return new_msg;
 }
 
@@ -569,67 +597,34 @@ VALUE Message_deep_copy(VALUE _self) {
 VALUE Message_eq(VALUE _self, VALUE _other) {
   Message* self;
   Message* other;
+  const char *data1, *data2;
+  size_t size1, size2;
+
   if (TYPE(_self) != TYPE(_other)) {
     return Qfalse;
   }
+
   TypedData_Get_Struct(_self, Message, &Message_type, self);
   TypedData_Get_Struct(_other, Message, &Message_type, other);
 
-  if (self->descriptor != other->descriptor) {
-    return Qfalse;
+  // Compare deterministically serialized payloads with no unknown fields.
+  upb_arena *arena = upb_arena_new();
+  data1 = upb_encode_ex(self->msg, upb_msgdef_layout(self->descriptor->msgdef),
+                        UPB_ENCODE_SKIPUNKNOWN | UPB_ENCODE_DETERMINISTIC,
+                        arena, &size1);
+  data2 = upb_encode_ex(
+      other->msg, upb_msgdef_layout(other->descriptor->msgdef),
+      UPB_ENCODE_SKIPUNKNOWN | UPB_ENCODE_DETERMINISTIC, arena, &size2);
+
+  if (data1 && data2) {
+    bool ret = size1 == size2 && memcmp(data1, data2, size1) == 0;
+    upb_arena_free(arena);
+    return ret ? Qtrue : Qfalse;
+  } else {
+    upb_arena_free(arena);
+    rb_raise(cParseError, "Error comparing messages");
   }
-
-  upb_msg_field_iter it;
-  for (upb_msg_field_begin(&it, layout->msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    const upb_oneofdef* oneof = upb_fielddef_realcontainingoneof(field);
-
-    void* msg1_memory = slot_memory(layout, msg1, field);
-    void* msg2_memory = slot_memory(layout, msg2, field);
-
-    if (oneof) {
-      uint32_t* msg1_oneof_case = slot_oneof_case(layout, msg1, oneof);
-      uint32_t* msg2_oneof_case = slot_oneof_case(layout, msg2, oneof);
-      if (*msg1_oneof_case != *msg2_oneof_case ||
-          (slot_read_oneof_case(layout, msg1, oneof) ==
-               upb_fielddef_number(field) &&
-           !native_slot_eq(upb_fielddef_type(field),
-                           field_type_class(layout, field), msg1_memory,
-                           msg2_memory))) {
-        return Qfalse;
-      }
-    } else if (is_map_field(field)) {
-      if (!Map_eq(DEREF(msg1_memory, VALUE),
-                  DEREF(msg2_memory, VALUE))) {
-        return Qfalse;
-      }
-    } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      if (!RepeatedField_eq(DEREF(msg1_memory, VALUE),
-                            DEREF(msg2_memory, VALUE))) {
-        return Qfalse;
-      }
-    } else {
-      if (field_contains_hasbit(layout, field) &&
-          slot_is_hasbit_set(layout, msg1, field) !=
-              slot_is_hasbit_set(layout, msg2, field)) {
-        // TODO(haberman): I don't think we should actually care about hasbits
-        // here: an unset default should be able to equal a set default. But we
-        // can address this later (will also have to make sure defaults are
-        // being properly set when hasbit is clear).
-        return Qfalse;
-      }
-      if (!native_slot_eq(upb_fielddef_type(field),
-                          field_type_class(layout, field), msg1_memory,
-                          msg2_memory)) {
-        return Qfalse;
-      }
-    }
-  }
-  return Qtrue;
 }
-#endif
 
 /*
  * call-seq:
@@ -639,21 +634,25 @@ VALUE Message_eq(VALUE _self, VALUE _other) {
  */
 VALUE Message_hash(VALUE _self) {
   Message* self;
-  upb_msg_field_iter it;
+  upb_arena *arena = upb_arena_new();
+  const char *data;
+  size_t size;
+
   TypedData_Get_Struct(_self, Message, &Message_type, self);
 
-  st_index_t h = rb_hash_start(0);
-  VALUE hash_sym = rb_intern("hash");
-  for (upb_msg_field_begin(&it, layout->msgdef);
-       !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
-    VALUE field_val = layout_get(layout, storage, field);
-    h = rb_hash_uint(h, NUM2LONG(rb_funcall(field_val, hash_sym, 0)));
-  }
-  h = rb_hash_end(h);
+  // Hash a deterministically serialized payloads with no unknown fields.
+  data = upb_encode_ex(self->msg, upb_msgdef_layout(self->descriptor->msgdef),
+                       UPB_ENCODE_SKIPUNKNOWN | UPB_ENCODE_DETERMINISTIC, arena,
+                       &size);
 
-  return INT2FIX(h);
+  if (data) {
+    uint32_t ret = wyhash(data, size, 0, _wyp);
+    upb_arena_free(arena);
+    return INT2FIX(ret);
+  } else {
+    upb_arena_free(arena);
+    rb_raise(cParseError, "Error calculating hash");
+  }
 }
 
 /*
@@ -700,31 +699,42 @@ VALUE Message_inspect(VALUE _self) {
   return str;
 }
 
+static VALUE Scalar_CreateHash(upb_msgval val, TypeInfo type_info);
+
 static VALUE RepeatedField_CreateArray(const upb_array* arr,
-                                       const upb_fielddef* f) {
+                                       TypeInfo type_info) {
   int size = upb_array_size(arr);
   VALUE ary = rb_ary_new2(size);
-  int i;
 
-  for (i = 0; i < size; i++) {
+  for (int i = 0; i < size; i++) {
     upb_msgval msgval = upb_array_get(arr, i);
-    VALUE val;
-
-    if (upb_fielddef_issubmsg(f)) {
-      val = Message_CreateHash(msgval.msg_val, upb_fielddef_msgsubdef(f));
-    } else {
-      val = Convert_UpbToRuby(msgval, TypeInfo_get(f), Qnil);
-    }
-
+    VALUE val = Scalar_CreateHash(msgval, type_info);
     rb_ary_push(ary, val);
   }
 
   return ary;
 }
 
-VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
+static VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
+                            TypeInfo val_info) {
   VALUE hash = rb_hash_new();
-  upb_msg_field_iter it;
+  size_t iter = UPB_MAP_BEGIN;
+  TypeInfo key_info = TypeInfo_from_type(key_type);
+
+  while (upb_mapiter_next(map, &iter)) {
+    upb_msgval key = upb_mapiter_key(map, iter);
+    upb_msgval val = upb_mapiter_value(map, iter);
+    VALUE key_val = Convert_UpbToRuby(key, key_info, Qnil);
+    VALUE val_val = Scalar_CreateHash(val, val_info);
+    rb_hash_aset(hash, key_val, val_val);
+  }
+
+  return hash;
+}
+
+static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
+  VALUE hash = rb_hash_new();
+  int n = upb_msgdef_fieldcount(m);
   bool is_proto2;
 
   // We currently have a few behaviors that are specific to proto2.
@@ -733,9 +743,9 @@ VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
   // can change this without breaking users.
   is_proto2 = upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2;
 
-  for (upb_msg_field_begin(&it, m); !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
-    const upb_fielddef* field = upb_msg_iter_field(&it);
+  for (int i = 0; i < n; i++) {
+    const upb_fielddef* field = upb_msgdef_field(m, i);
+    TypeInfo type_info = TypeInfo_get(field);
     upb_msgval msgval;
     VALUE msg_value;
     VALUE msg_key;
@@ -750,20 +760,31 @@ VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
     msgval = upb_msg_get(msg, field);
 
     if (upb_fielddef_ismap(field)) {
-      msg_value = Map_CreateHash(msgval.map_val, field);
+      const upb_msgdef *entry_m = upb_fielddef_msgsubdef(field);
+      const upb_fielddef *key_f = upb_msgdef_itof(entry_m, 1);
+      const upb_fielddef *val_f = upb_msgdef_itof(entry_m, 2);
+      upb_fieldtype_t key_type = upb_fielddef_type(key_f);
+      msg_value = Map_CreateHash(msgval.map_val, key_type, TypeInfo_get(val_f));
     } else if (upb_fielddef_isseq(field)) {
       if (is_proto2 && upb_array_size(msgval.array_val) == 0) {
         continue;
       }
-      msg_value = RepeatedField_CreateArray(msgval.array_val, field);
-    } else if (upb_fielddef_issubmsg(field)) {
-      msg_value =
-          Message_CreateHash(msgval.msg_val, upb_fielddef_msgsubdef(field));
+      msg_value = RepeatedField_CreateArray(msgval.array_val, type_info);
     } else {
-      msg_value = Convert_UpbToRuby(msgval, TypeInfo_get(field), Qnil);
+      msg_value = Scalar_CreateHash(msgval, type_info);
     }
 
     rb_hash_aset(hash, msg_key, msg_value);
+  }
+
+  return hash;
+}
+
+static VALUE Scalar_CreateHash(upb_msgval msgval, TypeInfo type_info) {
+  if (type_info.type == UPB_TYPE_MESSAGE) {
+    return Message_CreateHash(msgval.msg_val, type_info.def.msgdef->msgdef);
+  } else {
+    return Convert_UpbToRuby(msgval, type_info, Qnil);
   }
 }
 
@@ -968,13 +989,12 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   // TODO(haberman): use this message's pool instead.
   DescriptorPool* pool = ruby_to_DescriptorPool(generated_pool);
 
-  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
-
   if (argc < 1 || argc > 2) {
     rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
   }
 
   msg_rb = argv[0];
+  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
 
   if (argc == 2) {
     VALUE hash_args = argv[1];
@@ -1025,14 +1045,16 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
  */
 VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
   Message* msg;
-  VALUE klass = CLASS_OF(msg_rb);
-  if (klass == cRepeatedField || klass == cMap) {
+
+  if (CLASS_OF(msg_rb) == cRepeatedField || CLASS_OF(msg_rb) == cMap) {
     rb_raise(rb_eArgError, "Expected proto msg for discard unknown.");
-  } else {
-    if (!upb_msg_discardunknown(msg->msg, msg->descriptor->msgdef, 128)) {
-      rb_raise(rb_eRuntimeError, "Messages nested too deeply.");
-    }
   }
+
+  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+  if (!upb_msg_discardunknown(msg->msg, msg->descriptor->msgdef, 128)) {
+    rb_raise(rb_eRuntimeError, "Messages nested too deeply.");
+  }
+
   return Qnil;
 }
 
