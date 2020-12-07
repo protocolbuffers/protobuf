@@ -93,17 +93,18 @@ struct upb_filedef {
   const char *package;
   const char *phpprefix;
   const char *phpnamespace;
-  upb_syntax_t syntax;
 
   const upb_filedef **deps;
   const upb_msgdef *msgs;
   const upb_enumdef *enums;
   const upb_fielddef *exts;
+  const upb_symtab *symtab;
 
   int dep_count;
   int msg_count;
   int enum_count;
   int ext_count;
+  upb_syntax_t syntax;
 };
 
 struct upb_symtab {
@@ -821,6 +822,10 @@ const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i) {
 
 const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i) {
   return i < 0 || i >= f->enum_count ? NULL : &f->enums[i];
+}
+
+const upb_symtab *upb_filedef_symtab(const upb_filedef *f) {
+  return f->symtab;
 }
 
 void upb_symtab_free(upb_symtab *s) {
@@ -2093,6 +2098,7 @@ static const upb_filedef *_upb_symtab_addfile(
   file->msg_count = 0;
   file->enum_count = 0;
   file->ext_count = 0;
+  file->symtab = s;
 
   if (UPB_UNLIKELY(UPB_SETJMP(ctx.err))) {
     UPB_ASSERT(!upb_ok(status));

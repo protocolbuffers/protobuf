@@ -668,6 +668,13 @@ static int lupb_filedef_package(lua_State *L) {
   return 1;
 }
 
+static int lupb_filedef_symtab(lua_State *L) {
+  const upb_filedef *f = lupb_filedef_check(L, 1);
+  const upb_symtab *symtab = upb_filedef_symtab(f);
+  lupb_wrapper_pushwrapper(L, 1, symtab, LUPB_SYMTAB);
+  return 1;
+}
+
 static int lupb_filedef_syntax(lua_State *L) {
   const upb_filedef *f = lupb_filedef_check(L, 1);
   lua_pushnumber(L, upb_filedef_syntax(f));
@@ -683,6 +690,7 @@ static const struct luaL_Reg lupb_filedef_m[] = {
   {"msgcount", lupb_filedef_msgcount},
   {"name", lupb_filedef_name},
   {"package", lupb_filedef_package},
+  {"symtab", lupb_filedef_symtab},
   {"syntax", lupb_filedef_syntax},
   {NULL, NULL}
 };
@@ -760,6 +768,10 @@ static int lupb_symtab_new(lua_State *L) {
   lua_pushstring(L, "v");
   lua_setfield(L, -2, "__mode");
   lua_setmetatable(L, -2);
+
+  /* Put the symtab itself in the cache metatable. */
+  lua_pushvalue(L, -2);
+  lua_rawsetp(L, -2, lsymtab->symtab);
 
   /* Set the cache as our userval. */
   lua_setiuservalue(L, -2, LUPB_CACHE_INDEX);
