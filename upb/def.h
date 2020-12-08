@@ -277,6 +277,7 @@ int upb_filedef_enumcount(const upb_filedef *f);
 const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i);
 const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i);
 const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i);
+const upb_symtab *upb_filedef_symtab(const upb_filedef *f);
 
 /* upb_symtab *****************************************************************/
 
