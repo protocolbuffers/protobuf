@@ -698,7 +698,6 @@ end
 function test_json_emit_defaults()
   local msg = test_messages_proto3.TestAllTypesProto3()
   local json = upb.json_encode(msg, {upb.JSONENC_EMITDEFAULTS})
-  print(json)
 end
 
 function test_gc()
