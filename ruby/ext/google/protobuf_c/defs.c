@@ -368,6 +368,7 @@ void DescriptorPool_mark(void* _self) {
 void DescriptorPool_free(void* _self) {
   DescriptorPool* self = _self;
 
+  ObjectCache_Remove(self->symtab);
   upb_symtab_free(self->symtab);
   xfree(self);
 }
@@ -387,6 +388,7 @@ VALUE DescriptorPool_alloc(VALUE klass) {
 
   self->def_to_descriptor = rb_hash_new();
   self->symtab = upb_symtab_new();
+  ObjectCache_Add(self->symtab, ret);
 
   return ret;
 }
@@ -2341,27 +2343,6 @@ static VALUE get_def_obj(VALUE _descriptor_pool, const void* ptr, VALUE klass) {
     VALUE args[3] = { c_only_cookie, _descriptor_pool, key };
     def = rb_class_new_instance(3, args, klass);
     rb_hash_aset(descriptor_pool->def_to_descriptor, key, def);
-
-    // For message defs, we now eagerly get/create descriptors for all
-    // submessages.  We will need these anyway to parse or serialize this
-    // message type.  But more importantly, we must do this now so that
-    // add_handlers_for_message() (which calls get_msgdef_obj()) does *not*
-    // need to create a Ruby object or insert into a Ruby Hash.  We need to
-    // avoid triggering GC, which can switch Ruby threads and re-enter our
-    // C extension from a different thread.  This wreaks havoc on our state
-    // if we were in the middle of building handlers.
-    if (klass == cDescriptor) {
-      const upb_msgdef *m = ptr;
-      upb_msg_field_iter it;
-      for (upb_msg_field_begin(&it, m);
-           !upb_msg_field_done(&it);
-           upb_msg_field_next(&it)) {
-        const upb_fielddef* f = upb_msg_iter_field(&it);
-        if (upb_fielddef_issubmsg(f)) {
-          get_msgdef_obj(_descriptor_pool, upb_fielddef_msgsubdef(f));
-        }
-      }
-    }
   }
 
   return def;
@@ -2385,4 +2366,13 @@ VALUE get_filedef_obj(VALUE descriptor_pool, const upb_filedef* def) {
 
 VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def) {
   return get_def_obj(descriptor_pool, def, cOneofDescriptor);
+}
+
+VALUE Descriptor_DefToClass(const upb_msgdef *m) {
+  const upb_symtab *symtab = upb_filedef_symtab(upb_msgdef_file(m));
+  VALUE pool = ObjectCache_Get(symtab);
+  PBRUBY_ASSERT(pool != Qnil);
+  VALUE desc_rb = get_msgdef_obj(pool, m);
+  const Descriptor* desc = ruby_to_Descriptor(desc_rb);
+  return desc->klass;
 }

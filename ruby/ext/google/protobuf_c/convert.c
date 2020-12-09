@@ -4,11 +4,16 @@
 #include "message.h"
 #include "protobuf.h"
 
-static upb_strview Convert_StrDup(VALUE str, upb_arena *arena) {
+static upb_strview Convert_StringData(VALUE str, upb_arena *arena) {
   upb_strview ret;
-  char *ptr = upb_arena_malloc(arena, RSTRING_LEN(str));
-  memcpy(ptr, RSTRING_PTR(str), RSTRING_LEN(str));
-  ret.data = ptr;
+  if (arena) {
+    char *ptr = upb_arena_malloc(arena, RSTRING_LEN(str));
+    memcpy(ptr, RSTRING_PTR(str), RSTRING_LEN(str));
+    ret.data = ptr;
+  } else {
+    // Data is only needed temporarily (within map lookup).
+    ret.data = RSTRING_PTR(str);
+  }
   ret.size = RSTRING_LEN(str);
   return ret;
 }
@@ -129,7 +134,7 @@ upb_msgval Convert_RubyToUpb(VALUE value, const char* name, TypeInfo type_info,
         }
       }
 
-      ret.str_val = Convert_StrDup(value, arena);
+      ret.str_val = Convert_StringData(value, arena);
       break;
     }
     case UPB_TYPE_BYTES: {
@@ -145,7 +150,7 @@ upb_msgval Convert_RubyToUpb(VALUE value, const char* name, TypeInfo type_info,
         value = rb_str_encode(value, bytes, 0, Qnil);
       }
 
-      ret.str_val = Convert_StrDup(value, arena);
+      ret.str_val = Convert_StringData(value, arena);
       break;
     }
     case UPB_TYPE_MESSAGE:

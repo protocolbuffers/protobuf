@@ -1787,7 +1787,7 @@ static void insert(upb_table *t, lookupkey_t key, upb_tabkey tabkey,
     /* Head of collider's chain. */
     upb_tabent *chain = getentry_mutable(t, hashfunc(mainpos_e->key));
     if (chain == mainpos_e) {
-      /* Existing ent is in its main posisiton (it has the same hash as us, and
+      /* Existing ent is in its main position (it has the same hash as us, and
        * is the head of our chain).  Insert to new ent and append to this chain. */
       new_e->next = mainpos_e->next;
       mainpos_e->next = new_e;
@@ -4191,17 +4191,18 @@ struct upb_filedef {
   const char *package;
   const char *phpprefix;
   const char *phpnamespace;
-  upb_syntax_t syntax;
 
   const upb_filedef **deps;
   const upb_msgdef *msgs;
   const upb_enumdef *enums;
   const upb_fielddef *exts;
+  const upb_symtab *symtab;
 
   int dep_count;
   int msg_count;
   int enum_count;
   int ext_count;
+  upb_syntax_t syntax;
 };
 
 struct upb_symtab {
@@ -4919,6 +4920,10 @@ const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i) {
 
 const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i) {
   return i < 0 || i >= f->enum_count ? NULL : &f->enums[i];
+}
+
+const upb_symtab *upb_filedef_symtab(const upb_filedef *f) {
+  return f->symtab;
 }
 
 void upb_symtab_free(upb_symtab *s) {
@@ -6191,6 +6196,7 @@ static const upb_filedef *_upb_symtab_addfile(
   file->msg_count = 0;
   file->enum_count = 0;
   file->ext_count = 0;
+  file->symtab = s;
 
   if (UPB_UNLIKELY(UPB_SETJMP(ctx.err))) {
     UPB_ASSERT(!upb_ok(status));
@@ -8699,7 +8705,7 @@ static void jsonenc_mapkey(jsonenc *e, upb_msgval val, const upb_fielddef *f) {
 static void jsonenc_array(jsonenc *e, const upb_array *arr,
                          const upb_fielddef *f) {
   size_t i;
-  size_t size = upb_array_size(arr);
+  size_t size = arr ? upb_array_size(arr) : 0;
   bool first = true;
 
   jsonenc_putstr(e, "[");
@@ -8721,10 +8727,12 @@ static void jsonenc_map(jsonenc *e, const upb_map *map, const upb_fielddef *f) {
 
   jsonenc_putstr(e, "{");
 
-  while (upb_mapiter_next(map, &iter)) {
-    jsonenc_putsep(e, ",", &first);
-    jsonenc_mapkey(e, upb_mapiter_key(map, iter), key_f);
-    jsonenc_scalar(e, upb_mapiter_value(map, iter), val_f);
+  if (map) {
+    while (upb_mapiter_next(map, &iter)) {
+      jsonenc_putsep(e, ",", &first);
+      jsonenc_mapkey(e, upb_mapiter_key(map, iter), key_f);
+      jsonenc_scalar(e, upb_mapiter_value(map, iter), val_f);
+    }
   }
 
   jsonenc_putstr(e, "}");
@@ -8764,7 +8772,9 @@ static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
     int n = upb_msgdef_fieldcount(m);
     for (i = 0; i < n; i++) {
       f = upb_msgdef_field(m, i);
-      jsonenc_fieldval(e, f, upb_msg_get(msg, f), &first);
+      if (!upb_fielddef_haspresence(f) || upb_msg_has(msg, f)) {
+        jsonenc_fieldval(e, f, upb_msg_get(msg, f), &first);
+      }
     }
   } else {
     /* Iterate over non-empty fields. */

@@ -218,6 +218,14 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
     self->value_type_class = argv[2];
     validate_type_class(self->value_type_info.type, self->value_type_class);
     init_value_arg = 3;
+
+    if (self->value_type_info.type == UPB_TYPE_MESSAGE) {
+      const Descriptor* desc = ruby_to_Descriptor(self->value_type_class);
+      self->value_type_info.def.msgdef = desc->msgdef;
+    } else {
+      const EnumDescriptor* desc = ruby_to_EnumDescriptor(self->value_type_class);
+      self->value_type_info.def.msgdef = desc->enumdef;
+    }
   }
 
   self->map = upb_map_new(Arena_get(self->arena), self->key_type,

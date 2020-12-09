@@ -125,12 +125,38 @@ void Arena_register() {
 }
 
 // -----------------------------------------------------------------------------
+// Object Cache
+// -----------------------------------------------------------------------------
+
+static upb_inttable obj_cache;
+
+void ObjectCache_Add(const void* key, VALUE val) {
+  upb_inttable_insertptr(&obj_cache, key, upb_value_uint64(val));
+}
+
+void ObjectCache_Remove(const void* key) {
+  bool ok = upb_inttable_removeptr(&obj_cache, key, NULL);
+  PBRUBY_ASSERT(ok);
+}
+
+// Returns the cached object for this key, if any. Otherwise returns Qnil.
+VALUE ObjectCache_Get(const void* key) {
+  upb_value val;
+  if (upb_inttable_lookupptr(&obj_cache, key, &val)) {
+    return (VALUE)upb_value_getuint64(val);
+  } else {
+    return Qnil;
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Initialization/entry point.
 // -----------------------------------------------------------------------------
 
 // This must be named "Init_protobuf_c" because the Ruby module is named
 // "protobuf_c" -- the VM looks for this symbol in our .so.
 void Init_protobuf_c() {
+  upb_inttable_init(&obj_cache, UPB_CTYPE_UINT64);
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
   VALUE internal = rb_define_module_under(protobuf, "Internal");

@@ -36,9 +36,9 @@
 #include "protobuf.h"
 #include "ruby-upb.h"
 
-upb_msg* Message_GetUpbMessage(VALUE value, const Descriptor* desc,
+upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
                                const char* name, upb_arena* arena);
 
-VALUE Message_GetRubyWrapper(upb_msg* msg, const Descriptor* m, VALUE arena);
+VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena);
 
 #endif  // RUBY_PROTOBUF_MESSAGE_H_

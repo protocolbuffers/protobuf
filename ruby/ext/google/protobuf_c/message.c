@@ -31,9 +31,10 @@
 #include "message.h"
 
 #include "convert.h"
+#include "defs.h"
 #include "map.h"
-#include "repeated_field.h"
 #include "protobuf.h"
+#include "repeated_field.h"
 #include "third_party/wyhash/wyhash.h"
 
 static VALUE initialize_rb_class_with_no_args(VALUE klass) {
@@ -49,6 +50,11 @@ void Message_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
+void Message_free(void* _self) {
+  Message* self = (Message *)_self;
+  ObjectCache_Remove(self->msg);
+}
+
 rb_data_type_t Message_type = {
   "Message",
   { Message_mark, NULL, NULL },
@@ -61,7 +67,8 @@ VALUE Message_alloc(VALUE klass) {
   VALUE ret;
 
   msg->descriptor = desc;
-  msg->arena = Arena_new();
+  msg->arena = Qnil;
+  msg->msg = NULL;
 
   ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
   rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
@@ -161,10 +168,10 @@ static bool match(const upb_msgdef* m, const char* name, const upb_fielddef** f,
 static int extract_method_call(VALUE method_name, Message* self,
                                const upb_fielddef** f, const upb_oneofdef** o) {
   const upb_msgdef* m = self->descriptor->msgdef;
-  char* name;
+  const char* name;
 
   Check_Type(method_name, T_SYMBOL);
-  name = RSTRING_PTR(method_name);
+  name = rb_id2name(SYM2ID(method_name));
 
   if (match(m, name, f, o, "", "")) return METHOD_GETTER;
   if (match(m, name, f, o, "", "=")) return METHOD_SETTER;
@@ -177,24 +184,29 @@ static int extract_method_call(VALUE method_name, Message* self,
   return METHOD_UNKNOWN;
 }
 
-upb_msg* Message_GetUpbMessage(VALUE value, const Descriptor* desc,
+upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
                                const char* name, upb_arena* arena) {
   Message* self;
 
   if (value == Qnil) return NULL;
 
-  if (CLASS_OF(value) != desc->klass) {
+  VALUE klass = CLASS_OF(value);
+  VALUE desc_rb = rb_ivar_get(klass, descriptor_instancevar_interned);
+  const upb_msgdef* val_m =
+      desc_rb == Qnil ? NULL : ruby_to_Descriptor(desc_rb)->msgdef;
+
+  if (val_m != m) {
     // Check for possible implicit conversions
     // TODO: hash conversion?
 
-    switch (upb_msgdef_wellknowntype(desc->msgdef)) {
+    switch (upb_msgdef_wellknowntype(m)) {
       case UPB_WELLKNOWN_TIMESTAMP: {
         // Time -> Google::Protobuf::Timestamp
-        upb_msg *msg = upb_msg_new(desc->msgdef, arena);
+        upb_msg *msg = upb_msg_new(m, arena);
         upb_msgval sec, nsec;
         struct timespec time;
-        const upb_fielddef *sec_f = upb_msgdef_itof(desc->msgdef, 1);
-        const upb_fielddef *nsec_f = upb_msgdef_itof(desc->msgdef, 2);
+        const upb_fielddef *sec_f = upb_msgdef_itof(m, 1);
+        const upb_fielddef *nsec_f = upb_msgdef_itof(m, 2);
 
         if (!rb_obj_is_kind_of(value, rb_cTime)) goto badtype;
 
@@ -207,10 +219,10 @@ upb_msg* Message_GetUpbMessage(VALUE value, const Descriptor* desc,
       }
       case UPB_WELLKNOWN_DURATION: {
         // Numeric -> Google::Protobuf::Duration
-        upb_msg *msg = upb_msg_new(desc->msgdef, arena);
+        upb_msg *msg = upb_msg_new(m, arena);
         upb_msgval sec, nsec;
-        const upb_fielddef *sec_f = upb_msgdef_itof(desc->msgdef, 1);
-        const upb_fielddef *nsec_f = upb_msgdef_itof(desc->msgdef, 2);
+        const upb_fielddef *sec_f = upb_msgdef_itof(m, 1);
+        const upb_fielddef *nsec_f = upb_msgdef_itof(m, 2);
 
         if (!rb_obj_is_kind_of(value, rb_cNumeric)) goto badtype;
 
@@ -233,6 +245,22 @@ upb_msg* Message_GetUpbMessage(VALUE value, const Descriptor* desc,
   upb_arena_fuse(arena, Arena_get(self->arena));
 
   return self->msg;
+}
+
+VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena) {
+  VALUE val = ObjectCache_Get(msg);
+
+  if (val == Qnil) {
+    VALUE klass = Descriptor_DefToClass(m);
+    val = Message_alloc(klass);
+    Message* self;
+    TypedData_Get_Struct(val, Message, &Message_type, self);
+    self->msg = msg;
+    self->arena = arena;
+    ObjectCache_Add(msg, val);
+  }
+
+  return val;
 }
 
 static VALUE Message_oneof_accessor(Message* self, const upb_oneofdef* o,
@@ -414,8 +442,8 @@ void Map_InitFromValue(upb_map* map, upb_fieldtype_t key_type,
 upb_msgval MessageValue_FromValue(VALUE val, TypeInfo info, upb_arena *arena) {
   if (info.type == UPB_TYPE_MESSAGE) {
     upb_msgval msgval;
-    upb_msg *msg = upb_msg_new(info.def.msgdef->msgdef, arena);
-    Message_InitFromValue(msg, info.def.msgdef->msgdef, val, arena);
+    upb_msg* msg = upb_msg_new(info.def.msgdef, arena);
+    Message_InitFromValue(msg, info.def.msgdef, val, arena);
     msgval.msg_val = msg;
     return msgval;
   } else {
@@ -520,9 +548,12 @@ void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
 VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   Message* self;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
-  upb_arena *arena = Arena_get(self->arena);
+  VALUE arena_rb = Arena_new();
+  upb_arena *arena = Arena_get(arena_rb);
 
+  self->arena = arena_rb;
   self->msg = upb_msg_new(self->descriptor->msgdef, arena);
+  ObjectCache_Add(self->msg, _self);
 
   if (argc == 0) {
     return Qnil;
@@ -782,7 +813,7 @@ static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
 
 static VALUE Scalar_CreateHash(upb_msgval msgval, TypeInfo type_info) {
   if (type_info.type == UPB_TYPE_MESSAGE) {
-    return Message_CreateHash(msgval.msg_val, type_info.def.msgdef->msgdef);
+    return Message_CreateHash(msgval.msg_val, type_info.def.msgdef);
   } else {
     return Convert_UpbToRuby(msgval, type_info, Qnil);
   }

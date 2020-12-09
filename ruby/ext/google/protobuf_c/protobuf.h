@@ -123,7 +123,7 @@ struct Descriptor {
 struct TypeInfo {
   upb_fieldtype_t type;
   union {
-    const Descriptor* msgdef;  // When type == UPB_TYPE_MESSAGE
+    const upb_msgdef* msgdef;  // When type == UPB_TYPE_MESSAGE
     const upb_enumdef* enumdef;    // When type == UPB_TYPE_ENUM
   } def;
 };
@@ -207,7 +207,21 @@ VALUE DescriptorPool_generated_pool(VALUE _self);
 
 extern VALUE generated_pool;
 
-TypeInfo TypeInfo_get(const upb_fielddef *f);
+static inline TypeInfo TypeInfo_get(const upb_fielddef *f) {
+  TypeInfo ret = {upb_fielddef_type(f)};
+  switch (ret.type) {
+    case UPB_TYPE_MESSAGE:
+      ret.def.msgdef = upb_fielddef_msgsubdef(f);
+      break;
+    case UPB_TYPE_ENUM:
+      ret.def.enumdef = upb_fielddef_enumsubdef(f);
+      break;
+    default:
+      break;
+  }
+  return ret;
+}
+
 static inline TypeInfo TypeInfo_from_type(upb_fieldtype_t type) {
   TypeInfo ret = {type};
   assert(type != UPB_TYPE_MESSAGE && type != UPB_TYPE_ENUM);
@@ -489,6 +503,22 @@ VALUE get_filedef_obj(VALUE descriptor_pool, const upb_filedef* def);
 VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def);
 
 // -----------------------------------------------------------------------------
+// Global object cache from upb array/map/message/symtab to wrapper object.
+// -----------------------------------------------------------------------------
+
+// This is a conceptually "weak" cache, in that it does not prevent "val" from
+// being collected.
+//
+// To prevent dangling references, the finalizer for "val" *must* call
+// ObjectCache_Remove(). Only objects with such a finalizer are suitable to be
+// stored in the cache.
+void ObjectCache_Add(const void* key, VALUE val);
+void ObjectCache_Remove(const void* key);
+
+// Returns the cached object for this key, if any. Otherwise returns Qnil.
+VALUE ObjectCache_Get(const void* key);
+
+// -----------------------------------------------------------------------------
 // Utilities.
 // -----------------------------------------------------------------------------
 
@@ -508,9 +538,9 @@ extern ID descriptor_instancevar_interned;
 extern VALUE c_only_cookie;
 
 #ifdef NDEBUG
-#define UPB_ASSERT(expr) do {} while (false && (expr))
+#define PBRUBY_ASSERT(expr) do {} while (false && (expr))
 #else
-#define UPB_ASSERT(expr) assert(expr)
+#define PBRUBY_ASSERT(expr) assert(expr)
 #endif
 
 #define UPB_UNUSED(var) (void)var
