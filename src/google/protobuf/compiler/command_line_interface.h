@@ -393,7 +393,7 @@ class PROTOC_EXPORT CommandLineInterface {
   ErrorFormat error_format_ = ERROR_FORMAT_GCC;
 
   // True if we should treat warnings as errors that fail the compilation.
-  bool fatal_warnings_;
+  bool fatal_warnings_ = false;
 
   std::vector<std::pair<std::string, std::string> >
       proto_path_;                        // Search path for proto files.

@@ -132,9 +132,6 @@ class CommandLineInterfaceTest : public testing::Test {
   // -----------------------------------------------------------------
   // Methods to check the test results (called after Run()).
 
-  // Checks that Run() returned code r.
-  void ExpectReturnCode(int r);
-
   // Checks that no text was written to stderr during Run(), and Run()
   // returned 0.
   void ExpectNoErrors();
@@ -158,6 +155,11 @@ class CommandLineInterfaceTest : public testing::Test {
   // Checks that Run() returned zero and the stdout contains the given
   // substring.
   void ExpectCapturedStdoutSubstringWithZeroReturnCode(
+      const std::string& expected_substring);
+
+  // Checks that Run() returned zero and the stderr contains the given
+  // substring.
+  void ExpectCapturedStderrSubstringWithZeroReturnCode(
       const std::string& expected_substring);
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -409,10 +411,6 @@ void CommandLineInterfaceTest::CreateTempDir(const std::string& name) {
 
 // -------------------------------------------------------------------
 
-void CommandLineInterfaceTest::ExpectReturnCode(int r) {
-  EXPECT_EQ(r, return_code_);
-}
-
 void CommandLineInterfaceTest::ExpectNoErrors() {
   EXPECT_EQ(0, return_code_);
   EXPECT_EQ("", error_text_);
@@ -433,8 +431,8 @@ void CommandLineInterfaceTest::ExpectErrorSubstring(
 
 void CommandLineInterfaceTest::ExpectWarningSubstring(
     const std::string& expected_substring) {
-  EXPECT_EQ(0, return_code_);
   EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
+  EXPECT_EQ(0, return_code_);
 }
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -520,6 +518,13 @@ void CommandLineInterfaceTest::ExpectCapturedStdoutSubstringWithZeroReturnCode(
   EXPECT_EQ(0, return_code_);
   EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring,
                       captured_stdout_);
+}
+
+void CommandLineInterfaceTest::ExpectCapturedStderrSubstringWithZeroReturnCode(
+    const std::string& expected_substring) {
+  EXPECT_EQ(0, return_code_);
+  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring,
+                      error_text_);
 }
 
 void CommandLineInterfaceTest::ExpectFileContent(const std::string& filename,
@@ -2310,13 +2315,14 @@ TEST_F(CommandLineInterfaceTest, MsvsFormatErrors) {
 }
 
 TEST_F(CommandLineInterfaceTest, InvalidErrorFormat) {
-  // Test --error_format=msvs
+  // Test invalid --error_format
 
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
                  "badsyntax\n");
 
-  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir foo.proto");
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir --error_format=invalid foo.proto");
 
   ExpectErrorText("Unknown error format: invalid\n");
 }
@@ -2332,14 +2338,13 @@ TEST_F(CommandLineInterfaceTest, Warnings) {
 
   Run("protocol_compiler --test_out=$tmpdir "
     "--proto_path=$tmpdir foo.proto");
-  ExpectReturnCode(0);
-  ExpectErrorSubstringWithZeroReturnCode(
-    "foo.proto: warning: Import bar.proto but not used.");
+  ExpectCapturedStderrSubstringWithZeroReturnCode(
+    "foo.proto:2:1: warning: Import bar.proto is unused.");
 
   Run("protocol_compiler --test_out=$tmpdir --fatal_warnings "
     "--proto_path=$tmpdir foo.proto");
   ExpectErrorSubstring(
-    "foo.proto: warning: Import bar.proto but not used.");
+    "foo.proto:2:1: warning: Import bar.proto is unused.");
 }
 
 // -------------------------------------------------------------------

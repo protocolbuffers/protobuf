@@ -2054,6 +2054,10 @@ Parse PROTO_FILES and generate output based on the options given:
   --error_format=FORMAT       Set the format in which to print errors.
                               FORMAT may be 'gcc' (the default) or 'msvs'
                               (Microsoft Visual Studio format).
+  --fatal_warnings            Make warnings be fatal (similar to -Werr in
+                              gcc). This flag will make protoc return
+                              with a non-zero exit code if any warnings
+                              are generated.
   --print_free_field_numbers  Print the free field numbers of the messages
                               defined in the given proto files. Groups share
                               the same field number space with the parent
