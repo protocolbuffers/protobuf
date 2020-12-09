@@ -497,7 +497,7 @@ static int lupb_msgdef_tostring(lua_State *L) {
 }
 
 static const struct luaL_Reg lupb_msgdef_mm[] = {
-  {"__call", lupb_msg_pushnew},
+  {"__call", lupb_msgdef_call},
   {"__index", lupb_msgdef_index},
   {"__len", lupb_msgdef_fieldcount},
   {"__tostring", lupb_msgdef_tostring},
