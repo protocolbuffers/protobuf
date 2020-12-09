@@ -695,6 +695,11 @@ function test_encode_skipunknown()
   assert_true(#upb.encode(empty_with_unknown, {upb.ENCODE_SKIPUNKNOWN}) == 0)
 end
 
+function test_json_emit_defaults()
+  local msg = test_messages_proto3.TestAllTypesProto3()
+  local json = upb.json_encode(msg, {upb.JSONENC_EMITDEFAULTS})
+end
+
 function test_gc()
   local top = test_messages_proto3.TestAllTypesProto3()
   local n = 100

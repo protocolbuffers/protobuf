@@ -594,7 +594,7 @@ static void jsonenc_mapkey(jsonenc *e, upb_msgval val, const upb_fielddef *f) {
 static void jsonenc_array(jsonenc *e, const upb_array *arr,
                          const upb_fielddef *f) {
   size_t i;
-  size_t size = upb_array_size(arr);
+  size_t size = arr ? upb_array_size(arr) : 0;
   bool first = true;
 
   jsonenc_putstr(e, "[");
@@ -616,10 +616,12 @@ static void jsonenc_map(jsonenc *e, const upb_map *map, const upb_fielddef *f) {
 
   jsonenc_putstr(e, "{");
 
-  while (upb_mapiter_next(map, &iter)) {
-    jsonenc_putsep(e, ",", &first);
-    jsonenc_mapkey(e, upb_mapiter_key(map, iter), key_f);
-    jsonenc_scalar(e, upb_mapiter_value(map, iter), val_f);
+  if (map) {
+    while (upb_mapiter_next(map, &iter)) {
+      jsonenc_putsep(e, ",", &first);
+      jsonenc_mapkey(e, upb_mapiter_key(map, iter), key_f);
+      jsonenc_scalar(e, upb_mapiter_value(map, iter), val_f);
+    }
   }
 
   jsonenc_putstr(e, "}");
@@ -659,7 +661,9 @@ static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
     int n = upb_msgdef_fieldcount(m);
     for (i = 0; i < n; i++) {
       f = upb_msgdef_field(m, i);
-      jsonenc_fieldval(e, f, upb_msg_get(msg, f), &first);
+      if (!upb_fielddef_haspresence(f) || upb_msg_has(msg, f)) {
+        jsonenc_fieldval(e, f, upb_msg_get(msg, f), &first);
+      }
     }
   } else {
     /* Iterate over non-empty fields. */
