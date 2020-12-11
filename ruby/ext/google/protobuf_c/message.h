@@ -40,5 +40,7 @@ upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
                                const char* name, upb_arena* arena);
 
 VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena);
+void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,
+                          const upb_msgdef* m);
 
 #endif  // RUBY_PROTOBUF_MESSAGE_H_

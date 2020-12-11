@@ -31,6 +31,7 @@
 #include "repeated_field.h"
 
 #include "convert.h"
+#include "defs.h"
 #include "protobuf.h"
 
 // -----------------------------------------------------------------------------
@@ -45,12 +46,61 @@ static void RepeatedField_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
+static void RepeatedField_free(void* _self) {
+  RepeatedField* self = (RepeatedField *)_self;
+  ObjectCache_Remove(self->array);
+}
+
 const rb_data_type_t RepeatedField_type = {
   "Google::Protobuf::RepeatedField",
-  { RepeatedField_mark, NULL, NULL },
+  { RepeatedField_mark, RepeatedField_free, NULL },
 };
 
 VALUE cRepeatedField;
+
+VALUE RepeatedField_alloc(VALUE klass) {
+  RepeatedField* self = ALLOC(RepeatedField);
+  self->arena = Qnil;
+  self->type_class = Qnil;
+  self->array = NULL;
+  return TypedData_Wrap_Struct(klass, &RepeatedField_type, self);
+}
+
+VALUE RepeatedField_GetRubyWrapper(upb_array* array, const upb_fielddef* f,
+                                   VALUE arena) {
+  VALUE val = ObjectCache_Get(array);
+
+  if (val == Qnil) {
+    val = RepeatedField_alloc(cRepeatedField);
+    RepeatedField* self;
+    ObjectCache_Add(array, val);
+    TypedData_Get_Struct(val, RepeatedField, &RepeatedField_type, self);
+    self->array = array;
+    self->arena = arena;
+    self->type_info = TypeInfo_get(f);
+    if (self->type_info.type == UPB_TYPE_MESSAGE) {
+      const upb_msgdef *m = upb_fielddef_msgsubdef(f);
+      self->type_class = Descriptor_DefToClass(m);
+    }
+  }
+
+  return val;
+}
+
+void RepeatedField_Inspect(StringBuilder* b, const upb_array* array,
+                           TypeInfo info) {
+  bool first = true;
+  StringBuilder_Printf(b, "[");
+  size_t n = array ? upb_array_size(array) : 0;
+  for (size_t i = 0; i < n; i++) {
+    if (first) {
+      first = false;
+    } else {
+      StringBuilder_Printf(b, ", ");
+    }
+    StringBuilder_PrintMsgval(b, upb_array_get(array, i), info);
+  }
+}
 
 static RepeatedField* ruby_to_RepeatedField(VALUE _self) {
   RepeatedField* self;
@@ -496,13 +546,6 @@ VALUE RepeatedField_concat(VALUE _self, VALUE list) {
   return _self;
 }
 
-VALUE RepeatedField_alloc(VALUE klass) {
-  RepeatedField* self = ALLOC(RepeatedField);
-  self->arena = Qnil;
-  self->array = NULL;
-  return TypedData_Wrap_Struct(klass, &RepeatedField_type, self);
-}
-
 /*
  * call-seq:
  *     RepeatedField.new(type, type_class = nil, initial_elems = [])
@@ -544,7 +587,7 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
       self->type_info.def.msgdef = desc->msgdef;
     } else {
       const EnumDescriptor* desc = ruby_to_EnumDescriptor(self->type_class);
-      self->type_info.def.msgdef = desc->enumdef;
+      self->type_info.def.enumdef = desc->enumdef;
     }
   } else {
     if (argc > 2) {

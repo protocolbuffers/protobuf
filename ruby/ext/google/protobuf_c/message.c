@@ -57,7 +57,7 @@ void Message_free(void* _self) {
 
 rb_data_type_t Message_type = {
   "Message",
-  { Message_mark, NULL, NULL },
+  { Message_mark, Message_free, NULL },
 };
 
 VALUE Message_alloc(VALUE klass) {
@@ -74,6 +74,58 @@ VALUE Message_alloc(VALUE klass) {
   rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
 
   return ret;
+}
+
+VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena) {
+  VALUE val = ObjectCache_Get(msg);
+
+  if (val == Qnil) {
+    VALUE klass = Descriptor_DefToClass(m);
+    val = Message_alloc(klass);
+    Message* self;
+    TypedData_Get_Struct(val, Message, &Message_type, self);
+    self->msg = msg;
+    self->arena = arena;
+    ObjectCache_Add(msg, val);
+  }
+
+  return val;
+}
+
+void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,
+                          const upb_msgdef* m) {
+  bool first = true;
+  int n = upb_msgdef_fieldcount(m);
+
+  StringBuilder_Printf(b, "<%s: ", upb_msgdef_fullname(m));
+
+  for (int i = 0; i < n; i++) {
+    const upb_fielddef* field = upb_msgdef_field(m, i);
+
+    if (upb_fielddef_haspresence(field) && !upb_msg_has(msg, field)) {
+      continue;
+    }
+
+    if (!first) {
+      StringBuilder_Printf(b, ", ");
+    } else {
+      first = false;
+    }
+
+    upb_msgval msgval = upb_msg_get(msg, field);
+
+    StringBuilder_Printf(b, "%s: ", upb_fielddef_name(field));
+
+    if (upb_fielddef_ismap(field)) {
+      Map_Inspect(b, msgval.map_val, field);
+    } else if (upb_fielddef_isseq(field)) {
+      RepeatedField_Inspect(b, msgval.array_val, TypeInfo_get(field));
+    } else {
+      StringBuilder_PrintMsgval(b, msgval, TypeInfo_get(field));
+    }
+  }
+
+  StringBuilder_Printf(b, ">");
 }
 
 enum {
@@ -247,22 +299,6 @@ upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
   return self->msg;
 }
 
-VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena) {
-  VALUE val = ObjectCache_Get(msg);
-
-  if (val == Qnil) {
-    VALUE klass = Descriptor_DefToClass(m);
-    val = Message_alloc(klass);
-    Message* self;
-    TypedData_Get_Struct(val, Message, &Message_type, self);
-    self->msg = msg;
-    self->arena = arena;
-    ObjectCache_Add(msg, val);
-  }
-
-  return val;
-}
-
 static VALUE Message_oneof_accessor(Message* self, const upb_oneofdef* o,
                                     int accessor_type) {
   const upb_fielddef* oneof_field = upb_msg_whichoneof(self->msg, o);
@@ -300,6 +336,9 @@ static VALUE Message_field_accessor(Message* self, const upb_fielddef* f,
       upb_msg_clearfield(self->msg, f);
       return Qnil;
     case METHOD_PRESENCE:
+      if (!upb_fielddef_haspresence(f)) {
+        rb_raise(rb_eRuntimeError, "Field does not have presence.");
+      }
       return upb_msg_has(self->msg, f);
     case METHOD_WRAPPER_GETTER: {
       upb_msgval msgval = upb_msg_get(self->msg, f);
@@ -337,8 +376,20 @@ static VALUE Message_field_accessor(Message* self, const upb_fielddef* f,
       }
     }
     case METHOD_GETTER:
-      return Convert_UpbToRuby(upb_msg_get(self->msg, f), TypeInfo_get(f),
-                               self->arena);
+      if (upb_fielddef_ismap(f)) {
+        upb_map *map = upb_msg_mutable(self->msg, f, arena).map;
+        return Map_GetRubyWrapper(map, f, self->arena);
+      } else if (upb_fielddef_isseq(f)) {
+        upb_array *array = upb_msg_mutable(self->msg, f, arena).array;
+        return RepeatedField_GetRubyWrapper(array, f, self->arena);
+      } else if (upb_fielddef_issubmsg(f)) {
+        upb_msg *msg = upb_msg_mutable(self->msg, f, arena).msg;
+        const upb_msgdef *m = upb_fielddef_msgsubdef(f);
+        return Message_GetRubyWrapper(msg, m, self->arena);
+      } else {
+        upb_msgval msgval = upb_msg_get(self->msg, f);
+        return Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
+      }
     default:
       rb_raise(rb_eRuntimeError, "Internal error, no such accessor: %d",
                accessor_type);
@@ -696,38 +747,13 @@ VALUE Message_hash(VALUE _self) {
  */
 VALUE Message_inspect(VALUE _self) {
   Message* self;
-  VALUE str = rb_str_new2("");
-  bool first = true;
   TypedData_Get_Struct(_self, Message, &Message_type, self);
-  const upb_msgdef *m = self->descriptor->msgdef;
-  int n = upb_msgdef_fieldcount(m);
 
-  str = rb_str_new2("<");
-  str = rb_str_append(str, rb_str_new2(rb_class2name(CLASS_OF(_self))));
-  str = rb_str_cat2(str, ": ");
-
-  for (int i = 0; i < n; i++) {
-    const upb_fielddef* field = upb_msgdef_field(m, i);
-    // OPT: this would be more efficient if we didn't create Ruby objects for
-    // the whole tree. But to maintain backward-compatibility, we would need to
-    // make sure we are printing all values in the same way that #inspect
-    // would.
-    VALUE field_val = Convert_UpbToRuby(upb_msg_get(self->msg, field),
-                                        TypeInfo_get(field), self->arena);
-
-    if (!first) {
-      str = rb_str_cat2(str, ", ");
-    } else {
-      first = false;
-    }
-    str = rb_str_cat2(str, upb_fielddef_name(field));
-    str = rb_str_cat2(str, ": ");
-
-    str = rb_str_append(str, rb_funcall(field_val, rb_intern("inspect"), 0));
-  }
-
-  str = rb_str_cat2(str, ">");
-  return str;
+  StringBuilder* builder = StringBuilder_New();
+  Message_PrintMessage(builder, self->msg, self->descriptor->msgdef);
+  VALUE ret = StringBuilder_ToRubyString(builder);
+  StringBuilder_Free(builder);
+  return ret;
 }
 
 static VALUE Scalar_CreateHash(upb_msgval val, TypeInfo type_info);

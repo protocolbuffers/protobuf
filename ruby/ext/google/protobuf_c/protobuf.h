@@ -519,6 +519,20 @@ void ObjectCache_Remove(const void* key);
 VALUE ObjectCache_Get(const void* key);
 
 // -----------------------------------------------------------------------------
+// StringBuilder, for inspect
+// -----------------------------------------------------------------------------
+
+struct StringBuilder;
+typedef struct StringBuilder StringBuilder;
+
+StringBuilder* StringBuilder_New();
+void StringBuilder_Free(StringBuilder* b);
+void StringBuilder_Printf(StringBuilder* b, const char *fmt, ...);
+VALUE StringBuilder_ToRubyString(StringBuilder* b);
+
+void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val, TypeInfo info);
+
+// -----------------------------------------------------------------------------
 // Utilities.
 // -----------------------------------------------------------------------------
 

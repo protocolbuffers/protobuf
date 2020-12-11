@@ -31,7 +31,13 @@
 #ifndef RUBY_PROTOBUF_MAP_H_
 #define RUBY_PROTOBUF_MAP_H_
 
+#include "protobuf.h"
+#include "ruby-upb.h"
+
 void Map_register(VALUE module);
 VALUE Map_deep_copy(VALUE obj);
+
+VALUE Map_GetRubyWrapper(upb_map *map, const upb_fielddef *f, VALUE arena);
+void Map_Inspect(StringBuilder* b, const upb_map *map, const upb_fielddef *f);
 
 #endif  // RUBY_PROTOBUF_MAP_H_

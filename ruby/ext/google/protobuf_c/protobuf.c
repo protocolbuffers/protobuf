@@ -29,7 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "protobuf.h"
+
 #include "map.h"
+#include "message.h"
 
 VALUE cError;
 VALUE cParseError;
@@ -62,6 +64,16 @@ VALUE get_frozen_string(const char* str, size_t size, bool binary) {
   }
 }
 
+const upb_fielddef* map_field_key(const upb_fielddef* field) {
+  const upb_msgdef *entry = upb_fielddef_msgsubdef(field);
+  return upb_msgdef_itof(entry, 1);
+}
+
+const upb_fielddef* map_field_value(const upb_fielddef* field) {
+  const upb_msgdef *entry = upb_fielddef_msgsubdef(field);
+  return upb_msgdef_itof(entry, 2);
+}
+
 // -----------------------------------------------------------------------------
 // Utilities.
 // -----------------------------------------------------------------------------
@@ -87,6 +99,107 @@ rb_encoding* kRubyString8bitEncoding;
 // runtime in order to avoid the cost of repeatedly interning in hot paths.
 const char* kDescriptorInstanceVar = "descriptor";
 ID descriptor_instancevar_interned;
+
+// -----------------------------------------------------------------------------
+// StringBuilder, for inspect
+// -----------------------------------------------------------------------------
+
+struct StringBuilder {
+  size_t size;
+  size_t cap;
+  char data[];
+};
+
+typedef struct StringBuilder StringBuilder;
+
+static size_t StringBuilder_SizeOf(size_t cap) {
+  return sizeof(StringBuilder) + cap;
+}
+
+StringBuilder* StringBuilder_New() {
+  const size_t cap = 128;
+  StringBuilder* builder = malloc(StringBuilder_SizeOf(cap));
+  builder->size = 0;
+  builder->cap = cap;
+  return builder;
+}
+
+void StringBuilder_Free(StringBuilder* b) { free(b); }
+
+void StringBuilder_Printf(StringBuilder* b, const char *fmt, ...) {
+  size_t have = b->cap - b->size;
+  size_t n;
+  va_list args;
+
+  va_start(args, fmt);
+  n = vsnprintf(&b->data[b->size], have, fmt, args);
+  va_end(args);
+
+  if (have <= n) {
+    while (have <= n) {
+      b->cap *= 2;
+      have = b->cap - b->size;
+    }
+    b = realloc(b, StringBuilder_SizeOf(b->cap));
+    va_start(args, fmt);
+    n = vsnprintf(&b->data[b->size], have, fmt, args);
+    va_end(args);
+    PBRUBY_ASSERT(n < have);
+  }
+}
+
+VALUE StringBuilder_ToRubyString(StringBuilder* b) {
+  return rb_str_new(b->data, b->size);
+}
+
+static void StringBuilder_PrintEnum(StringBuilder* b, int32_t val,
+                                    const upb_enumdef* e) {
+  const char *name = upb_enumdef_iton(e, val);
+  if (name) {
+    StringBuilder_Printf(b, "%s", name);
+  } else {
+    StringBuilder_Printf(b, "%" PRId32, val);
+  }
+}
+
+void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val,
+                               TypeInfo info) {
+  switch (info.type) {
+    case UPB_TYPE_BOOL:
+      StringBuilder_Printf(b, "%s", val.bool_val ? "true" : "false");
+      break;
+    case UPB_TYPE_FLOAT:
+      StringBuilder_Printf(b, "%f", val.float_val);
+      break;
+    case UPB_TYPE_DOUBLE:
+      StringBuilder_Printf(b, "%f", val.double_val);
+      break;
+    case UPB_TYPE_INT32:
+      StringBuilder_Printf(b, "%" PRId32, val.int32_val);
+      break;
+    case UPB_TYPE_UINT32:
+      StringBuilder_Printf(b, "%" PRIu32, val.uint32_val);
+      break;
+    case UPB_TYPE_INT64:
+      StringBuilder_Printf(b, "%" PRId64, val.int64_val);
+      break;
+    case UPB_TYPE_UINT64:
+      StringBuilder_Printf(b, "%" PRIu64, val.uint64_val);
+      break;
+    case UPB_TYPE_STRING:
+      StringBuilder_Printf(b, "%s", val.str_val);
+      break;
+    case UPB_TYPE_BYTES:
+      StringBuilder_Printf(b, "%s", val.str_val, true);
+      break;
+    case UPB_TYPE_ENUM:
+      StringBuilder_PrintEnum(b, val.int32_val, info.def.enumdef);
+      break;
+    case UPB_TYPE_MESSAGE:
+      Message_PrintMessage(b, val.msg_val, info.def.msgdef);
+      break;
+  }
+}
 
 // -----------------------------------------------------------------------------
 // Arena

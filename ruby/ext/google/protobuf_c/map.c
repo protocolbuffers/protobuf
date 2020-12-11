@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "convert.h"
+#include "defs.h"
 #include "protobuf.h"
 
 // -----------------------------------------------------------------------------
@@ -51,12 +52,48 @@ static void Map_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
+static void Map_free(void* _self) {
+  Map* self = (Map *)_self;
+  ObjectCache_Remove(self->map);
+}
+
 const rb_data_type_t Map_type = {
   "Google::Protobuf::Map",
-  { Map_mark, NULL, NULL },
+  { Map_mark, Map_free, NULL },
 };
 
 VALUE cMap;
+
+static VALUE Map_alloc(VALUE klass) {
+  Map* self = ALLOC(Map);
+  self->map = NULL;
+  self->value_type_class = Qnil;
+  self->arena = Qnil;
+  return TypedData_Wrap_Struct(klass, &Map_type, self);
+}
+
+VALUE Map_GetRubyWrapper(upb_map* map, const upb_fielddef* f, VALUE arena) {
+  VALUE val = ObjectCache_Get(map);
+
+  if (val == Qnil) {
+    val = Map_alloc(cMap);
+    Map* self;
+    ObjectCache_Add(map, val);
+    TypedData_Get_Struct(val, Map, &Map_type, self);
+    const upb_fielddef *key_f = map_field_key(f);
+    const upb_fielddef *val_f = map_field_value(f);
+    self->map = map;
+    self->arena = arena;
+    self->key_type = upb_fielddef_type(key_f);
+    self->value_type_info = TypeInfo_get(val_f);
+    if (self->value_type_info.type == UPB_TYPE_MESSAGE) {
+      const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
+      self->value_type_class = Descriptor_DefToClass(val_m);
+    }
+  }
+
+  return val;
+}
 
 static TypeInfo Map_keyinfo(Map* self) {
   TypeInfo ret;
@@ -94,14 +131,6 @@ upb_map* Map_from_value(VALUE val, const upb_fielddef *field) {
   }
 
   return self->map;
-}
-
-static VALUE Map_alloc(VALUE klass) {
-  Map* self = ALLOC(Map);
-  self->map = NULL;
-  self->value_type_class = Qnil;
-  self->arena = Qnil;
-  return TypedData_Wrap_Struct(klass, &Map_type, self);
 }
 
 static bool needs_typeclass(upb_fieldtype_t type) {
@@ -224,7 +253,7 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
       self->value_type_info.def.msgdef = desc->msgdef;
     } else {
       const EnumDescriptor* desc = ruby_to_EnumDescriptor(self->value_type_class);
-      self->value_type_info.def.msgdef = desc->enumdef;
+      self->value_type_info.def.enumdef = desc->enumdef;
     }
   }
 
@@ -330,9 +359,9 @@ static VALUE Map_index(VALUE _self, VALUE key) {
  */
 static VALUE Map_index_set(VALUE _self, VALUE key, VALUE val) {
   Map* self = ruby_to_Map(_self);
-  upb_msgval key_upb = Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
-  upb_msgval val_upb = Convert_RubyToUpb(val, "", self->value_type_info, NULL);
   upb_arena *arena = Arena_get(self->arena);
+  upb_msgval key_upb = Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
+  upb_msgval val_upb = Convert_RubyToUpb(val, "", self->value_type_info, arena);
 
   upb_map_set(self->map, key_upb, val_upb, arena);
 
