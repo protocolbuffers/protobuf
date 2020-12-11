@@ -97,7 +97,7 @@ class Option extends \Google\Protobuf\Internal\Message
      * value using the google.protobuf.Int32Value type.
      *
      * Generated from protobuf field <code>.google.protobuf.Any value = 2;</code>
-     * @return \Google\Protobuf\Any
+     * @return \Google\Protobuf\Any|null
      */
     public function getValue()
     {

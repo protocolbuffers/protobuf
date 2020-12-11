@@ -95,7 +95,6 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options);
 std::string UnderscoresToCamelCase(const std::string& name,
                                    bool cap_first_letter);
-std::string BinaryToHex(const std::string& binary);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
 void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
@@ -598,27 +597,6 @@ std::string UnderscoresToCamelCase(const std::string& name,
     result += '_';
   }
   return result;
-}
-
-std::string BinaryToHex(const std::string& binary) {
-  std::string dest;
-  size_t i;
-  unsigned char symbol[16] = {
-    '0', '1', '2', '3',
-    '4', '5', '6', '7',
-    '8', '9', 'a', 'b',
-    'c', 'd', 'e', 'f',
-  };
-
-  dest.resize(binary.size() * 2);
-  char* append_ptr = &dest[0];
-
-  for (i = 0; i < binary.size(); i++) {
-    *append_ptr++ = symbol[(binary[i] & 0xf0) >> 4];
-    *append_ptr++ = symbol[binary[i] & 0x0f];
-  }
-
-  return dest;
 }
 
 void Indent(io::Printer* printer) {
@@ -1757,8 +1735,11 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
       "php_type", PhpSetterTypeName(field, options));
     printer->Print(" * @return $this\n");
   } else if (function_type == kFieldGetter) {
-    printer->Print(" * @return ^php_type^\n",
-      "php_type", PhpGetterTypeName(field, options));
+    bool can_return_null = field->has_presence() &&
+                           field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
+    printer->Print(" * @return ^php_type^^maybe_null^\n",
+      "php_type", PhpGetterTypeName(field, options),
+      "maybe_null", can_return_null ? "|null" : "");
   }
   printer->Print(" */\n");
 }
@@ -1858,7 +1839,7 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
       "  const char *name;\n"
       "  zend_long value;\n"
-      "  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, \"l\", &value) ==\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"l\", &value) ==\n"
       "      FAILURE) {\n"
       "    return;\n"
       "  }\n"
@@ -1880,7 +1861,7 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "  char *name = NULL;\n"
       "  size_t name_len;\n"
       "  int32_t num;\n"
-      "  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, \"s\", &name,\n"
+      "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"s\", &name,\n"
       "                            &name_len) == FAILURE) {\n"
       "    return;\n"
       "  }\n"
@@ -1895,8 +1876,8 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "}\n"
       "\n"
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, name, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
-      "  PHP_ME($c_name$, value, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, name, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, value, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
       "  ZEND_FE_END\n"
       "};\n"
       "\n"
@@ -1990,16 +1971,37 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "camel_name", UnderscoresToCamelCase(oneof->name(), true));
   }
 
+  switch (message->well_known_type()) {
+    case Descriptor::WELLKNOWNTYPE_ANY:
+      printer->Print(
+          "ZEND_BEGIN_ARG_INFO_EX(arginfo_is, 0, 0, 1)\n"
+          "  ZEND_ARG_INFO(0, proto)\n"
+          "ZEND_END_ARG_INFO()\n"
+          "\n"
+      );
+      break;
+    case Descriptor::WELLKNOWNTYPE_TIMESTAMP:
+      printer->Print(
+          "ZEND_BEGIN_ARG_INFO_EX(arginfo_timestamp_fromdatetime, 0, 0, 1)\n"
+          "  ZEND_ARG_INFO(0, datetime)\n"
+          "ZEND_END_ARG_INFO()\n"
+          "\n"
+      );
+      break;
+    default:
+      break;
+  }
+
   printer->Print(
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, __construct, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, __construct, arginfo_void, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name);
 
   for (int i = 0; i < message->field_count(); i++) {
     auto field = message->field(i);
     printer->Print(
-      "  PHP_ME($c_name$, get$camel_name$, NULL, ZEND_ACC_PUBLIC)\n"
-      "  PHP_ME($c_name$, set$camel_name$, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, get$camel_name$, arginfo_void, ZEND_ACC_PUBLIC)\n"
+      "  PHP_ME($c_name$, set$camel_name$, arginfo_setter, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name,
       "camel_name", UnderscoresToCamelCase(field->name(), true));
   }
@@ -2007,7 +2009,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
   for (int i = 0; i < message->real_oneof_decl_count(); i++) {
     auto oneof = message->oneof_decl(i);
     printer->Print(
-      "  PHP_ME($c_name$, get$camel_name$, NULL, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, get$camel_name$, arginfo_void, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name,
       "camel_name", UnderscoresToCamelCase(oneof->name(), true));
   }
@@ -2016,15 +2018,15 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
   switch (message->well_known_type()) {
     case Descriptor::WELLKNOWNTYPE_ANY:
       printer->Print(
-        "  PHP_ME($c_name$, is, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, pack, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, unpack, NULL, ZEND_ACC_PUBLIC)\n",
+        "  PHP_ME($c_name$, is, arginfo_is, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, pack, arginfo_setter, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, unpack, arginfo_void, ZEND_ACC_PUBLIC)\n",
         "c_name", c_name);
       break;
     case Descriptor::WELLKNOWNTYPE_TIMESTAMP:
       printer->Print(
-        "  PHP_ME($c_name$, fromDateTime, NULL, ZEND_ACC_PUBLIC)\n"
-        "  PHP_ME($c_name$, toDateTime, NULL, ZEND_ACC_PUBLIC)\n",
+        "  PHP_ME($c_name$, fromDateTime, arginfo_timestamp_fromdatetime, ZEND_ACC_PUBLIC)\n"
+        "  PHP_ME($c_name$, toDateTime, arginfo_void, ZEND_ACC_PUBLIC)\n",
         "c_name", c_name);
       break;
     default:
@@ -2154,7 +2156,7 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
         "}\n"
         "\n"
         "static zend_function_entry $metadata_c_name$_methods[] = {\n"
-        "  PHP_ME($metadata_c_name$, initOnce, NULL, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+        "  PHP_ME($metadata_c_name$, initOnce, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
         "  ZEND_FE_END\n"
         "};\n"
         "\n"
