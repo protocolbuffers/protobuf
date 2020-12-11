@@ -187,10 +187,7 @@ cc_library(
         "upb/json_encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = [
-        "//tests:__pkg__",
-        "//upb/bindings/lua:__pkg__",
-    ],
+    visibility = ["//visibility:public"],
     deps = [
         ":port",
         ":reflection",
