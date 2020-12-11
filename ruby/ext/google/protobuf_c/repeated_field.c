@@ -570,6 +570,7 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
   }
 
   self->type_info.type = ruby_to_fieldtype(argv[0]);
+  self->type_info.def.msgdef = NULL;
   self->array = upb_array_new(arena, self->type_info.type);
 
   if (self->type_info.type == UPB_TYPE_MESSAGE ||

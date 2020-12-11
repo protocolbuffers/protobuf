@@ -108,7 +108,7 @@ static Map* ruby_to_Map(VALUE _self) {
   return self;
 }
 
-upb_map* Map_from_value(VALUE val, const upb_fielddef *field) {
+upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field) {
   const upb_fielddef* key_field = map_field_key(field);
   const upb_fielddef* value_field = map_field_value(field);
   TypeInfo value_type_info = TypeInfo_get(value_field);

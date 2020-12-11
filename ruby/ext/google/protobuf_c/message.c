@@ -321,17 +321,33 @@ static VALUE Message_oneof_accessor(Message* self, const upb_oneofdef* o,
   rb_raise(rb_eRuntimeError, "Invalid access of oneof field.");
 }
 
+static void Message_setfield(upb_msg* msg, const upb_fielddef* f, VALUE val,
+                             upb_arena* arena) {
+  if (val == Qnil) {
+    upb_msg_clearfield(msg, f);
+    return;
+  }
+
+  upb_msgval msgval;
+  if (upb_fielddef_ismap(f)) {
+    msgval.map_val = Map_GetUpbMap(val, f);
+  } else if (upb_fielddef_isseq(f)) {
+    msgval.array_val = RepeatedField_GetUpbArray(val, f);
+  } else {
+    msgval =
+        Convert_RubyToUpb(val, upb_fielddef_name(f), TypeInfo_get(f), arena);
+  }
+  upb_msg_set(msg, f, msgval, arena);
+}
+
 static VALUE Message_field_accessor(Message* self, const upb_fielddef* f,
                                     int accessor_type, int argc, VALUE* argv) {
   upb_arena *arena = Arena_get(self->arena);
 
   switch (accessor_type) {
-    case METHOD_SETTER: {
-      upb_msgval msgval = Convert_RubyToUpb(argv[1], upb_fielddef_name(f),
-                                            TypeInfo_get(f), arena);
-      upb_msg_set(self->msg, f, msgval, arena);
+    case METHOD_SETTER:
+      Message_setfield(self->msg, f, argv[1], arena);
       return Qnil;
-    }
     case METHOD_CLEAR:
       upb_msg_clearfield(self->msg, f);
       return Qnil;
@@ -569,8 +585,7 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Unknown field name '%s' in initialization map entry.", name);
   }
 
-  Message_InitFromValue(msg_init->msg, upb_fielddef_msgsubdef(f), val,
-                        msg_init->arena);
+  Message_setfield(msg_init->msg, f, val, msg_init->arena);
   return ST_CONTINUE;
 }
 
@@ -578,7 +593,8 @@ void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
                            upb_arena* arena) {
   MsgInit msg_init = {msg, m, arena};
   if (TYPE(val) != T_HASH) {
-    rb_raise(rb_eArgError, "Expected hash arguments.");
+    rb_raise(rb_eArgError, "Expected hash arguments, not %s",
+             rb_class2name(CLASS_OF(val)));
   }
 
   rb_hash_foreach(val, Message_initialize_kwarg, (VALUE)&msg_init);

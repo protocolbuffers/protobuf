@@ -208,7 +208,7 @@ VALUE DescriptorPool_generated_pool(VALUE _self);
 extern VALUE generated_pool;
 
 static inline TypeInfo TypeInfo_get(const upb_fielddef *f) {
-  TypeInfo ret = {upb_fielddef_type(f)};
+  TypeInfo ret = {upb_fielddef_type(f), {NULL}};
   switch (ret.type) {
     case UPB_TYPE_MESSAGE:
       ret.def.msgdef = upb_fielddef_msgsubdef(f);
