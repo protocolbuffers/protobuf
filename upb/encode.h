@@ -27,6 +27,8 @@ enum {
   UPB_ENCODE_SKIPUNKNOWN = 2,
 };
 
+#define UPB_ENCODE_MAXDEPTH(depth) ((depth) << 16)
+
 char *upb_encode_ex(const void *msg, const upb_msglayout *l, int options,
                     upb_arena *arena, size_t *size);
 
