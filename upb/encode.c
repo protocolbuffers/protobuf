@@ -33,6 +33,7 @@ typedef struct {
   upb_alloc *alloc;
   char *buf, *ptr, *limit;
   int options;
+  int depth;
   _upb_mapsorter sorter;
 } upb_encstate;
 
@@ -217,9 +218,11 @@ static void encode_scalar(upb_encstate *e, const void *_field_mem,
       if (submsg == NULL) {
         return;
       }
+      if (--e->depth == 0) encode_err(e);
       encode_tag(e, f->number, UPB_WIRE_TYPE_END_GROUP);
       encode_message(e, submsg, subm, &size);
       wire_type = UPB_WIRE_TYPE_START_GROUP;
+      e->depth++;
       break;
     }
     case UPB_DESCRIPTOR_TYPE_MESSAGE: {
@@ -229,9 +232,11 @@ static void encode_scalar(upb_encstate *e, const void *_field_mem,
       if (submsg == NULL) {
         return;
       }
+      if (--e->depth == 0) encode_err(e);
       encode_message(e, submsg, subm, &size);
       encode_varint(e, size);
       wire_type = UPB_WIRE_TYPE_DELIMITED;
+      e->depth++;
       break;
     }
     default:
@@ -312,6 +317,7 @@ static void encode_array(upb_encstate *e, const char *field_mem,
       const void *const*start = _upb_array_constptr(arr);
       const void *const*ptr = start + arr->len;
       const upb_msglayout *subm = m->submsgs[f->submsg_index];
+      if (--e->depth == 0) encode_err(e);
       do {
         size_t size;
         ptr--;
@@ -319,12 +325,14 @@ static void encode_array(upb_encstate *e, const char *field_mem,
         encode_message(e, *ptr, subm, &size);
         encode_tag(e, f->number, UPB_WIRE_TYPE_START_GROUP);
       } while (ptr != start);
+      e->depth++;
       return;
     }
     case UPB_DESCRIPTOR_TYPE_MESSAGE: {
       const void *const*start = _upb_array_constptr(arr);
       const void *const*ptr = start + arr->len;
       const upb_msglayout *subm = m->submsgs[f->submsg_index];
+      if (--e->depth == 0) encode_err(e);
       do {
         size_t size;
         ptr--;
@@ -332,6 +340,7 @@ static void encode_array(upb_encstate *e, const char *field_mem,
         encode_varint(e, size);
         encode_tag(e, f->number, UPB_WIRE_TYPE_DELIMITED);
       } while (ptr != start);
+      e->depth++;
       return;
     }
   }
@@ -437,10 +446,13 @@ static void encode_message(upb_encstate *e, const char *msg,
 char *upb_encode_ex(const void *msg, const upb_msglayout *m, int options,
                     upb_arena *arena, size_t *size) {
   upb_encstate e;
+  unsigned depth = (unsigned)options >> 16;
+
   e.alloc = upb_arena_alloc(arena);
   e.buf = NULL;
   e.limit = NULL;
   e.ptr = NULL;
+  e.depth = depth ? depth : 64;
   e.options = options;
   _upb_mapsorter_init(&e.sorter);
   char *ret = NULL;

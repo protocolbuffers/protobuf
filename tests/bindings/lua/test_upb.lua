@@ -700,6 +700,12 @@ function test_json_emit_defaults()
   local json = upb.json_encode(msg, {upb.JSONENC_EMITDEFAULTS})
 end
 
+function test_encode_depth_limit()
+  local msg = test_messages_proto3.TestAllTypesProto3()
+  msg.recursive_message = msg
+  assert_error(function() upb.encode(msg) end)
+end
+
 function test_gc()
   local top = test_messages_proto3.TestAllTypesProto3()
   local n = 100
