@@ -170,7 +170,7 @@ upb_msgval Convert_RubyToUpb(VALUE value, const char* name, TypeInfo type_info,
         ret.int32_val = NUM2INT(value);
         break;
       case UPB_TYPE_INT64:
-        ret.int64_val = NUM2INT(value);
+        ret.int64_val = NUM2LL(value);
         break;
       case UPB_TYPE_UINT32:
         ret.uint32_val = NUM2UINT(value);

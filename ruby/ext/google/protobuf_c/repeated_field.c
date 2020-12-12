@@ -100,12 +100,18 @@ void RepeatedField_Inspect(StringBuilder* b, const upb_array* array,
     }
     StringBuilder_PrintMsgval(b, upb_array_get(array, i), info);
   }
+  StringBuilder_Printf(b, "]");
 }
 
 static RepeatedField* ruby_to_RepeatedField(VALUE _self) {
   RepeatedField* self;
   TypedData_Get_Struct(_self, RepeatedField, &RepeatedField_type, self);
   return self;
+}
+
+VALUE RepeatedField_deep_copy(VALUE obj) {
+  rb_raise(rb_eRuntimeError, "RepeatedField_deep_copy NYI");
+  return Qnil;
 }
 
 upb_array* RepeatedField_GetUpbArray(VALUE val, const upb_fielddef *field) {
@@ -583,11 +589,12 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
       ary = argv[2];
     }
     validate_type_class(self->type_info.type, self->type_class);
+    VALUE descriptor = rb_ivar_get(self->type_class, descriptor_instancevar_interned);
     if (self->type_info.type == UPB_TYPE_MESSAGE) {
-      const Descriptor* desc = ruby_to_Descriptor(self->type_class);
+      const Descriptor* desc = ruby_to_Descriptor(descriptor);
       self->type_info.def.msgdef = desc->msgdef;
     } else {
-      const EnumDescriptor* desc = ruby_to_EnumDescriptor(self->type_class);
+      const EnumDescriptor* desc = ruby_to_EnumDescriptor(descriptor);
       self->type_info.def.enumdef = desc->enumdef;
     }
   } else {

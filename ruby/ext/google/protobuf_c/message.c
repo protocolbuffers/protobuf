@@ -357,22 +357,25 @@ static VALUE Message_field_accessor(Message* self, const upb_fielddef* f,
       }
       return upb_msg_has(self->msg, f);
     case METHOD_WRAPPER_GETTER: {
-      upb_msgval msgval = upb_msg_get(self->msg, f);
-      VALUE value = Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
-      switch (TYPE(value)) {
-        case T_DATA:
-          return rb_funcall(value, rb_intern("value"), 0);
-        case T_NIL:
-          return Qnil;
-        default:
-          return value;
+      PBRUBY_ASSERT(upb_fielddef_haspresence(f));
+      if (upb_msg_has(self->msg, f)) {
+        upb_msgval msgval = upb_msg_get(self->msg, f);
+        VALUE value = Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
+        return rb_funcall(value, rb_intern("value"), 0);
+      } else {
+        return Qnil;
       }
     }
     case METHOD_WRAPPER_SETTER: {
-      VALUE wrapper = ruby_wrapper_type(self->descriptor->klass, argv[1]);
-      upb_msgval msgval = Convert_RubyToUpb(wrapper, upb_fielddef_name(f),
-                                            TypeInfo_get(f), arena);
-      upb_msg_set(self->msg, f, msgval, arena);
+      if (argv[1] == Qnil) {
+        upb_msg_clearfield(self->msg, f);
+      } else {
+        const upb_fielddef *val_f = upb_msgdef_itof(upb_fielddef_msgsubdef(f), 1);
+        upb_msgval msgval = Convert_RubyToUpb(argv[1], upb_fielddef_name(f),
+                                              TypeInfo_get(val_f), arena);
+        upb_msg *wrapper = upb_msg_mutable(self->msg, f, arena).msg;
+        upb_msg_set(wrapper, val_f, msgval, arena);
+      }
       return Qnil;
     }
     case METHOD_ENUM_GETTER: {
@@ -392,7 +395,9 @@ static VALUE Message_field_accessor(Message* self, const upb_fielddef* f,
       }
     }
     case METHOD_GETTER:
-      if (upb_fielddef_ismap(f)) {
+      if (upb_fielddef_issubmsg(f) && !upb_msg_has(self->msg, f)) {
+        return Qnil;
+      } else if (upb_fielddef_ismap(f)) {
         upb_map *map = upb_msg_mutable(self->msg, f, arena).map;
         return Map_GetRubyWrapper(map, f, self->arena);
       } else if (upb_fielddef_isseq(f)) {
@@ -503,8 +508,44 @@ VALUE Message_respond_to_missing(int argc, VALUE* argv, VALUE _self) {
 void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
                            upb_arena* arena);
 
-void Map_InitFromValue(upb_map* map, upb_fieldtype_t key_type,
-                       TypeInfo val_type, VALUE val, upb_arena* arena);
+typedef struct {
+  upb_map *map;
+  TypeInfo key_type;
+  TypeInfo val_type;
+  upb_arena *arena;
+} MapInit;
+
+int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
+  MapInit *map_init = (MapInit*)_self;
+  upb_msgval k, v;
+  k = Convert_RubyToUpb(key, "", map_init->key_type, NULL);
+
+  if (map_init->val_type.type == UPB_TYPE_MESSAGE && TYPE(val) == T_HASH) {
+    upb_msg *msg = upb_msg_new(map_init->val_type.def.msgdef, map_init->arena);
+    Message_InitFromValue(msg, map_init->val_type.def.msgdef, val,
+                          map_init->arena);
+    v.msg_val = msg;
+  } else {
+    v = Convert_RubyToUpb(val, "", map_init->val_type, map_init->arena);
+  }
+  upb_map_set(map_init->map, k, v, map_init->arena);
+  return ST_CONTINUE;
+}
+
+void Map_InitFromValue(upb_map* map, const upb_fielddef* f, VALUE val,
+                       upb_arena* arena) {
+  const upb_msgdef* entry_m = upb_fielddef_msgsubdef(f);
+  const upb_fielddef* key_f = upb_msgdef_itof(entry_m, 1);
+  const upb_fielddef* val_f = upb_msgdef_itof(entry_m, 2);
+  if (TYPE(val) != T_HASH) {
+    rb_raise(rb_eArgError,
+             "Expected Hash object as initializer value for map field '%s' "
+             "(given %s).",
+             upb_fielddef_name(f), rb_class2name(CLASS_OF(val)));
+  }
+  MapInit map_init = {map, TypeInfo_get(key_f), TypeInfo_get(val_f), arena};
+  rb_hash_foreach(val, Map_initialize_kwarg, (VALUE)&map_init);
+}
 
 upb_msgval MessageValue_FromValue(VALUE val, TypeInfo info, upb_arena *arena) {
   if (info.type == UPB_TYPE_MESSAGE) {
@@ -530,7 +571,12 @@ void Array_InitFromValue(upb_array* arr, const upb_fielddef* f, VALUE val,
 
   for (int i = 0; i < RARRAY_LEN(val); i++) {
     VALUE entry = rb_ary_entry(val, i);
-    upb_msgval msgval = MessageValue_FromValue(entry, type_info, arena);
+    upb_msgval msgval;
+    if (upb_fielddef_issubmsg(f) && TYPE(val) == T_HASH) {
+      msgval = MessageValue_FromValue(entry, type_info, arena);
+    } else {
+      msgval = Convert_RubyToUpb(entry, upb_fielddef_name(f), type_info, arena);
+    }
     upb_array_append(arr, msgval, arena);
   }
 }
@@ -541,17 +587,17 @@ void Message_InitFieldFromValue(upb_msg* msg, const upb_fielddef* f, VALUE val,
 
   if (upb_fielddef_ismap(f)) {
     upb_map *map = upb_msg_mutable(msg, f, arena).map;
-    const upb_msgdef *entry_m = upb_fielddef_msgsubdef(f);
-    const upb_fielddef *key_f = upb_msgdef_itof(entry_m, 1);
-    const upb_fielddef *val_f = upb_msgdef_itof(entry_m, 2);
-    upb_fieldtype_t key_type = upb_fielddef_type(key_f);
-    Map_InitFromValue(map, key_type, TypeInfo_get(val_f), val, arena);
+    Map_InitFromValue(map, f, val, arena);
   } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
     upb_array *arr = upb_msg_mutable(msg, f, arena).array;
     Array_InitFromValue(arr, f, val, arena);
   } else if (upb_fielddef_issubmsg(f)) {
-    upb_msg *submsg = upb_msg_mutable(msg, f, arena).msg;
-    Message_InitFromValue(submsg, upb_fielddef_msgsubdef(f), val, arena);
+    if (TYPE(val) == T_HASH) {
+      upb_msg *submsg = upb_msg_mutable(msg, f, arena).msg;
+      Message_InitFromValue(submsg, upb_fielddef_msgsubdef(f), val, arena);
+    } else {
+      Message_setfield(msg, f, val, arena);
+    }
   } else {
     upb_msgval msgval =
         Convert_RubyToUpb(val, upb_fielddef_name(f), TypeInfo_get(f), arena);
@@ -585,19 +631,19 @@ int Message_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
              "Unknown field name '%s' in initialization map entry.", name);
   }
 
-  Message_setfield(msg_init->msg, f, val, msg_init->arena);
+  Message_InitFieldFromValue(msg_init->msg, f, val, msg_init->arena);
   return ST_CONTINUE;
 }
 
 void Message_InitFromValue(upb_msg* msg, const upb_msgdef* m, VALUE val,
                            upb_arena* arena) {
   MsgInit msg_init = {msg, m, arena};
-  if (TYPE(val) != T_HASH) {
-    rb_raise(rb_eArgError, "Expected hash arguments, not %s",
+  if (TYPE(val) == T_HASH) {
+    rb_hash_foreach(val, Message_initialize_kwarg, (VALUE)&msg_init);
+  } else {
+    rb_raise(rb_eArgError, "Expected hash arguments or message, not %s",
              rb_class2name(CLASS_OF(val)));
   }
-
-  rb_hash_foreach(val, Message_initialize_kwarg, (VALUE)&msg_init);
 }
 
 /*
@@ -776,7 +822,7 @@ static VALUE Scalar_CreateHash(upb_msgval val, TypeInfo type_info);
 
 static VALUE RepeatedField_CreateArray(const upb_array* arr,
                                        TypeInfo type_info) {
-  int size = upb_array_size(arr);
+  int size = arr ? upb_array_size(arr) : 0;
   VALUE ary = rb_ary_new2(size);
 
   for (int i = 0; i < size; i++) {
@@ -794,6 +840,8 @@ static VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
   size_t iter = UPB_MAP_BEGIN;
   TypeInfo key_info = TypeInfo_from_type(key_type);
 
+  if (!map) return hash;
+
   while (upb_mapiter_next(map, &iter)) {
     upb_msgval key = upb_mapiter_key(map, iter);
     upb_msgval val = upb_mapiter_value(map, iter);
@@ -806,6 +854,8 @@ static VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
 }
 
 static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
+  if (!msg) return Qnil;
+
   VALUE hash = rb_hash_new();
   int n = upb_msgdef_fieldcount(m);
   bool is_proto2;
@@ -839,9 +889,6 @@ static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
       upb_fieldtype_t key_type = upb_fielddef_type(key_f);
       msg_value = Map_CreateHash(msgval.map_val, key_type, TypeInfo_get(val_f));
     } else if (upb_fielddef_isseq(field)) {
-      if (is_proto2 && upb_array_size(msgval.array_val) == 0) {
-        continue;
-      }
       msg_value = RepeatedField_CreateArray(msgval.array_val, type_info);
     } else {
       msg_value = Scalar_CreateHash(msgval, type_info);

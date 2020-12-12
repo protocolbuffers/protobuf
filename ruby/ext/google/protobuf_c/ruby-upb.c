@@ -6420,7 +6420,7 @@ upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
         val.double_val = upb_fielddef_defaultdouble(f);
         break;
       case UPB_TYPE_BOOL:
-        val.double_val = upb_fielddef_defaultbool(f);
+        val.bool_val = upb_fielddef_defaultbool(f);
         break;
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES:

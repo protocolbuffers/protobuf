@@ -133,6 +133,32 @@ upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field) {
   return self->map;
 }
 
+void Map_Inspect(StringBuilder* b, const upb_map *map, const upb_fielddef *f) {
+  bool first = true;
+  StringBuilder_Printf(b, "{");
+  if (map) {
+    const upb_msgdef* entry_m = upb_fielddef_msgsubdef(f);
+    const upb_fielddef* key_f = upb_msgdef_itof(entry_m, 1);
+    const upb_fielddef* val_f = upb_msgdef_itof(entry_m, 2);
+    TypeInfo key_info = TypeInfo_get(key_f);
+    TypeInfo val_info = TypeInfo_get(val_f);
+    size_t iter = UPB_MAP_BEGIN;
+    while (upb_mapiter_next(map, &iter)) {
+      upb_msgval key = upb_mapiter_key(map, iter);
+      upb_msgval val = upb_mapiter_value(map, iter);
+      if (first) {
+        first = false;
+      } else {
+        StringBuilder_Printf(b, ", ");
+      }
+      StringBuilder_PrintMsgval(b, key, key_info);
+      StringBuilder_Printf(b, "=>");
+      StringBuilder_PrintMsgval(b, val, val_info);
+    }
+  }
+  StringBuilder_Printf(b, "}");
+}
+
 static bool needs_typeclass(upb_fieldtype_t type) {
   switch (type) {
     case UPB_TYPE_MESSAGE:
@@ -248,11 +274,13 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
     validate_type_class(self->value_type_info.type, self->value_type_class);
     init_value_arg = 3;
 
+    VALUE descriptor =
+        rb_ivar_get(self->value_type_class, descriptor_instancevar_interned);
     if (self->value_type_info.type == UPB_TYPE_MESSAGE) {
-      const Descriptor* desc = ruby_to_Descriptor(self->value_type_class);
+      const Descriptor* desc = ruby_to_Descriptor(descriptor);
       self->value_type_info.def.msgdef = desc->msgdef;
     } else {
-      const EnumDescriptor* desc = ruby_to_EnumDescriptor(self->value_type_class);
+      const EnumDescriptor* desc = ruby_to_EnumDescriptor(descriptor);
       self->value_type_info.def.enumdef = desc->enumdef;
     }
   }
