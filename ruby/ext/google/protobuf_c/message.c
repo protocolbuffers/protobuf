@@ -77,6 +77,8 @@ VALUE Message_alloc(VALUE klass) {
 }
 
 VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena) {
+  if (msg == NULL) return Qnil;
+
   VALUE val = ObjectCache_Get(msg);
 
   if (val == Qnil) {
@@ -323,17 +325,16 @@ static VALUE Message_oneof_accessor(Message* self, const upb_oneofdef* o,
 
 static void Message_setfield(upb_msg* msg, const upb_fielddef* f, VALUE val,
                              upb_arena* arena) {
-  if (val == Qnil) {
-    upb_msg_clearfield(msg, f);
-    return;
-  }
-
   upb_msgval msgval;
   if (upb_fielddef_ismap(f)) {
     msgval.map_val = Map_GetUpbMap(val, f);
   } else if (upb_fielddef_isseq(f)) {
     msgval.array_val = RepeatedField_GetUpbArray(val, f);
   } else {
+    if (val == Qnil && upb_fielddef_issubmsg(f)) {
+      upb_msg_clearfield(msg, f);
+      return;
+    }
     msgval =
         Convert_RubyToUpb(val, upb_fielddef_name(f), TypeInfo_get(f), arena);
   }
@@ -395,15 +396,14 @@ static VALUE Message_field_accessor(Message* self, const upb_fielddef* f,
       }
     }
     case METHOD_GETTER:
-      if (upb_fielddef_issubmsg(f) && !upb_msg_has(self->msg, f)) {
-        return Qnil;
-      } else if (upb_fielddef_ismap(f)) {
+      if (upb_fielddef_ismap(f)) {
         upb_map *map = upb_msg_mutable(self->msg, f, arena).map;
         return Map_GetRubyWrapper(map, f, self->arena);
       } else if (upb_fielddef_isseq(f)) {
         upb_array *array = upb_msg_mutable(self->msg, f, arena).array;
         return RepeatedField_GetRubyWrapper(array, f, self->arena);
       } else if (upb_fielddef_issubmsg(f)) {
+        if (!upb_msg_has(self->msg, f)) return Qnil;
         upb_msg *msg = upb_msg_mutable(self->msg, f, arena).msg;
         const upb_msgdef *m = upb_fielddef_msgsubdef(f);
         return Message_GetRubyWrapper(msg, m, self->arena);
@@ -559,8 +559,8 @@ upb_msgval MessageValue_FromValue(VALUE val, TypeInfo info, upb_arena *arena) {
   }
 }
 
-void Array_InitFromValue(upb_array* arr, const upb_fielddef* f, VALUE val,
-                         upb_arena* arena) {
+void RepeatedField_InitFromValue(upb_array* arr, const upb_fielddef* f,
+                                 VALUE val, upb_arena* arena) {
   TypeInfo type_info = TypeInfo_get(f);
 
   if (TYPE(val) != T_ARRAY) {
@@ -572,7 +572,7 @@ void Array_InitFromValue(upb_array* arr, const upb_fielddef* f, VALUE val,
   for (int i = 0; i < RARRAY_LEN(val); i++) {
     VALUE entry = rb_ary_entry(val, i);
     upb_msgval msgval;
-    if (upb_fielddef_issubmsg(f) && TYPE(val) == T_HASH) {
+    if (upb_fielddef_issubmsg(f) && TYPE(entry) == T_HASH) {
       msgval = MessageValue_FromValue(entry, type_info, arena);
     } else {
       msgval = Convert_RubyToUpb(entry, upb_fielddef_name(f), type_info, arena);
@@ -590,7 +590,7 @@ void Message_InitFieldFromValue(upb_msg* msg, const upb_fielddef* f, VALUE val,
     Map_InitFromValue(map, f, val, arena);
   } else if (upb_fielddef_label(f) == UPB_LABEL_REPEATED) {
     upb_array *arr = upb_msg_mutable(msg, f, arena).array;
-    Array_InitFromValue(arr, f, val, arena);
+    RepeatedField_InitFromValue(arr, f, val, arena);
   } else if (upb_fielddef_issubmsg(f)) {
     if (TYPE(val) == T_HASH) {
       upb_msg *submsg = upb_msg_mutable(msg, f, arena).msg;
@@ -770,6 +770,26 @@ VALUE Message_eq(VALUE _self, VALUE _other) {
   }
 }
 
+uint64_t Message_Hash(upb_msg *msg, const upb_msgdef *m, uint64_t seed) {
+  upb_arena *arena = upb_arena_new();
+  const char *data;
+  size_t size;
+
+  // Hash a deterministically serialized payloads with no unknown fields.
+  data = upb_encode_ex(msg, upb_msgdef_layout(m),
+                       UPB_ENCODE_SKIPUNKNOWN | UPB_ENCODE_DETERMINISTIC, arena,
+                       &size);
+
+  if (data) {
+    uint64_t ret = wyhash(data, size, seed, _wyp);
+    upb_arena_free(arena);
+    return ret;
+  } else {
+    upb_arena_free(arena);
+    rb_raise(cParseError, "Error calculating hash");
+  }
+}
+
 /*
  * call-seq:
  *     Message.hash => hash_value
@@ -778,25 +798,8 @@ VALUE Message_eq(VALUE _self, VALUE _other) {
  */
 VALUE Message_hash(VALUE _self) {
   Message* self;
-  upb_arena *arena = upb_arena_new();
-  const char *data;
-  size_t size;
-
   TypedData_Get_Struct(_self, Message, &Message_type, self);
-
-  // Hash a deterministically serialized payloads with no unknown fields.
-  data = upb_encode_ex(self->msg, upb_msgdef_layout(self->descriptor->msgdef),
-                       UPB_ENCODE_SKIPUNKNOWN | UPB_ENCODE_DETERMINISTIC, arena,
-                       &size);
-
-  if (data) {
-    uint32_t ret = wyhash(data, size, 0, _wyp);
-    upb_arena_free(arena);
-    return INT2FIX(ret);
-  } else {
-    upb_arena_free(arena);
-    rb_raise(cParseError, "Error calculating hash");
-  }
+  return INT2FIX(Message_Hash(self->msg, self->descriptor->msgdef, 0));
 }
 
 /*
@@ -882,6 +885,8 @@ static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
     msg_key = ID2SYM(rb_intern(upb_fielddef_name(field)));
     msgval = upb_msg_get(msg, field);
 
+    // Proto2 omits empty map/repeated filds also.
+
     if (upb_fielddef_ismap(field)) {
       const upb_msgdef *entry_m = upb_fielddef_msgsubdef(field);
       const upb_fielddef *key_f = upb_msgdef_itof(entry_m, 1);
@@ -889,6 +894,10 @@ static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
       upb_fieldtype_t key_type = upb_fielddef_type(key_f);
       msg_value = Map_CreateHash(msgval.map_val, key_type, TypeInfo_get(val_f));
     } else if (upb_fielddef_isseq(field)) {
+      if (is_proto2 &&
+          (!msgval.array_val || upb_array_size(msgval.array_val) == 0)) {
+        continue;
+      }
       msg_value = RepeatedField_CreateArray(msgval.array_val, type_info);
     } else {
       msg_value = Scalar_CreateHash(msgval, type_info);
@@ -1050,6 +1059,11 @@ VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   msg_rb = initialize_rb_class_with_no_args(klass);
   TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
 
+  // We don't allow users to decode a wrapper type directly.
+  if (upb_msgdef_iswrapper(msg->descriptor->msgdef)) {
+    rb_raise(rb_eRuntimeError, "Cannot parse a wrapper directly.");
+  }
+
   upb_status_clear(&status);
   if (!upb_json_decode(RSTRING_PTR(data), RSTRING_LEN(data), msg->msg,
                        msg->descriptor->msgdef, pool->symtab,
@@ -1075,6 +1089,10 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
   size_t size;
 
   TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+
+  if (CLASS_OF(msg_rb) != klass) {
+    rb_raise(rb_eArgError, "Message of wrong type.");
+  }
 
   data = upb_encode(msg->msg, upb_msgdef_layout(msg->descriptor->msgdef), arena,
                     &size);

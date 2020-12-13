@@ -73,6 +73,8 @@ static VALUE Map_alloc(VALUE klass) {
 }
 
 VALUE Map_GetRubyWrapper(upb_map* map, const upb_fielddef* f, VALUE arena) {
+  PBRUBY_ASSERT(map);
+
   VALUE val = ObjectCache_Get(map);
 
   if (val == Qnil) {
@@ -287,6 +289,7 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->map = upb_map_new(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
+  ObjectCache_Add(self->map, _self);
 
   if (argc > init_value_arg) {
     Map_merge_into_self(_self, argv[init_value_arg]);

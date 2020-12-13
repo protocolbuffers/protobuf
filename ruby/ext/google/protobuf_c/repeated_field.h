@@ -28,20 +28,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef RUBY_PROTOBUF_MESSAGE_H_
-#define RUBY_PROTOBUF_MESSAGE_H_
+#ifndef RUBY_PROTOBUF_REPEATED_FIELD_H_
+#define RUBY_PROTOBUF_REPEATED_FIELD_H_
 
 #include <ruby/ruby.h>
 
 #include "protobuf.h"
 #include "ruby-upb.h"
 
-upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
-                               const char* name, upb_arena* arena);
+void RepeatedField_register(VALUE module);
+VALUE RepeatedField_deep_copy(VALUE obj);
+VALUE RepeatedField_GetRubyWrapper(upb_array* msg, const upb_fielddef* f,
+                                   VALUE arena);
+upb_array* RepeatedField_GetUpbArray(VALUE value, const upb_fielddef* f);
+void RepeatedField_Inspect(StringBuilder* b, const upb_array* array,
+                           TypeInfo info);
 
-VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena);
-void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,
-                          const upb_msgdef* m);
-uint64_t Message_Hash(upb_msg *msg, const upb_msgdef *m, uint64_t seed);
-
-#endif  // RUBY_PROTOBUF_MESSAGE_H_
+#endif  // RUBY_PROTOBUF_REPEATED_FIELD_H_

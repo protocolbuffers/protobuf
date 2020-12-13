@@ -214,9 +214,18 @@ VALUE Convert_UpbToRuby(upb_msgval upb_val, TypeInfo type_info, VALUE arena) {
         return INT2NUM(upb_val.int32_val);
       }
     }
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
-      return rb_str_new(upb_val.str_val.data, upb_val.str_val.size);
+    case UPB_TYPE_STRING: {
+      VALUE str_rb = rb_str_new(upb_val.str_val.data, upb_val.str_val.size);
+      rb_enc_associate(str_rb, kRubyStringUtf8Encoding);
+      rb_obj_freeze(str_rb);
+      return str_rb;
+    }
+    case UPB_TYPE_BYTES: {
+      VALUE str_rb = rb_str_new(upb_val.str_val.data, upb_val.str_val.size);
+      rb_enc_associate(str_rb, kRubyString8bitEncoding);
+      rb_obj_freeze(str_rb);
+      return str_rb;
+    }
     case UPB_TYPE_MESSAGE:
       return Message_GetRubyWrapper((upb_msg*)upb_val.msg_val,
                                     type_info.def.msgdef, arena);

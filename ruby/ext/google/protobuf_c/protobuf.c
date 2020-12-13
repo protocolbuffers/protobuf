@@ -244,6 +244,7 @@ void Arena_register() {
 static upb_inttable obj_cache;
 
 void ObjectCache_Add(const void* key, VALUE val) {
+  PBRUBY_ASSERT(key);
   upb_inttable_insertptr(&obj_cache, key, upb_value_uint64(val));
 }
 
@@ -254,6 +255,7 @@ void ObjectCache_Remove(const void* key) {
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key) {
+  PBRUBY_ASSERT(key);
   upb_value val;
   if (upb_inttable_lookupptr(&obj_cache, key, &val)) {
     return (VALUE)upb_value_getuint64(val);

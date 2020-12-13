@@ -33,6 +33,7 @@
 #include "convert.h"
 #include "defs.h"
 #include "protobuf.h"
+#include "third_party/wyhash/wyhash.h"
 
 // -----------------------------------------------------------------------------
 // Repeated field container type.
@@ -68,6 +69,7 @@ VALUE RepeatedField_alloc(VALUE klass) {
 
 VALUE RepeatedField_GetRubyWrapper(upb_array* array, const upb_fielddef* f,
                                    VALUE arena) {
+  PBRUBY_ASSERT(array);
   VALUE val = ObjectCache_Get(array);
 
   if (val == Qnil) {
@@ -137,12 +139,8 @@ upb_array* RepeatedField_GetUpbArray(VALUE val, const upb_fielddef *field) {
 
 static int index_position(VALUE _index, RepeatedField* repeated_field) {
   int index = NUM2INT(_index);
-  int size = upb_array_size(repeated_field->array);
-  if (index < 0 && size > 0) {
-    index = size + index;
-  }
-
-  return index >= 0 && index < size ? index : -1;
+  if (index < 0) index += upb_array_size(repeated_field->array);
+  return index;
 }
 
 static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
@@ -198,7 +196,7 @@ static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
       /* standard case */
       upb_msgval msgval;
       int index = index_position(argv[0], self);
-      if (index < 0) return Qnil;
+      if (index < 0 || index >= upb_array_size(self->array)) return Qnil;
       msgval = upb_array_get(self->array, index);
       return Convert_UpbToRuby(msgval, self->type_info, self->arena);
     } else {
@@ -245,10 +243,17 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   }
 
   if (index >= size) {
-    upb_array_resize(self->array, index, arena);
+    upb_array_resize(self->array, index + 1, arena);
+    upb_msgval fill;
+    memset(&fill, 0, sizeof(fill));
+    for (int i = size; i < index; i++) {
+      // Fill default values.
+      // TODO(haberman): should this happen at the upb level?
+      upb_array_set(self->array, i, fill);
+    }
   }
 
-  upb_array_append(self->array, msgval, arena);
+  upb_array_set(self->array, index, msgval);
   return Qnil;
 }
 
@@ -379,6 +384,8 @@ static VALUE RepeatedField_dup(VALUE _self) {
   int size = upb_array_size(self->array);
   int i;
 
+  upb_arena_fuse(arena, Arena_get(self->arena));
+
   for (i = 0; i < size; i++) {
     upb_msgval msgval = upb_array_get(self->array, i);
     upb_array_append(new_rptfield_self->array, msgval, arena);
@@ -471,26 +478,37 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
  * Returns a hash value computed from this repeated field's elements.
  */
 VALUE RepeatedField_hash(VALUE _self) {
-  #if 0
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  st_index_t h = rb_hash_start(0);
-  VALUE hash_sym = rb_intern("hash");
-  upb_fieldtype_t field_type = self->field_type;
-  VALUE field_type_class = self->field_type_class;
-  size_t elem_size = native_slot_size(field_type);
-  size_t off = 0;
-  int i;
+  uint32_t hash = 0;
+  int size = upb_array_size(self->array);
 
-  for (i = 0; i < self->size; i++, off += elem_size) {
-    void* mem = ((uint8_t *)self->elements) + off;
-    VALUE elem = native_slot_get(field_type, field_type_class, mem);
-    h = rb_hash_uint(h, NUM2LONG(rb_funcall(elem, hash_sym, 0)));
+  for (int i = 0; i < size; i++) {
+    upb_msgval msgval = upb_array_get(self->array, i);
+    switch (self->type_info.type) {
+      case UPB_TYPE_BOOL:
+        hash = wyhash(&msgval, 1, hash, _wyp);
+        break;
+      case UPB_TYPE_FLOAT:
+      case UPB_TYPE_INT32:
+      case UPB_TYPE_UINT32:
+      case UPB_TYPE_ENUM:
+        hash = wyhash(&msgval, 4, hash, _wyp);
+        break;
+      case UPB_TYPE_DOUBLE:
+      case UPB_TYPE_INT64:
+      case UPB_TYPE_UINT64:
+        hash = wyhash(&msgval, 8, hash, _wyp);
+        break;
+      case UPB_TYPE_STRING:
+      case UPB_TYPE_BYTES:
+        hash = wyhash(msgval.str_val.data, msgval.str_val.size, hash, _wyp);
+        break;
+      case UPB_TYPE_MESSAGE:
+        Message_Hash(msgval.msg_val, self->type_info.def.msgdef, hash);
+        break;
+    }
   }
-  h = rb_hash_end(h);
-
-  return INT2FIX(h);
-  #endif
-  rb_raise(rb_eRuntimeError, "NYI: RepeatedField_hash");
+  return INT2FIX(hash);
 }
 
 /*
@@ -578,6 +596,7 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
   self->type_info.type = ruby_to_fieldtype(argv[0]);
   self->type_info.def.msgdef = NULL;
   self->array = upb_array_new(arena, self->type_info.type);
+  ObjectCache_Add(self->array, _self);
 
   if (self->type_info.type == UPB_TYPE_MESSAGE ||
       self->type_info.type == UPB_TYPE_ENUM) {

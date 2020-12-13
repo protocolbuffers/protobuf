@@ -28,20 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef RUBY_PROTOBUF_MESSAGE_H_
-#define RUBY_PROTOBUF_MESSAGE_H_
+#ifndef RUBY_PROTOBUF_DEFS_H_
+#define RUBY_PROTOBUF_DEFS_H_
 
 #include <ruby/ruby.h>
 
 #include "protobuf.h"
 #include "ruby-upb.h"
 
-upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
-                               const char* name, upb_arena* arena);
+VALUE Descriptor_DefToClass(const upb_msgdef *m);
 
-VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena);
-void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,
-                          const upb_msgdef* m);
-uint64_t Message_Hash(upb_msg *msg, const upb_msgdef *m, uint64_t seed);
-
-#endif  // RUBY_PROTOBUF_MESSAGE_H_
+#endif  // RUBY_PROTOBUF_DEFS_H_
