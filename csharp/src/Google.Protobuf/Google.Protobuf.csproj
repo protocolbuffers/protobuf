@@ -12,7 +12,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageTags>Protocol;Buffers;Binary;Serialization;Format;Google;proto;proto3</PackageTags>
     <PackageReleaseNotes>C# proto3 support</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/protocolbuffers/protobuf</PackageProjectUrl>
