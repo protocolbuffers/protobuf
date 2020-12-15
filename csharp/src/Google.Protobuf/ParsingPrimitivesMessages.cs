@@ -32,9 +32,11 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Security;
+using Google.Protobuf.Collections;
 
 namespace Google.Protobuf
 {
@@ -132,6 +134,67 @@ namespace Google.Protobuf
             }
             --ctx.state.recursionDepth;
             SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
+        }
+
+        private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
+
+        public static KeyValuePair<TKey, TValue> ReadMapEntry<TKey, TValue>(ref ParseContext ctx, MapField<TKey, TValue>.Codec codec)
+        {
+            int length = ParsingPrimitives.ParseLength(ref ctx.buffer, ref ctx.state);
+            if (ctx.state.recursionDepth >= ctx.state.recursionLimit)
+            {
+                throw InvalidProtocolBufferException.RecursionLimitExceeded();
+            }
+            int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
+            ++ctx.state.recursionDepth;
+
+            TKey key = default;
+            TValue value = default;
+
+            uint tag;
+            while ((tag = ctx.ReadTag()) != 0)
+            {
+                if (tag == codec.KeyCodec.Tag)
+                {
+                    key = codec.KeyCodec.Read(ref ctx);
+                }
+                else if (tag == codec.ValueCodec.Tag)
+                {
+                    value = codec.ValueCodec.Read(ref ctx);
+                }
+                else
+                {
+                    SkipLastField(ref ctx.buffer, ref ctx.state);
+                }
+            }
+
+            // Corner case: a map entry with a key but no value, where the value type is a message.
+            // Read it as if we'd seen input with no data (i.e. create a "default" message).
+            if (value == null)
+            {
+                if (ctx.state.CodedInputStream != null)
+                {
+                    // the decoded message might not support parsing from ParseContext, so
+                    // we need to allow fallback to the legacy MergeFrom(CodedInputStream) parsing.
+                    value = codec.ValueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
+                }
+                else
+                {
+                    ParseContext.Initialize(new ReadOnlySequence<byte>(ZeroLengthMessageStreamData), out ParseContext zeroLengthCtx);
+                    value = codec.ValueCodec.Read(ref zeroLengthCtx);
+                }
+            }
+
+            CheckReadEndOfStreamTag(ref ctx.state);
+            // Check that we've read exactly as much data as expected.
+            if (!SegmentedBufferHelper.IsReachedLimit(ref ctx.state))
+            {
+                throw InvalidProtocolBufferException.TruncatedMessage();
+            }
+            --ctx.state.recursionDepth;
+            SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
+
+            return new KeyValuePair<TKey, TValue>(key, value);
         }
 
         public static void ReadGroup(ref ParseContext ctx, IMessage message)
