@@ -551,9 +551,11 @@ namespace Google.Protobuf
         }
 
         [Test]
+#if !NET5_0
         [TestCase("1.7977e308")]
         [TestCase("-1.7977e308")]
         [TestCase("1e309")]
+#endif
         [TestCase("1,0")]
         [TestCase("1.0.0")]
         [TestCase("+1")]
