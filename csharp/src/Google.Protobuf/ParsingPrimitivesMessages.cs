@@ -46,6 +46,8 @@ namespace Google.Protobuf
     [SecuritySafeCritical]
     internal static class ParsingPrimitivesMessages
     {
+        private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
+
         public static void SkipLastField(ref ReadOnlySpan<byte> buffer, ref ParserInternalState state)
         {
             if (state.lastTag == 0)
@@ -135,8 +137,6 @@ namespace Google.Protobuf
             --ctx.state.recursionDepth;
             SegmentedBufferHelper.PopLimit(ref ctx.state, oldLimit);
         }
-
-        private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
 
         public static KeyValuePair<TKey, TValue> ReadMapEntry<TKey, TValue>(ref ParseContext ctx, MapField<TKey, TValue>.Codec codec)
         {

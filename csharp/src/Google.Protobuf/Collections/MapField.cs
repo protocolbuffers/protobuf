@@ -657,12 +657,19 @@ namespace Google.Protobuf.Collections
             }
 
             /// <summary>
+            /// The key codec.
+            /// </summary>
+            internal FieldCodec<TKey> KeyCodec => keyCodec;
+
+            /// <summary>
+            /// The value codec.
+            /// </summary>
+            internal FieldCodec<TValue> ValueCodec => valueCodec;
+
+            /// <summary>
             /// The tag used in the enclosing message to indicate map entries.
             /// </summary>
-            internal uint MapTag { get { return mapTag; } }
-
-            internal FieldCodec<TKey> KeyCodec => keyCodec;
-            internal FieldCodec<TValue> ValueCodec => valueCodec;
+            internal uint MapTag => mapTag;
         }
 
         private class MapView<T> : ICollection<T>, ICollection
