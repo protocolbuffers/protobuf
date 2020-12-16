@@ -134,7 +134,8 @@ static void encode_float(upb_encstate *e, float d) {
   encode_fixed32(e, u32);
 }
 
-static void encode_tag(upb_encstate *e, int field_number, int wire_type) {
+static void encode_tag(upb_encstate *e, uint32_t field_number,
+                       uint8_t wire_type) {
   encode_varint(e, (field_number << 3) | wire_type);
 }
 
