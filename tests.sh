@@ -357,7 +357,7 @@ build_python38() {
 }
 
 build_python39() {
-  build_python_version py38-python
+  build_python_version py39-python
 }
 
 build_python_cpp() {
@@ -413,7 +413,7 @@ build_python38_cpp() {
 }
 
 build_python39_cpp() {
-  build_python_cpp_version py38-cpp
+  build_python_cpp_version py39-cpp
 }
 
 build_python_compatibility() {
