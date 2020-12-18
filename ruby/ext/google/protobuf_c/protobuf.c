@@ -107,7 +107,7 @@ ID descriptor_instancevar_interned;
 struct StringBuilder {
   size_t size;
   size_t cap;
-  char data[];
+  char *data;
 };
 
 typedef struct StringBuilder StringBuilder;
@@ -118,13 +118,17 @@ static size_t StringBuilder_SizeOf(size_t cap) {
 
 StringBuilder* StringBuilder_New() {
   const size_t cap = 128;
-  StringBuilder* builder = malloc(StringBuilder_SizeOf(cap));
+  StringBuilder* builder = malloc(sizeof(*builder));
   builder->size = 0;
   builder->cap = cap;
+  builder->data = malloc(builder->cap);
   return builder;
 }
 
-void StringBuilder_Free(StringBuilder* b) { free(b); }
+void StringBuilder_Free(StringBuilder* b) {
+  free(b->data);
+  free(b);
+}
 
 void StringBuilder_Printf(StringBuilder* b, const char *fmt, ...) {
   size_t have = b->cap - b->size;
@@ -140,12 +144,14 @@ void StringBuilder_Printf(StringBuilder* b, const char *fmt, ...) {
       b->cap *= 2;
       have = b->cap - b->size;
     }
-    b = realloc(b, StringBuilder_SizeOf(b->cap));
+    b->data = realloc(b->data, StringBuilder_SizeOf(b->cap));
     va_start(args, fmt);
     n = vsnprintf(&b->data[b->size], have, fmt, args);
     va_end(args);
     PBRUBY_ASSERT(n < have);
   }
+
+  b->size += n;
 }
 
 VALUE StringBuilder_ToRubyString(StringBuilder* b) {
@@ -187,10 +193,10 @@ void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val,
       StringBuilder_Printf(b, "%" PRIu64, val.uint64_val);
       break;
     case UPB_TYPE_STRING:
-      StringBuilder_Printf(b, "%s", val.str_val);
+      StringBuilder_Printf(b, "\"%.*s\"", (int)val.str_val.size, val.str_val.data);
       break;
     case UPB_TYPE_BYTES:
-      StringBuilder_Printf(b, "%s", val.str_val, true);
+      StringBuilder_Printf(b, "\"%.*s\"", (int)val.str_val.size, val.str_val.data);
       break;
     case UPB_TYPE_ENUM:
       StringBuilder_PrintEnum(b, val.int32_val, info.def.enumdef);
@@ -242,26 +248,44 @@ void Arena_register() {
 // -----------------------------------------------------------------------------
 
 static upb_inttable obj_cache;
+VALUE obj_cache2 = Qnil;
+
+static VALUE ObjectCache_GetKey(const void* key) {
+  //char data[sizeof(key)];
+  //memcpy(data, &key, sizeof(key));
+  //return rb_str_new(data, sizeof(data));
+  return LL2NUM((intptr_t)key);
+}
 
 void ObjectCache_Add(const void* key, VALUE val) {
-  PBRUBY_ASSERT(key);
-  upb_inttable_insertptr(&obj_cache, key, upb_value_uint64(val));
+  //PBRUBY_ASSERT(key);
+  //fprintf(stderr, "Inserting key=%p, value=%s\n", key, rb_class2name(CLASS_OF(val)));
+  //upb_inttable_insertptr(&obj_cache, key, upb_value_uint64(val));
+  VALUE key_rb = ObjectCache_GetKey(key);
+  rb_funcall(obj_cache2, rb_intern("[]="), 2, key_rb, val);
+  PBRUBY_ASSERT(rb_funcall(obj_cache2, rb_intern("[]"), 1, key_rb) == val);
+  PBRUBY_ASSERT(ObjectCache_Get(key) == val);
 }
 
 void ObjectCache_Remove(const void* key) {
-  bool ok = upb_inttable_removeptr(&obj_cache, key, NULL);
-  PBRUBY_ASSERT(ok);
+  //fprintf(stderr, "Removing key=%p\n", key);
+  //bool ok = upb_inttable_removeptr(&obj_cache, key, NULL);
+  //PBRUBY_ASSERT(ok);
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key) {
-  PBRUBY_ASSERT(key);
-  upb_value val;
-  if (upb_inttable_lookupptr(&obj_cache, key, &val)) {
-    return (VALUE)upb_value_getuint64(val);
-  } else {
-    return Qnil;
-  }
+  //PBRUBY_ASSERT(key);
+  //upb_value val;
+  //if (upb_inttable_lookupptr(&obj_cache, key, &val)) {
+  //  return (VALUE)upb_value_getuint64(val);
+  //} else {
+  //  return Qnil;
+  //}
+  VALUE key_rb = ObjectCache_GetKey(key);
+  VALUE ret = rb_funcall(obj_cache2, rb_intern("[]"), 1, key_rb);
+  //fprintf(stderr, "Getting key=%p, ret=%s\n", key, rb_class2name(CLASS_OF(ret)));
+  return ret;
 }
 
 // -----------------------------------------------------------------------------
@@ -275,6 +299,10 @@ void Init_protobuf_c() {
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
   VALUE internal = rb_define_module_under(protobuf, "Internal");
+
+  VALUE cWeakMap = rb_eval_string("ObjectSpace::WeakMap");
+  rb_gc_register_address(&obj_cache2);
+  obj_cache2 = rb_class_new_instance(0, NULL, cWeakMap);
 
   descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
   Arena_register();

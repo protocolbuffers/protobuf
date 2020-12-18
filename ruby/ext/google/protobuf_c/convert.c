@@ -3,6 +3,7 @@
 
 #include "message.h"
 #include "protobuf.h"
+#include "third_party/wyhash/wyhash.h"
 
 static upb_strview Convert_StringData(VALUE str, upb_arena *arena) {
   upb_strview ret;
@@ -232,5 +233,79 @@ VALUE Convert_UpbToRuby(upb_msgval upb_val, TypeInfo type_info, VALUE arena) {
     default:
       rb_raise(rb_eRuntimeError, "Convert_UpbToRuby(): Unexpected type %d",
                (int)type_info.type);
+  }
+}
+
+upb_msgval Message_DeepCopyMsgval(upb_msgval msgval, TypeInfo type_info,
+                                  upb_arena* arena) {
+  upb_msgval new_msgval;
+
+  switch (type_info.type) {
+    default:
+      memcpy(&new_msgval, &msgval, sizeof(msgval));
+      break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      size_t n = msgval.str_val.size;
+      char *mem = upb_arena_malloc(arena, n);
+      new_msgval.str_val.data = mem;
+      new_msgval.str_val.size = n;
+      memcpy(mem, msgval.str_val.data, n);
+      break;
+    }
+    case UPB_TYPE_MESSAGE:
+      new_msgval.msg_val =
+          Message_deep_copy(msgval.msg_val, type_info.def.msgdef, arena);
+      break;
+  }
+
+  return new_msgval;
+}
+
+bool Message_MsgvalEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info) {
+  switch (type_info.type) {
+    case UPB_TYPE_BOOL:
+      return memcmp(&val1, &val2, 1) == 0;
+    case UPB_TYPE_FLOAT:
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_ENUM:
+      return memcmp(&val1, &val2, 4) == 0;
+    case UPB_TYPE_DOUBLE:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT64:
+      return memcmp(&val1, &val2, 8) == 0;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      return val1.str_val.size != val2.str_val.size ||
+             memcmp(val1.str_val.data, val2.str_val.data,
+                    val1.str_val.size) == 0;
+    case UPB_TYPE_MESSAGE:
+      return Message_Equal(val1.msg_val, val2.msg_val, type_info.def.msgdef);
+    default:
+      rb_raise(rb_eRuntimeError, "Internal error, unexpected type");
+  }
+}
+
+uint64_t Message_HashMsgval(upb_msgval val, TypeInfo type_info, uint64_t seed) {
+  switch (type_info.type) {
+    case UPB_TYPE_BOOL:
+      return wyhash(&val, 1, seed, _wyp);
+    case UPB_TYPE_FLOAT:
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_ENUM:
+      return wyhash(&val, 4, seed, _wyp);
+    case UPB_TYPE_DOUBLE:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT64:
+      return wyhash(&val, 8, seed, _wyp);
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      return wyhash(val.str_val.data, val.str_val.size, seed, _wyp);
+    case UPB_TYPE_MESSAGE:
+      return Message_Hash(val.msg_val, type_info.def.msgdef, seed);
+    default:
+      rb_raise(rb_eRuntimeError, "Internal error, unexpected type");
   }
 }

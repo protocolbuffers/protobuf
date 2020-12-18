@@ -4296,6 +4296,11 @@ bool upb_array_append(upb_array *array, upb_msgval val, upb_arena *arena);
  * Returns false on allocation failure. */
 bool upb_array_resize(upb_array *array, size_t size, upb_arena *arena);
 
+/* Returns a raw pointer to the array's internal storage. Users can read or
+ * write this directly according to the array's type. Stores the array's
+ * current size (in bytes) in *n. */
+void *upb_array_ptr(upb_array *array, size_t* n);
+
 /** upb_map *******************************************************************/
 
 /* Creates a new map on the given arena with the given key/value size. */

@@ -32,6 +32,7 @@
 
 #include "convert.h"
 #include "defs.h"
+#include "message.h"
 #include "protobuf.h"
 #include "third_party/wyhash/wyhash.h"
 
@@ -111,9 +112,38 @@ static RepeatedField* ruby_to_RepeatedField(VALUE _self) {
   return self;
 }
 
-VALUE RepeatedField_deep_copy(VALUE obj) {
-  rb_raise(rb_eRuntimeError, "RepeatedField_deep_copy NYI");
-  return Qnil;
+static VALUE RepeatedField_new_this_type(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  VALUE new_rptfield = Qnil;
+  VALUE element_type = fieldtype_to_ruby(self->type_info.type);
+  if (self->type_class != Qnil) {
+    new_rptfield = rb_funcall(CLASS_OF(_self), rb_intern("new"), 2,
+                              element_type, self->type_class);
+  } else {
+    new_rptfield = rb_funcall(CLASS_OF(_self), rb_intern("new"), 1,
+                              element_type);
+  }
+  return new_rptfield;
+}
+
+VALUE RepeatedField_deep_copy(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  VALUE new_rptfield = RepeatedField_new_this_type(_self);
+  RepeatedField* new_self = ruby_to_RepeatedField(new_rptfield);
+  VALUE arena_rb = new_self->arena;
+  upb_arena *arena = Arena_get(arena_rb);
+  size_t elements = upb_array_size(self->array);
+
+  upb_array_resize(new_self->array, elements, arena);
+
+  size_t size = upb_array_size(self->array);
+  for (size_t i = 0; i < size; i++) {
+    upb_msgval msgval = upb_array_get(self->array, i);
+    upb_msgval copy = Message_DeepCopyMsgval(msgval, self->type_info, arena);
+    upb_array_set(new_self->array, i, copy);
+  }
+
+  return new_rptfield;
 }
 
 upb_array* RepeatedField_GetUpbArray(VALUE val, const upb_fielddef *field) {
@@ -196,7 +226,9 @@ static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
       /* standard case */
       upb_msgval msgval;
       int index = index_position(argv[0], self);
-      if (index < 0 || index >= upb_array_size(self->array)) return Qnil;
+      if (index < 0 || (size_t)index >= upb_array_size(self->array)) {
+        return Qnil;
+      }
       msgval = upb_array_get(self->array, index);
       return Convert_UpbToRuby(msgval, self->type_info, self->arena);
     } else {
@@ -355,20 +387,6 @@ static VALUE RepeatedField_length(VALUE _self) {
   return INT2NUM(upb_array_size(self->array));
 }
 
-static VALUE RepeatedField_new_this_type(VALUE _self) {
-  RepeatedField* self = ruby_to_RepeatedField(_self);
-  VALUE new_rptfield = Qnil;
-  VALUE element_type = fieldtype_to_ruby(self->type_info.type);
-  if (self->type_class != Qnil) {
-    new_rptfield = rb_funcall(CLASS_OF(_self), rb_intern("new"), 2,
-                              element_type, self->type_class);
-  } else {
-    new_rptfield = rb_funcall(CLASS_OF(_self), rb_intern("new"), 1,
-                              element_type);
-  }
-  return new_rptfield;
-}
-
 /*
  * call-seq:
  *     RepeatedField.dup => repeated_field
@@ -432,6 +450,7 @@ VALUE RepeatedField_to_ary(VALUE _self) {
 VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
   RepeatedField* self;
   RepeatedField* other;
+  size_t i;
 
   if (_self == _other) {
     return Qtrue;
@@ -442,33 +461,25 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
     return rb_equal(self_ary, _other);
   }
 
-  rb_raise(rb_eRuntimeError, "NYI: RepeatedField_eq");
-#if 0
   self = ruby_to_RepeatedField(_self);
   other = ruby_to_RepeatedField(_other);
+  size_t n = upb_array_size(self->array);
+
   if (self->type_info.type != other->type_info.type ||
       self->type_class != other->type_class ||
-      upb_array_size(self->array) != upb_array_size(other->array)) {
+      upb_array_size(other->array) != n) {
     return Qfalse;
   }
 
-  {
-    upb_fieldtype_t field_type = self->field_type;
-    size_t elem_size = native_slot_size(field_type);
-    size_t off = 0;
-    int i;
-
-    for (i = 0; i < self->size; i++, off += elem_size) {
-      void* self_mem = ((uint8_t *)self->elements) + off;
-      void* other_mem = ((uint8_t *)other->elements) + off;
-      if (!native_slot_eq(field_type, self->field_type_class, self_mem,
-                          other_mem)) {
-        return Qfalse;
-      }
+  for (size_t i = 0; i < n; i++) {
+    upb_msgval val1 = upb_array_get(self->array, i);
+    upb_msgval val2 = upb_array_get(other->array, i);
+    if (!Message_MsgvalEqual(val1, val2, self->type_info)) {
+      return Qfalse;
     }
-    return Qtrue;
   }
-#endif
+
+  return Qtrue;
 }
 
 /*
@@ -479,36 +490,15 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
  */
 VALUE RepeatedField_hash(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  uint32_t hash = 0;
-  int size = upb_array_size(self->array);
+  uint64_t hash = 0;
+  size_t n = upb_array_size(self->array);
 
-  for (int i = 0; i < size; i++) {
-    upb_msgval msgval = upb_array_get(self->array, i);
-    switch (self->type_info.type) {
-      case UPB_TYPE_BOOL:
-        hash = wyhash(&msgval, 1, hash, _wyp);
-        break;
-      case UPB_TYPE_FLOAT:
-      case UPB_TYPE_INT32:
-      case UPB_TYPE_UINT32:
-      case UPB_TYPE_ENUM:
-        hash = wyhash(&msgval, 4, hash, _wyp);
-        break;
-      case UPB_TYPE_DOUBLE:
-      case UPB_TYPE_INT64:
-      case UPB_TYPE_UINT64:
-        hash = wyhash(&msgval, 8, hash, _wyp);
-        break;
-      case UPB_TYPE_STRING:
-      case UPB_TYPE_BYTES:
-        hash = wyhash(msgval.str_val.data, msgval.str_val.size, hash, _wyp);
-        break;
-      case UPB_TYPE_MESSAGE:
-        Message_Hash(msgval.msg_val, self->type_info.def.msgdef, hash);
-        break;
-    }
+  for (size_t i = 0; i < n; i++) {
+    upb_msgval val = upb_array_get(self->array, i);
+    hash = Message_HashMsgval(val, self->type_info, hash);
   }
-  return INT2FIX(hash);
+
+  return LL2NUM(hash);
 }
 
 /*

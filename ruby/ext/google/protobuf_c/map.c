@@ -30,6 +30,7 @@
 
 #include "convert.h"
 #include "defs.h"
+#include "message.h"
 #include "protobuf.h"
 
 // -----------------------------------------------------------------------------
@@ -72,7 +73,8 @@ static VALUE Map_alloc(VALUE klass) {
   return TypedData_Wrap_Struct(klass, &Map_type, self);
 }
 
-VALUE Map_GetRubyWrapper(upb_map* map, const upb_fielddef* f, VALUE arena) {
+VALUE Map_GetRubyWrapper(upb_map* map, upb_fieldtype_t key_type,
+                         TypeInfo value_type, VALUE arena) {
   PBRUBY_ASSERT(map);
 
   VALUE val = ObjectCache_Get(map);
@@ -82,14 +84,12 @@ VALUE Map_GetRubyWrapper(upb_map* map, const upb_fielddef* f, VALUE arena) {
     Map* self;
     ObjectCache_Add(map, val);
     TypedData_Get_Struct(val, Map, &Map_type, self);
-    const upb_fielddef *key_f = map_field_key(f);
-    const upb_fielddef *val_f = map_field_value(f);
     self->map = map;
     self->arena = arena;
-    self->key_type = upb_fielddef_type(key_f);
-    self->value_type_info = TypeInfo_get(val_f);
+    self->key_type = key_type;
+    self->value_type_info = value_type;
     if (self->value_type_info.type == UPB_TYPE_MESSAGE) {
-      const upb_msgdef *val_m = upb_fielddef_msgsubdef(val_f);
+      const upb_msgdef *val_m = self->value_type_info.def.msgdef;
       self->value_type_class = Descriptor_DefToClass(val_m);
     }
   }
@@ -108,6 +108,24 @@ static Map* ruby_to_Map(VALUE _self) {
   Map* self;
   TypedData_Get_Struct(_self, Map, &Map_type, self);
   return self;
+}
+
+VALUE Map_deep_copy(VALUE obj) {
+  Map* self = ruby_to_Map(obj);
+  VALUE new_arena_rb = Arena_new();
+  upb_arena *arena = Arena_get(new_arena_rb);
+  upb_map* new_map =
+      upb_map_new(arena, self->key_type, self->value_type_info.type);
+  size_t iter = UPB_MAP_BEGIN;
+  while (upb_mapiter_next(self->map, &iter)) {
+    upb_msgval key = upb_mapiter_key(self->map, iter);
+    upb_msgval val = upb_mapiter_value(self->map, iter);
+    upb_msgval val_copy = Message_DeepCopyMsgval(val, self->value_type_info, arena);
+    upb_map_set(new_map, key, val_copy, arena);
+  }
+
+  return Map_GetRubyWrapper(new_map, self->key_type, self->value_type_info,
+                            new_arena_rb);
 }
 
 upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field) {
@@ -135,15 +153,12 @@ upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field) {
   return self->map;
 }
 
-void Map_Inspect(StringBuilder* b, const upb_map *map, const upb_fielddef *f) {
+void Map_Inspect(StringBuilder* b, const upb_map* map, upb_fieldtype_t key_type,
+                 TypeInfo val_type) {
   bool first = true;
+  TypeInfo key_type_info = {key_type};
   StringBuilder_Printf(b, "{");
   if (map) {
-    const upb_msgdef* entry_m = upb_fielddef_msgsubdef(f);
-    const upb_fielddef* key_f = upb_msgdef_itof(entry_m, 1);
-    const upb_fielddef* val_f = upb_msgdef_itof(entry_m, 2);
-    TypeInfo key_info = TypeInfo_get(key_f);
-    TypeInfo val_info = TypeInfo_get(val_f);
     size_t iter = UPB_MAP_BEGIN;
     while (upb_mapiter_next(map, &iter)) {
       upb_msgval key = upb_mapiter_key(map, iter);
@@ -153,9 +168,9 @@ void Map_Inspect(StringBuilder* b, const upb_map *map, const upb_fielddef *f) {
       } else {
         StringBuilder_Printf(b, ", ");
       }
-      StringBuilder_PrintMsgval(b, key, key_info);
+      StringBuilder_PrintMsgval(b, key, key_type_info);
       StringBuilder_Printf(b, "=>");
-      StringBuilder_PrintMsgval(b, val, val_info);
+      StringBuilder_PrintMsgval(b, val, val_type);
     }
   }
   StringBuilder_Printf(b, "}");
@@ -511,7 +526,6 @@ static VALUE Map_dup(VALUE _self) {
   return new_map;
 }
 
-#if 0
 /*
  * call-seq:
  *     Map.==(other) => boolean
@@ -528,7 +542,6 @@ static VALUE Map_dup(VALUE _self) {
 VALUE Map_eq(VALUE _self, VALUE _other) {
   Map* self = ruby_to_Map(_self);
   Map* other;
-  upb_strtable_iter it;
 
   // Allow comparisons to Ruby hashmaps by converting to a temporary Map
   // instance. Slow, but workable.
@@ -544,33 +557,27 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
     return Qtrue;
   }
   if (self->key_type != other->key_type ||
-      self->value_type != other->value_type ||
+      self->value_type_info.type != other->value_type_info.type ||
       self->value_type_class != other->value_type_class) {
     return Qfalse;
   }
-  if (upb_strtable_count(&self->table) != upb_strtable_count(&other->table)) {
+  if (upb_map_size(self->map) != upb_map_size(other->map)) {
     return Qfalse;
   }
 
   // For each member of self, check that an equal member exists at the same key
   // in other.
-  for (upb_strtable_begin(&it, &self->table);
-       !upb_strtable_done(&it);
-       upb_strtable_next(&it)) {
-    upb_strview k = upb_strtable_iter_key(&it);
-    upb_value v = upb_strtable_iter_value(&it);
-    void* mem = value_memory(&v);
-    upb_value other_v;
-    void* other_mem = value_memory(&other_v);
-
-    if (!upb_strtable_lookup2(&other->table, k.data, k.size, &other_v)) {
+  size_t iter = UPB_MAP_BEGIN;
+  while (upb_mapiter_next(self->map, &iter)) {
+    upb_msgval key = upb_mapiter_key(self->map, iter);
+    upb_msgval val = upb_mapiter_value(self->map, iter);
+    upb_msgval other_val;
+    if (!upb_map_get(other->map, key, &other_val)) {
       // Not present in other map.
       return Qfalse;
     }
-
-    if (!native_slot_eq(self->value_type, self->value_type_class, mem,
-                        other_mem)) {
-      // Present, but value not equal.
+    if (!Message_MsgvalEqual(val, other_val, self->value_type_info)) {
+      // Present but different value.
       return Qfalse;
     }
   }
@@ -586,27 +593,21 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
  */
 VALUE Map_hash(VALUE _self) {
   Map* self = ruby_to_Map(_self);
+  uint64_t hash = 0;
 
-  st_index_t h = rb_hash_start(0);
-  VALUE hash_sym = rb_intern("hash");
-
-  upb_strtable_iter it;
-  for (upb_strtable_begin(&it, &self->table); !upb_strtable_done(&it);
-       upb_strtable_next(&it)) {
-    VALUE key = table_key_to_ruby(self, upb_strtable_iter_key(&it));
-
-    upb_value v = upb_strtable_iter_value(&it);
-    void* mem = value_memory(&v);
-    VALUE value = native_slot_get(self->value_type,
-                                  self->value_type_class,
-                                  mem);
-
-    h = rb_hash_uint(h, NUM2LONG(rb_funcall(key, hash_sym, 0)));
-    h = rb_hash_uint(h, NUM2LONG(rb_funcall(value, hash_sym, 0)));
+  size_t iter = UPB_MAP_BEGIN;
+  TypeInfo key_info = {self->key_type};
+  while (upb_mapiter_next(self->map, &iter)) {
+    upb_msgval key = upb_mapiter_key(self->map, iter);
+    upb_msgval val = upb_mapiter_value(self->map, iter);
+    hash = Message_HashMsgval(key, key_info, hash);
+    hash = Message_HashMsgval(val, self->value_type_info, hash);
   }
 
-  return INT2FIX(h);
+  return LL2NUM(hash);
 }
+
+#if 0
 
 /*
  * call-seq:
@@ -636,6 +637,7 @@ VALUE Map_to_h(VALUE _self) {
   return hash;
 }
 
+#endif
 /*
  * call-seq:
  *     Map.inspect => string
@@ -647,36 +649,12 @@ VALUE Map_to_h(VALUE _self) {
 VALUE Map_inspect(VALUE _self) {
   Map* self = ruby_to_Map(_self);
 
-  VALUE str = rb_str_new2("{");
-
-  bool first = true;
-  VALUE inspect_sym = rb_intern("inspect");
-
-  upb_strtable_iter it;
-  for (upb_strtable_begin(&it, &self->table); !upb_strtable_done(&it);
-       upb_strtable_next(&it)) {
-    VALUE key = table_key_to_ruby(self, upb_strtable_iter_key(&it));
-
-    upb_value v = upb_strtable_iter_value(&it);
-    void* mem = value_memory(&v);
-    VALUE value = native_slot_get(self->value_type,
-                                  self->value_type_class,
-                                  mem);
-
-    if (!first) {
-      str = rb_str_cat2(str, ", ");
-    } else {
-      first = false;
-    }
-    str = rb_str_append(str, rb_funcall(key, inspect_sym, 0));
-    str = rb_str_cat2(str, "=>");
-    str = rb_str_append(str, rb_funcall(value, inspect_sym, 0));
-  }
-
-  str = rb_str_cat2(str, "}");
-  return str;
+  StringBuilder* builder = StringBuilder_New();
+  Map_Inspect(builder, self->map, self->key_type, self->value_type_info);
+  VALUE ret = StringBuilder_ToRubyString(builder);
+  StringBuilder_Free(builder);
+  return ret;
 }
-#endif
 
 /*
  * call-seq:
@@ -709,12 +687,12 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "clear", Map_clear, 0);
   rb_define_method(klass, "length", Map_length, 0);
   rb_define_method(klass, "dup", Map_dup, 0);
-  /*
   rb_define_method(klass, "==", Map_eq, 1);
   rb_define_method(klass, "hash", Map_hash, 0);
+  /*
   rb_define_method(klass, "to_h", Map_to_h, 0);
-  rb_define_method(klass, "inspect", Map_inspect, 0);
   */
+  rb_define_method(klass, "inspect", Map_inspect, 0);
   rb_define_method(klass, "merge", Map_merge, 1);
   rb_include_module(klass, rb_mEnumerable);
 }

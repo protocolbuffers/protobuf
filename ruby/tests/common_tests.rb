@@ -419,6 +419,7 @@ module CommonTests
     # We only assert on inspect value when there is one map entry because the
     # order in which elements appear is unspecified (depends on the internal
     # hash function). We don't want a brittle test.
+    puts "inspect: #{m.inspect}"
     assert m.inspect == "{\"jkl;\"=>42}"
 
     assert m.keys == ["jkl;"]
@@ -428,7 +429,7 @@ module CommonTests
     assert m.length == 0
     assert m == {}
 
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
     assert_raise RangeError do
@@ -492,7 +493,7 @@ module CommonTests
 
     m = Google::Protobuf::Map.new(:string, :int32)
     m["asdf"] = 1
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
     assert_raise Encoding::UndefinedConversionError do
@@ -505,7 +506,7 @@ module CommonTests
     m[bytestring] = 1
     # Allowed -- we will automatically convert to ASCII-8BIT.
     m["asdf"] = 1
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
   end

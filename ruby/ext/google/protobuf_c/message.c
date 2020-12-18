@@ -119,7 +119,11 @@ void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,
     StringBuilder_Printf(b, "%s: ", upb_fielddef_name(field));
 
     if (upb_fielddef_ismap(field)) {
-      Map_Inspect(b, msgval.map_val, field);
+      const upb_msgdef* entry_m = upb_fielddef_msgsubdef(field);
+      const upb_fielddef* key_f = upb_msgdef_itof(entry_m, 1);
+      const upb_fielddef* val_f = upb_msgdef_itof(entry_m, 2);
+      TypeInfo val_info = TypeInfo_get(val_f);
+      Map_Inspect(b, msgval.map_val, upb_fielddef_type(key_f), val_info);
     } else if (upb_fielddef_isseq(field)) {
       RepeatedField_Inspect(b, msgval.array_val, TypeInfo_get(field));
     } else {
@@ -230,10 +234,31 @@ static int extract_method_call(VALUE method_name, Message* self,
   if (match(m, name, f, o, "", "")) return METHOD_GETTER;
   if (match(m, name, f, o, "", "=")) return METHOD_SETTER;
   if (match(m, name, f, o, "clear_", "")) return METHOD_CLEAR;
-  if (match(m, name, f, o, "has_", "?")) return METHOD_PRESENCE;
-  if (match(m, name, f, o, "", "_as_value")) return METHOD_WRAPPER_GETTER;
-  if (match(m, name, f, o, "", "_as_value=")) return METHOD_WRAPPER_SETTER;
-  if (match(m, name, f, o, "", "_const")) return METHOD_ENUM_GETTER;
+  if (match(m, name, f, o, "has_", "?") &&
+      (*o || (*f && upb_fielddef_haspresence(*f)))) {
+    // Disallow oneof hazzers for proto3.
+    // TODO(haberman): remove this test when we are enabling oneof hazzers for
+    // proto3.
+    if (*f && !upb_fielddef_issubmsg(*f) &&
+        upb_fielddef_realcontainingoneof(*f) &&
+        upb_msgdef_syntax(upb_fielddef_containingtype(*f)) !=
+            UPB_SYNTAX_PROTO2) {
+      return METHOD_UNKNOWN;
+    }
+    return METHOD_PRESENCE;
+  }
+  if (match(m, name, f, o, "", "_as_value") && *f &&
+      is_wrapper_type_field(*f)) {
+    return METHOD_WRAPPER_GETTER;
+  }
+  if (match(m, name, f, o, "", "_as_value=") && *f &&
+      is_wrapper_type_field(*f)) {
+    return METHOD_WRAPPER_SETTER;
+  }
+  if (match(m, name, f, o, "", "_const") && *f &&
+      upb_fielddef_type(*f) == UPB_TYPE_ENUM) {
+    return METHOD_ENUM_GETTER;
+  }
 
   return METHOD_UNKNOWN;
 }
@@ -331,7 +356,8 @@ static void Message_setfield(upb_msg* msg, const upb_fielddef* f, VALUE val,
   } else if (upb_fielddef_isseq(f)) {
     msgval.array_val = RepeatedField_GetUpbArray(val, f);
   } else {
-    if (val == Qnil && upb_fielddef_issubmsg(f)) {
+    if (val == Qnil &&
+        (upb_fielddef_issubmsg(f) || upb_fielddef_realcontainingoneof(f))) {
       upb_msg_clearfield(msg, f);
       return;
     }
@@ -358,7 +384,10 @@ static VALUE Message_field_accessor(Message* self, const upb_fielddef* f,
       }
       return upb_msg_has(self->msg, f);
     case METHOD_WRAPPER_GETTER: {
-      PBRUBY_ASSERT(upb_fielddef_haspresence(f));
+      if (!upb_fielddef_issubmsg(f) ||
+          !upb_msgdef_iswrapper(upb_fielddef_msgsubdef(f))) {
+        rb_raise(rb_eRuntimeError, "Field is not a wrapper type.");
+      }
       if (upb_msg_has(self->msg, f)) {
         upb_msgval msgval = upb_msg_get(self->msg, f);
         VALUE value = Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
@@ -398,7 +427,11 @@ static VALUE Message_field_accessor(Message* self, const upb_fielddef* f,
     case METHOD_GETTER:
       if (upb_fielddef_ismap(f)) {
         upb_map *map = upb_msg_mutable(self->msg, f, arena).map;
-        return Map_GetRubyWrapper(map, f, self->arena);
+        const upb_fielddef *key_f = map_field_key(f);
+        const upb_fielddef *val_f = map_field_value(f);
+        upb_fieldtype_t key_type = upb_fielddef_type(key_f);
+        TypeInfo value_type_info = TypeInfo_get(val_f);
+        return Map_GetRubyWrapper(map, key_type, value_type_info, self->arena);
       } else if (upb_fielddef_isseq(f)) {
         upb_array *array = upb_msg_mutable(self->msg, f, arena).array;
         return RepeatedField_GetRubyWrapper(array, f, self->arena);
@@ -702,31 +735,45 @@ VALUE Message_dup(VALUE _self) {
 }
 
 // Internal only; used by Google::Protobuf.deep_copy.
-static VALUE Message_deep_copy(VALUE _self) {
-  Message* self;
-  Message* new_msg_self;
-  VALUE new_msg;
-  TypedData_Get_Struct(_self, Message, &Message_type, self);
-
-  new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
-  TypedData_Get_Struct(new_msg, Message, &Message_type, new_msg_self);
-
-  const char *data;
+upb_msg* Message_deep_copy(const upb_msg* msg, const upb_msgdef* m,
+                           upb_arena *arena) {
+  // Serialize and parse.
+  upb_arena *tmp_arena = upb_arena_new();
+  const upb_msglayout *layout = upb_msgdef_layout(m);
   size_t size;
 
-  // Serialize and parse.
-  upb_arena *arena = upb_arena_new();
-  data = upb_encode_ex(self->msg, upb_msgdef_layout(self->descriptor->msgdef),
-                       0, arena, &size);
-  if (!data || !upb_decode(data, size, new_msg_self->msg,
-                           upb_msgdef_layout(new_msg_self->descriptor->msgdef),
-                           Arena_get(new_msg_self->arena))) {
-    upb_arena_free(arena);
+  char* data = upb_encode_ex(msg, layout, 0, tmp_arena, &size);
+  upb_msg* new_msg = upb_msg_new(m, arena);
+
+  if (!data || !upb_decode(data, size, new_msg, layout, arena)) {
+    upb_arena_free(tmp_arena);
     rb_raise(cParseError, "Error occurred copying proto");
   }
 
-  upb_arena_free(arena);
+  upb_arena_free(tmp_arena);
   return new_msg;
+}
+
+bool Message_Equal(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m) {
+  if (m1 == m2) return true;
+
+  size_t size1, size2;
+  int encode_opts = UPB_ENCODE_SKIPUNKNOWN | UPB_ENCODE_DETERMINISTIC;
+  upb_arena *arena_tmp = upb_arena_new();
+  const upb_msglayout *layout = upb_msgdef_layout(m);
+
+  // Compare deterministically serialized payloads with no unknown fields.
+  char *data1 = upb_encode_ex(m1, layout, encode_opts, arena_tmp, &size1);
+  char *data2 = upb_encode_ex(m2, layout, encode_opts, arena_tmp, &size2);
+
+  if (data1 && data2) {
+    bool ret = (size1 == size2) && (memcmp(data1, data2, size1) == 0);
+    upb_arena_free(arena_tmp);
+    return ret;
+  } else {
+    upb_arena_free(arena_tmp);
+    rb_raise(cParseError, "Error comparing messages");
+  }
 }
 
 /*
@@ -741,8 +788,6 @@ static VALUE Message_deep_copy(VALUE _self) {
 VALUE Message_eq(VALUE _self, VALUE _other) {
   Message* self;
   Message* other;
-  const char *data1, *data2;
-  size_t size1, size2;
 
   if (TYPE(_self) != TYPE(_other)) {
     return Qfalse;
@@ -751,26 +796,12 @@ VALUE Message_eq(VALUE _self, VALUE _other) {
   TypedData_Get_Struct(_self, Message, &Message_type, self);
   TypedData_Get_Struct(_other, Message, &Message_type, other);
 
-  // Compare deterministically serialized payloads with no unknown fields.
-  upb_arena *arena = upb_arena_new();
-  data1 = upb_encode_ex(self->msg, upb_msgdef_layout(self->descriptor->msgdef),
-                        UPB_ENCODE_SKIPUNKNOWN | UPB_ENCODE_DETERMINISTIC,
-                        arena, &size1);
-  data2 = upb_encode_ex(
-      other->msg, upb_msgdef_layout(other->descriptor->msgdef),
-      UPB_ENCODE_SKIPUNKNOWN | UPB_ENCODE_DETERMINISTIC, arena, &size2);
-
-  if (data1 && data2) {
-    bool ret = size1 == size2 && memcmp(data1, data2, size1) == 0;
-    upb_arena_free(arena);
-    return ret ? Qtrue : Qfalse;
-  } else {
-    upb_arena_free(arena);
-    rb_raise(cParseError, "Error comparing messages");
-  }
+  return Message_Equal(self->msg, other->msg, self->descriptor->msgdef)
+             ? Qtrue
+             : Qfalse;
 }
 
-uint64_t Message_Hash(upb_msg *msg, const upb_msgdef *m, uint64_t seed) {
+uint64_t Message_Hash(const upb_msg* msg, const upb_msgdef* m, uint64_t seed) {
   upb_arena *arena = upb_arena_new();
   const char *data;
   size_t size;
@@ -1103,7 +1134,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
     return ret;
   } else {
     upb_arena_free(arena);
-    rb_raise(cParseError, "Error occurred during encoding");
+    rb_raise(rb_eRuntimeError, "Exceeded maximum depth (possibly cycle)");
   }
 }
 
@@ -1347,6 +1378,12 @@ VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
   } else if (klass == cMap) {
     return Map_deep_copy(obj);
   } else {
-    return Message_deep_copy(obj);
+    VALUE new_arena_rb = Arena_new();
+    upb_arena *new_arena = Arena_get(new_arena_rb);
+    Message *self;
+    TypedData_Get_Struct(obj, Message, &Message_type, self);
+    const upb_msgdef *m = self->descriptor->msgdef;
+    upb_msg* new_msg = Message_deep_copy(self->msg, m, new_arena);
+    return Message_GetRubyWrapper(new_msg, m, new_arena_rb);
   }
 }
