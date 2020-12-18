@@ -22,3 +22,7 @@ message UnpackedTest {
   repeated fixed32 f32_packed = 4 [packed = false];
   repeated fixed64 f64_packed = 5 [packed = false];
 }
+
+message TestLargeFieldNumber {
+  optional int32 i32 = 456214797;
+}

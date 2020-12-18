@@ -706,6 +706,14 @@ function test_encode_depth_limit()
   assert_error(function() upb.encode(msg) end)
 end
 
+function test_large_field_number()
+  local msg = upb_test.TestLargeFieldNumber()
+  msg.i32 = 5
+  local serialized = upb.encode(msg)
+  local msg2 = upb.decode(upb_test.TestLargeFieldNumber, serialized)
+  assert_equal(msg.i32, msg2.i32)
+end
+
 function test_gc()
   local top = test_messages_proto3.TestAllTypesProto3()
   local n = 100
