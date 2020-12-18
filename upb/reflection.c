@@ -136,7 +136,7 @@ upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
         val.double_val = upb_fielddef_defaultdouble(f);
         break;
       case UPB_TYPE_BOOL:
-        val.double_val = upb_fielddef_defaultbool(f);
+        val.bool_val = upb_fielddef_defaultbool(f);
         break;
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES:
@@ -359,6 +359,10 @@ size_t upb_map_size(const upb_map *map) {
 
 bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val) {
   return _upb_map_get(map, &key, map->key_size, val, map->val_size);
+}
+
+void upb_map_clear(upb_map *map) {
+  _upb_map_clear(map);
 }
 
 bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
