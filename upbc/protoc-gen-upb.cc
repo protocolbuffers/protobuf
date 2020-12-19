@@ -1,105 +1,29 @@
 
-#include "upbc/generator.h"
-
 #include <memory>
 
-#include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/wire_format.h"
+#include "upbc/common.h"
 #include "upbc/message_layout.h"
+
+namespace upbc {
+namespace {
 
 namespace protoc = ::google::protobuf::compiler;
 namespace protobuf = ::google::protobuf;
 
-static std::string StripExtension(absl::string_view fname) {
-  size_t lastdot = fname.find_last_of(".");
-  if (lastdot == std::string::npos) {
-    return std::string(fname);
-  }
-  return std::string(fname.substr(0, lastdot));
-}
-
-static std::string HeaderFilename(std::string proto_filename) {
+std::string HeaderFilename(std::string proto_filename) {
   return StripExtension(proto_filename) + ".upb.h";
 }
 
-static std::string SourceFilename(std::string proto_filename) {
+std::string SourceFilename(std::string proto_filename) {
   return StripExtension(proto_filename) + ".upb.c";
-}
-
-static std::string DefHeaderFilename(std::string proto_filename) {
-  return StripExtension(proto_filename) + ".upbdefs.h";
-}
-
-static std::string DefSourceFilename(std::string proto_filename) {
-  return StripExtension(proto_filename) + ".upbdefs.c";
-}
-
-class Output {
- public:
-  Output(protobuf::io::ZeroCopyOutputStream* stream) : stream_(stream) {}
-  ~Output() { stream_->BackUp((int)size_); }
-
-  template <class... Arg>
-  void operator()(absl::string_view format, const Arg&... arg) {
-    Write(absl::Substitute(format, arg...));
-  }
-
- private:
-  void Write(absl::string_view data) {
-    while (!data.empty()) {
-      RefreshOutput();
-      size_t to_write = std::min(data.size(), size_);
-      memcpy(ptr_, data.data(), to_write);
-      data.remove_prefix(to_write);
-      ptr_ += to_write;
-      size_ -= to_write;
-    }
-  }
-
-  void RefreshOutput() {
-    while (size_ == 0) {
-      void *ptr;
-      int size;
-      if (!stream_->Next(&ptr, &size)) {
-        fprintf(stderr, "upbc: Failed to write to to output\n");
-        abort();
-      }
-      ptr_ = static_cast<char*>(ptr);
-      size_ = size;
-    }
-  }
-
-  protobuf::io::ZeroCopyOutputStream* stream_;
-  char *ptr_ = nullptr;
-  size_t size_ = 0;
-};
-
-namespace upbc {
-
-class Generator : public protoc::CodeGenerator {
-  ~Generator() override {}
-  bool Generate(const protobuf::FileDescriptor* file,
-                const std::string& parameter, protoc::GeneratorContext* context,
-                std::string* error) const override;
-  uint64_t GetSupportedFeatures() const override {
-    return FEATURE_PROTO3_OPTIONAL;
-  }
-};
-
-void AddMessages(const protobuf::Descriptor* message,
-                 std::vector<const protobuf::Descriptor*>* messages) {
-  messages->push_back(message);
-  for (int i = 0; i < message->nested_type_count(); i++) {
-    AddMessages(message->nested_type(i), messages);
-  }
 }
 
 void AddEnums(const protobuf::Descriptor* message,
@@ -116,15 +40,6 @@ template <class T>
 void SortDefs(std::vector<T>* defs) {
   std::sort(defs->begin(), defs->end(),
             [](T a, T b) { return a->full_name() < b->full_name(); });
-}
-
-std::vector<const protobuf::Descriptor*> SortedMessages(
-    const protobuf::FileDescriptor* file) {
-  std::vector<const protobuf::Descriptor*> messages;
-  for (int i = 0; i < file->message_type_count(); i++) {
-    AddMessages(file->message_type(i), &messages);
-  }
-  return messages;
 }
 
 std::vector<const protobuf::EnumDescriptor*> SortedEnums(
@@ -172,32 +87,12 @@ std::vector<const protobuf::FieldDescriptor*> SortedSubmessages(
   return ret;
 }
 
-std::string ToCIdent(absl::string_view str) {
-  return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}});
-}
-
-std::string DefInitSymbol(const protobuf::FileDescriptor *file) {
-  return ToCIdent(file->name()) + "_upbdefinit";
-}
-
-std::string ToPreproc(absl::string_view str) {
-  return absl::AsciiStrToUpper(ToCIdent(str));
-}
-
 std::string EnumValueSymbol(const protobuf::EnumValueDescriptor* value) {
   return ToCIdent(value->full_name());
 }
 
 std::string GetSizeInit(const MessageLayout::Size& size) {
   return absl::Substitute("UPB_SIZE($0, $1)", size.size32, size.size64);
-}
-
-std::string MessageName(const protobuf::Descriptor* descriptor) {
-  return ToCIdent(descriptor->full_name());
-}
-
-std::string MessageInit(const protobuf::Descriptor* descriptor) {
-  return MessageName(descriptor) + "_msginit";
 }
 
 std::string CTypeInternal(const protobuf::FieldDescriptor* field,
@@ -318,18 +213,6 @@ void DumpEnumValues(const protobuf::EnumDescriptor* desc, Output& output) {
     }
     output("\n");
   }
-}
-
-void EmitFileWarning(const protobuf::FileDescriptor* file, Output& output) {
-  output(
-      "/* This file was generated by upbc (the upb compiler) from the input\n"
-      " * file:\n"
-      " *\n"
-      " *     $0\n"
-      " *\n"
-      " * Do not edit -- your changes will be discarded when the file is\n"
-      " * regenerated. */\n\n",
-      file->name());
 }
 
 void GenerateMessageInHeader(const protobuf::Descriptor* message, Output& output) {
@@ -1064,150 +947,47 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
   output("\n");
 }
 
-void GenerateMessageDefAccessor(const protobuf::Descriptor* d, Output& output) {
-  output("UPB_INLINE const upb_msgdef *$0_getmsgdef(upb_symtab *s) {\n",
-         ToCIdent(d->full_name()));
-  output("  _upb_symtab_loaddefinit(s, &$0);\n", DefInitSymbol(d->file()));
-  output("  return upb_symtab_lookupmsg(s, \"$0\");\n", d->full_name());
-  output("}\n");
-  output("\n");
-
-  for (int i = 0; i < d->nested_type_count(); i++) {
-    GenerateMessageDefAccessor(d->nested_type(i), output);
+class Generator : public protoc::CodeGenerator {
+  ~Generator() override {}
+  bool Generate(const protobuf::FileDescriptor* file,
+                const std::string& parameter, protoc::GeneratorContext* context,
+                std::string* error) const override;
+  uint64_t GetSupportedFeatures() const override {
+    return FEATURE_PROTO3_OPTIONAL;
   }
-}
-
-void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
-  EmitFileWarning(file, output);
-
-  output(
-      "#ifndef $0_UPBDEFS_H_\n"
-      "#define $0_UPBDEFS_H_\n\n"
-      "#include \"upb/def.h\"\n"
-      "#include \"upb/port_def.inc\"\n"
-      "#ifdef __cplusplus\n"
-      "extern \"C\" {\n"
-      "#endif\n\n",
-      ToPreproc(file->name()));
-
-  output("#include \"upb/def.h\"\n");
-  output("\n");
-  output("#include \"upb/port_def.inc\"\n");
-  output("\n");
-
-  output("extern upb_def_init $0;\n", DefInitSymbol(file));
-  output("\n");
-
-  for (int i = 0; i < file->message_type_count(); i++) {
-    GenerateMessageDefAccessor(file->message_type(i), output);
-  }
-
-  output(
-      "#ifdef __cplusplus\n"
-      "}  /* extern \"C\" */\n"
-      "#endif\n"
-      "\n"
-      "#include \"upb/port_undef.inc\"\n"
-      "\n"
-      "#endif  /* $0_UPBDEFS_H_ */\n",
-      ToPreproc(file->name()));
-}
-
-// Escape C++ trigraphs by escaping question marks to \?
-std::string EscapeTrigraphs(absl::string_view to_escape) {
-  return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
-}
-
-void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
-  EmitFileWarning(file, output);
-
-  output("#include \"upb/def.h\"\n");
-  output("#include \"$0\"\n", DefHeaderFilename(file->name()));
-  output("\n");
-
-  for (int i = 0; i < file->dependency_count(); i++) {
-    output("extern upb_def_init $0;\n", DefInitSymbol(file->dependency(i)));
-  }
-
-  std::vector<const protobuf::Descriptor*> file_messages =
-      SortedMessages(file);
-
-  for (auto message : file_messages) {
-    output("extern const upb_msglayout $0;\n", MessageInit(message));
-  }
-  output("\n");
-
-  if (!file_messages.empty()) {
-    output("static const upb_msglayout *layouts[$0] = {\n", file_messages.size());
-    for (auto message : file_messages) {
-      output("  &$0,\n", MessageInit(message));
-    }
-    output("};\n");
-    output("\n");
-  }
-
-  protobuf::FileDescriptorProto file_proto;
-  file->CopyTo(&file_proto);
-  std::string file_data;
-  file_proto.SerializeToString(&file_data);
-
-  output("static const char descriptor[$0] = {", file_data.size());
-
-  // C90 only guarantees that strings can be up to 509 characters, and some
-  // implementations have limits here (for example, MSVC only allows 64k:
-  // https://docs.microsoft.com/en-us/cpp/error-messages/compiler-errors-1/fatal-error-c1091.
-  // So we always emit an array instead of a string.
-  for (size_t i = 0; i < file_data.size();) {
-    for (size_t j = 0; j < 25 && i < file_data.size(); ++i, ++j) {
-      output("'$0', ", absl::CEscape(file_data.substr(i, 1)));
-    }
-    output("\n");
-  }
-  output("};\n\n");
-
-  output("static upb_def_init *deps[$0] = {\n", file->dependency_count() + 1);
-  for (int i = 0; i < file->dependency_count(); i++) {
-    output("  &$0,\n", DefInitSymbol(file->dependency(i)));
-  }
-  output("  NULL\n");
-  output("};\n");
-  output("\n");
-
-  output("upb_def_init $0 = {\n", DefInitSymbol(file));
-  output("  deps,\n");
-  if (file_messages.empty()) {
-    output("  NULL,\n");
-  } else {
-    output("  layouts,\n");
-  }
-  output("  \"$0\",\n", file->name());
-  output("  UPB_STRVIEW_INIT(descriptor, $0)\n", file_data.size());
-  output("};\n");
-}
+};
 
 bool Generator::Generate(const protobuf::FileDescriptor* file,
                          const std::string& parameter,
                          protoc::GeneratorContext* context,
-                         std::string* /* error */) const {
-  bool fasttable_enabled = parameter == "fasttable";
+                         std::string* error) const {
+  bool fasttable_enabled = false;
+  std::vector<std::pair<std::string, std::string>> params;
+  google::protobuf::compiler::ParseGeneratorParameter(parameter, &params);
+
+  for (const auto& pair : params) {
+    if (pair.first == "fasttable") {
+      fasttable_enabled = true;
+    } else {
+      *error = "Unknown parameter: " + pair.first;
+      return false;
+    }
+  }
+
   Output h_output(context->Open(HeaderFilename(file->name())));
   WriteHeader(file, h_output);
 
   Output c_output(context->Open(SourceFilename(file->name())));
   WriteSource(file, c_output, fasttable_enabled);
 
-  Output h_def_output(context->Open(DefHeaderFilename(file->name())));
-  WriteDefHeader(file, h_def_output);
-
-  Output c_def_output(context->Open(DefSourceFilename(file->name())));
-  WriteDefSource(file, c_def_output);
-
   return true;
 }
 
-std::unique_ptr<google::protobuf::compiler::CodeGenerator> GetGenerator() {
-  return std::unique_ptr<google::protobuf::compiler::CodeGenerator>(
-      new Generator());
-}
-
+}  // namespace
 }  // namespace upbc
+
+int main(int argc, char** argv) {
+  std::unique_ptr<google::protobuf::compiler::CodeGenerator> generator(
+      new upbc::Generator());
+  return google::protobuf::compiler::PluginMain(argc, argv, generator.get());
+}
