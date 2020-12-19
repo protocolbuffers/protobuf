@@ -136,7 +136,7 @@
 
 /* Configure whether fasttable is switched on or not. *************************/
 
-#if defined(__x86_64__) && defined(__GNUC__)
+#if (defined(__x86_64__) || defined(__aarch64__)) && defined(__GNUC__)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
 #define UPB_FASTTABLE_SUPPORTED 0
