@@ -155,14 +155,16 @@ void StringBuilder_Printf(StringBuilder* b, const char *fmt, ...) {
 }
 
 VALUE StringBuilder_ToRubyString(StringBuilder* b) {
-  return rb_str_new(b->data, b->size);
+  VALUE ret = rb_str_new(b->data, b->size);
+  rb_enc_associate(ret, kRubyStringUtf8Encoding);
+  return ret;
 }
 
 static void StringBuilder_PrintEnum(StringBuilder* b, int32_t val,
                                     const upb_enumdef* e) {
   const char *name = upb_enumdef_iton(e, val);
   if (name) {
-    StringBuilder_Printf(b, "%s", name);
+    StringBuilder_Printf(b, ":%s", name);
   } else {
     StringBuilder_Printf(b, "%" PRId32, val);
   }

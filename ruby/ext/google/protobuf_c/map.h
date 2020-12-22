@@ -39,7 +39,7 @@ VALUE Map_deep_copy(VALUE obj);
 
 VALUE Map_GetRubyWrapper(upb_map *map, upb_fieldtype_t key_type,
                          TypeInfo value_type, VALUE arena);
-upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field);
+const upb_map *Map_GetUpbMap(VALUE val, const upb_fielddef *field);
 void Map_Inspect(StringBuilder *b, const upb_map *map, upb_fieldtype_t key_type,
                  TypeInfo val_type);
 

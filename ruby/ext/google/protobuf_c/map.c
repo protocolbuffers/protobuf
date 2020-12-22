@@ -47,6 +47,14 @@
 // Map container type.
 // -----------------------------------------------------------------------------
 
+typedef struct {
+  const upb_map *map;  // Can convert to mutable when non-frozen.
+  upb_fieldtype_t key_type;
+  TypeInfo value_type_info;
+  VALUE value_type_class;
+  VALUE arena;
+} Map;
+
 static void Map_mark(void* _self) {
   Map* self = _self;
   rb_gc_mark(self->value_type_class);
@@ -69,6 +77,7 @@ static VALUE Map_alloc(VALUE klass) {
   Map* self = ALLOC(Map);
   self->map = NULL;
   self->value_type_class = Qnil;
+  self->value_type_info.def.msgdef = NULL;
   self->arena = Qnil;
   return TypedData_Wrap_Struct(klass, &Map_type, self);
 }
@@ -110,6 +119,11 @@ static Map* ruby_to_Map(VALUE _self) {
   return self;
 }
 
+static upb_map *Map_GetMutable(VALUE _self) {
+  rb_check_frozen(_self);
+  return (upb_map*)ruby_to_Map(_self)->map;
+}
+
 VALUE Map_deep_copy(VALUE obj) {
   Map* self = ruby_to_Map(obj);
   VALUE new_arena_rb = Arena_new();
@@ -128,7 +142,7 @@ VALUE Map_deep_copy(VALUE obj) {
                             new_arena_rb);
 }
 
-upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field) {
+const upb_map* Map_GetUpbMap(VALUE val, const upb_fielddef *field) {
   const upb_fielddef* key_field = map_field_key(field);
   const upb_fielddef* value_field = map_field_value(field);
   TypeInfo value_type_info = TypeInfo_get(value_field);
@@ -191,7 +205,7 @@ static int merge_into_self_callback(VALUE key, VALUE val, VALUE _self) {
   upb_arena *arena = Arena_get(self->arena);
   upb_msgval key_val = Convert_RubyToUpb(key, "", Map_keyinfo(self), arena);
   upb_msgval val_val = Convert_RubyToUpb(val, "", self->value_type_info, arena);
-  upb_map_set(self->map, key_val, val_val, arena);
+  upb_map_set(Map_GetMutable(_self), key_val, val_val, arena);
   return ST_CONTINUE;
 }
 
@@ -204,6 +218,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     Map* self = ruby_to_Map(_self);
     Map* other = ruby_to_Map(hashmap);
     upb_arena *arena = Arena_get(self->arena);
+    upb_msg *self_msg = Map_GetMutable(_self);
     size_t iter = UPB_MAP_BEGIN;
 
     upb_arena_fuse(arena, Arena_get(other->arena));
@@ -217,7 +232,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
     while (upb_mapiter_next(other->map, &iter)) {
       upb_msgval key = upb_mapiter_key(other->map, iter);
       upb_msgval val = upb_mapiter_value(other->map, iter);
-      upb_map_set(self->map, key, val, arena);
+      upb_map_set(self_msg, key, val, arena);
     }
   } else {
     rb_raise(rb_eArgError, "Unknown type merging into Map");
@@ -409,7 +424,7 @@ static VALUE Map_index_set(VALUE _self, VALUE key, VALUE val) {
   upb_msgval key_upb = Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
   upb_msgval val_upb = Convert_RubyToUpb(val, "", self->value_type_info, arena);
 
-  upb_map_set(self->map, key_upb, val_upb, arena);
+  upb_map_set(Map_GetMutable(_self), key_upb, val_upb, arena);
 
   return val;
 }
@@ -455,7 +470,7 @@ static VALUE Map_delete(VALUE _self, VALUE key) {
     ret = Qnil;
   }
 
-  upb_map_delete(self->map, key_upb);
+  upb_map_delete(Map_GetMutable(_self), key_upb);
 
   return ret;
 }
@@ -467,11 +482,7 @@ static VALUE Map_delete(VALUE _self, VALUE key) {
  * Removes all entries from the map.
  */
 static VALUE Map_clear(VALUE _self) {
-  Map* self = ruby_to_Map(_self);
-
-  rb_check_frozen(_self);
-  upb_map_clear(self->map);
-
+  upb_map_clear(Map_GetMutable(_self));
   return Qnil;
 }
 
@@ -510,20 +521,21 @@ static VALUE Map_new_this_type(VALUE _self) {
  */
 static VALUE Map_dup(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  VALUE new_map = Map_new_this_type(_self);
-  Map* new_self = ruby_to_Map(new_map);
+  VALUE new_map_rb = Map_new_this_type(_self);
+  Map* new_self = ruby_to_Map(new_map_rb);
   size_t iter = UPB_MAP_BEGIN;
   upb_arena *arena = Arena_get(new_self->arena);
+  upb_map *new_map = Map_GetMutable(new_map_rb);
 
   upb_arena_fuse(arena, Arena_get(self->arena));
 
   while (upb_mapiter_next(self->map, &iter)) {
     upb_msgval key = upb_mapiter_key(self->map, iter);
     upb_msgval val = upb_mapiter_value(self->map, iter);
-    upb_map_set(new_self->map, key, val, arena);
+    upb_map_set(new_map, key, val, arena);
   }
 
-  return new_map;
+  return new_map_rb;
 }
 
 /*

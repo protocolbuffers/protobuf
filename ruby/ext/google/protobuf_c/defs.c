@@ -1128,7 +1128,7 @@ VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
     rb_raise(rb_eArgError, "does not track presence");
   }
 
-  return upb_msg_has(msg->msg, self->fielddef);
+  return upb_msg_has(msg->msg, self->fielddef) ? Qtrue : Qfalse;
 }
 
 /*

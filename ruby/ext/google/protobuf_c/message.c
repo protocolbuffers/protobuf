@@ -98,8 +98,8 @@ void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,
                           const upb_msgdef* m) {
   bool first = true;
   int n = upb_msgdef_fieldcount(m);
-
-  StringBuilder_Printf(b, "<%s: ", upb_msgdef_fullname(m));
+  VALUE klass = Descriptor_DefToClass(m);
+  StringBuilder_Printf(b, "<%s: ", rb_class2name(klass));
 
   for (int i = 0; i < n; i++) {
     const upb_fielddef* field = upb_msgdef_field(m, i);

@@ -450,7 +450,6 @@ VALUE RepeatedField_to_ary(VALUE _self) {
 VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
   RepeatedField* self;
   RepeatedField* other;
-  size_t i;
 
   if (_self == _other) {
     return Qtrue;

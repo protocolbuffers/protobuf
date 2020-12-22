@@ -441,18 +441,6 @@ void validate_type_class(upb_fieldtype_t type, VALUE klass);
 extern const rb_data_type_t RepeatedField_type;
 extern VALUE cRepeatedField;
 
-// -----------------------------------------------------------------------------
-// Map container type.
-// -----------------------------------------------------------------------------
-
-typedef struct {
-  upb_map *map;
-  upb_fieldtype_t key_type;
-  TypeInfo value_type_info;
-  VALUE value_type_class;
-  VALUE arena;
-} Map;
-
 extern VALUE cMap;
 
 bool is_wrapper_type_field(const upb_fielddef* field);
