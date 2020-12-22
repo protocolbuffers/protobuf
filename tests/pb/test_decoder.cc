@@ -557,7 +557,7 @@ string wrap_text(int32_t fn, const string& text) {
   string wrapped_text = text;
   size_t pos = 0;
   string replace_with = "\n  ";
-  while ((pos = wrapped_text.find("\n", pos)) != string::npos &&
+  while ((pos = wrapped_text.find('\n', pos)) != string::npos &&
          pos != wrapped_text.size() - 1) {
     wrapped_text.replace(pos, 1, replace_with);
     pos += replace_with.size();
