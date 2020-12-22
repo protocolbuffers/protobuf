@@ -444,7 +444,7 @@ static void encode_message(upb_encstate *e, const char *msg,
   *size = (e->limit - e->ptr) - pre_len;
 }
 
-char *upb_encode_ex(const void *msg, const upb_msglayout *m, int options,
+char *upb_encode_ex(const void *msg, const upb_msglayout *l, int options,
                     upb_arena *arena, size_t *size) {
   upb_encstate e;
   unsigned depth = (unsigned)options >> 16;
@@ -462,7 +462,7 @@ char *upb_encode_ex(const void *msg, const upb_msglayout *m, int options,
     *size = 0;
     ret = NULL;
   } else {
-    encode_message(&e, msg, m, size);
+    encode_message(&e, msg, l, size);
     *size = e.limit - e.ptr;
     if (*size == 0) {
       static char ch;
