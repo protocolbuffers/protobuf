@@ -1070,7 +1070,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             " }\n",
             descriptor_->field(1)->full_name());
       } else {
-        GOOGLE_CHECK(utf8_check = VERIFY);
+        GOOGLE_CHECK(utf8_check == VERIFY);
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "#ifndef NDEBUG\n"
