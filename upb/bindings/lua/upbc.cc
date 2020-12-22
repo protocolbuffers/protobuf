@@ -19,7 +19,7 @@ class LuaGenerator : public protoc::CodeGenerator {
 };
 
 static std::string StripExtension(absl::string_view fname) {
-  size_t lastdot = fname.find_last_of(".");
+  size_t lastdot = fname.find_last_of('.');
   if (lastdot == std::string::npos) {
     return std::string(fname);
   }
