@@ -52,5 +52,4 @@ bool Message_Equal(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m);
 void Message_CheckClass(VALUE klass);
 VALUE Scalar_CreateHash(upb_msgval val, TypeInfo type_info);
 
-
 #endif  // RUBY_PROTOBUF_MESSAGE_H_

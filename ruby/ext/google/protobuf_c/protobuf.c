@@ -38,7 +38,6 @@
 VALUE cError;
 VALUE cParseError;
 VALUE cTypeError;
-VALUE c_only_cookie = Qnil;
 
 static VALUE cached_empty_string = Qnil;
 static VALUE cached_empty_bytes = Qnil;
@@ -83,7 +82,6 @@ const upb_fielddef* map_field_value(const upb_fielddef* field) {
 // String encodings: we look these up once, at load time, and then cache them
 // here.
 rb_encoding* kRubyStringUtf8Encoding;
-rb_encoding* kRubyStringASCIIEncoding;
 rb_encoding* kRubyString8bitEncoding;
 
 // Ruby-interned string: "descriptor". We use this identifier to store an
@@ -356,11 +354,7 @@ void Init_protobuf_c() {
                              Google_Protobuf_deep_copy, 1);
 
   kRubyStringUtf8Encoding = rb_utf8_encoding();
-  kRubyStringASCIIEncoding = rb_usascii_encoding();
   kRubyString8bitEncoding = rb_ascii8bit_encoding();
-
-  rb_gc_register_address(&c_only_cookie);
-  c_only_cookie = rb_class_new_instance(0, NULL, rb_cObject);
 
   rb_gc_register_address(&cached_empty_string);
   rb_gc_register_address(&cached_empty_bytes);

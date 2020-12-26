@@ -49,7 +49,6 @@ typedef struct {
   } def;
 } TypeInfo;
 
-extern VALUE cError;
 extern VALUE cParseError;
 extern VALUE cTypeError;
 
@@ -84,7 +83,6 @@ static inline TypeInfo TypeInfo_from_type(upb_fieldtype_t type) {
 // -----------------------------------------------------------------------------
 
 extern rb_encoding* kRubyStringUtf8Encoding;
-extern rb_encoding* kRubyStringASCIIEncoding;
 extern rb_encoding* kRubyString8bitEncoding;
 
 // These operate on a map field (i.e., a repeated field of submessages whose
@@ -156,11 +154,6 @@ void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val, TypeInfo info);
 // -----------------------------------------------------------------------------
 
 extern ID descriptor_instancevar_interned;
-
-// A distinct object that is not accessible from Ruby.  We use this as a
-// constructor argument to enforce that certain objects cannot be created from
-// Ruby.
-extern VALUE c_only_cookie;
 
 #ifdef NDEBUG
 #define PBRUBY_ASSERT(expr) do {} while (false && (expr))

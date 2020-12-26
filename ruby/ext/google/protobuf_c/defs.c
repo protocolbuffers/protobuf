@@ -37,14 +37,15 @@
 
 VALUE Builder_build(VALUE _self);
 
-extern VALUE cFileDescriptor;
-extern VALUE cFieldDescriptor;
-extern VALUE cEnumDescriptor;
 extern VALUE cMessageBuilderContext;
 extern VALUE cOneofBuilderContext;
 extern VALUE cEnumBuilderContext;
-extern VALUE cFileBuilderContext;
 extern VALUE cBuilder;
+
+// A distinct object that is not accessible from Ruby.  We use this as a
+// constructor argument to enforce that certain objects cannot be created from
+// Ruby.
+VALUE c_only_cookie = Qnil;
 
 // -----------------------------------------------------------------------------
 // Common utilities.
@@ -2523,4 +2524,7 @@ void Defs_register(VALUE module) {
   OneofBuilderContext_register(module);
   EnumBuilderContext_register(module);
   Builder_register(module);
+
+  rb_gc_register_address(&c_only_cookie);
+  c_only_cookie = rb_class_new_instance(0, NULL, rb_cObject);
 }
