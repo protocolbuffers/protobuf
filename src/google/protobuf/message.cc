@@ -363,3 +363,5 @@ PROTOBUF_NOINLINE
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

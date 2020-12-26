@@ -82,7 +82,7 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
   GPBExtensionDescriptor *autocreatorExtension_;
 
   // Message can only be mutated from one thread. But some *readonly* operations
-  // modifify internal state because they autocreate things. The
+  // modify internal state because they autocreate things. The
   // autocreatedExtensionMap_ is one such structure. Access during readonly
   // operations is protected via this semaphore.
   // NOTE: OSSpinLock may seem like a good fit here but Apple engineers have

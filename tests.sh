@@ -726,6 +726,7 @@ Usage: $0 { cpp |
             php7.1   |
             php7.1_c |
             php_all |
+            php8.0_all |
             dist_install |
             benchmark)
 "

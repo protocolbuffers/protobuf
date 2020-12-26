@@ -2255,7 +2255,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
     if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
       options.aggregate_metadata = true;
       for (const auto& prefix : Split(option_pair[1], "#", false)) {
-        options.aggregate_metadata_prefixes.insert(prefix);
+        options.aggregate_metadata_prefixes.emplace(prefix);
         GOOGLE_LOG(INFO) << prefix;
       }
     } else if (option_pair[0] == "internal") {

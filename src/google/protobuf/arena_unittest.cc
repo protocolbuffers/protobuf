@@ -1331,7 +1331,7 @@ void ClearHookCounts() {
 }  // namespace
 
 // A helper utility class that handles arena callbacks.
-class ArenaOptionsTestFriend : public internal::ArenaMetricsCollector {
+class ArenaOptionsTestFriend final : public internal::ArenaMetricsCollector {
  public:
   static internal::ArenaMetricsCollector* NewWithAllocs() {
     return new ArenaOptionsTestFriend(true);
@@ -1352,7 +1352,7 @@ class ArenaOptionsTestFriend : public internal::ArenaMetricsCollector {
   }
 
   explicit ArenaOptionsTestFriend(bool record_allocs)
-      : record_allocs_(record_allocs) {
+      : ArenaMetricsCollector(record_allocs) {
     ++hooks_num_init;
   }
   void OnDestroy(uint64 space_allocated) override {
@@ -1360,14 +1360,10 @@ class ArenaOptionsTestFriend : public internal::ArenaMetricsCollector {
     delete this;
   }
   void OnReset(uint64 space_allocated) override { ++hooks_num_reset; }
-  bool RecordAllocs() override { return record_allocs_; }
   void OnAlloc(const std::type_info* allocated_type,
                uint64 alloc_size) override {
     ++hooks_num_allocations;
   }
-
- private:
-  bool record_allocs_;
 };
 
 // Test the hooks are correctly called.
@@ -1408,3 +1404,5 @@ TEST(ArenaTest, ArenaHooksWhenAllocationsNotNeeded) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

@@ -89,6 +89,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Benchmarks/BenchmarkDatasetConfig.cs            \
   csharp/src/Google.Protobuf.Benchmarks/BenchmarkMessage1Proto3.cs           \
   csharp/src/Google.Protobuf.Benchmarks/Benchmarks.cs                        \
+  csharp/src/Google.Protobuf.Benchmarks/ByteStringBenchmark.cs               \
   csharp/src/Google.Protobuf.Benchmarks/Google.Protobuf.Benchmarks.csproj    \
   csharp/src/Google.Protobuf.Benchmarks/GoogleMessageBenchmark.cs            \
   csharp/src/Google.Protobuf.Benchmarks/ParseMessagesBenchmark.cs            \
@@ -171,6 +172,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.sln                                             \
   csharp/src/Google.Protobuf/ByteArray.cs                                    \
   csharp/src/Google.Protobuf/ByteString.cs                                   \
+  csharp/src/Google.Protobuf/ByteStringAsync.cs                              \
   csharp/src/Google.Protobuf/CodedInputStream.cs                             \
   csharp/src/Google.Protobuf/CodedOutputStream.ComputeSize.cs                \
   csharp/src/Google.Protobuf/CodedOutputStream.cs                            \
@@ -268,7 +270,8 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WriteContext.cs                                 \
   csharp/src/Google.Protobuf/WriteBufferHelper.cs                            \
   csharp/src/Google.Protobuf/UnknownField.cs                                 \
-  csharp/src/Google.Protobuf/UnknownFieldSet.cs
+  csharp/src/Google.Protobuf/UnknownFieldSet.cs                              \
+  csharp/src/Google.Protobuf/UnsafeByteOperations.cs
 
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \

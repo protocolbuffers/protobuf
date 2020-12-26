@@ -297,6 +297,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
+  UNREGISTER_INI_ENTRIES();
   return SUCCESS;
 }
 

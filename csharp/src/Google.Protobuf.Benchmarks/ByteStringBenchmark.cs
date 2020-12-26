@@ -1,6 +1,7 @@
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+// Copyright 2019 Google Inc.  All rights reserved.
+// https://github.com/protocolbuffers/protobuf
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -27,18 +28,45 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#endregion
 
-syntax = "proto3";
+using BenchmarkDotNet.Attributes;
 
-package protobuf_unittest;
+namespace Google.Protobuf.Benchmarks
+{
+    /// <summary>
+    /// Benchmarks using ByteString.
+    /// </summary>
+    [MemoryDiagnoser]
+    public class ByteStringBenchmark
+    {
+        private const int Zero = 0;
+        private const int Kilobyte = 1024;
+        private const int _128Kilobytes = 1024 * 128;
+        private const int Megabyte = 1024 * 1024;
+        private const int _10Megabytes = 1024 * 1024 * 10;
 
-import "google/protobuf/any.proto";
+        byte[] byteBuffer;
 
-option java_outer_classname = "TestAnyProto";
+        [GlobalSetup]
+        public void GlobalSetup()
+        {
+            byteBuffer = new byte[PayloadSize];
+        }
 
-message TestAny {
-  int32 int32_value = 1;
-  google.protobuf.Any any_value = 2;
-  repeated google.protobuf.Any repeated_any_value = 3;
-  string text = 4;
+        [Params(Zero, Kilobyte, _128Kilobytes, Megabyte, _10Megabytes)]
+        public int PayloadSize { get; set; }
+
+        [Benchmark]
+        public ByteString CopyFrom()
+        {
+            return ByteString.CopyFrom(byteBuffer);
+        }
+
+        [Benchmark]
+        public ByteString UnsafeWrap()
+        {
+            return UnsafeByteOperations.UnsafeWrap(byteBuffer);
+        }
+    }
 }

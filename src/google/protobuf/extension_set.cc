@@ -180,7 +180,6 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* containing_type,
   Register(containing_type, number, info);
 }
 
-
 // ===================================================================
 // Constructors and basic methods.
 
@@ -2141,3 +2140,5 @@ size_t ExtensionSet::MessageSetByteSize() const {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

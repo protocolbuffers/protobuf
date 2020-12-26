@@ -11,9 +11,11 @@ PHP_VERSION=$(php -r "echo PHP_VERSION;")
 
 # Each version of PHPUnit supports a fairly narrow range of PHP versions.
 case "$PHP_VERSION" in
-  7.0.*|7.1.*|7.2.*)
-    # Oddly older than for 5.6. Not sure the reason.
-    PHPUNIT=phpunit-5.6.0.phar
+  7.0.*)
+    PHPUNIT=phpunit-6.phar
+    ;;
+  7.1.*|7.2.*)
+    PHPUNIT=phpunit-7.5.0.phar
     ;;
   7.3.*|7.4.*)
     PHPUNIT=phpunit-8.phar

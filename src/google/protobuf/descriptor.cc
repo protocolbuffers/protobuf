@@ -855,15 +855,15 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
   GOOGLE_DCHECK(!checkpoints_.empty());
   const CheckPoint& checkpoint = checkpoints_.back();
 
-  for (int i = checkpoint.pending_symbols_before_checkpoint;
+  for (size_t i = checkpoint.pending_symbols_before_checkpoint;
        i < symbols_after_checkpoint_.size(); i++) {
     symbols_by_name_.erase(symbols_after_checkpoint_[i]);
   }
-  for (int i = checkpoint.pending_files_before_checkpoint;
+  for (size_t i = checkpoint.pending_files_before_checkpoint;
        i < files_after_checkpoint_.size(); i++) {
     files_by_name_.erase(files_after_checkpoint_[i]);
   }
-  for (int i = checkpoint.pending_extensions_before_checkpoint;
+  for (size_t i = checkpoint.pending_extensions_before_checkpoint;
        i < extensions_after_checkpoint_.size(); i++) {
     extensions_.erase(extensions_after_checkpoint_[i]);
   }
@@ -4203,13 +4203,13 @@ void DescriptorBuilder::AllocateOptionsImpl(
 void DescriptorBuilder::AddRecursiveImportError(
     const FileDescriptorProto& proto, int from_here) {
   std::string error_message("File recursively imports itself: ");
-  for (int i = from_here; i < tables_->pending_files_.size(); i++) {
+  for (size_t i = from_here; i < tables_->pending_files_.size(); i++) {
     error_message.append(tables_->pending_files_[i]);
     error_message.append(" -> ");
   }
   error_message.append(proto.name());
 
-  if (from_here < tables_->pending_files_.size() - 1) {
+  if (static_cast<size_t>(from_here) < tables_->pending_files_.size() - 1) {
     AddError(tables_->pending_files_[from_here + 1], proto,
              DescriptorPool::ErrorCollector::IMPORT, error_message);
   } else {
@@ -4282,7 +4282,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   //   mid-file, but that's pretty ugly, and I'm pretty sure there are
   //   some languages out there that do not allow recursive dependencies
   //   at all.
-  for (int i = 0; i < tables_->pending_files_.size(); i++) {
+  for (size_t i = 0; i < tables_->pending_files_.size(); i++) {
     if (tables_->pending_files_[i] == proto.name()) {
       AddRecursiveImportError(proto, i);
       return nullptr;
@@ -6702,10 +6702,10 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
     if (matched) {
       // see if this location is in the range to remove
       bool loc_matches = true;
-      if (loc->path_size() < pathv.size()) {
+      if (loc->path_size() < static_cast<int64>(pathv.size())) {
         loc_matches = false;
       } else {
-        for (int j = 0; j < pathv.size(); j++) {
+        for (size_t j = 0; j < pathv.size(); j++) {
           if (loc->path(j) != pathv[j]) {
             loc_matches = false;
             break;
@@ -7444,3 +7444,5 @@ void LazyDescriptor::OnceInternal() {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

@@ -191,17 +191,17 @@ public final class MapLiteTest extends TestCase {
   }
 
   private void assertMapValuesCleared(TestMapOrBuilder testMapOrBuilder) {
-    assertEquals(0, testMapOrBuilder.getInt32ToInt32Field().size());
+    assertEquals(0, testMapOrBuilder.getInt32ToInt32FieldMap().size());
     assertEquals(0, testMapOrBuilder.getInt32ToInt32FieldCount());
-    assertEquals(0, testMapOrBuilder.getInt32ToStringField().size());
+    assertEquals(0, testMapOrBuilder.getInt32ToStringFieldMap().size());
     assertEquals(0, testMapOrBuilder.getInt32ToStringFieldCount());
-    assertEquals(0, testMapOrBuilder.getInt32ToBytesField().size());
+    assertEquals(0, testMapOrBuilder.getInt32ToBytesFieldMap().size());
     assertEquals(0, testMapOrBuilder.getInt32ToBytesFieldCount());
-    assertEquals(0, testMapOrBuilder.getInt32ToEnumField().size());
+    assertEquals(0, testMapOrBuilder.getInt32ToEnumFieldMap().size());
     assertEquals(0, testMapOrBuilder.getInt32ToEnumFieldCount());
-    assertEquals(0, testMapOrBuilder.getInt32ToMessageField().size());
+    assertEquals(0, testMapOrBuilder.getInt32ToMessageFieldMap().size());
     assertEquals(0, testMapOrBuilder.getInt32ToMessageFieldCount());
-    assertEquals(0, testMapOrBuilder.getStringToInt32Field().size());
+    assertEquals(0, testMapOrBuilder.getStringToInt32FieldMap().size());
     assertEquals(0, testMapOrBuilder.getStringToInt32FieldCount());
   }
 
@@ -232,13 +232,13 @@ public final class MapLiteTest extends TestCase {
   }
 
   private void assertMapsAreImmutable(TestMapOrBuilder testMapOrBuilder) {
-    assertImmutable(testMapOrBuilder.getInt32ToInt32Field(), 1, 2);
-    assertImmutable(testMapOrBuilder.getInt32ToStringField(), 1, "2");
-    assertImmutable(testMapOrBuilder.getInt32ToBytesField(), 1, TestUtil.toBytes("2"));
-    assertImmutable(testMapOrBuilder.getInt32ToEnumField(), 1, TestMap.EnumValue.FOO);
+    assertImmutable(testMapOrBuilder.getInt32ToInt32FieldMap(), 1, 2);
+    assertImmutable(testMapOrBuilder.getInt32ToStringFieldMap(), 1, "2");
+    assertImmutable(testMapOrBuilder.getInt32ToBytesFieldMap(), 1, TestUtil.toBytes("2"));
+    assertImmutable(testMapOrBuilder.getInt32ToEnumFieldMap(), 1, TestMap.EnumValue.FOO);
     assertImmutable(
-        testMapOrBuilder.getInt32ToMessageField(), 1, MessageValue.getDefaultInstance());
-    assertImmutable(testMapOrBuilder.getStringToInt32Field(), "1", 2);
+        testMapOrBuilder.getInt32ToMessageFieldMap(), 1, MessageValue.getDefaultInstance());
+    assertImmutable(testMapOrBuilder.getStringToInt32FieldMap(), "1", 2);
   }
 
   private <K, V> void assertImmutable(Map<K, V> map, K key, V value) {

@@ -428,7 +428,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 template <uint32 tag>
 bool ExpectTag(const char* ptr) {
   if (tag < 128) {
-    return *ptr == tag;
+    return *ptr == static_cast<char>(tag);
   } else {
     static_assert(tag < 128 * 128, "We only expect tags for 1 or 2 bytes");
     char buf[2] = {static_cast<char>(tag | 0x80), static_cast<char>(tag >> 7)};

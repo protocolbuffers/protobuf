@@ -1,3 +1,4 @@
+﻿#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -27,18 +28,37 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#endregion
 
-syntax = "proto3";
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
-package protobuf_unittest;
-
-import "google/protobuf/any.proto";
-
-option java_outer_classname = "TestAnyProto";
-
-message TestAny {
-  int32 int32_value = 1;
-  google.protobuf.Any any_value = 2;
-  repeated google.protobuf.Any repeated_any_value = 3;
-  string text = 4;
+namespace Google.Protobuf
+{
+    /// <summary>
+    /// SecuritySafeCritical attribute can not be placed on types with async methods.
+    /// This class has ByteString's async methods so it can be marked with SecuritySafeCritical.
+    /// </summary>
+    internal static class ByteStringAsync
+    {
+#if !NET35
+        internal static async Task<ByteString> FromStreamAsyncCore(Stream stream, CancellationToken cancellationToken)
+        {
+            int capacity = stream.CanSeek ? checked((int)(stream.Length - stream.Position)) : 0;
+            var memoryStream = new MemoryStream(capacity);
+            // We have to specify the buffer size here, as there's no overload accepting the cancellation token
+            // alone. But it's documented to use 81920 by default if not specified.
+            await stream.CopyToAsync(memoryStream, 81920, cancellationToken);
+#if NETSTANDARD1_1
+            byte[] bytes = memoryStream.ToArray();
+#else
+            // Avoid an extra copy if we can.
+            byte[] bytes = memoryStream.Length == memoryStream.Capacity ? memoryStream.GetBuffer() : memoryStream.ToArray();
+#endif
+            return ByteString.AttachBytes(bytes);
+        }
+#endif
+    }
 }

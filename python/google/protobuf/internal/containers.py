@@ -231,6 +231,9 @@ class BaseContainer(object):
       kwargs['cmp'] = kwargs.pop('sort_function')
     self._values.sort(*args, **kwargs)
 
+  def reverse(self):
+    self._values.reverse()
+
 
 collections_abc.MutableSequence.register(BaseContainer)
 

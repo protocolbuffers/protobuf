@@ -11,7 +11,7 @@
 cd $(dirname $0)/../../..
 
 export DOCKERHUB_ORGANIZATION=protobuftesting
-export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/php
+export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/php80
 export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker.sh
 export OUTPUT_DIR=testoutput
 export TEST_SET="php8.0_all"
