@@ -42,5 +42,9 @@ VALUE Map_GetRubyWrapper(upb_map *map, upb_fieldtype_t key_type,
 const upb_map *Map_GetUpbMap(VALUE val, const upb_fielddef *field);
 void Map_Inspect(StringBuilder *b, const upb_map *map, upb_fieldtype_t key_type,
                  TypeInfo val_type);
+VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
+                     TypeInfo val_info);
+
+extern VALUE cMap;
 
 #endif  // RUBY_PROTOBUF_MAP_H_

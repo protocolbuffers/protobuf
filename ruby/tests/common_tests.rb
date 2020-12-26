@@ -547,6 +547,7 @@ module CommonTests
         "b" => proto_module::TestMessage.new(:optional_int32 => 84) })
 
     m2 = m.dup
+    assert m.to_h == m2.to_h
     assert m == m2
     assert m.object_id != m2.object_id
     assert m["a"].object_id == m2["a"].object_id

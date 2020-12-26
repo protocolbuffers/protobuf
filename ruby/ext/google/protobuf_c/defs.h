@@ -38,4 +38,11 @@
 
 VALUE Descriptor_DefToClass(const upb_msgdef *m);
 
+const upb_enumdef *EnumDescriptor_GetEnumDef(VALUE enum_desc_rb);
+const upb_symtab *DescriptorPool_GetSymtab(VALUE desc_pool_rb);
+const upb_msgdef *Descriptor_GetMsgDef(VALUE desc_rb);
+upb_fieldtype_t ruby_to_fieldtype(VALUE type);
+
+void Defs_register(VALUE module);
+
 #endif  // RUBY_PROTOBUF_DEFS_H_

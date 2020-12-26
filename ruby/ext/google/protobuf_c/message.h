@@ -38,6 +38,8 @@
 
 upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
                                const char* name, upb_arena* arena);
+const upb_msg *Message_Get(VALUE value, const upb_msgdef **m);
+upb_msg *Message_GetMutable(VALUE value, const upb_msgdef **m);
 
 VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena);
 void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,
@@ -46,5 +48,8 @@ uint64_t Message_Hash(const upb_msg *msg, const upb_msgdef *m, uint64_t seed);
 upb_msg* Message_deep_copy(const upb_msg* msg, const upb_msgdef* m,
                            upb_arena *arena);
 bool Message_Equal(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m);
+void Message_CheckClass(VALUE klass);
+VALUE Scalar_CreateHash(upb_msgval val, TypeInfo type_info);
+
 
 #endif  // RUBY_PROTOBUF_MESSAGE_H_

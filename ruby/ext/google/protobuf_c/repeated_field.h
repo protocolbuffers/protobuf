@@ -38,10 +38,12 @@
 
 void RepeatedField_register(VALUE module);
 VALUE RepeatedField_deep_copy(VALUE obj);
-VALUE RepeatedField_GetRubyWrapper(upb_array* msg, const upb_fielddef* f,
+VALUE RepeatedField_GetRubyWrapper(upb_array* msg, TypeInfo type_info,
                                    VALUE arena);
-upb_array* RepeatedField_GetUpbArray(VALUE value, const upb_fielddef* f);
+const upb_array* RepeatedField_GetUpbArray(VALUE value, const upb_fielddef* f);
 void RepeatedField_Inspect(StringBuilder* b, const upb_array* array,
                            TypeInfo info);
+
+extern VALUE cRepeatedField;
 
 #endif  // RUBY_PROTOBUF_REPEATED_FIELD_H_

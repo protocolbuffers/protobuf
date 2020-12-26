@@ -30,8 +30,10 @@
 
 #include "protobuf.h"
 
+#include "defs.h"
 #include "map.h"
 #include "message.h"
+#include "repeated_field.h"
 
 VALUE cError;
 VALUE cParseError;
@@ -237,8 +239,8 @@ VALUE Arena_new() {
   return Arena_alloc(cArena);
 }
 
-void Arena_register() {
-  VALUE internal = rb_eval_string("Google::Protobuf::Internal");
+void Arena_register(VALUE module) {
+  VALUE internal = rb_define_module_under(module, "Internal");
   VALUE klass = rb_define_class_under(internal, "Arena", rb_cObject);
   rb_define_alloc_func(klass, Arena_alloc);
   rb_gc_register_address(&cArena);
@@ -300,25 +302,14 @@ void Init_protobuf_c() {
   upb_inttable_init(&obj_cache, UPB_CTYPE_UINT64);
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
-  VALUE internal = rb_define_module_under(protobuf, "Internal");
 
   VALUE cWeakMap = rb_eval_string("ObjectSpace::WeakMap");
   rb_gc_register_address(&obj_cache2);
   obj_cache2 = rb_class_new_instance(0, NULL, cWeakMap);
 
   descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
-  Arena_register();
-  DescriptorPool_register(protobuf);
-  Descriptor_register(protobuf);
-  FileDescriptor_register(protobuf);
-  FieldDescriptor_register(protobuf);
-  OneofDescriptor_register(protobuf);
-  EnumDescriptor_register(protobuf);
-  MessageBuilderContext_register(internal);
-  OneofBuilderContext_register(internal);
-  EnumBuilderContext_register(internal);
-  FileBuilderContext_register(internal);
-  Builder_register(internal);
+  Arena_register(protobuf);
+  Defs_register(protobuf);
   RepeatedField_register(protobuf);
   Map_register(protobuf);
 

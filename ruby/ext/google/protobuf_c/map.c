@@ -73,6 +73,12 @@ const rb_data_type_t Map_type = {
 
 VALUE cMap;
 
+static Map* ruby_to_Map(VALUE _self) {
+  Map* self;
+  TypedData_Get_Struct(_self, Map, &Map_type, self);
+  return self;
+}
+
 static VALUE Map_alloc(VALUE klass) {
   Map* self = ALLOC(Map);
   self->map = NULL;
@@ -106,6 +112,16 @@ VALUE Map_GetRubyWrapper(upb_map* map, upb_fieldtype_t key_type,
   return val;
 }
 
+static VALUE Map_new_this_type(Map *from) {
+  VALUE arena_rb = Arena_new();
+  upb_map* map = upb_map_new(Arena_get(arena_rb), from->key_type,
+                             from->value_type_info.type);
+  VALUE ret =
+      Map_GetRubyWrapper(map, from->key_type, from->value_type_info, arena_rb);
+  PBRUBY_ASSERT(ruby_to_Map(ret)->value_type_class == from->value_type_class);
+  return ret;
+}
+
 static TypeInfo Map_keyinfo(Map* self) {
   TypeInfo ret;
   ret.type = self->key_type;
@@ -113,15 +129,28 @@ static TypeInfo Map_keyinfo(Map* self) {
   return ret;
 }
 
-static Map* ruby_to_Map(VALUE _self) {
-  Map* self;
-  TypedData_Get_Struct(_self, Map, &Map_type, self);
-  return self;
-}
-
 static upb_map *Map_GetMutable(VALUE _self) {
   rb_check_frozen(_self);
   return (upb_map*)ruby_to_Map(_self)->map;
+}
+
+VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
+                     TypeInfo val_info) {
+  VALUE hash = rb_hash_new();
+  size_t iter = UPB_MAP_BEGIN;
+  TypeInfo key_info = TypeInfo_from_type(key_type);
+
+  if (!map) return hash;
+
+  while (upb_mapiter_next(map, &iter)) {
+    upb_msgval key = upb_mapiter_key(map, iter);
+    upb_msgval val = upb_mapiter_value(map, iter);
+    VALUE key_val = Convert_UpbToRuby(key, key_info, Qnil);
+    VALUE val_val = Scalar_CreateHash(val, val_info);
+    rb_hash_aset(hash, key_val, val_val);
+  }
+
+  return hash;
 }
 
 VALUE Map_deep_copy(VALUE obj) {
@@ -188,16 +217,6 @@ void Map_Inspect(StringBuilder* b, const upb_map* map, upb_fieldtype_t key_type,
     }
   }
   StringBuilder_Printf(b, "}");
-}
-
-static bool needs_typeclass(upb_fieldtype_t type) {
-  switch (type) {
-    case UPB_TYPE_MESSAGE:
-    case UPB_TYPE_ENUM:
-      return true;
-    default:
-      return false;
-  }
 }
 
 static int merge_into_self_callback(VALUE key, VALUE val, VALUE _self) {
@@ -272,7 +291,7 @@ static VALUE Map_merge_into_self(VALUE _self, VALUE hashmap) {
  */
 static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  int init_value_arg;
+  VALUE init_arg;
 
   // We take either two args (:key_type, :value_type), three args (:key_type,
   // :value_type, "ValueMessageType"), or four args (the above plus an initial
@@ -282,7 +301,8 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
   }
 
   self->key_type = ruby_to_fieldtype(argv[0]);
-  self->value_type_info.type = ruby_to_fieldtype(argv[1]);
+  self->value_type_info =
+      TypeInfo_FromClass(argc, argv, 1, &self->value_type_class, &init_arg);
   self->arena = Arena_new();
 
   // Check that the key type is an allowed type.
@@ -300,29 +320,12 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
       rb_raise(rb_eArgError, "Invalid key type for map.");
   }
 
-  init_value_arg = 2;
-  if (needs_typeclass(self->value_type_info.type) && argc > 2) {
-    self->value_type_class = argv[2];
-    validate_type_class(self->value_type_info.type, self->value_type_class);
-    init_value_arg = 3;
-
-    VALUE descriptor =
-        rb_ivar_get(self->value_type_class, descriptor_instancevar_interned);
-    if (self->value_type_info.type == UPB_TYPE_MESSAGE) {
-      const Descriptor* desc = ruby_to_Descriptor(descriptor);
-      self->value_type_info.def.msgdef = desc->msgdef;
-    } else {
-      const EnumDescriptor* desc = ruby_to_EnumDescriptor(descriptor);
-      self->value_type_info.def.enumdef = desc->enumdef;
-    }
-  }
-
   self->map = upb_map_new(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
   ObjectCache_Add(self->map, _self);
 
-  if (argc > init_value_arg) {
-    Map_merge_into_self(_self, argv[init_value_arg]);
+  if (init_arg != Qnil) {
+    Map_merge_into_self(_self, init_arg);
   }
 
   return Qnil;
@@ -497,21 +500,6 @@ static VALUE Map_length(VALUE _self) {
   return ULL2NUM(upb_map_size(self->map));
 }
 
-static VALUE Map_new_this_type(VALUE _self) {
-  Map* self = ruby_to_Map(_self);
-  VALUE new_map = Qnil;
-  VALUE key_type = fieldtype_to_ruby(self->key_type);
-  VALUE value_type = fieldtype_to_ruby(self->value_type_info.type);
-  if (self->value_type_class != Qnil) {
-    new_map = rb_funcall(CLASS_OF(_self), rb_intern("new"), 3,
-                         key_type, value_type, self->value_type_class);
-  } else {
-    new_map = rb_funcall(CLASS_OF(_self), rb_intern("new"), 2,
-                         key_type, value_type);
-  }
-  return new_map;
-}
-
 /*
  * call-seq:
  *     Map.dup => new_map
@@ -521,7 +509,7 @@ static VALUE Map_new_this_type(VALUE _self) {
  */
 static VALUE Map_dup(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  VALUE new_map_rb = Map_new_this_type(_self);
+  VALUE new_map_rb = Map_new_this_type(self);
   Map* new_self = ruby_to_Map(new_map_rb);
   size_t iter = UPB_MAP_BEGIN;
   upb_arena *arena = Arena_get(new_self->arena);
@@ -558,7 +546,7 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
   // Allow comparisons to Ruby hashmaps by converting to a temporary Map
   // instance. Slow, but workable.
   if (TYPE(_other) == T_HASH) {
-    VALUE other_map = Map_new_this_type(_self);
+    VALUE other_map = Map_new_this_type(self);
     Map_merge_into_self(other_map, _other);
     _other = other_map;
   }
@@ -619,8 +607,6 @@ VALUE Map_hash(VALUE _self) {
   return LL2NUM(hash);
 }
 
-#if 0
-
 /*
  * call-seq:
  *     Map.to_h => {}
@@ -629,27 +615,9 @@ VALUE Map_hash(VALUE _self) {
  */
 VALUE Map_to_h(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  VALUE hash = rb_hash_new();
-  upb_strtable_iter it;
-  for (upb_strtable_begin(&it, &self->table);
-       !upb_strtable_done(&it);
-       upb_strtable_next(&it)) {
-    VALUE key = table_key_to_ruby(self, upb_strtable_iter_key(&it));
-    upb_value v = upb_strtable_iter_value(&it);
-    void* mem = value_memory(&v);
-    VALUE value = native_slot_get(self->value_type,
-                                  self->value_type_class,
-                                  mem);
-
-    if (self->value_type == UPB_TYPE_MESSAGE) {
-      value = Message_to_h(value);
-    }
-    rb_hash_aset(hash, key, value);
-  }
-  return hash;
+  return Map_CreateHash(self->map, self->key_type, self->value_type_info);
 }
 
-#endif
 /*
  * call-seq:
  *     Map.inspect => string
@@ -701,9 +669,7 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "dup", Map_dup, 0);
   rb_define_method(klass, "==", Map_eq, 1);
   rb_define_method(klass, "hash", Map_hash, 0);
-  /*
   rb_define_method(klass, "to_h", Map_to_h, 0);
-  */
   rb_define_method(klass, "inspect", Map_inspect, 0);
   rb_define_method(klass, "merge", Map_merge, 1);
   rb_include_module(klass, rb_mEnumerable);

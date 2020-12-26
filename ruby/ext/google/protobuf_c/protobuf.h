@@ -109,11 +109,6 @@ typedef struct Builder Builder;
 // Ruby class structure definitions.
 // -----------------------------------------------------------------------------
 
-struct DescriptorPool {
-  VALUE def_to_descriptor;  // Hash table of def* -> Ruby descriptor.
-  upb_symtab* symtab;
-};
-
 struct Descriptor {
   const upb_msgdef* msgdef;
   VALUE klass;
@@ -126,53 +121,6 @@ struct TypeInfo {
     const upb_msgdef* msgdef;  // When type == UPB_TYPE_MESSAGE
     const upb_enumdef* enumdef;    // When type == UPB_TYPE_ENUM
   } def;
-};
-
-struct FileDescriptor {
-  const upb_filedef* filedef;
-  VALUE descriptor_pool;  // Owns the upb_filedef.
-};
-
-struct FieldDescriptor {
-  const upb_fielddef* fielddef;
-  VALUE descriptor_pool;  // Owns the upb_fielddef.
-};
-
-struct OneofDescriptor {
-  const upb_oneofdef* oneofdef;
-  VALUE descriptor_pool;  // Owns the upb_oneofdef.
-};
-
-struct EnumDescriptor {
-  const upb_enumdef* enumdef;
-  VALUE module;  // begins as nil
-  VALUE descriptor_pool;  // Owns the upb_enumdef.
-};
-
-struct MessageBuilderContext {
-  google_protobuf_DescriptorProto* msg_proto;
-  VALUE file_builder;
-};
-
-struct OneofBuilderContext {
-  int oneof_index;
-  VALUE message_builder;
-};
-
-struct EnumBuilderContext {
-  google_protobuf_EnumDescriptorProto* enum_proto;
-  VALUE file_builder;
-};
-
-struct FileBuilderContext {
-  upb_arena *arena;
-  google_protobuf_FileDescriptorProto* file_proto;
-  VALUE descriptor_pool;
-};
-
-struct Builder {
-  VALUE descriptor_pool;
-  VALUE default_file_builder;
 };
 
 extern VALUE cDescriptorPool;
@@ -189,21 +137,6 @@ extern VALUE cBuilder;
 extern VALUE cError;
 extern VALUE cParseError;
 extern VALUE cTypeError;
-
-// We forward-declare all of the Ruby method implementations here because we
-// sometimes call the methods directly across .c files, rather than going
-// through Ruby's method dispatching (e.g. during message parse). It's cleaner
-// to keep the list of object methods together than to split them between
-// static-in-file definitions and header declarations.
-
-void DescriptorPool_mark(void* _self);
-void DescriptorPool_free(void* _self);
-VALUE DescriptorPool_alloc(VALUE klass);
-void DescriptorPool_register(VALUE module);
-DescriptorPool* ruby_to_DescriptorPool(VALUE value);
-VALUE DescriptorPool_build(int argc, VALUE* argv, VALUE _self);
-VALUE DescriptorPool_lookup(VALUE _self, VALUE name);
-VALUE DescriptorPool_generated_pool(VALUE _self);
 
 extern VALUE generated_pool;
 
@@ -222,182 +155,19 @@ static inline TypeInfo TypeInfo_get(const upb_fielddef *f) {
   return ret;
 }
 
+TypeInfo TypeInfo_FromClass(int argc, VALUE* argv, int skip_arg,
+                            VALUE* type_class, VALUE* init_arg);
+
 static inline TypeInfo TypeInfo_from_type(upb_fieldtype_t type) {
   TypeInfo ret = {type};
   assert(type != UPB_TYPE_MESSAGE && type != UPB_TYPE_ENUM);
   return ret;
 }
 
-void Descriptor_mark(void* _self);
-void Descriptor_free(void* _self);
-VALUE Descriptor_alloc(VALUE klass);
-void Descriptor_register(VALUE module);
-Descriptor* ruby_to_Descriptor(VALUE value);
-Descriptor* Descriptor_from_fielddef(const upb_fielddef *f);
-VALUE Descriptor_initialize(VALUE _self, VALUE cookie, VALUE descriptor_pool,
-                            VALUE ptr);
-VALUE Descriptor_name(VALUE _self);
-VALUE Descriptor_each(VALUE _self);
-VALUE Descriptor_lookup(VALUE _self, VALUE name);
-VALUE Descriptor_each_oneof(VALUE _self);
-VALUE Descriptor_lookup_oneof(VALUE _self, VALUE name);
-VALUE Descriptor_msgclass(VALUE _self);
-VALUE Descriptor_file_descriptor(VALUE _self);
-extern const rb_data_type_t _Descriptor_type;
-
-void FileDescriptor_mark(void* _self);
-void FileDescriptor_free(void* _self);
-VALUE FileDescriptor_alloc(VALUE klass);
-void FileDescriptor_register(VALUE module);
-FileDescriptor* ruby_to_FileDescriptor(VALUE value);
-VALUE FileDescriptor_initialize(VALUE _self, VALUE cookie,
-                                VALUE descriptor_pool, VALUE ptr);
-VALUE FileDescriptor_name(VALUE _self);
-VALUE FileDescriptor_syntax(VALUE _self);
-
-void FieldDescriptor_mark(void* _self);
-void FieldDescriptor_free(void* _self);
-VALUE FieldDescriptor_alloc(VALUE klass);
-void FieldDescriptor_register(VALUE module);
-FieldDescriptor* ruby_to_FieldDescriptor(VALUE value);
-VALUE FieldDescriptor_initialize(VALUE _self, VALUE cookie,
-                                 VALUE descriptor_pool, VALUE ptr);
-VALUE FieldDescriptor_name(VALUE _self);
-VALUE FieldDescriptor_type(VALUE _self);
-VALUE FieldDescriptor_default(VALUE _self);
-VALUE FieldDescriptor_label(VALUE _self);
-VALUE FieldDescriptor_number(VALUE _self);
-VALUE FieldDescriptor_submsg_name(VALUE _self);
-VALUE FieldDescriptor_subtype(VALUE _self);
-VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb);
-VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb);
-VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb);
-VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value);
-upb_fieldtype_t ruby_to_fieldtype(VALUE type);
-VALUE fieldtype_to_ruby(upb_fieldtype_t type);
-
-void OneofDescriptor_mark(void* _self);
-void OneofDescriptor_free(void* _self);
-VALUE OneofDescriptor_alloc(VALUE klass);
-void OneofDescriptor_register(VALUE module);
-OneofDescriptor* ruby_to_OneofDescriptor(VALUE value);
-VALUE OneofDescriptor_initialize(VALUE _self, VALUE cookie,
-                                 VALUE descriptor_pool, VALUE ptr);
-VALUE OneofDescriptor_name(VALUE _self);
-VALUE OneofDescriptor_each(VALUE _self);
-
-void EnumDescriptor_mark(void* _self);
-void EnumDescriptor_free(void* _self);
-VALUE EnumDescriptor_alloc(VALUE klass);
-VALUE EnumDescriptor_initialize(VALUE _self, VALUE cookie,
-                                VALUE descriptor_pool, VALUE ptr);
-void EnumDescriptor_register(VALUE module);
-EnumDescriptor* ruby_to_EnumDescriptor(VALUE value);
-VALUE EnumDescriptor_file_descriptor(VALUE _self);
-VALUE EnumDescriptor_name(VALUE _self);
-VALUE EnumDescriptor_lookup_name(VALUE _self, VALUE name);
-VALUE EnumDescriptor_lookup_value(VALUE _self, VALUE number);
-VALUE EnumDescriptor_each(VALUE _self);
-VALUE EnumDescriptor_enummodule(VALUE _self);
-extern const rb_data_type_t _EnumDescriptor_type;
-
-void MessageBuilderContext_mark(void* _self);
-void MessageBuilderContext_free(void* _self);
-VALUE MessageBuilderContext_alloc(VALUE klass);
-void MessageBuilderContext_register(VALUE module);
-MessageBuilderContext* ruby_to_MessageBuilderContext(VALUE value);
-VALUE MessageBuilderContext_initialize(VALUE _self,
-                                       VALUE _file_builder,
-                                       VALUE name);
-VALUE MessageBuilderContext_optional(int argc, VALUE* argv, VALUE _self);
-VALUE MessageBuilderContext_proto3_optional(int argc, VALUE* argv, VALUE _self);
-VALUE MessageBuilderContext_required(int argc, VALUE* argv, VALUE _self);
-VALUE MessageBuilderContext_repeated(int argc, VALUE* argv, VALUE _self);
-VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self);
-VALUE MessageBuilderContext_oneof(VALUE _self, VALUE name);
-
-void OneofBuilderContext_mark(void* _self);
-void OneofBuilderContext_free(void* _self);
-VALUE OneofBuilderContext_alloc(VALUE klass);
-void OneofBuilderContext_register(VALUE module);
-OneofBuilderContext* ruby_to_OneofBuilderContext(VALUE value);
-VALUE OneofBuilderContext_initialize(VALUE _self,
-                                     VALUE descriptor,
-                                     VALUE builder);
-VALUE OneofBuilderContext_optional(int argc, VALUE* argv, VALUE _self);
-
-void EnumBuilderContext_mark(void* _self);
-void EnumBuilderContext_free(void* _self);
-VALUE EnumBuilderContext_alloc(VALUE klass);
-void EnumBuilderContext_register(VALUE module);
-EnumBuilderContext* ruby_to_EnumBuilderContext(VALUE value);
-VALUE EnumBuilderContext_initialize(VALUE _self, VALUE _file_builder,
-                                    VALUE name);
-VALUE EnumBuilderContext_value(VALUE _self, VALUE name, VALUE number);
-
-void FileBuilderContext_mark(void* _self);
-void FileBuilderContext_free(void* _self);
-VALUE FileBuilderContext_alloc(VALUE klass);
-void FileBuilderContext_register(VALUE module);
-FileBuilderContext* ruby_to_FileBuilderContext(VALUE _self);
-upb_strview FileBuilderContext_strdup(VALUE _self, VALUE rb_str);
-upb_strview FileBuilderContext_strdup_name(VALUE _self, VALUE rb_str);
-upb_strview FileBuilderContext_strdup_sym(VALUE _self, VALUE rb_sym);
-VALUE FileBuilderContext_initialize(VALUE _self, VALUE descriptor_pool,
-                                    VALUE name, VALUE options);
-VALUE FileBuilderContext_add_message(VALUE _self, VALUE name);
-VALUE FileBuilderContext_add_enum(VALUE _self, VALUE name);
-VALUE FileBuilderContext_pending_descriptors(VALUE _self);
-
-void Builder_mark(void* _self);
-void Builder_free(void* _self);
-VALUE Builder_alloc(VALUE klass);
-void Builder_register(VALUE module);
-Builder* ruby_to_Builder(VALUE value);
-VALUE Builder_build(VALUE _self);
-VALUE Builder_initialize(VALUE _self, VALUE descriptor_pool);
-VALUE Builder_add_file(int argc, VALUE *argv, VALUE _self);
-VALUE Builder_add_message(VALUE _self, VALUE name);
-VALUE Builder_add_enum(VALUE _self, VALUE name);
-VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb);
-
 // -----------------------------------------------------------------------------
 // Native slot storage abstraction.
 // -----------------------------------------------------------------------------
 
-#define NATIVE_SLOT_MAX_SIZE sizeof(uint64_t)
-
-size_t native_slot_size(upb_fieldtype_t type);
-void native_slot_set(const char* name,
-                     upb_fieldtype_t type,
-                     VALUE type_class,
-                     void* memory,
-                     VALUE value);
-// Atomically (with respect to Ruby VM calls) either update the value and set a
-// oneof case, or do neither. If |case_memory| is null, then no case value is
-// set.
-void native_slot_set_value_and_case(const char* name,
-                                    upb_fieldtype_t type,
-                                    VALUE type_class,
-                                    void* memory,
-                                    VALUE value,
-                                    uint32_t* case_memory,
-                                    uint32_t case_number);
-VALUE native_slot_get(upb_fieldtype_t type,
-                      VALUE type_class,
-                      const void* memory);
-void native_slot_init(upb_fieldtype_t type, void* memory);
-void native_slot_mark(upb_fieldtype_t type, void* memory);
-void native_slot_dup(upb_fieldtype_t type, void* to, void* from);
-void native_slot_deep_copy(upb_fieldtype_t type, VALUE type_class, void* to,
-                           void* from);
-bool native_slot_eq(upb_fieldtype_t type, VALUE type_class, void* mem1,
-                    void* mem2);
-
-VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value);
-void native_slot_check_int_range_precision(const char* name, upb_fieldtype_t type, VALUE value);
-uint32_t slot_read_oneof_case(MessageLayout* layout, const void* storage,
-                              const upb_oneofdef* oneof);
 bool is_value_field(const upb_fielddef* f);
 
 extern rb_encoding* kRubyStringUtf8Encoding;
@@ -428,21 +198,6 @@ const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 // Repeated field container type.
 // -----------------------------------------------------------------------------
 
-typedef struct {
-  upb_array *array;
-  TypeInfo type_info;
-  VALUE type_class;  // To GC-root the msgdef/enumdef in type_info.
-  VALUE arena;       // To GC-root the upb_array.
-} RepeatedField;
-
-void RepeatedField_register(VALUE module);
-void validate_type_class(upb_fieldtype_t type, VALUE klass);
-
-extern const rb_data_type_t RepeatedField_type;
-extern VALUE cRepeatedField;
-
-extern VALUE cMap;
-
 bool is_wrapper_type_field(const upb_fielddef* field);
 VALUE ruby_wrapper_type(VALUE type_class, VALUE value);
 
@@ -453,7 +208,7 @@ VALUE ruby_wrapper_type(VALUE type_class, VALUE value);
 struct Message {
   VALUE arena;
   upb_msg* msg;
-  Descriptor* descriptor;      // kept alive by self.class.descriptor reference.
+  const upb_msgdef* msgdef;      // kept alive by self.class.descriptor reference.
 };
 
 VALUE Arena_new();
