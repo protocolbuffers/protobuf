@@ -37,6 +37,15 @@
 
 VALUE Builder_build(VALUE _self);
 
+extern VALUE cFileDescriptor;
+extern VALUE cFieldDescriptor;
+extern VALUE cEnumDescriptor;
+extern VALUE cMessageBuilderContext;
+extern VALUE cOneofBuilderContext;
+extern VALUE cEnumBuilderContext;
+extern VALUE cFileBuilderContext;
+extern VALUE cBuilder;
+
 // -----------------------------------------------------------------------------
 // Common utilities.
 // -----------------------------------------------------------------------------
@@ -229,10 +238,10 @@ static void rewrite_nesting(VALUE msg_ent, google_protobuf_DescriptorProto* msg,
 // DescriptorPool.
 // -----------------------------------------------------------------------------
 
-struct DescriptorPool {
+typedef struct {
   VALUE def_to_descriptor;  // Hash table of def* -> Ruby descriptor.
   upb_symtab* symtab;
-};
+} DescriptorPool;
 
 // Global singleton DescriptorPool. The user is free to create others, but this
 // is used by generated code.
@@ -353,6 +362,12 @@ static void DescriptorPool_register(VALUE module) {
 // -----------------------------------------------------------------------------
 // Descriptor.
 // -----------------------------------------------------------------------------
+
+typedef struct {
+  const upb_msgdef* msgdef;
+  VALUE klass;
+  VALUE descriptor_pool;
+} Descriptor;
 
 static void Descriptor_mark(void* _self) {
   Descriptor* self = _self;
@@ -539,10 +554,10 @@ static void Descriptor_register(VALUE module) {
 // FileDescriptor.
 // -----------------------------------------------------------------------------
 
-struct FileDescriptor {
+typedef struct {
   const upb_filedef* filedef;
   VALUE descriptor_pool;  // Owns the upb_filedef.
-};
+} FileDescriptor;
 
 void FileDescriptor_mark(void* _self) {
   FileDescriptor* self = _self;
@@ -631,10 +646,10 @@ static void FileDescriptor_register(VALUE module) {
 // FieldDescriptor.
 // -----------------------------------------------------------------------------
 
-struct FieldDescriptor {
+typedef struct {
   const upb_fielddef* fielddef;
   VALUE descriptor_pool;  // Owns the upb_fielddef.
-};
+} FieldDescriptor;
 
 void FieldDescriptor_mark(void* _self) {
   FieldDescriptor* self = _self;
@@ -973,16 +988,17 @@ VALUE FieldDescriptor_subtype(VALUE _self) {
  */
 VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  Message* msg;
+  const upb_msgdef *m;
+  const upb_msgdef *msg = Message_Get(msg_rb, &m);
+  VALUE arena = Message_GetArena(msg_rb);
   upb_msgval msgval;
-  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
 
-  if (msg->msgdef != upb_fielddef_containingtype(self->fielddef)) {
+  if (m != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "get method called on wrong message type");
   }
 
-  msgval = upb_msg_get(msg->msg, self->fielddef);
-  return Convert_UpbToRuby(msgval, TypeInfo_get(self->fielddef), msg->arena);
+  msgval = upb_msg_get(msg, self->fielddef);
+  return Convert_UpbToRuby(msgval, TypeInfo_get(self->fielddef), arena);
 }
 
 /*
@@ -994,16 +1010,16 @@ VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
  */
 VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  Message* msg;
-  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+  const upb_msgdef *m;
+  const upb_msgdef *msg = Message_Get(msg_rb, &m);
 
-  if (msg->msgdef != upb_fielddef_containingtype(self->fielddef)) {
+  if (m != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
   } else if (!upb_fielddef_haspresence(self->fielddef)) {
     rb_raise(rb_eArgError, "does not track presence");
   }
 
-  return upb_msg_has(msg->msg, self->fielddef) ? Qtrue : Qfalse;
+  return upb_msg_has(msg, self->fielddef) ? Qtrue : Qfalse;
 }
 
 /*
@@ -1014,14 +1030,14 @@ VALUE FieldDescriptor_has(VALUE _self, VALUE msg_rb) {
  */
 VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  Message* msg;
-  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+  const upb_msgdef *m;
+  upb_msgdef *msg = Message_GetMutable(msg_rb, &m);
 
-  if (msg->msgdef != upb_fielddef_containingtype(self->fielddef)) {
+  if (m != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "has method called on wrong message type");
   }
 
-  upb_msg_clearfield(msg->msg, self->fielddef);
+  upb_msg_clearfield(msg, self->fielddef);
   return Qnil;
 }
 
@@ -1035,19 +1051,18 @@ VALUE FieldDescriptor_clear(VALUE _self, VALUE msg_rb) {
  */
 VALUE FieldDescriptor_set(VALUE _self, VALUE msg_rb, VALUE value) {
   DEFINE_SELF(FieldDescriptor, self, _self);
-  Message* msg;
-  upb_arena *arena;
+  const upb_msgdef *m;
+  upb_msgdef *msg = Message_GetMutable(msg_rb, &m);
+  upb_arena *arena = Arena_get(Message_GetArena(msg_rb));
   upb_msgval msgval;
-  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
-  arena = Arena_get(msg->arena);
 
-  if (msg->msgdef != upb_fielddef_containingtype(self->fielddef)) {
+  if (m != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "set method called on wrong message type");
   }
 
   msgval = Convert_RubyToUpb(value, upb_fielddef_name(self->fielddef),
                              TypeInfo_get(self->fielddef), arena);
-  upb_msg_set(msg->msg, self->fielddef, msgval, arena);
+  upb_msg_set(msg, self->fielddef, msgval, arena);
   return Qnil;
 }
 
@@ -1075,10 +1090,10 @@ static void FieldDescriptor_register(VALUE module) {
 // OneofDescriptor.
 // -----------------------------------------------------------------------------
 
-struct OneofDescriptor {
+typedef struct {
   const upb_oneofdef* oneofdef;
   VALUE descriptor_pool;  // Owns the upb_oneofdef.
-};
+} OneofDescriptor;
 
 void OneofDescriptor_mark(void* _self) {
   OneofDescriptor* self = _self;
@@ -1173,11 +1188,11 @@ static void OneofDescriptor_register(VALUE module) {
 // EnumDescriptor.
 // -----------------------------------------------------------------------------
 
-struct EnumDescriptor {
+typedef struct {
   const upb_enumdef* enumdef;
   VALUE module;  // begins as nil
   VALUE descriptor_pool;  // Owns the upb_enumdef.
-};
+} EnumDescriptor;
 
 void EnumDescriptor_mark(void* _self) {
   EnumDescriptor* self = _self;
@@ -1341,11 +1356,11 @@ static void EnumDescriptor_register(VALUE module) {
 // FileBuilderContext.
 // -----------------------------------------------------------------------------
 
-struct FileBuilderContext {
+typedef struct {
   upb_arena *arena;
   google_protobuf_FileDescriptorProto* file_proto;
   VALUE descriptor_pool;
-};
+} FileBuilderContext;
 
 void FileBuilderContext_mark(void* _self) {
   FileBuilderContext* self = _self;
@@ -1631,10 +1646,10 @@ static void FileBuilderContext_register(VALUE module) {
 // MessageBuilderContext.
 // -----------------------------------------------------------------------------
 
-struct MessageBuilderContext {
+typedef struct {
   google_protobuf_DescriptorProto* msg_proto;
   VALUE file_builder;
-};
+} MessageBuilderContext;
 
 void MessageBuilderContext_mark(void* _self) {
   MessageBuilderContext* self = _self;
@@ -2079,10 +2094,10 @@ static void MessageBuilderContext_register(VALUE module) {
 // OneofBuilderContext.
 // -----------------------------------------------------------------------------
 
-struct OneofBuilderContext {
+typedef struct {
   int oneof_index;
   VALUE message_builder;
-};
+} OneofBuilderContext;
 
 void OneofBuilderContext_mark(void* _self) {
   OneofBuilderContext* self = _self;
@@ -2160,10 +2175,10 @@ static void OneofBuilderContext_register(VALUE module) {
 // EnumBuilderContext.
 // -----------------------------------------------------------------------------
 
-struct EnumBuilderContext {
+typedef struct {
   google_protobuf_EnumDescriptorProto* enum_proto;
   VALUE file_builder;
-};
+} EnumBuilderContext;
 
 void EnumBuilderContext_mark(void* _self) {
   EnumBuilderContext* self = _self;
@@ -2247,10 +2262,10 @@ static void EnumBuilderContext_register(VALUE module) {
 // Builder.
 // -----------------------------------------------------------------------------
 
-struct Builder {
+typedef struct {
   VALUE descriptor_pool;
   VALUE default_file_builder;
-};
+} Builder;
 
 static void Builder_mark(void* _self) {
   Builder* self = _self;

@@ -40,6 +40,7 @@ upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
                                const char* name, upb_arena* arena);
 const upb_msg *Message_Get(VALUE value, const upb_msgdef **m);
 upb_msg *Message_GetMutable(VALUE value, const upb_msgdef **m);
+VALUE Message_GetArena(VALUE value);
 
 VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena);
 void Message_PrintMessage(StringBuilder* b, const upb_msg* msg,

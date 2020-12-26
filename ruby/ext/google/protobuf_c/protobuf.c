@@ -80,13 +80,6 @@ const upb_fielddef* map_field_value(const upb_fielddef* field) {
 // Utilities.
 // -----------------------------------------------------------------------------
 
-// Raises a Ruby error if |status| is not OK, using its error message.
-void check_upb_status(const upb_status* status, const char* msg) {
-  if (!upb_ok(status)) {
-    rb_raise(rb_eRuntimeError, "%s: %s\n", msg, upb_status_errmsg(status));
-  }
-}
-
 // String encodings: we look these up once, at load time, and then cache them
 // here.
 rb_encoding* kRubyStringUtf8Encoding;
@@ -290,6 +283,46 @@ VALUE ObjectCache_Get(const void* key) {
   VALUE ret = rb_funcall(obj_cache2, rb_intern("[]"), 1, key_rb);
   //fprintf(stderr, "Getting key=%p, ret=%s\n", key, rb_class2name(CLASS_OF(ret)));
   return ret;
+}
+
+/*
+ * call-seq:
+ *     Google::Protobuf.discard_unknown(msg)
+ *
+ * Discard unknown fields in the given message object and recursively discard
+ * unknown fields in submessages.
+ */
+static VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
+  const upb_msgdef *m;
+  upb_msg *msg = Message_GetMutable(msg_rb, &m);
+  if (!upb_msg_discardunknown(msg, m, 128)) {
+    rb_raise(rb_eRuntimeError, "Messages nested too deeply.");
+  }
+
+  return Qnil;
+}
+
+/*
+ * call-seq:
+ *     Google::Protobuf.deep_copy(obj) => copy_of_obj
+ *
+ * Performs a deep copy of a RepeatedField instance, a Map instance, or a
+ * message object, recursively copying its members.
+ */
+VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
+  VALUE klass = CLASS_OF(obj);
+  if (klass == cRepeatedField) {
+    return RepeatedField_deep_copy(obj);
+  } else if (klass == cMap) {
+    return Map_deep_copy(obj);
+  } else {
+    VALUE new_arena_rb = Arena_new();
+    upb_arena *new_arena = Arena_get(new_arena_rb);
+    const upb_msgdef *m;
+    const upb_msg *msg = Message_Get(obj, &m);
+    upb_msg* new_msg = Message_deep_copy(msg, m, new_arena);
+    return Message_GetRubyWrapper(new_msg, m, new_arena_rb);
+  }
 }
 
 // -----------------------------------------------------------------------------

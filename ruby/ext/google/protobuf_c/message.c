@@ -45,6 +45,12 @@ static VALUE initialize_rb_class_with_no_args(VALUE klass) {
 // Class/module creation from msgdefs and enumdefs, respectively.
 // -----------------------------------------------------------------------------
 
+typedef struct {
+  VALUE arena;
+  upb_msg* msg;
+  const upb_msgdef* msgdef;      // kept alive by self.class.descriptor reference.
+} Message;
+
 void Message_mark(void* _self) {
   Message* self = (Message *)_self;
   rb_gc_mark(self->arena);
@@ -73,6 +79,24 @@ VALUE Message_alloc(VALUE klass) {
   rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
 
   return ret;
+}
+
+const upb_msg *Message_Get(VALUE msg_rb, const upb_msgdef **m) {
+  Message* msg;
+  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+  if (m) *m = msg->msgdef;
+  return msg->msg;
+}
+
+upb_msg *Message_GetMutable(VALUE msg_rb, const upb_msgdef **m) {
+  rb_check_frozen(msg_rb);
+  return (upb_msg*)Message_Get(msg_rb, m);
+}
+
+VALUE Message_GetArena(VALUE msg_rb) {
+  Message* msg;
+  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
+  return msg->arena;
 }
 
 void Message_CheckClass(VALUE klass) {
@@ -152,39 +176,9 @@ enum {
 };
 
 // Check if the field is a well known wrapper type
-bool is_wrapper_type_field(const upb_fielddef* field) {
-  const upb_msgdef *m;
-  if (upb_fielddef_type(field) != UPB_TYPE_MESSAGE) {
-    return false;
-  }
-  m = upb_fielddef_msgsubdef(field);
-  switch (upb_msgdef_wellknowntype(m)) {
-    case UPB_WELLKNOWN_DOUBLEVALUE:
-    case UPB_WELLKNOWN_FLOATVALUE:
-    case UPB_WELLKNOWN_INT64VALUE:
-    case UPB_WELLKNOWN_UINT64VALUE:
-    case UPB_WELLKNOWN_INT32VALUE:
-    case UPB_WELLKNOWN_UINT32VALUE:
-    case UPB_WELLKNOWN_STRINGVALUE:
-    case UPB_WELLKNOWN_BYTESVALUE:
-    case UPB_WELLKNOWN_BOOLVALUE:
-      return true;
-    default:
-      return false;
-  }
-}
-
-// Get a new Ruby wrapper type and set the initial value
-VALUE ruby_wrapper_type(VALUE type_class, VALUE value) {
-  if (value != Qnil) {
-    VALUE hash = rb_hash_new();
-    rb_hash_aset(hash, rb_str_new2("value"), value);
-    {
-      VALUE args[1] = {hash};
-      return rb_class_new_instance(1, args, type_class);
-    }
-  }
-  return Qnil;
+static bool is_wrapper_type_field(const upb_fielddef* f) {
+  return upb_fielddef_issubmsg(f) &&
+         upb_msgdef_iswrapper(upb_fielddef_msgsubdef(f));
 }
 
 static bool match(const upb_msgdef* m, const char* name, const upb_fielddef** f,
@@ -1167,23 +1161,6 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
 
 /*
  * call-seq:
- *     Google::Protobuf.discard_unknown(msg)
- *
- * Discard unknown fields in the given message object and recursively discard
- * unknown fields in submessages.
- */
-VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb) {
-  Message* msg;
-  TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
-  if (!upb_msg_discardunknown(msg->msg, msg->msgdef, 128)) {
-    rb_raise(rb_eRuntimeError, "Messages nested too deeply.");
-  }
-
-  return Qnil;
-}
-
-/*
- * call-seq:
  *     Message.descriptor => descriptor
  *
  * Class method that returns the Descriptor instance corresponding to this
@@ -1246,7 +1223,7 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
  * This module method, provided on each generated enum module, looks up an enum
  * value by number and returns its name as a Ruby symbol, or nil if not found.
  */
-VALUE enum_lookup(VALUE self, VALUE number) {
+static VALUE enum_lookup(VALUE self, VALUE number) {
   int32_t num = NUM2INT(number);
   VALUE desc = rb_ivar_get(self, descriptor_instancevar_interned);
   const upb_enumdef *e = EnumDescriptor_GetEnumDef(desc);
@@ -1266,7 +1243,7 @@ VALUE enum_lookup(VALUE self, VALUE number) {
  * This module method, provided on each generated enum module, looks up an enum
  * value by name (as a Ruby symbol) and returns its name, or nil if not found.
  */
-VALUE enum_resolve(VALUE self, VALUE sym) {
+static VALUE enum_resolve(VALUE self, VALUE sym) {
   const char* name = rb_id2name(SYM2ID(sym));
   VALUE desc = rb_ivar_get(self, descriptor_instancevar_interned);
   const upb_enumdef *e = EnumDescriptor_GetEnumDef(desc);
@@ -1287,7 +1264,7 @@ VALUE enum_resolve(VALUE self, VALUE sym) {
  * This module method, provided on each generated enum module, returns the
  * EnumDescriptor corresponding to this enum type.
  */
-VALUE enum_descriptor(VALUE self) {
+static VALUE enum_descriptor(VALUE self) {
   return rb_ivar_get(self, descriptor_instancevar_interned);
 }
 
@@ -1315,28 +1292,4 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   rb_ivar_set(mod, descriptor_instancevar_interned, _enumdesc);
 
   return mod;
-}
-
-/*
- * call-seq:
- *     Google::Protobuf.deep_copy(obj) => copy_of_obj
- *
- * Performs a deep copy of a RepeatedField instance, a Map instance, or a
- * message object, recursively copying its members.
- */
-VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
-  VALUE klass = CLASS_OF(obj);
-  if (klass == cRepeatedField) {
-    return RepeatedField_deep_copy(obj);
-  } else if (klass == cMap) {
-    return Map_deep_copy(obj);
-  } else {
-    VALUE new_arena_rb = Arena_new();
-    upb_arena *new_arena = Arena_get(new_arena_rb);
-    Message *self;
-    TypedData_Get_Struct(obj, Message, &Message_type, self);
-    const upb_msgdef *m = self->msgdef;
-    upb_msg* new_msg = Message_deep_copy(self->msg, m, new_arena);
-    return Message_GetRubyWrapper(new_msg, m, new_arena_rb);
-  }
 }

@@ -37,102 +37,17 @@
 
 #include "ruby-upb.h"
 
-// Forward decls.
-struct DescriptorPool;
-struct Descriptor;
-struct TypeInfo;
-struct FileDescriptor;
-struct FieldDescriptor;
-struct EnumDescriptor;
-struct Message;
-struct MessageLayout;
-struct MessageField;
-struct MessageBuilderContext;
-struct EnumBuilderContext;
-struct FileBuilderContext;
-struct Builder;
-
-typedef struct DescriptorPool DescriptorPool;
-typedef struct Descriptor Descriptor;
-typedef struct TypeInfo TypeInfo;
-typedef struct FileDescriptor FileDescriptor;
-typedef struct FieldDescriptor FieldDescriptor;
-typedef struct OneofDescriptor OneofDescriptor;
-typedef struct EnumDescriptor EnumDescriptor;
-typedef struct Message Message;
-typedef struct MessageLayout MessageLayout;
-typedef struct MessageField MessageField;
-typedef struct MessageOneof MessageOneof;
-typedef struct MessageBuilderContext MessageBuilderContext;
-typedef struct OneofBuilderContext OneofBuilderContext;
-typedef struct EnumBuilderContext EnumBuilderContext;
-typedef struct FileBuilderContext FileBuilderContext;
-typedef struct Builder Builder;
-
-/*
- It can be a bit confusing how the C structs defined below and the Ruby
- objects interact and hold references to each other. First, a few principles:
-
- - Ruby's "TypedData" abstraction lets a Ruby VALUE hold a pointer to a C
-   struct (or arbitrary memory chunk), own it, and free it when collected.
-   Thus, each struct below will have a corresponding Ruby object
-   wrapping/owning it.
-
- - To get back from an underlying upb {msg,enum}def to the Ruby object, we
-   keep a global hashmap, accessed by get_def_obj/add_def_obj below.
-
- The in-memory structure is then something like:
-
-   Ruby                        |      upb
-                               |
-   DescriptorPool  ------------|-----------> upb_symtab____________________
-                               |                | (message types)          \
-                               |                v                           \
-   Descriptor   ---------------|-----------> upb_msgdef         (enum types)|
-    |--> msgclass              |                |   ^                       |
-    |    (dynamically built)   |                |   | (submsg fields)       |
-    |--> MessageLayout         |                |   |                       /
-    |--------------------------|> decoder method|   |                      /
-    \--------------------------|> serialize     |   |                     /
-                               |  handlers      v   |                    /
-   FieldDescriptor  -----------|-----------> upb_fielddef               /
-                               |                    |                  /
-                               |                    v (enum fields)   /
-   EnumDescriptor  ------------|-----------> upb_enumdef  <----------'
-                               |
-                               |
-               ^               |               \___/
-               `---------------|-----------------'    (get_def_obj map)
- */
-
 // -----------------------------------------------------------------------------
 // Ruby class structure definitions.
 // -----------------------------------------------------------------------------
 
-struct Descriptor {
-  const upb_msgdef* msgdef;
-  VALUE klass;
-  VALUE descriptor_pool;
-};
-
-struct TypeInfo {
+typedef struct {
   upb_fieldtype_t type;
   union {
     const upb_msgdef* msgdef;  // When type == UPB_TYPE_MESSAGE
     const upb_enumdef* enumdef;    // When type == UPB_TYPE_ENUM
   } def;
-};
-
-extern VALUE cDescriptorPool;
-extern VALUE cDescriptor;
-extern VALUE cFileDescriptor;
-extern VALUE cFieldDescriptor;
-extern VALUE cEnumDescriptor;
-extern VALUE cMessageBuilderContext;
-extern VALUE cOneofBuilderContext;
-extern VALUE cEnumBuilderContext;
-extern VALUE cFileBuilderContext;
-extern VALUE cBuilder;
+} TypeInfo;
 
 extern VALUE cError;
 extern VALUE cParseError;
@@ -168,25 +83,12 @@ static inline TypeInfo TypeInfo_from_type(upb_fieldtype_t type) {
 // Native slot storage abstraction.
 // -----------------------------------------------------------------------------
 
-bool is_value_field(const upb_fielddef* f);
-
 extern rb_encoding* kRubyStringUtf8Encoding;
 extern rb_encoding* kRubyStringASCIIEncoding;
 extern rb_encoding* kRubyString8bitEncoding;
 
-VALUE field_type_class(const MessageLayout* layout, const upb_fielddef* field);
-
-#define MAP_KEY_FIELD 1
-#define MAP_VALUE_FIELD 2
-
-// Oneof case slot value to indicate that no oneof case is set. The value `0` is
-// safe because field numbers are used as case identifiers, and no field can
-// have a number of 0.
-#define ONEOF_CASE_NONE 0
-
 // These operate on a map field (i.e., a repeated field of submessages whose
 // submessage type is a map-entry msgdef).
-bool is_map_field(const upb_fielddef* field);
 const upb_fielddef* map_field_key(const upb_fielddef* field);
 const upb_fielddef* map_field_value(const upb_fielddef* field);
 
@@ -195,40 +97,14 @@ const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
 const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 
 // -----------------------------------------------------------------------------
-// Repeated field container type.
-// -----------------------------------------------------------------------------
-
-bool is_wrapper_type_field(const upb_fielddef* field);
-VALUE ruby_wrapper_type(VALUE type_class, VALUE value);
-
-// -----------------------------------------------------------------------------
 // Message class creation.
 // -----------------------------------------------------------------------------
-
-struct Message {
-  VALUE arena;
-  upb_msg* msg;
-  const upb_msgdef* msgdef;      // kept alive by self.class.descriptor reference.
-};
 
 VALUE Arena_new();
 upb_arena *Arena_get(VALUE arena);
 
-extern rb_data_type_t Message_type;
-
 VALUE build_class_from_descriptor(VALUE descriptor);
-
-VALUE Google_Protobuf_discard_unknown(VALUE self, VALUE msg_rb);
-VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
-
 VALUE build_module_from_enumdesc(VALUE _enumdesc);
-VALUE enum_lookup(VALUE self, VALUE number);
-VALUE enum_resolve(VALUE self, VALUE sym);
-VALUE enum_descriptor(VALUE self);
-
-// Maximum depth allowed during encoding, to avoid stack overflows due to
-// cycles.
-#define ENCODE_MAX_NESTING 63
 
 // -----------------------------------------------------------------------------
 // A cache of frozen string objects to use as field defaults.
@@ -278,14 +154,6 @@ void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val, TypeInfo info);
 // -----------------------------------------------------------------------------
 // Utilities.
 // -----------------------------------------------------------------------------
-
-void check_upb_status(const upb_status* status, const char* msg);
-
-#define CHECK_UPB(code, msg) do {                                             \
-    upb_status status = UPB_STATUS_INIT;                                      \
-    code;                                                                     \
-    check_upb_status(&status, msg);                                           \
-} while (0)
 
 extern ID descriptor_instancevar_interned;
 
