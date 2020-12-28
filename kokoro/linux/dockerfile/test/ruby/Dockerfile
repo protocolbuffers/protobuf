@@ -33,7 +33,7 @@ RUN /bin/bash -l -c "rvm install 2.4.5"
 RUN /bin/bash -l -c "rvm install 2.5.1"
 RUN /bin/bash -l -c "rvm install 2.6.0"
 RUN /bin/bash -l -c "rvm install 2.7.0"
-RUN /bin/bash -l -c "rvm install 3.0.0-preview2"
+RUN /bin/bash -l -c "rvm install 3.0.0"
 
 RUN /bin/bash -l -c "echo 'gem: --no-ri --no-rdoc' > ~/.gemrc"
 RUN /bin/bash -l -c "echo 'export PATH=/usr/local/rvm/bin:$PATH' >> ~/.bashrc"

@@ -58,7 +58,7 @@ set +x # rvm commands are very verbose
 rvm use 2.7.0
 set -x
 ruby --version | grep 'ruby 2.7.0'
-for v in 3.0.0-preview2 2.7.0 ; do
+for v in 3.0.0 2.7.0 ; do
   ccache -c
   rake -f "$CROSS_RUBY" cross-ruby VERSION="$v" HOST=x86_64-darwin11 MAKE="$MAKE"
 done
