@@ -183,6 +183,25 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         /// <summary>
+        /// Allows for tuple-like deconstruction of the constituent <see cref="Seconds"/> and,
+        /// optionally, when there is a quantitative value, <see cref="Nanos"/> components.
+        /// </summary>
+        /// <param name="seconds">The <see cref="Seconds"/> component.</param>
+        /// <param name="nanoseconds">Optionally, the <see cref="Nanos"/> component. Nullable
+        /// because the component may or may not be specified by subscribers.</param>
+        /// <remarks>Allows for tuple-like deconstruction of the <see cref="Seconds"/> and,
+        /// optionally, <see cref="Nanos"/>, when there is a quantitative value other than
+        /// <em>zero</em>.</remarks>
+        /// <see cref="Seconds"/>
+        /// <see cref="Nanos"/>
+        /// <see cref="!:https://github.com/protocolbuffers/protobuf/issues/8169"/>
+        public void Deconstruct(out long seconds, out int? nanoseconds)
+        {
+            seconds = this.Seconds;
+            nanoseconds = this.Nanos == 0 ? (int?)null : this.Nanos;
+        }
+
+        /// <summary>
         /// Converts a duration specified in seconds/nanoseconds to a string.
         /// </summary>
         /// <remarks>
