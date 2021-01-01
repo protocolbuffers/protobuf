@@ -87,6 +87,15 @@ namespace Google.Protobuf
         /// </summary>
         public CodedOutputStream(byte[] buffer, int offset, int length)
         {
+            if (offset < 0 || offset > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException("offset", "Offset must be within the buffer");
+            }
+            if (length < 0 || offset + length > buffer.Length)
+            {
+                throw new ArgumentOutOfRangeException("length", "Length must be non-negative and within the buffer");
+            }
+
             this.output = null;
             this.buffer = ProtoPreconditions.CheckNotNull(buffer, nameof(buffer));
             this.state.position = offset;
