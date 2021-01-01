@@ -165,10 +165,18 @@
   } /* namespace protobuf */     \
   } /* namespace google */
 
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(__clang__)
 #define PROTOBUF_DEPRECATED __attribute__((deprecated))
 #define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
 #define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
+#elif defined(__GNUC__)
+#  define PROTOBUF_DEPRECATED __attribute__((deprecated))
+#  define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
+# if __GNUC__ >= 6
+#  define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
+# else
+#  define PROTOBUF_DEPRECATED_ENUM
+# endif
 #elif defined(_MSC_VER)
 #define PROTOBUF_DEPRECATED __declspec(deprecated)
 #define PROTOBUF_DEPRECATED_ENUM

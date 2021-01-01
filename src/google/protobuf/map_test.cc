@@ -3528,6 +3528,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
+  CleanStringLineEndings(&expected_text, false);
   EXPECT_EQ(message->DebugString(), expected_text);
 }
 
