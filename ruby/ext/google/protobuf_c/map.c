@@ -61,14 +61,10 @@ static void Map_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
-static void Map_free(void* _self) {
-  Map* self = (Map *)_self;
-  ObjectCache_Remove(self->map);
-}
-
 const rb_data_type_t Map_type = {
   "Google::Protobuf::Map",
-  { Map_mark, Map_free, NULL },
+  { Map_mark, RUBY_DEFAULT_FREE, NULL },
+  .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
 VALUE cMap;
@@ -97,7 +93,7 @@ VALUE Map_GetRubyWrapper(upb_map* map, upb_fieldtype_t key_type,
   if (val == Qnil) {
     val = Map_alloc(cMap);
     Map* self;
-    ObjectCache_Add(map, val);
+    ObjectCache_Add(map, val, Arena_get(arena));
     TypedData_Get_Struct(val, Map, &Map_type, self);
     self->map = map;
     self->arena = arena;
@@ -322,7 +318,7 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->map = upb_map_new(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
-  ObjectCache_Add(self->map, _self);
+  ObjectCache_Add(self->map, _self, Arena_get(self->arena));
 
   if (init_arg != Qnil) {
     Map_merge_into_self(_self, init_arg);

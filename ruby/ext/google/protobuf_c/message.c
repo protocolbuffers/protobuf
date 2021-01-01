@@ -57,13 +57,15 @@ void Message_mark(void* _self) {
 }
 
 void Message_free(void* _self) {
-  Message* self = (Message *)_self;
-  ObjectCache_Remove(self->msg);
+  //fprintf(stderr, "Freeing message: %p\n", _self);
+  ObjectCache_Remove(_self);
+  xfree(_self);
 }
 
 rb_data_type_t Message_type = {
   "Message",
   { Message_mark, Message_free, NULL },
+  .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
 VALUE Message_alloc(VALUE klass) {
@@ -93,6 +95,14 @@ upb_msg *Message_GetMutable(VALUE msg_rb, const upb_msgdef **m) {
   return (upb_msg*)Message_Get(msg_rb, m);
 }
 
+void Message_InitPtr(VALUE self_, upb_msg *msg, VALUE arena) {
+  Message* self;
+  TypedData_Get_Struct(self_, Message, &Message_type, self);
+  self->msg = msg;
+  self->arena = arena;
+  ObjectCache_Add(msg, self_, Arena_get(arena));
+}
+
 VALUE Message_GetArena(VALUE msg_rb) {
   Message* msg;
   TypedData_Get_Struct(msg_rb, Message, &Message_type, msg);
@@ -114,11 +124,7 @@ VALUE Message_GetRubyWrapper(upb_msg* msg, const upb_msgdef* m, VALUE arena) {
   if (val == Qnil) {
     VALUE klass = Descriptor_DefToClass(m);
     val = Message_alloc(klass);
-    Message* self;
-    TypedData_Get_Struct(val, Message, &Message_type, self);
-    self->msg = msg;
-    self->arena = arena;
-    ObjectCache_Add(msg, val);
+    Message_InitPtr(val, msg, arena);
   }
 
   return val;
@@ -671,10 +677,9 @@ VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   TypedData_Get_Struct(_self, Message, &Message_type, self);
   VALUE arena_rb = Arena_new();
   upb_arena *arena = Arena_get(arena_rb);
+  upb_msg *msg = upb_msg_new(self->msgdef, arena);
 
-  self->arena = arena_rb;
-  self->msg = upb_msg_new(self->msgdef, arena);
-  ObjectCache_Add(self->msg, _self);
+  Message_InitPtr(_self, msg, arena_rb);
 
   if (argc == 0) {
     return Qnil;

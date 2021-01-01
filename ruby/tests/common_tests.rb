@@ -1758,4 +1758,11 @@ module CommonTests
     assert m1.hash != m2.hash
     assert_nil h[m2]
   end
+
+  def test_object_gc
+    m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
+    m.optional_msg
+    GC.start(full_mark: true, immediate_sweep: true)
+    m.optional_msg.inspect
+  end
 end

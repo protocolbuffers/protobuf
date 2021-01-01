@@ -869,6 +869,7 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;
   state.arena.parent = arena;
+  state.arena.cleanups = arena->cleanups;
 
   if (UPB_UNLIKELY(UPB_SETJMP(state.err))) {
     ok = false;
@@ -881,6 +882,7 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
 
   arena->head.ptr = state.arena.head.ptr;
   arena->head.end = state.arena.head.end;
+  arena->cleanups = state.arena.cleanups;
   return ok;
 }
 
@@ -6283,6 +6285,10 @@ err:
 
 size_t _upb_symtab_bytesloaded(const upb_symtab *s) {
   return s->bytes_loaded;
+}
+
+upb_arena *upb_symtab_arena(const upb_symtab *s) {
+  return s->arena;
 }
 
 #undef CHK_OOM

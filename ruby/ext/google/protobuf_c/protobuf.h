@@ -129,8 +129,8 @@ VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def);
 // To prevent dangling references, the finalizer for "val" *must* call
 // ObjectCache_Remove(). Only objects with such a finalizer are suitable to be
 // stored in the cache.
-void ObjectCache_Add(const void* key, VALUE val);
-void ObjectCache_Remove(const void* key);
+void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena);
+void ObjectCache_Remove(void* key);
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key);

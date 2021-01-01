@@ -242,44 +242,68 @@ void Arena_register(VALUE module) {
 // Object Cache
 // -----------------------------------------------------------------------------
 
-static upb_inttable obj_cache;
+// A pointer -> Ruby Object cache that keeps references to Ruby wrapper
+// objects.  This allows us to look up any Ruby wrapper object by the address
+// of the object it is wrapping. That way we can avoid ever creating two
+// different wrapper objects for the same C object, which saves memory and
+// preserves object identity.
+//
+// Previously I tried using ObjectSpace::WeakMap for this. WeakMap would be
+// a superior solution overall, because our references to the wrapper objects
+// would be weak, which would allow GC of the objects when they are no longer
+// being used in the user's program (as it is, they will not be freed until
+// *all* objects in that arena are unneeded).
+//
+// Unfortunately WeakMap doesn't work for us at the moment:
+//
+//   1. Prior to https://bugs.ruby-lang.org/issues/16035 (released in 2.7.0),
+//      it is not possible to use integers as map keys, so we don't have an
+//      easy way of using a pointer as a map index.
+//
+//   2. Even in Ruby 2.7.0 and later, I saw odd behavior where the 
+//      PBRUBY_ASSERT() at the end of ObjectCache_Add() would sporadically
+//      fail.  I was not able to determine the root cause of this failure.
+//
+// To work around this problem, the cache is currently a hash table that
+// 
+
+//#define UPB_CACHE
+
 VALUE obj_cache2 = Qnil;
 
 static VALUE ObjectCache_GetKey(const void* key) {
-  //char data[sizeof(key)];
-  //memcpy(data, &key, sizeof(key));
-  //return rb_str_new(data, sizeof(data));
-  return LL2NUM((intptr_t)key);
+  char buf[sizeof(key)];
+  memcpy(&buf, &key, sizeof(key));
+  return rb_str_new(buf, sizeof(key));
+  intptr_t key_int = (intptr_t)key;
+  PBRUBY_ASSERT((key_int & 3) == 0);
+  return LL2NUM(key_int >> 2);
 }
 
-void ObjectCache_Add(const void* key, VALUE val) {
-  //PBRUBY_ASSERT(key);
-  //fprintf(stderr, "Inserting key=%p, value=%s\n", key, rb_class2name(CLASS_OF(val)));
-  //upb_inttable_insertptr(&obj_cache, key, upb_value_uint64(val));
+static void ObjectCache_Init() {
+  VALUE cWeakMap = rb_eval_string("ObjectSpace::WeakMap");
+  cWeakMap = rb_eval_string("Hash");
+  rb_gc_register_address(&obj_cache2);
+  obj_cache2 = rb_class_new_instance(0, NULL, cWeakMap);
+}
+
+void ObjectCache_Remove(void* key) {
+  //fprintf(stderr, "Removing key=%p\n", key);
+}
+
+void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena) {
+  PBRUBY_ASSERT(ObjectCache_Get(key) == Qnil);
   VALUE key_rb = ObjectCache_GetKey(key);
   rb_funcall(obj_cache2, rb_intern("[]="), 2, key_rb, val);
-  PBRUBY_ASSERT(rb_funcall(obj_cache2, rb_intern("[]"), 1, key_rb) == val);
   PBRUBY_ASSERT(ObjectCache_Get(key) == val);
-}
-
-void ObjectCache_Remove(const void* key) {
-  //fprintf(stderr, "Removing key=%p\n", key);
-  //bool ok = upb_inttable_removeptr(&obj_cache, key, NULL);
-  //PBRUBY_ASSERT(ok);
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key) {
-  //PBRUBY_ASSERT(key);
-  //upb_value val;
-  //if (upb_inttable_lookupptr(&obj_cache, key, &val)) {
-  //  return (VALUE)upb_value_getuint64(val);
-  //} else {
-  //  return Qnil;
-  //}
   VALUE key_rb = ObjectCache_GetKey(key);
   VALUE ret = rb_funcall(obj_cache2, rb_intern("[]"), 1, key_rb);
   //fprintf(stderr, "Getting key=%p, ret=%s\n", key, rb_class2name(CLASS_OF(ret)));
+  //fprintf(stderr, "Getting key=%s, ret=%s\n", RSTRING_PTR(rb_inspect(key_rb)), rb_class2name(CLASS_OF(ret)));
   return ret;
 }
 
@@ -330,13 +354,10 @@ VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj) {
 // This must be named "Init_protobuf_c" because the Ruby module is named
 // "protobuf_c" -- the VM looks for this symbol in our .so.
 void Init_protobuf_c() {
-  upb_inttable_init(&obj_cache, UPB_CTYPE_UINT64);
+  ObjectCache_Init();
+
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
-
-  VALUE cWeakMap = rb_eval_string("ObjectSpace::WeakMap");
-  rb_gc_register_address(&obj_cache2);
-  obj_cache2 = rb_class_new_instance(0, NULL, cWeakMap);
 
   descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
   Arena_register(protobuf);

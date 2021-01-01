@@ -55,14 +55,10 @@ static void RepeatedField_mark(void* _self) {
   rb_gc_mark(self->arena);
 }
 
-static void RepeatedField_free(void* _self) {
-  RepeatedField* self = (RepeatedField *)_self;
-  ObjectCache_Remove(self->array);
-}
-
 const rb_data_type_t RepeatedField_type = {
   "Google::Protobuf::RepeatedField",
-  { RepeatedField_mark, RepeatedField_free, NULL },
+  { RepeatedField_mark, RUBY_DEFAULT_FREE, NULL },
+  .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
 static RepeatedField* ruby_to_RepeatedField(VALUE _self) {
@@ -94,7 +90,7 @@ VALUE RepeatedField_GetRubyWrapper(upb_array* array, TypeInfo type_info,
   if (val == Qnil) {
     val = RepeatedField_alloc(cRepeatedField);
     RepeatedField* self;
-    ObjectCache_Add(array, val);
+    ObjectCache_Add(array, val, Arena_get(arena));
     TypedData_Get_Struct(val, RepeatedField, &RepeatedField_type, self);
     self->array = array;
     self->arena = arena;
@@ -601,7 +597,7 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
 
   self->type_info = TypeInfo_FromClass(argc, argv, 0, &self->type_class, &ary);
   self->array = upb_array_new(arena, self->type_info.type);
-  ObjectCache_Add(self->array, _self);
+  ObjectCache_Add(self->array, _self, arena);
 
   if (ary != Qnil) {
     if (!RB_TYPE_P(ary, T_ARRAY)) {

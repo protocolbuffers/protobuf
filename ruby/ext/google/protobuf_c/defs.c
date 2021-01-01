@@ -51,17 +51,18 @@ VALUE c_only_cookie = Qnil;
 // Common utilities.
 // -----------------------------------------------------------------------------
 
-#define DEFINE_CLASS(name, string_name)                             \
-    VALUE c ## name = Qnil;                                         \
-    const rb_data_type_t _ ## name ## _type = {                     \
-      string_name,                                                  \
-      { name ## _mark, name ## _free, NULL },                       \
-    };                                                              \
-    name* ruby_to_ ## name(VALUE val) {                             \
-      name* ret;                                                    \
-      TypedData_Get_Struct(val, name, &_ ## name ## _type, ret);    \
-      return ret;                                                   \
-    }                                                               \
+#define DEFINE_CLASS(name, string_name)                    \
+  VALUE c##name = Qnil;                                    \
+  const rb_data_type_t _##name##_type = {                  \
+      string_name,                                         \
+      {name##_mark, name##_free, NULL},                    \
+      .flags = RUBY_TYPED_FREE_IMMEDIATELY,                \
+  };                                                       \
+  name* ruby_to_##name(VALUE val) {                        \
+    name* ret;                                             \
+    TypedData_Get_Struct(val, name, &_##name##_type, ret); \
+    return ret;                                            \
+  }
 
 #define DEFINE_SELF(type, var, rb_var)                              \
     type* var = ruby_to_ ## type(rb_var)
@@ -255,8 +256,6 @@ static void DescriptorPool_mark(void* _self) {
 
 static void DescriptorPool_free(void* _self) {
   DescriptorPool* self = _self;
-
-  ObjectCache_Remove(self->symtab);
   upb_symtab_free(self->symtab);
   xfree(self);
 }
@@ -283,7 +282,7 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
 
   self->def_to_descriptor = rb_hash_new();
   self->symtab = upb_symtab_new();
-  ObjectCache_Add(self->symtab, ret);
+  ObjectCache_Add(self->symtab, ret, upb_symtab_arena(self->symtab));
 
   return ret;
 }
