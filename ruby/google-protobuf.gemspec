@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   else
     s.files     += Dir.glob('ext/**/*')
     s.extensions= ["ext/google/protobuf_c/extconf.rb"]
-    s.add_development_dependency "rake-compiler-dock", ">= 1.0.1", "< 2.0"
+    s.add_development_dependency "rake-compiler-dock", ">= 1.1.0", "< 2.0"
   end
   s.test_files  = ["tests/basic.rb",
                   "tests/stress.rb",
