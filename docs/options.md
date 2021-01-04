@@ -260,3 +260,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Astounding (Currently Private)
    * Website: https://github.com/PbPipes/Astounding 
    * Extension: 1090
+   
+1. Harmony Protocol
+   * Website: https://github.com/harmony-development/protocol
+   * Extension: 1091
