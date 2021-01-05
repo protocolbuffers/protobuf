@@ -457,6 +457,9 @@ class RepeatedCompositeFieldContainer(BaseContainer):
                       'other repeated composite fields.')
     return self._values == other._values
 
+  def GetEntryClass(self):
+    return self._entry_descriptor._concrete_class
+
 
 class ScalarMap(MutableMapping):
 
