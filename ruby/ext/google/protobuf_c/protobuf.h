@@ -124,13 +124,13 @@ VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def);
 // -----------------------------------------------------------------------------
 
 // This is a conceptually "weak" cache, in that it does not prevent "val" from
-// being collected.
-//
-// To prevent dangling references, the finalizer for "val" *must* call
-// ObjectCache_Remove(). Only objects with such a finalizer are suitable to be
-// stored in the cache.
+// being collected.  We use this to cache Ruby wrapper objects around the
+// underlying C objects.
+
+// Adds an entry to the cache. The "arena" parameter must give the arena that
+// "key" was allocated from.  In Ruby <2.7.0, it will be used to remove the key
+// from the cache when the arena is destroyed.
 void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena);
-void ObjectCache_Remove(void* key);
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key);

@@ -30,6 +30,8 @@
 
 #include "protobuf.h"
 
+#include <ruby/version.h>
+
 #include "defs.h"
 #include "map.h"
 #include "message.h"
@@ -265,44 +267,58 @@ void Arena_register(VALUE module) {
 //      fail.  I was not able to determine the root cause of this failure.
 //
 // To work around this problem, the cache is currently a hash table that
-// 
+//
 
-//#define UPB_CACHE
+#if RUBY_API_VERSION_CODE >= 20700
+#define USE_WEAK_MAP 1
+#else
+#define USE_WEAK_MAP 0
+#endif
 
-VALUE obj_cache2 = Qnil;
+VALUE obj_cache = Qnil;
 
 static VALUE ObjectCache_GetKey(const void* key) {
   char buf[sizeof(key)];
   memcpy(&buf, &key, sizeof(key));
-  return rb_str_new(buf, sizeof(key));
   intptr_t key_int = (intptr_t)key;
   PBRUBY_ASSERT((key_int & 3) == 0);
   return LL2NUM(key_int >> 2);
 }
 
 static void ObjectCache_Init() {
-  VALUE cWeakMap = rb_eval_string("ObjectSpace::WeakMap");
-  cWeakMap = rb_eval_string("Hash");
-  rb_gc_register_address(&obj_cache2);
-  obj_cache2 = rb_class_new_instance(0, NULL, cWeakMap);
+#if USE_WEAK_MAP
+  VALUE cMap = rb_eval_string("ObjectSpace::WeakMap");
+#else
+  cMap = rb_eval_string("Hash");
+#endif
+  rb_gc_register_address(&obj_cache);
+  obj_cache = rb_class_new_instance(0, NULL, cMap);
 }
 
-void ObjectCache_Remove(void* key) {
-  //fprintf(stderr, "Removing key=%p\n", key);
+#if !USE_WEAK_MAP
+static void ObjectCache_Remove(void* key) {
+  VALUE key_rb = ObjectCache_GetKey(key);
+  PBRUBY_ASSERT(rb_hash_lookup(obj_cache, key_rb) != Qnil);
+  rb_hash_delete(obj_cache, key_rb);
+  fprintf(stderr, "Removing key=%p\n", key);
 }
+#endif
 
 void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena) {
   PBRUBY_ASSERT(ObjectCache_Get(key) == Qnil);
   VALUE key_rb = ObjectCache_GetKey(key);
-  rb_funcall(obj_cache2, rb_intern("[]="), 2, key_rb, val);
+  rb_funcall(obj_cache, rb_intern("[]="), 2, key_rb, val);
   PBRUBY_ASSERT(ObjectCache_Get(key) == val);
+
+#if !USE_WEAK_MAP
+  upb_arena_addcleanup(arena, (void*)key, ObjectCache_Remove);
+#endif
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key) {
   VALUE key_rb = ObjectCache_GetKey(key);
-  VALUE ret = rb_funcall(obj_cache2, rb_intern("[]"), 1, key_rb);
-  //fprintf(stderr, "Getting key=%p, ret=%s\n", key, rb_class2name(CLASS_OF(ret)));
+  VALUE ret = rb_funcall(obj_cache, rb_intern("[]"), 1, key_rb);
   //fprintf(stderr, "Getting key=%s, ret=%s\n", RSTRING_PTR(rb_inspect(key_rb)), rb_class2name(CLASS_OF(ret)));
   return ret;
 }

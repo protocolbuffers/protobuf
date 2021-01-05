@@ -58,7 +58,7 @@ void Message_mark(void* _self) {
 
 void Message_free(void* _self) {
   //fprintf(stderr, "Freeing message: %p\n", _self);
-  ObjectCache_Remove(_self);
+  //ObjectCache_Remove(_self);
   xfree(_self);
 }
 
