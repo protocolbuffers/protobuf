@@ -250,24 +250,14 @@ void Arena_register(VALUE module) {
 // different wrapper objects for the same C object, which saves memory and
 // preserves object identity.
 //
-// Previously I tried using ObjectSpace::WeakMap for this. WeakMap would be
-// a superior solution overall, because our references to the wrapper objects
-// would be weak, which would allow GC of the objects when they are no longer
-// being used in the user's program (as it is, they will not be freed until
-// *all* objects in that arena are unneeded).
+// For Ruby >=2.7.0, ObjectSpace::WeakMap gives us exactly what we want.
+// For earlier Rubies, we cannot use WeakMap because of
+//   https://bugs.ruby-lang.org/issues/16035
 //
-// Unfortunately WeakMap doesn't work for us at the moment:
-//
-//   1. Prior to https://bugs.ruby-lang.org/issues/16035 (released in 2.7.0),
-//      it is not possible to use integers as map keys, so we don't have an
-//      easy way of using a pointer as a map index.
-//
-//   2. Even in Ruby 2.7.0 and later, I saw odd behavior where the 
-//      PBRUBY_ASSERT() at the end of ObjectCache_Add() would sporadically
-//      fail.  I was not able to determine the root cause of this failure.
-//
-// To work around this problem, the cache is currently a hash table that
-//
+// To work around this, in older Rubies we just use Hash and manually delete
+// the cache entries when necessary. This works, but appears to have a severe
+// speed penalty (for unit tests, using WeakMap is ~2x faster in running the
+// benchmarks).
 
 #if RUBY_API_VERSION_CODE >= 20700
 #define USE_WEAK_MAP 1
