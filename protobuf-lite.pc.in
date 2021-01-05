@@ -1,7 +1,7 @@
 prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
+exec_prefix=${prefix}
+libdir=${prefix}/lib64
+includedir=${prefix}/include
 
 Name: Protocol Buffers
 Description: Google's Data Interchange Format
