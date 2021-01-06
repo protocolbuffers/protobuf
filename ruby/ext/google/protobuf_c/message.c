@@ -51,20 +51,14 @@ typedef struct {
   const upb_msgdef* msgdef;      // kept alive by self.class.descriptor reference.
 } Message;
 
-void Message_mark(void* _self) {
+static void Message_mark(void* _self) {
   Message* self = (Message *)_self;
   rb_gc_mark(self->arena);
 }
 
-void Message_free(void* _self) {
-  //fprintf(stderr, "Freeing message: %p\n", _self);
-  //ObjectCache_Remove(_self);
-  xfree(_self);
-}
-
 rb_data_type_t Message_type = {
   "Message",
-  { Message_mark, Message_free, NULL },
+  { Message_mark, RUBY_DEFAULT_FREE, NULL },
   .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
@@ -1089,6 +1083,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
 
   if (data) {
     VALUE ret = rb_str_new(data, size);
+    rb_enc_associate(ret, kRubyString8bitEncoding);
     upb_arena_free(arena);
     return ret;
   } else {
@@ -1151,6 +1146,7 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
              upb_status_errmsg(&status));
   }
 
+  VALUE ret;
   if (size >= sizeof(buf)) {
     char* buf2 = malloc(size + 1);
     VALUE ret;
@@ -1158,10 +1154,12 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
                     &status);
     ret = rb_str_new(buf2, size);
     free(buf2);
-    return ret;
   } else {
-    return rb_str_new(buf, size);
+    ret = rb_str_new(buf, size);
   }
+
+  rb_enc_associate(ret, kRubyStringUtf8Encoding);
+  return ret;
 }
 
 /*

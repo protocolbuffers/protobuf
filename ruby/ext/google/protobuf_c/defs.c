@@ -1946,14 +1946,6 @@ VALUE MessageBuilderContext_map(int argc, VALUE* argv, VALUE _self) {
 
   file_builder = ruby_to_FileBuilderContext(self->file_builder);
 
-  // TODO(haberman): remove this restriction, maps are supported in proto2.
-  if (upb_strview_eql(
-          google_protobuf_FileDescriptorProto_syntax(file_builder->file_proto),
-          upb_strview_makez("proto2"))) {
-    rb_raise(rb_eArgError,
-             "Cannot add a native map field using proto2 syntax.");
-  }
-
   // Create a new message descriptor for the map entry message, and create a
   // repeated submessage field here with that type.
   msg_name = google_protobuf_DescriptorProto_name(self->msg_proto);
