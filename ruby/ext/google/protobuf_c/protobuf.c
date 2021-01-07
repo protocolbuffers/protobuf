@@ -171,12 +171,16 @@ void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val,
     case UPB_TYPE_BOOL:
       StringBuilder_Printf(b, "%s", val.bool_val ? "true" : "false");
       break;
-    case UPB_TYPE_FLOAT:
-      StringBuilder_Printf(b, "%f", val.float_val);
+    case UPB_TYPE_FLOAT: {
+      VALUE str = rb_inspect(DBL2NUM(val.float_val));
+      StringBuilder_Printf(b, "%s", RSTRING_PTR(str));
       break;
-    case UPB_TYPE_DOUBLE:
-      StringBuilder_Printf(b, "%f", val.double_val);
+    }
+    case UPB_TYPE_DOUBLE: {
+      VALUE str = rb_inspect(DBL2NUM(val.double_val));
+      StringBuilder_Printf(b, "%s", RSTRING_PTR(str));
       break;
+    }
     case UPB_TYPE_INT32:
       StringBuilder_Printf(b, "%" PRId32, val.int32_val);
       break;
@@ -290,7 +294,6 @@ static void ObjectCache_Remove(void* key) {
   VALUE key_rb = ObjectCache_GetKey(key);
   PBRUBY_ASSERT(rb_hash_lookup(obj_cache, key_rb) != Qnil);
   rb_hash_delete(obj_cache, key_rb);
-  fprintf(stderr, "Removing key=%p\n", key);
 }
 #endif
 
@@ -309,7 +312,6 @@ void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena) {
 VALUE ObjectCache_Get(const void* key) {
   VALUE key_rb = ObjectCache_GetKey(key);
   VALUE ret = rb_funcall(obj_cache, rb_intern("[]"), 1, key_rb);
-  //fprintf(stderr, "Getting key=%s, ret=%s\n", RSTRING_PTR(rb_inspect(key_rb)), rb_class2name(CLASS_OF(ret)));
   return ret;
 }
 
