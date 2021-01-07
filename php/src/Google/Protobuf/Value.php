@@ -174,7 +174,7 @@ class Value extends \Google\Protobuf\Internal\Message
      * Represents a structured value.
      *
      * Generated from protobuf field <code>.google.protobuf.Struct struct_value = 5;</code>
-     * @return \Google\Protobuf\Struct
+     * @return \Google\Protobuf\Struct|null
      */
     public function getStructValue()
     {
@@ -205,7 +205,7 @@ class Value extends \Google\Protobuf\Internal\Message
      * Represents a repeated `Value`.
      *
      * Generated from protobuf field <code>.google.protobuf.ListValue list_value = 6;</code>
-     * @return \Google\Protobuf\ListValue
+     * @return \Google\Protobuf\ListValue|null
      */
     public function getListValue()
     {
