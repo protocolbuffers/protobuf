@@ -1149,7 +1149,6 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE ret;
   if (size >= sizeof(buf)) {
     char* buf2 = malloc(size + 1);
-    VALUE ret;
     upb_json_encode(msg->msg, msg->msgdef, symtab, options, buf2, size + 1,
                     &status);
     ret = rb_str_new(buf2, size);

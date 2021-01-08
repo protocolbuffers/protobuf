@@ -1094,17 +1094,21 @@ ruby_EXTRA_DIST=                                                             \
   ruby/compatibility_tests/v3.0.0/test.sh                                    \
   ruby/compatibility_tests/v3.0.0/Rakefile                                   \
   ruby/compatibility_tests/v3.0.0/README.md                                  \
+  ruby/ext/google/protobuf_c/convert.c                                       \
+  ruby/ext/google/protobuf_c/convert.h                                       \
   ruby/ext/google/protobuf_c/defs.c                                          \
-  ruby/ext/google/protobuf_c/encode_decode.c                                 \
+  ruby/ext/google/protobuf_c/defs.h                                          \
   ruby/ext/google/protobuf_c/extconf.rb                                      \
   ruby/ext/google/protobuf_c/map.c                                           \
+  ruby/ext/google/protobuf_c/map.h                                           \
   ruby/ext/google/protobuf_c/message.c                                       \
+  ruby/ext/google/protobuf_c/message.h                                       \
   ruby/ext/google/protobuf_c/protobuf.c                                      \
   ruby/ext/google/protobuf_c/protobuf.h                                      \
   ruby/ext/google/protobuf_c/repeated_field.c                                \
-  ruby/ext/google/protobuf_c/storage.c                                       \
-  ruby/ext/google/protobuf_c/upb.c                                           \
-  ruby/ext/google/protobuf_c/upb.h                                           \
+  ruby/ext/google/protobuf_c/repeated_field.h                                \
+  ruby/ext/google/protobuf_c/ruby-upb.c                                      \
+  ruby/ext/google/protobuf_c/ruby-upb.h                                      \
   ruby/ext/google/protobuf_c/wrap_memcpy.c                                   \
   ruby/google-protobuf.gemspec                                               \
   ruby/lib/google/protobuf/message_exts.rb                                   \
