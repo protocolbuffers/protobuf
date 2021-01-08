@@ -2357,7 +2357,7 @@ static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size,
 }
 
 static mem_block *upb_arena_allocblock(upb_arena *a, size_t size) {
-  size_t block_size = UPB_MAX(size, a->next_block_size) + sizeof(mem_block);
+  size_t block_size = UPB_MAX(size, a->next_block_size) + _upb_arena_alignup(sizeof(mem_block));
   mem_block *block = upb_malloc(a->block_alloc, block_size);
 
   if (!block) {
