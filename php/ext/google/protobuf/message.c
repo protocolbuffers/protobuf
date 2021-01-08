@@ -968,6 +968,10 @@ PHP_METHOD(Message, readOneof) {
                      (int)field_num);
   }
 
+  if (upb_fielddef_issubmsg(f) && !upb_msg_has(intern->msg, f)) {
+    RETURN_NULL();
+  }
+
   {
     upb_msgval msgval = upb_msg_get(intern->msg, f);
     const Descriptor *subdesc = Descriptor_GetFromFieldDef(f);
