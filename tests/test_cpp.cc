@@ -977,6 +977,17 @@ void TestInlinedArena() {
   ASSERT(n == 0);
 }
 
+void TestDefault() {
+  upb::SymbolTable symtab;
+  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
+  upb::FieldDefPtr i32_f = md.FindFieldByName("i32");
+  upb::FieldDefPtr str_f = md.FindFieldByName("str");
+  ASSERT(i32_f && str_f);
+  ASSERT(i32_f.default_value().int32_val == 5);
+  ASSERT(strcmp(str_f.default_value().str_val.data, "abc") == 0);
+  ASSERT(str_f.default_value().str_val.size == 3);
+}
+
 extern "C" {
 
 int run_tests() {
@@ -1014,6 +1025,7 @@ int run_tests() {
   TestHandlerDataDestruction();
   TestIteration();
   TestArena();
+  TestDefault();
 
   return 0;
 }

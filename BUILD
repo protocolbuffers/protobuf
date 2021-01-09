@@ -149,6 +149,7 @@ cc_library(
         "upb/def.h",
         "upb/def.hpp",
         "upb/reflection.h",
+        "upb/reflection.hpp",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
