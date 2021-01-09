@@ -42,6 +42,17 @@ extern VALUE cOneofBuilderContext;
 extern VALUE cEnumBuilderContext;
 extern VALUE cBuilder;
 
+// -----------------------------------------------------------------------------
+// Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
+// instances.
+// -----------------------------------------------------------------------------
+
+VALUE get_msgdef_obj(VALUE descriptor_pool, const upb_msgdef* def);
+VALUE get_enumdef_obj(VALUE descriptor_pool, const upb_enumdef* def);
+VALUE get_fielddef_obj(VALUE descriptor_pool, const upb_fielddef* def);
+VALUE get_filedef_obj(VALUE descriptor_pool, const upb_filedef* def);
+VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def);
+
 // A distinct object that is not accessible from Ruby.  We use this as a
 // constructor argument to enforce that certain objects cannot be created from
 // Ruby.

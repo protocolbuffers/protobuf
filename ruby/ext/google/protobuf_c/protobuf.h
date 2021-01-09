@@ -38,7 +38,7 @@
 #include "ruby-upb.h"
 
 // -----------------------------------------------------------------------------
-// Ruby class structure definitions.
+// TypeInfo
 // -----------------------------------------------------------------------------
 
 typedef struct {
@@ -108,16 +108,6 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc);
 // A cache of frozen string objects to use as field defaults.
 // -----------------------------------------------------------------------------
 VALUE get_frozen_string(const char* data, size_t size, bool binary);
-
-// -----------------------------------------------------------------------------
-// Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
-// instances.
-// -----------------------------------------------------------------------------
-VALUE get_msgdef_obj(VALUE descriptor_pool, const upb_msgdef* def);
-VALUE get_enumdef_obj(VALUE descriptor_pool, const upb_enumdef* def);
-VALUE get_fielddef_obj(VALUE descriptor_pool, const upb_fielddef* def);
-VALUE get_filedef_obj(VALUE descriptor_pool, const upb_filedef* def);
-VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_oneofdef* def);
 
 // -----------------------------------------------------------------------------
 // Global object cache from upb array/map/message/symtab to wrapper object.

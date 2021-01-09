@@ -3,7 +3,7 @@
 require 'mkmf'
 
 if RUBY_PLATFORM =~ /darwin/ || RUBY_PLATFORM =~ /linux/
-  $CFLAGS += " -std=gnu99 -O3 -DNDEBUG -Wall -Wsign-compare -Wno-declaration-after-statement"
+  $CFLAGS += " -std=gnu99 -O3 -DNDEBUG -fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
 else
   $CFLAGS += " -std=gnu99 -O3 -DNDEBUG"
 end
