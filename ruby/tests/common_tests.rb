@@ -1765,4 +1765,18 @@ module CommonTests
     GC.start(full_mark: true, immediate_sweep: true)
     m.optional_msg.inspect
   end
+
+  def test_object_gc_freeze
+    m = proto_module::TestMessage.new
+    m.repeated_float.freeze
+    GC.start(full_mark: true)
+
+    # Make sure we remember that the object is frozen.
+    # The wrapper object contains this information, so we need to ensure that
+    # the previous GC did not collect it.
+    assert m.repeated_float.frozen?
+
+    GC.start(full_mark: true, immediate_sweep: true)
+    assert m.repeated_float.frozen?
+  end
 end

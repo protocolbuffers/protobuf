@@ -916,6 +916,22 @@ static VALUE Message_to_h(VALUE _self) {
 
 /*
  * call-seq:
+ *     Message.freeze => self
+ *
+ * Freezes the message object. We have to intercept this so we can pin the
+ * Ruby object into memory so we don't forget it's frozen.
+ */
+static VALUE Message_freeze(VALUE _self) {
+  Message* self;
+  TypedData_Get_Struct(_self, Message, &Message_type, self);
+
+  ObjectCache_Pin(self->msg, _self, Arena_get(self->arena));
+  RB_OBJ_FREEZE(_self);
+  return _self;
+}
+
+/*
+ * call-seq:
  *     Message.[](index) => value
  *
  * Accesses a field's value by field name. The provided field name should be a
@@ -1203,6 +1219,7 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
   rb_define_method(klass, "clone", Message_dup, 0);
   rb_define_method(klass, "==", Message_eq, 1);
   rb_define_method(klass, "eql?", Message_eq, 1);
+  rb_define_method(klass, "freeze", Message_freeze, 0);
   rb_define_method(klass, "hash", Message_hash, 0);
   rb_define_method(klass, "to_h", Message_to_h, 0);
   rb_define_method(klass, "inspect", Message_inspect, 0);

@@ -583,6 +583,21 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
 
 /*
  * call-seq:
+ *     Message.freeze => self
+ *
+ * Freezes the message object. We have to intercept this so we can pin the
+ * Ruby object into memory so we don't forget it's frozen.
+ */
+static VALUE Map_freeze(VALUE _self) {
+  Map* self = ruby_to_Map(_self);
+
+  ObjectCache_Pin(self->map, _self, Arena_get(self->arena));
+  RB_OBJ_FREEZE(_self);
+  return _self;
+}
+
+/*
+ * call-seq:
  *     Map.hash => hash_value
  *
  * Returns a hash value based on this map's contents.
@@ -664,6 +679,7 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "length", Map_length, 0);
   rb_define_method(klass, "dup", Map_dup, 0);
   rb_define_method(klass, "==", Map_eq, 1);
+  rb_define_method(klass, "freeze", Map_freeze, 0);
   rb_define_method(klass, "hash", Map_hash, 0);
   rb_define_method(klass, "to_h", Map_to_h, 0);
   rb_define_method(klass, "inspect", Map_inspect, 0);

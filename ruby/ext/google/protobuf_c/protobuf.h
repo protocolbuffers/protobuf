@@ -135,6 +135,10 @@ void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena);
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key);
 
+// Pins the given object so it is GC-rooted. This guarantees that the "frozen"
+// bit on the object will be remembered.
+void ObjectCache_Pin(const void* key, VALUE val, upb_arena *arena);
+
 // -----------------------------------------------------------------------------
 // StringBuilder, for inspect
 // -----------------------------------------------------------------------------

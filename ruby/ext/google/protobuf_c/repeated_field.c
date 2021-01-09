@@ -495,6 +495,21 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
 
 /*
  * call-seq:
+ *     RepeatedField.freeze => self
+ *
+ * Freezes the repeated field. We have to intercept this so we can pin the Ruby
+ * object into memory so we don't forget it's frozen.
+ */
+static VALUE RepeatedField_freeze(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+
+  ObjectCache_Pin(self->array, _self, Arena_get(self->arena));
+  RB_OBJ_FREEZE(_self);
+  return _self;
+}
+
+/*
+ * call-seq:
  *     RepeatedField.hash => hash_value
  *
  * Returns a hash value computed from this repeated field's elements.
@@ -635,6 +650,7 @@ void RepeatedField_register(VALUE module) {
   rb_define_method(klass, "clone", RepeatedField_dup, 0);
   rb_define_method(klass, "==", RepeatedField_eq, 1);
   rb_define_method(klass, "to_ary", RepeatedField_to_ary, 0);
+  rb_define_method(klass, "freeze", RepeatedField_freeze, 0);
   rb_define_method(klass, "hash", RepeatedField_hash, 0);
   rb_define_method(klass, "+", RepeatedField_plus, 1);
   rb_define_method(klass, "concat", RepeatedField_concat, 1);

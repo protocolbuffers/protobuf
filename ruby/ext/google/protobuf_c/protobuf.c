@@ -254,22 +254,16 @@ void Arena_register(VALUE module) {
 // different wrapper objects for the same C object, which saves memory and
 // preserves object identity.
 //
-// For Ruby >=2.7.0, ObjectSpace::WeakMap gives us exactly what we want.
-// For earlier Rubies, we cannot use WeakMap because of
-//   https://bugs.ruby-lang.org/issues/16035
-//
-// To work around this, in older Rubies we just use Hash and manually delete
-// the cache entries when necessary. This works, but appears to have a severe
-// speed penalty (for unit tests, using WeakMap is ~2x faster in running the
-// benchmarks).
+// We use Hash and/or WeakMap for the cache. WeakMap is faster overall
+// (probably due to removal being integrated with GC) but doesn't work for Ruby
+// <2.7 (see note below). We need Hash for Ruby <2.7 and for cases where we
+// need to GC-root the object (notably when the object has been frozen).
 
 #if RUBY_API_VERSION_CODE >= 20700
 #define USE_WEAK_MAP 1
 #else
 #define USE_WEAK_MAP 0
 #endif
-
-VALUE obj_cache = Qnil;
 
 static VALUE ObjectCache_GetKey(const void* key) {
   char buf[sizeof(key)];
@@ -279,40 +273,101 @@ static VALUE ObjectCache_GetKey(const void* key) {
   return LL2NUM(key_int >> 2);
 }
 
-static void ObjectCache_Init() {
-#if USE_WEAK_MAP
-  VALUE cMap = rb_eval_string("ObjectSpace::WeakMap");
-#else
-  cMap = rb_eval_string("Hash");
-#endif
-  rb_gc_register_address(&obj_cache);
-  obj_cache = rb_class_new_instance(0, NULL, cMap);
+// Strong object cache, uses regular Hash and GC-roots objects.
+// - For Ruby <2.7, used for all objects.
+// - For Ruby >=2.7, used only for frozen objects, so we preserve the "frozen"
+//   bit (since this information is not preserved at the upb level).
+
+VALUE strong_obj_cache = Qnil;
+
+static void StrongObjectCache_Init() {
+  rb_gc_register_address(&strong_obj_cache);
+  strong_obj_cache = rb_hash_new();
 }
 
-#if !USE_WEAK_MAP
-static void ObjectCache_Remove(void* key) {
+static void StrongObjectCache_Remove(void* key) {
   VALUE key_rb = ObjectCache_GetKey(key);
-  PBRUBY_ASSERT(rb_hash_lookup(obj_cache, key_rb) != Qnil);
-  rb_hash_delete(obj_cache, key_rb);
+  PBRUBY_ASSERT(rb_hash_lookup(strong_obj_cache, key_rb) != Qnil);
+  rb_hash_delete(strong_obj_cache, key_rb);
 }
+
+static VALUE StrongObjectCache_Get(const void* key) {
+  VALUE key_rb = ObjectCache_GetKey(key);
+  return rb_hash_lookup(strong_obj_cache, key_rb);
+}
+
+static void StrongObjectCache_Add(const void* key, VALUE val,
+                                  upb_arena* arena) {
+  PBRUBY_ASSERT(StrongObjectCache_Get(key) == Qnil);
+  VALUE key_rb = ObjectCache_GetKey(key);
+  rb_hash_aset(strong_obj_cache, key_rb, val);
+  upb_arena_addcleanup(arena, (void*)key, StrongObjectCache_Remove);
+}
+
+// Weak object cache. This speeds up the test suite significantly, so we
+// presume it speeds up real code also. However we can only use it in Ruby
+// >=2.7 due to:
+//   https://bugs.ruby-lang.org/issues/16035
+
+#if USE_WEAK_MAP
+
+VALUE weak_obj_cache = Qnil;
+
+static void WeakObjectCache_Init() {
+  rb_gc_register_address(&weak_obj_cache);
+  VALUE klass = rb_eval_string("ObjectSpace::WeakMap");
+  weak_obj_cache = rb_class_new_instance(0, NULL, klass);
+}
+
+static VALUE WeakObjectCache_Get(const void* key) {
+  VALUE key_rb = ObjectCache_GetKey(key);
+  VALUE ret = rb_funcall(weak_obj_cache, rb_intern("[]"), 1, key_rb);
+  return ret;
+}
+
+static void WeakObjectCache_Add(const void* key, VALUE val) {
+  PBRUBY_ASSERT(WeakObjectCache_Get(key) == Qnil);
+  VALUE key_rb = ObjectCache_GetKey(key);
+  rb_funcall(weak_obj_cache, rb_intern("[]="), 2, key_rb, val);
+  PBRUBY_ASSERT(WeakObjectCache_Get(key) == val);
+}
+
 #endif
+
+// Public ObjectCache API.
+
+static void ObjectCache_Init() {
+  StrongObjectCache_Init();
+#if USE_WEAK_MAP
+  WeakObjectCache_Init();
+#endif
+}
 
 void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena) {
-  PBRUBY_ASSERT(ObjectCache_Get(key) == Qnil);
-  VALUE key_rb = ObjectCache_GetKey(key);
-  rb_funcall(obj_cache, rb_intern("[]="), 2, key_rb, val);
-  PBRUBY_ASSERT(ObjectCache_Get(key) == val);
-
-#if !USE_WEAK_MAP
-  upb_arena_addcleanup(arena, (void*)key, ObjectCache_Remove);
+#if USE_WEAK_MAP
+  (void)arena;
+  WeakObjectCache_Add(key, val);
+#else
+  StrongObjectCache_Add(key, val, arena);
 #endif
 }
 
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key) {
-  VALUE key_rb = ObjectCache_GetKey(key);
-  VALUE ret = rb_funcall(obj_cache, rb_intern("[]"), 1, key_rb);
-  return ret;
+#if USE_WEAK_MAP
+  return WeakObjectCache_Get(key);
+#else
+  return StrongObjectCache_Get(key);
+#endif
+}
+
+void ObjectCache_Pin(const void* key, VALUE val, upb_arena *arena) {
+#if USE_WEAK_MAP
+  PBRUBY_ASSERT(WeakObjectCache_Get(key) == val);
+  // This will GC-root the object, but we'll still use the weak map for
+  // actual lookup.
+  StrongObjectCache_Add(key, val, arena);
+#endif
 }
 
 /*
