@@ -217,13 +217,13 @@ VALUE Convert_UpbToRuby(upb_msgval upb_val, TypeInfo type_info, VALUE arena) {
     }
     case UPB_TYPE_STRING: {
       VALUE str_rb = rb_str_new(upb_val.str_val.data, upb_val.str_val.size);
-      rb_enc_associate(str_rb, kRubyStringUtf8Encoding);
+      rb_enc_associate(str_rb, rb_utf8_encoding());
       rb_obj_freeze(str_rb);
       return str_rb;
     }
     case UPB_TYPE_BYTES: {
       VALUE str_rb = rb_str_new(upb_val.str_val.data, upb_val.str_val.size);
-      rb_enc_associate(str_rb, kRubyString8bitEncoding);
+      rb_enc_associate(str_rb, rb_ascii8bit_encoding());
       rb_obj_freeze(str_rb);
       return str_rb;
     }

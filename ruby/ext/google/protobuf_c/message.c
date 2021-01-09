@@ -37,8 +37,15 @@
 #include "repeated_field.h"
 #include "third_party/wyhash/wyhash.h"
 
+static VALUE cParseError = Qnil;
+static ID descriptor_instancevar_interned;
+
 static VALUE initialize_rb_class_with_no_args(VALUE klass) {
     return rb_funcall(klass, rb_intern("new"), 0);
+}
+
+VALUE MessageOrEnum_GetDescriptor(VALUE klass) {
+  return rb_ivar_get(klass, descriptor_instancevar_interned);
 }
 
 // -----------------------------------------------------------------------------
@@ -1099,7 +1106,7 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
 
   if (data) {
     VALUE ret = rb_str_new(data, size);
-    rb_enc_associate(ret, kRubyString8bitEncoding);
+    rb_enc_associate(ret, rb_ascii8bit_encoding());
     upb_arena_free(arena);
     return ret;
   } else {
@@ -1173,7 +1180,7 @@ VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
     ret = rb_str_new(buf, size);
   }
 
-  rb_enc_associate(ret, kRubyStringUtf8Encoding);
+  rb_enc_associate(ret, rb_utf8_encoding());
   return ret;
 }
 
@@ -1311,4 +1318,13 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   rb_ivar_set(mod, descriptor_instancevar_interned, _enumdesc);
 
   return mod;
+}
+
+void Message_register(VALUE protobuf) {
+  cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
+
+  // Ruby-interned string: "descriptor". We use this identifier to store an
+  // instance variable on message classes we create in order to link them back
+  // to their descriptors.
+  descriptor_instancevar_interned = rb_intern("descriptor");
 }

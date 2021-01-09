@@ -38,7 +38,6 @@
 #include "repeated_field.h"
 
 VALUE cError;
-VALUE cParseError;
 VALUE cTypeError;
 
 static VALUE cached_empty_string = Qnil;
@@ -48,7 +47,7 @@ static VALUE create_frozen_string(const char* str, size_t size, bool binary) {
   VALUE str_rb = rb_str_new(str, size);
 
   rb_enc_associate(str_rb,
-                   binary ? kRubyString8bitEncoding : kRubyStringUtf8Encoding);
+                   binary ? rb_ascii8bit_encoding() : rb_utf8_encoding());
   rb_obj_freeze(str_rb);
   return str_rb;
 }
@@ -76,24 +75,6 @@ const upb_fielddef* map_field_value(const upb_fielddef* field) {
   const upb_msgdef *entry = upb_fielddef_msgsubdef(field);
   return upb_msgdef_itof(entry, 2);
 }
-
-// -----------------------------------------------------------------------------
-// Utilities.
-// -----------------------------------------------------------------------------
-
-// String encodings: we look these up once, at load time, and then cache them
-// here.
-rb_encoding* kRubyStringUtf8Encoding;
-rb_encoding* kRubyString8bitEncoding;
-
-// Ruby-interned string: "descriptor". We use this identifier to store an
-// instance variable on message classes we create in order to link them back to
-// their descriptors.
-//
-// We intern this once at module load time then use the interned identifier at
-// runtime in order to avoid the cost of repeatedly interning in hot paths.
-const char* kDescriptorInstanceVar = "descriptor";
-ID descriptor_instancevar_interned;
 
 // -----------------------------------------------------------------------------
 // StringBuilder, for inspect
@@ -151,7 +132,7 @@ void StringBuilder_Printf(StringBuilder* b, const char *fmt, ...) {
 
 VALUE StringBuilder_ToRubyString(StringBuilder* b) {
   VALUE ret = rb_str_new(b->data, b->size);
-  rb_enc_associate(ret, kRubyStringUtf8Encoding);
+  rb_enc_associate(ret, rb_utf8_encoding());
   return ret;
 }
 
@@ -423,23 +404,19 @@ void Init_protobuf_c() {
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
 
-  descriptor_instancevar_interned = rb_intern(kDescriptorInstanceVar);
   Arena_register(protobuf);
   Defs_register(protobuf);
   RepeatedField_register(protobuf);
   Map_register(protobuf);
+  Message_register(protobuf);
 
   cError = rb_const_get(protobuf, rb_intern("Error"));
-  cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
   cTypeError = rb_const_get(protobuf, rb_intern("TypeError"));
 
   rb_define_singleton_method(protobuf, "discard_unknown",
                              Google_Protobuf_discard_unknown, 1);
   rb_define_singleton_method(protobuf, "deep_copy",
                              Google_Protobuf_deep_copy, 1);
-
-  kRubyStringUtf8Encoding = rb_utf8_encoding();
-  kRubyString8bitEncoding = rb_ascii8bit_encoding();
 
   rb_gc_register_address(&cached_empty_string);
   rb_gc_register_address(&cached_empty_bytes);

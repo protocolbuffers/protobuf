@@ -2491,7 +2491,7 @@ TypeInfo TypeInfo_FromClass(int argc, VALUE* argv, int skip_arg,
     }
 
     VALUE klass = argv[1 + skip_arg];
-    VALUE desc = rb_ivar_get(klass, descriptor_instancevar_interned);
+    VALUE desc = MessageOrEnum_GetDescriptor(klass);
     *type_class = klass;
 
     if (desc == Qnil) {

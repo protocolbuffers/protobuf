@@ -36,12 +36,60 @@
 #include "protobuf.h"
 #include "ruby-upb.h"
 
+// -----------------------------------------------------------------------------
+// TypeInfo
+// -----------------------------------------------------------------------------
+
+// This bundles a upb_fieldtype_t and msgdef/enumdef when appropriate. This is
+// convenient for functions that need type information but cannot necessarily
+// assume a upb_fielddef will be available.
+//
+// For example, Google::Protobuf::Map and Google::Protobuf::RepeatedField can
+// be constructed with type information alone:
+//
+//   # RepeatedField will internally store the type information in a TypeInfo.
+//   Google::Protobuf::RepeatedField.new(:message, FooMessage)
+
+typedef struct {
+  upb_fieldtype_t type;
+  union {
+    const upb_msgdef* msgdef;      // When type == UPB_TYPE_MESSAGE
+    const upb_enumdef* enumdef;    // When type == UPB_TYPE_ENUM
+  } def;
+} TypeInfo;
+
+static inline TypeInfo TypeInfo_get(const upb_fielddef *f) {
+  TypeInfo ret = {upb_fielddef_type(f), {NULL}};
+  switch (ret.type) {
+    case UPB_TYPE_MESSAGE:
+      ret.def.msgdef = upb_fielddef_msgsubdef(f);
+      break;
+    case UPB_TYPE_ENUM:
+      ret.def.enumdef = upb_fielddef_enumsubdef(f);
+      break;
+    default:
+      break;
+  }
+  return ret;
+}
+
+TypeInfo TypeInfo_FromClass(int argc, VALUE* argv, int skip_arg,
+                            VALUE* type_class, VALUE* init_arg);
+
+static inline TypeInfo TypeInfo_from_type(upb_fieldtype_t type) {
+  TypeInfo ret = {type};
+  assert(type != UPB_TYPE_MESSAGE && type != UPB_TYPE_ENUM);
+  return ret;
+}
+
 VALUE Descriptor_DefToClass(const upb_msgdef *m);
 
 const upb_enumdef *EnumDescriptor_GetEnumDef(VALUE enum_desc_rb);
 const upb_symtab *DescriptorPool_GetSymtab(VALUE desc_pool_rb);
 const upb_msgdef *Descriptor_GetMsgDef(VALUE desc_rb);
 upb_fieldtype_t ruby_to_fieldtype(VALUE type);
+
+extern VALUE generated_pool;
 
 void Defs_register(VALUE module);
 

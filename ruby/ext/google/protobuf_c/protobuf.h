@@ -36,54 +36,7 @@
 #include <ruby/encoding.h>
 
 #include "ruby-upb.h"
-
-// -----------------------------------------------------------------------------
-// TypeInfo
-// -----------------------------------------------------------------------------
-
-typedef struct {
-  upb_fieldtype_t type;
-  union {
-    const upb_msgdef* msgdef;  // When type == UPB_TYPE_MESSAGE
-    const upb_enumdef* enumdef;    // When type == UPB_TYPE_ENUM
-  } def;
-} TypeInfo;
-
-extern VALUE cParseError;
-extern VALUE cTypeError;
-
-extern VALUE generated_pool;
-
-static inline TypeInfo TypeInfo_get(const upb_fielddef *f) {
-  TypeInfo ret = {upb_fielddef_type(f), {NULL}};
-  switch (ret.type) {
-    case UPB_TYPE_MESSAGE:
-      ret.def.msgdef = upb_fielddef_msgsubdef(f);
-      break;
-    case UPB_TYPE_ENUM:
-      ret.def.enumdef = upb_fielddef_enumsubdef(f);
-      break;
-    default:
-      break;
-  }
-  return ret;
-}
-
-TypeInfo TypeInfo_FromClass(int argc, VALUE* argv, int skip_arg,
-                            VALUE* type_class, VALUE* init_arg);
-
-static inline TypeInfo TypeInfo_from_type(upb_fieldtype_t type) {
-  TypeInfo ret = {type};
-  assert(type != UPB_TYPE_MESSAGE && type != UPB_TYPE_ENUM);
-  return ret;
-}
-
-// -----------------------------------------------------------------------------
-// Native slot storage abstraction.
-// -----------------------------------------------------------------------------
-
-extern rb_encoding* kRubyStringUtf8Encoding;
-extern rb_encoding* kRubyString8bitEncoding;
+#include "defs.h"
 
 // These operate on a map field (i.e., a repeated field of submessages whose
 // submessage type is a map-entry msgdef).
@@ -147,7 +100,7 @@ void StringBuilder_PrintMsgval(StringBuilder* b, upb_msgval val, TypeInfo info);
 // Utilities.
 // -----------------------------------------------------------------------------
 
-extern ID descriptor_instancevar_interned;
+extern VALUE cTypeError;
 
 #ifdef NDEBUG
 #define PBRUBY_ASSERT(expr) do {} while (false && (expr))
