@@ -8,6 +8,9 @@
 #include <string.h>
 
 #include "google/protobuf/descriptor.upb.h"
+#include "upb/reflection.h"
+
+/* Must be last. */
 #include "upb/port_def.inc"
 
 typedef struct {
@@ -405,6 +408,23 @@ const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f) {
 const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f) {
   if (!f->oneof || upb_oneofdef_issynthetic(f->oneof)) return NULL;
   return f->oneof;
+}
+
+upb_msgval upb_fielddef_default(const upb_fielddef *f) {
+  UPB_ASSERT(!upb_fielddef_issubmsg(f));
+  upb_msgval ret;
+  if (upb_fielddef_isstring(f)) {
+    str_t *str = f->defaultval.str;
+    if (str) {
+      ret.str_val.data = str->str;
+      ret.str_val.size = str->len;
+    } else {
+      ret.str_val.size = 0;
+    }
+  } else {
+    memcpy(&ret, &f->defaultval, 8);
+  }
+  return ret;
 }
 
 static void chkdefaulttype(const upb_fielddef *f, int ctype) {
