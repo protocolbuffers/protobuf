@@ -929,7 +929,7 @@ typedef struct {
   jmp_buf err;                    /* longjmp() on error. */
 } symtab_addctx;
 
-UPB_NORETURN UPB_NOINLINE
+UPB_NORETURN UPB_NOINLINE UPB_PRINTF(2, 3)
 static void symtab_errf(symtab_addctx *ctx, const char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
@@ -1543,7 +1543,7 @@ static void parse_default(symtab_addctx *ctx, const char *str, size_t len,
   return;
 
 invalid:
-  symtab_errf(ctx, "Invalid default '%.*s' for field %f", (int)len, str,
+  symtab_errf(ctx, "Invalid default '%.*s' for field %s", (int)len, str,
               upb_fielddef_fullname(f));
 }
 

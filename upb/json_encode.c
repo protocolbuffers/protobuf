@@ -40,6 +40,7 @@ UPB_NORETURN static void jsonenc_err(jsonenc *e, const char *msg) {
   longjmp(e->err, 1);
 }
 
+UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsonenc_errf(jsonenc *e, const char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
@@ -72,6 +73,7 @@ static void jsonenc_putstr(jsonenc *e, const char *str) {
   jsonenc_putbytes(e, str, strlen(str));
 }
 
+UPB_PRINTF(2, 3)
 static void jsonenc_printf(jsonenc *e, const char *fmt, ...) {
   size_t n;
   size_t have = e->end - e->ptr;
@@ -102,7 +104,7 @@ static void jsonenc_nanos(jsonenc *e, int32_t nanos) {
     digits -= 3;
   }
 
-  jsonenc_printf(e, ".%0.*" PRId32, digits, nanos);
+  jsonenc_printf(e, ".%.*" PRId32, digits, nanos);
 }
 
 static void jsonenc_timestamp(jsonenc *e, const upb_msg *msg,

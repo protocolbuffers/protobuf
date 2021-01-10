@@ -62,6 +62,7 @@ UPB_NORETURN static void jsondec_err(jsondec *d, const char *msg) {
   UPB_LONGJMP(d->err, 1);
 }
 
+UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsondec_errf(jsondec *d, const char *fmt, ...) {
   va_list argp;
   upb_status_seterrf(d->status, "Error parsing JSON @%d:%d: ", d->line,
@@ -678,7 +679,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
       }
       val.int64_val = dbl;  /* must be guarded, overflow here is UB */
       if (val.int64_val != dbl) {
-        jsondec_errf(d, "JSON number was not integral (%d != %" PRId64 ")", dbl,
+        jsondec_errf(d, "JSON number was not integral (%f != %" PRId64 ")", dbl,
                      val.int64_val);
       }
       break;
@@ -704,7 +705,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
 
 /* Parse UINT32 or UINT64 value. */
 static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
-  upb_msgval val;
+  upb_msgval val = {0};
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER: {
@@ -714,7 +715,7 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
       }
       val.uint64_val = dbl;  /* must be guarded, overflow here is UB */
       if (val.uint64_val != dbl) {
-        jsondec_errf(d, "JSON number was not integral (%d != %" PRIu64 ")", dbl,
+        jsondec_errf(d, "JSON number was not integral (%f != %" PRIu64 ")", dbl,
                      val.uint64_val);
       }
       break;
@@ -741,7 +742,7 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
 /* Parse DOUBLE or FLOAT value. */
 static upb_msgval jsondec_double(jsondec *d, const upb_fielddef *f) {
   upb_strview str;
-  upb_msgval val;
+  upb_msgval val = {0};
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER:

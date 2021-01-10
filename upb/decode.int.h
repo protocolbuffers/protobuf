@@ -14,7 +14,7 @@
 /* Must be last. */
 #include "upb/port_def.inc"
 
-#define DECODE_NOGROUP -1
+#define DECODE_NOGROUP (uint32_t)-1
 
 typedef struct upb_decstate {
   const char *end;         /* Can read up to 16 bytes slop beyond this. */

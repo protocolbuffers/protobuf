@@ -80,14 +80,17 @@
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline))
 #define UPB_NOINLINE __attribute__((noinline))
 #define UPB_NORETURN __attribute__((__noreturn__))
+#define UPB_PRINTF(str, first_vararg) __attribute__((format (printf, str, first_vararg)))
 #elif defined(_MSC_VER)
 #define UPB_NOINLINE
 #define UPB_FORCEINLINE
 #define UPB_NORETURN __declspec(noreturn)
+#define UPB_PRINTF(str, first_vararg)
 #else  /* !defined(__GNUC__) */
 #define UPB_FORCEINLINE
 #define UPB_NOINLINE
 #define UPB_NORETURN
+#define UPB_PRINTF(str, first_vararg)
 #endif
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))

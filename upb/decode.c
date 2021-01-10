@@ -150,10 +150,22 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 UPB_NORETURN static void decode_err(upb_decstate *d) { UPB_LONGJMP(d->err, 1); }
 
+// We don't want to mark this NORETURN, see comment in .h.
+// Unfortunately this code to suppress the warning doesn't appear to be working.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wsuggest-attribute"
+#endif
+
 const char *fastdecode_err(upb_decstate *d) {
   longjmp(d->err, 1);
   return NULL;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 const uint8_t upb_utf8_offsets[] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -652,6 +664,14 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   return decode_msg(d, ptr, msg, decode_totablep(table));
 }
 
+static bool decode_top(struct upb_decstate *d, const char *buf, void *msg,
+                       const upb_msglayout *l) {
+  if (!decode_tryfastdispatch(d, &buf, msg, l)) {
+    decode_msg(d, buf, msg, l);
+  }
+  return d->end_group == DECODE_NOGROUP;
+}
+
 bool _upb_decode(const char *buf, size_t size, void *msg,
                  const upb_msglayout *l, upb_arena *arena, int options) {
   bool ok;
@@ -685,10 +705,7 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
   if (UPB_UNLIKELY(UPB_SETJMP(state.err))) {
     ok = false;
   } else {
-    if (!decode_tryfastdispatch(&state, &buf, msg, l)) {
-      decode_msg(&state, buf, msg, l);
-    }
-    ok = state.end_group == DECODE_NOGROUP;
+    ok = decode_top(&state, buf, msg, l);
   }
 
   arena->head.ptr = state.arena.head.ptr;

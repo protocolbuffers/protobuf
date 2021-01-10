@@ -33,9 +33,12 @@ bool upb_ok(const upb_status *status);
 /* These are no-op if |status| is NULL. */
 void upb_status_clear(upb_status *status);
 void upb_status_seterrmsg(upb_status *status, const char *msg);
-void upb_status_seterrf(upb_status *status, const char *fmt, ...);
-void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args);
-void upb_status_vappenderrf(upb_status *status, const char *fmt, va_list args);
+void upb_status_seterrf(upb_status *status, const char *fmt, ...)
+    UPB_PRINTF(2, 3);
+void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args)
+    UPB_PRINTF(2, 0);
+void upb_status_vappenderrf(upb_status *status, const char *fmt, va_list args)
+    UPB_PRINTF(2, 0);
 
 /** upb_strview ************************************************************/
 
