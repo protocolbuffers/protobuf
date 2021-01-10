@@ -1380,7 +1380,8 @@ static bool end_stringval_nontop(upb_json_parser *p) {
           ok = true;
           /* TODO(teboring): Should also clean this field. */
         } else {
-          upb_status_seterrf(p->status, "Enum value unknown: '%.*s'", len, buf);
+          upb_status_seterrf(p->status, "Enum value unknown: '%.*s'", (int)len,
+                             buf);
         }
       }
 
@@ -2808,7 +2809,8 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   %% write exec;
 
   if (p != pe) {
-    upb_status_seterrf(parser->status, "Parse error at '%.*s'\n", pe - p, p);
+    upb_status_seterrf(parser->status, "Parse error at '%.*s'\n", (int)(pe - p),
+                       p);
   } else {
     capture_suspend(parser, &p);
   }
