@@ -61,8 +61,31 @@ import java.util.concurrent.ConcurrentHashMap;
 final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   private static final String GET_DEFAULT_INSTANCE_METHOD_NAME = "getDefaultInstance";
   private static final DescriptorMessageInfoFactory instance = new DescriptorMessageInfoFactory();
+
+  /**
+   * Names that should be avoided as field names (in lowerCamelCase format).
+   * Using them will cause the compiler to generate accessors whose names are
+   * colliding with methods defined in base classes.
+   *
+   * Keep this list in sync with kForbiddenWordList in
+   * src/google/protobuf/compiler/java/java_helpers.cc
+   */
   private static final Set<String> specialFieldNames =
-      new HashSet<>(Arrays.asList("cached_size", "serialized_size", "class"));
+      new HashSet<>(Arrays.asList(
+        // java.lang.Object:
+        "class",
+        // com.google.protobuf.MessageLiteOrBuilder:
+        "defaultInstanceForType",
+        // com.google.protobuf.MessageLite:
+        "parserForType",
+        "serializedSize",
+        // com.google.protobuf.MessageOrBuilder:
+        "allFields",
+        "descriptorForType",
+        "initializationErrorString",
+        "unknownFields",
+        // obsolete. kept for backwards compatibility of generated code
+        "cachedSize"));
 
   // Disallow construction - it's a singleton.
   private DescriptorMessageInfoFactory() {}
@@ -593,8 +616,9 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     String name = (fd.getType() == FieldDescriptor.Type.GROUP)
                   ? fd.getMessageType().getName()
                   : fd.getName();
-    String suffix = specialFieldNames.contains(name) ? "__" : "_";
-    return snakeCaseToCamelCase(name) + suffix;
+    String nameInCamelCase = snakeCaseToCamelCase(name);
+    String suffix = specialFieldNames.contains(nameInCamelCase) ? "__" : "_";
+    return nameInCamelCase + suffix;
   }
 
   private static String getCachedSizeFieldName(FieldDescriptor fd) {
