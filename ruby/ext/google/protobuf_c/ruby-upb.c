@@ -82,14 +82,17 @@
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline))
 #define UPB_NOINLINE __attribute__((noinline))
 #define UPB_NORETURN __attribute__((__noreturn__))
+#define UPB_PRINTF(str, first_vararg) __attribute__((format (printf, str, first_vararg)))
 #elif defined(_MSC_VER)
 #define UPB_NOINLINE
 #define UPB_FORCEINLINE
 #define UPB_NORETURN __declspec(noreturn)
+#define UPB_PRINTF(str, first_vararg)
 #else  /* !defined(__GNUC__) */
 #define UPB_FORCEINLINE
 #define UPB_NOINLINE
 #define UPB_NORETURN
+#define UPB_PRINTF(str, first_vararg)
 #endif
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -339,10 +342,22 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
 UPB_NORETURN static void decode_err(upb_decstate *d) { UPB_LONGJMP(d->err, 1); }
 
+// We don't want to mark this NORETURN, see comment in .h.
+// Unfortunately this code to suppress the warning doesn't appear to be working.
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
+#pragma clang diagnostic ignored "-Wsuggest-attribute"
+#endif
+
 const char *fastdecode_err(upb_decstate *d) {
   longjmp(d->err, 1);
   return NULL;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 const uint8_t upb_utf8_offsets[] = {
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -841,6 +856,14 @@ const char *fastdecode_generic(struct upb_decstate *d, const char *ptr,
   return decode_msg(d, ptr, msg, decode_totablep(table));
 }
 
+static bool decode_top(struct upb_decstate *d, const char *buf, void *msg,
+                       const upb_msglayout *l) {
+  if (!decode_tryfastdispatch(d, &buf, msg, l)) {
+    decode_msg(d, buf, msg, l);
+  }
+  return d->end_group == DECODE_NOGROUP;
+}
+
 bool _upb_decode(const char *buf, size_t size, void *msg,
                  const upb_msglayout *l, upb_arena *arena, int options) {
   bool ok;
@@ -868,16 +891,13 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
   state.end_group = DECODE_NOGROUP;
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;
-  state.arena.parent = arena;
   state.arena.cleanups = arena->cleanups;
+  state.arena.parent = arena;
 
   if (UPB_UNLIKELY(UPB_SETJMP(state.err))) {
     ok = false;
   } else {
-    if (!decode_tryfastdispatch(&state, &buf, msg, l)) {
-      decode_msg(&state, buf, msg, l);
-    }
-    ok = state.end_group == DECODE_NOGROUP;
+    ok = decode_top(&state, buf, msg, l);
   }
 
   arena->head.ptr = state.arena.head.ptr;
@@ -1023,7 +1043,8 @@ static void encode_float(upb_encstate *e, float d) {
   encode_fixed32(e, u32);
 }
 
-static void encode_tag(upb_encstate *e, int field_number, int wire_type) {
+static void encode_tag(upb_encstate *e, uint32_t field_number,
+                       uint8_t wire_type) {
   encode_varint(e, (field_number << 3) | wire_type);
 }
 
@@ -1332,7 +1353,7 @@ static void encode_message(upb_encstate *e, const char *msg,
   *size = (e->limit - e->ptr) - pre_len;
 }
 
-char *upb_encode_ex(const void *msg, const upb_msglayout *m, int options,
+char *upb_encode_ex(const void *msg, const upb_msglayout *l, int options,
                     upb_arena *arena, size_t *size) {
   upb_encstate e;
   unsigned depth = (unsigned)options >> 16;
@@ -1350,7 +1371,7 @@ char *upb_encode_ex(const void *msg, const upb_msglayout *m, int options,
     *size = 0;
     ret = NULL;
   } else {
-    encode_message(&e, msg, m, size);
+    encode_message(&e, msg, l, size);
     *size = e.limit - e.ptr;
     if (*size == 0) {
       static char ch;
@@ -4122,6 +4143,8 @@ const upb_msglayout google_protobuf_GeneratedCodeInfo_Annotation_msginit = {
 #include <string.h>
 
 
+/* Must be last. */
+
 typedef struct {
   size_t len;
   char str[1];  /* Null-terminated string data follows. */
@@ -4517,6 +4540,23 @@ const upb_oneofdef *upb_fielddef_containingoneof(const upb_fielddef *f) {
 const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f) {
   if (!f->oneof || upb_oneofdef_issynthetic(f->oneof)) return NULL;
   return f->oneof;
+}
+
+upb_msgval upb_fielddef_default(const upb_fielddef *f) {
+  UPB_ASSERT(!upb_fielddef_issubmsg(f));
+  upb_msgval ret;
+  if (upb_fielddef_isstring(f)) {
+    str_t *str = f->defaultval.str;
+    if (str) {
+      ret.str_val.data = str->str;
+      ret.str_val.size = str->len;
+    } else {
+      ret.str_val.size = 0;
+    }
+  } else {
+    memcpy(&ret, &f->defaultval, 8);
+  }
+  return ret;
 }
 
 static void chkdefaulttype(const upb_fielddef *f, int ctype) {
@@ -5021,7 +5061,7 @@ typedef struct {
   jmp_buf err;                    /* longjmp() on error. */
 } symtab_addctx;
 
-UPB_NORETURN UPB_NOINLINE
+UPB_NORETURN UPB_NOINLINE UPB_PRINTF(2, 3)
 static void symtab_errf(symtab_addctx *ctx, const char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
@@ -5635,7 +5675,7 @@ static void parse_default(symtab_addctx *ctx, const char *str, size_t len,
   return;
 
 invalid:
-  symtab_errf(ctx, "Invalid default '%.*s' for field %f", (int)len, str,
+  symtab_errf(ctx, "Invalid default '%.*s' for field %s", (int)len, str,
               upb_fielddef_fullname(f));
 }
 
@@ -6287,7 +6327,7 @@ size_t _upb_symtab_bytesloaded(const upb_symtab *s) {
   return s->bytes_loaded;
 }
 
-upb_arena *upb_symtab_arena(const upb_symtab *s) {
+upb_arena *_upb_symtab_arena(const upb_symtab *s) {
   return s->arena;
 }
 
@@ -6635,12 +6675,6 @@ bool upb_array_resize(upb_array *arr, size_t size, upb_arena *arena) {
   return _upb_array_resize(arr, size, arena);
 }
 
-void *upb_array_ptr(upb_array *arr, size_t* n) {
-  int lg2 = arr->data & 7;
-  if (n) *n = arr->len << lg2;
-  return _upb_array_ptr(arr);
-}
-
 /** upb_map *******************************************************************/
 
 upb_map *upb_map_new(upb_arena *a, upb_fieldtype_t key_type,
@@ -6657,6 +6691,10 @@ bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val) {
   return _upb_map_get(map, &key, map->key_size, val, map->val_size);
 }
 
+void upb_map_clear(upb_map *map) {
+  _upb_map_clear(map);
+}
+
 bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
                  upb_arena *arena) {
   return _upb_map_set(map, &key, map->key_size, &val, map->val_size, arena);
@@ -6668,10 +6706,6 @@ bool upb_map_delete(upb_map *map, upb_msgval key) {
 
 bool upb_mapiter_next(const upb_map *map, size_t *iter) {
   return _upb_map_next(map, iter);
-}
-
-void upb_map_clear(upb_map *map) {
-  _upb_map_clear(map);
 }
 
 bool upb_mapiter_done(const upb_map *map, size_t iter) {
@@ -6762,6 +6796,7 @@ UPB_NORETURN static void jsondec_err(jsondec *d, const char *msg) {
   UPB_LONGJMP(d->err, 1);
 }
 
+UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsondec_errf(jsondec *d, const char *fmt, ...) {
   va_list argp;
   upb_status_seterrf(d->status, "Error parsing JSON @%d:%d: ", d->line,
@@ -7378,7 +7413,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
       }
       val.int64_val = dbl;  /* must be guarded, overflow here is UB */
       if (val.int64_val != dbl) {
-        jsondec_errf(d, "JSON number was not integral (%d != %" PRId64 ")", dbl,
+        jsondec_errf(d, "JSON number was not integral (%f != %" PRId64 ")", dbl,
                      val.int64_val);
       }
       break;
@@ -7404,7 +7439,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
 
 /* Parse UINT32 or UINT64 value. */
 static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
-  upb_msgval val;
+  upb_msgval val = {0};
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER: {
@@ -7414,7 +7449,7 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
       }
       val.uint64_val = dbl;  /* must be guarded, overflow here is UB */
       if (val.uint64_val != dbl) {
-        jsondec_errf(d, "JSON number was not integral (%d != %" PRIu64 ")", dbl,
+        jsondec_errf(d, "JSON number was not integral (%f != %" PRIu64 ")", dbl,
                      val.uint64_val);
       }
       break;
@@ -7441,7 +7476,7 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
 /* Parse DOUBLE or FLOAT value. */
 static upb_msgval jsondec_double(jsondec *d, const upb_fielddef *f) {
   upb_strview str;
-  upb_msgval val;
+  upb_msgval val = {0};
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER:
@@ -8179,6 +8214,7 @@ UPB_NORETURN static void jsonenc_err(jsonenc *e, const char *msg) {
   longjmp(e->err, 1);
 }
 
+UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsonenc_errf(jsonenc *e, const char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
@@ -8211,6 +8247,7 @@ static void jsonenc_putstr(jsonenc *e, const char *str) {
   jsonenc_putbytes(e, str, strlen(str));
 }
 
+UPB_PRINTF(2, 3)
 static void jsonenc_printf(jsonenc *e, const char *fmt, ...) {
   size_t n;
   size_t have = e->end - e->ptr;
@@ -8241,7 +8278,7 @@ static void jsonenc_nanos(jsonenc *e, int32_t nanos) {
     digits -= 3;
   }
 
-  jsonenc_printf(e, ".%0.*" PRId32, digits, nanos);
+  jsonenc_printf(e, ".%.*" PRId32, digits, nanos);
 }
 
 static void jsonenc_timestamp(jsonenc *e, const upb_msg *msg,

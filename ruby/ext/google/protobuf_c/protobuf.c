@@ -40,32 +40,6 @@
 VALUE cError;
 VALUE cTypeError;
 
-static VALUE cached_empty_string = Qnil;
-static VALUE cached_empty_bytes = Qnil;
-
-static VALUE create_frozen_string(const char* str, size_t size, bool binary) {
-  VALUE str_rb = rb_str_new(str, size);
-
-  rb_enc_associate(str_rb,
-                   binary ? rb_ascii8bit_encoding() : rb_utf8_encoding());
-  rb_obj_freeze(str_rb);
-  return str_rb;
-}
-
-VALUE get_frozen_string(const char* str, size_t size, bool binary) {
-  if (size == 0) {
-    return binary ? cached_empty_bytes : cached_empty_string;
-  } else {
-    // It is harder to memoize non-empty strings.  The obvious approach would be
-    // to use a Ruby hash keyed by string as memo table, but looking up in such a table
-    // requires constructing a string (the very thing we're trying to avoid).
-    //
-    // Since few fields have defaults, we will just optimize the empty string
-    // case for now.
-    return create_frozen_string(str, size, binary);
-  }
-}
-
 const upb_fielddef* map_field_key(const upb_fielddef* field) {
   const upb_msgdef *entry = upb_fielddef_msgsubdef(field);
   return upb_msgdef_itof(entry, 1);
@@ -417,9 +391,4 @@ void Init_protobuf_c() {
                              Google_Protobuf_discard_unknown, 1);
   rb_define_singleton_method(protobuf, "deep_copy",
                              Google_Protobuf_deep_copy, 1);
-
-  rb_gc_register_address(&cached_empty_string);
-  rb_gc_register_address(&cached_empty_bytes);
-  cached_empty_string = create_frozen_string("", 0, false);
-  cached_empty_bytes = create_frozen_string("", 0, true);
 }

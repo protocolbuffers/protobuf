@@ -81,14 +81,17 @@
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline))
 #define UPB_NOINLINE __attribute__((noinline))
 #define UPB_NORETURN __attribute__((__noreturn__))
+#define UPB_PRINTF(str, first_vararg) __attribute__((format (printf, str, first_vararg)))
 #elif defined(_MSC_VER)
 #define UPB_NOINLINE
 #define UPB_FORCEINLINE
 #define UPB_NORETURN __declspec(noreturn)
+#define UPB_PRINTF(str, first_vararg)
 #else  /* !defined(__GNUC__) */
 #define UPB_FORCEINLINE
 #define UPB_NOINLINE
 #define UPB_NORETURN
+#define UPB_PRINTF(str, first_vararg)
 #endif
 
 #define UPB_MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -270,9 +273,12 @@ bool upb_ok(const upb_status *status);
 /* These are no-op if |status| is NULL. */
 void upb_status_clear(upb_status *status);
 void upb_status_seterrmsg(upb_status *status, const char *msg);
-void upb_status_seterrf(upb_status *status, const char *fmt, ...);
-void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args);
-void upb_status_vappenderrf(upb_status *status, const char *fmt, va_list args);
+void upb_status_seterrf(upb_status *status, const char *fmt, ...)
+    UPB_PRINTF(2, 3);
+void upb_status_vseterrf(upb_status *status, const char *fmt, va_list args)
+    UPB_PRINTF(2, 0);
+void upb_status_vappenderrf(upb_status *status, const char *fmt, va_list args)
+    UPB_PRINTF(2, 0);
 
 /** upb_strview ************************************************************/
 
@@ -1685,7 +1691,7 @@ struct upb_arena {
 
 /* Must be last. */
 
-#define DECODE_NOGROUP -1
+#define DECODE_NOGROUP (uint32_t)-1
 
 typedef struct upb_decstate {
   const char *end;         /* Can read up to 16 bytes slop beyond this. */
@@ -3895,6 +3901,7 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_end(google_prot
 #define UPB_DEF_H_
 
 
+/* Must be last. */
 
 #ifdef __cplusplus
 extern "C" {
@@ -4154,6 +4161,7 @@ const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i);
 const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i);
 const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i);
 const upb_symtab *upb_filedef_symtab(const upb_filedef *f);
+upb_arena *_upb_symtab_arena(const upb_symtab *s);
 
 /* upb_symtab *****************************************************************/
 
@@ -4171,7 +4179,6 @@ const upb_filedef *upb_symtab_addfile(
     upb_symtab *s, const google_protobuf_FileDescriptorProto *file,
     upb_status *status);
 size_t _upb_symtab_bytesloaded(const upb_symtab *s);
-upb_arena *upb_symtab_arena(const upb_symtab *s);
 
 /* For generated code only: loads a generated descriptor. */
 typedef struct upb_def_init {
@@ -4195,6 +4202,10 @@ bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init);
 
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef union {
   bool bool_val;
   float float_val;
@@ -4214,6 +4225,8 @@ typedef union {
   upb_msg* msg;
   upb_array* array;
 } upb_mutmsgval;
+
+upb_msgval upb_fielddef_default(const upb_fielddef *f);
 
 /** upb_msg *******************************************************************/
 
@@ -4297,11 +4310,6 @@ bool upb_array_append(upb_array *array, upb_msgval val, upb_arena *arena);
  * Returns false on allocation failure. */
 bool upb_array_resize(upb_array *array, size_t size, upb_arena *arena);
 
-/* Returns a raw pointer to the array's internal storage. Users can read or
- * write this directly according to the array's type. Stores the array's
- * current size (in bytes) in *n. */
-void *upb_array_ptr(upb_array *array, size_t* n);
-
 /** upb_map *******************************************************************/
 
 /* Creates a new map on the given arena with the given key/value size. */
@@ -4354,6 +4362,10 @@ upb_msgval upb_mapiter_value(const upb_map *map, size_t iter);
 /* Sets the value for this entry.  The iterator must not be done, and the
  * iterator must not have been initialized const. */
 void upb_mapiter_setvalue(upb_map *map, size_t iter, upb_msgval value);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 
 #endif /* UPB_REFLECTION_H_ */

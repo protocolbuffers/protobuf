@@ -30,6 +30,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <ruby/version.h>
 
 #include "convert.h"
 #include "message.h"
@@ -293,7 +294,7 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
 
   self->def_to_descriptor = rb_hash_new();
   self->symtab = upb_symtab_new();
-  ObjectCache_Add(self->symtab, ret, upb_symtab_arena(self->symtab));
+  ObjectCache_Add(self->symtab, ret, _upb_symtab_arena(self->symtab));
 
   return ret;
 }
@@ -874,38 +875,15 @@ VALUE FieldDescriptor_type(VALUE _self) {
  * Returns this field's default, as a Ruby object, or nil if not yet set.
  */
 VALUE FieldDescriptor_default(VALUE _self) {
-  const upb_fielddef *field;
   DEFINE_SELF(FieldDescriptor, self, _self);
-  field = self->fielddef;
-  switch (upb_fielddef_type(field)) {
-    case UPB_TYPE_FLOAT:   return DBL2NUM(upb_fielddef_defaultfloat(field));
-    case UPB_TYPE_DOUBLE:  return DBL2NUM(upb_fielddef_defaultdouble(field));
-    case UPB_TYPE_BOOL:
-      return upb_fielddef_defaultbool(field) ? Qtrue : Qfalse;
-    case UPB_TYPE_MESSAGE: return Qnil;
-    case UPB_TYPE_ENUM: {
-      const upb_enumdef *enumdef = upb_fielddef_enumsubdef(field);
-      int32_t num = upb_fielddef_defaultint32(field);
-      const char *label = upb_enumdef_iton(enumdef, num);
-      if (label) {
-        return ID2SYM(rb_intern(label));
-      } else {
-        return INT2NUM(num);
-      }
-    }
-    case UPB_TYPE_INT32:   return INT2NUM(upb_fielddef_defaultint32(field));
-    case UPB_TYPE_INT64:   return LL2NUM(upb_fielddef_defaultint64(field));;
-    case UPB_TYPE_UINT32:  return UINT2NUM(upb_fielddef_defaultuint32(field));
-    case UPB_TYPE_UINT64:  return ULL2NUM(upb_fielddef_defaultuint64(field));
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES: {
-      size_t size;
-      const char *str = upb_fielddef_defaultstr(field, &size);
-      return get_frozen_string(str, size,
-                               upb_fielddef_type(field) == UPB_TYPE_BYTES);
-    }
-    default: return Qnil;
+  const upb_fielddef *f = self->fielddef;
+  upb_msgval default_val = {0};
+  if (upb_fielddef_issubmsg(f)) {
+    return Qnil;
+  } else if (!upb_fielddef_isseq(f)) {
+    default_val = upb_fielddef_default(f);
   }
+  return Convert_UpbToRuby(default_val, TypeInfo_get(self->fielddef), Qnil);
 }
 
 /*
@@ -1767,8 +1745,14 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
   }
 }
 
+#if RUBY_API_VERSION_CODE >= 20700
+static VALUE make_mapentry(VALUE _message_builder, VALUE types, int argc,
+                           const VALUE* argv, VALUE blockarg) {
+  (void)blockarg;
+#else
 static VALUE make_mapentry(VALUE _message_builder, VALUE types, int argc,
                            VALUE* argv) {
+#endif
   DEFINE_SELF(MessageBuilderContext, message_builder, _message_builder);
   VALUE type_class = rb_ary_entry(types, 2);
   FileBuilderContext* file_context =

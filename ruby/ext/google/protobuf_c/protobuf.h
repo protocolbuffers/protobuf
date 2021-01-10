@@ -43,32 +43,27 @@
 const upb_fielddef* map_field_key(const upb_fielddef* field);
 const upb_fielddef* map_field_value(const upb_fielddef* field);
 
-// These operate on a map-entry msgdef.
-const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
-const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
+// -----------------------------------------------------------------------------
+// Arena
+// -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
-// Message class creation.
-// -----------------------------------------------------------------------------
+// A Ruby object that wraps an underlying upb_arena.  Any objects that are
+// allocated from this arena should reference the Arena in rb_gc_mark(), to
+// ensure that the object's underlying memory outlives any Ruby object that can
+// reach it.
 
 VALUE Arena_new();
 upb_arena *Arena_get(VALUE arena);
 
-VALUE build_class_from_descriptor(VALUE descriptor);
-VALUE build_module_from_enumdesc(VALUE _enumdesc);
+// -----------------------------------------------------------------------------
+// ObjectCache
+// -----------------------------------------------------------------------------
 
-// -----------------------------------------------------------------------------
-// A cache of frozen string objects to use as field defaults.
-// -----------------------------------------------------------------------------
-VALUE get_frozen_string(const char* data, size_t size, bool binary);
-
-// -----------------------------------------------------------------------------
 // Global object cache from upb array/map/message/symtab to wrapper object.
-// -----------------------------------------------------------------------------
-
+//
 // This is a conceptually "weak" cache, in that it does not prevent "val" from
-// being collected.  We use this to cache Ruby wrapper objects around the
-// underlying C objects.
+// being collected (though in Ruby <2.7 is it effectively strong, due to
+// implementation limitations).
 
 // Adds an entry to the cache. The "arena" parameter must give the arena that
 // "key" was allocated from.  In Ruby <2.7.0, it will be used to remove the key
@@ -78,8 +73,12 @@ void ObjectCache_Add(const void* key, VALUE val, upb_arena *arena);
 // Returns the cached object for this key, if any. Otherwise returns Qnil.
 VALUE ObjectCache_Get(const void* key);
 
-// Pins the given object so it is GC-rooted. This guarantees that the "frozen"
-// bit on the object will be remembered.
+// Pins the previously added object so it is GC-rooted. This turns the
+// reference to "val" from weak to strong.  We use this to guarantee that the
+// "frozen" bit on the object will be remembered, even if the user drops their
+// reference to this precise object.
+//
+// The "arena" parameter must give the arena that "key" was allocated from.
 void ObjectCache_Pin(const void* key, VALUE val, upb_arena *arena);
 
 // -----------------------------------------------------------------------------

@@ -31,20 +31,36 @@
 #ifndef RUBY_PROTOBUF_MAP_H_
 #define RUBY_PROTOBUF_MAP_H_
 
+#include <ruby/ruby.h>
+
 #include "protobuf.h"
 #include "ruby-upb.h"
 
-void Map_register(VALUE module);
-VALUE Map_deep_copy(VALUE obj);
-
+// Returns a Ruby wrapper object for the given map, which will be created if
+// one does not exist already.
 VALUE Map_GetRubyWrapper(upb_map *map, upb_fieldtype_t key_type,
                          TypeInfo value_type, VALUE arena);
+
+// Gets the underlying upb_map for this Ruby map object, which must have
+// key/value type that match |field|. If this is not a map or the type doesn't
+// match, raises an exception.
 const upb_map *Map_GetUpbMap(VALUE val, const upb_fielddef *field);
+
+// Implements #inspect for this map by appending its contents to |b|.
 void Map_Inspect(StringBuilder *b, const upb_map *map, upb_fieldtype_t key_type,
                  TypeInfo val_type);
+
+// Returns a new Hash object containing the contents of this Map.
 VALUE Map_CreateHash(const upb_map* map, upb_fieldtype_t key_type,
                      TypeInfo val_info);
 
+// Returns a deep copy of this Map object.
+VALUE Map_deep_copy(VALUE obj);
+
+// Ruby class of Google::Protobuf::Map.
 extern VALUE cMap;
+
+// Call at startup to register all types in this module.
+void Map_register(VALUE module);
 
 #endif  // RUBY_PROTOBUF_MAP_H_

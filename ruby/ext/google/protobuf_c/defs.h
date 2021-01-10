@@ -82,15 +82,26 @@ static inline TypeInfo TypeInfo_from_type(upb_fieldtype_t type) {
   return ret;
 }
 
+// -----------------------------------------------------------------------------
+// Other utilities
+// -----------------------------------------------------------------------------
+
 VALUE Descriptor_DefToClass(const upb_msgdef *m);
 
+// Returns the underlying msgdef, enumdef, or symtab (respectively) for the
+// given Descriptor, EnumDescriptor, or DescriptorPool Ruby object.
 const upb_enumdef *EnumDescriptor_GetEnumDef(VALUE enum_desc_rb);
 const upb_symtab *DescriptorPool_GetSymtab(VALUE desc_pool_rb);
 const upb_msgdef *Descriptor_GetMsgDef(VALUE desc_rb);
+
+// Returns a upb field type for the given Ruby symbol
+// (eg. :float => UPB_TYPE_FLOAT).
 upb_fieldtype_t ruby_to_fieldtype(VALUE type);
 
+// The singleton generated pool (a DescriptorPool object).
 extern VALUE generated_pool;
 
+// Call at startup to register all types in this module.
 void Defs_register(VALUE module);
 
 #endif  // RUBY_PROTOBUF_DEFS_H_
