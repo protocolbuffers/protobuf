@@ -1,3 +1,41 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// -----------------------------------------------------------------------------
+// Ruby <-> upb data conversion functions.
+//
+// This file Also contains a few other assorted algorithms on upb_msgval.
+//
+// None of the algorithms in this file require any access to the internal
+// representation of Ruby or upb objects.
+// -----------------------------------------------------------------------------
 
 #include "convert.h"
 
@@ -236,8 +274,8 @@ VALUE Convert_UpbToRuby(upb_msgval upb_val, TypeInfo type_info, VALUE arena) {
   }
 }
 
-upb_msgval Message_DeepCopyMsgval(upb_msgval msgval, TypeInfo type_info,
-                                  upb_arena* arena) {
+upb_msgval Msgval_DeepCopy(upb_msgval msgval, TypeInfo type_info,
+                           upb_arena* arena) {
   upb_msgval new_msgval;
 
   switch (type_info.type) {
@@ -262,7 +300,7 @@ upb_msgval Message_DeepCopyMsgval(upb_msgval msgval, TypeInfo type_info,
   return new_msgval;
 }
 
-bool Message_MsgvalEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info) {
+bool Msgval_IsEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info) {
   switch (type_info.type) {
     case UPB_TYPE_BOOL:
       return memcmp(&val1, &val2, 1) == 0;
@@ -287,7 +325,7 @@ bool Message_MsgvalEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info) {
   }
 }
 
-uint64_t Message_HashMsgval(upb_msgval val, TypeInfo type_info, uint64_t seed) {
+uint64_t Msgval_GetHash(upb_msgval val, TypeInfo type_info, uint64_t seed) {
   switch (type_info.type) {
     case UPB_TYPE_BOOL:
       return wyhash(&val, 1, seed, _wyp);

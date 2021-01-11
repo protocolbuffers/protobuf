@@ -59,14 +59,14 @@ upb_msgval Convert_RubyToUpb(VALUE ruby_val, const char *name,
 VALUE Convert_UpbToRuby(upb_msgval upb_val, TypeInfo type_info, VALUE arena);
 
 // Creates a deep copy of |msgval| in |arena|.
-upb_msgval Message_DeepCopyMsgval(upb_msgval msgval, TypeInfo type_info,
-                                  upb_arena* arena);
+upb_msgval Msgval_DeepCopy(upb_msgval msgval, TypeInfo type_info,
+                           upb_arena *arena);
 
 // Returns true if |val1| and |val2| are equal. Their type is given by
 // |type_info|.
-bool Message_MsgvalEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info);
+bool Msgval_IsEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info);
 
 // Returns a hash value for the given upb_msgval.
-uint64_t Message_HashMsgval(upb_msgval val, TypeInfo type_info, uint64_t seed);
+uint64_t Msgval_GetHash(upb_msgval val, TypeInfo type_info, uint64_t seed);
 
 #endif  // RUBY_PROTOBUF_CONVERT_H_

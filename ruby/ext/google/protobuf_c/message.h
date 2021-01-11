@@ -56,8 +56,8 @@ VALUE Message_GetArena(VALUE value);
 // Google::Protobuf::Timestamp). If any new message is created, it will be
 // created on |arena|, and any existing message will have its arena fused with
 // |arena|.
-upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
-                               const char* name, upb_arena* arena);
+const upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
+                                     const char* name, upb_arena* arena);
 
 // Gets or constructs a Ruby wrapper object for the given message. The wrapper
 // object will reference |arena| and ensure that it outlives this object.

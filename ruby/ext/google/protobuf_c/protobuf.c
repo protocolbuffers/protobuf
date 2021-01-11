@@ -322,6 +322,8 @@ void ObjectCache_Pin(const void* key, VALUE val, upb_arena *arena) {
   // This will GC-root the object, but we'll still use the weak map for
   // actual lookup.
   StrongObjectCache_Add(key, val, arena);
+#else
+  // Value is already pinned, nothing to do.
 #endif
 }
 

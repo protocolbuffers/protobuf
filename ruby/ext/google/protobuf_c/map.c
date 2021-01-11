@@ -159,7 +159,7 @@ VALUE Map_deep_copy(VALUE obj) {
   while (upb_mapiter_next(self->map, &iter)) {
     upb_msgval key = upb_mapiter_key(self->map, iter);
     upb_msgval val = upb_mapiter_value(self->map, iter);
-    upb_msgval val_copy = Message_DeepCopyMsgval(val, self->value_type_info, arena);
+    upb_msgval val_copy = Msgval_DeepCopy(val, self->value_type_info, arena);
     upb_map_set(new_map, key, val_copy, arena);
   }
 
@@ -572,7 +572,7 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
       // Not present in other map.
       return Qfalse;
     }
-    if (!Message_MsgvalEqual(val, other_val, self->value_type_info)) {
+    if (!Msgval_IsEqual(val, other_val, self->value_type_info)) {
       // Present but different value.
       return Qfalse;
     }
@@ -611,8 +611,8 @@ VALUE Map_hash(VALUE _self) {
   while (upb_mapiter_next(self->map, &iter)) {
     upb_msgval key = upb_mapiter_key(self->map, iter);
     upb_msgval val = upb_mapiter_value(self->map, iter);
-    hash = Message_HashMsgval(key, key_info, hash);
-    hash = Message_HashMsgval(val, self->value_type_info, hash);
+    hash = Msgval_GetHash(key, key_info, hash);
+    hash = Msgval_GetHash(val, self->value_type_info, hash);
   }
 
   return LL2NUM(hash);

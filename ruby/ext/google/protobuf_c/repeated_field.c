@@ -47,7 +47,7 @@ typedef struct {
   VALUE arena;       // To GC-root the upb_array.
 } RepeatedField;
 
-// Mark, free, alloc, init and class setup functions.
+VALUE cRepeatedField;
 
 static void RepeatedField_mark(void* _self) {
   RepeatedField* self = (RepeatedField*)_self;
@@ -71,8 +71,6 @@ static upb_array *RepeatedField_GetMutable(VALUE _self) {
   rb_check_frozen(_self);
   return (upb_array*)ruby_to_RepeatedField(_self)->array;
 }
-
-VALUE cRepeatedField;
 
 VALUE RepeatedField_alloc(VALUE klass) {
   RepeatedField* self = ALLOC(RepeatedField);
@@ -144,7 +142,7 @@ VALUE RepeatedField_deep_copy(VALUE _self) {
   size_t size = upb_array_size(self->array);
   for (size_t i = 0; i < size; i++) {
     upb_msgval msgval = upb_array_get(self->array, i);
-    upb_msgval copy = Message_DeepCopyMsgval(msgval, self->type_info, arena);
+    upb_msgval copy = Msgval_DeepCopy(msgval, self->type_info, arena);
     upb_array_set(new_array, i, copy);
   }
 
@@ -485,7 +483,7 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
   for (size_t i = 0; i < n; i++) {
     upb_msgval val1 = upb_array_get(self->array, i);
     upb_msgval val2 = upb_array_get(other->array, i);
-    if (!Message_MsgvalEqual(val1, val2, self->type_info)) {
+    if (!Msgval_IsEqual(val1, val2, self->type_info)) {
       return Qfalse;
     }
   }
@@ -521,7 +519,7 @@ VALUE RepeatedField_hash(VALUE _self) {
 
   for (size_t i = 0; i < n; i++) {
     upb_msgval val = upb_array_get(self->array, i);
-    hash = Message_HashMsgval(val, self->type_info, hash);
+    hash = Msgval_GetHash(val, self->type_info, hash);
   }
 
   return LL2NUM(hash);
