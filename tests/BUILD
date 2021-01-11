@@ -29,7 +29,6 @@ cc_library(
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        "//:handlers",
         "//:port",
         "//:upb",
     ],
@@ -77,32 +76,6 @@ upb_proto_library(
 )
 
 proto_library(
-    name = "test_decoder_proto",
-    srcs = [
-        "pb/test_decoder.proto",
-    ],
-)
-
-upb_proto_reflection_library(
-    name = "test_decoder_upb_proto",
-    deps = [":test_decoder_proto"],
-)
-
-cc_test(
-    name = "test_decoder",
-    srcs = ["pb/test_decoder.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        ":test_decoder_upb_proto",
-        ":upb_test",
-        "//:handlers",
-        "//:port",
-        "//:upb",
-        "//:upb_pb",
-    ],
-)
-
-proto_library(
     name = "test_cpp_proto",
     srcs = [
         "test_cpp.proto",
@@ -121,11 +94,9 @@ cc_test(
     deps = [
         ":test_cpp_upb_proto",
         ":upb_test",
-        "//:handlers",
         "//:port",
         "//:reflection",
         "//:upb",
-        "//:upb_pb",
     ],
 )
 
@@ -159,61 +130,6 @@ cc_binary(
         "//:upb",
     ],
 )
-
-# copybara:strip_for_google3_begin
-cc_test(
-    name = "test_encoder",
-    srcs = ["pb/test_encoder.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        ":upb_test",
-        "//:descriptor_upb_proto",
-        "//:descriptor_upb_proto_reflection",
-        "//:upb",
-        "//:upb_pb",
-    ],
-)
-
-proto_library(
-    name = "test_json_enum_from_separate",
-    srcs = ["json/enum_from_separate_file.proto"],
-    deps = [":test_json_proto"],
-)
-
-proto_library(
-    name = "test_json_proto",
-    srcs = ["json/test.proto"],
-)
-
-upb_proto_reflection_library(
-    name = "test_json_upb_proto_reflection",
-    deps = ["test_json_proto"],
-)
-
-upb_proto_library(
-    name = "test_json_enum_from_separate_upb_proto",
-    deps = [":test_json_enum_from_separate"],
-)
-
-upb_proto_library(
-    name = "test_json_upb_proto",
-    deps = [":test_json_proto"],
-)
-
-cc_test(
-    name = "test_json",
-    srcs = [
-        "json/test_json.cc",
-    ],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        ":test_json_upb_proto",
-        ":test_json_upb_proto_reflection",
-        ":upb_test",
-        "//:upb_json",
-    ],
-)
-# copybara:strip_end
 
 upb_proto_library(
     name = "conformance_proto_upb",

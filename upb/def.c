@@ -40,7 +40,6 @@ struct upb_fielddef {
   uint32_t number_;
   uint16_t index_;
   uint16_t layout_index;
-  uint32_t selector_base;  /* Used to index into a upb::Handlers table. */
   bool is_extension_;
   bool lazy_;
   bool packed_;
@@ -53,8 +52,6 @@ struct upb_msgdef {
   const upb_msglayout *layout;
   const upb_filedef *file;
   const char *full_name;
-  uint32_t selector_count;
-  uint32_t submsg_field_count;
 
   /* Tables for looking up fields by number and name. */
   upb_inttable itof;
@@ -182,30 +179,6 @@ int cmp_fields(const void *p1, const void *p2) {
   const upb_fielddef *f1 = *(upb_fielddef*const*)p1;
   const upb_fielddef *f2 = *(upb_fielddef*const*)p2;
   return field_rank(f1) - field_rank(f2);
-}
-
-/* A few implementation details of handlers.  We put these here to avoid
- * a def -> handlers dependency. */
-
-#define UPB_STATIC_SELECTOR_COUNT 3  /* Warning: also in upb/handlers.h. */
-
-static uint32_t upb_handlers_selectorbaseoffset(const upb_fielddef *f) {
-  return upb_fielddef_isseq(f) ? 2 : 0;
-}
-
-static uint32_t upb_handlers_selectorcount(const upb_fielddef *f) {
-  uint32_t ret = 1;
-  if (upb_fielddef_isseq(f)) ret += 2;    /* STARTSEQ/ENDSEQ */
-  if (upb_fielddef_isstring(f)) ret += 2; /* [STRING]/STARTSTR/ENDSTR */
-  if (upb_fielddef_issubmsg(f)) {
-    /* ENDSUBMSG (STARTSUBMSG is at table beginning) */
-    ret += 0;
-    if (upb_fielddef_lazy(f)) {
-      /* STARTSTR/ENDSTR/STRING (for lazy) */
-      ret += 3;
-    }
-  }
-  return ret;
 }
 
 static void upb_status_setoom(upb_status *status) {
@@ -389,10 +362,6 @@ const char *upb_fielddef_jsonname(const upb_fielddef *f) {
   return f->json_name;
 }
 
-uint32_t upb_fielddef_selectorbase(const upb_fielddef *f) {
-  return f->selector_base;
-}
-
 const upb_filedef *upb_fielddef_file(const upb_fielddef *f) {
   return f->file;
 }
@@ -553,14 +522,6 @@ const char *upb_msgdef_name(const upb_msgdef *m) {
 
 upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m) {
   return m->file->syntax;
-}
-
-size_t upb_msgdef_selectorcount(const upb_msgdef *m) {
-  return m->selector_count;
-}
-
-uint32_t upb_msgdef_submsgfieldcount(const upb_msgdef *m) {
-  return m->submsg_field_count;
 }
 
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
@@ -1052,13 +1013,21 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   size_t hasbit;
-  size_t submsg_count = m->submsg_field_count;
+  size_t field_count = upb_msgdef_numfields(m);
+  size_t submsg_count = 0;
   const upb_msglayout **submsgs;
   upb_msglayout_field *fields;
 
   memset(l, 0, sizeof(*l) + sizeof(_upb_fasttable_entry));
 
-  fields = symtab_alloc(ctx, upb_msgdef_numfields(m) * sizeof(*fields));
+  /* Count sub-messages. */
+  for (size_t i = 0; i < field_count; i++) {
+    if (upb_fielddef_issubmsg(&m->fields[i])) {
+      submsg_count++;
+    }
+  }
+
+  fields = symtab_alloc(ctx, field_count * sizeof(*fields));
   submsgs = symtab_alloc(ctx, submsg_count * sizeof(*submsgs));
 
   l->field_count = upb_msgdef_numfields(m);
@@ -1207,49 +1176,6 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
   /* Sort fields by number. */
   qsort(fields, upb_msgdef_numfields(m), sizeof(*fields), field_number_cmp);
   assign_layout_indices(m, fields);
-}
-
-static void assign_msg_indices(symtab_addctx *ctx, upb_msgdef *m) {
-  /* Sort fields.  upb internally relies on UPB_TYPE_MESSAGE fields having the
-   * lowest indexes, but we do not publicly guarantee this. */
-  upb_msg_field_iter j;
-  int i;
-  uint32_t selector;
-  int n = upb_msgdef_numfields(m);
-  upb_fielddef **fields;
-
-  if (n == 0) {
-    m->selector_count = UPB_STATIC_SELECTOR_COUNT;
-    m->submsg_field_count = 0;
-    return;
-  }
-
-  fields = upb_gmalloc(n * sizeof(*fields));
-
-  m->submsg_field_count = 0;
-  for(i = 0, upb_msg_field_begin(&j, m);
-      !upb_msg_field_done(&j);
-      upb_msg_field_next(&j), i++) {
-    upb_fielddef *f = upb_msg_iter_field(&j);
-    UPB_ASSERT(f->msgdef == m);
-    if (upb_fielddef_issubmsg(f)) {
-      m->submsg_field_count++;
-    }
-    fields[i] = f;
-  }
-
-  qsort(fields, n, sizeof(*fields), cmp_fields);
-
-  selector = UPB_STATIC_SELECTOR_COUNT + m->submsg_field_count;
-  for (i = 0; i < n; i++) {
-    upb_fielddef *f = fields[i];
-    f->index_ = i;
-    f->selector_base = selector + upb_handlers_selectorbaseoffset(f);
-    selector += upb_handlers_selectorcount(f);
-  }
-  m->selector_count = selector;
-
-  upb_gfree(fields);
 }
 
 static char *strviewdup(symtab_addctx *ctx, upb_strview view) {
@@ -1613,7 +1539,8 @@ static void create_fielddef(
     upb_value v, field_v, json_v;
     size_t json_size;
 
-    f = (upb_fielddef*)&m->fields[m->field_count++];
+    f = (upb_fielddef*)&m->fields[m->field_count];
+    f->index_ = m->field_count++;
     f->msgdef = m;
     f->is_extension_ = false;
 
@@ -1848,7 +1775,6 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
     create_fielddef(ctx, m->full_name, m, fields[i]);
   }
 
-  assign_msg_indices(ctx, m);
   finalize_oneofs(ctx, m);
   assign_msg_wellknowntype(m);
   upb_inttable_compact2(&m->itof, ctx->alloc);

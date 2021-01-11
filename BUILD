@@ -210,85 +210,6 @@ cc_library(
     ],
 )
 
-# Legacy C/C++ Libraries (not recommended for new code) ########################
-
-cc_library(
-    name = "handlers",
-    srcs = [
-        "upb/handlers.c",
-        "upb/handlers-inl.h",
-        "upb/sink.c",
-    ],
-    hdrs = [
-        "upb/handlers.h",
-        "upb/sink.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//tests:__pkg__"],
-    deps = [
-        ":port",
-        ":reflection",
-        ":table",
-        ":upb",
-    ],
-)
-
-cc_library(
-    name = "upb_pb",
-    srcs = [
-        "upb/pb/compile_decoder.c",
-        "upb/pb/decoder.c",
-        "upb/pb/decoder.int.h",
-        "upb/pb/encoder.c",
-        "upb/pb/textprinter.c",
-        "upb/pb/varint.c",
-        "upb/pb/varint.int.h",
-    ],
-    hdrs = [
-        "upb/pb/decoder.h",
-        "upb/pb/encoder.h",
-        "upb/pb/textprinter.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//tests:__pkg__"],
-    deps = [
-        ":descriptor_upb_proto",
-        ":handlers",
-        ":port",
-        ":reflection",
-        ":table",
-        ":upb",
-    ],
-)
-
-# copybara:strip_for_google3_begin
-cc_library(
-    name = "upb_json",
-    srcs = [
-        "upb/json/parser.c",
-        "upb/json/printer.c",
-    ],
-    hdrs = [
-        "upb/json/parser.h",
-        "upb/json/printer.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//tests:__pkg__"],
-    deps = [
-        ":upb",
-        ":upb_pb",
-    ],
-)
-
-genrule(
-    name = "generate_json_ragel",
-    srcs = ["//:upb/json/parser.rl"],
-    outs = ["upb/json/parser.c"],
-    cmd = "$(location @ragel//:ragelc) -C -o upb/json/parser.c $< && mv upb/json/parser.c $@",
-    tools = ["@ragel//:ragelc"],
-    visibility = ["//cmake:__pkg__"],
-)
-
 # Amalgamation #################################################################
 
 py_binary(
@@ -308,10 +229,7 @@ upb_amalgamation(
         ":fastdecode",
         ":descriptor_upb_proto",
         ":reflection",
-        ":handlers",
         ":port",
-        ":upb_pb",
-        ":upb_json",
     ],
 )
 
