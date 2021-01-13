@@ -1148,6 +1148,8 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/generated_code_proto2_test.rb                                   \
   ruby/tests/generated_code_proto2.proto                                     \
   ruby/tests/generated_code.proto                                            \
+  ruby/tests/multi_level_nesting_test.proto                                  \
+  ruby/tests/multi_level_nesting_test.rb                                     \
   ruby/tests/test_import_proto2.proto                                        \
   ruby/tests/test_import.proto                                               \
   ruby/tests/test_ruby_package_proto2.proto                                  \

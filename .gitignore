@@ -192,6 +192,7 @@ ruby/tests/generated_code_pb.rb
 ruby/tests/test_import_pb.rb
 ruby/tests/test_ruby_package_pb.rb
 ruby/tests/generated_code_proto2_pb.rb
+ruby/tests/multi_level_nesting_test_pb.rb
 ruby/tests/test_import_proto2_pb.rb
 ruby/tests/test_ruby_package_proto2_pb.rb
 ruby/Gemfile.lock
