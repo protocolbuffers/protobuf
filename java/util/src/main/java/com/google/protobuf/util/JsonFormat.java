@@ -43,10 +43,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.stream.JsonReader;
-import com.google.protobuf.Any;
-import com.google.protobuf.BoolValue;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.BytesValue;
+import com.google.protobuf.*;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
@@ -54,24 +51,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
-import com.google.protobuf.DoubleValue;
-import com.google.protobuf.Duration;
-import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.FieldMask;
-import com.google.protobuf.FloatValue;
-import com.google.protobuf.Int32Value;
-import com.google.protobuf.Int64Value;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.ListValue;
-import com.google.protobuf.Message;
-import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.NullValue;
-import com.google.protobuf.StringValue;
-import com.google.protobuf.Struct;
-import com.google.protobuf.Timestamp;
-import com.google.protobuf.UInt32Value;
-import com.google.protobuf.UInt64Value;
-import com.google.protobuf.Value;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -881,7 +861,7 @@ public class JsonFormat {
       if (type == null) {
         type = oldRegistry.getDescriptorForTypeUrl(typeUrl);
         if (type == null) {
-          throw new InvalidProtocolBufferException("Cannot find type for url: " + typeUrl);
+          throw new InvalidAnyProtocolBufferException("Cannot find type for url: " + typeUrl, typeUrl);
         }
       }
       ByteString content = (ByteString) message.getField(valueField);
@@ -1531,7 +1511,7 @@ public class JsonFormat {
       if (contentType == null) {
         contentType = oldRegistry.getDescriptorForTypeUrl(typeUrl);
         if (contentType == null) {
-          throw new InvalidProtocolBufferException("Cannot resolve type: " + typeUrl);
+          throw new InvalidAnyProtocolBufferException("Cannot resolve type: " + typeUrl, typeUrl);
         }
       }
       builder.setField(typeUrlField, typeUrl);
