@@ -232,6 +232,7 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field);
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
   constexpr Message() = default;
+  virtual ~Message() = default;
 
   // Basic Operations ------------------------------------------------
 

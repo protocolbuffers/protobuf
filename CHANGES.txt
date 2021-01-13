@@ -12,6 +12,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     implementation detail users must not rely on. It should not be used in
     unit tests.
   * Change the signature of Any::PackFrom() to return false on error.
+  * Let destructor of Message class be virtual 
 
   Java
   * Avoid possible UnsupportedOperationException when using CodedInputSteam
