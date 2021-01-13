@@ -18,7 +18,7 @@ test_version() {
        rake gc_test &&
        cd ../conformance && make test_jruby &&
        cd ../ruby/compatibility_tests/v3.0.0 && ./test.sh"
-  elif [ "$version" == "ruby-2.6.0" -o "$version" == "ruby-2.7.0" ] ; then
+  elif [ "$version" == "ruby-2.6.0" -o "$version" == "ruby-2.7.0" -o "$version" == "ruby-3.0.0" ] ; then
     bash --login -c \
       "rvm install $version && rvm use $version && \
        which ruby && \
