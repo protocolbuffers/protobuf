@@ -41,6 +41,8 @@
 // proto2 syntax. It's cut down significantly as proto3 only supports
 // extensions for options.
 
+// This file is part of the unit test for issue #6956. It is
+// generated with protoc from version 3.10.1.
 
 syntax = "proto3";
 
