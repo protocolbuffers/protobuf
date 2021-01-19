@@ -17,11 +17,16 @@ if [ $# -lt 3 ]; then
   exit 1
 fi
 
+ARCH=`uname -m`
 PROTOBUF_VERSION=$1
 PYPI_USERNAME=$2
 PYPI_PASSWORD=$3
 
 docker rmi protobuf-python-wheel
-docker build . -t protobuf-python-wheel
+if [ "$ARCH" == "aarch64" ]; then
+	docker build arm64/ -t protobuf-python-wheel
+else
+	docker build x86_64/ -t protobuf-python-wheel
+fi
 docker run --rm protobuf-python-wheel ./protobuf_optimized_pip.sh $PROTOBUF_VERSION $PYPI_USERNAME $PYPI_PASSWORD
 docker rmi protobuf-python-wheel

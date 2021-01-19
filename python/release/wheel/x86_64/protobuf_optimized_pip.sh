@@ -63,4 +63,4 @@ do
   build_wheel $PYTHON_VERSION
 done
 
-/opt/python/cp27-cp27mu/bin/twine upload wheelhouse/*
+/opt/python/cp36-cp36m/bin/twine upload wheelhouse/*
