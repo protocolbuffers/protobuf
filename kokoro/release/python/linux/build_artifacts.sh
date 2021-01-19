@@ -7,6 +7,7 @@ pushd $(dirname $0)/../../../..
 
 # Create stage dir
 ORIGINAL_DIR=`pwd`
+ARCH=`uname -m`
 pushd ..
 cp -R $ORIGINAL_DIR stage
 export STAGE_DIR="`pwd`/stage"
@@ -16,7 +17,12 @@ export REPO_DIR=protobuf
 export BUILD_VERSION=`grep -i "version" python/google/protobuf/__init__.py | grep -o "'.*'" | tr -d "'"`
 
 export BUILD_COMMIT=`git rev-parse HEAD`
-export PLAT=x86_64
+if [ "$ARCH" == "aarch64" ]; then
+	export PLAT=aarch64
+	export MB_ML_VER=2014
+else
+	export PLAT=x86_64
+fi
 export UNICODE_WIDTH=32
 export MACOSX_DEPLOYMENT_TARGET=10.9
 
@@ -49,8 +55,11 @@ build_artifact_version() {
   mv wheelhouse/* $ARTIFACT_DIR
 }
 
-build_artifact_version 2.7
+if [ "$ARCH" == "x86_64" ]; then
+	build_artifact_version 2.7
+fi
 build_artifact_version 3.5
 build_artifact_version 3.6
 build_artifact_version 3.7
 build_artifact_version 3.8
+build_artifact_version 3.9

@@ -6,7 +6,11 @@ function pre_build {
     # Runs in the root directory of this repository.
     pushd protobuf
 
-    yum install -y devtoolset-2-libatomic-devel
+    if [ `uname -m` == "aarch64" ]; then
+	yum install -y devtoolset-7-libatomic-devel
+    else
+	yum install -y devtoolset-3-libatomic-devel
+    fi
 
     # Build protoc
     ./autogen.sh
