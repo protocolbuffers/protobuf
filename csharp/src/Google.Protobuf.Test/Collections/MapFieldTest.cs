@@ -600,6 +600,8 @@ namespace Google.Protobuf.Collections
             output.WriteString("the_value");
             output.Flush();
 
+            Console.WriteLine(BitConverter.ToString(memoryStream.ToArray()));
+
             var field = new MapField<string,string>();
             var mapCodec = new MapField<string,string>.Codec(FieldCodec.ForString(keyTag, ""), FieldCodec.ForString(valueTag, ""), 10);
             var input = new CodedInputStream(memoryStream.ToArray());
@@ -607,6 +609,32 @@ namespace Google.Protobuf.Collections
             // test the legacy overload of AddEntriesFrom that takes a CodedInputStream
             field.AddEntriesFrom(input, mapCodec);
             CollectionAssert.AreEquivalent(new[] { "the_key" }, field.Keys);
+            CollectionAssert.AreEquivalent(new[] { "the_value" }, field.Values);
+            Assert.IsTrue(input.IsAtEnd);
+        }
+
+        [Test]
+        public void AddEntriesFrom_CodedInputStream_MissingKey()
+        {
+            // map will have string key and string value
+            var keyTag = WireFormat.MakeTag(1, WireFormat.WireType.LengthDelimited);
+            var valueTag = WireFormat.MakeTag(2, WireFormat.WireType.LengthDelimited);
+
+            var memoryStream = new MemoryStream();
+            var output = new CodedOutputStream(memoryStream);
+            output.WriteLength(11);  // total of valueTag + value
+            output.WriteTag(valueTag);
+            output.WriteString("the_value");
+            output.Flush();
+
+            Console.WriteLine(BitConverter.ToString(memoryStream.ToArray()));
+
+            var field = new MapField<string, string>();
+            var mapCodec = new MapField<string, string>.Codec(FieldCodec.ForString(keyTag, ""), FieldCodec.ForString(valueTag, ""), 10);
+            var input = new CodedInputStream(memoryStream.ToArray());
+
+            field.AddEntriesFrom(input, mapCodec);
+            CollectionAssert.AreEquivalent(new[] { "" }, field.Keys);
             CollectionAssert.AreEquivalent(new[] { "the_value" }, field.Values);
             Assert.IsTrue(input.IsAtEnd);
         }

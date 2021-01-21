@@ -148,8 +148,8 @@ namespace Google.Protobuf
             int oldLimit = SegmentedBufferHelper.PushLimit(ref ctx.state, length);
             ++ctx.state.recursionDepth;
 
-            TKey key = default;
-            TValue value = default;
+            TKey key = codec.KeyCodec.DefaultValue;
+            TValue value = codec.ValueCodec.DefaultValue;
 
             uint tag;
             while ((tag = ctx.ReadTag()) != 0)
