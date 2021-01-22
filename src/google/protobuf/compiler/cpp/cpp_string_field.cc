@@ -399,6 +399,16 @@ void StringFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "    this->_internal_$name$());\n");
 }
 
+void StringFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (descriptor_->default_value_string().empty()) {
+    format("$name$_(&::$proto_ns$::internal::fixed_address_empty_string)");
+  } else {
+    format("$name$_(nullptr)");
+  }
+}
+
 // ===================================================================
 
 StringOneofFieldGenerator::StringOneofFieldGenerator(
@@ -816,6 +826,12 @@ void RepeatedStringFieldGenerator::GenerateByteSize(
       "::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
       "    $name$_.Get(i));\n"
       "}\n");
+}
+
+void RepeatedStringFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("$name$_()");
 }
 
 }  // namespace cpp

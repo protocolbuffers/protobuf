@@ -501,7 +501,7 @@ namespace internal {
 // effectively.
 template <typename Element,
           bool HasTrivialCopy =
-              std::is_standard_layout<Element>::value && std::is_trivial<Element>::value>
+              std::is_pod<Element>::value>
 struct ElementCopier {
   void operator()(Element* to, const Element* from, int array_size);
 };
@@ -657,7 +657,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   const typename TypeHandler::Type* const* data() const;
 
   template <typename TypeHandler>
-  PROTOBUF_ALWAYS_INLINE void Swap(RepeatedPtrFieldBase* other);
+  PROTOBUF_NDEBUG_INLINE void Swap(RepeatedPtrFieldBase* other);
 
   void SwapElements(int index1, int index2);
 

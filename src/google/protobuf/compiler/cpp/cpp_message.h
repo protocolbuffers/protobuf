@@ -124,6 +124,10 @@ class MessageGenerator {
   // Generate the arena-specific destructor code.
   void GenerateArenaDestructorCode(io::Printer* printer);
 
+  // Generate the constexpr constructor for constant initialization of the
+  // default instance.
+  void GenerateConstexprConstructor(io::Printer* printer);
+
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
   void GenerateOneofClear(io::Printer* printer);

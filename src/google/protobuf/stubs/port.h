@@ -57,17 +57,17 @@
 #pragma runtime_checks("c", off)
 #endif
 #else
-  #ifdef __APPLE__
-    #include <machine/endian.h>  // __BYTE_ORDER
-  #else
-    #include <endian.h>  // __BYTE_ORDER
-  #endif
-  #if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) || \
-         (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \
-         (defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN)) && \
-      !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-    #define PROTOBUF_LITTLE_ENDIAN 1
-  #endif
+#ifdef __APPLE__
+#include <machine/endian.h>  // __BYTE_ORDER
+#else
+#include <endian.h>  // __BYTE_ORDER
+#endif
+#if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||   \
+     (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \
+     (defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN)) &&      \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
+#define PROTOBUF_LITTLE_ENDIAN 1
+#endif
 #endif
 
 // These #includes are for the byte swap functions declared later on.

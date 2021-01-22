@@ -1507,9 +1507,9 @@ public class TextFormatTest extends TestCase {
             + "  value: -1\n"
             + "}\n";
     TestMap msg = TextFormat.parse(input, TestMap.class);
-    int i1 = msg.getInt32ToInt32Field().get(1);
+    int i1 = msg.getInt32ToInt32FieldMap().get(1);
     TestMap msg2 = TextFormat.parse(msg.toString(), TestMap.class);
-    int i2 = msg2.getInt32ToInt32Field().get(1);
+    int i2 = msg2.getInt32ToInt32FieldMap().get(1);
     assertEquals(i1, i2);
   }
 
@@ -1521,10 +1521,10 @@ public class TextFormatTest extends TestCase {
     TestMap.Builder dest = TestMap.newBuilder();
     parserWithOverwriteForbidden.merge(text, dest);
     TestMap message = dest.build();
-    assertEquals(2, message.getStringToInt32Field().size());
-    assertEquals(2, message.getInt32ToMessageField().size());
-    assertEquals(10, message.getStringToInt32Field().get("x").intValue());
-    assertEquals(200, message.getInt32ToMessageField().get(2).getValue());
+    assertEquals(2, message.getStringToInt32FieldMap().size());
+    assertEquals(2, message.getInt32ToMessageFieldMap().size());
+    assertEquals(10, message.getStringToInt32FieldMap().get("x").intValue());
+    assertEquals(200, message.getInt32ToMessageFieldMap().get(2).getValue());
   }
 
   public void testMapShortFormEmpty() throws Exception {
@@ -1532,8 +1532,8 @@ public class TextFormatTest extends TestCase {
     TestMap.Builder dest = TestMap.newBuilder();
     parserWithOverwriteForbidden.merge(text, dest);
     TestMap message = dest.build();
-    assertEquals(0, message.getStringToInt32Field().size());
-    assertEquals(0, message.getInt32ToMessageField().size());
+    assertEquals(0, message.getStringToInt32FieldMap().size());
+    assertEquals(0, message.getInt32ToMessageFieldMap().size());
   }
 
   public void testMapShortFormTrailingComma() throws Exception {
@@ -1558,8 +1558,8 @@ public class TextFormatTest extends TestCase {
       TestMap.Builder builder = TestMap.newBuilder();
       defaultParser.merge(text, builder);
       TestMap map = builder.build();
-      assertEquals(2, map.getInt32ToInt32Field().size());
-      assertEquals(30, map.getInt32ToInt32Field().get(1).intValue());
+      assertEquals(2, map.getInt32ToInt32FieldMap().size());
+      assertEquals(30, map.getInt32ToInt32FieldMap().get(1).intValue());
     }
 
     {
@@ -1568,8 +1568,8 @@ public class TextFormatTest extends TestCase {
       TestMap.Builder builder = TestMap.newBuilder();
       parserWithOverwriteForbidden.merge(text, builder);
       TestMap map = builder.build();
-      assertEquals(2, map.getInt32ToInt32Field().size());
-      assertEquals(30, map.getInt32ToInt32Field().get(1).intValue());
+      assertEquals(2, map.getInt32ToInt32FieldMap().size());
+      assertEquals(30, map.getInt32ToInt32FieldMap().get(1).intValue());
     }
 
     {
@@ -1580,8 +1580,8 @@ public class TextFormatTest extends TestCase {
       TestMap map =
           TestMap.parseFrom(
               builder.build().toByteString(), ExtensionRegistryLite.getEmptyRegistry());
-      assertEquals(2, map.getInt32ToInt32Field().size());
-      assertEquals(30, map.getInt32ToInt32Field().get(1).intValue());
+      assertEquals(2, map.getInt32ToInt32FieldMap().size());
+      assertEquals(30, map.getInt32ToInt32FieldMap().get(1).intValue());
     }
   }
 

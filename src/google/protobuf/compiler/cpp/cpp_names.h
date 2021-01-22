@@ -28,52 +28,58 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
+#ifndef GOOGLE_PROTOBUF_COMPILER_CPP_NAMES_H__
+#define GOOGLE_PROTOBUF_COMPILER_CPP_NAMES_H__
+
+#include <string>
+
+#include <google/protobuf/port_def.inc>
+
+namespace google {
+namespace protobuf {
+
+class Descriptor;
+class EnumDescriptor;
+class FieldDescriptor;
+
+namespace compiler {
+namespace cpp {
+
+// Returns the unqualified C++ name.
 //
-// This file contains messages for testing repeated field comparison
-// LINT: ALLOW_GROUPS
+// For example, if you had:
+//   package foo.bar;
+//   message Baz { message Qux {} }
+// Then the non-qualified version would be:
+//   Baz_Qux
+std::string ClassName(const Descriptor* descriptor);
+std::string ClassName(const EnumDescriptor* enum_descriptor);
 
-syntax = "proto2";
+// Returns the fully qualified C++ name.
+//
+// For example, if you had:
+//   package foo.bar;
+//   message Baz { message Qux {} }
+// Then the qualified ClassName for Qux would be:
+//   ::foo::bar::Baz_Qux
+std::string QualifiedClassName(const Descriptor* d);
+std::string QualifiedClassName(const EnumDescriptor* d);
+std::string QualifiedExtensionName(const FieldDescriptor* d);
 
-package protobuf_unittest;
+// Get the (unqualified) name that should be used for this field in C++ code.
+// The name is coerced to lower-case to emulate proto1 behavior.  People
+// should be using lowercase-with-underscores style for proto field names
+// anyway, so normally this just returns field->name().
+std::string FieldName(const FieldDescriptor* field);
 
-import "google/protobuf/any.proto";
+// Strips ".proto" or ".protodevel" from the end of a filename.
+PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
-option optimize_for = SPEED;
+}  // namespace cpp
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
 
-message TestField {
-  optional int32 a = 3;
-  optional int32 b = 4;
-  optional int32 c = 1;
-  repeated int32 rc = 2;
-  optional TestField m = 5;
+#include <google/protobuf/port_undef.inc>
 
-  extend TestDiffMessage {
-    optional TestField tf = 100;
-  }
-}
-
-message TestDiffMessage {
-  repeated group Item = 1 {
-    optional int32 a = 2;       // Test basic repeated field comparison.
-    optional string b = 4;      // Test basic repeated field comparison.
-    repeated int32 ra = 3;      // Test SetOfSet Comparison.
-    repeated string rb = 5;     // Test TreatAsMap when key is repeated
-    optional TestField m = 6;   // Test TreatAsMap when key is a message
-    repeated TestField rm = 7;  // Test TreatAsMap when key is a repeated
-                                // message
-    map<string, int32> mp = 8;  // Test for map comparisons
-  }
-
-  optional int32 v = 13 [deprecated = true];
-  optional string w = 14;
-  optional TestField m = 15;
-  repeated int32 rv = 11;                          // Test for combinations
-  repeated string rw = 10;                         // Test for combinations
-  repeated TestField rm = 12 [deprecated = true];  // Test for combinations
-  repeated google.protobuf.Any rany =
-      16;  // Test for repeated Any type resolution
-  extensions 100 to 199;
-}
+#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_NAMES_H__

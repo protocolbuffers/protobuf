@@ -41,6 +41,7 @@
 
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
+#include <google/protobuf/compiler/java/java_names.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>

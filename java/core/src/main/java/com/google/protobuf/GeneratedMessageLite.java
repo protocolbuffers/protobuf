@@ -266,12 +266,14 @@ public abstract class GeneratedMessageLite<
     memoizedSerializedSize = size;
   }
 
+  @Override
   public void writeTo(CodedOutputStream output) throws IOException {
     Protobuf.getInstance()
         .schemaFor(this)
         .writeTo(this, CodedOutputStreamWriter.forCodedOutput(output));
   }
 
+  @Override
   public int getSerializedSize() {
     if (memoizedSerializedSize == -1) {
       memoizedSerializedSize = Protobuf.getInstance().schemaFor(this).getSerializedSize(this);

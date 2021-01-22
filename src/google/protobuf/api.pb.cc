@@ -16,68 +16,59 @@
 #include <google/protobuf/port_def.inc>
 
 PROTOBUF_PRAGMA_INIT_SEG
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fapi_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Method_google_2fprotobuf_2fapi_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fapi_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Mixin_google_2fprotobuf_2fapi_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftype_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Option_google_2fprotobuf_2ftype_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fsource_5fcontext_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto;
 PROTOBUF_NAMESPACE_OPEN
-class ApiDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Api> _instance;
-} _Api_default_instance_;
-class MethodDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Method> _instance;
-} _Method_default_instance_;
-class MixinDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Mixin> _instance;
-} _Mixin_default_instance_;
+constexpr Api::Api(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : methods_()
+  , options_()
+  , mixins_()
+  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , version_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , source_context_(nullptr)
+  , syntax_(0)
+{}
+struct ApiDefaultTypeInternal {
+  constexpr ApiDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~ApiDefaultTypeInternal() {}
+  union {
+    Api _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY ApiDefaultTypeInternal _Api_default_instance_;
+constexpr Method::Method(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : options_()
+  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , request_type_url_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , response_type_url_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , request_streaming_(false)
+  , response_streaming_(false)
+  , syntax_(0)
+{}
+struct MethodDefaultTypeInternal {
+  constexpr MethodDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~MethodDefaultTypeInternal() {}
+  union {
+    Method _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY MethodDefaultTypeInternal _Method_default_instance_;
+constexpr Mixin::Mixin(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , root_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+struct MixinDefaultTypeInternal {
+  constexpr MixinDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~MixinDefaultTypeInternal() {}
+  union {
+    Mixin _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY MixinDefaultTypeInternal _Mixin_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsscc_info_Api_google_2fprotobuf_2fapi_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_Api_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::Api();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<4> scc_info_Api_google_2fprotobuf_2fapi_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 4, 0, InitDefaultsscc_info_Api_google_2fprotobuf_2fapi_2eproto}, {
-      &scc_info_Method_google_2fprotobuf_2fapi_2eproto.base,
-      &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,
-      &scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base,
-      &scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base,}};
-
-static void InitDefaultsscc_info_Method_google_2fprotobuf_2fapi_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_Method_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::Method();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Method_google_2fprotobuf_2fapi_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_Method_google_2fprotobuf_2fapi_2eproto}, {
-      &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,}};
-
-static void InitDefaultsscc_info_Mixin_google_2fprotobuf_2fapi_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_Mixin_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::Mixin();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Mixin_google_2fprotobuf_2fapi_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Mixin_google_2fprotobuf_2fapi_2eproto}, {}};
-
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fapi_2eproto[3];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;
@@ -152,18 +143,18 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor
   &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
   &::descriptor_table_google_2fprotobuf_2ftype_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2fapi_2eproto_sccs[3] = {
-  &scc_info_Api_google_2fprotobuf_2fapi_2eproto.base,
-  &scc_info_Method_google_2fprotobuf_2fapi_2eproto.base,
-  &scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base,
-};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fapi_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto, "google/protobuf/api.proto", 751,
-  &descriptor_table_google_2fprotobuf_2fapi_2eproto_once, descriptor_table_google_2fprotobuf_2fapi_2eproto_sccs, descriptor_table_google_2fprotobuf_2fapi_2eproto_deps, 3, 2,
+  false, false, 751, descriptor_table_protodef_google_2fprotobuf_2fapi_2eproto, "google/protobuf/api.proto", 
+  &descriptor_table_google_2fprotobuf_2fapi_2eproto_once, descriptor_table_google_2fprotobuf_2fapi_2eproto_deps, 2, 3,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fapi_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2fapi_2eproto, 3, file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto, file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto,
+  file_level_metadata_google_2fprotobuf_2fapi_2eproto, file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto, file_level_service_descriptors_google_2fprotobuf_2fapi_2eproto,
 };
+PROTOBUF_ATTRIBUTE_WEAK ::PROTOBUF_NAMESPACE_ID::Metadata
+descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(int index) {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fapi_2eproto);
+  return descriptor_table_google_2fprotobuf_2fapi_2eproto.file_level_metadata[index];
+}
 
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fapi_2eproto(&descriptor_table_google_2fprotobuf_2fapi_2eproto);
@@ -224,13 +215,12 @@ Api::Api(const Api& from)
 }
 
 void Api::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Api_google_2fprotobuf_2fapi_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  version_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-      reinterpret_cast<char*>(&source_context_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&syntax_) -
-      reinterpret_cast<char*>(&source_context_)) + sizeof(syntax_));
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+version_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&source_context_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&syntax_) -
+    reinterpret_cast<char*>(&source_context_)) + sizeof(syntax_));
 }
 
 Api::~Api() {
@@ -255,11 +245,6 @@ void Api::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Api::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Api& Api::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Api_google_2fprotobuf_2fapi_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Api::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
@@ -636,14 +621,13 @@ Method::Method(const Method& from)
 }
 
 void Method::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Method_google_2fprotobuf_2fapi_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  request_type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  response_type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-      reinterpret_cast<char*>(&request_streaming_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&syntax_) -
-      reinterpret_cast<char*>(&request_streaming_)) + sizeof(syntax_));
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+request_type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+response_type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&request_streaming_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&syntax_) -
+    reinterpret_cast<char*>(&request_streaming_)) + sizeof(syntax_));
 }
 
 Method::~Method() {
@@ -668,11 +652,6 @@ void Method::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Method::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Method& Method::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Method_google_2fprotobuf_2fapi_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Method::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
@@ -1022,9 +1001,8 @@ Mixin::Mixin(const Mixin& from)
 }
 
 void Mixin::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  root_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+root_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 Mixin::~Mixin() {
@@ -1048,11 +1026,6 @@ void Mixin::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Mixin::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Mixin& Mixin::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Mixin_google_2fprotobuf_2fapi_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Mixin::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)

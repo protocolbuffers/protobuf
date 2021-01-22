@@ -290,6 +290,16 @@ void MapFieldGenerator::GenerateByteSize(io::Printer* printer) const {
       "}\n");
 }
 
+void MapFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    format("$name$_(::$proto_ns$::internal::ConstantInitialized{})");
+  } else {
+    format("$name$_()");
+  }
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

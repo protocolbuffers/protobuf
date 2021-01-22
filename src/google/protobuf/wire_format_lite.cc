@@ -547,7 +547,7 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   WriteSubMessageMaybeToArray(size, value, output);
 }
 
-PROTOBUF_ALWAYS_INLINE static bool ReadBytesToString(
+PROTOBUF_NDEBUG_INLINE static bool ReadBytesToString(
     io::CodedInputStream* input, std::string* value);
 inline static bool ReadBytesToString(io::CodedInputStream* input,
                                      std::string* value) {

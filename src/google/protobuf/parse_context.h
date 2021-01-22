@@ -348,7 +348,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (ptr - buffer_end_ > limit_) return nullptr;
     while (limit_ > kSlopBytes) {
       size_t chunk_size = buffer_end_ + kSlopBytes - ptr;
-      GOOGLE_DCHECK_GE(chunk_size, 0);
+      GOOGLE_DCHECK_GE(chunk_size, static_cast<size_t>(0));
       append(ptr, chunk_size);
       ptr = Next();
       if (ptr == nullptr) return limit_end_;
@@ -401,7 +401,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   const char* ParseMessage(Message* msg, const char* ptr);
 
   template <typename T>
-  PROTOBUF_MUST_USE_RESULT PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
       T* msg, const char* ptr, uint32 tag) {
     if (--depth_ < 0) return nullptr;
     group_depth_++;

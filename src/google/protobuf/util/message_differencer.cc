@@ -35,6 +35,7 @@
 #include <google/protobuf/util/message_differencer.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -46,8 +47,11 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/map_field.h>
+#include <google/protobuf/message.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -184,8 +188,8 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
 // element. The optimal solution requires to use //util/diff/lcs.h, which is
 // not open sourced yet. Overwrite this method if you want to have that.
 // TODO(ykzhu): change to use LCS once it is open sourced.
-void MatchIndicesPostProcessorForSmartList(
-    std::vector<int>* match_list1, std::vector<int>* match_list2) {
+void MatchIndicesPostProcessorForSmartList(std::vector<int>* match_list1,
+                                           std::vector<int>* match_list2) {
   int last_matched_index = -1;
   for (size_t i = 0; i < match_list1->size(); ++i) {
     if (match_list1->at(i) < 0) {
@@ -485,18 +489,17 @@ bool MessageDifferencer::Compare(const Message& message1,
   std::vector<SpecificField> parent_fields;
 
   bool result = false;
-
   // Setup the internal reporter if need be.
   if (output_string_) {
     io::StringOutputStream output_stream(output_string_);
     StreamReporter reporter(&output_stream);
+    reporter.SetMessages(message1, message2);
     reporter_ = &reporter;
     result = Compare(message1, message2, &parent_fields);
     reporter_ = NULL;
   } else {
     result = Compare(message1, message2, &parent_fields);
   }
-
   return result;
 }
 
@@ -556,11 +559,13 @@ bool MessageDifferencer::Compare(const Message& message1,
                 << descriptor2->full_name();
     return false;
   }
+
   // Expand google.protobuf.Any payload if possible.
   if (descriptor1->full_name() == internal::kAnyFullTypeName) {
     std::unique_ptr<Message> data1;
     std::unique_ptr<Message> data2;
-    if (UnpackAny(message1, &data1) && UnpackAny(message2, &data2)) {
+    if (unpack_any_field_.UnpackAny(message1, &data1) &&
+        unpack_any_field_.UnpackAny(message2, &data2)) {
       // Avoid DFATAL for different descriptors in google.protobuf.Any payloads.
       if (data1->GetDescriptor() != data2->GetDescriptor()) {
         return false;
@@ -590,10 +595,10 @@ bool MessageDifferencer::Compare(const Message& message1,
   FieldDescriptorArray message1_fields = RetrieveFields(message1, true);
   FieldDescriptorArray message2_fields = RetrieveFields(message2, false);
 
-  return CompareRequestedFieldsUsingSettings(
-      message1, message2,
-      message1_fields, message2_fields,
-      parent_fields) && unknown_compare_result;
+  return CompareRequestedFieldsUsingSettings(message1, message2,
+                                             message1_fields, message2_fields,
+                                             parent_fields) &&
+         unknown_compare_result;
 }
 
 FieldDescriptorArray MessageDifferencer::RetrieveFields(const Message& message,
@@ -733,7 +738,6 @@ bool MessageDifferencer::CompareWithFieldsInternal(
         if (reporter_ != NULL) {
           SpecificField specific_field;
           specific_field.field = field1;
-
           parent_fields->push_back(specific_field);
           if (report_ignores_) {
             reporter_->ReportIgnored(message1, message2, *parent_fields);
@@ -775,7 +779,6 @@ bool MessageDifferencer::CompareWithFieldsInternal(
         if (reporter_ != NULL) {
           SpecificField specific_field;
           specific_field.field = field2;
-
           parent_fields->push_back(specific_field);
           if (report_ignores_) {
             reporter_->ReportIgnored(message1, message2, *parent_fields);
@@ -818,7 +821,6 @@ bool MessageDifferencer::CompareWithFieldsInternal(
       if (reporter_ != NULL) {
         SpecificField specific_field;
         specific_field.field = field1;
-
         parent_fields->push_back(specific_field);
         if (report_ignores_) {
           reporter_->ReportIgnored(message1, message2, *parent_fields);
@@ -1336,8 +1338,8 @@ struct UnknownFieldOrdering {
 
 }  // namespace
 
-bool MessageDifferencer::UnpackAny(const Message& any,
-                                   std::unique_ptr<Message>* data) {
+bool MessageDifferencer::UnpackAnyField::UnpackAny(
+    const Message& any, std::unique_ptr<Message>* data) {
   const Reflection* reflection = any.GetReflection();
   const FieldDescriptor* type_url_field;
   const FieldDescriptor* value_field;
@@ -1870,12 +1872,16 @@ MessageDifferencer::StreamReporter::StreamReporter(
     io::ZeroCopyOutputStream* output)
     : printer_(new io::Printer(output, '$')),
       delete_printer_(true),
-      report_modified_aggregates_(false) {}
+      report_modified_aggregates_(false),
+      message1_(nullptr),
+      message2_(nullptr) {}
 
 MessageDifferencer::StreamReporter::StreamReporter(io::Printer* printer)
     : printer_(printer),
       delete_printer_(false),
-      report_modified_aggregates_(false) {}
+      report_modified_aggregates_(false),
+      message1_(nullptr),
+      message2_(nullptr) {}
 
 MessageDifferencer::StreamReporter::~StreamReporter() {
   if (delete_printer_) delete printer_;
@@ -1884,20 +1890,28 @@ MessageDifferencer::StreamReporter::~StreamReporter() {
 void MessageDifferencer::StreamReporter::PrintPath(
     const std::vector<SpecificField>& field_path, bool left_side) {
   for (size_t i = 0; i < field_path.size(); ++i) {
+    SpecificField specific_field = field_path[i];
+
+    if (specific_field.field != nullptr &&
+        specific_field.field->name() == "value") {
+      // check to see if this the value label of a map value.  If so, skip it
+      // because it isn't meaningful
+      if (i > 0 && field_path[i - 1].field->is_map()) {
+        continue;
+      }
+    }
     if (i > 0) {
       printer_->Print(".");
     }
-
-    SpecificField specific_field = field_path[i];
-
     if (specific_field.field != NULL) {
       if (specific_field.field->is_extension()) {
         printer_->Print("($name$)", "name", specific_field.field->full_name());
       } else {
         printer_->PrintRaw(specific_field.field->name());
       }
+
       if (specific_field.field->is_map()) {
-        // Don't print index in a map field; they are semantically unordered.
+        PrintMapKey(field_path, left_side, specific_field, i);
         continue;
       }
     } else {
@@ -1933,11 +1947,29 @@ void MessageDifferencer::StreamReporter::PrintValue(
           field->is_repeated()
               ? reflection->GetRepeatedMessage(message, field, index)
               : reflection->GetMessage(message, field);
-      output = field_message.ShortDebugString();
+      const FieldDescriptor* fd = nullptr;
+
+      if (field->is_map() && message1_ != nullptr && message2_ != nullptr) {
+        fd = field_message.GetDescriptor()->field(1);
+        if (fd->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          output = field_message.GetReflection()
+                       ->GetMessage(field_message, fd)
+                       .ShortDebugString();
+        } else {
+          TextFormat::PrintFieldValueToString(field_message, fd, -1, &output);
+        }
+      } else {
+        output = field_message.ShortDebugString();
+      }
       if (output.empty()) {
         printer_->Print("{ }");
       } else {
-        printer_->Print("{ $name$ }", "name", output);
+        if ((fd != nullptr) &&
+            (fd->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE)) {
+          printer_->PrintRaw(output);
+        } else {
+          printer_->Print("{ $name$ }", "name", output);
+        }
       }
     } else {
       TextFormat::PrintFieldValueToString(message, field, index, &output);
@@ -1987,6 +2019,81 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
 
 void MessageDifferencer::StreamReporter::Print(const std::string& str) {
   printer_->Print(str.c_str());
+}
+
+void MessageDifferencer::StreamReporter::PrintMapKey(
+    const std::vector<SpecificField>& field_path, bool left_side,
+    const SpecificField& specific_field, size_t target_field_index) {
+  if (message1_ == nullptr || message2_ == nullptr) {
+    GOOGLE_LOG(WARNING) << "PrintPath cannot log map keys; "
+                    "use SetMessages to provide the messages "
+                    "being compared prior to any processing.";
+    return;
+  }
+  auto get_target_message = [=](const SpecificField& specific_field,
+                                const Reflection* reflection,
+                                const Message* message) {
+    return &(
+        specific_field.field->is_repeated()
+            ? reflection->GetRepeatedMessage(
+                  *message, specific_field.field,
+                  left_side ? specific_field.index : specific_field.new_index)
+            : reflection->GetMessage(*message, specific_field.field));
+  };
+
+  std::unique_ptr<Message> deserialized_msg;  // used for protobuf.Any case
+  std::unique_ptr<DynamicMessageFactory> dynamic_message_factory;
+  const Message* found_message = left_side ? message1_ : message2_;
+  for (size_t j = 0; j <= target_field_index;
+       j++) {  // iterate until we find target field
+    if (specific_field.field->is_repeated()) {
+      int index = left_side ? specific_field.index : specific_field.new_index;
+      if (index < 0) {
+        // Filtered messages fall in this case
+        GOOGLE_LOG(WARNING) << "Invalid index " << index << " for map.\n";
+        found_message = nullptr;
+        break;
+      }
+    }
+    if (found_message->GetTypeName() == "google.protobuf.Any") {
+      if (!unpack_any_field_.UnpackAny(*found_message, &deserialized_msg)) {
+        GOOGLE_LOG(ERROR) << "Cannot print Any message map key due to "
+                      "unpacking error\n";
+        found_message = nullptr;
+        break;
+      }
+
+      found_message =
+          get_target_message(field_path[j], deserialized_msg->GetReflection(),
+                             deserialized_msg.get());
+
+    } else {
+      found_message = get_target_message(
+          field_path[j], found_message->GetReflection(), found_message);
+    }
+  }
+
+  std::string key_string = "";
+  if (found_message != nullptr) {
+    // NB: the map key is always the first field
+    const FieldDescriptor* fd = found_message->GetDescriptor()->field(0);
+    if (fd->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      key_string = found_message->GetReflection()
+                       ->GetMessage(*found_message, fd)
+                       .ShortDebugString();
+    } else if (fd->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
+      // Not using PrintFieldValueToString for strings to avoid extra
+      // characters
+      key_string = found_message->GetReflection()->GetString(
+          *found_message, found_message->GetDescriptor()->field(0));
+    } else {
+      TextFormat::PrintFieldValueToString(*found_message, fd, -1, &key_string);
+    }
+    if (key_string.empty()) {
+      key_string = "''";
+    }
+    printer_->PrintRaw(StrCat("[", key_string, "]"));
+  }
 }
 
 void MessageDifferencer::StreamReporter::ReportAdded(
@@ -2074,6 +2181,12 @@ void MessageDifferencer::StreamReporter::ReportIgnored(
     PrintPath(field_path, false, message2);
   }
   printer_->Print("\n");  // Print for newlines.
+}
+
+void MessageDifferencer::StreamReporter::SetMessages(const Message& message1,
+                                                     const Message& message2) {
+  message1_ = &message1;
+  message2_ = &message2;
 }
 
 void MessageDifferencer::StreamReporter::ReportUnknownFieldIgnored(

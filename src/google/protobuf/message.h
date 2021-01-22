@@ -231,7 +231,7 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field);
 // the internal library are allowed to create subclasses.
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
-  constexpr Message() = default;
+  constexpr Message() {}
 
   // Basic Operations ------------------------------------------------
 

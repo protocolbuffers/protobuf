@@ -36,8 +36,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/type.pb.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/statusor.h>
+#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/port_def.inc>
 

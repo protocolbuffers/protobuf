@@ -2130,7 +2130,7 @@ class MapFieldPrinterHelper {
   // DynamicMapSorter::Sort cannot be used because it enfores syncing with
   // repeated field.
   static bool SortMap(const Message& message, const Reflection* reflection,
-                      const FieldDescriptor* field, MessageFactory* factory,
+                      const FieldDescriptor* field,
                       std::vector<const Message*>* sorted_map_field);
   static void CopyKey(const MapKey& key, Message* message,
                       const FieldDescriptor* field_desc);
@@ -2141,7 +2141,7 @@ class MapFieldPrinterHelper {
 // Returns true if elements contained in sorted_map_field need to be released.
 bool MapFieldPrinterHelper::SortMap(
     const Message& message, const Reflection* reflection,
-    const FieldDescriptor* field, MessageFactory* factory,
+    const FieldDescriptor* field,
     std::vector<const Message*>* sorted_map_field) {
   bool need_release = false;
   const MapFieldBase& base = *reflection->GetMapData(message, field);
@@ -2157,7 +2157,8 @@ bool MapFieldPrinterHelper::SortMap(
     // TODO(teboring): For performance, instead of creating map entry message
     // for each element, just store map keys and sort them.
     const Descriptor* map_entry_desc = field->message_type();
-    const Message* prototype = factory->GetPrototype(map_entry_desc);
+    const Message* prototype =
+        reflection->GetMessageFactory()->GetPrototype(map_entry_desc);
     for (MapIterator iter =
              reflection->MapBegin(const_cast<Message*>(&message), field);
          iter != reflection->MapEnd(const_cast<Message*>(&message), field);
@@ -2270,13 +2271,12 @@ void TextFormat::Printer::PrintField(const Message& message,
     count = 1;
   }
 
-  DynamicMessageFactory factory;
   std::vector<const Message*> sorted_map_field;
   bool need_release = false;
   bool is_map = field->is_map();
   if (is_map) {
     need_release = internal::MapFieldPrinterHelper::SortMap(
-        message, reflection, field, &factory, &sorted_map_field);
+        message, reflection, field, &sorted_map_field);
   }
 
   for (int j = 0; j < count; ++j) {

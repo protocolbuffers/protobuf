@@ -46,9 +46,6 @@
 
 #include <google/protobuf/port_def.inc>
 
-static const size_t kMinCleanupListElements = 8;
-static const size_t kMaxCleanupListElements = 64;  // 1kB on 64-bit.
-
 namespace google {
 namespace protobuf {
 namespace internal {

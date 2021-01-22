@@ -47,15 +47,18 @@ namespace protobuf {
 namespace internal {
 
 // This is the representation for messages that support arena allocation. It
-// uses a tagged pointer to either store the Arena pointer, if there are no
-// unknown fields, or a pointer to a block of memory with both the Arena pointer
-// and the UnknownFieldSet, if there are unknown fields. This optimization
-// allows for "zero-overhead" storage of the Arena pointer, relative to the
-// above baseline implementation.
+// uses a tagged pointer to either store the owning Arena pointer, if there are
+// no unknown fields, or a pointer to a block of memory with both the owning
+// Arena pointer and the UnknownFieldSet, if there are unknown fields. Besides,
+// it also uses the tag to distinguish whether the owning Arena pointer is also
+// used by sub-structure allocation. This optimization allows for
+// "zero-overhead" storage of the Arena pointer, relative to the above baseline
+// implementation.
 //
-// The tagged pointer uses the LSB to disambiguate cases, and uses bit 0 == 0 to
-// indicate an arena pointer and bit 0 == 1 to indicate a UFS+Arena-container
-// pointer.
+// The tagged pointer uses the least two significant bits to disambiguate cases.
+// It uses bit 0 == 0 to indicate an arena pointer and bit 0 == 1 to indicate a
+// UFS+Arena-container pointer. Besides it uses bit 1 == 0 to indicate arena
+// allocation and bit 1 == 1 to indicate heap allocation.
 class InternalMetadata {
  public:
   constexpr InternalMetadata() : ptr_(nullptr) {}
@@ -69,22 +72,24 @@ class InternalMetadata {
     }
   }
 
-  PROTOBUF_ALWAYS_INLINE Arena* arena() const {
-    if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
-      return PtrValue<ContainerBase>()->arena;
-    } else {
+  PROTOBUF_NDEBUG_INLINE Arena* arena() const {
+    if (PROTOBUF_PREDICT_TRUE(!has_tag())) {
       return PtrValue<Arena>();
+    } else if (is_heap_allocating()) {
+      return nullptr;
+    } else {
+      return PtrValue<ContainerBase>()->arena;
     }
   }
 
-  PROTOBUF_ALWAYS_INLINE bool have_unknown_fields() const {
-    return PtrTag() == kTagContainer;
+  PROTOBUF_NDEBUG_INLINE bool have_unknown_fields() const {
+    return UnknownTag() == kUnknownTagMask;
   }
 
-  PROTOBUF_ALWAYS_INLINE void* raw_arena_ptr() const { return ptr_; }
+  PROTOBUF_NDEBUG_INLINE void* raw_arena_ptr() const { return ptr_; }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE const T& unknown_fields(
+  PROTOBUF_NDEBUG_INLINE const T& unknown_fields(
       const T& (*default_instance)()) const {
     if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<Container<T>>()->unknown_fields;
@@ -94,7 +99,7 @@ class InternalMetadata {
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE T* mutable_unknown_fields() {
+  PROTOBUF_NDEBUG_INLINE T* mutable_unknown_fields() {
     if (PROTOBUF_PREDICT_TRUE(have_unknown_fields())) {
       return &PtrValue<Container<T>>()->unknown_fields;
     } else {
@@ -103,7 +108,7 @@ class InternalMetadata {
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE void Swap(InternalMetadata* other) {
+  PROTOBUF_NDEBUG_INLINE void Swap(InternalMetadata* other) {
     // Semantics here are that we swap only the unknown fields, not the arena
     // pointer. We cannot simply swap ptr_ with other->ptr_ because we need to
     // maintain our own arena ptr. Also, our ptr_ and other's ptr_ may be in
@@ -116,16 +121,40 @@ class InternalMetadata {
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE void MergeFrom(const InternalMetadata& other) {
+  PROTOBUF_NDEBUG_INLINE void MergeFrom(const InternalMetadata& other) {
     if (other.have_unknown_fields()) {
       DoMergeFrom<T>(other.unknown_fields<T>(nullptr));
     }
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE void Clear() {
+  PROTOBUF_NDEBUG_INLINE void Clear() {
     if (have_unknown_fields()) {
       DoClear<T>();
+    }
+  }
+
+  PROTOBUF_ALWAYS_INLINE Arena* GetOwningArena() const {
+    if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
+      return PtrValue<ContainerBase>()->arena;
+    } else {
+      return PtrValue<Arena>();
+    }
+  }
+
+  PROTOBUF_ALWAYS_INLINE void SetOwningArena(Arena* arena) {
+    Arena* owning_arena = GetOwningArena();
+    GOOGLE_DCHECK(arena != nullptr);         // Heap can't own.
+    GOOGLE_DCHECK(owning_arena == nullptr);  // Only heap can be owned.
+
+    if (have_unknown_fields()) {
+      ContainerBase* container = PtrValue<ContainerBase>();
+      container->arena = arena;
+      ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(ptr_) |
+                                     kHeapAllocatingTagMask);
+    } else {
+      ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(arena) |
+                                     kHeapAllocatingTagMask);
     }
   }
 
@@ -133,18 +162,27 @@ class InternalMetadata {
   void* ptr_;
 
   // Tagged pointer implementation.
-  enum {
-    // ptr_ is an Arena*.
-    kTagArena = 0,
-    // ptr_ is a Container*.
-    kTagContainer = 1,
-  };
-  static constexpr intptr_t kPtrTagMask = 1;
+  static constexpr intptr_t kUnknownTagMask = 1;
+  static constexpr intptr_t kHeapAllocatingTagMask = 2;
+  static constexpr intptr_t kPtrTagMask =
+      kUnknownTagMask | kHeapAllocatingTagMask;
   static constexpr intptr_t kPtrValueMask = ~kPtrTagMask;
 
   // Accessors for pointer tag and pointer value.
-  PROTOBUF_ALWAYS_INLINE int PtrTag() const {
+  PROTOBUF_NDEBUG_INLINE int PtrTag() const {
     return reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask;
+  }
+  PROTOBUF_ALWAYS_INLINE int UnknownTag() const {
+    return reinterpret_cast<intptr_t>(ptr_) & kUnknownTagMask;
+  }
+  PROTOBUF_ALWAYS_INLINE int HeapAllocatingTag() const {
+    return reinterpret_cast<intptr_t>(ptr_) & kHeapAllocatingTagMask;
+  }
+  PROTOBUF_ALWAYS_INLINE bool has_tag() const {
+    return (reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask) != 0;
+  }
+  PROTOBUF_ALWAYS_INLINE bool is_heap_allocating() const {
+    return HeapAllocatingTag() == kHeapAllocatingTagMask;
   }
 
   template <typename U>
@@ -153,7 +191,8 @@ class InternalMetadata {
                                 kPtrValueMask);
   }
 
-  // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
+  // If ptr_'s tag is kUnknownTagMask, it points to an instance of this
+  // struct.
   struct ContainerBase {
     Arena* arena;
   };
@@ -166,13 +205,16 @@ class InternalMetadata {
   template <typename T>
   PROTOBUF_NOINLINE T* mutable_unknown_fields_slow() {
     Arena* my_arena = arena();
+    Arena* owning_arena = GetOwningArena();
     Container<T>* container = Arena::Create<Container<T>>(my_arena);
     // Two-step assignment works around a bug in clang's static analyzer:
     // https://bugs.llvm.org/show_bug.cgi?id=34198.
+    intptr_t allocating_tag =
+        reinterpret_cast<intptr_t>(ptr_) & kHeapAllocatingTagMask;
     ptr_ = container;
     ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(ptr_) |
-                                   kTagContainer);
-    container->arena = my_arena;
+                                   kUnknownTagMask | allocating_tag);
+    container->arena = owning_arena;
     return &(container->unknown_fields);
   }
 

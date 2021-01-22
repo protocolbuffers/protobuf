@@ -59,6 +59,7 @@
 
 namespace google {
 namespace protobuf {
+class MapKey;           // map_field.h
 class UnknownFieldSet;  // unknown_field_set.h
 }  // namespace protobuf
 }  // namespace google
@@ -398,6 +399,12 @@ PROTOBUF_EXPORT
 size_t ComputeUnknownFieldsSize(const InternalMetadata& metadata, size_t size,
                                 CachedSize* cached_size);
 
+size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
+                              const MapKey& value);
+
+uint8* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
+                                      const MapKey& value, uint8* target,
+                                      io::EpsCopyOutputStream* stream);
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

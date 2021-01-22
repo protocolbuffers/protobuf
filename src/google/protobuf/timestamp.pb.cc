@@ -17,24 +17,20 @@
 
 PROTOBUF_PRAGMA_INIT_SEG
 PROTOBUF_NAMESPACE_OPEN
-class TimestampDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Timestamp> _instance;
-} _Timestamp_default_instance_;
+constexpr Timestamp::Timestamp(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : seconds_(PROTOBUF_LONGLONG(0))
+  , nanos_(0){}
+struct TimestampDefaultTypeInternal {
+  constexpr TimestampDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~TimestampDefaultTypeInternal() {}
+  union {
+    Timestamp _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY TimestampDefaultTypeInternal _Timestamp_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsscc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_Timestamp_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::Timestamp();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto}, {}};
-
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto = nullptr;
@@ -64,18 +60,18 @@ const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] PRO
   "tobuf/types/known/timestamppb\370\001\001\242\002\003GPB\252\002"
   "\036Google.Protobuf.WellKnownTypesb\006proto3"
   ;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_deps[1] = {
-};
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_sccs[1] = {
-  &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,
-};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftimestamp_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto, "google/protobuf/timestamp.proto", 239,
-  &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once, descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_sccs, descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_deps, 1, 0,
+  false, false, 239, descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto, "google/protobuf/timestamp.proto", 
+  &descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once, nullptr, 0, 1,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2ftimestamp_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto, file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
+  file_level_metadata_google_2fprotobuf_2ftimestamp_2eproto, file_level_enum_descriptors_google_2fprotobuf_2ftimestamp_2eproto, file_level_service_descriptors_google_2fprotobuf_2ftimestamp_2eproto,
 };
+PROTOBUF_ATTRIBUTE_WEAK ::PROTOBUF_NAMESPACE_ID::Metadata
+descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_metadata_getter(int index) {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftimestamp_2eproto);
+  return descriptor_table_google_2fprotobuf_2ftimestamp_2eproto.file_level_metadata[index];
+}
 
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2ftimestamp_2eproto(&descriptor_table_google_2fprotobuf_2ftimestamp_2eproto);
@@ -103,10 +99,10 @@ Timestamp::Timestamp(const Timestamp& from)
 }
 
 void Timestamp::SharedCtor() {
-  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-      reinterpret_cast<char*>(&seconds_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
-      reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&seconds_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
+    reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
 }
 
 Timestamp::~Timestamp() {
@@ -128,11 +124,6 @@ void Timestamp::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Timestamp::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Timestamp& Timestamp::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Timestamp::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
