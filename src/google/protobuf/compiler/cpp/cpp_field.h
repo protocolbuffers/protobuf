@@ -164,6 +164,12 @@ class FieldGenerator {
     return false;
   }
 
+  // Generate initialization code for private members declared by
+  // GeneratePrivateMembers(), specifically for the constexpr construtor.
+  // These go into the constructor's initializer list and must follow that
+  // syntax (eg `field_(args)`). Does not include `:` or `,` separators.
+  virtual void GenerateConstinitInitializer(io::Printer* printer) const {}
+
   // Generate lines to serialize this field directly to the array "target",
   // which are placed within the message's SerializeWithCachedSizesToArray()
   // method. This must also advance "target" past the written bytes.

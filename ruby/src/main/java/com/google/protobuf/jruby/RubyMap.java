@@ -32,19 +32,19 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.DynamicMessage;
-import com.google.protobuf.MapEntry;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
+import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ObjectAllocator;
 import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
-import org.jruby.util.ByteList;
 
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -100,7 +100,6 @@ public class RubyMap extends RubyObject {
      * references to underlying objects will be shared if the value type is a
      * message type.
      */
-
     @JRubyMethod(required = 2, optional = 2)
     public IRubyObject initialize(ThreadContext context, IRubyObject[] args) {
         this.table = new HashMap<IRubyObject, IRubyObject>();
@@ -108,13 +107,15 @@ public class RubyMap extends RubyObject {
         this.valueType = Utils.rubyToFieldType(args[1]);
 
         switch(keyType) {
+            case STRING:
+            case BYTES:
+                this.keyTypeIsString = true;
+                break;
             case INT32:
             case INT64:
             case UINT32:
             case UINT64:
             case BOOL:
-            case STRING:
-            case BYTES:
                 // These are OK.
                 break;
             default:
@@ -130,8 +131,6 @@ public class RubyMap extends RubyObject {
             this.valueTypeClass = context.runtime.getNilClass();
         }
 
-        // Table value type is always UINT64: this ensures enough space to store the
-        // native_slot value.
         if (args.length > initValueArg) {
             mergeIntoSelf(context, args[initValueArg]);
         }
@@ -148,10 +147,19 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod(name = "[]=")
     public IRubyObject indexSet(ThreadContext context, IRubyObject key, IRubyObject value) {
-        key = Utils.checkType(context, keyType, key, (RubyModule) valueTypeClass);
-        value = Utils.checkType(context, valueType, value, (RubyModule) valueTypeClass);
+        checkFrozen();
+
+        /*
+         * String types for keys return a different error than
+         * other types for keys, so deal with them specifically first
+         */
+        if (keyTypeIsString && !(key instanceof RubySymbol || key instanceof RubyString)) {
+            throw context.runtime.newTypeError("Expected string for map key");
+        }
+        key = Utils.checkType(context, keyType, "key", key, (RubyModule) valueTypeClass);
+        value = Utils.checkType(context, valueType, "value", value, (RubyModule) valueTypeClass);
         IRubyObject symbol;
-        if (valueType == Descriptors.FieldDescriptor.Type.ENUM &&
+        if (valueType == FieldDescriptor.Type.ENUM &&
                 Utils.isRubyNum(value) &&
                 ! (symbol = RubyEnum.lookup(context, valueTypeClass, value)).isNil()) {
             value = symbol;
@@ -169,9 +177,8 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod(name = "[]")
     public IRubyObject index(ThreadContext context, IRubyObject key) {
-        if (table.containsKey(key))
-            return this.table.get(key);
-        return context.runtime.getNil();
+        key = Utils.symToString(key);
+        return Helpers.nullToNil(table.get(key), context.nil);
     }
 
     /*
@@ -190,7 +197,7 @@ public class RubyMap extends RubyObject {
     @JRubyMethod(name = "==")
     public IRubyObject eq(ThreadContext context, IRubyObject _other) {
         if (_other instanceof RubyHash)
-            return toHash(context).op_equal(context, _other);
+            return singleLevelHash(context).op_equal(context, _other);
         RubyMap other = (RubyMap) _other;
         if (this == other) return context.runtime.getTrue();
         if (!typeCompatible(other) || this.table.size() != other.table.size())
@@ -214,7 +221,7 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject inspect() {
-        return toHash(getRuntime().getCurrentContext()).inspect();
+        return singleLevelHash(getRuntime().getCurrentContext()).inspect();
     }
 
     /*
@@ -231,7 +238,7 @@ public class RubyMap extends RubyObject {
                 digest.update((byte) key.hashCode());
                 digest.update((byte) table.get(key).hashCode());
             }
-            return context.runtime.newString(new ByteList(digest.digest()));
+            return context.runtime.newFixnum(ByteBuffer.wrap(digest.digest()).getLong());
         } catch (NoSuchAlgorithmException ignore) {
             return context.runtime.newFixnum(System.identityHashCode(table));
         }
@@ -267,8 +274,9 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject clear(ThreadContext context) {
+        checkFrozen();
         table.clear();
-        return context.runtime.getNil();
+        return context.nil;
     }
 
     /*
@@ -284,7 +292,7 @@ public class RubyMap extends RubyObject {
         for (IRubyObject key : table.keySet()) {
             block.yieldSpecific(context, key, table.get(key));
         }
-        return context.runtime.getNil();
+        return context.nil;
     }
 
     /*
@@ -296,6 +304,7 @@ public class RubyMap extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject delete(ThreadContext context, IRubyObject key) {
+        checkFrozen();
         return table.remove(key);
     }
 
@@ -340,7 +349,20 @@ public class RubyMap extends RubyObject {
 
     @JRubyMethod(name = "to_h")
     public RubyHash toHash(ThreadContext context) {
-        return RubyHash.newHash(context.runtime, table, context.runtime.getNil());
+        Map<IRubyObject, IRubyObject> mapForHash = new HashMap();
+
+        table.forEach((key, value) -> {
+            if (!value.isNil()) {
+                if (value.respondsTo("to_h")) {
+                    value = Helpers.invoke(context, value, "to_h");
+                } else if (value.respondsTo("to_a")) {
+                    value = Helpers.invoke(context, value, "to_a");
+                }
+                mapForHash.put(key, value);
+            }
+        });
+
+        return RubyHash.newHash(context.runtime, mapForHash, context.nil);
     }
 
     // Used by Google::Protobuf.deep_copy but not exposed directly.
@@ -361,16 +383,16 @@ public class RubyMap extends RubyObject {
         return newMap;
     }
 
-    protected List<DynamicMessage> build(ThreadContext context, RubyDescriptor descriptor) {
+    protected List<DynamicMessage> build(ThreadContext context, RubyDescriptor descriptor, int depth) {
         List<DynamicMessage> list = new ArrayList<DynamicMessage>();
         RubyClass rubyClass = (RubyClass) descriptor.msgclass(context);
-        Descriptors.FieldDescriptor keyField = descriptor.lookup("key").getFieldDef();
-        Descriptors.FieldDescriptor valueField = descriptor.lookup("value").getFieldDef();
+        FieldDescriptor keyField = descriptor.getField("key");
+        FieldDescriptor valueField = descriptor.getField("value");
         for (IRubyObject key : table.keySet()) {
             RubyMessage mapMessage = (RubyMessage) rubyClass.newInstance(context, Block.NULL_BLOCK);
             mapMessage.setField(context, keyField, key);
             mapMessage.setField(context, valueField, table.get(key));
-            list.add(mapMessage.build(context));
+            list.add(mapMessage.build(context, depth + 1));
         }
         return list;
     }
@@ -380,13 +402,16 @@ public class RubyMap extends RubyObject {
             ((RubyHash) hashmap).visitAll(new RubyHash.Visitor() {
                 @Override
                 public void visit(IRubyObject key, IRubyObject val) {
+                    if (val instanceof RubyHash && !valueTypeClass.isNil()) {
+                        val = ((RubyClass) valueTypeClass).newInstance(context, val, Block.NULL_BLOCK);
+                    }
                     indexSet(context, key, val);
                 }
             });
         } else if (hashmap instanceof RubyMap) {
             RubyMap other = (RubyMap) hashmap;
             if (!typeCompatible(other)) {
-                throw context.runtime.newTypeError("Attempt to merge Map with mismatching types");
+                throw Utils.createTypeError(context, "Attempt to merge Map with mismatching types");
             }
         } else {
             throw context.runtime.newTypeError("Unknown type merging into Map");
@@ -417,7 +442,15 @@ public class RubyMap extends RubyObject {
         return newMap;
     }
 
-    private boolean needTypeclass(Descriptors.FieldDescriptor.Type type) {
+    /*
+     * toHash calls toHash on values, for some camparisons we only need
+     * a hash with the original objects still as values
+     */
+    private RubyHash singleLevelHash(ThreadContext context) {
+        return RubyHash.newHash(context.runtime, table, context.nil);
+    }
+
+    private boolean needTypeclass(FieldDescriptor.Type type) {
         switch(type) {
             case MESSAGE:
             case ENUM:
@@ -427,8 +460,9 @@ public class RubyMap extends RubyObject {
         }
     }
 
-    private Descriptors.FieldDescriptor.Type keyType;
-    private Descriptors.FieldDescriptor.Type valueType;
+    private FieldDescriptor.Type keyType;
+    private FieldDescriptor.Type valueType;
     private IRubyObject valueTypeClass;
     private Map<IRubyObject, IRubyObject> table;
+    private boolean keyTypeIsString = false;
 }

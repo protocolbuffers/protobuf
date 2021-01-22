@@ -34,7 +34,6 @@ syntax = "proto2";
 
 package google.protobuf.python.internal;
 
-
 enum Factory1Enum {
   FACTORY_1_VALUE_0 = 0;
   FACTORY_1_VALUE_1 = 1;
@@ -67,6 +66,5 @@ message Factory1MethodResponse {
 
 service Factory1Service {
   // Dummy method for this dummy service.
-  rpc Factory1Method(Factory1MethodRequest) returns (Factory1MethodResponse) {
-  }
+  rpc Factory1Method(Factory1MethodRequest) returns (Factory1MethodResponse) {}
 }

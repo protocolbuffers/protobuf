@@ -208,7 +208,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   bool DoneWithCheck(const char** ptr, int d) {
     GOOGLE_DCHECK(*ptr);
     if (PROTOBUF_PREDICT_TRUE(*ptr < limit_end_)) return false;
-    int overrun = *ptr - buffer_end_;
+    int overrun = static_cast<int>(*ptr - buffer_end_);
     GOOGLE_DCHECK_LE(overrun, kSlopBytes);  // Guaranteed by parse loop.
     if (overrun ==
         limit_) {  //  No need to flip buffers if we ended on a limit.
@@ -347,8 +347,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* AppendUntilEnd(const char* ptr, const A& append) {
     if (ptr - buffer_end_ > limit_) return nullptr;
     while (limit_ > kSlopBytes) {
-      int chunk_size = buffer_end_ + kSlopBytes - ptr;
-      GOOGLE_DCHECK_GE(chunk_size, 0);
+      size_t chunk_size = buffer_end_ + kSlopBytes - ptr;
+      GOOGLE_DCHECK_GE(chunk_size, static_cast<size_t>(0));
       append(ptr, chunk_size);
       ptr = Next();
       if (ptr == nullptr) return limit_end_;
@@ -401,7 +401,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   const char* ParseMessage(Message* msg, const char* ptr);
 
   template <typename T>
-  PROTOBUF_MUST_USE_RESULT PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
       T* msg, const char* ptr, uint32 tag) {
     if (--depth_ < 0) return nullptr;
     group_depth_++;
@@ -428,7 +428,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 template <uint32 tag>
 bool ExpectTag(const char* ptr) {
   if (tag < 128) {
-    return *ptr == tag;
+    return *ptr == static_cast<char>(tag);
   } else {
     static_assert(tag < 128 * 128, "We only expect tags for 1 or 2 bytes");
     char buf[2] = {static_cast<char>(tag | 0x80), static_cast<char>(tag >> 7)};

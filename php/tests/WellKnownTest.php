@@ -86,31 +86,28 @@ class WellKnownTest extends TestBase {
         $this->assertFalse($any->is(Any::class));
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testAnyUnpackInvalidTypeUrl()
     {
+        $this->expectException(Exception::class);
+
         $any = new Any();
         $any->setTypeUrl("invalid");
         $any->unpack();
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testAnyUnpackMessageNotAdded()
     {
+        $this->expectException(Exception::class);
+
         $any = new Any();
         $any->setTypeUrl("type.googleapis.com/MessageNotAdded");
         $any->unpack();
     }
 
-    /**
-     * @expectedException Exception
-     */
     public function testAnyUnpackDecodeError()
     {
+        $this->expectException(Exception::class);
+
         $any = new Any();
         $any->setTypeUrl("type.googleapis.com/foo.TestMessage");
         $any->setValue("abc");

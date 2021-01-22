@@ -209,9 +209,6 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
 std::string FieldMessageTypeName(const FieldDescriptor* field,
                                  const Options& options);
 
-// Strips ".proto" or ".protodevel" from the end of a filename.
-PROTOC_EXPORT std::string StripProto(const std::string& filename);
-
 // Get the C++ type name for a primitive type (e.g. "double", "::google::protobuf::int32", etc.).
 const char* PrimitiveTypeName(FieldDescriptor::CppType type);
 std::string PrimitiveTypeName(const Options& options,
@@ -542,7 +539,6 @@ struct MessageAnalysis {
   bool contains_cord;
   bool contains_extension;
   bool contains_required;
-  bool constructor_requires_initialization;
 };
 
 // This class is used in FileGenerator, to ensure linear instead of
@@ -579,16 +575,6 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
   Options options_;
   std::map<const SCC*, MessageAnalysis> analysis_cache_;
 };
-
-inline std::string SccInfoSymbol(const SCC* scc, const Options& options) {
-  return UniqueName("scc_info_" + ClassName(scc->GetRepresentative()),
-                    scc->GetRepresentative(), options);
-}
-
-inline std::string SccInfoPtrSymbol(const SCC* scc, const Options& options) {
-  return UniqueName("scc_info_ptr_" + ClassName(scc->GetRepresentative()),
-                    scc->GetRepresentative(), options);
-}
 
 void ListAllFields(const Descriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
@@ -883,6 +869,8 @@ inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 void GenerateParserLoop(const Descriptor* descriptor, int num_hasbits,
                         const Options& options,
                         MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
+
+PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
 }  // namespace cpp
 }  // namespace compiler

@@ -271,7 +271,7 @@ class Api extends \Google\Protobuf\Internal\Message
      * message.
      *
      * Generated from protobuf field <code>.google.protobuf.SourceContext source_context = 5;</code>
-     * @return \Google\Protobuf\SourceContext
+     * @return \Google\Protobuf\SourceContext|null
      */
     public function getSourceContext()
     {

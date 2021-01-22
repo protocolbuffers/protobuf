@@ -89,6 +89,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Benchmarks/BenchmarkDatasetConfig.cs            \
   csharp/src/Google.Protobuf.Benchmarks/BenchmarkMessage1Proto3.cs           \
   csharp/src/Google.Protobuf.Benchmarks/Benchmarks.cs                        \
+  csharp/src/Google.Protobuf.Benchmarks/ByteStringBenchmark.cs               \
   csharp/src/Google.Protobuf.Benchmarks/Google.Protobuf.Benchmarks.csproj    \
   csharp/src/Google.Protobuf.Benchmarks/GoogleMessageBenchmark.cs            \
   csharp/src/Google.Protobuf.Benchmarks/ParseMessagesBenchmark.cs            \
@@ -171,6 +172,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.sln                                             \
   csharp/src/Google.Protobuf/ByteArray.cs                                    \
   csharp/src/Google.Protobuf/ByteString.cs                                   \
+  csharp/src/Google.Protobuf/ByteStringAsync.cs                              \
   csharp/src/Google.Protobuf/CodedInputStream.cs                             \
   csharp/src/Google.Protobuf/CodedOutputStream.ComputeSize.cs                \
   csharp/src/Google.Protobuf/CodedOutputStream.cs                            \
@@ -268,7 +270,8 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WriteContext.cs                                 \
   csharp/src/Google.Protobuf/WriteBufferHelper.cs                            \
   csharp/src/Google.Protobuf/UnknownField.cs                                 \
-  csharp/src/Google.Protobuf/UnknownFieldSet.cs
+  csharp/src/Google.Protobuf/UnknownFieldSet.cs                              \
+  csharp/src/Google.Protobuf/UnsafeByteOperations.cs
 
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \
@@ -772,13 +775,11 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/arena.h                                     \
   php/ext/google/protobuf/array.c                                     \
   php/ext/google/protobuf/array.h                                     \
-  php/ext/google/protobuf/bundled_php.h                               \
   php/ext/google/protobuf/config.m4                                   \
   php/ext/google/protobuf/convert.c                                   \
   php/ext/google/protobuf/convert.h                                   \
   php/ext/google/protobuf/def.c                                       \
   php/ext/google/protobuf/def.h                                       \
-  php/ext/google/protobuf/make-preload.php                            \
   php/ext/google/protobuf/map.c                                       \
   php/ext/google/protobuf/map.h                                       \
   php/ext/google/protobuf/message.c                                   \
@@ -790,8 +791,10 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/php-upb.h                                   \
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
+  php/ext/google/protobuf/wkt.inc                                     \
   php/generate_descriptor_protos.sh                                   \
   php/phpunit.xml                                                     \
+  php/prepare_c_extension.sh                                          \
   php/release.sh                                                      \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
   php/src/GPBMetadata/Google/Protobuf/Api.php                         \
@@ -827,6 +830,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/GPBEmpty.php                                \
   php/src/Google/Protobuf/Int32Value.php                              \
   php/src/Google/Protobuf/Int64Value.php                              \
+  php/src/Google/Protobuf/Internal/AnyBase.php                        \
   php/src/Google/Protobuf/Internal/CodedInputStream.php               \
   php/src/Google/Protobuf/Internal/CodedOutputStream.php              \
   php/src/Google/Protobuf/Internal/Descriptor.php                     \
@@ -886,6 +890,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/ServiceOptions.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo/Location.php        \
+  php/src/Google/Protobuf/Internal/TimestampBase.php                  \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/Google/Protobuf/Internal/UninterpretedOption/NamePart.php   \
   php/src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php \
@@ -1110,13 +1115,15 @@ ruby_EXTRA_DIST=                                                             \
   ruby/src/main/java/com/google/protobuf/jruby/RubyBuilder.java              \
   ruby/src/main/java/com/google/protobuf/jruby/RubyDescriptor.java           \
   ruby/src/main/java/com/google/protobuf/jruby/RubyDescriptorPool.java       \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyEnum.java                 \
   ruby/src/main/java/com/google/protobuf/jruby/RubyEnumBuilderContext.java   \
   ruby/src/main/java/com/google/protobuf/jruby/RubyEnumDescriptor.java       \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyEnum.java                 \
   ruby/src/main/java/com/google/protobuf/jruby/RubyFieldDescriptor.java      \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyFileBuilderContext.java   \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyFileDescriptor.java       \
   ruby/src/main/java/com/google/protobuf/jruby/RubyMap.java                  \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyMessageBuilderContext.java \
   ruby/src/main/java/com/google/protobuf/jruby/RubyMessage.java              \
+  ruby/src/main/java/com/google/protobuf/jruby/RubyMessageBuilderContext.java \
   ruby/src/main/java/com/google/protobuf/jruby/RubyOneofBuilderContext.java  \
   ruby/src/main/java/com/google/protobuf/jruby/RubyOneofDescriptor.java      \
   ruby/src/main/java/com/google/protobuf/jruby/RubyProtobuf.java             \
@@ -1390,6 +1397,8 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   python/release/wheel/README.md         \
   third_party/six.BUILD                  \
   third_party/zlib.BUILD                 \
+  third_party/wyhash/LICENSE             \
+  third_party/wyhash/wyhash.h            \
   util/python/BUILD
 
 

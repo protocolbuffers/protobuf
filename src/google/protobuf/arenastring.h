@@ -51,6 +51,9 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+template <typename T>
+class ExplicitlyConstructed;
+
 // Lazy string instance to support string fields with non-empty default.
 // These are initialized on the first call to .get().
 class PROTOBUF_EXPORT LazyString {
@@ -88,8 +91,8 @@ template <typename T>
 class TaggedPtr {
  public:
   TaggedPtr() = default;
-  explicit constexpr TaggedPtr(const std::string* ptr)
-      : ptr_(const_cast<std::string*>(ptr)) {}
+  explicit constexpr TaggedPtr(const ExplicitlyConstructed<std::string>* ptr)
+      : ptr_(const_cast<ExplicitlyConstructed<std::string>*>(ptr)) {}
 
   void SetTagged(T* p) {
     Set(p);
@@ -171,7 +174,8 @@ static_assert(std::is_trivial<TaggedPtr<std::string>>::value,
 // requires the String tag to be 0 so we can avoid the mask before comparing.)
 struct PROTOBUF_EXPORT ArenaStringPtr {
   ArenaStringPtr() = default;
-  explicit constexpr ArenaStringPtr(const std::string* default_value)
+  explicit constexpr ArenaStringPtr(
+      const ExplicitlyConstructed<std::string>* default_value)
       : tagged_ptr_(default_value) {}
 
   // Some methods below are overloaded on a `default_value` and on tags.
@@ -191,11 +195,11 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   void Set(NonEmptyDefault, std::string&& value, ::google::protobuf::Arena* arena);
 
   // Basic accessors.
-  const std::string& Get() const PROTOBUF_ALWAYS_INLINE {
+  const std::string& Get() const PROTOBUF_NDEBUG_INLINE {
     // Unconditionally mask away the tag.
     return *tagged_ptr_.Get();
   }
-  const std::string* GetPointer() const PROTOBUF_ALWAYS_INLINE {
+  const std::string* GetPointer() const PROTOBUF_NDEBUG_INLINE {
     // Unconditionally mask away the tag.
     return tagged_ptr_.Get();
   }
@@ -224,7 +228,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
   inline void Swap(ArenaStringPtr* other, const std::string* default_value,
-                   Arena* arena) PROTOBUF_ALWAYS_INLINE;
+                   Arena* arena) PROTOBUF_NDEBUG_INLINE;
 
   // Frees storage (if not on an arena).
   void Destroy(const std::string* default_value, ::google::protobuf::Arena* arena);
@@ -329,6 +333,8 @@ inline void ArenaStringPtr::Swap(ArenaStringPtr* other,
     this_ptr->swap(*other_ptr);
   }
 #else
+  (void)default_value;
+  (void)arena;
   std::swap(tagged_ptr_, other->tagged_ptr_);
 #endif
 }

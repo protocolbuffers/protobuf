@@ -37,13 +37,15 @@
 //
 // Aug. 2008: Added Unknown Fields Comparison for messages.
 // Aug. 2009: Added different options to compare repeated fields.
-// Apr. 2010: Moved field comparison to FieldComparator.
+// Apr. 2010: Moved field comparison to FieldComparator
+// Sep. 2020: Added option to output map keys in path
 
 #ifndef GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 #define GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -204,6 +206,20 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // reporting an addition or deletion.
     int unknown_field_index1 = -1;
     int unknown_field_index2 = -1;
+  };
+
+  // Class for processing Any deserialization.  This logic is used by both the
+  // MessageDifferencer and StreamReporter classes.
+  class UnpackAnyField {
+   private:
+    std::unique_ptr<DynamicMessageFactory> dynamic_message_factory_;
+
+   public:
+    UnpackAnyField() = default;
+    ~UnpackAnyField() = default;
+    // If "any" is of type google.protobuf.Any, extract its payload using
+    // DynamicMessageFactory and store in "data".
+    bool UnpackAny(const Message& any, std::unique_ptr<Message>* data);
   };
 
   // Abstract base class from which all MessageDifferencer
@@ -652,6 +668,10 @@ class PROTOBUF_EXPORT MessageDifferencer {
         const Message& message1, const Message& message2,
         const std::vector<SpecificField>& field_path) override;
 
+    // Messages that are being compared must be provided to StreamReporter prior
+    // to processing
+    void SetMessages(const Message& message1, const Message& message2);
+
    protected:
     // Prints the specified path of fields to the buffer.  message is used to
     // print map keys.
@@ -677,11 +697,18 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // Just print a string
     void Print(const std::string& str);
 
+    // helper function for PrintPath that contains logic for printing maps
+    void PrintMapKey(const std::vector<SpecificField>& field_path,
+                     bool left_side, const SpecificField& specific_field,
+                     size_t target_field_index);
+
    private:
     io::Printer* printer_;
     bool delete_printer_;
     bool report_modified_aggregates_;
-
+    const Message* message1_;
+    const Message* message2_;
+    MessageDifferencer::UnpackAnyField unpack_any_field_;
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StreamReporter);
   };
 
@@ -848,10 +875,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
       const std::vector<SpecificField>& parent_fields,
       std::vector<int>* match_list1, std::vector<int>* match_list2);
 
-  // If "any" is of type google.protobuf.Any, extract its payload using
-  // DynamicMessageFactory and store in "data".
-  bool UnpackAny(const Message& any, std::unique_ptr<Message>* data);
-
   // Checks if index is equal to new_index in all the specific fields.
   static bool CheckPathChanged(const std::vector<SpecificField>& parent_fields);
 
@@ -904,7 +927,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   std::function<void(std::vector<int>*, std::vector<int>*)>
       match_indices_for_smart_list_callback_;
 
-  std::unique_ptr<DynamicMessageFactory> dynamic_message_factory_;
+  MessageDifferencer::UnpackAnyField unpack_any_field_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageDifferencer);
 };
 

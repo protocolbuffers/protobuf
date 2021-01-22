@@ -37,9 +37,13 @@ sudo rm -rf \
 sudo rm -rf \
     /usr/local/bin/2to3* \
     /usr/local/bin/idle3* \
+    /usr/local/bin/pip3 \
     /usr/local/bin/pydoc3* \
     /usr/local/bin/python3* \
     /usr/local/bin/pyvenv*
+
+git -C /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core fetch --unshallow
+git -C /usr/local/Homebrew/Library/Taps/homebrew/homebrew-cask fetch --unshallow
 
 brew update
 brew upgrade
@@ -76,5 +80,5 @@ if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
   curl -sSL https://rvm.io/mpapis.asc | gpg --import -
   curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
 
-  curl -sSL https://get.rvm.io | bash -s stable --ruby
+  curl -sSL https://get.rvm.io | bash -s master --ruby
 fi

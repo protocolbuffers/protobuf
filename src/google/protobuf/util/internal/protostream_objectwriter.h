@@ -48,6 +48,7 @@
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/port_def.inc>
@@ -156,7 +157,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
  protected:
   // Function that renders a well known type with modified behavior.
   typedef util::Status (*TypeRenderer)(ProtoStreamObjectWriter*,
-                                         const DataPiece&);
+                                       const DataPiece&);
 
   // Handles writing Anys out using nested object writers and the like.
   class PROTOBUF_EXPORT AnyWriter {
@@ -365,24 +366,24 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // Renders google.protobuf.Value in struct.proto. It picks the right oneof
   // type based on value's type.
   static util::Status RenderStructValue(ProtoStreamObjectWriter* ow,
-                                          const DataPiece& data);
+                                        const DataPiece& data);
 
   // Renders google.protobuf.Timestamp value.
   static util::Status RenderTimestamp(ProtoStreamObjectWriter* ow,
-                                        const DataPiece& data);
+                                      const DataPiece& data);
 
   // Renders google.protobuf.FieldMask value.
   static util::Status RenderFieldMask(ProtoStreamObjectWriter* ow,
-                                        const DataPiece& data);
+                                      const DataPiece& data);
 
   // Renders google.protobuf.Duration value.
   static util::Status RenderDuration(ProtoStreamObjectWriter* ow,
-                                       const DataPiece& data);
+                                     const DataPiece& data);
 
   // Renders wrapper message types for primitive types in
   // google/protobuf/wrappers.proto.
   static util::Status RenderWrapperType(ProtoStreamObjectWriter* ow,
-                                          const DataPiece& data);
+                                        const DataPiece& data);
 
   static void InitRendererMap();
   static void DeleteRendererMap();

@@ -217,6 +217,12 @@ void PrimitiveFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   }
 }
 
+void PrimitiveFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("$name$_($default$)");
+}
+
 // ===================================================================
 
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
@@ -468,6 +474,16 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
   }
   format.Outdent();
   format("}\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("$name$_()");
+  if (descriptor_->is_packed() &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
+    format("\n, _$name$_cached_byte_size_()");
+  }
 }
 
 }  // namespace cpp

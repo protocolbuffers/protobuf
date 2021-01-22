@@ -51,6 +51,12 @@ if RUBY_PLATFORM == "java"
     system("mvn --batch-mode package")
   end
 else
+  unless ENV['IN_DOCKER'] == 'true'
+    # We need wyhash in-tree.
+    FileUtils.mkdir_p("ext/google/protobuf_c/third_party/wyhash")
+    FileUtils.cp("../third_party/wyhash/wyhash.h", "ext/google/protobuf_c/third_party/wyhash/wyhash.h")
+  end
+
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
     unless RUBY_PLATFORM =~ /darwin/
       # TODO: also set "no_native to true" for mac if possible. As is,
@@ -73,7 +79,7 @@ else
     ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=2.7.0:2.6.0:2.5.0:2.4.0:2.3.0
+        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.0:2.4.0:2.3.0
       EOT
     end
   end
@@ -81,7 +87,7 @@ else
   if RUBY_PLATFORM =~ /darwin/
     task 'gem:native' do
       system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=2.7.0:2.6.0:2.5.1:2.4.0:2.3.0"
+      system "rake cross native gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.1:2.4.0:2.3.0"
     end
   else
     task 'gem:native' => [:genproto, 'gem:windows']
@@ -98,7 +104,9 @@ genproto_output << "tests/test_ruby_package.rb"
 genproto_output << "tests/test_ruby_package_proto2.rb"
 genproto_output << "tests/basic_test.rb"
 genproto_output << "tests/basic_test_proto2.rb"
+genproto_output << "tests/multi_level_nesting_test.rb"
 genproto_output << "tests/wrappers.rb"
+
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
   sh "../src/protoc --ruby_out=. tests/generated_code.proto"
 end
@@ -129,6 +137,10 @@ end
 
 file "tests/basic_test_proto2.rb" => "tests/basic_test_proto2.proto" do |file_task|
   sh "../src/protoc -I../src -I. --ruby_out=. tests/basic_test_proto2.proto"
+end
+
+file "tests/multi_level_nesting_test.rb" => "tests/multi_level_nesting_test.proto" do |file_task|
+  sh "../src/protoc -I../src -I. --ruby_out=. tests/multi_level_nesting_test.proto"
 end
 
 file "tests/wrappers.rb" => "../src/google/protobuf/wrappers.proto" do |file_task|

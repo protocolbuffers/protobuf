@@ -64,8 +64,6 @@ namespace protobuf {
 namespace internal {
 
 // Forward declare static functions
-static size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
-                                     const MapKey& value);
 static size_t MapValueRefDataOnlyByteSize(const FieldDescriptor* field,
                                           const MapValueConstRef& value);
 
@@ -1061,9 +1059,9 @@ uint8* WireFormat::_InternalSerialize(const Message& message, uint8* target,
   }
 }
 
-static uint8* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
-                                             const MapKey& value, uint8* target,
-                                             io::EpsCopyOutputStream* stream) {
+uint8* SerializeMapKeyWithCachedSizes(const FieldDescriptor* field,
+                                      const MapKey& value, uint8* target,
+                                      io::EpsCopyOutputStream* stream) {
   target = stream->EnsureSpace(target);
   switch (field->type()) {
     case FieldDescriptor::TYPE_DOUBLE:
@@ -1524,8 +1522,8 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
   return our_size;
 }
 
-static size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
-                                     const MapKey& value) {
+size_t MapKeyDataOnlyByteSize(const FieldDescriptor* field,
+                              const MapKey& value) {
   GOOGLE_DCHECK_EQ(FieldDescriptor::TypeToCppType(field->type()), value.type());
   switch (field->type()) {
     case FieldDescriptor::TYPE_DOUBLE:

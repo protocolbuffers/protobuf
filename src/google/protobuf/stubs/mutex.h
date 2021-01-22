@@ -125,11 +125,11 @@ class GOOGLE_PROTOBUF_CAPABILITY("mutex") PROTOBUF_EXPORT WrappedMutex {
 
  private:
 #if defined(GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP)
-  CallOnceInitializedMutex<CriticalSectionLock> mu_;
+  CallOnceInitializedMutex<CriticalSectionLock> mu_{};
 #elif defined(_MSC_VER)
-  CallOnceInitializedMutex<std::mutex> mu_;
+  CallOnceInitializedMutex<std::mutex> mu_{};
 #else
-  std::mutex mu_;
+  std::mutex mu_{};
 #endif
 };
 

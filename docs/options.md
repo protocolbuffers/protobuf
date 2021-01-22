@@ -252,3 +252,11 @@ with info about your project (name and website) so we can add an entry for you.
 1. Confluent Schema Registry
    * Website: https://github.com/confluentinc/schema-registry
    * Extensions: 1088
+   
+1. ScalaPB Validate
+   * Website: https://scalapb.github.io/docs/validation
+   * Extension: 1089
+   
+1. Astounding (Currently Private)
+   * Website: https://github.com/PbPipes/Astounding 
+   * Extension: 1090

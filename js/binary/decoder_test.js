@@ -315,6 +315,9 @@ describe('binaryDecoderTest', function() {
         // 64-bit extremes, not in dev guide.
         {original: '9223372036854775807', zigzag: '18446744073709551614'},
         {original: '-9223372036854775808', zigzag: '18446744073709551615'},
+        // None of the above catch: bitsLow < 0 && bitsHigh > 0 && bitsHigh <
+        // 0x1FFFFF. The following used to be broken.
+        {original: '72000000000', zigzag: '144000000000'},
       ];
       var encoder = new jspb.BinaryEncoder();
       testCases.forEach(function(c) {

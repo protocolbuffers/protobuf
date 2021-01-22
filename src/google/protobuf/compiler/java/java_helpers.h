@@ -96,9 +96,6 @@ std::string CamelCaseFieldName(const FieldDescriptor* field);
 // outermost file scope.
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor);
 
-// Strips ".proto" or ".protodevel" from the end of a filename.
-std::string StripProto(const std::string& filename);
-
 // Gets the unqualified class name for the file.  For each .proto file, there
 // will be one Java class containing all the immutable messages and another
 // Java class containing all the mutable messages.
@@ -106,20 +103,10 @@ std::string StripProto(const std::string& filename);
 std::string FileClassName(const FileDescriptor* file, bool immutable = true);
 
 // Returns the file's Java package name.
-std::string FileJavaPackage(const FileDescriptor* file);
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable);
 
 // Returns output directory for the given package name.
 std::string JavaPackageToDir(std::string package_name);
-
-// TODO(xiaofeng): the following methods are kept for they are exposed
-// publicly in //net/proto2/compiler/java/public/names.h. They return
-// immutable names only and should be removed after mutable API is
-// integrated into google3.
-std::string ClassName(const Descriptor* descriptor);
-std::string ClassName(const EnumDescriptor* descriptor);
-std::string ClassName(const ServiceDescriptor* descriptor);
-std::string ClassName(const FileDescriptor* descriptor);
 
 // Comma-separate list of option-specified interfaces implemented by the
 // Message, to follow the "implements" declaration of the Message definition.
@@ -360,24 +347,22 @@ inline bool IsProto2(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
-inline bool SupportFieldPresence(const FieldDescriptor* descriptor) {
-  // Note that while proto3 oneofs do conceptually support present, we return
-  // false for them because they do not offer a public hazzer. Therefore this
-  // method could be named HasHazzer().
-  return !descriptor->is_repeated() &&
-         (descriptor->message_type() || descriptor->has_optional_keyword() ||
-          IsProto2(descriptor->file()));
-}
-
 inline bool IsRealOneof(const FieldDescriptor* descriptor) {
   return descriptor->containing_oneof() &&
          !descriptor->containing_oneof()->is_synthetic();
+}
+
+inline bool HasHazzer(const FieldDescriptor* descriptor) {
+  return !descriptor->is_repeated() &&
+         (descriptor->message_type() || descriptor->has_optional_keyword() ||
+          IsProto2(descriptor->file()) || IsRealOneof(descriptor));
 }
 
 inline bool HasHasbit(const FieldDescriptor* descriptor) {
   // Note that currently message fields inside oneofs have hasbits. This is
   // surprising, as the oneof case should avoid any need for a hasbit. But if
   // you change this method to remove hasbits for oneofs, a few tests fail.
+  // TODO(b/124347790): remove hasbits for oneofs
   return !descriptor->is_repeated() &&
          (descriptor->has_optional_keyword() || IsProto2(descriptor->file()));
 }

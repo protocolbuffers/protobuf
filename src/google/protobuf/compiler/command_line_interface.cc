@@ -234,7 +234,7 @@ bool IsInstalledProtoPath(const std::string& path) {
 // Add the paths where google/protobuf/descriptor.proto and other well-known
 // type protos are installed.
 void AddDefaultProtoPaths(
-    std::vector<std::pair<std::string, std::string> >* paths) {
+    std::vector<std::pair<std::string, std::string>>* paths) {
   // TODO(xiaofeng): The code currently only checks relative paths of where
   // the protoc binary is installed. We probably should make it handle more
   // cases than that.

@@ -968,6 +968,10 @@ PHP_METHOD(Message, readOneof) {
                      (int)field_num);
   }
 
+  if (upb_fielddef_issubmsg(f) && !upb_msg_has(intern->msg, f)) {
+    RETURN_NULL();
+  }
+
   {
     upb_msgval msgval = upb_msg_get(intern->msg, f);
     const Descriptor *subdesc = Descriptor_GetFromFieldDef(f);
@@ -1020,9 +1024,6 @@ PHP_METHOD(Message, writeOneof) {
 
   upb_msg_set(intern->msg, f, msgval, arena);
 }
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_void, 0, 0, 0)
-ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFrom, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
@@ -1106,7 +1107,7 @@ PHP_METHOD(google_protobuf_Any, unpack) {
   if (!TryStripUrlPrefix(&type_url)) {
     zend_throw_exception(
         NULL, "Type url needs to be type.googleapis.com/fully-qualified",
-        0 TSRMLS_CC);
+        0);
     return;
   }
 
@@ -1115,7 +1116,7 @@ PHP_METHOD(google_protobuf_Any, unpack) {
   if (m == NULL) {
     zend_throw_exception(
         NULL, "Specified message in any hasn't been added to descriptor pool",
-        0 TSRMLS_CC);
+        0);
     return;
   }
 
@@ -1149,7 +1150,7 @@ PHP_METHOD(google_protobuf_Any, pack) {
   const char *full_name;
   char *buf;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "o", &val) ==
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "o", &val) ==
       FAILURE) {
     return;
   }
@@ -1182,7 +1183,7 @@ PHP_METHOD(google_protobuf_Any, is) {
   zend_class_entry *klass = NULL;
   const upb_msgdef *m;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "C", &klass) ==
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "C", &klass) ==
       FAILURE) {
     return;
   }
@@ -1209,7 +1210,7 @@ PHP_METHOD(google_protobuf_Timestamp, fromDateTime) {
     return;
   }
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &datetime,
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "O", &datetime,
                             date_interface_ce) == FAILURE) {
     zend_error(E_USER_ERROR, "Expect DatetimeInterface.");
     return;
@@ -1326,7 +1327,11 @@ void Message_ModuleInit() {
 
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
   h->dtor_obj = Message_dtor;
+#if PHP_VERSION_ID < 80000
   h->compare_objects = Message_compare_objects;
+#else
+  h->compare = Message_compare_objects;
+#endif
   h->read_property = Message_read_property;
   h->write_property = Message_write_property;
   h->has_property = Message_has_property;

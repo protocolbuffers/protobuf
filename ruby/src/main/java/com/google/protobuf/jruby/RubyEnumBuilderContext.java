@@ -32,9 +32,11 @@
 
 package com.google.protobuf.jruby;
 
+import com.google.protobuf.DescriptorProtos.EnumDescriptorProto;
 import org.jruby.Ruby;
 import org.jruby.RubyClass;
 import org.jruby.RubyModule;
+import org.jruby.RubyNumeric;
 import org.jruby.RubyObject;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
@@ -45,14 +47,14 @@ import org.jruby.runtime.builtin.IRubyObject;
 @JRubyClass(name = "EnumBuilderContext")
 public class RubyEnumBuilderContext extends RubyObject {
     public static void createRubyEnumBuilderContext(Ruby runtime) {
-        RubyModule protobuf = runtime.getClassFromPath("Google::Protobuf");
-        RubyClass cMessageBuilderContext = protobuf.defineClassUnder("EnumBuilderContext", runtime.getObject(), new ObjectAllocator() {
+        RubyModule internal = runtime.getClassFromPath("Google::Protobuf::Internal");
+        RubyClass cEnumBuilderContext = internal.defineClassUnder("EnumBuilderContext", runtime.getObject(), new ObjectAllocator() {
             @Override
             public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
                 return new RubyEnumBuilderContext(runtime, klazz);
             }
         });
-        cMessageBuilderContext.defineAnnotatedMethods(RubyEnumBuilderContext.class);
+        cEnumBuilderContext.defineAnnotatedMethods(RubyEnumBuilderContext.class);
     }
 
     public RubyEnumBuilderContext(Ruby ruby, RubyClass klazz) {
@@ -60,8 +62,12 @@ public class RubyEnumBuilderContext extends RubyObject {
     }
 
     @JRubyMethod
-    public IRubyObject initialize(ThreadContext context, IRubyObject enumDescriptor) {
-        this.enumDescriptor = (RubyEnumDescriptor) enumDescriptor;
+    public IRubyObject initialize(ThreadContext context, IRubyObject fileBuilderContext, IRubyObject name) {
+        this.fileBuilderContext = (RubyFileBuilderContext) fileBuilderContext;
+        this.builder = this.fileBuilderContext.getNewEnumBuilder();
+        this.builder.setName(name.asJavaString());
+        this.builder.getOptionsBuilder().setAllowAlias(true);
+
         return this;
     }
 
@@ -74,9 +80,12 @@ public class RubyEnumBuilderContext extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject value(ThreadContext context, IRubyObject name, IRubyObject number) {
-        this.enumDescriptor.addValue(context, name, number);
-        return context.runtime.getNil();
+        this.builder.addValueBuilder()
+            .setName(name.asJavaString())
+            .setNumber(RubyNumeric.num2int(number));
+        return context.nil;
     }
 
-    private RubyEnumDescriptor enumDescriptor;
+    private EnumDescriptorProto.Builder builder;
+    private RubyFileBuilderContext fileBuilderContext;
 }

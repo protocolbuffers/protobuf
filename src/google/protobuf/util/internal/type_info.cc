@@ -37,10 +37,10 @@
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/status.h>
+#include <google/protobuf/stubs/statusor.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/statusor.h>
 
 namespace google {
 namespace protobuf {

@@ -209,7 +209,7 @@ bool TimeUtil::FromString(const std::string& value, Duration* duration) {
   // Parse the duration value as two integers rather than a float value
   // to avoid precision loss.
   std::string seconds_part, nanos_part;
-  size_t pos = value.find_last_of(".");
+  size_t pos = value.find_last_of('.');
   if (pos == std::string::npos) {
     seconds_part = value.substr(sign_length, value.length() - 1 - sign_length);
     nanos_part = "0";

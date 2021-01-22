@@ -441,6 +441,15 @@ build_ruby27() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.7.0 && cd ..
 }
+build_ruby30() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh ruby-3.0.0 && cd ..
+}
+
+build_jruby() {
+  internal_build_cpp  # For conformance tests.
+  cd ruby && bash travis-test.sh jruby-9.2.11.1 && cd ..
+}
 
 build_javascript() {
   internal_build_cpp
@@ -718,6 +727,7 @@ Usage: $0 { cpp |
             ruby25 |
             ruby26 |
             ruby27 |
+            ruby30 |
             jruby |
             ruby_all |
             php7.0   |
@@ -726,6 +736,7 @@ Usage: $0 { cpp |
             php7.1   |
             php7.1_c |
             php_all |
+            php8.0_all |
             dist_install |
             benchmark)
 "

@@ -46,6 +46,7 @@
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/stubs/status.h>
 
@@ -314,11 +315,11 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
  private:
   // Writes an ENUM field, including tag, to the stream.
   static util::Status WriteEnum(int field_number, const DataPiece& data,
-                                  const google::protobuf::Enum* enum_type,
-                                  io::CodedOutputStream* stream,
-                                  bool use_lower_camel_for_enums,
-                                  bool case_insensitive_enum_parsing,
-                                  bool ignore_unknown_values);
+                                const google::protobuf::Enum* enum_type,
+                                io::CodedOutputStream* stream,
+                                bool use_lower_camel_for_enums,
+                                bool case_insensitive_enum_parsing,
+                                bool ignore_unknown_values);
 
   // Variables for describing the structure of the input tree:
   // master_type_: descriptor for the whole protobuf message.

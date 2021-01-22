@@ -69,6 +69,13 @@ const zval *get_generated_pool();
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
 #endif
 
+ZEND_BEGIN_ARG_INFO(arginfo_void, 0)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
+  ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
 #define PHP_PROTOBUF_VERSION "3.14.0"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created

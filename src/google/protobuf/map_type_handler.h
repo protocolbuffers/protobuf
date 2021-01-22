@@ -569,7 +569,7 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
   }                                                                           \
   template <typename Type>                                                    \
   inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Clear(  \
-      TypeOnMemory* value, Arena* arena) {                                    \
+      TypeOnMemory* value, Arena* /* arena */) {                              \
     value->ClearToEmpty();                                                    \
   }                                                                           \
   template <typename Type>                                                    \
@@ -586,7 +586,7 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
   constexpr auto                                                              \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Constinit()         \
       ->TypeOnMemory {                                                        \
-    return TypeOnMemory(&internal::GetEmptyStringAlreadyInited());            \
+    return TypeOnMemory(&internal::fixed_address_empty_string);               \
   }                                                                           \
   template <typename Type>                                                    \
   inline typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,            \

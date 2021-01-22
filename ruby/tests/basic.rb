@@ -216,7 +216,7 @@ module BasicTest
         m.map_string_int32 = {}
       end
 
-      assert_raise TypeError do
+      assert_raise Google::Protobuf::TypeError do
         m = MapMessage.new(:map_string_int32 => { 1 => "I am not a number" })
       end
     end
@@ -241,8 +241,12 @@ module BasicTest
         :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
                             "b" => TestMessage2.new(:foo => 2)},
         :map_string_enum => {"a" => :A, "b" => :B})
-      expected = "<BasicTest::MapMessage: map_string_int32: {\"b\"=>2, \"a\"=>1}, map_string_msg: {\"b\"=><BasicTest::TestMessage2: foo: 2>, \"a\"=><BasicTest::TestMessage2: foo: 1>}, map_string_enum: {\"b\"=>:B, \"a\"=>:A}>"
-      assert_equal expected, m.inspect
+
+      # JRuby doesn't keep consistent ordering so check for either version
+      expected_a = "<BasicTest::MapMessage: map_string_int32: {\"b\"=>2, \"a\"=>1}, map_string_msg: {\"b\"=><BasicTest::TestMessage2: foo: 2>, \"a\"=><BasicTest::TestMessage2: foo: 1>}, map_string_enum: {\"b\"=>:B, \"a\"=>:A}>"
+      expected_b = "<BasicTest::MapMessage: map_string_int32: {\"a\"=>1, \"b\"=>2}, map_string_msg: {\"a\"=><BasicTest::TestMessage2: foo: 1>, \"b\"=><BasicTest::TestMessage2: foo: 2>}, map_string_enum: {\"a\"=>:A, \"b\"=>:B}>"
+      inspect_result = m.inspect
+      assert expected_a == inspect_result || expected_b == inspect_result, "Incorrect inspect result: #{inspect_result}"
     end
 
     def test_map_corruption
@@ -443,6 +447,7 @@ module BasicTest
         :optional_int32=>0,
         :optional_int64=>0,
         :optional_msg=>nil,
+        :optional_msg2=>nil,
         :optional_string=>"foo",
         :optional_uint32=>0,
         :optional_uint64=>0,
@@ -480,9 +485,9 @@ module BasicTest
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = {mapStringInt32: {a: 1}, mapStringMsg: {}, mapStringEnum: {}}
       expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}, map_string_enum: {}}
-      assert_equal JSON.parse(MapMessage.encode_json(m), :symbolize_names => true), expected
+      assert_equal JSON.parse(MapMessage.encode_json(m, :emit_defaults=>true), :symbolize_names => true), expected
 
-      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
+      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true, :emit_defaults=>true)
       assert_equal JSON.parse(json, :symbolize_names => true), expected_preserve
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
@@ -492,12 +497,36 @@ module BasicTest
     def test_json_maps_emit_defaults_submsg
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
-      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new})
+      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new(foo: 0)})
       expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}, mapStringEnum: {}}
 
       actual = MapMessage.encode_json(m, :emit_defaults => true)
 
       assert_equal JSON.parse(actual, :symbolize_names => true), expected
+    end
+
+    def test_json_emit_defaults_submsg
+      # TODO: Fix JSON in JRuby version.
+      return if RUBY_PLATFORM == "java"
+      m = TestSingularFields.new(singular_msg: proto_module::TestMessage2.new)
+
+      expected = {
+        singularInt32: 0,
+        singularInt64: "0",
+        singularUint32: 0,
+        singularUint64: "0",
+        singularBool: false,
+        singularFloat: 0,
+        singularDouble: 0,
+        singularString: "",
+        singularBytes: "",
+        singularMsg: {},
+        singularEnum: "Default",
+      }
+
+      actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
+
+      assert_equal expected, JSON.parse(actual, :symbolize_names => true)
     end
 
     def test_respond_to

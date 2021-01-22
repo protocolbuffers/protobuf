@@ -3816,6 +3816,45 @@ TEST_F(ValidationErrorTest, InvalidPackageName) {
       "foo.proto: foo.$: NAME: \"$\" is not a valid identifier.\n");
 }
 
+// 'str' is a static C-style string that may contain '\0'
+#define STATIC_STR(str) std::string((str), sizeof(str) - 1)
+
+TEST_F(ValidationErrorTest, NullCharSymbolName) {
+  BuildFileWithErrors(
+      "name: \"bar.proto\" "
+      "package: \"foo\""
+      "message_type { "
+      "  name: '\\000\\001\\013.Bar' "
+      "  field { name: \"foo\" number:  9 label:LABEL_OPTIONAL type:TYPE_INT32 "
+      "} "
+      "}",
+      STATIC_STR("bar.proto: foo.\0\x1\v.Bar: NAME: \"\0\x1\v.Bar\" is not a "
+                 "valid identifier.\nbar.proto: foo.\0\x1\v.Bar: NAME: "
+                 "\"\0\x1\v.Bar\" is not a valid identifier.\nbar.proto: "
+                 "foo.\0\x1\v.Bar: NAME: \"\0\x1\v.Bar\" is not a valid "
+                 "identifier.\nbar.proto: foo.\0\x1\v.Bar: NAME: "
+                 "\"\0\x1\v.Bar\" is not a valid identifier.\nbar.proto: "
+                 "foo.\0\x1\v.Bar.foo: NAME: \"foo.\0\x1\v.Bar.foo\" contains "
+                 "null character.\nbar.proto: foo.\0\x1\v.Bar: NAME: "
+                 "\"foo.\0\x1\v.Bar\" contains null character.\n"));
+}
+
+TEST_F(ValidationErrorTest, NullCharFileName) {
+  BuildFileWithErrors(
+      "name: \"bar\\000\\001\\013.proto\" "
+      "package: \"outer.foo\"",
+      STATIC_STR("bar\0\x1\v.proto: bar\0\x1\v.proto: NAME: "
+                 "\"bar\0\x1\v.proto\" contains null character.\n"));
+}
+
+TEST_F(ValidationErrorTest, NullCharPackageName) {
+  BuildFileWithErrors(
+      "name: \"bar.proto\" "
+      "package: \"\\000\\001\\013.\"",
+      STATIC_STR("bar.proto: \0\x1\v.: NAME: \"\0\x1\v.\" contains null "
+                 "character.\n"));
+}
+
 TEST_F(ValidationErrorTest, MissingFileName) {
   BuildFileWithErrors("",
 
@@ -4027,6 +4066,32 @@ TEST_F(ValidationErrorTest, ReservedFieldsDebugString) {
       "message Foo {\n"
       "  reserved 5, 10 to 19;\n"
       "  reserved \"foo\", \"bar\";\n"
+      "}\n\n",
+      file->DebugString());
+}
+
+TEST_F(ValidationErrorTest, DebugStringReservedRangeMax) {
+  const FileDescriptor* file = BuildFile(strings::Substitute(
+      "name: \"foo.proto\" "
+      "enum_type { "
+      "  name: \"Bar\""
+      "  value { name:\"BAR\" number:1 }"
+      "  reserved_range { start: 5 end: $0 }"
+      "}"
+      "message_type {"
+      "  name: \"Foo\""
+      "  reserved_range { start: 5 end: $1 }"
+      "}",
+      std::numeric_limits<int>::max(), FieldDescriptor::kMaxNumber + 1));
+
+  ASSERT_EQ(
+      "syntax = \"proto2\";\n\n"
+      "enum Bar {\n"
+      "  BAR = 1;\n"
+      "  reserved 5 to max;\n"
+      "}\n\n"
+      "message Foo {\n"
+      "  reserved 5 to max;\n"
       "}\n\n",
       file->DebugString());
 }

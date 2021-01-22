@@ -69,18 +69,6 @@ namespace python {
 
 namespace {
 
-bool StrEndsWith(StringPiece sp, StringPiece x) {
-  return sp.size() >= x.size() && sp.substr(sp.size() - x.size()) == x;
-}
-
-// Returns a copy of |filename| with any trailing ".protodevel" or ".proto
-// suffix stripped.
-// TODO(robinson): Unify with copy in compiler/cpp/internal/helpers.cc.
-std::string StripProto(const std::string& filename) {
-  const char* suffix =
-      StrEndsWith(filename, ".protodevel") ? ".protodevel" : ".proto";
-  return StripSuffixString(filename, suffix);
-}
 
 // Returns the Python module name expected for a given .proto filename.
 std::string ModuleName(const std::string& filename) {
@@ -324,7 +312,6 @@ bool Generator::Generate(const FileDescriptor* file,
       return false;
     }
   }
-
 
   // Completely serialize all Generate() calls on this instance.  The
   // thread-safety constraints of the CodeGenerator interface aren't clear so
@@ -688,7 +675,8 @@ void Generator::PrintDescriptorKeyAndModuleName(
     const ServiceDescriptor& descriptor) const {
   std::string name = ModuleLevelServiceDescriptorName(descriptor);
   if (!pure_python_workable_) {
-    name = "'" + descriptor.full_name() + "'";
+    name = "_descriptor.ServiceDescriptor(full_name='" +
+           descriptor.full_name() + "')";
   }
   printer_->Print("$descriptor_key$ = $descriptor_name$,\n", "descriptor_key",
                   kDescriptorKey, "descriptor_name", name);
@@ -885,7 +873,8 @@ void Generator::PrintMessage(const Descriptor& message_descriptor,
   if (pure_python_workable_) {
     m["descriptor_name"] = ModuleLevelDescriptorName(message_descriptor);
   } else {
-    m["descriptor_name"] = "'" + message_descriptor.full_name() + "'";
+    m["descriptor_name"] = "_descriptor.Descriptor(full_name='" +
+                           message_descriptor.full_name() + "')";
   }
   printer_->Print(m, "'$descriptor_key$' : $descriptor_name$,\n");
   std::string module_name = ModuleName(file_->name());
