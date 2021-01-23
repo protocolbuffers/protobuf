@@ -52,7 +52,6 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.TreeMap;
 
 @JRubyClass(name = "FileBuilderContext")
 public class RubyFileBuilderContext extends RubyObject {
@@ -155,7 +154,7 @@ public class RubyFileBuilderContext extends RubyObject {
         }
 
         // Make an index of the message builders so we can easily nest them
-        TreeMap<String, DescriptorProto.Builder> messageBuilderMap = new TreeMap();
+        HashMap<String, DescriptorProto.Builder> messageBuilderMap = new HashMap();
         for (DescriptorProto.Builder messageBuilder : messageBuilderList) {
             messageBuilderMap.put(messageBuilder.getName(), messageBuilder);
         }
@@ -176,6 +175,7 @@ public class RubyFileBuilderContext extends RubyObject {
         messageBuilderList.toArray(messageBuilders);
         EnumDescriptorProto.Builder[] enumBuilders = new EnumDescriptorProto.Builder[enumBuilderList.size()];
         enumBuilderList.toArray(enumBuilders);
+
 
         for (EnumDescriptorProto.Builder enumBuilder : enumBuilders) {
             String name = enumBuilder.getName();
@@ -216,17 +216,28 @@ public class RubyFileBuilderContext extends RubyObject {
             }
         }
 
-        // Wipe out top level message builders so we can insert only the ones that should be there
-        builder.clearMessageType();
+        for (DescriptorProto.Builder messageBuilder : messageBuilders) {
+            String name = messageBuilder.getName();
+            int lastDot = name.lastIndexOf('.');
 
-        /*
-         * This block is done in this order because calling
-         * `addNestedType` and `addMessageType` makes a copy of the builder
-         * so the objects that our maps point to are no longer the objects
-         * that are being used to build the descriptions.
-         */
-        for (HashMap.Entry<String, DescriptorProto.Builder> entry : messageBuilderMap.descendingMap().entrySet()) {
-            DescriptorProto.Builder messageBuilder = entry.getValue();
+            if (lastDot > packageNameLength) {
+                String parentName = name.substring(0, lastDot);
+                String shortName = name.substring(lastDot + 1);
+
+                messageBuilder.setName(shortName);
+                messageBuilderMap.get(parentName).addNestedType(messageBuilder);
+
+                builder.removeMessageType(currentMessageIndex);
+
+            } else {
+                if (packageNameLength > 0) {
+                    // Remove the package name
+                    String shortName = name.substring(packageNameLength + 1);
+                    messageBuilder.setName(shortName);
+                }
+
+                currentMessageIndex++;
+            }
 
             // Rewrite any enum defaults needed
             for(FieldDescriptorProto.Builder field : messageBuilder.getFieldBuilderList()) {
@@ -246,28 +257,6 @@ public class RubyFileBuilderContext extends RubyObject {
                         break;
                     }
                 }
-            }
-
-            // Turn Foo.Bar.Baz into a correctly nested structure with the correct name
-            String name = messageBuilder.getName();
-            int lastDot = name.lastIndexOf('.');
-
-            if (lastDot > packageNameLength) {
-                String parentName = name.substring(0, lastDot);
-                String shortName = name.substring(lastDot + 1);
-                messageBuilder.setName(shortName);
-                messageBuilderMap.get(parentName).addNestedType(messageBuilder);
-
-            } else {
-                if (packageNameLength > 0) {
-                    // Remove the package name
-                    messageBuilder.setName(name.substring(packageNameLength + 1));
-                }
-
-                // Add back in top level message definitions
-                builder.addMessageType(messageBuilder);
-
-                currentMessageIndex++;
             }
         }
 
