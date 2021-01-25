@@ -70,27 +70,18 @@ else
     ext.cross_platform = [
       'x86-mingw32', 'x64-mingw32',
       'x86_64-linux', 'x86-linux',
-      'universal-darwin'
+      'x86_64-darwin', 'arm64-darwin',
     ]
   end
 
-  task 'gem:windows' do
+  task 'gem:native' => :genproto do
     require 'rake_compiler_dock'
-    ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux'].each do |plat|
+    ['x86-mingw32', 'x64-mingw32', 'x86_64-linux', 'x86-linux', 'x86_64-darwin', 'arm64-darwin'].each do |plat|
       RakeCompilerDock.sh <<-"EOT", platform: plat
         bundle && \
         IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.0:2.4.0:2.3.0
       EOT
     end
-  end
-
-  if RUBY_PLATFORM =~ /darwin/
-    task 'gem:native' do
-      system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.0.0:2.7.0:2.6.0:2.5.1:2.4.0:2.3.0"
-    end
-  else
-    task 'gem:native' => [:genproto, 'gem:windows']
   end
 end
 
