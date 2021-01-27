@@ -172,9 +172,8 @@ namespace Google.Protobuf
             // This saves calling GetByteCount on the string. We get the string length from GetBytes.
             if (value.Length <= MaxSmallStringLength && buffer.Length - state.position - 1 >= value.Length * MaxBytesPerChar)
             {
-                // Get the original position, then increment it on state by 1, then write string to buffer.
-                // Method will return byte length, which is then set to the original position.
-                buffer[state.position++] = (byte)WriteStringToBuffer(buffer, ref state, value);
+                int indexOfLengthDelimiter = state.position++;
+                buffer[indexOfLengthDelimiter] = (byte)WriteStringToBuffer(buffer, ref state, value);
                 return;
             }
 
