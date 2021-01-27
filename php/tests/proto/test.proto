@@ -220,6 +220,10 @@ message TestRandomFieldOrder {
   string tag14 = 160;
 }
 
+message TestLargeFieldNumber {
+  int32 large_field_number = 536870911;
+}
+
 message TestReverseFieldOrder {
   repeated int32 a = 2;
   string b = 1;
