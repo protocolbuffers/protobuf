@@ -501,7 +501,7 @@ namespace internal {
 // effectively.
 template <typename Element,
           bool HasTrivialCopy =
-              std::is_standard_layout<Element>::value && std::is_trivialElement>::value>
+              std::is_standard_layout<Element>::value && std::is_trivial<Element>::value>
 struct ElementCopier {
   void operator()(Element* to, const Element* from, int array_size);
 };
