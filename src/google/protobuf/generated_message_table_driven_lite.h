@@ -87,7 +87,7 @@ inline ExtensionSet* GetExtensionSet(MessageLite* msg, int64 extension_offset) {
 
 template <typename Type>
 inline Type* AddField(MessageLite* msg, int64 offset) {
-  static_assert(std::is_pod<Type>::value,
+  static_assert(std::is_standard_layout<Type>::value && std::is_trivial<Type>::value,
                 "Do not assign");
 
   RepeatedField<Type>* repeated = Raw<RepeatedField<Type>>(msg, offset);

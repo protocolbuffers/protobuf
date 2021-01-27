@@ -341,6 +341,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/cpp/cpp_message_field.cc            \
   google/protobuf/compiler/cpp/cpp_message_field.h             \
   google/protobuf/compiler/cpp/cpp_message_layout_helper.h     \
+  google/protobuf/compiler/cpp/cpp_names.h                     \
   google/protobuf/compiler/cpp/cpp_options.h                   \
   google/protobuf/compiler/cpp/cpp_padding_optimizer.cc        \
   google/protobuf/compiler/cpp/cpp_padding_optimizer.h         \

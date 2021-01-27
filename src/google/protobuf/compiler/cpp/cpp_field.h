@@ -165,7 +165,7 @@ class FieldGenerator {
   }
 
   // Generate initialization code for private members declared by
-  // GeneratePrivateMembers(), specifically for the constexpr construtor.
+  // GeneratePrivateMembers(), specifically for the constexpr constructor.
   // These go into the constructor's initializer list and must follow that
   // syntax (eg `field_(args)`). Does not include `:` or `,` separators.
   virtual void GenerateConstinitInitializer(io::Printer* printer) const {}
