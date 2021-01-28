@@ -1697,6 +1697,7 @@ public class JsonFormatTest extends TestCase {
   public void testJsonException() throws Exception {
     InputStream throwingInputStream =
         new InputStream() {
+          @Override
           public int read() throws IOException {
             throw new IOException("12345");
           }

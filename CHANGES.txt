@@ -12,6 +12,22 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     implementation detail users must not rely on. It should not be used in
     unit tests.
   * Change the signature of Any::PackFrom() to return false on error.
+  * Add fast reflection getter API for strings.
+  * Constant initialize the global message instances
+  * Avoid potential for missed wakeup in UnknownFieldSet
+  * Now Proto3 Oneof fields have "has" methods for checking their presence in
+    C++.
+  * Bugfix for NVCC
+  * Return early in _InternalSerialize for empty maps.
+  * Adding functionality for outputting map key values in proto path logging
+    output (does not affect comparison logic) and stop printing 'value' in the
+    path. The modified print functionality is in the
+    MessageDifferencer::StreamReporter.
+  * Fixes https://github.com/protocolbuffers/protobuf/issues/8129
+  * Ensure that null char symbol, package and file names do not result in a
+    crash.
+  * Constant initialize the global message instances
+  * Pretty print 'max' instead of numeric values in reserved ranges.
 
   Java
   * Avoid possible UnsupportedOperationException when using CodedInputSteam
@@ -19,10 +35,20 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Make Durations.comparator() and Timestamps.comparator() Serializable.
   * Add more detailed error information for dynamic message field type
     validation failure
+  * Removed declarations of functions declared in java_names.h from
+    java_helpers.h.
+  * Now Proto3 Oneof fields have "has" methods for checking their presence in
+    Java.
+  * Annotates Java proto generated *_FIELD_NUMBER constants.
 
   Python
   * Provided an override for the reverse() method that will reverse the internal
     collection directly instead of using the other methods of the BaseContainer.
+  * MessageFactory.CreateProtoype can be overridden to customize class creation.
+
+  Javascript
+  * Generate `getDescriptor` methods with `*` as their `this` type.
+  * Enforce `let/const` for generated messages.
 
 2020-11-11 version 3.14.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 

@@ -491,6 +491,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     printer->Print("public static final int $constant_name$ = $number$;\n",
                    "constant_name", FieldConstantName(descriptor_->field(i)),
                    "number", StrCat(descriptor_->field(i)->number()));
+    printer->Annotate("constant_name", descriptor_->field(i));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
     printer->Print("\n");
   }

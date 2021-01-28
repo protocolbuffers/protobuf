@@ -54,87 +54,88 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fdescriptor_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
+PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 class DescriptorProto;
-class DescriptorProtoDefaultTypeInternal;
+struct DescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
 class DescriptorProto_ExtensionRange;
-class DescriptorProto_ExtensionRangeDefaultTypeInternal;
+struct DescriptorProto_ExtensionRangeDefaultTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
 class DescriptorProto_ReservedRange;
-class DescriptorProto_ReservedRangeDefaultTypeInternal;
+struct DescriptorProto_ReservedRangeDefaultTypeInternal;
 PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
 class EnumDescriptorProto;
-class EnumDescriptorProtoDefaultTypeInternal;
+struct EnumDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
 class EnumDescriptorProto_EnumReservedRange;
-class EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal;
+struct EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal;
 PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal _EnumDescriptorProto_EnumReservedRange_default_instance_;
 class EnumOptions;
-class EnumOptionsDefaultTypeInternal;
+struct EnumOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
 class EnumValueDescriptorProto;
-class EnumValueDescriptorProtoDefaultTypeInternal;
+struct EnumValueDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
 class EnumValueOptions;
-class EnumValueOptionsDefaultTypeInternal;
+struct EnumValueOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
 class ExtensionRangeOptions;
-class ExtensionRangeOptionsDefaultTypeInternal;
+struct ExtensionRangeOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
 class FieldDescriptorProto;
-class FieldDescriptorProtoDefaultTypeInternal;
+struct FieldDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
 class FieldOptions;
-class FieldOptionsDefaultTypeInternal;
+struct FieldOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
 class FileDescriptorProto;
-class FileDescriptorProtoDefaultTypeInternal;
+struct FileDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
 class FileDescriptorSet;
-class FileDescriptorSetDefaultTypeInternal;
+struct FileDescriptorSetDefaultTypeInternal;
 PROTOBUF_EXPORT extern FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
 class FileOptions;
-class FileOptionsDefaultTypeInternal;
+struct FileOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
 class GeneratedCodeInfo;
-class GeneratedCodeInfoDefaultTypeInternal;
+struct GeneratedCodeInfoDefaultTypeInternal;
 PROTOBUF_EXPORT extern GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
 class GeneratedCodeInfo_Annotation;
-class GeneratedCodeInfo_AnnotationDefaultTypeInternal;
+struct GeneratedCodeInfo_AnnotationDefaultTypeInternal;
 PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
 class MessageOptions;
-class MessageOptionsDefaultTypeInternal;
+struct MessageOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
 class MethodDescriptorProto;
-class MethodDescriptorProtoDefaultTypeInternal;
+struct MethodDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
 class MethodOptions;
-class MethodOptionsDefaultTypeInternal;
+struct MethodOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
 class OneofDescriptorProto;
-class OneofDescriptorProtoDefaultTypeInternal;
+struct OneofDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
 class OneofOptions;
-class OneofOptionsDefaultTypeInternal;
+struct OneofOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
 class ServiceDescriptorProto;
-class ServiceDescriptorProtoDefaultTypeInternal;
+struct ServiceDescriptorProtoDefaultTypeInternal;
 PROTOBUF_EXPORT extern ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
 class ServiceOptions;
-class ServiceOptionsDefaultTypeInternal;
+struct ServiceOptionsDefaultTypeInternal;
 PROTOBUF_EXPORT extern ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
 class SourceCodeInfo;
-class SourceCodeInfoDefaultTypeInternal;
+struct SourceCodeInfoDefaultTypeInternal;
 PROTOBUF_EXPORT extern SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
 class SourceCodeInfo_Location;
-class SourceCodeInfo_LocationDefaultTypeInternal;
+struct SourceCodeInfo_LocationDefaultTypeInternal;
 PROTOBUF_EXPORT extern SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
 class UninterpretedOption;
-class UninterpretedOptionDefaultTypeInternal;
+struct UninterpretedOptionDefaultTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
 class UninterpretedOption_NamePart;
-class UninterpretedOption_NamePartDefaultTypeInternal;
+struct UninterpretedOption_NamePartDefaultTypeInternal;
 PROTOBUF_EXPORT extern UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
@@ -334,6 +335,7 @@ class PROTOBUF_EXPORT FileDescriptorSet PROTOBUF_FINAL :
  public:
   inline FileDescriptorSet() : FileDescriptorSet(nullptr) {}
   virtual ~FileDescriptorSet();
+  explicit constexpr FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FileDescriptorSet(const FileDescriptorSet& from);
   FileDescriptorSet(FileDescriptorSet&& from) noexcept
@@ -370,8 +372,9 @@ class PROTOBUF_EXPORT FileDescriptorSet PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const FileDescriptorSet& default_instance();
-
+  static const FileDescriptorSet& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const FileDescriptorSet* internal_default_instance() {
     return reinterpret_cast<const FileDescriptorSet*>(
                &_FileDescriptorSet_default_instance_);
@@ -437,8 +440,7 @@ class PROTOBUF_EXPORT FileDescriptorSet PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -486,6 +488,7 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
  public:
   inline FileDescriptorProto() : FileDescriptorProto(nullptr) {}
   virtual ~FileDescriptorProto();
+  explicit constexpr FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FileDescriptorProto(const FileDescriptorProto& from);
   FileDescriptorProto(FileDescriptorProto&& from) noexcept
@@ -522,8 +525,9 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const FileDescriptorProto& default_instance();
-
+  static const FileDescriptorProto& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const FileDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const FileDescriptorProto*>(
                &_FileDescriptorProto_default_instance_);
@@ -589,8 +593,7 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -879,6 +882,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
  public:
   inline DescriptorProto_ExtensionRange() : DescriptorProto_ExtensionRange(nullptr) {}
   virtual ~DescriptorProto_ExtensionRange();
+  explicit constexpr DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   DescriptorProto_ExtensionRange(const DescriptorProto_ExtensionRange& from);
   DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
@@ -915,8 +919,9 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const DescriptorProto_ExtensionRange& default_instance();
-
+  static const DescriptorProto_ExtensionRange& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const DescriptorProto_ExtensionRange* internal_default_instance() {
     return reinterpret_cast<const DescriptorProto_ExtensionRange*>(
                &_DescriptorProto_ExtensionRange_default_instance_);
@@ -982,8 +987,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -1062,6 +1066,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange PROTOBUF_FINAL :
  public:
   inline DescriptorProto_ReservedRange() : DescriptorProto_ReservedRange(nullptr) {}
   virtual ~DescriptorProto_ReservedRange();
+  explicit constexpr DescriptorProto_ReservedRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from);
   DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
@@ -1098,8 +1103,9 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const DescriptorProto_ReservedRange& default_instance();
-
+  static const DescriptorProto_ReservedRange& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const DescriptorProto_ReservedRange* internal_default_instance() {
     return reinterpret_cast<const DescriptorProto_ReservedRange*>(
                &_DescriptorProto_ReservedRange_default_instance_);
@@ -1165,8 +1171,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -1225,6 +1230,7 @@ class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
  public:
   inline DescriptorProto() : DescriptorProto(nullptr) {}
   virtual ~DescriptorProto();
+  explicit constexpr DescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   DescriptorProto(const DescriptorProto& from);
   DescriptorProto(DescriptorProto&& from) noexcept
@@ -1261,8 +1267,9 @@ class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const DescriptorProto& default_instance();
-
+  static const DescriptorProto& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const DescriptorProto* internal_default_instance() {
     return reinterpret_cast<const DescriptorProto*>(
                &_DescriptorProto_default_instance_);
@@ -1328,8 +1335,7 @@ class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -1569,6 +1575,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions PROTOBUF_FINAL :
  public:
   inline ExtensionRangeOptions() : ExtensionRangeOptions(nullptr) {}
   virtual ~ExtensionRangeOptions();
+  explicit constexpr ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ExtensionRangeOptions(const ExtensionRangeOptions& from);
   ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
@@ -1605,8 +1612,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const ExtensionRangeOptions& default_instance();
-
+  static const ExtensionRangeOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const ExtensionRangeOptions* internal_default_instance() {
     return reinterpret_cast<const ExtensionRangeOptions*>(
                &_ExtensionRangeOptions_default_instance_);
@@ -1672,8 +1680,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -1724,6 +1731,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
  public:
   inline FieldDescriptorProto() : FieldDescriptorProto(nullptr) {}
   virtual ~FieldDescriptorProto();
+  explicit constexpr FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FieldDescriptorProto(const FieldDescriptorProto& from);
   FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
@@ -1760,8 +1768,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const FieldDescriptorProto& default_instance();
-
+  static const FieldDescriptorProto& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const FieldDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const FieldDescriptorProto*>(
                &_FieldDescriptorProto_default_instance_);
@@ -1827,8 +1836,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -2156,6 +2164,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
  public:
   inline OneofDescriptorProto() : OneofDescriptorProto(nullptr) {}
   virtual ~OneofDescriptorProto();
+  explicit constexpr OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   OneofDescriptorProto(const OneofDescriptorProto& from);
   OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
@@ -2192,8 +2201,9 @@ class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const OneofDescriptorProto& default_instance();
-
+  static const OneofDescriptorProto& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const OneofDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const OneofDescriptorProto*>(
                &_OneofDescriptorProto_default_instance_);
@@ -2259,8 +2269,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -2331,6 +2340,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange PROTOBUF_FINAL :
  public:
   inline EnumDescriptorProto_EnumReservedRange() : EnumDescriptorProto_EnumReservedRange(nullptr) {}
   virtual ~EnumDescriptorProto_EnumReservedRange();
+  explicit constexpr EnumDescriptorProto_EnumReservedRange(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from);
   EnumDescriptorProto_EnumReservedRange(EnumDescriptorProto_EnumReservedRange&& from) noexcept
@@ -2367,8 +2377,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const EnumDescriptorProto_EnumReservedRange& default_instance();
-
+  static const EnumDescriptorProto_EnumReservedRange& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const EnumDescriptorProto_EnumReservedRange* internal_default_instance() {
     return reinterpret_cast<const EnumDescriptorProto_EnumReservedRange*>(
                &_EnumDescriptorProto_EnumReservedRange_default_instance_);
@@ -2434,8 +2445,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -2494,6 +2504,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
  public:
   inline EnumDescriptorProto() : EnumDescriptorProto(nullptr) {}
   virtual ~EnumDescriptorProto();
+  explicit constexpr EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumDescriptorProto(const EnumDescriptorProto& from);
   EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
@@ -2530,8 +2541,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const EnumDescriptorProto& default_instance();
-
+  static const EnumDescriptorProto& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const EnumDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const EnumDescriptorProto*>(
                &_EnumDescriptorProto_default_instance_);
@@ -2597,8 +2609,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -2737,6 +2748,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
  public:
   inline EnumValueDescriptorProto() : EnumValueDescriptorProto(nullptr) {}
   virtual ~EnumValueDescriptorProto();
+  explicit constexpr EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumValueDescriptorProto(const EnumValueDescriptorProto& from);
   EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
@@ -2773,8 +2785,9 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const EnumValueDescriptorProto& default_instance();
-
+  static const EnumValueDescriptorProto& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const EnumValueDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const EnumValueDescriptorProto*>(
                &_EnumValueDescriptorProto_default_instance_);
@@ -2840,8 +2853,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -2927,6 +2939,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
  public:
   inline ServiceDescriptorProto() : ServiceDescriptorProto(nullptr) {}
   virtual ~ServiceDescriptorProto();
+  explicit constexpr ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ServiceDescriptorProto(const ServiceDescriptorProto& from);
   ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
@@ -2963,8 +2976,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const ServiceDescriptorProto& default_instance();
-
+  static const ServiceDescriptorProto& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const ServiceDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const ServiceDescriptorProto*>(
                &_ServiceDescriptorProto_default_instance_);
@@ -3030,8 +3044,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -3122,6 +3135,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
  public:
   inline MethodDescriptorProto() : MethodDescriptorProto(nullptr) {}
   virtual ~MethodDescriptorProto();
+  explicit constexpr MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   MethodDescriptorProto(const MethodDescriptorProto& from);
   MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
@@ -3158,8 +3172,9 @@ class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const MethodDescriptorProto& default_instance();
-
+  static const MethodDescriptorProto& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const MethodDescriptorProto* internal_default_instance() {
     return reinterpret_cast<const MethodDescriptorProto*>(
                &_MethodDescriptorProto_default_instance_);
@@ -3225,8 +3240,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -3371,6 +3385,7 @@ class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
  public:
   inline FileOptions() : FileOptions(nullptr) {}
   virtual ~FileOptions();
+  explicit constexpr FileOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FileOptions(const FileOptions& from);
   FileOptions(FileOptions&& from) noexcept
@@ -3407,8 +3422,9 @@ class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const FileOptions& default_instance();
-
+  static const FileOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const FileOptions* internal_default_instance() {
     return reinterpret_cast<const FileOptions*>(
                &_FileOptions_default_instance_);
@@ -3474,8 +3490,7 @@ class PROTOBUF_EXPORT FileOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -3929,6 +3944,7 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
  public:
   inline MessageOptions() : MessageOptions(nullptr) {}
   virtual ~MessageOptions();
+  explicit constexpr MessageOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   MessageOptions(const MessageOptions& from);
   MessageOptions(MessageOptions&& from) noexcept
@@ -3965,8 +3981,9 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const MessageOptions& default_instance();
-
+  static const MessageOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const MessageOptions* internal_default_instance() {
     return reinterpret_cast<const MessageOptions*>(
                &_MessageOptions_default_instance_);
@@ -4032,8 +4049,7 @@ class PROTOBUF_EXPORT MessageOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -4145,6 +4161,7 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
  public:
   inline FieldOptions() : FieldOptions(nullptr) {}
   virtual ~FieldOptions();
+  explicit constexpr FieldOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FieldOptions(const FieldOptions& from);
   FieldOptions(FieldOptions&& from) noexcept
@@ -4181,8 +4198,9 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const FieldOptions& default_instance();
-
+  static const FieldOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const FieldOptions* internal_default_instance() {
     return reinterpret_cast<const FieldOptions*>(
                &_FieldOptions_default_instance_);
@@ -4248,8 +4266,7 @@ class PROTOBUF_EXPORT FieldOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -4455,6 +4472,7 @@ class PROTOBUF_EXPORT OneofOptions PROTOBUF_FINAL :
  public:
   inline OneofOptions() : OneofOptions(nullptr) {}
   virtual ~OneofOptions();
+  explicit constexpr OneofOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   OneofOptions(const OneofOptions& from);
   OneofOptions(OneofOptions&& from) noexcept
@@ -4491,8 +4509,9 @@ class PROTOBUF_EXPORT OneofOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const OneofOptions& default_instance();
-
+  static const OneofOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const OneofOptions* internal_default_instance() {
     return reinterpret_cast<const OneofOptions*>(
                &_OneofOptions_default_instance_);
@@ -4558,8 +4577,7 @@ class PROTOBUF_EXPORT OneofOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -4610,6 +4628,7 @@ class PROTOBUF_EXPORT EnumOptions PROTOBUF_FINAL :
  public:
   inline EnumOptions() : EnumOptions(nullptr) {}
   virtual ~EnumOptions();
+  explicit constexpr EnumOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumOptions(const EnumOptions& from);
   EnumOptions(EnumOptions&& from) noexcept
@@ -4646,8 +4665,9 @@ class PROTOBUF_EXPORT EnumOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const EnumOptions& default_instance();
-
+  static const EnumOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const EnumOptions* internal_default_instance() {
     return reinterpret_cast<const EnumOptions*>(
                &_EnumOptions_default_instance_);
@@ -4713,8 +4733,7 @@ class PROTOBUF_EXPORT EnumOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -4796,6 +4815,7 @@ class PROTOBUF_EXPORT EnumValueOptions PROTOBUF_FINAL :
  public:
   inline EnumValueOptions() : EnumValueOptions(nullptr) {}
   virtual ~EnumValueOptions();
+  explicit constexpr EnumValueOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumValueOptions(const EnumValueOptions& from);
   EnumValueOptions(EnumValueOptions&& from) noexcept
@@ -4832,8 +4852,9 @@ class PROTOBUF_EXPORT EnumValueOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const EnumValueOptions& default_instance();
-
+  static const EnumValueOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const EnumValueOptions* internal_default_instance() {
     return reinterpret_cast<const EnumValueOptions*>(
                &_EnumValueOptions_default_instance_);
@@ -4899,8 +4920,7 @@ class PROTOBUF_EXPORT EnumValueOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -4967,6 +4987,7 @@ class PROTOBUF_EXPORT ServiceOptions PROTOBUF_FINAL :
  public:
   inline ServiceOptions() : ServiceOptions(nullptr) {}
   virtual ~ServiceOptions();
+  explicit constexpr ServiceOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ServiceOptions(const ServiceOptions& from);
   ServiceOptions(ServiceOptions&& from) noexcept
@@ -5003,8 +5024,9 @@ class PROTOBUF_EXPORT ServiceOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const ServiceOptions& default_instance();
-
+  static const ServiceOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const ServiceOptions* internal_default_instance() {
     return reinterpret_cast<const ServiceOptions*>(
                &_ServiceOptions_default_instance_);
@@ -5070,8 +5092,7 @@ class PROTOBUF_EXPORT ServiceOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -5138,6 +5159,7 @@ class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
  public:
   inline MethodOptions() : MethodOptions(nullptr) {}
   virtual ~MethodOptions();
+  explicit constexpr MethodOptions(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   MethodOptions(const MethodOptions& from);
   MethodOptions(MethodOptions&& from) noexcept
@@ -5174,8 +5196,9 @@ class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const MethodOptions& default_instance();
-
+  static const MethodOptions& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const MethodOptions* internal_default_instance() {
     return reinterpret_cast<const MethodOptions*>(
                &_MethodOptions_default_instance_);
@@ -5241,8 +5264,7 @@ class PROTOBUF_EXPORT MethodOptions PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -5356,6 +5378,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart PROTOBUF_FINAL :
  public:
   inline UninterpretedOption_NamePart() : UninterpretedOption_NamePart(nullptr) {}
   virtual ~UninterpretedOption_NamePart();
+  explicit constexpr UninterpretedOption_NamePart(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   UninterpretedOption_NamePart(const UninterpretedOption_NamePart& from);
   UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
@@ -5392,8 +5415,9 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const UninterpretedOption_NamePart& default_instance();
-
+  static const UninterpretedOption_NamePart& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const UninterpretedOption_NamePart* internal_default_instance() {
     return reinterpret_cast<const UninterpretedOption_NamePart*>(
                &_UninterpretedOption_NamePart_default_instance_);
@@ -5459,8 +5483,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -5529,6 +5552,7 @@ class PROTOBUF_EXPORT UninterpretedOption PROTOBUF_FINAL :
  public:
   inline UninterpretedOption() : UninterpretedOption(nullptr) {}
   virtual ~UninterpretedOption();
+  explicit constexpr UninterpretedOption(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   UninterpretedOption(const UninterpretedOption& from);
   UninterpretedOption(UninterpretedOption&& from) noexcept
@@ -5565,8 +5589,9 @@ class PROTOBUF_EXPORT UninterpretedOption PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const UninterpretedOption& default_instance();
-
+  static const UninterpretedOption& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const UninterpretedOption* internal_default_instance() {
     return reinterpret_cast<const UninterpretedOption*>(
                &_UninterpretedOption_default_instance_);
@@ -5632,8 +5657,7 @@ class PROTOBUF_EXPORT UninterpretedOption PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -5795,6 +5819,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location PROTOBUF_FINAL :
  public:
   inline SourceCodeInfo_Location() : SourceCodeInfo_Location(nullptr) {}
   virtual ~SourceCodeInfo_Location();
+  explicit constexpr SourceCodeInfo_Location(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   SourceCodeInfo_Location(const SourceCodeInfo_Location& from);
   SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
@@ -5831,8 +5856,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const SourceCodeInfo_Location& default_instance();
-
+  static const SourceCodeInfo_Location& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const SourceCodeInfo_Location* internal_default_instance() {
     return reinterpret_cast<const SourceCodeInfo_Location*>(
                &_SourceCodeInfo_Location_default_instance_);
@@ -5898,8 +5924,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -6048,6 +6073,7 @@ class PROTOBUF_EXPORT SourceCodeInfo PROTOBUF_FINAL :
  public:
   inline SourceCodeInfo() : SourceCodeInfo(nullptr) {}
   virtual ~SourceCodeInfo();
+  explicit constexpr SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   SourceCodeInfo(const SourceCodeInfo& from);
   SourceCodeInfo(SourceCodeInfo&& from) noexcept
@@ -6084,8 +6110,9 @@ class PROTOBUF_EXPORT SourceCodeInfo PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const SourceCodeInfo& default_instance();
-
+  static const SourceCodeInfo& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const SourceCodeInfo* internal_default_instance() {
     return reinterpret_cast<const SourceCodeInfo*>(
                &_SourceCodeInfo_default_instance_);
@@ -6151,8 +6178,7 @@ class PROTOBUF_EXPORT SourceCodeInfo PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -6202,6 +6228,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation PROTOBUF_FINAL :
  public:
   inline GeneratedCodeInfo_Annotation() : GeneratedCodeInfo_Annotation(nullptr) {}
   virtual ~GeneratedCodeInfo_Annotation();
+  explicit constexpr GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   GeneratedCodeInfo_Annotation(const GeneratedCodeInfo_Annotation& from);
   GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
@@ -6238,8 +6265,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const GeneratedCodeInfo_Annotation& default_instance();
-
+  static const GeneratedCodeInfo_Annotation& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const GeneratedCodeInfo_Annotation* internal_default_instance() {
     return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
                &_GeneratedCodeInfo_Annotation_default_instance_);
@@ -6305,8 +6333,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -6412,6 +6439,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo PROTOBUF_FINAL :
  public:
   inline GeneratedCodeInfo() : GeneratedCodeInfo(nullptr) {}
   virtual ~GeneratedCodeInfo();
+  explicit constexpr GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   GeneratedCodeInfo(const GeneratedCodeInfo& from);
   GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
@@ -6448,8 +6476,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const GeneratedCodeInfo& default_instance();
-
+  static const GeneratedCodeInfo& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const GeneratedCodeInfo* internal_default_instance() {
     return reinterpret_cast<const GeneratedCodeInfo*>(
                &_GeneratedCodeInfo_default_instance_);
@@ -6515,8 +6544,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:

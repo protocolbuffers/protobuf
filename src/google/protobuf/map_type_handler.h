@@ -586,7 +586,7 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::IsInitialized(
   constexpr auto                                                              \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::Constinit()         \
       ->TypeOnMemory {                                                        \
-    return TypeOnMemory(&internal::GetEmptyStringAlreadyInited());            \
+    return TypeOnMemory(&internal::fixed_address_empty_string);               \
   }                                                                           \
   template <typename Type>                                                    \
   inline typename MapTypeHandler<WireFormatLite::TYPE_##FieldType,            \

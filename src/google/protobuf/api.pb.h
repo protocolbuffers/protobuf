@@ -55,15 +55,16 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fapi_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto;
+PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 class Api;
-class ApiDefaultTypeInternal;
+struct ApiDefaultTypeInternal;
 PROTOBUF_EXPORT extern ApiDefaultTypeInternal _Api_default_instance_;
 class Method;
-class MethodDefaultTypeInternal;
+struct MethodDefaultTypeInternal;
 PROTOBUF_EXPORT extern MethodDefaultTypeInternal _Method_default_instance_;
 class Mixin;
-class MixinDefaultTypeInternal;
+struct MixinDefaultTypeInternal;
 PROTOBUF_EXPORT extern MixinDefaultTypeInternal _Mixin_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
@@ -80,6 +81,7 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
  public:
   inline Api() : Api(nullptr) {}
   virtual ~Api();
+  explicit constexpr Api(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Api(const Api& from);
   Api(Api&& from) noexcept
@@ -109,8 +111,9 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Api& default_instance();
-
+  static const Api& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const Api* internal_default_instance() {
     return reinterpret_cast<const Api*>(
                &_Api_default_instance_);
@@ -176,8 +179,7 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -332,6 +334,7 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
  public:
   inline Method() : Method(nullptr) {}
   virtual ~Method();
+  explicit constexpr Method(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Method(const Method& from);
   Method(Method&& from) noexcept
@@ -361,8 +364,9 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Method& default_instance();
-
+  static const Method& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const Method* internal_default_instance() {
     return reinterpret_cast<const Method*>(
                &_Method_default_instance_);
@@ -428,8 +432,7 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:
@@ -564,6 +567,7 @@ class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
  public:
   inline Mixin() : Mixin(nullptr) {}
   virtual ~Mixin();
+  explicit constexpr Mixin(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Mixin(const Mixin& from);
   Mixin(Mixin&& from) noexcept
@@ -593,8 +597,9 @@ class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Mixin& default_instance();
-
+  static const Mixin& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const Mixin* internal_default_instance() {
     return reinterpret_cast<const Mixin*>(
                &_Mixin_default_instance_);
@@ -660,8 +665,7 @@ class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fapi_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:

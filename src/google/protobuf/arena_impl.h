@@ -296,7 +296,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // semantics is necessary to allow callers to program functions that only
   // have fallback function calls in tail position. This substantially improves
   // code for the happy path.
-  PROTOBUF_ALWAYS_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
+  PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
     SerialArena* a;
     if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFromThreadCache(tag_and_id_, &a))) {
       return a->MaybeAllocateAligned(n, out);
@@ -362,7 +362,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     hint_.store(serial, std::memory_order_release);
   }
 
-  PROTOBUF_ALWAYS_INLINE bool GetSerialArenaFast(uint64 lifecycle_id,
+  PROTOBUF_NDEBUG_INLINE bool GetSerialArenaFast(uint64 lifecycle_id,
                                                  SerialArena** arena) {
     if (GetSerialArenaFromThreadCache(lifecycle_id, arena)) return true;
     if (lifecycle_id & kRecordAllocs) return false;
@@ -378,7 +378,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     return false;
   }
 
-  PROTOBUF_ALWAYS_INLINE bool GetSerialArenaFromThreadCache(
+  PROTOBUF_NDEBUG_INLINE bool GetSerialArenaFromThreadCache(
       uint64 lifecycle_id, SerialArena** arena) {
     // If this thread already owns a block in this arena then try to use that.
     // This fast path optimizes the case where multiple threads allocate from

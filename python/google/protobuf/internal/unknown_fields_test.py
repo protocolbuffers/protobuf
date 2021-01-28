@@ -40,11 +40,6 @@ try:
 except ImportError:
   import unittest
 import sys
-try:
-  import tracemalloc
-except ImportError:
-  # Requires python 3.4+
-  pass
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -58,6 +53,12 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import wire_format
 from google.protobuf import descriptor
+
+try:
+  import tracemalloc  # pylint: disable=g-import-not-at-top
+except ImportError:
+  # Requires python 3.4+
+  pass
 
 
 @testing_refleaks.TestCase
@@ -318,14 +319,16 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.assertIn('UnknownFields does not exist.',
                   str(context.exception))
 
-  @unittest.skipIf((sys.version_info.major, sys.version_info.minor) < (3, 4), 
+  @unittest.skipIf((sys.version_info.major, sys.version_info.minor) < (3, 4),
                    'tracemalloc requires python 3.4+')
   def testUnknownFieldsNoMemoryLeak(self):
     # Call to UnknownFields must not leak memory
     nb_leaks = 1234
+
     def leaking_function():
       for _ in range(nb_leaks):
         self.empty_message.UnknownFields()
+
     tracemalloc.start()
     snapshot1 = tracemalloc.take_snapshot()
     leaking_function()

@@ -253,25 +253,24 @@ struct MigrationSchema {
   int object_size;
 };
 
-struct SCCInfoBase;
-
+// This struct tries to reduce unnecessary padding.
+// The num_xxx might not be close to their respective pointer, but this saves
+// padding.
 struct PROTOBUF_EXPORT DescriptorTable {
   mutable bool is_initialized;
   bool is_eager;
+  int size;  // of serialized descriptor
   const char* descriptor;
   const char* filename;
-  int size;  // of serialized descriptor
   once_flag* once;
-  SCCInfoBase* const* init_default_instances;
   const DescriptorTable* const* deps;
-  int num_sccs;
   int num_deps;
+  int num_messages;
   const MigrationSchema* schemas;
   const Message* const* default_instances;
   const uint32* offsets;
   // update the following descriptor arrays.
   Metadata* file_level_metadata;
-  int num_messages;
   const EnumDescriptor** file_level_enum_descriptors;
   const ServiceDescriptor** file_level_service_descriptors;
 };

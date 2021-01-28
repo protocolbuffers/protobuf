@@ -1454,9 +1454,9 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
   return ParseMessageSetLite(input, &finder, &skipper);
 }
 
-uint8* ExtensionSet::_InternalSerialize(int start_field_number,
-                                        int end_field_number, uint8* target,
-                                        io::EpsCopyOutputStream* stream) const {
+uint8* ExtensionSet::_InternalSerializeImpl(
+    int start_field_number, int end_field_number, uint8* target,
+    io::EpsCopyOutputStream* stream) const {
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     const auto& end = map_.large->end();
     for (auto it = map_.large->lower_bound(start_field_number);
@@ -1885,9 +1885,6 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
   }
   flat_capacity_ = new_flat_capacity;
   map_ = new_map;
-  if (is_large()) {
-    flat_size_ = 0;
-  }
 }
 
 // static

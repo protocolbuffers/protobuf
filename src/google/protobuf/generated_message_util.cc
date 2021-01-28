@@ -34,14 +34,8 @@
 
 #include <google/protobuf/generated_message_util.h>
 
+#include <atomic>
 #include <limits>
-
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-// We're only using this as a standard way for getting the thread id.
-// We're not using any thread functionality.
-#include <thread>  // NOLINT
-#endif             // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
 #include <vector>
 
 #include <google/protobuf/io/coded_stream.h>
@@ -51,7 +45,6 @@
 #include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
 
@@ -73,19 +66,15 @@ void DestroyString(const void* s) {
 }
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY EmptyString
-        fixed_address_empty_string;  // NOLINT
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY ExplicitlyConstructed<std::string>
+        fixed_address_empty_string{};  // NOLINT
 
 
 PROTOBUF_CONSTINIT std::atomic<bool> init_protobuf_defaults_state{false};
 static bool InitProtobufDefaultsImpl() {
-  ::new (static_cast<void*>(&fixed_address_empty_string.value)) std::string();
-  OnShutdownDestroyString(&fixed_address_empty_string.value);
+  fixed_address_empty_string.DefaultConstruct();
+  OnShutdownDestroyString(fixed_address_empty_string.get_mutable());
 
-  // Verify that we can indeed get the address during constant evaluation.
-  PROTOBUF_CONSTINIT static const std::string& fixed_address_empty_string_test =
-      GetEmptyStringAlreadyInited();
-  (void)fixed_address_empty_string_test;
 
   init_protobuf_defaults_state.store(true, std::memory_order_release);
   return true;
@@ -739,74 +728,6 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
     ret->CheckTypeAndMergeFrom(*submessage);
     return ret;
   }
-}
-
-namespace {
-
-void InitSCC_DFS(SCCInfoBase* scc) {
-  if (scc->visit_status.load(std::memory_order_relaxed) !=
-      SCCInfoBase::kUninitialized)
-    return;
-  scc->visit_status.store(SCCInfoBase::kRunning, std::memory_order_relaxed);
-  // Each base is followed by an array of void*, containing first pointers to
-  // SCCInfoBase and then pointers-to-pointers to SCCInfoBase.
-  auto deps = reinterpret_cast<void**>(scc + 1);
-  auto strong_deps = reinterpret_cast<SCCInfoBase* const*>(deps);
-  for (int i = 0; i < scc->num_deps; ++i) {
-    if (strong_deps[i]) InitSCC_DFS(strong_deps[i]);
-  }
-  auto implicit_weak_deps =
-      reinterpret_cast<SCCInfoBase** const*>(deps + scc->num_deps);
-  for (int i = 0; i < scc->num_implicit_weak_deps; ++i) {
-    if (*implicit_weak_deps[i]) {
-      InitSCC_DFS(*implicit_weak_deps[i]);
-    }
-  }
-  scc->init_func();
-  // Mark done (note we use memory order release here), other threads could
-  // now see this as initialized and thus the initialization must have happened
-  // before.
-  scc->visit_status.store(SCCInfoBase::kInitialized, std::memory_order_release);
-}
-
-}  // namespace
-
-void InitSCCImpl(SCCInfoBase* scc) {
-  static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
-  // Either the default in case no initialization is running or the id of the
-  // thread that is currently initializing.
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-  static std::atomic<std::thread::id> runner;
-  auto me = std::this_thread::get_id();
-#else
-  // This is a lightweight replacement for std::thread::id. std::thread does not
-  // work on Windows XP SP2 with the latest VC++ libraries, because it utilizes
-  // the Concurrency Runtime that is only supported on Windows XP SP3 and above.
-  static std::atomic_llong runner(-1);
-  auto me = ::GetCurrentThreadId();
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
-  // This will only happen because the constructor will call InitSCC while
-  // constructing the default instance.
-  if (runner.load(std::memory_order_relaxed) == me) {
-    // Because we're in the process of constructing the default instance.
-    // We can be assured that we're already exploring this SCC.
-    GOOGLE_CHECK_EQ(scc->visit_status.load(std::memory_order_relaxed),
-             SCCInfoBase::kRunning);
-    return;
-  }
-  InitProtobufDefaults();
-  mu.Lock();
-  runner.store(me, std::memory_order_relaxed);
-  InitSCC_DFS(scc);
-
-#ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-  runner.store(std::thread::id{}, std::memory_order_relaxed);
-#else
-  runner.store(-1, std::memory_order_relaxed);
-#endif  // #ifndef GOOGLE_PROTOBUF_SUPPORT_WINDOWS_XP
-
-  mu.Unlock();
 }
 
 }  // namespace internal

@@ -41,6 +41,7 @@
 
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
+#include <google/protobuf/compiler/java/java_names.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -87,17 +88,6 @@ const std::unordered_set<std::string>* kReservedNames =
         "return",     "short",        "static",    "strictfp",   "super",
         "switch",     "synchronized", "this",      "throw",      "throws",
         "transient",  "try",          "void",      "volatile",   "while",
-    });
-
-// Names that should be avoided as field names in Kotlin.
-// All Kotlin hard keywords are in this list.
-const std::unordered_set<std::string>* kKotlinForbiddenNames =
-    new std::unordered_set<std::string>({
-        "as",    "as?",   "break", "class",  "continue",  "do",     "else",
-        "false", "for",   "fun",   "if",     "in",        "!in",    "interface",
-        "is",    "!is",   "null",  "object", "package",   "return", "super",
-        "this",  "throw", "true",  "try",    "typealias", "typeof", "val",
-        "var",   "when",  "while",
     });
 
 bool IsForbidden(const std::string& field_name) {

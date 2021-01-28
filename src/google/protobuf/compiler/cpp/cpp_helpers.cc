@@ -44,6 +44,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/compiler/cpp/cpp_names.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/compiler/scc.h>
@@ -519,6 +520,14 @@ std::string FieldMessageTypeName(const FieldDescriptor* field,
   // Note:  The Google-internal version of Protocol Buffers uses this function
   //   as a hook point for hacks to support legacy code.
   return QualifiedClassName(field->message_type(), options);
+}
+
+std::string StripProto(const std::string& filename) {
+  /*
+   * TODO(github/georgthegreat) remove this proxy method
+   * once Google's internal codebase will become ready
+   */
+  return compiler::StripProto(filename);
 }
 
 const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
@@ -1147,11 +1156,6 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
     const Descriptor* descriptor = scc->descriptors[i];
     if (descriptor->extension_range_count() > 0) {
       result.contains_extension = true;
-      // Extensions are found by looking up default_instance and extension
-      // number in a map. So you'd maybe expect here
-      // result.constructor_requires_initialization = true;
-      // However the extension registration mechanism already makes sure
-      // the default will be initialized.
     }
     for (int i = 0; i < descriptor->field_count(); i++) {
       const FieldDescriptor* field = descriptor->field(i);
@@ -1161,7 +1165,6 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
       switch (field->type()) {
         case FieldDescriptor::TYPE_STRING:
         case FieldDescriptor::TYPE_BYTES: {
-          result.constructor_requires_initialization = true;
           if (field->options().ctype() == FieldOptions::CORD) {
             result.contains_cord = true;
           }
@@ -1169,7 +1172,6 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
         }
         case FieldDescriptor::TYPE_GROUP:
         case FieldDescriptor::TYPE_MESSAGE: {
-          result.constructor_requires_initialization = true;
           const SCC* child = analyzer_.GetSCC(field->message_type());
           if (child != scc) {
             MessageAnalysis analysis = GetSCCAnalysis(child);

@@ -16,107 +16,93 @@
 #include <google/protobuf/port_def.inc>
 
 PROTOBUF_PRAGMA_INIT_SEG
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fany_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Any_google_2fprotobuf_2fany_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftype_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EnumValue_google_2fprotobuf_2ftype_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftype_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Field_google_2fprotobuf_2ftype_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftype_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Option_google_2fprotobuf_2ftype_2eproto;
-extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fsource_5fcontext_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto;
 PROTOBUF_NAMESPACE_OPEN
-class TypeDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Type> _instance;
-} _Type_default_instance_;
-class FieldDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Field> _instance;
-} _Field_default_instance_;
-class EnumDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Enum> _instance;
-} _Enum_default_instance_;
-class EnumValueDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<EnumValue> _instance;
-} _EnumValue_default_instance_;
-class OptionDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Option> _instance;
-} _Option_default_instance_;
+constexpr Type::Type(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : fields_()
+  , oneofs_()
+  , options_()
+  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , source_context_(nullptr)
+  , syntax_(0)
+{}
+struct TypeDefaultTypeInternal {
+  constexpr TypeDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~TypeDefaultTypeInternal() {}
+  union {
+    Type _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY TypeDefaultTypeInternal _Type_default_instance_;
+constexpr Field::Field(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : options_()
+  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , type_url_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , json_name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , default_value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , kind_(0)
+
+  , cardinality_(0)
+
+  , number_(0)
+  , oneof_index_(0)
+  , packed_(false){}
+struct FieldDefaultTypeInternal {
+  constexpr FieldDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~FieldDefaultTypeInternal() {}
+  union {
+    Field _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY FieldDefaultTypeInternal _Field_default_instance_;
+constexpr Enum::Enum(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : enumvalue_()
+  , options_()
+  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , source_context_(nullptr)
+  , syntax_(0)
+{}
+struct EnumDefaultTypeInternal {
+  constexpr EnumDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~EnumDefaultTypeInternal() {}
+  union {
+    Enum _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumDefaultTypeInternal _Enum_default_instance_;
+constexpr EnumValue::EnumValue(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : options_()
+  , name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , number_(0){}
+struct EnumValueDefaultTypeInternal {
+  constexpr EnumValueDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~EnumValueDefaultTypeInternal() {}
+  union {
+    EnumValue _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+constexpr Option::Option(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , value_(nullptr){}
+struct OptionDefaultTypeInternal {
+  constexpr OptionDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~OptionDefaultTypeInternal() {}
+  union {
+    Option _instance;
+  };
+};
+PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY OptionDefaultTypeInternal _Option_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsscc_info_Enum_google_2fprotobuf_2ftype_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_Enum_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::Enum();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Enum_google_2fprotobuf_2ftype_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 3, 0, InitDefaultsscc_info_Enum_google_2fprotobuf_2ftype_2eproto}, {
-      &scc_info_EnumValue_google_2fprotobuf_2ftype_2eproto.base,
-      &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,
-      &scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base,}};
-
-static void InitDefaultsscc_info_EnumValue_google_2fprotobuf_2ftype_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_EnumValue_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::EnumValue();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_EnumValue_google_2fprotobuf_2ftype_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_EnumValue_google_2fprotobuf_2ftype_2eproto}, {
-      &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,}};
-
-static void InitDefaultsscc_info_Field_google_2fprotobuf_2ftype_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_Field_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::Field();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Field_google_2fprotobuf_2ftype_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_Field_google_2fprotobuf_2ftype_2eproto}, {
-      &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,}};
-
-static void InitDefaultsscc_info_Option_google_2fprotobuf_2ftype_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_Option_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::Option();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Option_google_2fprotobuf_2ftype_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_Option_google_2fprotobuf_2ftype_2eproto}, {
-      &scc_info_Any_google_2fprotobuf_2fany_2eproto.base,}};
-
-static void InitDefaultsscc_info_Type_google_2fprotobuf_2ftype_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_Type_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::Type();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_Type_google_2fprotobuf_2ftype_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 3, 0, InitDefaultsscc_info_Type_google_2fprotobuf_2ftype_2eproto}, {
-      &scc_info_Field_google_2fprotobuf_2ftype_2eproto.base,
-      &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,
-      &scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base,}};
-
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2ftype_2eproto[5];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[3];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto = nullptr;
@@ -236,20 +222,18 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
   &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2ftype_2eproto_sccs[5] = {
-  &scc_info_Enum_google_2fprotobuf_2ftype_2eproto.base,
-  &scc_info_EnumValue_google_2fprotobuf_2ftype_2eproto.base,
-  &scc_info_Field_google_2fprotobuf_2ftype_2eproto.base,
-  &scc_info_Option_google_2fprotobuf_2ftype_2eproto.base,
-  &scc_info_Type_google_2fprotobuf_2ftype_2eproto.base,
-};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2ftype_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftype_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto, "google/protobuf/type.proto", 1592,
-  &descriptor_table_google_2fprotobuf_2ftype_2eproto_once, descriptor_table_google_2fprotobuf_2ftype_2eproto_sccs, descriptor_table_google_2fprotobuf_2ftype_2eproto_deps, 5, 2,
+  false, false, 1592, descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto, "google/protobuf/type.proto", 
+  &descriptor_table_google_2fprotobuf_2ftype_2eproto_once, descriptor_table_google_2fprotobuf_2ftype_2eproto_deps, 2, 5,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2ftype_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2ftype_2eproto, 5, file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto, file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto,
+  file_level_metadata_google_2fprotobuf_2ftype_2eproto, file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto, file_level_service_descriptors_google_2fprotobuf_2ftype_2eproto,
 };
+PROTOBUF_ATTRIBUTE_WEAK ::PROTOBUF_NAMESPACE_ID::Metadata
+descriptor_table_google_2fprotobuf_2ftype_2eproto_metadata_getter(int index) {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
+  return descriptor_table_google_2fprotobuf_2ftype_2eproto.file_level_metadata[index];
+}
 
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2ftype_2eproto(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
@@ -396,12 +380,11 @@ Type::Type(const Type& from)
 }
 
 void Type::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Type_google_2fprotobuf_2ftype_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-      reinterpret_cast<char*>(&source_context_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&syntax_) -
-      reinterpret_cast<char*>(&source_context_)) + sizeof(syntax_));
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&source_context_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&syntax_) -
+    reinterpret_cast<char*>(&source_context_)) + sizeof(syntax_));
 }
 
 Type::~Type() {
@@ -425,11 +408,6 @@ void Type::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Type::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Type& Type::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Type_google_2fprotobuf_2ftype_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Type::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
@@ -782,15 +760,14 @@ Field::Field(const Field& from)
 }
 
 void Field::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Field_google_2fprotobuf_2ftype_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  json_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  default_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-      reinterpret_cast<char*>(&kind_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&packed_) -
-      reinterpret_cast<char*>(&kind_)) + sizeof(packed_));
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+json_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+default_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&kind_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&packed_) -
+    reinterpret_cast<char*>(&kind_)) + sizeof(packed_));
 }
 
 Field::~Field() {
@@ -816,11 +793,6 @@ void Field::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Field::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Field& Field::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Field_google_2fprotobuf_2ftype_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Field::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
@@ -1266,12 +1238,11 @@ Enum::Enum(const Enum& from)
 }
 
 void Enum::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Enum_google_2fprotobuf_2ftype_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-      reinterpret_cast<char*>(&source_context_) - reinterpret_cast<char*>(this)),
-      0, static_cast<size_t>(reinterpret_cast<char*>(&syntax_) -
-      reinterpret_cast<char*>(&source_context_)) + sizeof(syntax_));
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&source_context_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&syntax_) -
+    reinterpret_cast<char*>(&source_context_)) + sizeof(syntax_));
 }
 
 Enum::~Enum() {
@@ -1295,11 +1266,6 @@ void Enum::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Enum::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Enum& Enum::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Enum_google_2fprotobuf_2ftype_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Enum::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
@@ -1600,9 +1566,8 @@ EnumValue::EnumValue(const EnumValue& from)
 }
 
 void EnumValue::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_EnumValue_google_2fprotobuf_2ftype_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  number_ = 0;
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+number_ = 0;
 }
 
 EnumValue::~EnumValue() {
@@ -1625,11 +1590,6 @@ void EnumValue::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void EnumValue::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const EnumValue& EnumValue::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_EnumValue_google_2fprotobuf_2ftype_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void EnumValue::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
@@ -1878,9 +1838,8 @@ Option::Option(const Option& from)
 }
 
 void Option::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Option_google_2fprotobuf_2ftype_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  value_ = nullptr;
+name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+value_ = nullptr;
 }
 
 Option::~Option() {
@@ -1904,11 +1863,6 @@ void Option::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void Option::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const Option& Option::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_Option_google_2fprotobuf_2ftype_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)

@@ -282,51 +282,50 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
 /* Is 64bit */
 #define IS_64BIT (SIZEOF_LONG == 8)
 
-#define FIELD_IS_REPEATED(field_descriptor)                 \
-    ((field_descriptor)->label() == FieldDescriptor::LABEL_REPEATED)
+#define FIELD_IS_REPEATED(field_descriptor) \
+  ((field_descriptor)->label() == FieldDescriptor::LABEL_REPEATED)
 
-#define GOOGLE_CHECK_GET_INT32(arg, value, err)                        \
-    int32 value;                                            \
-    if (!CheckAndGetInteger(arg, &value)) { \
-      return err;                                          \
-    }
+#define GOOGLE_CHECK_GET_INT32(arg, value, err)  \
+  int32 value;                            \
+  if (!CheckAndGetInteger(arg, &value)) { \
+    return err;                           \
+  }
 
-#define GOOGLE_CHECK_GET_INT64(arg, value, err)                        \
-    int64 value;                                            \
-    if (!CheckAndGetInteger(arg, &value)) { \
-      return err;                                          \
-    }
+#define GOOGLE_CHECK_GET_INT64(arg, value, err)  \
+  int64 value;                            \
+  if (!CheckAndGetInteger(arg, &value)) { \
+    return err;                           \
+  }
 
-#define GOOGLE_CHECK_GET_UINT32(arg, value, err)                       \
-    uint32 value;                                           \
-    if (!CheckAndGetInteger(arg, &value)) { \
-      return err;                                          \
-    }
+#define GOOGLE_CHECK_GET_UINT32(arg, value, err) \
+  uint32 value;                           \
+  if (!CheckAndGetInteger(arg, &value)) { \
+    return err;                           \
+  }
 
-#define GOOGLE_CHECK_GET_UINT64(arg, value, err)                       \
-    uint64 value;                                           \
-    if (!CheckAndGetInteger(arg, &value)) { \
-      return err;                                          \
-    }
+#define GOOGLE_CHECK_GET_UINT64(arg, value, err) \
+  uint64 value;                           \
+  if (!CheckAndGetInteger(arg, &value)) { \
+    return err;                           \
+  }
 
-#define GOOGLE_CHECK_GET_FLOAT(arg, value, err)                        \
-    float value;                                            \
-    if (!CheckAndGetFloat(arg, &value)) {                   \
-      return err;                                          \
-    }                                                       \
+#define GOOGLE_CHECK_GET_FLOAT(arg, value, err) \
+  float value;                           \
+  if (!CheckAndGetFloat(arg, &value)) {  \
+    return err;                          \
+  }
 
-#define GOOGLE_CHECK_GET_DOUBLE(arg, value, err)                       \
-    double value;                                           \
-    if (!CheckAndGetDouble(arg, &value)) {                  \
-      return err;                                          \
-    }
+#define GOOGLE_CHECK_GET_DOUBLE(arg, value, err) \
+  double value;                           \
+  if (!CheckAndGetDouble(arg, &value)) {  \
+    return err;                           \
+  }
 
-#define GOOGLE_CHECK_GET_BOOL(arg, value, err)                         \
-    bool value;                                             \
-    if (!CheckAndGetBool(arg, &value)) {                    \
-      return err;                                          \
-    }
-
+#define GOOGLE_CHECK_GET_BOOL(arg, value, err) \
+  bool value;                           \
+  if (!CheckAndGetBool(arg, &value)) {  \
+    return err;                         \
+  }
 
 #define FULL_MODULE_NAME "google.protobuf.pyext._message"
 
@@ -353,10 +352,12 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
 
 extern PyObject* PickleError_class;
 
+PyObject* PyMessage_New(const Descriptor* descriptor,
+                        PyObject* py_message_factory);
 const Message* PyMessage_GetMessagePointer(PyObject* msg);
 Message* PyMessage_GetMutableMessagePointer(PyObject* msg);
 PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
-                                              PyObject* message_factory);
+                                              PyObject* py_message_factory);
 
 bool InitProto2MessageModule(PyObject *m);
 

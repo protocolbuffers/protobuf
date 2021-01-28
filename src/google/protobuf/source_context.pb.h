@@ -53,9 +53,10 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto 
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto;
+PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 class SourceContext;
-class SourceContextDefaultTypeInternal;
+struct SourceContextDefaultTypeInternal;
 PROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
@@ -70,6 +71,7 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
  public:
   inline SourceContext() : SourceContext(nullptr) {}
   virtual ~SourceContext();
+  explicit constexpr SourceContext(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   SourceContext(const SourceContext& from);
   SourceContext(SourceContext&& from) noexcept
@@ -99,8 +101,9 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const SourceContext& default_instance();
-
+  static const SourceContext& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const SourceContext* internal_default_instance() {
     return reinterpret_cast<const SourceContext*>(
                &_SourceContext_default_instance_);
@@ -166,8 +169,7 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:

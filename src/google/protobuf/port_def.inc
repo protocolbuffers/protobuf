@@ -61,6 +61,9 @@
 #ifdef PROTOBUF_ALWAYS_INLINE
 #error PROTOBUF_ALWAYS_INLINE was previously defined
 #endif
+#ifdef PROTOBUF_NDEBUG_INLINE
+#error PROTOBUF_NDEBUG_INLINE was previously defined
+#endif
 #ifdef PROTOBUF_COLD
 #error PROTOBUF_COLD was previously defined
 #endif
@@ -154,6 +157,9 @@
 #ifdef PROTOBUF_PRAGMA_INIT_SEG
 #error PROTOBUF_PRAGMA_INIT_SEG was previously defined
 #endif
+#ifdef PROTOBUF_ATTRIBUTE_WEAK
+#error PROTOBUF_ATTRIBUTE_WEAK was previously defined
+#endif
 
 
 #define PROTOBUF_NAMESPACE "google::protobuf"
@@ -170,13 +176,13 @@
 #define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
 #define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
 #elif defined(__GNUC__)
-#  define PROTOBUF_DEPRECATED __attribute__((deprecated))
-#  define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
-# if __GNUC__ >= 6
-#  define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
-# else
-#  define PROTOBUF_DEPRECATED_ENUM
-# endif
+#define PROTOBUF_DEPRECATED __attribute__((deprecated))
+#define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
+#if __GNUC__ >= 6
+#define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
+#else
+#define PROTOBUF_DEPRECATED_ENUM
+#endif
 #elif defined(_MSC_VER)
 #define PROTOBUF_DEPRECATED __declspec(deprecated)
 #define PROTOBUF_DEPRECATED_ENUM
@@ -194,15 +200,18 @@
 
 #ifdef GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #define PROTOBUF_ALWAYS_INLINE GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+#define PROTOBUF_NDEBUG_INLINE GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #else
 #if defined(__GNUC__) && \
     (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 // For functions we want to force inline.
 // Introduced in gcc 3.1.
 #define PROTOBUF_ALWAYS_INLINE __attribute__((always_inline))
+#define PROTOBUF_NDEBUG_INLINE __attribute__((always_inline))
 #else
 // Other compilers will have to figure it out for themselves.
 #define PROTOBUF_ALWAYS_INLINE
+#define PROTOBUF_NDEBUG_INLINE
 #endif
 #endif
 
@@ -604,6 +613,15 @@
 #define PROTOBUF_PRAGMA_INIT_SEG __pragma(init_seg(lib))
 #else
 #define PROTOBUF_PRAGMA_INIT_SEG
+#endif
+
+#if defined(__has_attribute)
+#if __has_attribute(weak)
+#define PROTOBUF_ATTRIBUTE_WEAK __attribute__((weak))
+#endif
+#endif
+#if !defined(PROTOBUF_ATTRIBUTE_WEAK)
+#define PROTOBUF_ATTRIBUTE_WEAK
 #endif
 
 // Silence some MSVC warnings in all our code.

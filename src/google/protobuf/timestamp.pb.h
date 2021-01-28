@@ -53,9 +53,10 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ftimestamp_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ftimestamp_2eproto;
+PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 class Timestamp;
-class TimestampDefaultTypeInternal;
+struct TimestampDefaultTypeInternal;
 PROTOBUF_EXPORT extern TimestampDefaultTypeInternal _Timestamp_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 PROTOBUF_NAMESPACE_OPEN
@@ -70,6 +71,7 @@ class PROTOBUF_EXPORT Timestamp PROTOBUF_FINAL :
  public:
   inline Timestamp() : Timestamp(nullptr) {}
   virtual ~Timestamp();
+  explicit constexpr Timestamp(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Timestamp(const Timestamp& from);
   Timestamp(Timestamp&& from) noexcept
@@ -99,8 +101,9 @@ class PROTOBUF_EXPORT Timestamp PROTOBUF_FINAL :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return GetMetadataStatic().reflection;
   }
-  static const Timestamp& default_instance();
-
+  static const Timestamp& default_instance() {
+    return *internal_default_instance();
+  }
   static inline const Timestamp* internal_default_instance() {
     return reinterpret_cast<const Timestamp*>(
                &_Timestamp_default_instance_);
@@ -166,8 +169,7 @@ class PROTOBUF_EXPORT Timestamp PROTOBUF_FINAL :
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2ftimestamp_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2ftimestamp_2eproto.file_level_metadata[kIndexInFileMessages];
+    return ::descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_metadata_getter(kIndexInFileMessages);
   }
 
   public:

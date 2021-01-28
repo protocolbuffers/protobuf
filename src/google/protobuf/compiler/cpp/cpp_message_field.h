@@ -68,6 +68,7 @@ class MessageFieldGenerator : public FieldGenerator {
   void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
+  void GenerateConstinitInitializer(io::Printer* printer) const;
 
  protected:
   const bool implicit_weak_field_;
@@ -117,6 +118,7 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
   void GenerateCopyConstructorCode(io::Printer* printer) const {}
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
+  void GenerateConstinitInitializer(io::Printer* printer) const;
 
  private:
   const bool implicit_weak_field_;

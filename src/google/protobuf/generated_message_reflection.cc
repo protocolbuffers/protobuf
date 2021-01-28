@@ -2479,11 +2479,8 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
 }
 
 void AddDescriptorsImpl(const DescriptorTable* table) {
-  // Reflection refers to the default instances so make sure they are
-  // initialized.
-  for (int i = 0; i < table->num_sccs; i++) {
-    internal::InitSCC(table->init_default_instances[i]);
-  }
+  // Reflection refers to the default fields so make sure they are initialized.
+  internal::InitProtobufDefaults();
 
   // Ensure all dependent descriptors are registered to the generated descriptor
   // pool and message factory.
