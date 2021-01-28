@@ -645,57 +645,49 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   GenerateFieldDocComment(printer, field, options, kFieldGetter);
 
   // deprecation
-  std::string deprecation_std_string = (field->options().deprecated()) ? "@trigger_error('" +
-      field->name() +
-      " is deprecated and will be removed in the next major release', E_USER_DEPRECATED);" : "";
-  const char* deprecation_string = deprecation_std_string.c_str();
+  std::string deprecation_trigger = (field->options().deprecated()) ? "@trigger_error('" +
+      field->name() + " is deprecated.', E_USER_DEPRECATED);\n        " : "";
 
   if (oneof != NULL) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    ^deprecation_trigger^\n"
-        "    return $this->readOneof(^number^);\n"
+        "    ^deprecation_trigger^return $this->readOneof(^number^);\n"
         "}\n\n"
         "public function has^camel_name^()\n"
         "{\n"
-        "    ^deprecation_trigger^\n"
-        "    return $this->hasOneof(^number^);\n"
+        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()),
-        "deprecation_trigger", deprecation_string);
+        "deprecation_trigger", deprecation_trigger);
   } else if (field->has_presence()) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    ^deprecation_trigger^\n"
-        "    return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
+        "    ^deprecation_trigger^return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
         "}\n\n"
         "public function has^camel_name^()\n"
         "{\n"
-        "    ^deprecation_trigger^\n"
-        "    return isset($this->^name^);\n"
+        "    ^deprecation_trigger^return isset($this->^name^);\n"
         "}\n\n"
         "public function clear^camel_name^()\n"
         "{\n"
-        "    ^deprecation_trigger^\n"
-        "    unset($this->^name^);\n"
+        "    ^deprecation_trigger^unset($this->^name^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
         "default_value", DefaultForField(field),
-        "deprecation_trigger", deprecation_string);
+        "deprecation_trigger", deprecation_trigger);
   } else {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
-        "    ^deprecation_trigger^\n"
-        "    return $this->^name^;\n"
+        "    ^deprecation_trigger^return $this->^name^;\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
-        "deprecation_trigger", deprecation_string);
+        "deprecation_trigger", deprecation_trigger);
   }
 
   // For wrapper types, generate an additional getXXXUnwrapped getter
@@ -707,24 +699,28 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
     printer->Print(
         "public function get^camel_name^Unwrapped()\n"
         "{\n"
-        "    ^deprecation_trigger^\n"
-        "    return $this->readWrapperValue(\"^field_name^\");\n"
+        "    ^deprecation_trigger^return $this->readWrapperValue(\"^field_name^\");\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "field_name", field->name(),
-        "deprecation_trigger", deprecation_string);
+        "deprecation_trigger", deprecation_trigger);
   }
 
   // Generate setter.
   GenerateFieldDocComment(printer, field, options, kFieldSetter);
   printer->Print(
       "public function set^camel_name^($var)\n"
-      "{\n"
-      "    ^deprecation_trigger^\n",
-      "camel_name", UnderscoresToCamelCase(field->name(), true),
-      "deprecation_trigger", deprecation_string);
+      "{\n",
+      "camel_name", UnderscoresToCamelCase(field->name(), true));
 
   Indent(printer);
+
+  if (field->options().deprecated()) {
+      printer->Print(
+          "^deprecation_trigger^",
+          "deprecation_trigger", deprecation_trigger
+      );
+  }
 
   // Type check.
   if (field->is_map()) {

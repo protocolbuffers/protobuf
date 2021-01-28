@@ -82,7 +82,7 @@ class GeneratedClassTest extends TestBase
         // temporarily change error handler to capture the deprecated errors
         $deprecationCount = 0;
         set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
-            if ($errstr === 'deprecated_optional_int32 is deprecated and will be removed in the next major release') {
+            if ($errstr === 'deprecated_optional_int32 is deprecated.') {
                 $deprecationCount++;
             }
         }, E_USER_DEPRECATED);
