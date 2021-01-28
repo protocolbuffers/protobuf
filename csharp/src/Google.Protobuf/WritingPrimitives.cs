@@ -163,10 +163,25 @@ namespace Google.Protobuf
         /// </summary>
         public static void WriteString(ref Span<byte> buffer, ref WriterInternalState state, string value)
         {
-            // Optimise the case where we have enough space to write
-            // the string directly to the buffer, which should be common.
+            const int MaxBytesPerChar = 3;
+            const int MaxSmallStringLength = 128 / MaxBytesPerChar;
+
+            // The string is small enough that the length will always be a 1 byte varint.
+            // Also there is enough space to write length + bytes to buffer.
+            // Write string directly to the buffer, and then write length.
+            // This saves calling GetByteCount on the string. We get the string length from GetBytes.
+            if (value.Length <= MaxSmallStringLength && buffer.Length - state.position - 1 >= value.Length * MaxBytesPerChar)
+            {
+                int indexOfLengthDelimiter = state.position++;
+                buffer[indexOfLengthDelimiter] = (byte)WriteStringToBuffer(buffer, ref state, value);
+                return;
+            }
+
             int length = Utf8Encoding.GetByteCount(value);
             WriteLength(ref buffer, ref state, length);
+
+            // Optimise the case where we have enough space to write
+            // the string directly to the buffer, which should be common.
             if (buffer.Length - state.position >= length)
             {
                 if (length == value.Length) // Must be all ASCII...
@@ -179,23 +194,7 @@ namespace Google.Protobuf
                 }
                 else
                 {
-#if NETSTANDARD1_1
-                    // slowpath when Encoding.GetBytes(Char*, Int32, Byte*, Int32) is not available
-                    byte[] bytes = Utf8Encoding.GetBytes(value);
-                    WriteRawBytes(ref buffer, ref state, bytes);
-#else
-                    ReadOnlySpan<char> source = value.AsSpan();
-                    int bytesUsed;
-                    unsafe
-                    {
-                        fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
-                        fixed (byte* destinationBytes = &MemoryMarshal.GetReference(buffer.Slice(state.position)))
-                        {
-                            bytesUsed = Utf8Encoding.GetBytes(sourceChars, source.Length, destinationBytes, buffer.Length);
-                        }
-                    }
-                    state.position += bytesUsed;
-#endif
+                    WriteStringToBuffer(buffer, ref state, value);
                 }
             }
             else
@@ -207,6 +206,33 @@ namespace Google.Protobuf
                 byte[] bytes = Utf8Encoding.GetBytes(value);
                 WriteRawBytes(ref buffer, ref state, bytes);
             }
+        }
+
+        private static int WriteStringToBuffer(Span<byte> buffer, ref WriterInternalState state, string value)
+        {
+#if NETSTANDARD1_1
+            // slowpath when Encoding.GetBytes(Char*, Int32, Byte*, Int32) is not available
+            byte[] bytes = Utf8Encoding.GetBytes(value);
+            WriteRawBytes(ref buffer, ref state, bytes);
+            return bytes.Length;
+#else
+            ReadOnlySpan<char> source = value.AsSpan();
+            int bytesUsed;
+            unsafe
+            {
+                fixed (char* sourceChars = &MemoryMarshal.GetReference(source))
+                fixed (byte* destinationBytes = &MemoryMarshal.GetReference(buffer))
+                {
+                    bytesUsed = Utf8Encoding.GetBytes(
+                        sourceChars,
+                        source.Length,
+                        destinationBytes + state.position,
+                        buffer.Length - state.position);
+                }
+            }
+            state.position += bytesUsed;
+            return bytesUsed;
+#endif
         }
 
         /// <summary>
