@@ -72,6 +72,33 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test deprecated int32 field.
+    #########################################################
+
+    public function testDeprecatedInt32Field()
+    {
+        $m = new TestMessage();
+
+        // temporarily change error handler to capture the deprecated errors
+        $deprecationCount = 0;
+        set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
+            if ($errstr === 'deprecated_optional_int32 is deprecated.') {
+                $deprecationCount++;
+            }
+        }, E_USER_DEPRECATED);
+
+        // default test set
+        $m->setDeprecatedOptionalInt32(MAX_INT32);
+        $this->assertSame(MAX_INT32, $m->getDeprecatedOptionalInt32());
+        $m->setDeprecatedOptionalInt32(MIN_INT32);
+        $this->assertSame(MIN_INT32, $m->getDeprecatedOptionalInt32());
+
+        restore_error_handler();
+
+        $this->assertSame(4, $deprecationCount);
+    }
+
+    #########################################################
     # Test optional int32 field.
     #########################################################
 
