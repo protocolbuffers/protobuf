@@ -46,8 +46,8 @@ bool Convert_PhpToInt64(const zval *php_val, int64_t *i64);
 // UPB_TYPE_MESSAGE, then |desc| must be the Descriptor for this message type.
 // If type is string, message, or bytes, then |arena| will be used to copy
 // string data or fuse this arena to the given message's arena.
-bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, upb_fieldtype_t type,
-                      const Descriptor *desc, upb_arena *arena);
+bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, TypeInfo type,
+                      upb_arena *arena);
 
 // Similar to Convert_PhpToUpb, but supports automatically wrapping the wrapper
 // types if a primitive is specified:
@@ -56,16 +56,15 @@ bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, upb_fieldtype_t type,
 //
 // We currently allow this implicit conversion in initializers, but not for
 // assignment.
-bool Convert_PhpToUpbAutoWrap(zval *val, upb_msgval *upb_val,
-                              upb_fieldtype_t type, const Descriptor *desc,
+bool Convert_PhpToUpbAutoWrap(zval *val, upb_msgval *upb_val, TypeInfo type,
                               upb_arena *arena);
 
 // Converts |upb_val| to a PHP zval according to |type|. This may involve
 // creating a PHP wrapper object. If type == UPB_TYPE_MESSAGE, then |desc| must
 // be the Descriptor for this message type. Any newly created wrapper object
 // will reference |arena|.
-void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, upb_fieldtype_t type,
-                      const Descriptor *desc, zval *arena);
+void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, TypeInfo type,
+                      zval *arena);
 
 // Registers the GPBUtil class.
 void Convert_ModuleInit(void);
