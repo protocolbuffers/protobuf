@@ -27,7 +27,7 @@ if %PYTHON%==C:\python38 set vcplatform=x64
 REM Prepend newly installed Python to the PATH of this build (this cannot be
 REM done from inside the powershell script as it would require to restart
 REM the parent CMD process).
-SET PATH=%PYTHON%;%PYTHON%\Scripts;%OLD_PATH%
+SET PATH=C:\Program Files\CMake\bin;%PYTHON%;%PYTHON%\Scripts;%OLD_PATH%
 python -m pip install -U pip
 pip install wheel
 
