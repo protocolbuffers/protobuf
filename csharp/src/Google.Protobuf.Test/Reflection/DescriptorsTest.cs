@@ -35,7 +35,9 @@ using NUnit.Framework;
 using ProtobufUnittest;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.Reflection
 {
@@ -68,6 +70,24 @@ namespace Google.Protobuf.Reflection
             var converted = FileDescriptor.BuildFromByteStrings(descriptorData);
             Assert.AreEqual(3, converted.Count);
             TestFileDescriptor(converted[2], converted[1], converted[0]);
+        }
+
+        [Test]
+        public void FileDescriptor_BuildFromByteStrings_WithExtensionRegistry()
+        {
+            var extension = UnittestCustomOptionsProto3Extensions.MessageOpt1;
+
+            var byteStrings = new[]
+            {
+                DescriptorReflection.Descriptor.Proto.ToByteString(),
+                UnittestCustomOptionsProto3Reflection.Descriptor.Proto.ToByteString()
+            };
+            var registry = new ExtensionRegistry { extension };
+
+            var descriptor = FileDescriptor.BuildFromByteStrings(byteStrings, registry).Last();
+            var message = descriptor.MessageTypes.Single(t => t.Name == nameof(TestMessageWithCustomOptions));
+            var extensionValue = message.GetOptions().GetExtension(extension);
+            Assert.AreEqual(-56, extensionValue);
         }
 
         private void TestFileDescriptor(FileDescriptor file, FileDescriptor importedFile, FileDescriptor importedPublicFile)
