@@ -554,9 +554,31 @@ static void Message_Initialize(Message *intern, const Descriptor *desc) {
  */
 PHP_METHOD(Message, __construct) {
   Message* intern = (Message*)Z_OBJ_P(getThis());
-  const Descriptor* desc = Descriptor_GetFromClassEntry(Z_OBJCE_P(getThis()));
+  const Descriptor* desc;
+  zend_class_entry *ce = Z_OBJCE_P(getThis());
   upb_arena *arena = Arena_Get(&intern->arena);
   zval *init_arr = NULL;
+
+  // This descriptor should always be available, as the generated __construct
+  // method calls initOnce() to load the descriptor prior to calling us.
+  //
+  // However, if the user created their own class derived from Message, this
+  // will trigger an infinite construction loop and blow the stack.  We
+  // temporarily clear create_object to break this loop (see check in
+  // NameMap_GetMessage()).
+  PBPHP_ASSERT(ce->create_object == Message_create);
+  ce->create_object = NULL;
+  desc = Descriptor_GetFromClassEntry(ce);
+  ce->create_object = Message_create;
+
+  if (!desc) {
+    zend_throw_exception_ex(
+        NULL, 0,
+        "Couldn't find descriptor. Note only generated code may derive from "
+        "\\Google\\Protobuf\\Internal\\Message");
+    return;
+  }
+
 
   Message_Initialize(intern, desc);
 

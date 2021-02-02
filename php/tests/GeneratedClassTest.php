@@ -24,6 +24,13 @@ use Foo\testLowerCaseEnum;
 use PBEmpty\PBEcho\TestEmptyPackage;
 use Php\Test\TestNamespace;
 
+# This is not allowed, but we at least shouldn't crash.
+class C extends \Google\Protobuf\Internal\Message {
+    public function __construct($data = null) {
+        parent::__construct($data);
+    }
+}
+
 class GeneratedClassTest extends TestBase
 {
 
@@ -1721,6 +1728,16 @@ class GeneratedClassTest extends TestBase
         $m->clear();
         $this->assertFalse($m->hasOneofInt32());
         $this->assertFalse($m->hasOneofString());
+    }
+
+    #########################################################
+    # Test that we don't crash if users create their own messages.
+    #########################################################
+
+    public function testUserDefinedClass() {
+      # This is not allowed, but at least we shouldn't crash.
+      $this->expectException(Exception::class);
+      $p = new C();
     }
 
     #########################################################
