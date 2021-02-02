@@ -118,8 +118,8 @@ static int RepeatedField_compare_objects(zval *rf1, zval *rf2) {
  *
  *   $rf2 = clone $rf1;
  */
-static zend_object *RepeatedField_clone_obj(zval *object) {
-  RepeatedField* intern = (RepeatedField*)Z_OBJ_P(object);
+static zend_object *RepeatedField_clone_obj(PROTO_VAL *object) {
+  RepeatedField* intern = PROTO_VAL_P(object);
   upb_arena *arena = Arena_Get(&intern->arena);
   upb_array *clone = upb_array_new(arena, intern->type.type);
   size_t n = upb_array_size(intern->array);
