@@ -1526,6 +1526,28 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test clone.
+    #########################################################
+
+    public function testClone()
+    {
+        $m = new TestMessage([
+            'optional_int32' => -42,
+            'optional_int64' => -43,
+            'optional_message' => new Sub([
+                'a' => 33
+            ]),
+            'map_int32_message' => [1 => new Sub(['a' => 36])],
+        ]);
+        $m2 = clone $m;
+        $this->assertEquals($m->getOptionalInt32(), $m2->getOptionalInt32());
+        $this->assertEquals($m->getOptionalInt64(), $m2->getOptionalInt64());
+        $this->assertSame($m->getOptionalMessage(), $m2->getOptionalMessage());
+        $this->assertSame($m->getMapInt32Message()[1], $m2->getMapInt32Message()[1]);
+        $this->assertEquals($m->serializeToJsonString(), $m2->serializeToJsonString());
+    }
+
+    #########################################################
     # Test message equals.
     #########################################################
 
