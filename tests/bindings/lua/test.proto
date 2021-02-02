@@ -1,6 +1,8 @@
 
 syntax = "proto2";
 
+import "google/protobuf/timestamp.proto";
+
 package upb_test;
 
 message MapTest {
@@ -25,4 +27,8 @@ message UnpackedTest {
 
 message TestLargeFieldNumber {
   optional int32 i32 = 456214797;
+}
+
+message TestTimestamp {
+  optional google.protobuf.Timestamp ts = 1;
 }
