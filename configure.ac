@@ -209,11 +209,6 @@ AS_IF([test "$with_protoc" != "no"], [
 ])
 AM_CONDITIONAL([USE_EXTERNAL_PROTOC], [test "$with_protoc" != "no"])
 
-AX_PTHREAD
-AM_CONDITIONAL([HAVE_PTHREAD], [test "x$ax_pthread_ok" = "xyes"])
-# We still keep this for improving pbconfig.h for unsupported platforms.
-AC_CXX_STL_HASH
-
 # Enable ObjC support for conformance directory on OS X.
 OBJC_CONFORMANCE_TEST=0
 case "$target_os" in

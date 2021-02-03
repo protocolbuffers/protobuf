@@ -117,11 +117,6 @@ endif()
 
 add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
 
-find_package(Threads REQUIRED)
-if (CMAKE_USE_PTHREADS_INIT)
-  add_definitions(-DHAVE_PTHREAD)
-endif (CMAKE_USE_PTHREADS_INIT)
-
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
