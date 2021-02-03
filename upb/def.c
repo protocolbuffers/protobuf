@@ -2195,4 +2195,8 @@ size_t _upb_symtab_bytesloaded(const upb_symtab *s) {
   return s->bytes_loaded;
 }
 
+upb_arena *_upb_symtab_arena(const upb_symtab *s) {
+  return s->arena;
+}
+
 #undef CHK_OOM
