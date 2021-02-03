@@ -37,6 +37,7 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
+    deps = ["@com_google_protobuf//:timestamp_proto"],
 )
 
 lua_proto_library(

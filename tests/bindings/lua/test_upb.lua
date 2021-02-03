@@ -714,6 +714,11 @@ function test_large_field_number()
   assert_equal(msg.i32, msg2.i32)
 end
 
+function test_timestamp_minutes()
+  local msg = upb.json_decode(upb_test.TestTimestamp, '{"ts": "2000-01-01T00:00:00-06:59"}')
+  assert_equal(msg.ts.seconds, 946684800 + ((6 * 60) + 59) * 60)
+end
+
 function test_gc()
   local top = test_messages_proto3.TestAllTypesProto3()
   local n = 100
