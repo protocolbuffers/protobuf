@@ -15,15 +15,25 @@ class TestWellKnownTypes < Test::Unit::TestCase
 
     # millisecond accuracy
     time = Time.at(123456, 654321)
-    ts.from_time(time)
+    resp = ts.from_time(time)
     assert_equal 123456, ts.seconds
     assert_equal 654321000, ts.nanos
     assert_equal time, ts.to_time
+    assert_equal resp, ts
 
     # nanosecond accuracy
     time = Time.at(123456, Rational(654321321, 1000))
-    ts.from_time(time)
+    resp = ts.from_time(time)
+    assert_equal 123456, ts.seconds
     assert_equal 654321321, ts.nanos
+    assert_equal time, ts.to_time
+    assert_equal resp, ts
+
+    # Class based initialisation using from_time
+    time = Time.at(123456, Rational(654321321, 1000))
+    ts = Google::Protobuf::Timestamp.from_time(time)
+    assert_equal 123456, ts.seconds
+    assert_equal 654321000, ts.nanos
     assert_equal time, ts.to_time
   end
 
