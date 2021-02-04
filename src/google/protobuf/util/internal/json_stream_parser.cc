@@ -52,7 +52,6 @@ namespace util {
 
 // Allow these symbols to be referenced as util::Status, util::error::* in
 // this file.
-using util::Status;
 namespace error {
 using util::error::CANCELLED;
 using util::error::INTERNAL;

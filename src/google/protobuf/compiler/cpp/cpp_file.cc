@@ -75,11 +75,6 @@ std::string GetSortKey<FileDescriptor>(const FileDescriptor& val) {
   return val.name();
 }
 
-template <>
-std::string GetSortKey<SCC>(const SCC& val) {
-  return val.GetRepresentative()->full_name();
-}
-
 template <class T>
 bool CompareSortKeys(const T* a, const T* b) {
   return GetSortKey(*a) < GetSortKey(*b);

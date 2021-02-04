@@ -42,13 +42,11 @@
 namespace google {
 namespace protobuf {
 namespace util {
-using util::Status;
 namespace error {
 using util::error::INVALID_ARGUMENT;
 }  // namespace error
 namespace converter {
 
-using util::Status;
 
 // Tests for the JSON Stream Parser. These tests are intended to be
 // comprehensive and cover the following:

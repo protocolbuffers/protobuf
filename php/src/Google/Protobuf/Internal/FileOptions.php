@@ -49,6 +49,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * This option does nothing.
      *
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
+     * @deprecated
      */
     protected $java_generate_equals_and_hash = null;
     /**
@@ -412,19 +413,23 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
      * @return bool
+     * @deprecated
      */
     public function getJavaGenerateEqualsAndHash()
     {
+        @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
         return isset($this->java_generate_equals_and_hash) ? $this->java_generate_equals_and_hash : false;
     }
 
     public function hasJavaGenerateEqualsAndHash()
     {
+        @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
         return isset($this->java_generate_equals_and_hash);
     }
 
     public function clearJavaGenerateEqualsAndHash()
     {
+        @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
         unset($this->java_generate_equals_and_hash);
     }
 
@@ -434,9 +439,11 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
      * @param bool $var
      * @return $this
+     * @deprecated
      */
     public function setJavaGenerateEqualsAndHash($var)
     {
+        @trigger_error('java_generate_equals_and_hash is deprecated.', E_USER_DEPRECATED);
         GPBUtil::checkBool($var);
         $this->java_generate_equals_and_hash = $var;
 

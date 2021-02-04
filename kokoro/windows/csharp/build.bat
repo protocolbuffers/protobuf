@@ -11,4 +11,7 @@ set PATH=%LOCALAPPDATA%\Microsoft\dotnet;%PATH%
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
 set DOTNET_CLI_TELEMETRY_OPTOUT=true
 
+@rem Work around https://github.com/dotnet/core/issues/5881
+dotnet nuget locals all --clear
+
 call buildall.bat

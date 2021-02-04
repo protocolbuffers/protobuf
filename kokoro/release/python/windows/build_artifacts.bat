@@ -72,6 +72,16 @@ SET PYTHON_VERSION=3.8
 SET PYTHON_ARCH=64
 CALL build_single_artifact.bat || goto :error
 
+SET PYTHON=C:\python39_32bit
+SET PYTHON_VERSION=3.9
+SET PYTHON_ARCH=32
+CALL build_single_artifact.bat || goto :error
+
+SET PYTHON=C:\python39
+SET PYTHON_VERSION=3.9
+SET PYTHON_ARCH=64
+CALL build_single_artifact.bat || goto :error
+
 goto :EOF
 
 :error

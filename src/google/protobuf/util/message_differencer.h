@@ -673,11 +673,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
     void SetMessages(const Message& message1, const Message& message2);
 
    protected:
-    // Prints the specified path of fields to the buffer.  message is used to
-    // print map keys.
-    virtual void PrintPath(const std::vector<SpecificField>& field_path,
-                           bool left_side, const Message& message);
-
     // Prints the specified path of fields to the buffer.
     virtual void PrintPath(const std::vector<SpecificField>& field_path,
                            bool left_side);
