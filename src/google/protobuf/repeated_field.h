@@ -500,8 +500,7 @@ namespace internal {
 // shouldn't be necessary, but our compiler doesn't optimize std::copy very
 // effectively.
 template <typename Element,
-          bool HasTrivialCopy =
-              std::is_trivially_copy_constructible<Element>::value>
+          bool HasTrivialCopy = std::is_trivial<Element>::value>
 struct ElementCopier {
   void operator()(Element* to, const Element* from, int array_size);
 };
