@@ -4178,6 +4178,7 @@ const upb_filedef *upb_symtab_addfile(
     upb_symtab *s, const google_protobuf_FileDescriptorProto *file,
     upb_status *status);
 size_t _upb_symtab_bytesloaded(const upb_symtab *s);
+upb_arena *_upb_symtab_arena(const upb_symtab *s);
 
 /* For generated code only: loads a generated descriptor. */
 typedef struct upb_def_init {
