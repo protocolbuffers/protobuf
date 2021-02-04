@@ -47,6 +47,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Now Proto3 Oneof fields have "has" methods for checking their presence in
     Java.
   * Annotates Java proto generated *_FIELD_NUMBER constants.
+  * Add -assumevalues to remove JvmMemoryAccessor on Android.
 
   Python
   * Provided an override for the reverse() method that will reverse the internal
