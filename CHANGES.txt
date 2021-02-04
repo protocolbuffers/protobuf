@@ -1,5 +1,9 @@
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
+  Protocol Compiler
+  * Optional fields for proto3 are enabled by default, and no longer require
+    the --experimental_allow_proto3_optional flag.
+
   C++
   * MessageDifferencer: fixed bug when using custom ignore with multiple
     unknown fields
@@ -28,6 +32,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     crash.
   * Constant initialize the global message instances
   * Pretty print 'max' instead of numeric values in reserved ranges.
+  * Removed remaining instances of std::is_pod, which is deprecated in C++20.
 
   Java
   * Avoid possible UnsupportedOperationException when using CodedInputSteam
