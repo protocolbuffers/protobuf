@@ -33,6 +33,8 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Constant initialize the global message instances
   * Pretty print 'max' instead of numeric values in reserved ranges.
   * Removed remaining instances of std::is_pod, which is deprecated in C++20.
+  * Changes to reduce code size for unknown field handling by making uncommon
+    cases out of line.
 
   Java
   * Avoid possible UnsupportedOperationException when using CodedInputSteam
