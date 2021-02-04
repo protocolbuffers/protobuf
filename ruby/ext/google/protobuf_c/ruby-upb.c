@@ -7640,7 +7640,7 @@ static void jsondec_field(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
 
   if (!f) {
     if ((d->options & UPB_JSONDEC_IGNOREUNKNOWN) == 0) {
-      jsondec_errf(d, "No such field: '" UPB_STRVIEW_FORMAT "'",
+      jsondec_errf(d, "No such field: " UPB_STRVIEW_FORMAT,
                    UPB_STRVIEW_ARGS(name));
     }
     jsondec_skipval(d);
