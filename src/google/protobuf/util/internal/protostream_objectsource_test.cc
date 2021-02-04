@@ -79,7 +79,6 @@ using proto_util_converter::testing::Proto3Message;
 using proto_util_converter::testing::StructType;
 using proto_util_converter::testing::TimestampDuration;
 using ::testing::_;
-using util::Status;
 
 
 namespace {
@@ -117,12 +116,13 @@ class ProtostreamObjectSourceTest
     ArrayInputStream arr_stream(proto.data(), proto.size());
     CodedInputStream in_stream(&arr_stream);
 
+    ProtoStreamObjectSource::RenderOptions render_options;
+    render_options.use_lower_camel_for_enums = use_lower_camel_for_enums_;
+    render_options.use_ints_for_enums = use_ints_for_enums_;
+    render_options.preserve_proto_field_names = use_preserve_proto_field_names_;
     std::unique_ptr<ProtoStreamObjectSource> os(
-        helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor)));
-    if (use_lower_camel_for_enums_) os->set_use_lower_camel_for_enums(true);
-    if (use_ints_for_enums_) os->set_use_ints_for_enums(true);
-    if (use_preserve_proto_field_names_)
-      os->set_preserve_proto_field_names(true);
+        helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor),
+                               render_options));
     os->set_max_recursion_depth(64);
     return os->WriteTo(&mock_);
   }

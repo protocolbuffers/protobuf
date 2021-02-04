@@ -198,44 +198,6 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
   return 0;
 }
 
-// Compute the byte size of in-memory representation of the oneof fields
-// in default oneof instance.
-int OneofFieldSpaceUsed(const FieldDescriptor* field) {
-  typedef FieldDescriptor FD;  // avoid line wrapping
-  switch (field->cpp_type()) {
-    case FD::CPPTYPE_INT32:
-      return sizeof(int32);
-    case FD::CPPTYPE_INT64:
-      return sizeof(int64);
-    case FD::CPPTYPE_UINT32:
-      return sizeof(uint32);
-    case FD::CPPTYPE_UINT64:
-      return sizeof(uint64);
-    case FD::CPPTYPE_DOUBLE:
-      return sizeof(double);
-    case FD::CPPTYPE_FLOAT:
-      return sizeof(float);
-    case FD::CPPTYPE_BOOL:
-      return sizeof(bool);
-    case FD::CPPTYPE_ENUM:
-      return sizeof(int);
-
-    case FD::CPPTYPE_MESSAGE:
-      return sizeof(Message*);
-
-    case FD::CPPTYPE_STRING:
-      switch (field->options().ctype()) {
-        default:
-        case FieldOptions::STRING:
-          return sizeof(ArenaStringPtr);
-      }
-      break;
-  }
-
-  GOOGLE_LOG(DFATAL) << "Can't get here.";
-  return 0;
-}
-
 inline int DivideRoundingUp(int i, int j) { return (i + (j - 1)) / j; }
 
 static const int kSafeAlignment = sizeof(uint64);

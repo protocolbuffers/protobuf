@@ -74,68 +74,57 @@ class TypeInfo;
 class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
  public:
   struct RenderOptions {
-    RenderOptions() {}
+    RenderOptions() = default;
     RenderOptions(const RenderOptions&) = default;
 
-    // whether to render enums using lowercamelcase.
+    // Sets whether or not to use lowerCamelCase casing for enum values. If set
+    // to false, enum values are output without any case conversions.
+    //
+    // For example, if we have an enum:
+    // enum Type {
+    //   ACTION_AND_ADVENTURE = 1;
+    // }
+    // Type type = 20;
+    //
+    // And this option is set to true. Then the rendered "type" field will have
+    // the string "actionAndAdventure".
+    // {
+    //   ...
+    //   "type": "actionAndAdventure",
+    //   ...
+    // }
+    //
+    // If set to false, the rendered "type" field will have the string
+    // "ACTION_AND_ADVENTURE".
+    // {
+    //   ...
+    //   "type": "ACTION_AND_ADVENTURE",
+    //   ...
+    // }
     bool use_lower_camel_for_enums = false;
 
-    // whether to render enums as ints always. defaults to false.
+    // Sets whether to always output enums as ints, by default this is off, and
+    // enums are rendered as strings.
     bool use_ints_for_enums = false;
 
-    // whether to preserve proto field names
+    // Whether to preserve proto field names
     bool preserve_proto_field_names = false;
 
   };
 
   ProtoStreamObjectSource(io::CodedInputStream* stream,
                           TypeResolver* type_resolver,
+                          const google::protobuf::Type& type)
+      : ProtoStreamObjectSource(stream, type_resolver, type, RenderOptions()) {}
+  ProtoStreamObjectSource(io::CodedInputStream* stream,
+                          TypeResolver* type_resolver,
                           const google::protobuf::Type& type,
-                          const RenderOptions& render_options = {});
+                          const RenderOptions& render_options);
 
   ~ProtoStreamObjectSource() override;
 
   util::Status NamedWriteTo(StringPiece name,
                             ObjectWriter* ow) const override;
-
-  // Sets whether or not to use lowerCamelCase casing for enum values. If set to
-  // false, enum values are output without any case conversions.
-  //
-  // For example, if we have an enum:
-  // enum Type {
-  //   ACTION_AND_ADVENTURE = 1;
-  // }
-  // Type type = 20;
-  //
-  // And this option is set to true. Then the rendered "type" field will have
-  // the string "actionAndAdventure".
-  // {
-  //   ...
-  //   "type": "actionAndAdventure",
-  //   ...
-  // }
-  //
-  // If set to false, the rendered "type" field will have the string
-  // "ACTION_AND_ADVENTURE".
-  // {
-  //   ...
-  //   "type": "ACTION_AND_ADVENTURE",
-  //   ...
-  // }
-  void set_use_lower_camel_for_enums(bool value) {
-    render_options_.use_lower_camel_for_enums = value;
-  }
-
-  // Sets whether to always output enums as ints, by default this is off, and
-  // enums are rendered as strings.
-  void set_use_ints_for_enums(bool value) {
-    render_options_.use_ints_for_enums = value;
-  }
-
-  // Sets whether to use original proto field names
-  void set_preserve_proto_field_names(bool value) {
-    render_options_.preserve_proto_field_names = value;
-  }
 
   // Sets the max recursion depth of proto message to be deserialized. Proto
   // messages over this depth will fail to be deserialized.
@@ -143,7 +132,6 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   void set_max_recursion_depth(int max_depth) {
     max_recursion_depth_ = max_depth;
   }
-
 
  protected:
   // Writes a proto2 Message to the ObjectWriter. When the given end_tag is
@@ -317,7 +305,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   const google::protobuf::Type& type_;
 
 
-  RenderOptions render_options_;
+  const RenderOptions render_options_;
 
   // Tracks current recursion depth.
   mutable int recursion_depth_;
