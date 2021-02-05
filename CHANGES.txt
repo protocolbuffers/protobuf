@@ -1,5 +1,9 @@
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
+  Protocol Compiler
+  * Optional fields for proto3 are enabled by default, and no longer require
+    the --experimental_allow_proto3_optional flag.
+
   C++
   * MessageDifferencer: fixed bug when using custom ignore with multiple
     unknown fields
@@ -28,6 +32,9 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     crash.
   * Constant initialize the global message instances
   * Pretty print 'max' instead of numeric values in reserved ranges.
+  * Removed remaining instances of std::is_pod, which is deprecated in C++20.
+  * Changes to reduce code size for unknown field handling by making uncommon
+    cases out of line.
 
   Java
   * Avoid possible UnsupportedOperationException when using CodedInputSteam
@@ -40,6 +47,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Now Proto3 Oneof fields have "has" methods for checking their presence in
     Java.
   * Annotates Java proto generated *_FIELD_NUMBER constants.
+  * Add -assumevalues to remove JvmMemoryAccessor on Android.
 
   Python
   * Provided an override for the reverse() method that will reverse the internal

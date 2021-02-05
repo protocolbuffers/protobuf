@@ -2378,48 +2378,6 @@ TEST_F(CommandLineInterfaceTest, MissingValueAtEndError) {
   ExpectErrorText("Missing value for flag: --test_out\n");
 }
 
-TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowed) {
-  CreateTempFile("google/foo.proto",
-                 "syntax = \"proto3\";\n"
-                 "message Foo {\n"
-                 "  optional int32 i = 1;\n"
-                 "}\n");
-
-  Run("protocol_compiler --proto_path=$tmpdir google/foo.proto "
-      "-odescriptor.pb");
-
-  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
-}
-
-TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedDescriptor) {
-  CreateTempFile("google/foo.proto",
-                 "syntax = \"proto3\";\n"
-                 "message Foo {\n"
-                 "  optional int32 i = 1;\n"
-                 "}\n");
-
-  Run("protocol_compiler --experimental_allow_proto3_optional "
-      "--proto_path=$tmpdir google/foo.proto "
-      " -o$tmpdir/descriptor.pb");
-  ExpectNoErrors();
-
-  Run("protocol_compiler --descriptor_set_in=$tmpdir/descriptor.pb"
-      " google/foo.proto --test_out=$tmpdir");
-  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
-}
-
-TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedGenCode) {
-  CreateTempFile("google/foo.proto",
-                 "syntax = \"proto3\";\n"
-                 "message Foo {\n"
-                 "  optional int32 i = 1;\n"
-                 "}\n");
-
-  Run("protocol_compiler --proto_path=$tmpdir google/foo.proto "
-      "--test_out=$tmpdir");
-
-  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
-}
 
 TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedNoCodegenSupport) {
   CreateTempFile("google/foo.proto",

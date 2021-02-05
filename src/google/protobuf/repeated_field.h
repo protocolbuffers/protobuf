@@ -438,7 +438,7 @@ class RepeatedField final {
   //
   // The first version executes at 7 cycles per iteration while the second
   // version near 1 or 2 cycles.
-  template <int = 0, bool = std::is_pod<Element>::value>
+  template <int = 0, bool = std::is_trivial<Element>::value>
   class FastAdderImpl {
    public:
     explicit FastAdderImpl(RepeatedField* rf) : repeated_field_(rf) {
@@ -500,8 +500,7 @@ namespace internal {
 // shouldn't be necessary, but our compiler doesn't optimize std::copy very
 // effectively.
 template <typename Element,
-          bool HasTrivialCopy =
-              std::is_standard_layout<Element>::value && std::is_trivial<Element>::value>
+          bool HasTrivialCopy = std::is_trivial<Element>::value>
 struct ElementCopier {
   void operator()(Element* to, const Element* from, int array_size);
 };
