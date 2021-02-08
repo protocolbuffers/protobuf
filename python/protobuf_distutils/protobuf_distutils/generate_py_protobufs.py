@@ -39,6 +39,7 @@ import distutils.spawn as spawn
 from distutils.cmd import Command
 from distutils.errors import DistutilsOptionError, DistutilsExecError
 
+
 class generate_py_protobufs(Command):
     """Generates Python sources for .proto files."""
 
@@ -58,7 +59,9 @@ class generate_py_protobufs(Command):
         self.proto_root_path = None
         self.extra_proto_paths = []
         self.output_dir = '.'
+        self.grpc_output_dir = None
         self.proto_files = None
+        self.grpc_proto_files = None
         self.recurse = True
         self.protoc = None
 
@@ -127,6 +130,14 @@ class generate_py_protobufs(Command):
 
         self.ensure_string_list('proto_files')
 
+        if self.grpc_proto_files is not None:
+            self.ensure_string_list('grpc_proto_files')
+
+            # Using the same output_dir if grpc output dir is not specified.
+            if self.grpc_output_dir is None:
+                self.grpc_output_dir = self.output_dir
+            self.ensure_dirname('grpc_output_dir')
+
         if self.protoc is None:
             self.protoc = os.getenv('PROTOC')
         if self.protoc is None:
@@ -145,3 +156,11 @@ class generate_py_protobufs(Command):
              '--python_out=' + self.output_dir,
             ] + proto_paths + self.proto_files,
             search_path=0)
+
+        # Ruining grpc out separately because the grpc proto files are optional
+        if self.grpc_proto_files:
+            spawn.spawn(
+                [self.protoc,
+                 '--grpc_python_out=' + self.grpc_output_dir,
+                 ] + proto_paths + self.grpc_proto_files,
+                search_path=0)

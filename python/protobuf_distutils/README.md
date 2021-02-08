@@ -35,7 +35,9 @@ setup(
             'source_dir':        'path/to/protos',
             'extra_proto_paths': ['path/to/other/project/protos'],
             'output_dir':        'path/to/project/sources',  # default '.'
+            'grpc_output_dir':   'path/to/project/sources',  # default 'output_dir'
             'proto_files':       ['relative/path/to/just_this_file.proto'],
+            'grpc_proto_files':  ['relative/path/to/just_this_file.proto'],
             'protoc':            'path/to/protoc.exe',
         },
     },
@@ -90,6 +92,17 @@ $ python -m pip install .
   `${proto_root_path}/subdir/message.proto` will be generated as the Python
   module `${output_dir}/subdir/message_pb2.py`.
 
+- `grpc_output_dir`:
+
+  Specifies where generated gRPC stubs will be placed. 
+  If not provided it will be defaulted to `output_dir`. This will passed as parameter 
+  to `grpc_python_out` for `protoc`.
+
+  The generated files will be placed under `grpc_output_dir` according to the
+  relative source paths under `proto_root_path`. For example, the source file
+  `${proto_root_path}/subdir/message.proto` will be generated as the Python
+  module `${grpc_output_dir}/subdir/message_pb2.py`.
+
 - `proto_files`:
 
   A list of strings, specific .proto file paths for generating code, instead of
@@ -98,6 +111,19 @@ $ python -m pip install .
   These paths are relative to `source_dir`. For example, to generate code
   for just `${source_dir}/subdir/message.proto`, specify
   `['subdir/message.proto']`.
+
+- `grpc_proto_files`:
+
+  A list of strings, specific .proto file paths for generating gRPC stubs.
+  Unlike `proto_files`, the parameter will not instead look into `source_path`
+  for all the `*.proto` files if values not provided. 
+  The `grpc_python_out` command will be skipped if `grpc_proto_files` are not
+  provided. 
+
+  These paths are relative to `source_dir`. For example, to generate code
+  for just `${source_dir}/subdir/message.proto`, specify
+  `['subdir/message.proto']`.
+  The generated code will be placed in `grpc_output_dir`.
 
 - `protoc`:
 
