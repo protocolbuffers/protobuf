@@ -21,7 +21,17 @@
   <api>beta</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
- <notes>PHP protobuf</notes>
+ <notes>
+ New changes in 3.15.0:
+  * unregister INI entries and fix invalid read on shutdown (#8042)
+  * Fix PhpDoc comments for message accessors to include "|null". (#8136)
+  * fix: convert native PHP floats to single precision (#8187)
+  * Fixed PHP to support field numbers >=2**28. (#8235)
+  * feat: add support for deprecated fields to PHP compiler (#8223)
+  * Protect against stack overflow if the user derives from Message. (#8248)
+  * Fixed clone for Message, RepeatedField, and MapField. (#8245)
+  * Updated upb to allow nonzero offset minutes in JSON timestamps. (#8258)
+ </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
     <file baseinstalldir="/" name="config.m4" role="src"/>
