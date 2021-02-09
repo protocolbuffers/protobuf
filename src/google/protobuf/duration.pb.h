@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <string>
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
 
 #include <google/protobuf/port_def.inc>
 #if PROTOBUF_VERSION < 3014000

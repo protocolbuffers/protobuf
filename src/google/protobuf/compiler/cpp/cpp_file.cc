@@ -1108,7 +1108,10 @@ void FileGenerator::GenerateTopHeaderGuard(io::Printer* printer, bool pb_h) {
       "#define $1$\n"
       "\n"
       "#include <limits>\n"
-      "#include <string>\n",
+      "#include <string>\n"
+      "#if __cplusplus >= 201703L\n"
+      "# include <string_view>\n"
+      "#endif\n",
       IncludeGuard(file_, pb_h, options_));
   if (!options_.opensource_runtime && !enum_generators_.empty()) {
     // Add header to provide std::is_integral for safe Enum_Name() function.

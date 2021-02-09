@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <string>
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
 
 #include <google/protobuf/port_def.inc>
 #if PROTOBUF_VERSION < 3014000
@@ -775,6 +778,11 @@ inline void Api::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Api.name)
 }
+#if __cplusplus >= 201703L
+inline void Api::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Api::_internal_mutable_name() {
   
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -911,6 +919,11 @@ inline void Api::set_version(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Api.version)
 }
+#if __cplusplus >= 201703L
+inline void Api::set_version(const std::string_view& value) {
+  set_version(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Api::_internal_mutable_version() {
   
   return version_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1112,6 +1125,11 @@ inline void Method::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.name)
 }
+#if __cplusplus >= 201703L
+inline void Method::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Method::_internal_mutable_name() {
   
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1173,6 +1191,11 @@ inline void Method::set_request_type_url(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.request_type_url)
 }
+#if __cplusplus >= 201703L
+inline void Method::set_request_type_url(const std::string_view& value) {
+  set_request_type_url(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Method::_internal_mutable_request_type_url() {
   
   return request_type_url_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1254,6 +1277,11 @@ inline void Method::set_response_type_url(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.response_type_url)
 }
+#if __cplusplus >= 201703L
+inline void Method::set_response_type_url(const std::string_view& value) {
+  set_response_type_url(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Method::_internal_mutable_response_type_url() {
   
   return response_type_url_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1395,6 +1423,11 @@ inline void Mixin::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Mixin.name)
 }
+#if __cplusplus >= 201703L
+inline void Mixin::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Mixin::_internal_mutable_name() {
   
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1456,6 +1489,11 @@ inline void Mixin::set_root(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Mixin.root)
 }
+#if __cplusplus >= 201703L
+inline void Mixin::set_root(const std::string_view& value) {
+  set_root(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Mixin::_internal_mutable_root() {
   
   return root_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());

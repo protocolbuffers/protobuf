@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <string>
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
 
 #include <google/protobuf/port_def.inc>
 #if PROTOBUF_VERSION < 3014000
@@ -6691,6 +6694,11 @@ inline void FileDescriptorProto::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.name)
 }
+#if __cplusplus >= 201703L
+inline void FileDescriptorProto::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -6764,6 +6772,11 @@ inline void FileDescriptorProto::set_package(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.package)
 }
+#if __cplusplus >= 201703L
+inline void FileDescriptorProto::set_package(const std::string_view& value) {
+  set_package(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileDescriptorProto::_internal_mutable_package() {
   _has_bits_[0] |= 0x00000002u;
   return package_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -7327,6 +7340,11 @@ inline void FileDescriptorProto::set_syntax(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileDescriptorProto.syntax)
 }
+#if __cplusplus >= 201703L
+inline void FileDescriptorProto::set_syntax(const std::string_view& value) {
+  set_syntax(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileDescriptorProto::_internal_mutable_syntax() {
   _has_bits_[0] |= 0x00000004u;
   return syntax_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -7607,6 +7625,11 @@ inline void DescriptorProto::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.DescriptorProto.name)
 }
+#if __cplusplus >= 201703L
+inline void DescriptorProto::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* DescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -8157,6 +8180,11 @@ inline void FieldDescriptorProto::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.name)
 }
+#if __cplusplus >= 201703L
+inline void FieldDescriptorProto::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FieldDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -8316,6 +8344,11 @@ inline void FieldDescriptorProto::set_type_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.type_name)
 }
+#if __cplusplus >= 201703L
+inline void FieldDescriptorProto::set_type_name(const std::string_view& value) {
+  set_type_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FieldDescriptorProto::_internal_mutable_type_name() {
   _has_bits_[0] |= 0x00000004u;
   return type_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -8389,6 +8422,11 @@ inline void FieldDescriptorProto::set_extendee(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.extendee)
 }
+#if __cplusplus >= 201703L
+inline void FieldDescriptorProto::set_extendee(const std::string_view& value) {
+  set_extendee(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FieldDescriptorProto::_internal_mutable_extendee() {
   _has_bits_[0] |= 0x00000002u;
   return extendee_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -8462,6 +8500,11 @@ inline void FieldDescriptorProto::set_default_value(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.default_value)
 }
+#if __cplusplus >= 201703L
+inline void FieldDescriptorProto::set_default_value(const std::string_view& value) {
+  set_default_value(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FieldDescriptorProto::_internal_mutable_default_value() {
   _has_bits_[0] |= 0x00000008u;
   return default_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -8563,6 +8606,11 @@ inline void FieldDescriptorProto::set_json_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldDescriptorProto.json_name)
 }
+#if __cplusplus >= 201703L
+inline void FieldDescriptorProto::set_json_name(const std::string_view& value) {
+  set_json_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FieldDescriptorProto::_internal_mutable_json_name() {
   _has_bits_[0] |= 0x00000010u;
   return json_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -8751,6 +8799,11 @@ inline void OneofDescriptorProto::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.OneofDescriptorProto.name)
 }
+#if __cplusplus >= 201703L
+inline void OneofDescriptorProto::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* OneofDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -8971,6 +9024,11 @@ inline void EnumDescriptorProto::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.EnumDescriptorProto.name)
 }
+#if __cplusplus >= 201703L
+inline void EnumDescriptorProto::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* EnumDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -9283,6 +9341,11 @@ inline void EnumValueDescriptorProto::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.EnumValueDescriptorProto.name)
 }
+#if __cplusplus >= 201703L
+inline void EnumValueDescriptorProto::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* EnumValueDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -9471,6 +9534,11 @@ inline void ServiceDescriptorProto::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.ServiceDescriptorProto.name)
 }
+#if __cplusplus >= 201703L
+inline void ServiceDescriptorProto::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* ServiceDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -9670,6 +9738,11 @@ inline void MethodDescriptorProto::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.MethodDescriptorProto.name)
 }
+#if __cplusplus >= 201703L
+inline void MethodDescriptorProto::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* MethodDescriptorProto::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -9743,6 +9816,11 @@ inline void MethodDescriptorProto::set_input_type(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.MethodDescriptorProto.input_type)
 }
+#if __cplusplus >= 201703L
+inline void MethodDescriptorProto::set_input_type(const std::string_view& value) {
+  set_input_type(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* MethodDescriptorProto::_internal_mutable_input_type() {
   _has_bits_[0] |= 0x00000002u;
   return input_type_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -9816,6 +9894,11 @@ inline void MethodDescriptorProto::set_output_type(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.MethodDescriptorProto.output_type)
 }
+#if __cplusplus >= 201703L
+inline void MethodDescriptorProto::set_output_type(const std::string_view& value) {
+  set_output_type(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* MethodDescriptorProto::_internal_mutable_output_type() {
   _has_bits_[0] |= 0x00000004u;
   return output_type_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10032,6 +10115,11 @@ inline void FileOptions::set_java_package(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.java_package)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_java_package(const std::string_view& value) {
+  set_java_package(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_java_package() {
   _has_bits_[0] |= 0x00000001u;
   return java_package_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10105,6 +10193,11 @@ inline void FileOptions::set_java_outer_classname(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.java_outer_classname)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_java_outer_classname(const std::string_view& value) {
+  set_java_outer_classname(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_java_outer_classname() {
   _has_bits_[0] |= 0x00000002u;
   return java_outer_classname_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10291,6 +10384,11 @@ inline void FileOptions::set_go_package(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.go_package)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_go_package(const std::string_view& value) {
+  set_go_package(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_go_package() {
   _has_bits_[0] |= 0x00000004u;
   return go_package_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10532,6 +10630,11 @@ inline void FileOptions::set_objc_class_prefix(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.objc_class_prefix)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_objc_class_prefix(const std::string_view& value) {
+  set_objc_class_prefix(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_objc_class_prefix() {
   _has_bits_[0] |= 0x00000008u;
   return objc_class_prefix_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10605,6 +10708,11 @@ inline void FileOptions::set_csharp_namespace(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.csharp_namespace)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_csharp_namespace(const std::string_view& value) {
+  set_csharp_namespace(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_csharp_namespace() {
   _has_bits_[0] |= 0x00000010u;
   return csharp_namespace_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10678,6 +10786,11 @@ inline void FileOptions::set_swift_prefix(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.swift_prefix)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_swift_prefix(const std::string_view& value) {
+  set_swift_prefix(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_swift_prefix() {
   _has_bits_[0] |= 0x00000020u;
   return swift_prefix_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10751,6 +10864,11 @@ inline void FileOptions::set_php_class_prefix(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.php_class_prefix)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_php_class_prefix(const std::string_view& value) {
+  set_php_class_prefix(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_php_class_prefix() {
   _has_bits_[0] |= 0x00000040u;
   return php_class_prefix_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10824,6 +10942,11 @@ inline void FileOptions::set_php_namespace(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.php_namespace)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_php_namespace(const std::string_view& value) {
+  set_php_namespace(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_php_namespace() {
   _has_bits_[0] |= 0x00000080u;
   return php_namespace_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10897,6 +11020,11 @@ inline void FileOptions::set_php_metadata_namespace(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.php_metadata_namespace)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_php_metadata_namespace(const std::string_view& value) {
+  set_php_metadata_namespace(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_php_metadata_namespace() {
   _has_bits_[0] |= 0x00000100u;
   return php_metadata_namespace_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -10970,6 +11098,11 @@ inline void FileOptions::set_ruby_package(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.ruby_package)
 }
+#if __cplusplus >= 201703L
+inline void FileOptions::set_ruby_package(const std::string_view& value) {
+  set_ruby_package(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* FileOptions::_internal_mutable_ruby_package() {
   _has_bits_[0] |= 0x00000200u;
   return ruby_package_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -11838,6 +11971,11 @@ inline void UninterpretedOption_NamePart::set_name_part(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.UninterpretedOption.NamePart.name_part)
 }
+#if __cplusplus >= 201703L
+inline void UninterpretedOption_NamePart::set_name_part(const std::string_view& value) {
+  set_name_part(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* UninterpretedOption_NamePart::_internal_mutable_name_part() {
   _has_bits_[0] |= 0x00000001u;
   return name_part_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -11982,6 +12120,11 @@ inline void UninterpretedOption::set_identifier_value(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.UninterpretedOption.identifier_value)
 }
+#if __cplusplus >= 201703L
+inline void UninterpretedOption::set_identifier_value(const std::string_view& value) {
+  set_identifier_value(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* UninterpretedOption::_internal_mutable_identifier_value() {
   _has_bits_[0] |= 0x00000001u;
   return identifier_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -12139,6 +12282,11 @@ inline void UninterpretedOption::set_string_value(const void* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.UninterpretedOption.string_value)
 }
+#if __cplusplus >= 201703L
+inline void UninterpretedOption::set_string_value(const std::string_view& value) {
+  set_string_value(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* UninterpretedOption::_internal_mutable_string_value() {
   _has_bits_[0] |= 0x00000002u;
   return string_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -12212,6 +12360,11 @@ inline void UninterpretedOption::set_aggregate_value(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.UninterpretedOption.aggregate_value)
 }
+#if __cplusplus >= 201703L
+inline void UninterpretedOption::set_aggregate_value(const std::string_view& value) {
+  set_aggregate_value(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* UninterpretedOption::_internal_mutable_aggregate_value() {
   _has_bits_[0] |= 0x00000004u;
   return aggregate_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -12383,6 +12536,11 @@ inline void SourceCodeInfo_Location::set_leading_comments(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceCodeInfo.Location.leading_comments)
 }
+#if __cplusplus >= 201703L
+inline void SourceCodeInfo_Location::set_leading_comments(const std::string_view& value) {
+  set_leading_comments(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* SourceCodeInfo_Location::_internal_mutable_leading_comments() {
   _has_bits_[0] |= 0x00000001u;
   return leading_comments_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -12456,6 +12614,11 @@ inline void SourceCodeInfo_Location::set_trailing_comments(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
+#if __cplusplus >= 201703L
+inline void SourceCodeInfo_Location::set_trailing_comments(const std::string_view& value) {
+  set_trailing_comments(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* SourceCodeInfo_Location::_internal_mutable_trailing_comments() {
   _has_bits_[0] |= 0x00000002u;
   return trailing_comments_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -12697,6 +12860,11 @@ inline void GeneratedCodeInfo_Annotation::set_source_file(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
 }
+#if __cplusplus >= 201703L
+inline void GeneratedCodeInfo_Annotation::set_source_file(const std::string_view& value) {
+  set_source_file(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* GeneratedCodeInfo_Annotation::_internal_mutable_source_file() {
   _has_bits_[0] |= 0x00000001u;
   return source_file_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());

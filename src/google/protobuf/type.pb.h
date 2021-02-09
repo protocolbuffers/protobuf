@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <string>
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
 
 #include <google/protobuf/port_def.inc>
 #if PROTOBUF_VERSION < 3014000
@@ -1396,6 +1399,11 @@ inline void Type::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Type.name)
 }
+#if __cplusplus >= 201703L
+inline void Type::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Type::_internal_mutable_name() {
   
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1770,6 +1778,11 @@ inline void Field::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Field.name)
 }
+#if __cplusplus >= 201703L
+inline void Field::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Field::_internal_mutable_name() {
   
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1831,6 +1844,11 @@ inline void Field::set_type_url(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Field.type_url)
 }
+#if __cplusplus >= 201703L
+inline void Field::set_type_url(const std::string_view& value) {
+  set_type_url(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Field::_internal_mutable_type_url() {
   
   return type_url_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1971,6 +1989,11 @@ inline void Field::set_json_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Field.json_name)
 }
+#if __cplusplus >= 201703L
+inline void Field::set_json_name(const std::string_view& value) {
+  set_json_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Field::_internal_mutable_json_name() {
   
   return json_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -2032,6 +2055,11 @@ inline void Field::set_default_value(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Field.default_value)
 }
+#if __cplusplus >= 201703L
+inline void Field::set_default_value(const std::string_view& value) {
+  set_default_value(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Field::_internal_mutable_default_value() {
   
   return default_value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -2097,6 +2125,11 @@ inline void Enum::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Enum.name)
 }
+#if __cplusplus >= 201703L
+inline void Enum::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Enum::_internal_mutable_name() {
   
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -2337,6 +2370,11 @@ inline void EnumValue::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.EnumValue.name)
 }
+#if __cplusplus >= 201703L
+inline void EnumValue::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* EnumValue::_internal_mutable_name() {
   
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -2461,6 +2499,11 @@ inline void Option::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Option.name)
 }
+#if __cplusplus >= 201703L
+inline void Option::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Option::_internal_mutable_name() {
   
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());

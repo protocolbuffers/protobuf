@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <string>
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
 
 #include <google/protobuf/port_def.inc>
 #if PROTOBUF_VERSION < 3014000
@@ -1564,6 +1567,11 @@ inline void StringValue::set_value(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.StringValue.value)
 }
+#if __cplusplus >= 201703L
+inline void StringValue::set_value(const std::string_view& value) {
+  set_value(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* StringValue::_internal_mutable_value() {
   
   return value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1629,6 +1637,11 @@ inline void BytesValue::set_value(const void* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.BytesValue.value)
 }
+#if __cplusplus >= 201703L
+inline void BytesValue::set_value(const std::string_view& value) {
+  set_value(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* BytesValue::_internal_mutable_value() {
   
   return value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());

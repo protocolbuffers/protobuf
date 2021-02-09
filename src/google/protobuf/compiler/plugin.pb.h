@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <string>
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
 
 #include <google/protobuf/port_def.inc>
 #if PROTOBUF_VERSION < 3014000
@@ -1121,6 +1124,11 @@ inline void Version::set_suffix(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.Version.suffix)
 }
+#if __cplusplus >= 201703L
+inline void Version::set_suffix(const std::string_view& value) {
+  set_suffix(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Version::_internal_mutable_suffix() {
   _has_bits_[0] |= 0x00000001u;
   return suffix_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1272,6 +1280,11 @@ inline void CodeGeneratorRequest::set_parameter(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
+#if __cplusplus >= 201703L
+inline void CodeGeneratorRequest::set_parameter(const std::string_view& value) {
+  set_parameter(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* CodeGeneratorRequest::_internal_mutable_parameter() {
   _has_bits_[0] |= 0x00000001u;
   return parameter_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1468,6 +1481,11 @@ inline void CodeGeneratorResponse_File::set_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
+#if __cplusplus >= 201703L
+inline void CodeGeneratorResponse_File::set_name(const std::string_view& value) {
+  set_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* CodeGeneratorResponse_File::_internal_mutable_name() {
   _has_bits_[0] |= 0x00000001u;
   return name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1541,6 +1559,11 @@ inline void CodeGeneratorResponse_File::set_insertion_point(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
+#if __cplusplus >= 201703L
+inline void CodeGeneratorResponse_File::set_insertion_point(const std::string_view& value) {
+  set_insertion_point(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* CodeGeneratorResponse_File::_internal_mutable_insertion_point() {
   _has_bits_[0] |= 0x00000002u;
   return insertion_point_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1614,6 +1637,11 @@ inline void CodeGeneratorResponse_File::set_content(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
+#if __cplusplus >= 201703L
+inline void CodeGeneratorResponse_File::set_content(const std::string_view& value) {
+  set_content(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* CodeGeneratorResponse_File::_internal_mutable_content() {
   _has_bits_[0] |= 0x00000004u;
   return content_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -1770,6 +1798,11 @@ inline void CodeGeneratorResponse::set_error(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
+#if __cplusplus >= 201703L
+inline void CodeGeneratorResponse::set_error(const std::string_view& value) {
+  set_error(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* CodeGeneratorResponse::_internal_mutable_error() {
   _has_bits_[0] |= 0x00000001u;
   return error_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());

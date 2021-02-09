@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <string>
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
 
 #include <google/protobuf/port_def.inc>
 #if PROTOBUF_VERSION < 3014000
@@ -261,6 +264,11 @@ inline void SourceContext::set_file_name(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceContext.file_name)
 }
+#if __cplusplus >= 201703L
+inline void SourceContext::set_file_name(const std::string_view& value) {
+  set_file_name(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* SourceContext::_internal_mutable_file_name() {
   
   return file_name_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());

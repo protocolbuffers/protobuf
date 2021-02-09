@@ -6,6 +6,9 @@
 
 #include <limits>
 #include <string>
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
 
 #include <google/protobuf/port_def.inc>
 #if PROTOBUF_VERSION < 3014000
@@ -313,6 +316,11 @@ inline void Any::set_type_url(const char* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Any.type_url)
 }
+#if __cplusplus >= 201703L
+inline void Any::set_type_url(const std::string_view& value) {
+  set_type_url(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Any::_internal_mutable_type_url() {
   
   return type_url_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
@@ -374,6 +382,11 @@ inline void Any::set_value(const void* value,
       reinterpret_cast<const char*>(value), size), GetArena());
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Any.value)
 }
+#if __cplusplus >= 201703L
+inline void Any::set_value(const std::string_view& value) {
+  set_value(value.data(), value.size());
+}
+#endif // c++17
 inline std::string* Any::_internal_mutable_value() {
   
   return value_.Mutable(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
