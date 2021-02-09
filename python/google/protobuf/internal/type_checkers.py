@@ -38,13 +38,18 @@ TYPE_TO_BYTE_SIZE_FN: A dictionary with field types and a size computing
 TYPE_TO_SERIALIZE_METHOD: A dictionary with field types and serialization
   function.
 FIELD_TYPE_TO_WIRE_TYPE: A dictionary with field typed and their
-  coresponding wire types.
+  corresponding wire types.
 TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
   function.
 """
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+try:
+  import ctypes
+except Exception:  # pylint: disable=broad-except
+  ctypes = None
+  import struct
 import numbers
 import six
 
@@ -58,6 +63,29 @@ from google.protobuf.internal import wire_format
 from google.protobuf import descriptor
 
 _FieldDescriptor = descriptor.FieldDescriptor
+
+
+def TruncateToFourByteFloat(original):
+  if ctypes:
+    return ctypes.c_float(original).value
+  else:
+    return struct.unpack('<f', struct.pack('<f', original))[0]
+
+
+def ToShortestFloat(original):
+  """Returns the shortest float that has same value in wire."""
+  # All 4 byte floats have between 6 and 9 significant digits, so we
+  # start with 6 as the lower bound.
+  # It has to be iterative because use '.9g' directly can not get rid
+  # of the noises for most values. For example if set a float_field=0.9
+  # use '.9g' will print 0.899999976.
+  precision = 6
+  rounded = float('{0:.{1}g}'.format(original, precision))
+  while TruncateToFourByteFloat(rounded) != original:
+    precision += 1
+    rounded = float('{0:.{1}g}'.format(original, precision))
+  return rounded
+
 
 def SupportsOpenEnums(field_descriptor):
   return field_descriptor.containing_type.syntax == "proto3"
@@ -257,9 +285,7 @@ class FloatValueChecker(object):
     if converted_value < _FLOAT_MIN:
       return _NEG_INF
 
-    return converted_value
-    # TODO(jieluo): convert to 4 bytes float (c style float) at setters:
-    # return struct.unpack('f', struct.pack('f', converted_value))
+    return TruncateToFourByteFloat(converted_value)
 
   def DefaultValue(self):
     return 0.0

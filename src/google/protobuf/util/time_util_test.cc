@@ -83,7 +83,7 @@ TEST(TimeUtilTest, TimestampStringFormat) {
   EXPECT_TRUE(TimeUtil::FromString("1970-01-01T00:00:00.0000001Z", &time));
   EXPECT_EQ(100, TimeUtil::TimestampToNanoseconds(time));
 
-  // Also accpets offsets.
+  // Also accepts offsets.
   EXPECT_TRUE(TimeUtil::FromString("1970-01-01T00:00:00-08:00", &time));
   EXPECT_EQ(8 * 3600, TimeUtil::TimestampToSeconds(time));
 }
@@ -119,10 +119,10 @@ TEST(TimeUtilTest, DurationStringFormat) {
   // Duration must support range from -315,576,000,000s to +315576000000s
   // which includes negative values.
   EXPECT_TRUE(TimeUtil::FromString("315576000000.999999999s", &d));
-  EXPECT_EQ(315576000000LL, d.seconds());
+  EXPECT_EQ(int64{315576000000}, d.seconds());
   EXPECT_EQ(999999999, d.nanos());
   EXPECT_TRUE(TimeUtil::FromString("-315576000000.999999999s", &d));
-  EXPECT_EQ(-315576000000LL, d.seconds());
+  EXPECT_EQ(int64{-315576000000}, d.seconds());
   EXPECT_EQ(-999999999, d.nanos());
 }
 
@@ -278,20 +278,22 @@ TEST(TimeUtilTest, DurationOperators) {
   // Multiplication should not overflow if the result fits into the supported
   // range of Duration (intermediate result may be larger than int64).
   EXPECT_EQ("315575999684.424s",
-            TimeUtil::ToString((one_second - one_nano) * 315576000000LL));
+            TimeUtil::ToString((one_second - one_nano) * int64{315576000000}));
   EXPECT_EQ("-315575999684.424s",
-            TimeUtil::ToString((one_nano - one_second) * 315576000000LL));
-  EXPECT_EQ("-315575999684.424s",
-            TimeUtil::ToString((one_second - one_nano) * (-315576000000LL)));
+            TimeUtil::ToString((one_nano - one_second) * int64{315576000000}));
+  EXPECT_EQ("-315575999684.424s", TimeUtil::ToString((one_second - one_nano) *
+                                                     (int64{-315576000000})));
 
   // Test / and %
   EXPECT_EQ("0.999999999s", TimeUtil::ToString(a / 2));
   EXPECT_EQ("-0.999999999s", TimeUtil::ToString(b / 2));
-  Duration large = TimeUtil::SecondsToDuration(315576000000LL) - one_nano;
+  Duration large = TimeUtil::SecondsToDuration(int64{315576000000}) - one_nano;
   // We have to handle division with values beyond 64 bits.
-  EXPECT_EQ("0.999999999s", TimeUtil::ToString(large / 315576000000LL));
-  EXPECT_EQ("-0.999999999s", TimeUtil::ToString((-large) / 315576000000LL));
-  EXPECT_EQ("-0.999999999s", TimeUtil::ToString(large / (-315576000000LL)));
+  EXPECT_EQ("0.999999999s", TimeUtil::ToString(large / int64{315576000000}));
+  EXPECT_EQ("-0.999999999s",
+            TimeUtil::ToString((-large) / int64{315576000000}));
+  EXPECT_EQ("-0.999999999s",
+            TimeUtil::ToString(large / (int64{-315576000000})));
   Duration large2 = large + one_nano;
   EXPECT_EQ(large, large % large2);
   EXPECT_EQ(-large, (-large) % large2);

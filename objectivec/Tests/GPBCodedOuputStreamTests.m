@@ -400,7 +400,7 @@
 
 - (void)testWriteStringsWithZeroChar {
   // Unicode allows `\0` as a character, and NSString is a class cluster, so
-  // there are a few different classes that could end up beind a given string.
+  // there are a few different classes that could end up behind a given string.
   // Historically, we've seen differences based on constant strings in code and
   // strings built via the NSString apis. So this round trips them to ensure
   // they are acting as expected.

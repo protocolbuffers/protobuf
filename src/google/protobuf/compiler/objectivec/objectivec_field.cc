@@ -48,16 +48,16 @@ namespace objectivec {
 namespace {
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<string, string>* variables) {
-  string camel_case_name = FieldName(descriptor);
-  string raw_field_name;
+                             std::map<std::string, std::string>* variables) {
+  std::string camel_case_name = FieldName(descriptor);
+  std::string raw_field_name;
   if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {
     raw_field_name = descriptor->message_type()->name();
   } else {
     raw_field_name = descriptor->name();
   }
   // The logic here has to match -[GGPBFieldDescriptor textFormatName].
-  const string un_camel_case_name(
+  const std::string un_camel_case_name(
       UnCamelCaseFieldName(camel_case_name, descriptor));
   const bool needs_custom_name = (raw_field_name != un_camel_case_name);
 
@@ -67,10 +67,10 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   } else {
     (*variables)["comments"] = "\n";
   }
-  const string& classname = ClassName(descriptor->containing_type());
+  const std::string& classname = ClassName(descriptor->containing_type());
   (*variables)["classname"] = classname;
   (*variables)["name"] = camel_case_name;
-  const string& capitalized_name = FieldNameCapitalized(descriptor);
+  const std::string& capitalized_name = FieldNameCapitalized(descriptor);
   (*variables)["capitalized_name"] = capitalized_name;
   (*variables)["raw_field_name"] = raw_field_name;
   (*variables)["field_number_name"] =
@@ -78,7 +78,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["field_number"] = StrCat(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor);
-  std::vector<string> field_flags;
+  std::vector<std::string> field_flags;
   if (descriptor->is_repeated()) field_flags.push_back("GPBFieldRepeated");
   if (descriptor->is_required()) field_flags.push_back("GPBFieldRequired");
   if (descriptor->is_optional()) field_flags.push_back("GPBFieldOptional");
@@ -91,14 +91,22 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
   }
+  // It will clear on a zero value if...
+  //  - not repeated/map
+  //  - doesn't have presence
+  bool clear_on_zero =
+      (!descriptor->is_repeated() && !descriptor->has_presence());
+  if (clear_on_zero) {
+    field_flags.push_back("GPBFieldClearHasIvarOnZero");
+  }
 
   (*variables)["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
 
   (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["default_name"] = GPBGenericValueFieldName(descriptor);
 
-  (*variables)["dataTypeSpecific_name"] = "className";
-  (*variables)["dataTypeSpecific_value"] = "NULL";
+  (*variables)["dataTypeSpecific_name"] = "clazz";
+  (*variables)["dataTypeSpecific_value"] = "Nil";
 
   (*variables)["storage_offset_value"] =
       "(uint32_t)offsetof(" + classname + "__storage_, " + camel_case_name + ")";
@@ -177,7 +185,12 @@ void FieldGenerator::GenerateCFunctionImplementations(
 }
 
 void FieldGenerator::DetermineForwardDeclarations(
-    std::set<string>* fwd_decls) const {
+    std::set<std::string>* fwd_decls) const {
+  // Nothing
+}
+
+void FieldGenerator::DetermineObjectiveCClassDefinitions(
+    std::set<std::string>* fwd_decls) const {
   // Nothing
 }
 
@@ -233,11 +246,16 @@ void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
 }
 
 void FieldGenerator::SetOneofIndexBase(int index_base) {
-  if (descriptor_->containing_oneof() != NULL) {
-    int index = descriptor_->containing_oneof()->index() + index_base;
+  const OneofDescriptor *oneof = descriptor_->real_containing_oneof();
+  if (oneof != NULL) {
+    int index = oneof->index() + index_base;
     // Flip the sign to mark it as a oneof.
     variables_["has_index"] = StrCat(-index);
   }
+}
+
+bool FieldGenerator::WantsHasProperty(void) const {
+  return descriptor_->has_presence() && !descriptor_->real_containing_oneof();
 }
 
 void FieldGenerator::FinishInitialization(void) {
@@ -284,20 +302,8 @@ void SingleFieldGenerator::GeneratePropertyImplementation(
   }
 }
 
-bool SingleFieldGenerator::WantsHasProperty(void) const {
-  if (descriptor_->containing_oneof() != NULL) {
-    // If in a oneof, it uses the oneofcase instead of a has bit.
-    return false;
-  }
-  if (HasFieldPresence(descriptor_->file())) {
-    // In proto1/proto2, every field has a has_$name$() method.
-    return true;
-  }
-  return false;
-}
-
 bool SingleFieldGenerator::RuntimeUsesHasBit(void) const {
-  if (descriptor_->containing_oneof() != NULL) {
+  if (descriptor_->real_containing_oneof()) {
     // The oneof tracks what is set instead.
     return false;
   }
@@ -397,13 +403,8 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
   printer->Print("\n");
 }
 
-bool RepeatedFieldGenerator::WantsHasProperty(void) const {
-  // Consumer check the array size/existance rather than a has bit.
-  return false;
-}
-
 bool RepeatedFieldGenerator::RuntimeUsesHasBit(void) const {
-  return false;  // The array having anything is what is used.
+  return false;  // The array (or map/dict) having anything is what is used.
 }
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,

@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
@@ -92,7 +94,7 @@ public class LiteralByteStringTest extends TestCase {
       stillEqual = (iter.hasNext() && referenceBytes[i] == iter.nextByte());
     }
     assertTrue(classUnderTest + " must capture the right bytes", stillEqual);
-    assertFalse(classUnderTest + " must have exhausted the itertor", iter.hasNext());
+    assertFalse(classUnderTest + " must have exhausted the iterator", iter.hasNext());
 
     try {
       iter.nextByte();
@@ -512,10 +514,25 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(classUnderTest + " InputStream must now be exhausted", -1, input.read());
   }
 
+  public void testNewInput_readZeroBytes() throws IOException {
+    InputStream input = stringUnderTest.newInput();
+    assertEquals(
+        classUnderTest + " InputStream.read() returns 0 when told to read 0 bytes and not at EOF",
+        0,
+        input.read(new byte[0]));
+
+    input.skip(input.available());
+    assertEquals(
+        classUnderTest + " InputStream.read() returns -1 when told to read 0 bytes at EOF",
+        -1,
+        input.read(new byte[0]));
+  }
+
   public void testNewInput_skip() throws IOException {
     InputStream input = stringUnderTest.newInput();
     int stringSize = stringUnderTest.size();
     int nearEndIndex = stringSize * 2 / 3;
+
     long skipped1 = input.skip(nearEndIndex);
     assertEquals("InputStream.skip()", skipped1, nearEndIndex);
     assertEquals("InputStream.available()", stringSize - skipped1, input.available());
@@ -524,12 +541,16 @@ public class LiteralByteStringTest extends TestCase {
     assertEquals(
         "InputStream.skip(), read()", stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
     assertEquals("InputStream.available()", stringSize - skipped1 - 1, input.available());
+
     long skipped2 = input.skip(stringSize);
     assertEquals("InputStream.skip() incomplete", skipped2, stringSize - skipped1 - 1);
     assertEquals("InputStream.skip(), no more input", 0, input.available());
     assertEquals("InputStream.skip(), no more input", -1, input.read());
+    assertThat(input.skip(1)).isEqualTo(0);
+    assertThat(input.read(new byte[1], /* off= */ 0, /*len=*/ 0)).isEqualTo(-1);
+
     input.reset();
-    assertEquals("InputStream.reset() succeded", stringSize - skipped1, input.available());
+    assertEquals("InputStream.reset() succeeded", stringSize - skipped1, input.available());
     assertEquals(
         "InputStream.reset(), read()", stringUnderTest.byteAt(nearEndIndex) & 0xFF, input.read());
   }

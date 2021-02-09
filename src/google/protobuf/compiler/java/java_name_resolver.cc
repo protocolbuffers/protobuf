@@ -91,7 +91,7 @@ std::string ClassNameWithoutPackage(const ServiceDescriptor* descriptor,
 }
 
 // Return true if a and b are equals (case insensitive).
-NameEquality CheckNameEquality(const string& a, const string& b) {
+NameEquality CheckNameEquality(const std::string& a, const std::string& b) {
   if (ToUpper(a) == ToUpper(b)) {
     if (a == b) {
       return NameEquality::EXACT_EQUAL;
@@ -160,7 +160,14 @@ std::string ClassNameResolver::GetFileImmutableClassName(
 
 std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
                                                 bool immutable) {
-  if (immutable) {
+  return GetFileClassName(file, immutable, false);
+}
+
+std::string ClassNameResolver::GetFileClassName(const FileDescriptor* file,
+                                                bool immutable, bool kotlin) {
+  if (kotlin) {
+    return GetFileImmutableClassName(file) + "Kt";
+  } else if (immutable) {
     return GetFileImmutableClassName(file);
   } else {
     return "Mutable" + GetFileImmutableClassName(file);
@@ -200,9 +207,14 @@ std::string ClassNameResolver::GetDescriptorClassName(
 
 std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
                                             bool immutable) {
+  return GetClassName(descriptor, immutable, false);
+}
+
+std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
+                                            bool immutable, bool kotlin) {
   std::string result = FileJavaPackage(descriptor, immutable);
   if (!result.empty()) result += '.';
-  result += GetFileClassName(descriptor, immutable);
+  result += GetFileClassName(descriptor, immutable, kotlin);
   return result;
 }
 
@@ -210,51 +222,80 @@ std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
 // or outer class name.
 std::string ClassNameResolver::GetClassFullName(
     const std::string& name_without_package, const FileDescriptor* file,
-    bool immutable, bool multiple_files) {
+    bool immutable, bool is_own_file) {
+  return GetClassFullName(name_without_package, file, immutable, is_own_file,
+                          false);
+}
+
+std::string ClassNameResolver::GetClassFullName(
+    const std::string& name_without_package, const FileDescriptor* file,
+    bool immutable, bool is_own_file, bool kotlin) {
   std::string result;
-  if (multiple_files) {
+  if (is_own_file) {
     result = FileJavaPackage(file, immutable);
   } else {
-    result = GetClassName(file, immutable);
+    result = GetClassName(file, immutable, kotlin);
   }
   if (!result.empty()) {
     result += '.';
   }
   result += name_without_package;
+  if (kotlin) result += "Kt";
   return result;
 }
 
 std::string ClassNameResolver::GetClassName(const Descriptor* descriptor,
                                             bool immutable) {
-  return GetClassFullName(ClassNameWithoutPackage(descriptor, immutable),
-                          descriptor->file(), immutable,
-                          MultipleJavaFiles(descriptor->file(), immutable));
+  return GetClassName(descriptor, immutable, false);
+}
+
+std::string ClassNameResolver::GetClassName(const Descriptor* descriptor,
+                                            bool immutable, bool kotlin) {
+  return GetClassFullName(
+      ClassNameWithoutPackage(descriptor, immutable), descriptor->file(),
+      immutable, MultipleJavaFiles(descriptor->file(), immutable), kotlin);
 }
 
 std::string ClassNameResolver::GetClassName(const EnumDescriptor* descriptor,
                                             bool immutable) {
-  return GetClassFullName(ClassNameWithoutPackage(descriptor, immutable),
-                          descriptor->file(), immutable,
-                          MultipleJavaFiles(descriptor->file(), immutable));
+  return GetClassName(descriptor, immutable, false);
+}
+
+std::string ClassNameResolver::GetClassName(const EnumDescriptor* descriptor,
+                                            bool immutable, bool kotlin) {
+  return GetClassFullName(
+      ClassNameWithoutPackage(descriptor, immutable), descriptor->file(),
+      immutable, MultipleJavaFiles(descriptor->file(), immutable), kotlin);
 }
 
 std::string ClassNameResolver::GetClassName(const ServiceDescriptor* descriptor,
                                             bool immutable) {
+  return GetClassName(descriptor, immutable, false);
+}
+
+std::string ClassNameResolver::GetClassName(const ServiceDescriptor* descriptor,
+                                            bool immutable, bool kotlin) {
   return GetClassFullName(ClassNameWithoutPackage(descriptor, immutable),
                           descriptor->file(), immutable,
-                          MultipleJavaFiles(descriptor->file(), immutable));
+                          IsOwnFile(descriptor, immutable), kotlin);
 }
 
 // Get the Java Class style full name of a message.
 std::string ClassNameResolver::GetJavaClassFullName(
     const std::string& name_without_package, const FileDescriptor* file,
     bool immutable) {
+  return GetJavaClassFullName(name_without_package, file, immutable, false);
+}
+
+std::string ClassNameResolver::GetJavaClassFullName(
+    const std::string& name_without_package, const FileDescriptor* file,
+    bool immutable, bool kotlin) {
   std::string result;
   if (MultipleJavaFiles(file, immutable)) {
     result = FileJavaPackage(file, immutable);
     if (!result.empty()) result += '.';
   } else {
-    result = GetClassName(file, immutable);
+    result = GetClassName(file, immutable, kotlin);
     if (!result.empty()) result += '$';
   }
   result += StringReplace(name_without_package, ".", "$", true);
@@ -263,7 +304,12 @@ std::string ClassNameResolver::GetJavaClassFullName(
 
 std::string ClassNameResolver::GetExtensionIdentifierName(
     const FieldDescriptor* descriptor, bool immutable) {
-  return GetClassName(descriptor->containing_type(), immutable) + "." +
+  return GetExtensionIdentifierName(descriptor, immutable, false);
+}
+
+std::string ClassNameResolver::GetExtensionIdentifierName(
+    const FieldDescriptor* descriptor, bool immutable, bool kotlin) {
+  return GetClassName(descriptor->containing_type(), immutable, kotlin) + "." +
          descriptor->name();
 }
 

@@ -44,7 +44,6 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/reflection.h>
 #include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/reflection.h>
 #include <google/protobuf/repeated_field.h>

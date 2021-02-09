@@ -378,7 +378,7 @@ VALUE RepeatedField_deep_copy(VALUE _self) {
   for (i = 0; i < self->size; i++, off += elem_size) {
     void* to_mem = (uint8_t *)new_rptfield_self->elements + off;
     void* from_mem = (uint8_t *)self->elements + off;
-    native_slot_deep_copy(field_type, to_mem, from_mem);
+    native_slot_deep_copy(field_type, self->field_type_class, to_mem, from_mem);
     new_rptfield_self->size++;
   }
 
@@ -451,7 +451,8 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
     for (i = 0; i < self->size; i++, off += elem_size) {
       void* self_mem = ((uint8_t *)self->elements) + off;
       void* other_mem = ((uint8_t *)other->elements) + off;
-      if (!native_slot_eq(field_type, self_mem, other_mem)) {
+      if (!native_slot_eq(field_type, self->field_type_class, self_mem,
+                          other_mem)) {
         return Qfalse;
       }
     }

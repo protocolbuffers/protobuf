@@ -39,6 +39,12 @@ try:
   import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+import sys
+try:
+  import tracemalloc
+except ImportError:
+  # Requires python 3.4+
+  pass
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -112,8 +118,7 @@ class UnknownFieldsTest(unittest.TestCase):
                      wire_format.WIRETYPE_LENGTH_DELIMITED)
     d = unknown_fields[0].data
     message_new = message_set_extensions_pb2.TestMessageSetExtension1()
-    message_new.ParseFromString(d.tobytes() if isinstance(d, (
-        memoryview)) else d)
+    message_new.ParseFromString(d)
     self.assertEqual(message1, message_new)
 
     # Verify that the unknown extension is serialized unchanged
@@ -208,6 +213,8 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
           self.assertEqual(expected_value[1], unknown_field.data[0].wire_type)
           self.assertEqual(expected_value[2], unknown_field.data[0].data)
           continue
+        if expected_type == wire_format.WIRETYPE_LENGTH_DELIMITED:
+          self.assertIn(type(unknown_field.data), (str, bytes))
         if field_descriptor.label == descriptor.FieldDescriptor.LABEL_REPEATED:
           self.assertIn(unknown_field.data, expected_value)
         else:
@@ -250,7 +257,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.InternalCheckUnknownField('optional_fixed64',
                                    self.all_fields.optional_fixed64)
 
-    # Test lengthd elimited.
+    # Test length delimited.
     self.CheckUnknownField('optional_string',
                            unknown_fields,
                            self.all_fields.optional_string.encode('utf-8'))
@@ -310,6 +317,24 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
       len(unknown_fields)
     self.assertIn('UnknownFields does not exist.',
                   str(context.exception))
+
+  @unittest.skipIf((sys.version_info.major, sys.version_info.minor) < (3, 4), 
+                   'tracemalloc requires python 3.4+')
+  def testUnknownFieldsNoMemoryLeak(self):
+    # Call to UnknownFields must not leak memory
+    nb_leaks = 1234
+    def leaking_function():
+      for _ in range(nb_leaks):
+        self.empty_message.UnknownFields()
+    tracemalloc.start()
+    snapshot1 = tracemalloc.take_snapshot()
+    leaking_function()
+    snapshot2 = tracemalloc.take_snapshot()
+    top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+    tracemalloc.stop()
+    # There's no easy way to look for a precise leak source.
+    # Rely on a "marker" count value while checking allocated memory.
+    self.assertEqual([], [x for x in top_stats if x.count_diff == nb_leaks])
 
   def testSubUnknownFields(self):
     message = unittest_pb2.TestAllTypes()

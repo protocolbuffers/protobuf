@@ -49,7 +49,7 @@ const char kRfc3339TimeFormat[] = "%E4Y-%m-%dT%H:%M:%S";
 // timestamps like "1-01-0001T23:59:59Z" instead of "0001-01-0001T23:59:59Z".
 const char kRfc3339TimeFormatNoPadding[] = "%Y-%m-%dT%H:%M:%S";
 
-// Minimun seconds allowed in a google.protobuf.Timestamp value.
+// Minimum seconds allowed in a google.protobuf.Timestamp value.
 const int64 kTimestampMinSeconds = -62135596800LL;
 
 // Maximum seconds allowed in a google.protobuf.Timestamp value.

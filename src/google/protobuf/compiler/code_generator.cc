@@ -50,7 +50,7 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                                 const std::string& parameter,
                                 GeneratorContext* generator_context,
                                 std::string* error) const {
-  // Default implemenation is just to call the per file method, and prefix any
+  // Default implementation is just to call the per file method, and prefix any
   // error string with the file to provide context.
   bool succeeded = true;
   for (int i = 0; i < files.size(); i++) {
@@ -83,6 +83,12 @@ io::ZeroCopyOutputStream* GeneratorContext::OpenForInsert(
     const std::string& filename, const std::string& insertion_point) {
   GOOGLE_LOG(FATAL) << "This GeneratorContext does not support insertion.";
   return NULL;  // make compiler happy
+}
+
+io::ZeroCopyOutputStream* GeneratorContext::OpenForInsertWithGeneratedCodeInfo(
+    const std::string& filename, const std::string& insertion_point,
+    const google::protobuf::GeneratedCodeInfo& /*info*/) {
+  return OpenForInsert(filename, insertion_point);
 }
 
 void GeneratorContext::ListParsedFiles(

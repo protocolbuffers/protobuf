@@ -1,4 +1,4 @@
-FROM 32bit/debian:jessie
+FROM i386/debian:jessie
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
@@ -20,6 +20,9 @@ RUN apt-get update && apt-get install -y \
   parallel \
   time \
   wget \
+  re2c \
+  sqlite3 \
+  libsqlite3-dev \
   && apt-get clean
 
 # Install php dependencies
@@ -217,6 +220,46 @@ RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.phar \
   && chmod +x phpunit \
   && cp phpunit /usr/local/php-7.3/bin \
   && mv phpunit /usr/local/php-7.3-zts/bin
+
+# php 7.4
+RUN wget https://ftp.gnu.org/gnu/bison/bison-3.0.1.tar.gz -O /var/local/bison-3.0.1.tar.gz
+RUN cd /var/local \
+  && tar -zxvf bison-3.0.1.tar.gz \
+  && cd /var/local/bison-3.0.1 \
+  && ./configure \
+  && make \
+  && make install
+
+RUN wget https://github.com/php/php-src/archive/php-7.4.0.tar.gz -O /var/local/php-7.4.0.tar.gz
+
+RUN cd /var/local \
+  && tar -zxvf php-7.4.0.tar.gz
+
+RUN cd /var/local/php-src-php-7.4.0 \
+  && ./buildconf --force \
+  && ./configure \
+  --enable-bcmath \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.4 \
+  && make \
+  && make install \
+  && make clean
+RUN cd /var/local/php-src-php-7.4.0 \
+  && ./buildconf --force \
+  && ./configure \
+  --enable-maintainer-zts \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-7.4-zts \
+  && make \
+  && make install \
+  && make clean
+
+RUN wget -O phpunit https://phar.phpunit.de/phpunit-8.phar \
+  && chmod +x phpunit \
+  && cp phpunit /usr/local/php-7.4/bin \
+  && mv phpunit /usr/local/php-7.4-zts/bin
 
 # Install php dependencies
 RUN apt-get clean && apt-get update && apt-get install -y --force-yes \

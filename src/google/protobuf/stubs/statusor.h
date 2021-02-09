@@ -153,6 +153,7 @@ class StatusOr {
   // If you need to initialize a T object from the stored value,
   // ConsumeValueOrDie() may be more efficient.
   const T& ValueOrDie() const;
+  const T& value () const;
 
  private:
   Status status_;
@@ -204,7 +205,7 @@ inline StatusOr<T>::StatusOr(const Status& status) {
 template<typename T>
 inline StatusOr<T>::StatusOr(const T& value) {
   if (internal::StatusOrHelper::Specialize<T>::IsValueNull(value)) {
-    status_ = Status(error::INTERNAL, "nullptr is not a vaild argument.");
+    status_ = Status(error::INTERNAL, "nullptr is not a valid argument.");
   } else {
     status_ = Status::OK;
     value_ = value;
@@ -249,6 +250,14 @@ inline bool StatusOr<T>::ok() const {
 
 template<typename T>
 inline const T& StatusOr<T>::ValueOrDie() const {
+  if (!status_.ok()) {
+    internal::StatusOrHelper::Crash(status_);
+  }
+  return value_;
+}
+
+template<typename T>
+inline const T& StatusOr<T>::value() const {
   if (!status_.ok()) {
     internal::StatusOrHelper::Crash(status_);
   }

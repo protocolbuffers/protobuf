@@ -31,6 +31,7 @@
 /**
  * @fileoverview Definition of jspb.Message.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author mwr@google.com (Mark Rawling)
  */
 
@@ -317,7 +318,7 @@ jspb.Message.getIndex_ = function(msg, fieldNumber) {
   return fieldNumber + msg.arrayIndexOffset_;
 };
 
-// This is only here to ensure we are not back sliding on ES6 requiements for
+// This is only here to ensure we are not back sliding on ES6 requirements for
 // protos in g3.
 jspb.Message.hiddenES6Property_ = class {};
 
@@ -366,7 +367,7 @@ jspb.Message.initialize = function(
 
   if (!jspb.Message.SERIALIZE_EMPTY_TRAILING_FIELDS) {
     // TODO(jakubvrana): This is same for all instances, move to prototype.
-    // TODO(jakubvrana): There are indexOf calls on this in serializtion,
+    // TODO(jakubvrana): There are indexOf calls on this in serialization,
     // consider switching to a set.
     msg.repeatedFields = repeatedFields;
   }
@@ -417,7 +418,7 @@ jspb.Message.EMPTY_LIST_SENTINEL_ = goog.DEBUG && Object.freeze ?
  */
 jspb.Message.isArray_ = function(o) {
   return jspb.Message.ASSUME_LOCAL_ARRAYS ? o instanceof Array :
-                                            goog.isArray(o);
+                                            Array.isArray(o);
 };
 
 /**
@@ -778,7 +779,7 @@ jspb.Message.getRepeatedBooleanField = function(msg, fieldNumber) {
  * @return {?string} The field's coerced value.
  */
 jspb.Message.bytesAsB64 = function(value) {
-  if (value == null || goog.isString(value)) {
+  if (value == null || typeof value === 'string') {
     return value;
   }
   if (jspb.Message.SUPPORTS_UINT8ARRAY_ && value instanceof Uint8Array) {
@@ -800,7 +801,7 @@ jspb.Message.bytesAsU8 = function(value) {
   if (value == null || value instanceof Uint8Array) {
     return value;
   }
-  if (goog.isString(value)) {
+  if (typeof value === 'string') {
     return goog.crypt.base64.decodeStringToUint8Array(value);
   }
   goog.asserts.fail('Cannot coerce to Uint8Array: ' + goog.typeOf(value));
@@ -816,7 +817,7 @@ jspb.Message.bytesAsU8 = function(value) {
  */
 jspb.Message.bytesListAsB64 = function(value) {
   jspb.Message.assertConsistentTypes_(value);
-  if (!value.length || goog.isString(value[0])) {
+  if (!value.length || typeof value[0] === 'string') {
     return /** @type {!Array<string>} */ (value);
   }
   return goog.array.map(value, jspb.Message.bytesAsB64);
@@ -1112,8 +1113,11 @@ jspb.Message.setFieldIgnoringDefault_ = function(
   goog.asserts.assertInstanceof(msg, jspb.Message);
   if (value !== defaultValue) {
     jspb.Message.setField(msg, fieldNumber, value);
-  } else {
+  } else if (fieldNumber < msg.pivot_) {
     msg.array[jspb.Message.getIndex_(msg, fieldNumber)] = null;
+  } else {
+    jspb.Message.maybeInitEmptyExtensionObject_(msg);
+    delete msg.extensionObject_[fieldNumber];
   }
   return msg;
 };
@@ -1430,7 +1434,7 @@ jspb.Message.prototype.syncMapFields_ = function() {
   if (this.wrappers_) {
     for (var fieldNumber in this.wrappers_) {
       var val = this.wrappers_[fieldNumber];
-      if (goog.isArray(val)) {
+      if (Array.isArray(val)) {
         for (var i = 0; i < val.length; i++) {
           if (val[i]) {
             val[i].toArray();
@@ -1654,8 +1658,8 @@ jspb.Message.compareFields = function(field1, field2) {
 
   if (!goog.isObject(field1) || !goog.isObject(field2)) {
     // NaN != NaN so we cover this case.
-    if ((goog.isNumber(field1) && isNaN(field1)) ||
-        (goog.isNumber(field2) && isNaN(field2))) {
+    if ((typeof field1 === 'number' && isNaN(field1)) ||
+        (typeof field2 === 'number' && isNaN(field2))) {
       // One of the fields might be a string 'NaN'.
       return String(field1) == String(field2);
     }
@@ -1820,7 +1824,7 @@ jspb.Message.copyInto = function(fromMessage, toMessage) {
  */
 jspb.Message.clone_ = function(obj) {
   var o;
-  if (goog.isArray(obj)) {
+  if (Array.isArray(obj)) {
     // Allocate array of correct size.
     var clonedArray = new Array(obj.length);
     // Use array iteration where possible because it is faster than for-in.
@@ -1860,7 +1864,7 @@ jspb.Message.clone_ = function(obj) {
  * @param {Function} constructor The message constructor.
  */
 jspb.Message.registerMessageType = function(id, constructor) {
-  // This is needed so we can later access messageId directly on the contructor,
+  // This is needed so we can later access messageId directly on the constructor,
   // otherwise it is not available due to 'property collapsing' by the compiler.
   /**
    * @suppress {strictMissingProperties} messageId is not defined on Function

@@ -13,7 +13,7 @@ Requirements
 The Objective C implementation requires:
 
 - Objective C 2.0 Runtime (32bit & 64bit iOS, 64bit OS X).
-- Xcode 8.0 (or later).
+- Xcode 10.3 (or later).
 - The library code does *not* use ARC (for performance reasons), but it all can
   be called from ARC code.
 
@@ -168,9 +168,15 @@ supported keys are:
     Any number of files can be listed for a framework, just separate them with
     commas.
 
-    There can be multiple lines listing the same frameworkName incase it has a
+    There can be multiple lines listing the same frameworkName in case it has a
     lot of proto files included in it; and having multiple lines makes things
     easier to read.
+
+  * `runtime_import_prefix`: The `value` used for this key to be used as a
+    prefix on `#import`s of runtime provided headers in the generated files.
+    When integrating ObjC protos into a build system, this can be used to avoid
+    having to add the runtime directory to the header search path since the
+    generate `#import` will be more complete.
 
 Contributing
 ------------

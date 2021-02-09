@@ -767,7 +767,7 @@ final class SchemaUtil {
    * logic in the JDK</a>.
    *
    * @param lo the lowest fieldNumber contained within the message.
-   * @param hi the higest fieldNumber contained within the message.
+   * @param hi the highest fieldNumber contained within the message.
    * @param numFields the total number of fields in the message.
    * @return {@code true} if tableswitch should be used, rather than lookupswitch.
    */

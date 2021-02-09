@@ -85,7 +85,7 @@ public class RubyDescriptor extends RubyObject {
      * call-seq:
      *     Descriptor.name => name
      *
-     * Returns the name of this message type as a fully-qualfied string (e.g.,
+     * Returns the name of this message type as a fully-qualified string (e.g.,
      * My.Package.MessageType).
      */
     @JRubyMethod(name = "name")

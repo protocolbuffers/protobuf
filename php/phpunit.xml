@@ -3,16 +3,16 @@
          colors="true">
   <testsuites>
     <testsuite name="protobuf-tests">
-      <file>tests/php_implementation_test.php</file>
-      <file>tests/array_test.php</file>
-      <file>tests/encode_decode_test.php</file>
-      <file>tests/generated_class_test.php</file>
-      <file>tests/generated_phpdoc_test.php</file>
-      <file>tests/map_field_test.php</file>
-      <file>tests/well_known_test.php</file>
-      <file>tests/descriptors_test.php</file>
-      <file>tests/generated_service_test.php</file>
-      <file>tests/wrapper_type_setters_test.php</file>
+      <file>tests/PhpImplementationTest.php</file>
+      <file>tests/ArrayTest.php</file>
+      <file>tests/EncodeDecodeTest.php</file>
+      <file>tests/GeneratedClassTest.php</file>
+      <file>tests/GeneratedPhpdocTest.php</file>
+      <file>tests/MapFieldTest.php</file>
+      <file>tests/WellKnownTest.php</file>
+      <file>tests/DescriptorsTest.php</file>
+      <file>tests/GeneratedServiceTest.php</file>
+      <file>tests/WrapperTypeSettersTest.php</file>
     </testsuite>
   </testsuites>
 </phpunit>

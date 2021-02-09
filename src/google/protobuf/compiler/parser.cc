@@ -34,22 +34,24 @@
 //
 // Recursive descent FTW.
 
+#include <google/protobuf/compiler/parser.h>
+
 #include <float.h>
+
 #include <limits>
 #include <unordered_map>
-
-#include <google/protobuf/stubs/hash.h>
+#include <unordered_set>
 
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
+#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
@@ -119,7 +121,7 @@ bool IsLowercase(char c) { return c >= 'a' && c <= 'z'; }
 
 bool IsNumber(char c) { return c >= '0' && c <= '9'; }
 
-bool IsUpperCamelCase(const string& name) {
+bool IsUpperCamelCase(const std::string& name) {
   if (name.empty()) {
     return true;
   }
@@ -136,7 +138,7 @@ bool IsUpperCamelCase(const string& name) {
   return true;
 }
 
-bool IsUpperUnderscore(const string& name) {
+bool IsUpperUnderscore(const std::string& name) {
   for (int i = 0; i < name.length(); i++) {
     const char c = name[i];
     if (!IsUppercase(c) && c != '_' && !IsNumber(c)) {
@@ -146,7 +148,7 @@ bool IsUpperUnderscore(const string& name) {
   return true;
 }
 
-bool IsLowerUnderscore(const string& name) {
+bool IsLowerUnderscore(const std::string& name) {
   for (int i = 0; i < name.length(); i++) {
     const char c = name[i];
     if (!IsLowercase(c) && c != '_' && !IsNumber(c)) {
@@ -156,7 +158,7 @@ bool IsLowerUnderscore(const string& name) {
   return true;
 }
 
-bool IsNumberFollowUnderscore(const string& name) {
+bool IsNumberFollowUnderscore(const std::string& name) {
   for (int i = 1; i < name.length(); i++) {
     const char c = name[i];
     if (IsNumber(c) && name[i - 1] == '_') {
@@ -223,7 +225,7 @@ bool Parser::Consume(const char* text) {
   if (TryConsume(text)) {
     return true;
   } else {
-    AddError("Expected \"" + string(text) + "\".");
+    AddError("Expected \"" + std::string(text) + "\".");
     return false;
   }
 }
@@ -369,7 +371,7 @@ bool Parser::ConsumeEndOfDeclaration(const char* text,
   if (TryConsumeEndOfDeclaration(text, location)) {
     return true;
   } else {
-    AddError("Expected \"" + string(text) + "\".");
+    AddError("Expected \"" + std::string(text) + "\".");
     return false;
   }
 }
@@ -387,7 +389,7 @@ void Parser::AddError(const std::string& error) {
   AddError(input_->current().line, input_->current().column, error);
 }
 
-void Parser::AddWarning(const string& warning) {
+void Parser::AddWarning(const std::string& warning) {
   if (error_collector_ != nullptr) {
     error_collector_->AddWarning(input_->current().line,
                                  input_->current().column, warning);
@@ -477,7 +479,7 @@ void Parser::LocationRecorder::RecordLegacyLocation(
 }
 
 void Parser::LocationRecorder::RecordLegacyImportLocation(
-    const Message* descriptor, const string& name) {
+    const Message* descriptor, const std::string& name) {
   if (parser_->source_location_table_ != nullptr) {
     parser_->source_location_table_->AddImport(
         descriptor, name, location_->span(0), location_->span(1));
@@ -765,6 +767,43 @@ bool Parser::ParseMessageDefinition(
     }
   }
   DO(ParseMessageBlock(message, message_location, containing_file));
+
+  if (syntax_identifier_ == "proto3") {
+    // Add synthetic one-field oneofs for optional fields, except messages which
+    // already have presence in proto3.
+    //
+    // We have to make sure the oneof names don't conflict with any other
+    // field or oneof.
+    std::unordered_set<std::string> names;
+    for (const auto& field : message->field()) {
+      names.insert(field.name());
+    }
+    for (const auto& oneof : message->oneof_decl()) {
+      names.insert(oneof.name());
+    }
+
+    for (auto& field : *message->mutable_field()) {
+      if (field.proto3_optional()) {
+        std::string oneof_name = field.name();
+
+        // Prepend 'XXXXX_' until we are no longer conflicting.
+        // Avoid prepending a double-underscore because such names are
+        // reserved in C++.
+        if (oneof_name.empty() || oneof_name[0] != '_') {
+          oneof_name = '_' + oneof_name;
+        }
+        while (names.count(oneof_name) > 0) {
+          oneof_name = 'X' + oneof_name;
+        }
+
+        names.insert(oneof_name);
+        field.set_oneof_index(message->oneof_decl_size());
+        OneofDescriptorProto* oneof = message->add_oneof_decl();
+        oneof->set_name(oneof_name);
+      }
+    }
+  }
+
   return true;
 }
 
@@ -907,10 +946,7 @@ bool Parser::ParseMessageField(FieldDescriptorProto* field,
       field->set_label(label);
       if (label == FieldDescriptorProto::LABEL_OPTIONAL &&
           syntax_identifier_ == "proto3") {
-        AddError(
-            "Explicit 'optional' labels are disallowed in the Proto3 syntax. "
-            "To define 'optional' fields in Proto3, simply remove the "
-            "'optional' label, as fields are 'optional' by default.");
+        field->set_proto3_optional(true);
       }
     }
   }
@@ -1295,7 +1331,7 @@ bool Parser::ParseDefaultAssignment(
       break;
 
     case FieldDescriptorProto::TYPE_STRING:
-      // Note: When file opton java_string_check_utf8 is true, if a
+      // Note: When file option java_string_check_utf8 is true, if a
       // non-string representation (eg byte[]) is later supported, it must
       // be checked for UTF-8-ness.
       DO(ConsumeString(default_value,
@@ -2327,7 +2363,7 @@ bool Parser::ParseImport(RepeatedPtrField<std::string>* dependency,
     *weak_dependency->Add() = dependency->size();
   }
 
-  string import_file;
+  std::string import_file;
   DO(ConsumeString(&import_file,
                    "Expected a string naming the file to import."));
   *dependency->Add() = import_file;
@@ -2361,7 +2397,7 @@ bool SourceLocationTable::Find(
 }
 
 bool SourceLocationTable::FindImport(const Message* descriptor,
-                                     const string& name, int* line,
+                                     const std::string& name, int* line,
                                      int* column) const {
   const std::pair<int, int>* result =
       FindOrNull(import_location_map_, std::make_pair(descriptor, name));
@@ -2385,7 +2421,8 @@ void SourceLocationTable::Add(
 }
 
 void SourceLocationTable::AddImport(const Message* descriptor,
-                                    const string& name, int line, int column) {
+                                    const std::string& name, int line,
+                                    int column) {
   import_location_map_[std::make_pair(descriptor, name)] =
       std::make_pair(line, column);
 }

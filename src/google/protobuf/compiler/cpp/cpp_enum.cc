@@ -104,10 +104,8 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     // 2147483648, and since 2147483648 can't fit in an integer, this produces a
     // compiler warning.  This works around that issue.
     format_value.Set("number", Int32ToString(descriptor_->value(i)->number()));
-    format_value.Set(
-        "deprecation",
-        DeprecatedAttribute(options_,
-                            descriptor_->value(i)->options().deprecated()));
+    format_value.Set("deprecation",
+                     DeprecatedAttribute(options_, descriptor_->value(i)));
 
     if (i > 0) format_value(",\n");
     format_value("${1$$prefix$$name$$}$ $deprecation$= $number$",
@@ -182,14 +180,17 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
         "inline bool $classname$_Parse(\n"
-        "    const std::string& name, $classname$* value) {\n"
+        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "value) "
+        "{\n"
         "  return ::$proto_ns$::internal::ParseNamedEnum<$classname$>(\n"
         "    $classname$_descriptor(), name, value);\n"
         "}\n");
   } else {
     format(
         "bool $classname$_Parse(\n"
-        "    const std::string& name, $classname$* value);\n");
+        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "value);\n");
   }
 }
 
@@ -213,8 +214,8 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
   format("typedef $classname$ $resolved_name$;\n");
 
   for (int j = 0; j < descriptor_->value_count(); j++) {
-    std::string deprecated_attr = DeprecatedAttribute(
-        options_, descriptor_->value(j)->options().deprecated());
+    std::string deprecated_attr =
+        DeprecatedAttribute(options_, descriptor_->value(j));
     format(
         "$1$static constexpr $resolved_name$ ${2$$3$$}$ =\n"
         "  $classname$_$3$;\n",
@@ -255,7 +256,8 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       "  return $classname$_Name(enum_t_value);\n"
       "}\n");
   format(
-      "static inline bool $nested_name$_Parse(const std::string& name,\n"
+      "static inline bool "
+      "$nested_name$_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,\n"
       "    $resolved_name$* value) {\n"
       "  return $classname$_Parse(name, value);\n"
       "}\n");
@@ -385,7 +387,9 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
         CountUniqueValues(descriptor_));
     format(
         "bool $classname$_Parse(\n"
-        "    const std::string& name, $classname$* value) {\n"
+        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "value) "
+        "{\n"
         "  int int_value;\n"
         "  bool success = ::$proto_ns$::internal::LookUpEnumValue(\n"
         "      $classname$_entries, $1$, name, &int_value);\n"

@@ -252,7 +252,7 @@ TEST_P(DynamicMessageTest, Oneof) {
 }
 
 TEST_P(DynamicMessageTest, SpaceUsed) {
-  // Test that SpaceUsed() works properly
+  // Test that SpaceUsedLong() works properly
 
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
@@ -261,10 +261,10 @@ TEST_P(DynamicMessageTest, SpaceUsed) {
   Message* message = prototype_->New(GetParam() ? &arena : NULL);
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
-  int initial_space_used = message->SpaceUsed();
+  size_t initial_space_used = message->SpaceUsedLong();
 
   reflection_tester.SetAllFieldsViaReflection(message);
-  EXPECT_LT(initial_space_used, message->SpaceUsed());
+  EXPECT_LT(initial_space_used, message->SpaceUsedLong());
 
   if (!GetParam()) {
     delete message;
@@ -291,7 +291,7 @@ TEST_F(DynamicMessageTest, Proto3) {
   const Reflection* refl = message->GetReflection();
   const Descriptor* desc = message->GetDescriptor();
 
-  // Just test a single primtive and single message field here to make sure we
+  // Just test a single primitive and single message field here to make sure we
   // are getting the no-field-presence semantics elsewhere. DynamicMessage uses
   // GeneratedMessageReflection under the hood, so the rest should be fine as
   // long as GMR recognizes that we're using a proto3 message.

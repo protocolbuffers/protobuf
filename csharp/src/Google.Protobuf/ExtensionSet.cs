@@ -34,6 +34,7 @@ using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 
 namespace Google.Protobuf
 {
@@ -183,19 +184,36 @@ namespace Google.Protobuf
         /// </summary>
         public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, CodedInputStream stream) where TTarget : IExtendableMessage<TTarget>
         {
+            ParseContext.Initialize(stream, out ParseContext ctx);
+            try
+            {
+                return TryMergeFieldFrom<TTarget>(ref set, ref ctx);
+            }
+            finally
+            {
+                ctx.CopyStateTo(stream);
+            }
+        }
+
+        /// <summary>
+        /// Tries to merge a field from the coded input, returning true if the field was merged.
+        /// If the set is null or the field was not otherwise merged, this returns false.
+        /// </summary>
+        public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, ref ParseContext ctx) where TTarget : IExtendableMessage<TTarget>
+        {
             Extension extension;
-            int lastFieldNumber = WireFormat.GetTagFieldNumber(stream.LastTag);
-            
+            int lastFieldNumber = WireFormat.GetTagFieldNumber(ctx.LastTag);
+
             IExtensionValue extensionValue;
             if (set != null && set.ValuesByNumber.TryGetValue(lastFieldNumber, out extensionValue))
             {
-                extensionValue.MergeFrom(stream);
+                extensionValue.MergeFrom(ref ctx);
                 return true;
             }
-            else if (stream.ExtensionRegistry != null && stream.ExtensionRegistry.ContainsInputField(stream, typeof(TTarget), out extension))
+            else if (ctx.ExtensionRegistry != null && ctx.ExtensionRegistry.ContainsInputField(ctx.LastTag, typeof(TTarget), out extension))
             {
                 IExtensionValue value = extension.CreateValue();
-                value.MergeFrom(stream);
+                value.MergeFrom(ref ctx);
                 set = (set ?? new ExtensionSet<TTarget>());
                 set.ValuesByNumber.Add(extension.FieldNumber, value);
                 return true;
@@ -327,9 +345,27 @@ namespace Google.Protobuf
         /// </summary>
         public void WriteTo(CodedOutputStream stream)
         {
+            
+            WriteContext.Initialize(stream, out WriteContext ctx);
+            try
+            {
+                WriteTo(ref ctx);
+            }
+            finally
+            {
+                ctx.CopyStateTo(stream);
+            }
+        }
+
+        /// <summary>
+        /// Writes the extension values in this set to the write context
+        /// </summary>
+        [SecuritySafeCritical]
+        public void WriteTo(ref WriteContext ctx)
+        {
             foreach (var value in ValuesByNumber.Values)
             {
-                value.WriteTo(stream);
+                value.WriteTo(ref ctx);
             }
         }
 

@@ -58,8 +58,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -81,17 +79,11 @@ import java.util.TreeMap;
 public abstract class GeneratedMessageV3 extends AbstractMessage
     implements Serializable {
   private static final long serialVersionUID = 1L;
-  // Whether to use reflection for FieldAccessor
-  private static boolean forTestUseReflection = false;
-
-  static void setForTestUseReflection(boolean useReflection) {
-    forTestUseReflection = useReflection;
-  }
 
   /**
-   * For testing. Allows a test to disable the optimization that avoids using
-   * field builders for nested messages until they are requested. By disabling
-   * this optimization, existing tests can be reused to test the field builders.
+   * For testing. Allows a test to disable the optimization that avoids using field builders for
+   * nested messages until they are requested. By disabling this optimization, existing tests can be
+   * reused to test the field builders.
    */
   protected static boolean alwaysUseFieldBuilders = false;
 
@@ -523,7 +515,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
    * TODO(xiaofeng): remove this after b/29368482 is fixed. We need to move this
    * interface to AbstractMessage in order to versioning GeneratedMessageV3 but
    * this move breaks binary compatibility for AppEngine. After AppEngine is
-   * fixed we can exlude this from google3.
+   * fixed we can exclude this from google3.
    */
   protected interface BuilderParent extends AbstractMessage.BuilderParent {}
 
@@ -1506,8 +1498,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
 
     /** Clear an extension. */
-    public final <Type> BuilderType clearExtension(
-        final ExtensionLite<MessageType, ?> extensionLite) {
+    public final BuilderType clearExtension(final ExtensionLite<MessageType, ?> extensionLite) {
       Extension<MessageType, ?> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);
@@ -1880,32 +1871,14 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
   }
 
-  /** Calls invoke and throws a RuntimeException if it fails. */
-  private static RuntimeException handleException(Throwable e) {
-    if (e instanceof ClassCastException) {
-      // Reflection throws a bad param type as an IllegalArgumentException, whereas MethodHandle
-      // throws it as a ClassCastException; convert for backwards compatibility
-      throw new IllegalArgumentException(e);
-    } else if (e instanceof RuntimeException) {
-      throw (RuntimeException) e;
-    } else if (e instanceof Error) {
-      throw (Error) e;
-    } else {
-      throw new RuntimeException(
-          "Unexpected exception thrown by generated accessor method.", e);
-    }
-  }
-
   /**
-   * Gets the map field with the given field number. This method should be
-   * overridden in the generated message class if the message contains map
-   * fields.
+   * Gets the map field with the given field number. This method should be overridden in the
+   * generated message class if the message contains map fields.
    *
-   * Unlike other field types, reflection support for map fields can't be
-   * implemented based on generated public API because we need to access a
-   * map field as a list in reflection API but the generated API only allows
-   * us to access it as a map. This method returns the underlying map field
-   * directly and thus enables us to access the map field as a list.
+   * <p>Unlike other field types, reflection support for map fields can't be implemented based on
+   * generated public API because we need to access a map field as a list in reflection API but the
+   * generated API only allows us to access it as a map. This method returns the underlying map
+   * field directly and thus enables us to access the map field as a list.
    */
   @SuppressWarnings({"rawtypes", "unused"})
   protected MapField internalGetMapField(int fieldNumber) {
@@ -2014,9 +1987,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
         int oneofsSize = oneofs.length;
         for (int i = 0; i < oneofsSize; i++) {
-          oneofs[i] = new OneofAccessor(
-              descriptor, camelCaseNames[i + fieldsSize],
-              messageClass, builderClass);
+          oneofs[i] =
+              new OneofAccessor(
+                  descriptor, i, camelCaseNames[i + fieldsSize], messageClass, builderClass);
         }
         initialized = true;
         camelCaseNames = null;
@@ -2084,14 +2057,22 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     /** OneofAccessor provides access to a single oneof. */
     private static class OneofAccessor {
       OneofAccessor(
-          final Descriptor descriptor, final String camelCaseName,
+          final Descriptor descriptor,
+          final int oneofIndex,
+          final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
           final Class<? extends Builder> builderClass) {
         this.descriptor = descriptor;
-        caseMethod =
-            getMethodOrDie(messageClass, "get" + camelCaseName + "Case");
-        caseMethodBuilder =
-            getMethodOrDie(builderClass, "get" + camelCaseName + "Case");
+        OneofDescriptor oneofDescriptor = descriptor.getOneofs().get(oneofIndex);
+        if (oneofDescriptor.isSynthetic()) {
+          caseMethod = null;
+          caseMethodBuilder = null;
+          fieldDescriptor = oneofDescriptor.getFields().get(0);
+        } else {
+          caseMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Case");
+          caseMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Case");
+          fieldDescriptor = null;
+        }
         clearMethod = getMethodOrDie(builderClass, "clear" + camelCaseName);
       }
 
@@ -2099,33 +2080,51 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       private final Method caseMethod;
       private final Method caseMethodBuilder;
       private final Method clearMethod;
+      private final FieldDescriptor fieldDescriptor;
 
       public boolean has(final GeneratedMessageV3 message) {
-        if (((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() == 0) {
-          return false;
+        if (fieldDescriptor != null) {
+          return message.hasField(fieldDescriptor);
+        } else {
+          if (((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() == 0) {
+            return false;
+          }
         }
         return true;
       }
 
       public boolean has(GeneratedMessageV3.Builder builder) {
-        if (((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() == 0) {
-          return false;
+        if (fieldDescriptor != null) {
+          return builder.hasField(fieldDescriptor);
+        } else {
+          if (((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() == 0) {
+            return false;
+          }
         }
         return true;
       }
 
       public FieldDescriptor get(final GeneratedMessageV3 message) {
-        int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
-        if (fieldNumber > 0) {
-          return descriptor.findFieldByNumber(fieldNumber);
+        if (fieldDescriptor != null) {
+          return message.hasField(fieldDescriptor) ? fieldDescriptor : null;
+        } else {
+          int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber();
+          if (fieldNumber > 0) {
+            return descriptor.findFieldByNumber(fieldNumber);
+          }
         }
         return null;
       }
 
       public FieldDescriptor get(GeneratedMessageV3.Builder builder) {
-        int fieldNumber = ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
-        if (fieldNumber > 0) {
-          return descriptor.findFieldByNumber(fieldNumber);
+        if (fieldDescriptor != null) {
+          return builder.hasField(fieldDescriptor) ? fieldDescriptor : null;
+        } else {
+          int fieldNumber =
+              ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber();
+          if (fieldNumber > 0) {
+            return descriptor.findFieldByNumber(fieldNumber);
+          }
         }
         return null;
       }
@@ -2133,10 +2132,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       public void clear(final Builder builder) {
         invokeOrDie(clearMethod, builder);
       }
-    }
-
-    private static boolean supportFieldPresence(FileDescriptor file) {
-      return file.getSyntax() == FileDescriptor.Syntax.PROTO2;
     }
 
     // ---------------------------------------------------------------
@@ -2237,114 +2232,19 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         }
       }
 
-      private static final class MethodHandleInvoker implements MethodInvoker {
-        protected final MethodHandle getMethod;
-        protected final MethodHandle getMethodBuilder;
-        protected final MethodHandle setMethod;
-        protected final MethodHandle hasMethod;
-        protected final MethodHandle hasMethodBuilder;
-        protected final MethodHandle clearMethod;
-        protected final MethodHandle caseMethod;
-        protected final MethodHandle caseMethodBuilder;
-
-        MethodHandleInvoker(ReflectionInvoker accessor) throws IllegalAccessException {
-          MethodHandles.Lookup lookup = MethodHandles.publicLookup();
-
-          this.getMethod = lookup.unreflect(accessor.getMethod);
-          this.getMethodBuilder = lookup.unreflect(accessor.getMethodBuilder);
-          this.setMethod = lookup.unreflect(accessor.setMethod);
-          this.hasMethod =
-              (accessor.hasMethod != null) ? lookup.unreflect(accessor.hasMethod) : null;
-          this.hasMethodBuilder = (accessor.hasMethodBuilder != null)
-              ? lookup.unreflect(accessor.hasMethodBuilder) : null;
-          this.clearMethod = lookup.unreflect(accessor.clearMethod);
-          this.caseMethod =
-              (accessor.caseMethod != null) ? lookup.unreflect(accessor.caseMethod) : null;
-          this.caseMethodBuilder = (accessor.caseMethodBuilder != null)
-              ? lookup.unreflect(accessor.caseMethodBuilder) : null;
-        }
-
-        @Override
-        public Object get(final GeneratedMessageV3 message) {
-          try {
-            return getMethod.invoke(message);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public Object get(GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return getMethodBuilder.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public int getOneofFieldNumber(final GeneratedMessageV3 message) {
-          try {
-            return ((Internal.EnumLite) caseMethod.invoke(message)).getNumber();
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public int getOneofFieldNumber(final GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return ((Internal.EnumLite) caseMethodBuilder.invoke(builder)).getNumber();
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void set(final GeneratedMessageV3.Builder<?> builder, final Object value) {
-          try {
-            setMethod.invoke(builder, value);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public boolean has(final GeneratedMessageV3 message) {
-          try {
-            return (Boolean) hasMethod.invoke(message);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public boolean has(GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return (Boolean) hasMethodBuilder.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void clear(final GeneratedMessageV3.Builder<?> builder) {
-          try {
-            clearMethod.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-      }
-
       SingularFieldAccessor(
-          final FieldDescriptor descriptor, final String camelCaseName,
+          final FieldDescriptor descriptor,
+          final String camelCaseName,
           final Class<? extends GeneratedMessageV3> messageClass,
           final Class<? extends Builder> builderClass,
           final String containingOneofCamelCaseName) {
-        isOneofField = descriptor.getContainingOneof() != null;
-        hasHasMethod = supportFieldPresence(descriptor.getFile())
-            || (!isOneofField && descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE);
+        isOneofField =
+            descriptor.getContainingOneof() != null
+                && !descriptor.getContainingOneof().isSynthetic();
+        hasHasMethod =
+            descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO2
+                || descriptor.hasOptionalKeyword()
+                || (!isOneofField && descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE);
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
                 descriptor,
@@ -2356,23 +2256,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
                 hasHasMethod);
         field = descriptor;
         type = reflectionInvoker.getMethod.getReturnType();
-        invoker = tryGetMethodHandleInvoke(reflectionInvoker);
+        invoker = getMethodInvoker(reflectionInvoker);
       }
 
-      static MethodInvoker tryGetMethodHandleInvoke(ReflectionInvoker accessor) {
-        if (forTestUseReflection) {
-          return accessor;
-        }
-        try {
-          return new MethodHandleInvoker(accessor);
-        } catch (NoClassDefFoundError e) {
-          // Fall back to reflection if MethodHandleInvoker isn't available,
-          // allowing clients that don't want to use method handles to opt out
-          // by deleting the class.
-          return accessor;
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        }
+      static MethodInvoker getMethodInvoker(ReflectionInvoker accessor) {
+        return accessor;
       }
 
       // Note:  We use Java reflection to call public methods rather than
@@ -2581,114 +2469,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         }
       }
 
-      private static final class MethodHandleInvoker implements MethodInvoker {
-        protected final MethodHandle getMethod;
-        protected final MethodHandle getMethodBuilder;
-        protected final MethodHandle getRepeatedMethod;
-        protected final MethodHandle getRepeatedMethodBuilder;
-        protected final MethodHandle setRepeatedMethod;
-        protected final MethodHandle addRepeatedMethod;
-        protected final MethodHandle getCountMethod;
-        protected final MethodHandle getCountMethodBuilder;
-        protected final MethodHandle clearMethod;
-
-        MethodHandleInvoker(ReflectionInvoker accessor) throws IllegalAccessException {
-          MethodHandles.Lookup lookup = MethodHandles.lookup();
-
-          this.getMethod = lookup.unreflect(accessor.getMethod);
-          this.getMethodBuilder = lookup.unreflect(accessor.getMethodBuilder);
-          this.getRepeatedMethod = lookup.unreflect(accessor.getRepeatedMethod);
-          this.getRepeatedMethodBuilder = lookup.unreflect(accessor.getRepeatedMethodBuilder);
-          this.setRepeatedMethod = lookup.unreflect(accessor.setRepeatedMethod);
-          this.addRepeatedMethod = lookup.unreflect(accessor.addRepeatedMethod);
-          this.getCountMethod = lookup.unreflect(accessor.getCountMethod);
-          this.getCountMethodBuilder = lookup.unreflect(accessor.getCountMethodBuilder);
-          this.clearMethod = lookup.unreflect(accessor.clearMethod);
-        }
-
-        @Override
-        public Object get(final GeneratedMessageV3 message) {
-          try {
-            return getMethod.invoke(message);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public Object get(GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return getMethodBuilder.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public Object getRepeated(final GeneratedMessageV3 message, final int index) {
-          try {
-            return getRepeatedMethod.invoke(message, index);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public Object getRepeated(GeneratedMessageV3.Builder<?> builder, int index) {
-          try {
-            return getRepeatedMethodBuilder.invoke(builder, index);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void setRepeated(
-            final GeneratedMessageV3.Builder<?> builder, final int index, final Object value) {
-          try {
-            setRepeatedMethod.invoke(builder, index, value);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void addRepeated(final GeneratedMessageV3.Builder<?> builder, final Object value) {
-          try {
-            addRepeatedMethod.invoke(builder, value);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public int getRepeatedCount(final GeneratedMessageV3 message) {
-          try {
-            return (Integer) getCountMethod.invoke(message);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public int getRepeatedCount(GeneratedMessageV3.Builder<?> builder) {
-          try {
-            return (Integer) getCountMethodBuilder.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-
-        @Override
-        public void clear(final GeneratedMessageV3.Builder<?> builder) {
-          try {
-            clearMethod.invoke(builder);
-          } catch (Throwable e) {
-            throw handleException(e);
-          }
-        }
-      }
-
       protected final Class type;
       protected final MethodInvoker invoker;
 
@@ -2699,23 +2479,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(descriptor, camelCaseName, messageClass, builderClass);
         type = reflectionInvoker.getRepeatedMethod.getReturnType();
-        invoker = tryGetMethodHandleInvoke(reflectionInvoker);
+        invoker = getMethodInvoker(reflectionInvoker);
       }
 
-      static MethodInvoker tryGetMethodHandleInvoke(ReflectionInvoker accessor) {
-        if (forTestUseReflection) {
-          return accessor;
-        }
-        try {
-          return new MethodHandleInvoker(accessor);
-        } catch (NoClassDefFoundError e) {
-          // Fall back to reflection if MethodHandleInvoker isn't available,
-          // allowing clients that don't want to use method handles to opt out
-          // by deleting the class.
-          return accessor;
-        } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        }
+      static MethodInvoker getMethodInvoker(ReflectionInvoker accessor) {
+        return accessor;
       }
 
       @Override
@@ -3344,7 +3112,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       serializeMapTo(out, m, defaultEntry, fieldNumber);
       return;
     }
-    // Sorting the unboxed keys and then look up the values during serialziation is 2x faster
+    // Sorting the unboxed keys and then look up the values during serialization is 2x faster
     // than sorting map entries with a custom comparator directly.
     int[] keys = new int[m.size()];
     int index = 0;
@@ -3400,7 +3168,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       return;
     }
 
-    // Sorting the String keys and then look up the values during serialziation is 25% faster than
+    // Sorting the String keys and then look up the values during serialization is 25% faster than
     // sorting map entries with a custom comparator directly.
     String[] keys = new String[m.size()];
     keys = m.keySet().toArray(keys);

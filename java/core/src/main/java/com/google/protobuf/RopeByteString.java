@@ -211,7 +211,7 @@ final class RopeByteString extends ByteString {
 
     // Fine, we'll add a node and increase the tree depth--unless we rebalance ;^)
     int newDepth = Math.max(left.getTreeDepth(), right.getTreeDepth()) + 1;
-    if (newLength >= minLengthByDepth[newDepth]) {
+    if (newLength >= minLength(newDepth)) {
       // The tree is shallow enough, so don't rebalance
       return new RopeByteString(left, right);
     }
@@ -248,6 +248,22 @@ final class RopeByteString extends ByteString {
    */
   static RopeByteString newInstanceForTest(ByteString left, ByteString right) {
     return new RopeByteString(left, right);
+  }
+
+  /**
+   * Returns the minimum length for which a tree of the given depth is considered balanced according
+   * to BAP95, which means the tree is flat-enough with respect to the bounds. Defaults to {@code
+   * Integer.MAX_VALUE} if {@code depth >= minLengthByDepth.length} in order to avoid an {@code
+   * ArrayIndexOutOfBoundsException}.
+   *
+   * @param depth tree depth
+   * @return minimum balanced length
+   */
+  static int minLength(int depth) {
+    if (depth >= minLengthByDepth.length) {
+      return Integer.MAX_VALUE;
+    }
+    return minLengthByDepth[depth];
   }
 
   /**
@@ -328,7 +344,7 @@ final class RopeByteString extends ByteString {
    */
   @Override
   protected boolean isBalanced() {
-    return totalLength >= minLengthByDepth[treeDepth];
+    return totalLength >= minLength(treeDepth);
   }
 
   /**
@@ -656,7 +672,7 @@ final class RopeByteString extends ByteString {
      */
     private void insert(ByteString byteString) {
       int depthBin = getDepthBinForLength(byteString.size());
-      int binEnd = minLengthByDepth[depthBin + 1];
+      int binEnd = minLength(depthBin + 1);
 
       // BAP95: Concatenate all trees occupying bins representing the length of
       // our new piece or of shorter pieces, to the extent that is possible.
@@ -665,7 +681,7 @@ final class RopeByteString extends ByteString {
       if (prefixesStack.isEmpty() || prefixesStack.peek().size() >= binEnd) {
         prefixesStack.push(byteString);
       } else {
-        int binStart = minLengthByDepth[depthBin];
+        int binStart = minLength(depthBin);
 
         // Concatenate the subtrees of shorter length
         ByteString newTree = prefixesStack.pop();
@@ -680,7 +696,7 @@ final class RopeByteString extends ByteString {
         // Continue concatenating until we land in an empty bin
         while (!prefixesStack.isEmpty()) {
           depthBin = getDepthBinForLength(newTree.size());
-          binEnd = minLengthByDepth[depthBin + 1];
+          binEnd = minLength(depthBin + 1);
           if (prefixesStack.peek().size() < binEnd) {
             ByteString left = prefixesStack.pop();
             newTree = new RopeByteString(left, newTree);
@@ -811,6 +827,16 @@ final class RopeByteString extends ByteString {
       initialize();
     }
 
+    /**
+     * Reads up to {@code len} bytes of data into array {@code b}.
+     *
+     * <p>Note that {@link InputStream#read(byte[], int, int)} and {@link
+     * ByteArrayInputStream#read(byte[], int, int)} behave inconsistently when reading 0 bytes at
+     * EOF; the interface defines the return value to be 0 and the latter returns -1. We use the
+     * latter behavior so that all ByteString streams are consistent.
+     *
+     * @return -1 if at EOF, otherwise the actual number of bytes read.
+     */
     @Override
     public int read(byte[] b, int offset, int length) {
       if (b == null) {
@@ -818,7 +844,15 @@ final class RopeByteString extends ByteString {
       } else if (offset < 0 || length < 0 || length > b.length - offset) {
         throw new IndexOutOfBoundsException();
       }
-      return readSkipInternal(b, offset, length);
+      int bytesRead = readSkipInternal(b, offset, length);
+      if (bytesRead == 0 && (length > 0 || availableInternal() == 0)) {
+        // Modeling ByteArrayInputStream.read(byte[], int, int) behavior noted above:
+        // It's ok to read 0 bytes on purpose (length == 0) from a stream that isn't at EOF.
+        // It's not ok to try to read bytes (even 0 bytes) from a stream that is at EOF.
+        return -1;
+      } else {
+        return bytesRead;
+      }
     }
 
     @Override
@@ -845,10 +879,6 @@ final class RopeByteString extends ByteString {
       while (bytesRemaining > 0) {
         advanceIfCurrentPieceFullyRead();
         if (currentPiece == null) {
-          if (bytesRemaining == length) {
-            // We didn't manage to read anything
-            return -1;
-          }
           break;
         } else {
           // Copy the bytes from this piece.
@@ -878,8 +908,7 @@ final class RopeByteString extends ByteString {
 
     @Override
     public int available() throws IOException {
-      int bytesRead = currentPieceOffsetInRope + currentPieceIndex;
-      return RopeByteString.this.size() - bytesRead;
+      return availableInternal();
     }
 
     @Override
@@ -927,6 +956,12 @@ final class RopeByteString extends ByteString {
           currentPieceSize = 0;
         }
       }
+    }
+
+    /** Computes the number of bytes still available to read. */
+    private int availableInternal() {
+      int bytesRead = currentPieceOffsetInRope + currentPieceIndex;
+      return RopeByteString.this.size() - bytesRead;
     }
   }
 }

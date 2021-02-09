@@ -240,11 +240,11 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->FindExtensionByName(string(name, name_size));
+      pool->pool->FindExtensionByName(StringParam(name, name_size));
   if (message_extension == NULL) {
     // Is is the name of a message set extension?
-    const Descriptor* message_descriptor = pool->pool->FindMessageTypeByName(
-        string(name, name_size));
+    const Descriptor* message_descriptor =
+        pool->pool->FindMessageTypeByName(StringParam(name, name_size));
     if (message_descriptor && message_descriptor->extension_count() > 0) {
       const FieldDescriptor* extension = message_descriptor->extension(0);
       if (extension->is_extension() &&

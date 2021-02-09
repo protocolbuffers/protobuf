@@ -106,17 +106,15 @@ class PROTOBUF_EXPORT Status {
   }
 
   // Return a combination of the error code name and message.
-  string ToString() const;
+  std::string ToString() const;
 
  private:
   error::Code error_code_;
-  string error_message_;
+  std::string error_message_;
 };
 
 // Prints a human-readable representation of 'x' to 'os'.
 PROTOBUF_EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
-
-#define EXPECT_OK(value) EXPECT_TRUE((value).ok())
 
 }  // namespace util
 }  // namespace protobuf

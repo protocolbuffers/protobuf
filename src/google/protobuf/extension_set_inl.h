@@ -33,6 +33,7 @@
 
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/metadata_lite.h>
 
 namespace google {
 namespace protobuf {
@@ -41,7 +42,7 @@ namespace internal {
 template <typename T>
 const char* ExtensionSet::ParseFieldWithExtensionInfo(
     int number, bool was_packed_on_wire, const ExtensionInfo& extension,
-    T* metadata, const char* ptr, internal::ParseContext* ctx) {
+    InternalMetadata* metadata, const char* ptr, internal::ParseContext* ctx) {
   if (was_packed_on_wire) {
     switch (extension.type) {
 #define HANDLE_TYPE(UPPERCASE, CPP_CAMELCASE)                                \
@@ -66,7 +67,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 #undef HANDLE_TYPE
 
       case WireFormatLite::TYPE_ENUM:
-        return internal::PackedEnumParserArg(
+        return internal::PackedEnumParserArg<T>(
             MutableRawRepeatedField(number, extension.type, extension.is_packed,
                                     extension.descriptor),
             ptr, ctx, extension.enum_validity_check.func,
@@ -98,6 +99,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       HANDLE_VARINT_TYPE(INT64, Int64);
       HANDLE_VARINT_TYPE(UINT32, UInt32);
       HANDLE_VARINT_TYPE(UINT64, UInt64);
+      HANDLE_VARINT_TYPE(BOOL, Bool);
 #undef HANDLE_VARINT_TYPE
 #define HANDLE_SVARINT_TYPE(UPPERCASE, CPP_CAMELCASE, SIZE)                 \
   case WireFormatLite::TYPE_##UPPERCASE: {                                  \
@@ -136,7 +138,6 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       HANDLE_FIXED_TYPE(SFIXED64, Int64, int64);
       HANDLE_FIXED_TYPE(FLOAT, Float, float);
       HANDLE_FIXED_TYPE(DOUBLE, Double, double);
-      HANDLE_FIXED_TYPE(BOOL, Bool, bool);
 #undef HANDLE_FIXED_TYPE
 
       case WireFormatLite::TYPE_ENUM: {
@@ -147,7 +148,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 
         if (!extension.enum_validity_check.func(
                 extension.enum_validity_check.arg, value)) {
-          WriteVarint(number, val, metadata->mutable_unknown_fields());
+          WriteVarint(number, val, metadata->mutable_unknown_fields<T>());
         } else if (extension.is_repeated) {
           AddEnum(number, WireFormatLite::TYPE_ENUM, extension.is_packed, value,
                   extension.descriptor);
@@ -200,13 +201,13 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
   return ptr;
 }
 
-template <typename Msg, typename Metadata>
-const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
-                                                  const Msg* containing_type,
-                                                  Metadata* metadata,
-                                                  internal::ParseContext* ctx) {
+template <typename Msg, typename T>
+const char* ExtensionSet::ParseMessageSetItemTmpl(
+    const char* ptr, const Msg* containing_type,
+    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
   std::string payload;
   uint32 type_id = 0;
+  bool payload_read = false;
   while (!ctx->Done(&ptr)) {
     uint32 tag = static_cast<uint8>(*ptr++);
     if (tag == WireFormatLite::kMessageSetTypeIdTag) {
@@ -214,13 +215,13 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
       ptr = ParseBigVarint(ptr, &tmp);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       type_id = tmp;
-      if (!payload.empty()) {
+      if (payload_read) {
         ExtensionInfo extension;
         bool was_packed_on_wire;
         if (!FindExtension(2, type_id, containing_type, ctx, &extension,
                            &was_packed_on_wire)) {
           WriteLengthDelimited(type_id, payload,
-                               metadata->mutable_unknown_fields());
+                               metadata->mutable_unknown_fields<T>());
         } else {
           MessageLite* value =
               extension.is_repeated
@@ -253,6 +254,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(const char* ptr,
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         ptr = ctx->ReadString(ptr, size, &payload);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+        payload_read = true;
       }
     } else {
       ptr = ReadTag(ptr - 1, &tag);

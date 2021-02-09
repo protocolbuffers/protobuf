@@ -87,6 +87,10 @@ class _ExtensionDict(object):
     if extension_handle.label == FieldDescriptor.LABEL_REPEATED:
       result = extension_handle._default_constructor(self._extended_message)
     elif extension_handle.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
+      message_type = extension_handle.message_type
+      if not hasattr(message_type, '_concrete_class'):
+        # pylint: disable=protected-access
+        self._extended_message._FACTORY.GetPrototype(message_type)
       assert getattr(extension_handle.message_type, '_concrete_class', None), (
           'Uninitialized concrete class found for field %r (message type %r)'
           % (extension_handle.full_name,
@@ -139,7 +143,7 @@ class _ExtensionDict(object):
 
   # Note that this is only meaningful for non-repeated, scalar extension
   # fields.  Note also that we may have to call _Modified() when we do
-  # successfully set a field this way, to set any necssary "has" bits in the
+  # successfully set a field this way, to set any necessary "has" bits in the
   # ancestors of the extended message.
   def __setitem__(self, extension_handle, value):
     """If extension_handle specifies a non-repeated, scalar extension

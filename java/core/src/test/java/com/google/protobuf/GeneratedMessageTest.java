@@ -69,7 +69,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  * Unit test for generated messages and generated code. See also {@link MessageTest}, which tests
@@ -81,37 +80,8 @@ public class GeneratedMessageTest extends TestCase {
   TestUtil.ReflectionTester reflectionTester =
       new TestUtil.ReflectionTester(TestAllTypes.getDescriptor(), null);
 
-  public static TestSuite suite() {
-    TestSuite suite = new TestSuite();
-    suite.addTestSuite(ReflectionTest.class);
-    suite.addTestSuite(FastInvokeTest.class);
-    return suite;
-  }
-
-  public static class ReflectionTest extends GeneratedMessageTest {
-    public ReflectionTest() {
-      super(true);
-    }
-  }
-
-  public static class FastInvokeTest extends GeneratedMessageTest {
-    public FastInvokeTest() {
-      super(false);
-    }
-  }
-
-  private final boolean useReflection;
-
-  GeneratedMessageTest(boolean useReflection) {
-    this.useReflection = useReflection;
-  }
-
-  @Override public void setUp() {
-    GeneratedMessageV3.setForTestUseReflection(useReflection);
-  }
-
-  @Override public void tearDown() {
-    GeneratedMessageV3.setForTestUseReflection(false);
+  @Override
+  public void tearDown() {
     GeneratedMessageV3.setAlwaysUseFieldBuildersForTesting(false);
   }
 

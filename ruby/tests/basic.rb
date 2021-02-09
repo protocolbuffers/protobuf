@@ -32,11 +32,11 @@ module BasicTest
     include CommonTests
 
     def test_has_field
-      m = TestMessage.new
-      assert !m.has_optional_msg?
-      m.optional_msg = TestMessage2.new
-      assert m.has_optional_msg?
-      assert TestMessage.descriptor.lookup('optional_msg').has?(m)
+      m = TestSingularFields.new
+      assert !m.has_singular_msg?
+      m.singular_msg = TestMessage2.new
+      assert m.has_singular_msg?
+      assert TestSingularFields.descriptor.lookup('singular_msg').has?(m)
 
       m = OneofMessage.new
       assert !m.has_my_oneof?
@@ -45,32 +45,31 @@ module BasicTest
       assert_raise NoMethodError do
         m.has_a?
       end
+      assert_true OneofMessage.descriptor.lookup('a').has?(m)
+
+      m = TestSingularFields.new
+      assert_raise NoMethodError do
+        m.has_singular_int32?
+      end
       assert_raise ArgumentError do
-        OneofMessage.descriptor.lookup('a').has?(m)
+        TestSingularFields.descriptor.lookup('singular_int32').has?(m)
+      end
+
+      assert_raise NoMethodError do
+        m.has_singular_string?
+      end
+      assert_raise ArgumentError do
+        TestSingularFields.descriptor.lookup('singular_string').has?(m)
+      end
+
+      assert_raise NoMethodError do
+        m.has_singular_bool?
+      end
+      assert_raise ArgumentError do
+        TestSingularFields.descriptor.lookup('singular_bool').has?(m)
       end
 
       m = TestMessage.new
-      assert_raise NoMethodError do
-        m.has_optional_int32?
-      end
-      assert_raise ArgumentError do
-        TestMessage.descriptor.lookup('optional_int32').has?(m)
-      end
-
-      assert_raise NoMethodError do
-        m.has_optional_string?
-      end
-      assert_raise ArgumentError do
-        TestMessage.descriptor.lookup('optional_string').has?(m)
-      end
-
-      assert_raise NoMethodError do
-        m.has_optional_bool?
-      end
-      assert_raise ArgumentError do
-        TestMessage.descriptor.lookup('optional_bool').has?(m)
-      end
-
       assert_raise NoMethodError do
         m.has_repeated_msg?
       end
@@ -79,40 +78,59 @@ module BasicTest
       end
     end
 
+    def test_no_presence
+      m = TestSingularFields.new
+
+      # Explicitly setting to zero does not cause anything to be serialized.
+      m.singular_int32 = 0
+      assert_equal "", TestSingularFields.encode(m)
+
+      # Explicitly setting to a non-zero value *does* cause serialization.
+      m.singular_int32 = 1
+      assert_not_equal "", TestSingularFields.encode(m)
+
+      m.singular_int32 = 0
+      assert_equal "", TestSingularFields.encode(m)
+    end
+
     def test_set_clear_defaults
+      m = TestSingularFields.new
+
+      m.singular_int32 = -42
+      assert_equal -42, m.singular_int32
+      m.clear_singular_int32
+      assert_equal 0, m.singular_int32
+
+      m.singular_int32 = 50
+      assert_equal 50, m.singular_int32
+      TestSingularFields.descriptor.lookup('singular_int32').clear(m)
+      assert_equal 0, m.singular_int32
+
+      m.singular_string = "foo bar"
+      assert_equal "foo bar", m.singular_string
+      m.clear_singular_string
+      assert_equal "", m.singular_string
+
+      m.singular_string = "foo"
+      assert_equal "foo", m.singular_string
+      TestSingularFields.descriptor.lookup('singular_string').clear(m)
+      assert_equal "", m.singular_string
+
+      m.singular_msg = TestMessage2.new(:foo => 42)
+      assert_equal TestMessage2.new(:foo => 42), m.singular_msg
+      assert m.has_singular_msg?
+      m.clear_singular_msg
+      assert_equal nil, m.singular_msg
+      assert !m.has_singular_msg?
+
+      m.singular_msg = TestMessage2.new(:foo => 42)
+      assert_equal TestMessage2.new(:foo => 42), m.singular_msg
+      TestSingularFields.descriptor.lookup('singular_msg').clear(m)
+      assert_equal nil, m.singular_msg
+    end
+
+    def test_clear_repeated_fields
       m = TestMessage.new
-
-      m.optional_int32 = -42
-      assert_equal -42, m.optional_int32
-      m.clear_optional_int32
-      assert_equal 0, m.optional_int32
-
-      m.optional_int32 = 50
-      assert_equal 50, m.optional_int32
-      TestMessage.descriptor.lookup('optional_int32').clear(m)
-      assert_equal 0, m.optional_int32
-
-      m.optional_string = "foo bar"
-      assert_equal "foo bar", m.optional_string
-      m.clear_optional_string
-      assert_equal "", m.optional_string
-
-      m.optional_string = "foo"
-      assert_equal "foo", m.optional_string
-      TestMessage.descriptor.lookup('optional_string').clear(m)
-      assert_equal "", m.optional_string
-
-      m.optional_msg = TestMessage2.new(:foo => 42)
-      assert_equal TestMessage2.new(:foo => 42), m.optional_msg
-      assert m.has_optional_msg?
-      m.clear_optional_msg
-      assert_equal nil, m.optional_msg
-      assert !m.has_optional_msg?
-
-      m.optional_msg = TestMessage2.new(:foo => 42)
-      assert_equal TestMessage2.new(:foo => 42), m.optional_msg
-      TestMessage.descriptor.lookup('optional_msg').clear(m)
-      assert_equal nil, m.optional_msg
 
       m.repeated_int32.push(1)
       assert_equal [1], m.repeated_int32
@@ -128,6 +146,7 @@ module BasicTest
       m.a = "foo"
       assert_equal "foo", m.a
       assert m.has_my_oneof?
+      assert_equal :a, m.my_oneof
       m.clear_a
       assert !m.has_my_oneof?
 
@@ -142,7 +161,6 @@ module BasicTest
       OneofMessage.descriptor.lookup('a').clear(m)
       assert !m.has_my_oneof?
     end
-
 
     def test_initialization_map_errors
       e = assert_raise ArgumentError do
@@ -232,6 +250,128 @@ module BasicTest
       m = MapMessage.new(map_string_int32: { "aaa" => 1 })
       m.map_string_int32['podid'] = 2
       m.map_string_int32['aaa'] = 3
+    end
+
+    def test_map_wrappers
+      run_asserts = ->(m) {
+        assert_equal 2.0, m.map_double[0].value
+        assert_equal 4.0, m.map_float[0].value
+        assert_equal 3, m.map_int32[0].value
+        assert_equal 4, m.map_int64[0].value
+        assert_equal 5, m.map_uint32[0].value
+        assert_equal 6, m.map_uint64[0].value
+        assert_equal true, m.map_bool[0].value
+        assert_equal 'str', m.map_string[0].value
+        assert_equal 'fun', m.map_bytes[0].value
+      }
+
+      m = proto_module::Wrapper.new(
+        map_double: {0 => Google::Protobuf::DoubleValue.new(value: 2.0)},
+        map_float: {0 => Google::Protobuf::FloatValue.new(value: 4.0)},
+        map_int32: {0 => Google::Protobuf::Int32Value.new(value: 3)},
+        map_int64: {0 => Google::Protobuf::Int64Value.new(value: 4)},
+        map_uint32: {0 => Google::Protobuf::UInt32Value.new(value: 5)},
+        map_uint64: {0 => Google::Protobuf::UInt64Value.new(value: 6)},
+        map_bool: {0 => Google::Protobuf::BoolValue.new(value: true)},
+        map_string: {0 => Google::Protobuf::StringValue.new(value: 'str')},
+        map_bytes: {0 => Google::Protobuf::BytesValue.new(value: 'fun')},
+      )
+
+      run_asserts.call(m)
+      serialized = proto_module::Wrapper::encode(m)
+      m2 = proto_module::Wrapper::decode(serialized)
+      run_asserts.call(m2)
+
+      # Test the case where we are serializing directly from the parsed form
+      # (before anything lazy is materialized).
+      m3 = proto_module::Wrapper::decode(serialized)
+      serialized2 = proto_module::Wrapper::encode(m3)
+      m4 = proto_module::Wrapper::decode(serialized2)
+      run_asserts.call(m4)
+
+      # Test that the lazy form compares equal to the expanded form.
+      m5 = proto_module::Wrapper::decode(serialized2)
+      assert_equal m5, m
+    end
+
+    def test_map_wrappers_with_default_values
+      run_asserts = ->(m) {
+        assert_equal 0.0, m.map_double[0].value
+        assert_equal 0.0, m.map_float[0].value
+        assert_equal 0, m.map_int32[0].value
+        assert_equal 0, m.map_int64[0].value
+        assert_equal 0, m.map_uint32[0].value
+        assert_equal 0, m.map_uint64[0].value
+        assert_equal false, m.map_bool[0].value
+        assert_equal '', m.map_string[0].value
+        assert_equal '', m.map_bytes[0].value
+      }
+
+      m = proto_module::Wrapper.new(
+        map_double: {0 => Google::Protobuf::DoubleValue.new(value: 0.0)},
+        map_float: {0 => Google::Protobuf::FloatValue.new(value: 0.0)},
+        map_int32: {0 => Google::Protobuf::Int32Value.new(value: 0)},
+        map_int64: {0 => Google::Protobuf::Int64Value.new(value: 0)},
+        map_uint32: {0 => Google::Protobuf::UInt32Value.new(value: 0)},
+        map_uint64: {0 => Google::Protobuf::UInt64Value.new(value: 0)},
+        map_bool: {0 => Google::Protobuf::BoolValue.new(value: false)},
+        map_string: {0 => Google::Protobuf::StringValue.new(value: '')},
+        map_bytes: {0 => Google::Protobuf::BytesValue.new(value: '')},
+      )
+
+      run_asserts.call(m)
+      serialized = proto_module::Wrapper::encode(m)
+      m2 = proto_module::Wrapper::decode(serialized)
+      run_asserts.call(m2)
+
+      # Test the case where we are serializing directly from the parsed form
+      # (before anything lazy is materialized).
+      m3 = proto_module::Wrapper::decode(serialized)
+      serialized2 = proto_module::Wrapper::encode(m3)
+      m4 = proto_module::Wrapper::decode(serialized2)
+      run_asserts.call(m4)
+
+      # Test that the lazy form compares equal to the expanded form.
+      m5 = proto_module::Wrapper::decode(serialized2)
+      assert_equal m5, m
+    end
+
+    def test_map_wrappers_with_no_value
+      run_asserts = ->(m) {
+        assert_equal 0.0, m.map_double[0].value
+        assert_equal 0.0, m.map_float[0].value
+        assert_equal 0, m.map_int32[0].value
+        assert_equal 0, m.map_int64[0].value
+        assert_equal 0, m.map_uint32[0].value
+        assert_equal 0, m.map_uint64[0].value
+        assert_equal false, m.map_bool[0].value
+        assert_equal '', m.map_string[0].value
+        assert_equal '', m.map_bytes[0].value
+      }
+
+      m = proto_module::Wrapper.new(
+        map_double: {0 => Google::Protobuf::DoubleValue.new()},
+        map_float: {0 => Google::Protobuf::FloatValue.new()},
+        map_int32: {0 => Google::Protobuf::Int32Value.new()},
+        map_int64: {0 => Google::Protobuf::Int64Value.new()},
+        map_uint32: {0 => Google::Protobuf::UInt32Value.new()},
+        map_uint64: {0 => Google::Protobuf::UInt64Value.new()},
+        map_bool: {0 => Google::Protobuf::BoolValue.new()},
+        map_string: {0 => Google::Protobuf::StringValue.new()},
+        map_bytes: {0 => Google::Protobuf::BytesValue.new()},
+      )
+      run_asserts.call(m)
+
+      serialized = proto_module::Wrapper::encode(m)
+      m2 = proto_module::Wrapper::decode(serialized)
+      run_asserts.call(m2)
+
+      # Test the case where we are serializing directly from the parsed form
+      # (before anything lazy is materialized).
+      m3 = proto_module::Wrapper::decode(serialized)
+      serialized2 = proto_module::Wrapper::encode(m3)
+      m4 = proto_module::Wrapper::decode(serialized2)
+      run_asserts.call(m4)
     end
 
     def test_concurrent_decoding

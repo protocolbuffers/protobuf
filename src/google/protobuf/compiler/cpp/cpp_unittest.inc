@@ -44,12 +44,10 @@
 // correctly and produces the interfaces we expect, which is why this test
 // is written this way.
 
-#include <google/protobuf/compiler/cpp/cpp_unittest.h>
-
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/unittest_no_arena.pb.h>
+#include <google/protobuf/compiler/cpp/cpp_unittest.h>
 #include <google/protobuf/stubs/strutil.h>
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
 // We exclude this large proto from cmake build because it's too large for
@@ -100,8 +98,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
-                                 filename, line, column, message);
+    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
+                              message);
   }
 };
 
@@ -401,69 +399,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, StringCharStarLength) {
   // Verify that we can use a char*,length to set a repeated string field.
   message.set_repeated_string(0, "wxyz", 2);
   EXPECT_EQ("wx", message.repeated_string(0));
-}
-
-TEST(GENERATED_MESSAGE_TEST_NAME, StringMove) {
-  // Verify that we trigger the move behavior on a scalar setter.
-  protobuf_unittest_no_arena::TestAllTypes message;
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.set_optional_string(std::move(tmp));
-    const char* new_data = message.optional_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.optional_string());
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_optional_string(std::move(tmp2));
-    new_data = message.optional_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.optional_string());
-  }
-
-  // Verify that we trigger the move behavior on a oneof setter.
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.set_oneof_string(std::move(tmp));
-    const char* new_data = message.oneof_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.oneof_string());
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_oneof_string(std::move(tmp2));
-    new_data = message.oneof_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.oneof_string());
-  }
-
-  // Verify that we trigger the move behavior on a repeated setter.
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.add_repeated_string(std::move(tmp));
-    const char* new_data = message.repeated_string(0).data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.repeated_string(0));
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_repeated_string(0, std::move(tmp2));
-    new_data = message.repeated_string(0).data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.repeated_string(0));
-  }
 }
 
 
@@ -1681,6 +1616,26 @@ TEST_F(OneofTest, SetAllocatedString) {
   message.set_allocated_foo_string(new std::string(kHello));
   EXPECT_TRUE(message.has_foo_string());
   EXPECT_EQ(kHello, message.foo_string());
+}
+
+TEST_F(OneofTest, ArenaSetAllocatedString) {
+  // Check that set_allocated_foo() works for strings.
+  Arena arena;
+  UNITTEST::TestOneof2* message =
+      Arena::CreateMessage<UNITTEST::TestOneof2>(&arena);
+
+  EXPECT_FALSE(message->has_foo_string());
+  const std::string kHello("hello");
+  message->set_foo_string(kHello);
+  EXPECT_TRUE(message->has_foo_string());
+
+  message->set_allocated_foo_string(NULL);
+  EXPECT_FALSE(message->has_foo_string());
+  EXPECT_EQ("", message->foo_string());
+
+  message->set_allocated_foo_string(new std::string(kHello));
+  EXPECT_TRUE(message->has_foo_string());
+  EXPECT_EQ(kHello, message->foo_string());
 }
 
 

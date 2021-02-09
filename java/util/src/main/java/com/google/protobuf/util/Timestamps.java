@@ -92,7 +92,7 @@ public final class Timestamps {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH);
     GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
     // We use Proleptic Gregorian Calendar (i.e., Gregorian calendar extends
-    // backwards to year one) for timestamp formating.
+    // backwards to year one) for timestamp formatting.
     calendar.setGregorianChange(new Date(Long.MIN_VALUE));
     sdf.setCalendar(calendar);
     return sdf;

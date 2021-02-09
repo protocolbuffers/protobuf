@@ -91,7 +91,9 @@ bool CollectExtensions(const Message& message, FieldDescriptorSet* extensions) {
   reflection->ListFields(message, &fields);
 
   for (int i = 0; i < fields.size(); i++) {
-    if (fields[i]->is_extension()) extensions->insert(fields[i]);
+    if (fields[i]->is_extension()) {
+      extensions->insert(fields[i]);
+    }
 
     if (GetJavaType(fields[i]) == JAVATYPE_MESSAGE) {
       if (fields[i]->is_repeated()) {
@@ -267,6 +269,7 @@ void FileGenerator::Generate(io::Printer* printer) {
   }
   PrintGeneratedAnnotation(
       printer, '$', options_.annotate_code ? classname_ + ".java.pb.meta" : "");
+
   printer->Print(
       "$deprecation$public final class $classname$ {\n"
       "  private $ctor$() {}\n",
@@ -383,6 +386,7 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n");
 }
+
 
 void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     io::Printer* printer) {

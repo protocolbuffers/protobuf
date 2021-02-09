@@ -54,7 +54,7 @@ var BYTES_B64 = goog.crypt.base64.encodeByteArray(BYTES);
  * @return {boolean}
  */
 function bytesCompare(arr, expected) {
-  if (goog.isString(arr)) {
+  if (typeof arr === 'string') {
     arr = goog.crypt.base64.decodeStringToUint8Array(arr);
   }
   if (arr.length != expected.length) {
@@ -77,7 +77,7 @@ describe('proto3Test', function() {
   it('testEqualsProto3', function() {
     var msg1 = new proto.jspb.test.TestProto3();
     var msg2 = new proto.jspb.test.TestProto3();
-    msg2.setOptionalString('');
+    msg2.setSingularString('');
 
     assertTrue(jspb.Message.equals(msg1, msg2));
   });
@@ -90,12 +90,12 @@ describe('proto3Test', function() {
     var msg = new proto.jspb.test.TestProto3();
 
     // Setting should work normally.
-    msg.setOptionalString('optionalString');
-    assertEquals(msg.getOptionalString(), 'optionalString');
+    msg.setSingularString('optionalString');
+    assertEquals(msg.getSingularString(), 'optionalString');
 
     // Clearing should work too ...
-    msg.setOptionalString('');
-    assertEquals(msg.getOptionalString(), '');
+    msg.setSingularString('');
+    assertEquals(msg.getSingularString(), '');
 
     // ... and shouldn't affect the equality with a brand new message.
     assertTrue(jspb.Message.equals(msg, new proto.jspb.test.TestProto3()));
@@ -105,6 +105,58 @@ describe('proto3Test', function() {
    * Test defaults for proto3 message fields.
    */
   it('testProto3FieldDefaults', function() {
+    var msg = new proto.jspb.test.TestProto3();
+
+    assertEquals(msg.getSingularInt32(), 0);
+    assertEquals(msg.getSingularInt64(), 0);
+    assertEquals(msg.getSingularUint32(), 0);
+    assertEquals(msg.getSingularUint64(), 0);
+    assertEquals(msg.getSingularSint32(), 0);
+    assertEquals(msg.getSingularSint64(), 0);
+    assertEquals(msg.getSingularFixed32(), 0);
+    assertEquals(msg.getSingularFixed64(), 0);
+    assertEquals(msg.getSingularSfixed32(), 0);
+    assertEquals(msg.getSingularSfixed64(), 0);
+    assertEquals(msg.getSingularFloat(), 0);
+    assertEquals(msg.getSingularDouble(), 0);
+    assertEquals(msg.getSingularString(), '');
+
+    // TODO(b/26173701): when we change bytes fields default getter to return
+    // Uint8Array, we'll want to switch this assertion to match the u8 case.
+    assertEquals(typeof msg.getSingularBytes(), 'string');
+    assertEquals(msg.getSingularBytes_asU8() instanceof Uint8Array, true);
+    assertEquals(typeof msg.getSingularBytes_asB64(), 'string');
+    assertEquals(msg.getSingularBytes().length, 0);
+    assertEquals(msg.getSingularBytes_asU8().length, 0);
+    assertEquals(msg.getSingularBytes_asB64(), '');
+
+    assertEquals(
+        msg.getSingularForeignEnum(), proto.jspb.test.Proto3Enum.PROTO3_FOO);
+    assertEquals(msg.getSingularForeignMessage(), undefined);
+    assertEquals(msg.getSingularForeignMessage(), undefined);
+
+    assertEquals(msg.getRepeatedInt32List().length, 0);
+    assertEquals(msg.getRepeatedInt64List().length, 0);
+    assertEquals(msg.getRepeatedUint32List().length, 0);
+    assertEquals(msg.getRepeatedUint64List().length, 0);
+    assertEquals(msg.getRepeatedSint32List().length, 0);
+    assertEquals(msg.getRepeatedSint64List().length, 0);
+    assertEquals(msg.getRepeatedFixed32List().length, 0);
+    assertEquals(msg.getRepeatedFixed64List().length, 0);
+    assertEquals(msg.getRepeatedSfixed32List().length, 0);
+    assertEquals(msg.getRepeatedSfixed64List().length, 0);
+    assertEquals(msg.getRepeatedFloatList().length, 0);
+    assertEquals(msg.getRepeatedDoubleList().length, 0);
+    assertEquals(msg.getRepeatedStringList().length, 0);
+    assertEquals(msg.getRepeatedBytesList().length, 0);
+    assertEquals(msg.getRepeatedForeignEnumList().length, 0);
+    assertEquals(msg.getRepeatedForeignMessageList().length, 0);
+  });
+
+  /**
+   * Test presence for proto3 optional fields.
+   */
+  it('testProto3Optional', function() {
     var msg = new proto.jspb.test.TestProto3();
 
     assertEquals(msg.getOptionalInt32(), 0);
@@ -135,51 +187,65 @@ describe('proto3Test', function() {
     assertEquals(msg.getOptionalForeignMessage(), undefined);
     assertEquals(msg.getOptionalForeignMessage(), undefined);
 
-    assertEquals(msg.getRepeatedInt32List().length, 0);
-    assertEquals(msg.getRepeatedInt64List().length, 0);
-    assertEquals(msg.getRepeatedUint32List().length, 0);
-    assertEquals(msg.getRepeatedUint64List().length, 0);
-    assertEquals(msg.getRepeatedSint32List().length, 0);
-    assertEquals(msg.getRepeatedSint64List().length, 0);
-    assertEquals(msg.getRepeatedFixed32List().length, 0);
-    assertEquals(msg.getRepeatedFixed64List().length, 0);
-    assertEquals(msg.getRepeatedSfixed32List().length, 0);
-    assertEquals(msg.getRepeatedSfixed64List().length, 0);
-    assertEquals(msg.getRepeatedFloatList().length, 0);
-    assertEquals(msg.getRepeatedDoubleList().length, 0);
-    assertEquals(msg.getRepeatedStringList().length, 0);
-    assertEquals(msg.getRepeatedBytesList().length, 0);
-    assertEquals(msg.getRepeatedForeignEnumList().length, 0);
-    assertEquals(msg.getRepeatedForeignMessageList().length, 0);
+    // Serializing an empty proto yields the empty string.
+    assertEquals(msg.serializeBinary().length, 0);
 
+    // Values start as unset, but can be explicitly set even to default values
+    // like 0.
+    assertFalse(msg.hasOptionalInt32());
+    msg.setOptionalInt32(0);
+    assertTrue(msg.hasOptionalInt32());
+
+    assertFalse(msg.hasOptionalInt64());
+    msg.setOptionalInt64(0);
+    assertTrue(msg.hasOptionalInt64());
+
+    assertFalse(msg.hasOptionalString());
+    msg.setOptionalString('');
+    assertTrue(msg.hasOptionalString());
+
+    // Now the proto will have a non-zero size, even though its values are 0.
+    var serialized = msg.serializeBinary();
+    assertNotEquals(serialized.length, 0);
+
+    var msg2 = proto.jspb.test.TestProto3.deserializeBinary(serialized);
+    assertTrue(msg2.hasOptionalInt32());
+    assertTrue(msg2.hasOptionalInt64());
+    assertTrue(msg2.hasOptionalString());
+
+    // We can clear fields to go back to empty.
+    msg2.clearOptionalInt32();
+    assertFalse(msg2.hasOptionalInt32());
+
+    msg2.clearOptionalString();
+    assertFalse(msg2.hasOptionalString());
   });
 
-
   /**
-   * Test that all fields can be set and read via a serialization roundtrip.
+   * Test that all fields can be set ,and read via a serialization roundtrip.
    */
   it('testProto3FieldSetGet', function() {
     var msg = new proto.jspb.test.TestProto3();
 
-    msg.setOptionalInt32(-42);
-    msg.setOptionalInt64(-0x7fffffff00000000);
-    msg.setOptionalUint32(0x80000000);
-    msg.setOptionalUint64(0xf000000000000000);
-    msg.setOptionalSint32(-100);
-    msg.setOptionalSint64(-0x8000000000000000);
-    msg.setOptionalFixed32(1234);
-    msg.setOptionalFixed64(0x1234567800000000);
-    msg.setOptionalSfixed32(-1234);
-    msg.setOptionalSfixed64(-0x1234567800000000);
-    msg.setOptionalFloat(1.5);
-    msg.setOptionalDouble(-1.5);
-    msg.setOptionalBool(true);
-    msg.setOptionalString('hello world');
-    msg.setOptionalBytes(BYTES);
+    msg.setSingularInt32(-42);
+    msg.setSingularInt64(-0x7fffffff00000000);
+    msg.setSingularUint32(0x80000000);
+    msg.setSingularUint64(0xf000000000000000);
+    msg.setSingularSint32(-100);
+    msg.setSingularSint64(-0x8000000000000000);
+    msg.setSingularFixed32(1234);
+    msg.setSingularFixed64(0x1234567800000000);
+    msg.setSingularSfixed32(-1234);
+    msg.setSingularSfixed64(-0x1234567800000000);
+    msg.setSingularFloat(1.5);
+    msg.setSingularDouble(-1.5);
+    msg.setSingularBool(true);
+    msg.setSingularString('hello world');
+    msg.setSingularBytes(BYTES);
     var submsg = new proto.jspb.test.ForeignMessage();
     submsg.setC(16);
-    msg.setOptionalForeignMessage(submsg);
-    msg.setOptionalForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_BAR);
+    msg.setSingularForeignMessage(submsg);
+    msg.setSingularForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_BAR);
 
     msg.setRepeatedInt32List([-42]);
     msg.setRepeatedInt64List([-0x7fffffff00000000]);
@@ -206,24 +272,24 @@ describe('proto3Test', function() {
     var serialized = msg.serializeBinary();
     msg = proto.jspb.test.TestProto3.deserializeBinary(serialized);
 
-    assertEquals(msg.getOptionalInt32(), -42);
-    assertEquals(msg.getOptionalInt64(), -0x7fffffff00000000);
-    assertEquals(msg.getOptionalUint32(), 0x80000000);
-    assertEquals(msg.getOptionalUint64(), 0xf000000000000000);
-    assertEquals(msg.getOptionalSint32(), -100);
-    assertEquals(msg.getOptionalSint64(), -0x8000000000000000);
-    assertEquals(msg.getOptionalFixed32(), 1234);
-    assertEquals(msg.getOptionalFixed64(), 0x1234567800000000);
-    assertEquals(msg.getOptionalSfixed32(), -1234);
-    assertEquals(msg.getOptionalSfixed64(), -0x1234567800000000);
-    assertEquals(msg.getOptionalFloat(), 1.5);
-    assertEquals(msg.getOptionalDouble(), -1.5);
-    assertEquals(msg.getOptionalBool(), true);
-    assertEquals(msg.getOptionalString(), 'hello world');
-    assertEquals(true, bytesCompare(msg.getOptionalBytes(), BYTES));
-    assertEquals(msg.getOptionalForeignMessage().getC(), 16);
-    assertEquals(msg.getOptionalForeignEnum(),
-        proto.jspb.test.Proto3Enum.PROTO3_BAR);
+    assertEquals(msg.getSingularInt32(), -42);
+    assertEquals(msg.getSingularInt64(), -0x7fffffff00000000);
+    assertEquals(msg.getSingularUint32(), 0x80000000);
+    assertEquals(msg.getSingularUint64(), 0xf000000000000000);
+    assertEquals(msg.getSingularSint32(), -100);
+    assertEquals(msg.getSingularSint64(), -0x8000000000000000);
+    assertEquals(msg.getSingularFixed32(), 1234);
+    assertEquals(msg.getSingularFixed64(), 0x1234567800000000);
+    assertEquals(msg.getSingularSfixed32(), -1234);
+    assertEquals(msg.getSingularSfixed64(), -0x1234567800000000);
+    assertEquals(msg.getSingularFloat(), 1.5);
+    assertEquals(msg.getSingularDouble(), -1.5);
+    assertEquals(msg.getSingularBool(), true);
+    assertEquals(msg.getSingularString(), 'hello world');
+    assertEquals(true, bytesCompare(msg.getSingularBytes(), BYTES));
+    assertEquals(msg.getSingularForeignMessage().getC(), 16);
+    assertEquals(
+        msg.getSingularForeignEnum(), proto.jspb.test.Proto3Enum.PROTO3_BAR);
 
     assertElementsEquals(msg.getRepeatedInt32List(), [-42]);
     assertElementsEquals(msg.getRepeatedInt64List(), [-0x7fffffff00000000]);
@@ -327,20 +393,20 @@ describe('proto3Test', function() {
     // Set each primitive to a non-default value, then back to its default, to
     // ensure that the serialization is actually checking the value and not just
     // whether it has ever been set.
-    msg.setOptionalInt32(42);
-    msg.setOptionalInt32(0);
-    msg.setOptionalDouble(3.14);
-    msg.setOptionalDouble(0.0);
-    msg.setOptionalBool(true);
-    msg.setOptionalBool(false);
-    msg.setOptionalString('hello world');
-    msg.setOptionalString('');
-    msg.setOptionalBytes(goog.crypt.base64.encodeString('\u00FF\u00FF'));
-    msg.setOptionalBytes('');
-    msg.setOptionalForeignMessage(new proto.jspb.test.ForeignMessage());
-    msg.setOptionalForeignMessage(null);
-    msg.setOptionalForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_BAR);
-    msg.setOptionalForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_FOO);
+    msg.setSingularInt32(42);
+    msg.setSingularInt32(0);
+    msg.setSingularDouble(3.14);
+    msg.setSingularDouble(0.0);
+    msg.setSingularBool(true);
+    msg.setSingularBool(false);
+    msg.setSingularString('hello world');
+    msg.setSingularString('');
+    msg.setSingularBytes(goog.crypt.base64.encodeString('\u00FF\u00FF'));
+    msg.setSingularBytes('');
+    msg.setSingularForeignMessage(new proto.jspb.test.ForeignMessage());
+    msg.setSingularForeignMessage(null);
+    msg.setSingularForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_BAR);
+    msg.setSingularForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_FOO);
     msg.setOneofUint32(32);
     msg.clearOneofUint32();
 
@@ -355,26 +421,24 @@ describe('proto3Test', function() {
   it('testBytesFieldsInterop', function() {
     var msg = new proto.jspb.test.TestProto3();
     // Set as a base64 string and check all the getters work.
-    msg.setOptionalBytes(BYTES_B64);
-    assertTrue(bytesCompare(msg.getOptionalBytes_asU8(), BYTES));
-    assertTrue(bytesCompare(msg.getOptionalBytes_asB64(), BYTES));
-    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+    msg.setSingularBytes(BYTES_B64);
+    assertTrue(bytesCompare(msg.getSingularBytes_asU8(), BYTES));
+    assertTrue(bytesCompare(msg.getSingularBytes_asB64(), BYTES));
+    assertTrue(bytesCompare(msg.getSingularBytes(), BYTES));
 
     // Test binary serialize round trip doesn't break it.
     msg = proto.jspb.test.TestProto3.deserializeBinary(msg.serializeBinary());
-    assertTrue(bytesCompare(msg.getOptionalBytes_asU8(), BYTES));
-    assertTrue(bytesCompare(msg.getOptionalBytes_asB64(), BYTES));
-    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
+    assertTrue(bytesCompare(msg.getSingularBytes_asU8(), BYTES));
+    assertTrue(bytesCompare(msg.getSingularBytes_asB64(), BYTES));
+    assertTrue(bytesCompare(msg.getSingularBytes(), BYTES));
 
     msg = new proto.jspb.test.TestProto3();
     // Set as a Uint8Array and check all the getters work.
-    msg.setOptionalBytes(BYTES);
-    assertTrue(bytesCompare(msg.getOptionalBytes_asU8(), BYTES));
-    assertTrue(bytesCompare(msg.getOptionalBytes_asB64(), BYTES));
-    assertTrue(bytesCompare(msg.getOptionalBytes(), BYTES));
-
+    msg.setSingularBytes(BYTES);
+    assertTrue(bytesCompare(msg.getSingularBytes_asU8(), BYTES));
+    assertTrue(bytesCompare(msg.getSingularBytes_asB64(), BYTES));
+    assertTrue(bytesCompare(msg.getSingularBytes(), BYTES));
   });
-
 
   it('testTimestampWellKnownType', function() {
     var msg = new proto.google.protobuf.Timestamp();

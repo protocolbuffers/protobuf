@@ -46,7 +46,7 @@ namespace protobuf {
 class DescriptorPool;
 namespace util {
 
-// Abstract interface for a type resovler.
+// Abstract interface for a type resolver.
 //
 // Implementations of this interface must be thread-safe.
 class PROTOBUF_EXPORT TypeResolver {

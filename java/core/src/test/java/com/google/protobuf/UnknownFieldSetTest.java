@@ -38,6 +38,7 @@ import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
+import proto3_unittest.UnittestProto3;
 import java.util.Arrays;
 import java.util.Map;
 import junit.framework.TestCase;
@@ -379,4 +380,28 @@ public class UnknownFieldSetTest extends TestCase {
   }
 
   // =================================================================
+
+  public void testProto3RoundTrip() throws Exception {
+    ByteString data = getBizarroData();
+
+    UnittestProto3.TestEmptyMessage message =
+        UnittestProto3.TestEmptyMessage.parseFrom(data, ExtensionRegistryLite.getEmptyRegistry());
+    assertEquals(data, message.toByteString());
+
+    message = UnittestProto3.TestEmptyMessage.newBuilder().mergeFrom(message).build();
+    assertEquals(data, message.toByteString());
+
+    assertEquals(
+        data,
+        UnittestProto3.TestMessageWithDummy.parseFrom(
+                data, ExtensionRegistryLite.getEmptyRegistry())
+            .toBuilder()
+            // force copy-on-write
+            .setDummy(true)
+            .build()
+            .toBuilder()
+            .clearDummy()
+            .build()
+            .toByteString());
+  }
 }

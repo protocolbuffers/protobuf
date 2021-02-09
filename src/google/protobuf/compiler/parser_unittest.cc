@@ -41,6 +41,7 @@
 
 #include <google/protobuf/test_util2.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/any.pb.h>
 #include <google/protobuf/unittest_custom_options.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -68,8 +69,7 @@ class MockErrorCollector : public io::ErrorCollector {
 
   // implements ErrorCollector ---------------------------------------
   void AddWarning(int line, int column, const std::string& message) override {
-    strings::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column,
-                                 message);
+    strings::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column, message);
   }
 
   void AddError(int line, int column, const std::string& message) override {
@@ -224,7 +224,7 @@ TEST_F(ParserTest, WarnIfSyntaxIdentifierOmmitted) {
   CaptureTestStderr();
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(GetCapturedTestStderr().find("No syntax specified") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
@@ -235,7 +235,7 @@ TEST_F(ParserTest, WarnIfFieldNameIsNotUpperCamel) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Message name should be in UpperCamelCase. Found: abc.") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
@@ -248,7 +248,7 @@ TEST_F(ParserTest, WarnIfFieldNameIsNotLowerUnderscore) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Field name should be lowercase. Found: SongName") !=
-              string::npos);
+              std::string::npos);
 }
 
 TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
@@ -261,7 +261,7 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &file));
   EXPECT_TRUE(error_collector_.warning_.find(
                   "Number should not come right after an underscore. Found: "
-                  "song_name_1.") != string::npos);
+                  "song_name_1.") != std::string::npos);
 }
 
 // ===================================================================
@@ -1009,6 +1009,43 @@ TEST_F(ParseMessageTest, OptionalLabelProto3) {
       "}");
 }
 
+TEST_F(ParseMessageTest, ExplicitOptionalLabelProto3) {
+  ExpectParsesTo(
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  optional int32 foo = 1;\n"
+      "}\n",
+
+      "syntax: \"proto3\" "
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 "
+      "          proto3_optional: true oneof_index: 0 } "
+      "  oneof_decl { name:\"_foo\" } "
+      "}");
+
+  // Handle collisions in the synthetic oneof name.
+  ExpectParsesTo(
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  optional int32 foo = 1;\n"
+      "  oneof _foo {\n"
+      "    int32 __foo = 2;\n"
+      "  }\n"
+      "}\n",
+
+      "syntax: \"proto3\" "
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  field { name:\"foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:1 "
+      "          proto3_optional: true oneof_index: 1 } "
+      "  field { name:\"__foo\" label:LABEL_OPTIONAL type:TYPE_INT32 number:2 "
+      "          oneof_index: 0 } "
+      "  oneof_decl { name:\"_foo\" } "
+      "  oneof_decl { name:\"X_foo\" } "
+      "}");
+}
+
 // ===================================================================
 
 typedef ParserTest ParseEnumTest;
@@ -1573,17 +1610,6 @@ TEST_F(ParseErrorTest, EofInAggregateValue) {
   ExpectHasErrors(
       "option (fileopt) = { i:100\n",
       "1:0: Unexpected end of stream while parsing aggregate value.\n");
-}
-
-TEST_F(ParseErrorTest, ExplicitOptionalLabelProto3) {
-  ExpectHasErrors(
-      "syntax = 'proto3';\n"
-      "message TestMessage {\n"
-      "  optional int32 foo = 1;\n"
-      "}\n",
-      "2:11: Explicit 'optional' labels are disallowed in the Proto3 syntax. "
-      "To define 'optional' fields in Proto3, simply remove the 'optional' "
-      "label, as fields are 'optional' by default.\n");
 }
 
 // -------------------------------------------------------------------
@@ -2251,6 +2277,11 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   FileDescriptorProto import_proto;
   import->CopyTo(&import_proto);
   ASSERT_TRUE(pool_.BuildFile(import_proto) != NULL);
+
+  FileDescriptorProto any_import;
+  google::protobuf::Any::descriptor()->file()->CopyTo(&any_import);
+  ASSERT_TRUE(pool_.BuildFile(any_import) != nullptr);
+
   const FileDescriptor* actual = pool_.BuildFile(parsed);
   ASSERT_TRUE(actual != NULL);
   parsed.Clear();
@@ -2403,9 +2434,9 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
   // Make sure the debug string uses map syntax and does not have the auto
   // generated entry.
   std::string debug_string = file->DebugString();
-  EXPECT_TRUE(debug_string.find("map<") != string::npos);
-  EXPECT_TRUE(debug_string.find("option map_entry") == string::npos);
-  EXPECT_TRUE(debug_string.find("MapEntry") == string::npos);
+  EXPECT_TRUE(debug_string.find("map<") != std::string::npos);
+  EXPECT_TRUE(debug_string.find("option map_entry") == std::string::npos);
+  EXPECT_TRUE(debug_string.find("MapEntry") == std::string::npos);
 
   // Make sure the descriptor debug string is parsable.
   FileDescriptorProto parsed;

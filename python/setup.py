@@ -2,6 +2,7 @@
 #
 # See README for usage instructions.
 from distutils import util
+import fnmatch
 import glob
 import os
 import pkg_resources
@@ -82,8 +83,6 @@ def GenerateUnittestProtos():
   generate_proto("../src/google/protobuf/test_messages_proto3.proto", False)
   generate_proto("../src/google/protobuf/test_messages_proto2.proto", False)
   generate_proto("../src/google/protobuf/unittest_arena.proto", False)
-  generate_proto("../src/google/protobuf/unittest_no_arena.proto", False)
-  generate_proto("../src/google/protobuf/unittest_no_arena_import.proto", False)
   generate_proto("../src/google/protobuf/unittest.proto", False)
   generate_proto("../src/google/protobuf/unittest_custom_options.proto", False)
   generate_proto("../src/google/protobuf/unittest_import.proto", False)
@@ -110,6 +109,7 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/no_package.proto", False)
   generate_proto("google/protobuf/internal/packed_field_test.proto", False)
   generate_proto("google/protobuf/internal/test_bad_identifiers.proto", False)
+  generate_proto("google/protobuf/internal/test_proto3_optional.proto", False)
   generate_proto("google/protobuf/pyext/python.proto", False)
 
 
@@ -144,6 +144,18 @@ class build_py(_build_py):
 
     # _build_py is an old-style class, so super() doesn't work.
     _build_py.run(self)
+
+  def find_package_modules(self, package, package_dir):
+    exclude = (
+        "*test*",
+        "google/protobuf/internal/*_pb2.py",
+        "google/protobuf/internal/_parameterized.py",
+        "google/protobuf/pyext/python_pb2.py",
+    )
+    modules = _build_py.find_package_modules(self, package, package_dir)
+    return [(pkg, mod, fil) for (pkg, mod, fil) in modules
+            if not any(fnmatch.fnmatchcase(fil, pat=pat) for pat in exclude)]
+
 
 class test_conformance(_build_py):
   target = 'test_python'
@@ -242,7 +254,7 @@ if __name__ == '__main__':
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
 
   # Keep this list of dependencies in sync with tox.ini.
-  install_requires = ['six>=1.9', 'setuptools']
+  install_requires = ['six>=1.9']
   if sys.version_info <= (2,7):
     install_requires.append('ordereddict')
     install_requires.append('unittest2')
@@ -272,6 +284,7 @@ if __name__ == '__main__':
       packages=find_packages(
           exclude=[
               'import_test_package',
+              'protobuf_distutils',
           ],
       ),
       test_suite='google.protobuf.internal',

@@ -123,7 +123,7 @@ target directory layout:
           protoc.exe
         + ppcle_64
           protoc.exe
-        + s390x_64
+        + s390x
           protoc.exe
       + osx
         + x86_64
@@ -151,31 +151,6 @@ https://oss.sonatype.org/#stagingRepositories and find the repository, usually
 in the name like ``comgoogle-123``. Verify that the staging repository has all
 the binaries, close and release this repository.
 
-## Upload zip packages to github release page.
-After uploading protoc artifacts to Maven Central repository, run the
-build-zip.sh script to bulid zip packages for these protoc binaries
-and upload these zip packages to the download section of the github
-release. For example:
-
-```
-$ ./build-zip.sh protoc 3.6.0
-```
-
-The above command will create 7 zip files:
-
-```
-dist/protoc-3.6.0-win32.zip
-dist/protoc-3.6.0-osx-x86_32.zip
-dist/protoc-3.6.0-osx-x86_64.zip
-dist/protoc-3.6.0-linux-x86_32.zip
-dist/protoc-3.6.0-linux-x86_64.zip
-dist/protoc-3.6.0-linux-aarch_64.zip
-dist/protoc-3.6.0-linux-ppcle_64.zip
-dist/protoc-3.6.0-linux-s390x_64.zip
-```
-
-Before running the script, make sure the artifacts are accessible from:
-http://repo1.maven.org/maven2/com/google/protobuf/protoc/
 
 ## Tested build environments
 We have successfully built artifacts on the following environments:

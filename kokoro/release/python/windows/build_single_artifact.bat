@@ -18,6 +18,12 @@ if %PYTHON%==C:\python37_32bit set vcplatform=Win32
 if %PYTHON%==C:\python37 set generator=Visual Studio 14 Win64
 if %PYTHON%==C:\python37 set vcplatform=x64
 
+if %PYTHON%==C:\python38_32bit set generator=Visual Studio 14
+if %PYTHON%==C:\python38_32bit set vcplatform=Win32
+
+if %PYTHON%==C:\python38 set generator=Visual Studio 14 Win64
+if %PYTHON%==C:\python38 set vcplatform=x64
+
 REM Prepend newly installed Python to the PATH of this build (this cannot be
 REM done from inside the powershell script as it would require to restart
 REM the parent CMD process).

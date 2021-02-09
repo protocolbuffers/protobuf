@@ -34,13 +34,16 @@ using BenchmarkDotNet.Running;
 
 namespace Google.Protobuf.Benchmarks
 {
-    /// <summary>
-    /// Entry point, that currently runs the sole benchmark we have.
-    /// Eventually we might want to be able to specify a particular dataset
-    /// from the command line.
-    /// </summary>
     class Program
     {
-        static void Main() => BenchmarkRunner.Run<SerializationBenchmark>();
+        // typical usage: dotnet run -c Release -f netcoreapp2.1
+        // (this can profile both .net core and .net framework; for some reason
+        // if you start from "-f net461", it goes horribly wrong)
+        public static void Main(string[] args)
+        {
+            BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
+        }
     }
+
+    
 }

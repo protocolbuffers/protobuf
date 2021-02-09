@@ -160,6 +160,29 @@ TEST(MessageDifferencerTest, MapFieldEqualityTest) {
 
   // Compare
   EXPECT_TRUE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Get map entries by index will sync map to repeated field
+  MapTestUtil::GetMapEntries(msg1, 0);
+  EXPECT_TRUE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare values not match
+  (*msg1.mutable_map_int32_int32())[1] = 2;
+  (*msg2.mutable_map_int32_int32())[1] = 3;
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare keys not match
+  msg1.Clear();
+  msg2.Clear();
+  (*msg1.mutable_map_string_string())["1"] = "";
+  (*msg2.mutable_map_string_string())["2"] = "";
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare message values not match
+  msg1.Clear();
+  msg2.Clear();
+  (*msg1.mutable_map_int32_foreign_message())[1].set_c(1);
+  (*msg2.mutable_map_int32_foreign_message())[1].set_c(2);
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
 }
 
 TEST(MessageDifferencerTest, BasicPartialEqualityTest) {
@@ -1205,7 +1228,7 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest_PreviouslyMatch) {
   *msg2.add_rm() = elem1_2;
   *msg2.add_rm() = elem2_2;
 
-  string diff_report;
+  std::string diff_report;
   util::MessageDifferencer differencer;
   differencer.ReportDifferencesToString(&diff_report);
   differencer.set_repeated_field_comparison(
@@ -2385,7 +2408,7 @@ class ComparisonTest : public testing::Test {
 
   void field_as_set(const std::string& field) { set_field_ = field; }
 
-  void field_as_map(const string& field, const std::string& key) {
+  void field_as_map(const std::string& field, const std::string& key) {
     map_field_ = field;
     map_key_ = key;
   }
@@ -3198,11 +3221,13 @@ TEST_F(ComparisonTest, EquivalentIgnoresUnknown) {
 }
 
 TEST_F(ComparisonTest, MapTest) {
-  Map<string, std::string>& map1 = *map_proto1_.mutable_map_string_string();
+  Map<std::string, std::string>& map1 =
+      *map_proto1_.mutable_map_string_string();
   map1["key1"] = "1";
   map1["key2"] = "2";
   map1["key3"] = "3";
-  Map<string, std::string>& map2 = *map_proto2_.mutable_map_string_string();
+  Map<std::string, std::string>& map2 =
+      *map_proto2_.mutable_map_string_string();
   map2["key3"] = "0";
   map2["key2"] = "2";
   map2["key1"] = "1";
@@ -3212,11 +3237,13 @@ TEST_F(ComparisonTest, MapTest) {
 }
 
 TEST_F(ComparisonTest, MapIgnoreKeyTest) {
-  Map<string, std::string>& map1 = *map_proto1_.mutable_map_string_string();
+  Map<std::string, std::string>& map1 =
+      *map_proto1_.mutable_map_string_string();
   map1["key1"] = "1";
   map1["key2"] = "2";
   map1["key3"] = "3";
-  Map<string, std::string>& map2 = *map_proto2_.mutable_map_string_string();
+  Map<std::string, std::string>& map2 =
+      *map_proto2_.mutable_map_string_string();
   map2["key4"] = "2";
   map2["key5"] = "3";
   map2["key6"] = "1";
@@ -3443,6 +3470,7 @@ TEST_F(MatchingTest, ReportMatchedForMovedFields) {
       "moved: item[1] -> item[0] : { a: 27 }\n",
       RunWithResult(&differencer, msg1, msg2, true));
 }
+
 
 TEST_F(MatchingTest, MatchesAppearInPostTraversalOrderForMovedFields) {
   protobuf_unittest::TestDiffMessage msg1, msg2;

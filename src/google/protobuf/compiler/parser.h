@@ -208,7 +208,7 @@ class PROTOBUF_EXPORT Parser {
 
   // Invokes error_collector_->AddWarning() with the line and column number
   // of the current token.
-  void AddWarning(const string& warning);
+  void AddWarning(const std::string& warning);
 
   // Records a location in the SourceCodeInfo.location table (see
   // descriptor.proto).  We use RAII to ensure that the start and end locations
@@ -262,7 +262,7 @@ class PROTOBUF_EXPORT Parser {
         const Message* descriptor,
         DescriptorPool::ErrorCollector::ErrorLocation location);
     void RecordLegacyImportLocation(const Message* descriptor,
-                                    const string& name);
+                                    const std::string& name);
 
     // Returns the number of path components in the recorder's current location.
     int CurrentPathSize() const;
@@ -568,14 +568,14 @@ class PROTOBUF_EXPORT SourceLocationTable {
   bool Find(const Message* descriptor,
             DescriptorPool::ErrorCollector::ErrorLocation location, int* line,
             int* column) const;
-  bool FindImport(const Message* descriptor, const string& name, int* line,
+  bool FindImport(const Message* descriptor, const std::string& name, int* line,
                   int* column) const;
 
   // Adds a location to the table.
   void Add(const Message* descriptor,
            DescriptorPool::ErrorCollector::ErrorLocation location, int line,
            int column);
-  void AddImport(const Message* descriptor, const string& name, int line,
+  void AddImport(const Message* descriptor, const std::string& name, int line,
                  int column);
 
   // Clears the contents of the table.
@@ -587,7 +587,7 @@ class PROTOBUF_EXPORT SourceLocationTable {
       std::pair<int, int> >
       LocationMap;
   LocationMap location_map_;
-  std::map<std::pair<const Message*, string>, std::pair<int, int> >
+  std::map<std::pair<const Message*, std::string>, std::pair<int, int> >
       import_location_map_;
 };
 

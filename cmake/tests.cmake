@@ -33,7 +33,6 @@ set(lite_test_protos
   google/protobuf/unittest_import_lite.proto
   google/protobuf/unittest_import_public_lite.proto
   google/protobuf/unittest_lite.proto
-  google/protobuf/unittest_no_arena_lite.proto
 )
 
 set(tests_protos
@@ -56,8 +55,6 @@ set(tests_protos
   google/protobuf/unittest_lite_imports_nonlite.proto
   google/protobuf/unittest_mset.proto
   google/protobuf/unittest_mset_wire_format.proto
-  google/protobuf/unittest_no_arena.proto
-  google/protobuf/unittest_no_arena_import.proto
   google/protobuf/unittest_no_field_presence.proto
   google/protobuf/unittest_no_generic_services.proto
   google/protobuf/unittest_optimize_for.proto
@@ -67,6 +64,7 @@ set(tests_protos
   google/protobuf/unittest_proto3_arena.proto
   google/protobuf/unittest_proto3_arena_lite.proto
   google/protobuf/unittest_proto3_lite.proto
+  google/protobuf/unittest_proto3_optional.proto
   google/protobuf/unittest_well_known_types.proto
   google/protobuf/util/internal/testdata/anys.proto
   google/protobuf/util/internal/testdata/books.proto
@@ -89,10 +87,11 @@ macro(compile_proto_file filename)
   get_filename_component(basename ${filename} NAME_WE)
   add_custom_command(
     OUTPUT ${protobuf_source_dir}/src/${dirname}/${basename}.pb.cc
-    DEPENDS protoc ${protobuf_source_dir}/src/${dirname}/${basename}.proto
-    COMMAND protoc ${protobuf_source_dir}/src/${dirname}/${basename}.proto
+    DEPENDS ${protobuf_PROTOC_EXE} ${protobuf_source_dir}/src/${dirname}/${basename}.proto
+    COMMAND ${protobuf_PROTOC_EXE} ${protobuf_source_dir}/src/${dirname}/${basename}.proto
         --proto_path=${protobuf_source_dir}/src
         --cpp_out=${protobuf_source_dir}/src
+        --experimental_allow_proto3_optional
   )
 endmacro(compile_proto_file)
 

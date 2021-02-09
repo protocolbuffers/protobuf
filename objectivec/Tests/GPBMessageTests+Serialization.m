@@ -109,6 +109,317 @@
   [msg release];
 }
 
+- (void)testProto3SerializationHandlingOptionals {
+  //
+  // Proto3 optionals should be just like proto2, zero values also get serialized.
+  //
+
+//%PDDM-DEFINE PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(FIELD, ZERO_VALUE, EXPECTED_LEN)
+//%  {  // optional##FIELD
+//%    Message3Optional *msg = [[Message3Optional alloc] init];
+//%    NSData *data = [msg data];
+//%    XCTAssertEqual([data length], 0U);
+//%    msg.optional##FIELD = ZERO_VALUE;
+//%    data = [msg data];
+//%    XCTAssertEqual(data.length, EXPECTED_LEN);
+//%    NSError *err = nil;
+//%    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+//%    XCTAssertNotNil(msg2);
+//%    XCTAssertNil(err);
+//%    XCTAssertTrue(msg2.hasOptional##FIELD);
+//%    XCTAssertEqualObjects(msg, msg2);
+//%    [msg release];
+//%  }
+//%
+//%PDDM-DEFINE PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Int32, 0, 2)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Int64, 0, 2)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Uint32, 0, 2)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Uint64, 0, 2)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Sint32, 0, 2)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Sint64, 0, 2)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Fixed32, 0, 5)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Fixed64, 0, 9)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Sfixed32, 0, 5)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Sfixed64, 0, 9)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Float, 0.0f, 5)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Double, 0.0, 9)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Bool, NO, 2)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(String, @"", 2)
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Bytes, [NSData data], 2)
+//%  //
+//%  // Test doesn't apply to optionalMessage (no groups in proto3).
+//%  //
+//%
+//%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Enum, Message3Optional_Enum_Foo, 3)
+//%PDDM-EXPAND PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
+// This block of code is generated, do not edit it directly.
+// clang-format off
+
+  {  // optionalInt32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalInt32 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalInt32);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalInt64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalInt64 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalInt64);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalUint32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalUint32 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalUint32);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalUint64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalUint64 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalUint64);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalSint32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalSint32 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalSint32);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalSint64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalSint64 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalSint64);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalFixed32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalFixed32 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 5);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalFixed32);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalFixed64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalFixed64 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 9);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalFixed64);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalSfixed32
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalSfixed32 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 5);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalSfixed32);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalSfixed64
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalSfixed64 = 0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 9);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalSfixed64);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalFloat
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalFloat = 0.0f;
+    data = [msg data];
+    XCTAssertEqual(data.length, 5);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalFloat);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalDouble
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalDouble = 0.0;
+    data = [msg data];
+    XCTAssertEqual(data.length, 9);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalDouble);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalBool
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalBool = NO;
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalBool);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalString
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalString = @"";
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalString);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  {  // optionalBytes
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalBytes = [NSData data];
+    data = [msg data];
+    XCTAssertEqual(data.length, 2);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalBytes);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+  //
+  // Test doesn't apply to optionalMessage (no groups in proto3).
+  //
+
+  {  // optionalEnum
+    Message3Optional *msg = [[Message3Optional alloc] init];
+    NSData *data = [msg data];
+    XCTAssertEqual([data length], 0U);
+    msg.optionalEnum = Message3Optional_Enum_Foo;
+    data = [msg data];
+    XCTAssertEqual(data.length, 3);
+    NSError *err = nil;
+    Message3Optional *msg2 = [Message3Optional parseFromData:data error:&err];
+    XCTAssertNotNil(msg2);
+    XCTAssertNil(err);
+    XCTAssertTrue(msg2.hasOptionalEnum);
+    XCTAssertEqualObjects(msg, msg2);
+    [msg release];
+  }
+
+// clang-format on
+//%PDDM-EXPAND-END PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
+}
+
 - (void)testProto2UnknownEnumToUnknownField {
   Message3 *orig = [[Message3 alloc] init];
 
@@ -273,6 +584,7 @@
 //%
 //%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(2, NO)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 - (void)testProto2RoundTripOneof {
 
@@ -503,8 +815,10 @@
   [subMessage release];
 }
 
+// clang-format on
 //%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(3, YES)
 // This block of code is generated, do not edit it directly.
+// clang-format off
 
 - (void)testProto3RoundTripOneof {
 
@@ -721,6 +1035,7 @@
   [subMessage release];
 }
 
+// clang-format on
 //%PDDM-EXPAND-END (2 expansions)
 
 - (void)testPackedUnpackedMessageParsing {

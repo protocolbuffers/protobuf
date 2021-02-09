@@ -372,7 +372,7 @@ TEST_F(IoWin32Test, MkdirTestNonAscii) {
   EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1").c_str(), nullptr));
   EXPECT_TRUE(CreateDirectoryW((wtest_tmpdir + L"\\1\\" + kUtf16Text).c_str(), nullptr));
   // Ensure that we can create a very similarly named directory using mkdir.
-  // We don't attemp to delete and recreate the same directory, because on
+  // We don't attempt to delete and recreate the same directory, because on
   // Windows, deleting files and directories seems to be asynchronous.
   EXPECT_EQ(mkdir((test_tmpdir + "\\2").c_str(), 0644), 0);
   EXPECT_EQ(mkdir((test_tmpdir + "\\2\\" + kUtf8Text).c_str(), 0644), 0);

@@ -149,6 +149,14 @@ class PROTOBUF_EXPORT TextFormat {
     virtual void PrintMessageStart(const Message& message, int field_index,
                                    int field_count, bool single_line_mode,
                                    BaseTextGenerator* generator) const;
+    // Allows to override the logic on how to print the content of a message.
+    // Return false to use the default printing logic. Note that it is legal for
+    // this function to print something and then return false to use the default
+    // content printing (although at that point it would behave similarly to
+    // PrintMessageStart).
+    virtual bool PrintMessageContent(const Message& message, int field_index,
+                                     int field_count, bool single_line_mode,
+                                     BaseTextGenerator* generator) const;
     virtual void PrintMessageEnd(const Message& message, int field_index,
                                  int field_count, bool single_line_mode,
                                  BaseTextGenerator* generator) const;
@@ -361,6 +369,8 @@ class PROTOBUF_EXPORT TextFormat {
     // output to the OutputStream (see text_format.cc for implementation).
     class TextGenerator;
 
+    static const char* const kDoNotParse;
+
     // Internal Print method, used for writing to the OutputStream via
     // the TextGenerator class.
     void Print(const Message& message, TextGenerator* generator) const;
@@ -391,9 +401,10 @@ class PROTOBUF_EXPORT TextFormat {
 
     // Print the fields in an UnknownFieldSet.  They are printed by tag number
     // only.  Embedded messages are heuristically identified by attempting to
-    // parse them.
+    // parse them (subject to the recursion budget).
     void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
-                            TextGenerator* generator) const;
+                            TextGenerator* generator,
+                            int recursion_budget) const;
 
     bool PrintAny(const Message& message, TextGenerator* generator) const;
 
@@ -443,13 +454,13 @@ class PROTOBUF_EXPORT TextFormat {
   // google::protobuf::MessageLite::ParseFromString().
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
-  static bool ParseFromString(const std::string& input, Message* output);
+  static bool ParseFromString(ConstStringParam input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
   static bool Merge(io::ZeroCopyInputStream* input, Message* output);
   // Like Merge(), but reads directly from a string.
-  static bool MergeFromString(const std::string& input, Message* output);
+  static bool MergeFromString(ConstStringParam input, Message* output);
 
   // Parse the given text as a single field value and store it into the
   // given field of the given message. If the field is a repeated field,
@@ -520,11 +531,11 @@ class PROTOBUF_EXPORT TextFormat {
     // Like TextFormat::Parse().
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
-    bool ParseFromString(const std::string& input, Message* output);
+    bool ParseFromString(ConstStringParam input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().
-    bool MergeFromString(const std::string& input, Message* output);
+    bool MergeFromString(ConstStringParam input, Message* output);
 
     // Set where to report parse errors.  If NULL (the default), errors will
     // be printed to stderr.
@@ -558,16 +569,22 @@ class PROTOBUF_EXPORT TextFormat {
                                    const FieldDescriptor* field,
                                    Message* output);
 
-    // When an unknown extension is met, parsing will fail if this option is set
-    // to false (the default). If true, unknown extensions will be ignored and
-    // a warning message will be generated.
+    // When an unknown extension is met, parsing will fail if this option is
+    // set to false (the default). If true, unknown extensions will be ignored
+    // and a warning message will be generated.
+    // Beware! Setting this option true may hide some errors (e.g. spelling
+    // error on extension name).  This allows data loss; unlike binary format,
+    // text format cannot preserve unknown extensions.  Avoid using this option
+    // if possible.
     void AllowUnknownExtension(bool allow) { allow_unknown_extension_ = allow; }
 
     // When an unknown field is met, parsing will fail if this option is set
-    // to false(the default). If true, unknown fields will be ignored and
+    // to false (the default). If true, unknown fields will be ignored and
     // a warning message will be generated.
-    // Please aware that set this option true may hide some errors (e.g.
-    // spelling error on field name). Avoid to use this option if possible.
+    // Beware! Setting this option true may hide some errors (e.g. spelling
+    // error on field name). This allows data loss; unlike binary format, text
+    // format cannot preserve unknown fields.  Avoid using this option
+    // if possible.
     void AllowUnknownField(bool allow) { allow_unknown_field_ = allow; }
 
 

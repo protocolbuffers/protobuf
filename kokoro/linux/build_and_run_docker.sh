@@ -28,8 +28,9 @@ else
   DOCKER_IMAGE_NAME=${DOCKERHUB_ORGANIZATION}/${DOCKERFILE_PREFIX}_$(sha1sum $DOCKERFILE_DIR/Dockerfile | cut -f1 -d\ )
 fi
 
-# Pull dockerimage from Dockerhub
-docker pull $DOCKER_IMAGE_NAME
+# Pull dockerimage from Dockerhub. This sometimes fails intermittently, so we
+# keep trying until we succeed.
+until docker pull $DOCKER_IMAGE_NAME; do sleep 10; done
 
 # Ensure existence of ccache directory
 CCACHE_DIR=/tmp/protobuf-ccache

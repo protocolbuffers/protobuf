@@ -356,7 +356,7 @@ describe('binaryUtilsTest', function() {
      */
     function test(x, opt_bits) {
       jspb.utils.splitFloat32(x);
-      if (goog.isDef(opt_bits)) {
+      if (opt_bits !== undefined) {
         if (opt_bits != jspb.utils.split64Low) throw 'fail!';
       }
       expect(truncate(x))
@@ -428,11 +428,11 @@ describe('binaryUtilsTest', function() {
      */
     function test(x, opt_highBits, opt_lowBits) {
       jspb.utils.splitFloat64(x);
-      if (goog.isDef(opt_highBits)) {
+      if (opt_highBits !== undefined) {
         var split64High = jspb.utils.split64High;
         expect(opt_highBits.toString(16)).toEqual(split64High.toString(16));
       }
-      if (goog.isDef(opt_lowBits)) {
+      if (opt_lowBits !== undefined) {
         var split64Low = jspb.utils.split64Low;
         expect(opt_lowBits.toString(16)).toEqual(split64Low.toString(16));
       }
@@ -506,7 +506,7 @@ describe('binaryUtilsTest', function() {
     function makeHiLoPair(lo, hi) {
       return {lo: lo >>> 0, hi: hi >>> 0};
     }
-    // Test cases direcly from the protobuf dev guide.
+    // Test cases directly from the protobuf dev guide.
     // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
     var testCases = [
       {original: stringToHiLoPair('0'), zigzag: stringToHiLoPair('0')},

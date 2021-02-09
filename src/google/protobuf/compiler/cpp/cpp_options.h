@@ -44,7 +44,8 @@ namespace cpp {
 
 enum class EnforceOptimizeMode {
   kNoEnforcement,  // Use the runtime specified by the file specific options.
-  kSpeed,          // This is the full runtime.
+  kSpeed,          // Full runtime with a generated code implementation.
+  kCodeSize,       // Full runtime with a reflective implementation.
   kLiteRuntime,
 };
 
@@ -62,6 +63,7 @@ struct Options {
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;
+  bool unused_field_stripping = false;
   std::string runtime_include_base;
   int num_cc_files = 0;
   std::string annotation_pragma_name;

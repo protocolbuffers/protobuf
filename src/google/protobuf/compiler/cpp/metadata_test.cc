@@ -132,7 +132,7 @@ TEST_F(CppMetadataTest, AddsPragma) {
   atu::AddFile("test.proto", kSmallTestFile);
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
-  EXPECT_TRUE(pb_h.find("#ifdef guard_name") != string::npos);
+  EXPECT_TRUE(pb_h.find("#ifdef guard_name") != std::string::npos);
   EXPECT_TRUE(pb_h.find("#pragma pragma_name \"test.pb.h.meta\"") !=
               std::string::npos);
 }

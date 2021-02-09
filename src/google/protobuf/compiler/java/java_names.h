@@ -90,7 +90,7 @@ std::string FileJavaPackage(const FileDescriptor* descriptor);
 // Requires:
 //   descriptor != NULL
 // Returns:
-//   Captialized camel case name field name.
+//   Capitalized camel case name field name.
 std::string CapitalizedFieldName(const FieldDescriptor* descriptor);
 
 // Requires:

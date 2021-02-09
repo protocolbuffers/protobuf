@@ -64,7 +64,11 @@ namespace Benchmarks.Proto3 {
 
   }
   #region Messages
-  public sealed partial class GoogleMessage1 : pb::IMessage<GoogleMessage1> {
+  public sealed partial class GoogleMessage1 : pb::IMessage<GoogleMessage1>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<GoogleMessage1> _parser = new pb::MessageParser<GoogleMessage1>(() => new GoogleMessage1());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -702,6 +706,9 @@ namespace Benchmarks.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Field1.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Field1);
@@ -866,7 +873,178 @@ namespace Benchmarks.Proto3 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Field1.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Field1);
+      }
+      if (Field2 != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Field2);
+      }
+      if (Field3 != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Field3);
+      }
+      if (Field4.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Field4);
+      }
+      field5_.WriteTo(ref output, _repeated_field5_codec);
+      if (Field6 != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Field6);
+      }
+      if (Field7.Length != 0) {
+        output.WriteRawTag(58);
+        output.WriteString(Field7);
+      }
+      if (Field9.Length != 0) {
+        output.WriteRawTag(74);
+        output.WriteString(Field9);
+      }
+      if (Field12 != false) {
+        output.WriteRawTag(96);
+        output.WriteBool(Field12);
+      }
+      if (Field13 != false) {
+        output.WriteRawTag(104);
+        output.WriteBool(Field13);
+      }
+      if (Field14 != false) {
+        output.WriteRawTag(112);
+        output.WriteBool(Field14);
+      }
+      if (field15_ != null) {
+        output.WriteRawTag(122);
+        output.WriteMessage(Field15);
+      }
+      if (Field16 != 0) {
+        output.WriteRawTag(128, 1);
+        output.WriteInt32(Field16);
+      }
+      if (Field17 != false) {
+        output.WriteRawTag(136, 1);
+        output.WriteBool(Field17);
+      }
+      if (Field18.Length != 0) {
+        output.WriteRawTag(146, 1);
+        output.WriteString(Field18);
+      }
+      if (Field22 != 0L) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt64(Field22);
+      }
+      if (Field23 != 0) {
+        output.WriteRawTag(184, 1);
+        output.WriteInt32(Field23);
+      }
+      if (Field24 != false) {
+        output.WriteRawTag(192, 1);
+        output.WriteBool(Field24);
+      }
+      if (Field25 != 0) {
+        output.WriteRawTag(200, 1);
+        output.WriteInt32(Field25);
+      }
+      if (Field29 != 0) {
+        output.WriteRawTag(232, 1);
+        output.WriteInt32(Field29);
+      }
+      if (Field30 != false) {
+        output.WriteRawTag(240, 1);
+        output.WriteBool(Field30);
+      }
+      if (Field59 != false) {
+        output.WriteRawTag(216, 3);
+        output.WriteBool(Field59);
+      }
+      if (Field60 != 0) {
+        output.WriteRawTag(224, 3);
+        output.WriteInt32(Field60);
+      }
+      if (Field67 != 0) {
+        output.WriteRawTag(152, 4);
+        output.WriteInt32(Field67);
+      }
+      if (Field68 != 0) {
+        output.WriteRawTag(160, 4);
+        output.WriteInt32(Field68);
+      }
+      if (Field78 != false) {
+        output.WriteRawTag(240, 4);
+        output.WriteBool(Field78);
+      }
+      if (Field80 != false) {
+        output.WriteRawTag(128, 5);
+        output.WriteBool(Field80);
+      }
+      if (Field81 != false) {
+        output.WriteRawTag(136, 5);
+        output.WriteBool(Field81);
+      }
+      if (Field100 != 0) {
+        output.WriteRawTag(160, 6);
+        output.WriteInt32(Field100);
+      }
+      if (Field101 != 0) {
+        output.WriteRawTag(168, 6);
+        output.WriteInt32(Field101);
+      }
+      if (Field102.Length != 0) {
+        output.WriteRawTag(178, 6);
+        output.WriteString(Field102);
+      }
+      if (Field103.Length != 0) {
+        output.WriteRawTag(186, 6);
+        output.WriteString(Field103);
+      }
+      if (Field104 != 0) {
+        output.WriteRawTag(192, 6);
+        output.WriteInt32(Field104);
+      }
+      if (Field128 != 0) {
+        output.WriteRawTag(128, 8);
+        output.WriteInt32(Field128);
+      }
+      if (Field129.Length != 0) {
+        output.WriteRawTag(138, 8);
+        output.WriteString(Field129);
+      }
+      if (Field130 != 0) {
+        output.WriteRawTag(144, 8);
+        output.WriteInt32(Field130);
+      }
+      if (Field131 != 0) {
+        output.WriteRawTag(152, 8);
+        output.WriteInt32(Field131);
+      }
+      if (Field150 != 0) {
+        output.WriteRawTag(176, 9);
+        output.WriteInt32(Field150);
+      }
+      if (Field271 != 0) {
+        output.WriteRawTag(248, 16);
+        output.WriteInt32(Field271);
+      }
+      if (Field272 != 0) {
+        output.WriteRawTag(128, 17);
+        output.WriteInt32(Field272);
+      }
+      if (Field280 != 0) {
+        output.WriteRawTag(192, 17);
+        output.WriteInt32(Field280);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1132,6 +1310,9 @@ namespace Benchmarks.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1308,11 +1489,198 @@ namespace Benchmarks.Proto3 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Field1 = input.ReadString();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            Field4 = input.ReadString();
+            break;
+          }
+          case 42:
+          case 41: {
+            field5_.AddEntriesFrom(ref input, _repeated_field5_codec);
+            break;
+          }
+          case 48: {
+            Field6 = input.ReadInt32();
+            break;
+          }
+          case 58: {
+            Field7 = input.ReadString();
+            break;
+          }
+          case 74: {
+            Field9 = input.ReadString();
+            break;
+          }
+          case 96: {
+            Field12 = input.ReadBool();
+            break;
+          }
+          case 104: {
+            Field13 = input.ReadBool();
+            break;
+          }
+          case 112: {
+            Field14 = input.ReadBool();
+            break;
+          }
+          case 122: {
+            if (field15_ == null) {
+              Field15 = new global::Benchmarks.Proto3.GoogleMessage1SubMessage();
+            }
+            input.ReadMessage(Field15);
+            break;
+          }
+          case 128: {
+            Field16 = input.ReadInt32();
+            break;
+          }
+          case 136: {
+            Field17 = input.ReadBool();
+            break;
+          }
+          case 146: {
+            Field18 = input.ReadString();
+            break;
+          }
+          case 176: {
+            Field22 = input.ReadInt64();
+            break;
+          }
+          case 184: {
+            Field23 = input.ReadInt32();
+            break;
+          }
+          case 192: {
+            Field24 = input.ReadBool();
+            break;
+          }
+          case 200: {
+            Field25 = input.ReadInt32();
+            break;
+          }
+          case 232: {
+            Field29 = input.ReadInt32();
+            break;
+          }
+          case 240: {
+            Field30 = input.ReadBool();
+            break;
+          }
+          case 472: {
+            Field59 = input.ReadBool();
+            break;
+          }
+          case 480: {
+            Field60 = input.ReadInt32();
+            break;
+          }
+          case 536: {
+            Field67 = input.ReadInt32();
+            break;
+          }
+          case 544: {
+            Field68 = input.ReadInt32();
+            break;
+          }
+          case 624: {
+            Field78 = input.ReadBool();
+            break;
+          }
+          case 640: {
+            Field80 = input.ReadBool();
+            break;
+          }
+          case 648: {
+            Field81 = input.ReadBool();
+            break;
+          }
+          case 800: {
+            Field100 = input.ReadInt32();
+            break;
+          }
+          case 808: {
+            Field101 = input.ReadInt32();
+            break;
+          }
+          case 818: {
+            Field102 = input.ReadString();
+            break;
+          }
+          case 826: {
+            Field103 = input.ReadString();
+            break;
+          }
+          case 832: {
+            Field104 = input.ReadInt32();
+            break;
+          }
+          case 1024: {
+            Field128 = input.ReadInt32();
+            break;
+          }
+          case 1034: {
+            Field129 = input.ReadString();
+            break;
+          }
+          case 1040: {
+            Field130 = input.ReadInt32();
+            break;
+          }
+          case 1048: {
+            Field131 = input.ReadInt32();
+            break;
+          }
+          case 1200: {
+            Field150 = input.ReadInt32();
+            break;
+          }
+          case 2168: {
+            Field271 = input.ReadInt32();
+            break;
+          }
+          case 2176: {
+            Field272 = input.ReadInt32();
+            break;
+          }
+          case 2240: {
+            Field280 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class GoogleMessage1SubMessage : pb::IMessage<GoogleMessage1SubMessage> {
+  public sealed partial class GoogleMessage1SubMessage : pb::IMessage<GoogleMessage1SubMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<GoogleMessage1SubMessage> _parser = new pb::MessageParser<GoogleMessage1SubMessage>(() => new GoogleMessage1SubMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1657,6 +2025,9 @@ namespace Benchmarks.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Field1 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Field1);
@@ -1740,7 +2111,97 @@ namespace Benchmarks.Proto3 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Field1 != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Field1);
+      }
+      if (Field2 != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Field2);
+      }
+      if (Field3 != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Field3);
+      }
+      if (Field12 != false) {
+        output.WriteRawTag(96);
+        output.WriteBool(Field12);
+      }
+      if (Field13 != 0L) {
+        output.WriteRawTag(104);
+        output.WriteInt64(Field13);
+      }
+      if (Field14 != 0L) {
+        output.WriteRawTag(112);
+        output.WriteInt64(Field14);
+      }
+      if (Field15.Length != 0) {
+        output.WriteRawTag(122);
+        output.WriteString(Field15);
+      }
+      if (Field16 != 0) {
+        output.WriteRawTag(128, 1);
+        output.WriteInt32(Field16);
+      }
+      if (Field19 != 0) {
+        output.WriteRawTag(152, 1);
+        output.WriteInt32(Field19);
+      }
+      if (Field20 != false) {
+        output.WriteRawTag(160, 1);
+        output.WriteBool(Field20);
+      }
+      if (Field21 != 0UL) {
+        output.WriteRawTag(169, 1);
+        output.WriteFixed64(Field21);
+      }
+      if (Field22 != 0) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt32(Field22);
+      }
+      if (Field23 != false) {
+        output.WriteRawTag(184, 1);
+        output.WriteBool(Field23);
+      }
+      if (Field28 != false) {
+        output.WriteRawTag(224, 1);
+        output.WriteBool(Field28);
+      }
+      if (Field203 != 0) {
+        output.WriteRawTag(221, 12);
+        output.WriteFixed32(Field203);
+      }
+      if (Field204 != 0) {
+        output.WriteRawTag(224, 12);
+        output.WriteInt32(Field204);
+      }
+      if (Field205.Length != 0) {
+        output.WriteRawTag(234, 12);
+        output.WriteString(Field205);
+      }
+      if (Field206 != false) {
+        output.WriteRawTag(240, 12);
+        output.WriteBool(Field206);
+      }
+      if (Field207 != 0UL) {
+        output.WriteRawTag(248, 12);
+        output.WriteUInt64(Field207);
+      }
+      if (Field300 != 0UL) {
+        output.WriteRawTag(224, 18);
+        output.WriteUInt64(Field300);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
@@ -1881,6 +2342,9 @@ namespace Benchmarks.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1969,7 +2433,102 @@ namespace Benchmarks.Proto3 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Field1 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            Field12 = input.ReadBool();
+            break;
+          }
+          case 104: {
+            Field13 = input.ReadInt64();
+            break;
+          }
+          case 112: {
+            Field14 = input.ReadInt64();
+            break;
+          }
+          case 122: {
+            Field15 = input.ReadString();
+            break;
+          }
+          case 128: {
+            Field16 = input.ReadInt32();
+            break;
+          }
+          case 152: {
+            Field19 = input.ReadInt32();
+            break;
+          }
+          case 160: {
+            Field20 = input.ReadBool();
+            break;
+          }
+          case 169: {
+            Field21 = input.ReadFixed64();
+            break;
+          }
+          case 176: {
+            Field22 = input.ReadInt32();
+            break;
+          }
+          case 184: {
+            Field23 = input.ReadBool();
+            break;
+          }
+          case 224: {
+            Field28 = input.ReadBool();
+            break;
+          }
+          case 1629: {
+            Field203 = input.ReadFixed32();
+            break;
+          }
+          case 1632: {
+            Field204 = input.ReadInt32();
+            break;
+          }
+          case 1642: {
+            Field205 = input.ReadString();
+            break;
+          }
+          case 1648: {
+            Field206 = input.ReadBool();
+            break;
+          }
+          case 1656: {
+            Field207 = input.ReadUInt64();
+            break;
+          }
+          case 2400: {
+            Field300 = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

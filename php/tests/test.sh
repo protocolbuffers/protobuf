@@ -1,22 +1,51 @@
 #!/bin/bash
 
-VERSION=$1
+set -ex
 
-export PATH=/usr/local/php-$VERSION/bin:$PATH
-export C_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$C_INCLUDE_PATH
-export CPLUS_INCLUDE_PATH=/usr/local/php-$VERSION/include/php/main:/usr/local/php-$VERSION/include/php:$CPLUS_INCLUDE_PATH
+cd $(dirname $0)
 
-# Compile c extension
-/bin/bash ./compile_extension.sh ../ext/google/protobuf
+./generate_protos.sh
+./compile_extension.sh
 
-tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php descriptors_test.php wrapper_type_setters_test.php)
+PHP_VERSION=$(php -r "echo PHP_VERSION;")
+
+# Each version of PHPUnit supports a fairly narrow range of PHP versions.
+case "$PHP_VERSION" in
+  7.0.*|7.1.*|7.2.*)
+    # Oddly older than for 5.6. Not sure the reason.
+    PHPUNIT=phpunit-5.6.0.phar
+    ;;
+  7.3.*|7.4.*)
+    PHPUNIT=phpunit-8.phar
+    ;;
+  8.0.*)
+    PHPUNIT=phpunit-9.phar
+    ;;
+  *)
+    echo "ERROR: Unsupported PHP version $PHP_VERSION"
+    exit 1
+    ;;
+esac
+
+[ -f $PHPUNIT ] || wget https://phar.phpunit.de/$PHPUNIT
+
+tests=( ArrayTest.php EncodeDecodeTest.php GeneratedClassTest.php MapFieldTest.php WellKnownTest.php DescriptorsTest.php WrapperTypeSettersTest.php)
 
 for t in "${tests[@]}"
 do
   echo "****************************"
   echo "* $t"
   echo "****************************"
-  php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
+  php -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
+  echo ""
+done
+
+for t in "${tests[@]}"
+do
+  echo "****************************"
+  echo "* $t persistent"
+  echo "****************************"
+  php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
   echo ""
 done
 
@@ -25,16 +54,17 @@ done
 
 export ZEND_DONT_UNLOAD_MODULES=1
 export USE_ZEND_ALLOC=0
-valgrind --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
+valgrind --suppressions=valgrind.supp --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
+valgrind --suppressions=valgrind.supp --leak-check=yes php -d protobuf.keep_descriptor_pool_after_request=1 -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
 
 # TODO(teboring): Only for debug (phpunit has memory leak which blocks this beging used by
-# regresssion test.)
+# regression test.)
 
 # for t in "${tests[@]}"
 # do
 #   echo "****************************"
 #   echo "* $t (memory leak)"
 #   echo "****************************"
-#   valgrind --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so `which phpunit` --bootstrap autoload.php $t
+#   valgrind --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so $PHPUNIT --bootstrap autoload.php $t
 #   echo ""
 # done

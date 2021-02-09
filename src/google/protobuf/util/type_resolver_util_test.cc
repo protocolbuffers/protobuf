@@ -158,7 +158,7 @@ class DescriptorPoolTypeResolverTest : public testing::Test {
     return false;
   }
 
-  string GetTypeUrl(std::string full_name) {
+  std::string GetTypeUrl(std::string full_name) {
     return kUrlPrefix + std::string("/") + full_name;
   }
 

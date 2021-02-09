@@ -86,7 +86,7 @@ std::string UnderscoresToCamelCase(const MethodDescriptor* method);
 // Same as UnderscoresToCamelCase, but checks for reserved keywords
 std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field);
 
-// Similar to UnderscoresToCamelCase, but guarentees that the result is a
+// Similar to UnderscoresToCamelCase, but guarantees that the result is a
 // complete Java identifier by adding a _ if needed.
 std::string CamelCaseFieldName(const FieldDescriptor* field);
 
@@ -160,6 +160,7 @@ inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
   return descriptor->options().java_multiple_files();
 }
 
+
 // Returns true if `descriptor` will be written to its own .java file.
 // `immutable` should be set to true if we're generating for the immutable API.
 template <typename Descriptor>
@@ -187,9 +188,11 @@ template <typename Descriptor>
 void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
                                    Descriptor* descriptor, bool immutable,
                                    const std::string& suffix = "") {
-  if (context->options().annotate_code && IsOwnFile(descriptor, immutable)) {
+  if (IsOwnFile(descriptor, immutable)) {
     PrintGeneratedAnnotation(printer, '$',
-                             AnnotationFileName(descriptor, suffix));
+                             context->options().annotate_code
+                                 ? AnnotationFileName(descriptor, suffix)
+                                 : "");
   }
 }
 
@@ -222,6 +225,7 @@ const char* PrimitiveTypeName(JavaType type);
 // "java.lang.Integer" for JAVATYPE_INT.  Returns NULL for enum and message
 // types.
 const char* BoxedPrimitiveTypeName(JavaType type);
+
 
 // Get the name of the java enum constant representing this type. E.g.,
 // "INT32" for FieldDescriptor::TYPE_INT32. The enum constant's full
@@ -351,9 +355,30 @@ inline bool HasPackedFields(const Descriptor* descriptor) {
 // them has a required field. Return true if a required field is found.
 bool HasRequiredFields(const Descriptor* descriptor);
 
-// Whether a .proto file supports field presence test for non-message types.
-inline bool SupportFieldPresence(const FileDescriptor* descriptor) {
-  return descriptor->syntax() != FileDescriptor::SYNTAX_PROTO3;
+inline bool IsProto2(const FileDescriptor* descriptor) {
+  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
+inline bool SupportFieldPresence(const FieldDescriptor* descriptor) {
+  // Note that while proto3 oneofs do conceptually support present, we return
+  // false for them because they do not offer a public hazzer. Therefore this
+  // method could be named HasHazzer().
+  return !descriptor->is_repeated() &&
+         (descriptor->message_type() || descriptor->has_optional_keyword() ||
+          IsProto2(descriptor->file()));
+}
+
+inline bool IsRealOneof(const FieldDescriptor* descriptor) {
+  return descriptor->containing_oneof() &&
+         !descriptor->containing_oneof()->is_synthetic();
+}
+
+inline bool HasHasbit(const FieldDescriptor* descriptor) {
+  // Note that currently message fields inside oneofs have hasbits. This is
+  // surprising, as the oneof case should avoid any need for a hasbit. But if
+  // you change this method to remove hasbits for oneofs, a few tests fail.
+  return !descriptor->is_repeated() &&
+         (descriptor->has_optional_keyword() || IsProto2(descriptor->file()));
 }
 
 // Whether generate classes expose public PARSER instances.
@@ -367,6 +392,10 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
 // ints.
 inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
+inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 // Check whether a message has repeated fields.

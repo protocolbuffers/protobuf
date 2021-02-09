@@ -54,7 +54,7 @@ class ProtoWriter;
 //
 // For string, a StringPiece is stored. For Cord, a pointer to Cord is stored.
 // Just like StringPiece, the DataPiece class does not own the storage for
-// the actual string or Cord, so it is the user's responsiblity to guarantee
+// the actual string or Cord, so it is the user's responsibility to guarantee
 // that the underlying storage is still valid when the DataPiece is accessed.
 class PROTOBUF_EXPORT DataPiece {
  public:
@@ -167,10 +167,10 @@ class PROTOBUF_EXPORT DataPiece {
   // Same as the ToEnum() method above but with additional flag to ignore
   // unknown enum values.
   util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
-                               bool use_lower_camel_for_enums,
-                               bool case_insensitive_enum_parsing,
-                               bool ignore_unknown_enum_values,
-                               bool* is_unknown_enum_value) const;
+                             bool use_lower_camel_for_enums,
+                             bool case_insensitive_enum_parsing,
+                             bool ignore_unknown_enum_values,
+                             bool* is_unknown_enum_value) const;
 
   // For numeric conversion between
   //     int32, int64, uint32, uint64, double, float and bool
@@ -180,8 +180,7 @@ class PROTOBUF_EXPORT DataPiece {
   // For conversion from string to
   //     int32, int64, uint32, uint64, double, float and bool
   template <typename To>
-  util::StatusOr<To> StringToNumber(bool (*func)(StringPiece,
-                                                   To*)) const;
+  util::StatusOr<To> StringToNumber(bool (*func)(StringPiece, To*)) const;
 
   // Decodes a base64 string. Returns true on success.
   bool DecodeBase64(StringPiece src, std::string* dest) const;

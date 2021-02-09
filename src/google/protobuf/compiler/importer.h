@@ -178,7 +178,8 @@ class PROTOBUF_EXPORT Importer {
   // contents are stored.
   inline const DescriptorPool* pool() const { return &pool_; }
 
-  void AddUnusedImportTrackFile(const std::string& file_name);
+  void AddUnusedImportTrackFile(const std::string& file_name,
+                                bool is_error = false);
   void ClearUnusedImportTrackFiles();
 
 
@@ -254,7 +255,7 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   // and then you do:
   //   Open("bar/qux");
   // the DiskSourceTree will first try to open foo/bar/qux, then baz/bar/qux,
-  // returning the first one that opens successfuly.
+  // returning the first one that opens successfully.
   //
   // disk_path may be an absolute path or relative to the current directory,
   // just like a path you'd pass to open().

@@ -25,7 +25,7 @@ use Google\Protobuf\Internal\GPBUtil;
  *     if (duration.seconds < 0 && duration.nanos > 0) {
  *       duration.seconds += 1;
  *       duration.nanos -= 1000000000;
- *     } else if (durations.seconds > 0 && duration.nanos < 0) {
+ *     } else if (duration.seconds > 0 && duration.nanos < 0) {
  *       duration.seconds -= 1;
  *       duration.nanos += 1000000000;
  *     }
@@ -66,7 +66,7 @@ class Duration extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>int64 seconds = 1;</code>
      */
-    private $seconds = 0;
+    protected $seconds = 0;
     /**
      * Signed fractions of a second at nanosecond resolution of the span
      * of time. Durations less than one second are represented with a 0
@@ -77,7 +77,7 @@ class Duration extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>int32 nanos = 2;</code>
      */
-    private $nanos = 0;
+    protected $nanos = 0;
 
     /**
      * Constructor.

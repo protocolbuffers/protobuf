@@ -23,7 +23,6 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/service.cc
   ${protobuf_source_dir}/src/google/protobuf/source_context.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/struct.pb.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/mathlimits.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/substitute.cc
   ${protobuf_source_dir}/src/google/protobuf/text_format.cc
   ${protobuf_source_dir}/src/google/protobuf/timestamp.pb.cc
@@ -77,7 +76,6 @@ set(libprotobuf_includes
   ${protobuf_source_dir}/src/google/protobuf/service.h
   ${protobuf_source_dir}/src/google/protobuf/source_context.pb.h
   ${protobuf_source_dir}/src/google/protobuf/struct.pb.h
-  ${protobuf_source_dir}/src/google/protobuf/stubs/mathlimits.h
   ${protobuf_source_dir}/src/google/protobuf/stubs/substitute.h
   ${protobuf_source_dir}/src/google/protobuf/text_format.h
   ${protobuf_source_dir}/src/google/protobuf/timestamp.pb.h
@@ -122,6 +120,9 @@ if(protobuf_WITH_ZLIB)
 endif()
 if(protobuf_LINK_LIBATOMIC)
   target_link_libraries(libprotobuf atomic)
+endif()
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+	target_link_libraries(libprotobuf log)
 endif()
 target_include_directories(libprotobuf PUBLIC ${protobuf_source_dir}/src)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)

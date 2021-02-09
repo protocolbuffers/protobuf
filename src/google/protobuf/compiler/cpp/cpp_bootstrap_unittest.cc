@@ -76,8 +76,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line,
-                                 column, message);
+    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
+                              message);
   }
 };
 
@@ -157,7 +157,8 @@ TEST(BootstrapTest, GeneratedFilesMatch) {
     const FileDescriptor* file =
         importer.Import(file_parameter[0] + std::string(".proto"));
     ASSERT_TRUE(file != nullptr)
-        << "Can't import file " << file_parameter[0] + string(".proto") << "\n";
+        << "Can't import file " << file_parameter[0] + std::string(".proto")
+        << "\n";
     EXPECT_EQ("", error_collector.text_);
     CppGenerator generator;
     MockGeneratorContext context;
@@ -183,7 +184,7 @@ TEST(BootstrapTest, OptionNotExist) {
   DescriptorPool pool;
   GeneratorContext* generator_context = nullptr;
   std::string parameter = "aaa";
-  string error;
+  std::string error;
   ASSERT_FALSE(generator.Generate(
       pool.FindFileByName("google/protobuf/descriptor.proto"), parameter,
       generator_context, &error));

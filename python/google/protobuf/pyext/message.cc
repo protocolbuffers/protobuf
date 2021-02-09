@@ -33,11 +33,14 @@
 
 #include <google/protobuf/pyext/message.h>
 
+#include <structmember.h>  // A Python header file.
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <structmember.h>  // A Python header file.
+
+#include <google/protobuf/stubs/strutil.h>
 
 #ifndef PyVarObject_HEAD_INIT
 #define PyVarObject_HEAD_INIT(type, size) PyObject_HEAD_INIT(type) size,
@@ -111,9 +114,9 @@ static int InsertEmptyWeakref(PyTypeObject* base);
 
 namespace {
 // Copied over from internal 'google/protobuf/stubs/strutil.h'.
-inline void LowerString(string * s) {
-  string::iterator end = s->end();
-  for (string::iterator i = s->begin(); i != end; ++i) {
+inline void LowerString(std::string* s) {
+  std::string::iterator end = s->end();
+  for (std::string::iterator i = s->begin(); i != end; ++i) {
     // tolower() changes based on locale.  We don't want this!
     if ('A' <= *i && *i <= 'Z') *i += 'a' - 'A';
   }
@@ -216,15 +219,41 @@ static PyObject* New(PyTypeObject* type,
   }
 
   // Check dict['DESCRIPTOR']
-  PyObject* py_descriptor = PyDict_GetItem(dict, kDESCRIPTOR);
-  if (py_descriptor == NULL) {
+  PyObject* descriptor_or_name = PyDict_GetItem(dict, kDESCRIPTOR);
+  if (descriptor_or_name == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Message class has no DESCRIPTOR");
     return NULL;
   }
-  if (!PyObject_TypeCheck(py_descriptor, &PyMessageDescriptor_Type)) {
-    PyErr_Format(PyExc_TypeError, "Expected a message Descriptor, got %s",
-                 py_descriptor->ob_type->tp_name);
-    return NULL;
+
+  Py_ssize_t name_size;
+  char* full_name;
+  const Descriptor* message_descriptor;
+  PyObject* py_descriptor;
+
+  if (PyObject_TypeCheck(descriptor_or_name, &PyMessageDescriptor_Type)) {
+    py_descriptor = descriptor_or_name;
+    message_descriptor = PyMessageDescriptor_AsDescriptor(py_descriptor);
+    if (message_descriptor == nullptr) {
+      return nullptr;
+    }
+  } else {
+    if (PyString_AsStringAndSize(descriptor_or_name, &full_name, &name_size) <
+        0) {
+      return nullptr;
+    }
+    message_descriptor =
+        GetDefaultDescriptorPool()->pool->FindMessageTypeByName(
+            StringParam(full_name, name_size));
+    if (message_descriptor == nullptr) {
+      PyErr_Format(PyExc_KeyError,
+                   "Can not find message descriptor %s "
+                   "from pool",
+                   full_name);
+      return nullptr;
+    }
+    py_descriptor = PyMessageDescriptor_FromDescriptor(message_descriptor);
+    // reset the dict['DESCRIPTOR'] to py_descriptor.
+    PyDict_SetItem(dict, kDESCRIPTOR, py_descriptor);
   }
 
   // Messages have no __dict__
@@ -236,11 +265,6 @@ static PyObject* New(PyTypeObject* type,
   // Build the arguments to the base metaclass.
   // We change the __bases__ classes.
   ScopedPyObjectPtr new_args;
-  const Descriptor* message_descriptor =
-      PyMessageDescriptor_AsDescriptor(py_descriptor);
-  if (message_descriptor == NULL) {
-    return NULL;
-  }
 
   if (WKT_classes == NULL) {
     ScopedPyObjectPtr well_known_types(PyImport_ImportModule(
@@ -435,8 +459,8 @@ static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
   Py_ssize_t attr_size;
   static const char kSuffix[] = "_FIELD_NUMBER";
   if (PyString_AsStringAndSize(name, &attr, &attr_size) >= 0 &&
-      strings::EndsWith(StringPiece(attr, attr_size), kSuffix)) {
-    string field_name(attr, attr_size - sizeof(kSuffix) + 1);
+      HasSuffixString(StringPiece(attr, attr_size), kSuffix)) {
+    std::string field_name(attr, attr_size - sizeof(kSuffix) + 1);
     LowerString(&field_name);
 
     // Try to find a field with the given name, without the suffix.
@@ -785,7 +809,7 @@ bool CheckAndSetString(
     return false;
   }
 
-  string value_string(value, value_len);
+  std::string value_string(value, value_len);
   if (append) {
     reflection->AddString(message, descriptor, std::move(value_string));
   } else if (index < 0) {
@@ -798,7 +822,7 @@ bool CheckAndSetString(
 }
 
 PyObject* ToStringObject(const FieldDescriptor* descriptor,
-                         const string& value) {
+                         const std::string& value) {
   if (descriptor->type() != FieldDescriptor::TYPE_STRING) {
     return PyBytes_FromStringAndSize(value.c_str(), value.length());
   }
@@ -960,7 +984,7 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
       return NULL;
     }
     const EnumValueDescriptor* enum_value_descriptor =
-        enum_descriptor->FindValueByName(string(enum_label, size));
+        enum_descriptor->FindValueByName(StringParam(enum_label, size));
     if (enum_value_descriptor == NULL) {
       PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", enum_label);
       return NULL;
@@ -1374,8 +1398,9 @@ int HasFieldByDescriptor(CMessage* self,
   return message->GetReflection()->HasField(*message, field_descriptor);
 }
 
-const FieldDescriptor* FindFieldWithOneofs(
-    const Message* message, const string& field_name, bool* in_oneof) {
+const FieldDescriptor* FindFieldWithOneofs(const Message* message,
+                                           ConstStringParam field_name,
+                                           bool* in_oneof) {
   *in_oneof = false;
   const Descriptor* descriptor = message->GetDescriptor();
   const FieldDescriptor* field_descriptor =
@@ -1402,28 +1427,12 @@ bool CheckHasPresence(const FieldDescriptor* field_descriptor, bool in_oneof) {
     return false;
   }
 
-  if (field_descriptor->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
-    // HasField() for a oneof *itself* isn't supported.
-    if (in_oneof) {
-      PyErr_Format(PyExc_ValueError,
-                   "Can't test oneof field \"%s.%s\" for presence in proto3, "
-                   "use WhichOneof instead.", message_name.c_str(),
-                   field_descriptor->containing_oneof()->name().c_str());
-      return false;
-    }
-
-    // ...but HasField() for fields *in* a oneof is supported.
-    if (field_descriptor->containing_oneof() != NULL) {
-      return true;
-    }
-
-    if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-      PyErr_Format(
-          PyExc_ValueError,
-          "Can't test non-submessage field \"%s.%s\" for presence in proto3.",
-          message_name.c_str(), field_descriptor->name().c_str());
-      return false;
-    }
+  if (!field_descriptor->has_presence()) {
+    PyErr_Format(PyExc_ValueError,
+                 "Can't test non-optional, non-submessage field \"%s.%s\" for "
+                 "presence in proto3.",
+                 message_name.c_str(), field_descriptor->name().c_str());
+    return false;
   }
 
   return true;
@@ -1446,7 +1455,7 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
   Message* message = self->message;
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor =
-      FindFieldWithOneofs(message, string(field_name, size), &is_in_oneof);
+      FindFieldWithOneofs(message, StringParam(field_name, size), &is_in_oneof);
   if (field_descriptor == NULL) {
     if (!is_in_oneof) {
       PyErr_Format(PyExc_ValueError, "Protocol message %s has no field %s.",
@@ -1623,7 +1632,7 @@ PyObject* ClearField(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
-      self->message, string(field_name, field_size), &is_in_oneof);
+      self->message, StringParam(field_name, field_size), &is_in_oneof);
   if (field_descriptor == NULL) {
     if (is_in_oneof) {
       // We gave the name of a oneof, and none of its fields are set.
@@ -1671,7 +1680,7 @@ PyObject* Clear(CMessage* self) {
 
 // ---------------------------------------------------------------------
 
-static string GetMessageName(CMessage* self) {
+static std::string GetMessageName(CMessage* self) {
   if (self->parent_field_descriptor != NULL) {
     return self->parent_field_descriptor->full_name();
   } else {
@@ -1823,7 +1832,7 @@ static PyObject* ToStr(CMessage* self) {
   // Passes ownership
   printer.SetDefaultFieldValuePrinter(new PythonFieldValuePrinter());
   printer.SetHideUnknownFields(true);
-  string output;
+  std::string output;
   if (!printer.PrintToString(*self->message, &output)) {
     PyErr_SetString(PyExc_ValueError, "Unable to convert message to str");
     return NULL;
@@ -2024,13 +2033,12 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   char *name_data;
   if (PyString_AsStringAndSize(arg, &name_data, &name_size) < 0)
     return NULL;
-  string oneof_name = string(name_data, name_size);
   const OneofDescriptor* oneof_desc =
-      self->message->GetDescriptor()->FindOneofByName(oneof_name);
+      self->message->GetDescriptor()->FindOneofByName(
+          StringParam(name_data, name_size));
   if (oneof_desc == NULL) {
     PyErr_Format(PyExc_ValueError,
-                 "Protocol message has no oneof \"%s\" field.",
-                 oneof_name.c_str());
+                 "Protocol message has no oneof \"%s\" field.", name_data);
     return NULL;
   }
   const FieldDescriptor* field_in_oneof =
@@ -2039,7 +2047,7 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   if (field_in_oneof == NULL) {
     Py_RETURN_NONE;
   } else {
-    const string& name = field_in_oneof->name();
+    const std::string& name = field_in_oneof->name();
     return PyString_FromStringAndSize(name.c_str(), name.size());
   }
 }
@@ -2131,7 +2139,7 @@ static PyObject* DiscardUnknownFields(CMessage* self) {
 
 PyObject* FindInitializationErrors(CMessage* self) {
   Message* message = self->message;
-  std::vector<string> errors;
+  std::vector<std::string> errors;
   message->FindInitializationErrors(&errors);
 
   PyObject* error_list = PyList_New(errors.size());
@@ -2139,7 +2147,7 @@ PyObject* FindInitializationErrors(CMessage* self) {
     return NULL;
   }
   for (size_t i = 0; i < errors.size(); ++i) {
-    const string& error = errors[i];
+    const std::string& error = errors[i];
     PyObject* error_string = PyString_FromStringAndSize(
         error.c_str(), error.length());
     if (error_string == NULL) {
@@ -2161,19 +2169,21 @@ static PyObject* RichCompare(CMessage* self, PyObject* other, int opid) {
   // If other is not a message, it cannot be equal.
   if (!PyObject_TypeCheck(other, CMessage_Type)) {
     equals = false;
-  }
-  const google::protobuf::Message* other_message =
-      reinterpret_cast<CMessage*>(other)->message;
-  // If messages don't have the same descriptors, they are not equal.
-  if (equals &&
-      self->message->GetDescriptor() != other_message->GetDescriptor()) {
-    equals = false;
-  }
-  // Check the message contents.
-  if (equals && !google::protobuf::util::MessageDifferencer::Equals(
-          *self->message,
-          *reinterpret_cast<CMessage*>(other)->message)) {
-    equals = false;
+  } else {
+    // Otherwise, we have a CMessage whose message we can inspect.
+    const google::protobuf::Message* other_message =
+        reinterpret_cast<CMessage*>(other)->message;
+    // If messages don't have the same descriptors, they are not equal.
+    if (equals &&
+        self->message->GetDescriptor() != other_message->GetDescriptor()) {
+      equals = false;
+    }
+    // Check the message contents.
+    if (equals &&
+        !google::protobuf::util::MessageDifferencer::Equals(
+            *self->message, *reinterpret_cast<CMessage*>(other)->message)) {
+      equals = false;
+    }
   }
 
   if (equals ^ (opid == Py_EQ)) {
@@ -2229,8 +2239,8 @@ PyObject* InternalGetScalar(const Message* message,
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      string scratch;
-      const string& value =
+      std::string scratch;
+      const std::string& value =
           reflection->GetStringReference(*message, field_descriptor, &scratch);
       result = ToStringObject(field_descriptor, value);
       break;
@@ -2957,8 +2967,12 @@ bool InitProto2MessageModule(PyObject *m) {
         reinterpret_cast<PyObject*>(
             &RepeatedCompositeContainer_Type));
 
-    // Register them as collections.Sequence
+    // Register them as MutableSequence.
+#if PY_MAJOR_VERSION >= 3
+    ScopedPyObjectPtr collections(PyImport_ImportModule("collections.abc"));
+#else
     ScopedPyObjectPtr collections(PyImport_ImportModule("collections"));
+#endif
     if (collections == NULL) {
       return false;
     }
@@ -3027,10 +3041,6 @@ bool InitProto2MessageModule(PyObject *m) {
 
   PyModule_AddObject(m, "DescriptorPool", reinterpret_cast<PyObject*>(
       &PyDescriptorPool_Type));
-
-  // This implementation provides full Descriptor types, we advertise it so that
-  // descriptor.py can use them in replacement of the Python classes.
-  PyModule_AddIntConstant(m, "_USE_C_DESCRIPTORS", 1);
 
   PyModule_AddObject(m, "Descriptor", reinterpret_cast<PyObject*>(
       &PyMessageDescriptor_Type));

@@ -259,8 +259,8 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      string scratch;
-      const string& value = reflection->GetRepeatedStringReference(
+      std::string scratch;
+      const std::string& value = reflection->GetRepeatedStringReference(
           *message, field_descriptor, index, &scratch);
       result = ToStringObject(field_descriptor, value);
       break;

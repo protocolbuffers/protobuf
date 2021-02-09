@@ -84,7 +84,7 @@ public class NioByteStringTest extends TestCase {
       stillEqual = (iter.hasNext() && BYTES[i] == iter.nextByte());
     }
     assertTrue(CLASSNAME + " must capture the right bytes", stillEqual);
-    assertFalse(CLASSNAME + " must have exhausted the itertor", iter.hasNext());
+    assertFalse(CLASSNAME + " must have exhausted the iterator", iter.hasNext());
 
     try {
       iter.nextByte();
@@ -590,7 +590,7 @@ public class NioByteStringTest extends TestCase {
     assertEquals("InputStream.skip(), no more input", 0, input.available());
     assertEquals("InputStream.skip(), no more input", -1, input.read());
     input.reset();
-    assertEquals("InputStream.reset() succeded", stringSize - skipped1, input.available());
+    assertEquals("InputStream.reset() succeeded", stringSize - skipped1, input.available());
     assertEquals(
         "InputStream.reset(), read()", testString.byteAt(nearEndIndex) & 0xFF, input.read());
   }

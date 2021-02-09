@@ -36,6 +36,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 import json
 import math
+import struct
 import sys
 
 try:
@@ -52,6 +53,7 @@ from google.protobuf import wrappers_pb2
 from google.protobuf import any_test_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
+from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import json_format
 from google.protobuf.util import json_format_pb2
@@ -237,16 +239,19 @@ class JsonFormatTest(JsonFormatBase):
     golden_dict = {
         'messageSet': {
             '[protobuf_unittest.'
-            'TestMessageSetExtension1.messageSetExtension]': {
+            'TestMessageSetExtension1.message_set_extension]': {
                 'i': 23,
             },
             '[protobuf_unittest.'
-            'TestMessageSetExtension2.messageSetExtension]': {
+            'TestMessageSetExtension2.message_set_extension]': {
                 'str': u'foo',
             },
         },
     }
     self.assertEqual(golden_dict, message_dict)
+    parsed_msg = unittest_mset_pb2.TestMessageSetContainer()
+    json_format.ParseDict(golden_dict, parsed_msg)
+    self.assertEqual(message, parsed_msg)
 
   def testExtensionSerializationDictMatchesProto3SpecMore(self):
     """See go/proto3-json-spec for spec.
@@ -264,7 +269,6 @@ class JsonFormatTest(JsonFormatBase):
     }
     self.assertEqual(expected_dict, message_dict)
 
-
   def testExtensionSerializationJsonMatchesProto3Spec(self):
     """See go/proto3-json-spec for spec.
     """
@@ -277,9 +281,9 @@ class JsonFormatTest(JsonFormatBase):
         message
     )
     ext1_text = ('protobuf_unittest.TestMessageSetExtension1.'
-                 'messageSetExtension')
+                 'message_set_extension')
     ext2_text = ('protobuf_unittest.TestMessageSetExtension2.'
-                 'messageSetExtension')
+                 'message_set_extension')
     golden_text = ('{"messageSet": {'
                    '    "[%s]": {'
                    '        "i": 23'
@@ -289,7 +293,6 @@ class JsonFormatTest(JsonFormatBase):
                    '    }'
                    '}}') % (ext1_text, ext2_text)
     self.assertEqual(json.loads(golden_text), json.loads(message_text))
-
 
   def testJsonEscapeString(self):
     message = json_format_proto3_pb2.TestMessage()
@@ -337,6 +340,20 @@ class JsonFormatTest(JsonFormatBase):
                    '"repeatedMessageValue": []}'))
     parsed_message = json_format_proto3_pb2.TestMessage()
     self.CheckParseBack(message, parsed_message)
+
+  def testProto3Optional(self):
+    message = test_proto3_optional_pb2.TestProto3Optional()
+    self.assertEqual(
+        json.loads(
+            json_format.MessageToJson(
+                message, including_default_value_fields=True)),
+        json.loads('{}'))
+    message.optional_int32 = 0
+    self.assertEqual(
+        json.loads(
+            json_format.MessageToJson(
+                message, including_default_value_fields=True)),
+        json.loads('{"optionalInt32": 0}'))
 
   def testIntegersRepresentedAsFloat(self):
     message = json_format_proto3_pb2.TestMessage()
@@ -619,6 +636,20 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestListValue()
     self.CheckParseBack(message, parsed_message)
 
+  def testNullValue(self):
+    message = json_format_proto3_pb2.TestOneof()
+    message.oneof_null_value = 0
+    self.assertEqual(json_format.MessageToJson(message),
+                     '{\n  "oneofNullValue": null\n}')
+    parsed_message = json_format_proto3_pb2.TestOneof()
+    self.CheckParseBack(message, parsed_message)
+    # Check old format is also accepted
+    new_message = json_format_proto3_pb2.TestOneof()
+    json_format.Parse('{\n  "oneofNullValue": "NULL_VALUE"\n}',
+                      new_message)
+    self.assertEqual(json_format.MessageToJson(new_message),
+                     '{\n  "oneofNullValue": null\n}')
+
   def testAnyMessage(self):
     message = json_format_proto3_pb2.TestAny()
     value1 = json_format_proto3_pb2.MessageType()
@@ -813,10 +844,52 @@ class JsonFormatTest(JsonFormatBase):
 
   def testParseDoubleToFloat(self):
     message = json_format_proto3_pb2.TestMessage()
-    text = ('{"repeatedFloatValue": [3.4028235e+39, 1.4028235e-39]\n}')
+    text = ('{"repeatedDoubleValue": [3.4028235e+39, 1.4028235e-39]\n}')
     json_format.Parse(text, message)
-    self.assertEqual(message.repeated_float_value[0], float('inf'))
-    self.assertAlmostEqual(message.repeated_float_value[1], 1.4028235e-39)
+    self.assertEqual(message.repeated_double_value[0], 3.4028235e+39)
+    self.assertEqual(message.repeated_double_value[1], 1.4028235e-39)
+    text = ('{"repeatedFloatValue": [3.4028235e+39, 1.4028235e-39]\n}')
+    self.CheckError(text,
+                    'Failed to parse repeatedFloatValue field: '
+                    'Float value too large.')
+
+  def testFloatPrecision(self):
+    message = json_format_proto3_pb2.TestMessage()
+    message.float_value = 1.123456789
+    # Set to 8 valid digits.
+    text = '{\n  "floatValue": 1.1234568\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message, float_precision=8), text)
+    # Set to 7 valid digits.
+    text = '{\n  "floatValue": 1.123457\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message, float_precision=7), text)
+
+    # Default float_precision will automatic print shortest float.
+    message.float_value = 1.1000000011
+    text = '{\n  "floatValue": 1.1\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message), text)
+    message.float_value = 1.00000075e-36
+    text = '{\n  "floatValue": 1.00000075e-36\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message), text)
+    message.float_value = 12345678912345e+11
+    text = '{\n  "floatValue": 1.234568e+24\n}'
+    self.assertEqual(
+        json_format.MessageToJson(message), text)
+
+    # Test a bunch of data and check json encode/decode do not
+    # lose precision
+    value_list = [0x00, 0xD8, 0x6E, 0x00]
+    msg2 = json_format_proto3_pb2.TestMessage()
+    for a in range(0, 256):
+      value_list[3] = a
+      for b in range(0, 256):
+        value_list[0] = b
+        byte_array = bytearray(value_list)
+        message.float_value = struct.unpack('<f', byte_array)[0]
+        self.CheckParseBack(message, msg2)
 
   def testParseEmptyText(self):
     self.CheckError('',
@@ -842,6 +915,23 @@ class JsonFormatTest(JsonFormatBase):
         'Failed to parse optionalNestedEnum field: Invalid enum value 12345 '
         'for enum type protobuf_unittest.TestAllTypes.NestedEnum.',
         json_format.Parse, '{"optionalNestedEnum": 12345}', message)
+
+  def testBytes(self):
+    message = json_format_proto3_pb2.TestMessage()
+    # Test url base64
+    text = '{"bytesValue": "-_"}'
+    json_format.Parse(text, message)
+    self.assertEqual(message.bytes_value, b'\xfb')
+    # Test padding
+    text = '{"bytesValue": "AQI="}'
+    json_format.Parse(text, message)
+    self.assertEqual(message.bytes_value, b'\x01\x02')
+    text = '{"bytesValue": "AQI"}'
+    json_format.Parse(text, message)
+    self.assertEqual(message.bytes_value, b'\x01\x02')
+    text = '{"bytesValue": "AQI*"}'
+    json_format.Parse(text, message)
+    self.assertEqual(message.bytes_value, b'\x01\x02')
 
   def testParseBadIdentifer(self):
     self.CheckError('{int32Value: 1}',
@@ -893,6 +983,9 @@ class JsonFormatTest(JsonFormatBase):
     self.CheckError('{"int32Value": "1 "}',
                     'Failed to parse int32Value field: '
                     'Couldn\'t parse integer: "1 ".')
+    self.CheckError('{"int32Value": false}',
+                    'Failed to parse int32Value field: Bool value False '
+                    'is not acceptable for integer field.')
     self.CheckError('{"int32Value": 12345678901234567890}',
                     'Failed to parse int32Value field: Value out of range: '
                     '12345678901234567890.')
@@ -904,12 +997,24 @@ class JsonFormatTest(JsonFormatBase):
     self.CheckError('{"floatValue": "nan"}',
                     'Failed to parse floatValue field: Couldn\'t '
                     'parse float "nan", use "NaN" instead.')
-
-  def testInvalidBytesValue(self):
-    self.CheckError('{"bytesValue": "AQI"}',
-                    'Failed to parse bytesValue field: Incorrect padding.')
-    self.CheckError('{"bytesValue": "AQI*"}',
-                    'Failed to parse bytesValue field: Incorrect padding.')
+    self.CheckError('{"floatValue": NaN}',
+                    'Failed to parse floatValue field: Couldn\'t '
+                    'parse NaN, use quoted "NaN" instead.')
+    self.CheckError('{"floatValue": Infinity}',
+                    'Failed to parse floatValue field: Couldn\'t parse Infinity'
+                    ' or value too large, use quoted "Infinity" instead.')
+    self.CheckError('{"floatValue": -Infinity}',
+                    'Failed to parse floatValue field: Couldn\'t parse '
+                    '-Infinity or value too small, '
+                    'use quoted "-Infinity" instead.')
+    self.CheckError('{"doubleValue": -1.89769e+308}',
+                    'Failed to parse doubleValue field: Couldn\'t parse '
+                    '-Infinity or value too small, '
+                    'use quoted "-Infinity" instead.')
+    self.CheckError('{"floatValue": 3.4028235e+39}',
+                    'Failed to parse floatValue field: Float value too large.')
+    self.CheckError('{"floatValue": -3.502823e+38}',
+                    'Failed to parse floatValue field: Float value too small.')
 
   def testInvalidRepeated(self):
     self.CheckError('{"repeatedInt32Value": 12345}',
@@ -973,12 +1078,21 @@ class JsonFormatTest(JsonFormatBase):
         json_format.ParseError,
         'Failed to parse value field: year (0 )?is out of range.',
         json_format.Parse, text, message)
-    # Time bigger than maxinum time.
+    # Time bigger than maximum time.
     message.value.seconds = 253402300800
     self.assertRaisesRegexp(
         OverflowError,
         'date value out of range',
         json_format.MessageToJson, message)
+    # Lower case t does not accept.
+    text = '{"value": "0001-01-01t00:00:00Z"}'
+    with self.assertRaises(json_format.ParseError) as e:
+      json_format.Parse(text, message)
+    self.assertEqual(
+        'Failed to parse value field: '
+        'time data \'0001-01-01t00:00:00\' does not match format '
+        '\'%Y-%m-%dT%H:%M:%S\', lowercase \'t\' is not accepted.',
+        str(e.exception))
 
   def testInvalidOneof(self):
     message = json_format_proto3_pb2.TestOneof()
@@ -1099,6 +1213,19 @@ class JsonFormatTest(JsonFormatBase):
         str(cm.exception),
         'Failed to parse any_value field: Can not find message descriptor by'
         ' type_url: type.googleapis.com/proto3.MessageType..')
+
+  def testParseDictUnknownValueType(self):
+    class UnknownClass(object):
+
+      def __str__(self):
+        return 'v'
+    message = json_format_proto3_pb2.TestValue()
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r"Value v has unexpected type <class '.*\.UnknownClass'>.",
+        json_format.ParseDict,
+        {'value': UnknownClass()},
+        message)
 
   def testMessageToDict(self):
     message = json_format_proto3_pb2.TestMessage()

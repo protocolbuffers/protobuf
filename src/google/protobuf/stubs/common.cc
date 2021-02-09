@@ -55,7 +55,6 @@
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/stringpiece.h>
@@ -97,7 +96,7 @@ void VerifyVersion(int headerVersion,
   }
 }
 
-string VersionString(int version) {
+std::string VersionString(int version) {
   int major = version / 1000000;
   int minor = (version / 1000) % 1000;
   int micro = version % 1000;
@@ -128,7 +127,7 @@ namespace internal {
 
 #if defined(__ANDROID__)
 inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                              const string& message) {
+                              const std::string& message) {
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
@@ -163,7 +162,7 @@ inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
 
 #else
 void DefaultLogHandler(LogLevel level, const char* filename, int line,
-                       const string& message) {
+                       const std::string& message) {
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
@@ -178,14 +177,14 @@ void DefaultLogHandler(LogLevel level, const char* filename, int line,
 #endif
 
 void NullLogHandler(LogLevel /* level */, const char* /* filename */,
-                    int /* line */, const string& /* message */) {
+                    int /* line */, const std::string& /* message */) {
   // Nothing.
 }
 
 static LogHandler* log_handler_ = &DefaultLogHandler;
 static std::atomic<int> log_silencer_count_ = ATOMIC_VAR_INIT(0);
 
-LogMessage& LogMessage::operator<<(const string& value) {
+LogMessage& LogMessage::operator<<(const std::string& value) {
   message_ += value;
   return *this;
 }
@@ -305,7 +304,7 @@ void DoNothing() {}
 //
 // TODO(xiaofeng): PROTOBUF_LITTLE_ENDIAN is unfortunately defined in
 // google/protobuf/io/coded_stream.h and therefore can not be used here.
-// Maybe move that macro definition here in the furture.
+// Maybe move that macro definition here in the future.
 uint32 ghtonl(uint32 x) {
   union {
     uint32 result;
@@ -316,52 +315,6 @@ uint32 ghtonl(uint32 x) {
   result_array[2] = static_cast<uint8>((x >> 8) & 0xFF);
   result_array[3] = static_cast<uint8>(x & 0xFF);
   return result;
-}
-
-// ===================================================================
-// Shutdown support.
-
-namespace internal {
-
-struct ShutdownData {
-  ~ShutdownData() {
-    std::reverse(functions.begin(), functions.end());
-    for (auto pair : functions) pair.first(pair.second);
-  }
-
-  static ShutdownData* get() {
-    static auto* data = new ShutdownData;
-    return data;
-  }
-
-  std::vector<std::pair<void (*)(const void*), const void*>> functions;
-  Mutex mutex;
-};
-
-static void RunZeroArgFunc(const void* arg) {
-  void (*func)() = reinterpret_cast<void (*)()>(const_cast<void*>(arg));
-  func();
-}
-
-void OnShutdown(void (*func)()) {
-  OnShutdownRun(RunZeroArgFunc, reinterpret_cast<void*>(func));
-}
-
-void OnShutdownRun(void (*f)(const void*), const void* arg) {
-  auto shutdown_data = ShutdownData::get();
-  MutexLock lock(&shutdown_data->mutex);
-  shutdown_data->functions.push_back(std::make_pair(f, arg));
-}
-
-}  // namespace internal
-
-void ShutdownProtobufLibrary() {
-  // This function should be called only once, but accepts multiple calls.
-  static bool is_shutdown = false;
-  if (!is_shutdown) {
-    delete internal::ShutdownData::get();
-    is_shutdown = true;
-  }
 }
 
 #if PROTOBUF_USE_EXCEPTIONS

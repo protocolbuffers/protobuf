@@ -62,13 +62,12 @@ VALUE Message_alloc(VALUE klass) {
   Descriptor* desc = ruby_to_Descriptor(descriptor);
   MessageHeader* msg;
   VALUE ret;
-  size_t size;
 
   if (desc->layout == NULL) {
     create_layout(desc);
   }
 
-  msg = ALLOC_N(uint8_t, sizeof(MessageHeader) + desc->layout->size);
+  msg = (void*)ALLOC_N(uint8_t, sizeof(MessageHeader) + desc->layout->size);
   msg->descriptor = desc;
   msg->unknown_fields = NULL;
   memcpy(Message_data(msg), desc->layout->empty_template, desc->layout->size);
@@ -109,30 +108,36 @@ enum {
 };
 
 // Check if the field is a well known wrapper type
-static bool is_wrapper_type_field(const MessageLayout* layout,
-                                  const upb_fielddef* field) {
-  const char* field_type_name = rb_class2name(field_type_class(layout, field));
-
-  return strcmp(field_type_name, "Google::Protobuf::DoubleValue") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::FloatValue") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::Int32Value") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::Int64Value") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::UInt32Value") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::UInt64Value") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::BoolValue") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::StringValue") == 0 ||
-         strcmp(field_type_name, "Google::Protobuf::BytesValue") == 0;
+bool is_wrapper_type_field(const upb_fielddef* field) {
+  const upb_msgdef *m;
+  if (upb_fielddef_type(field) != UPB_TYPE_MESSAGE) {
+    return false;
+  }
+  m = upb_fielddef_msgsubdef(field);
+  switch (upb_msgdef_wellknowntype(m)) {
+    case UPB_WELLKNOWN_DOUBLEVALUE:
+    case UPB_WELLKNOWN_FLOATVALUE:
+    case UPB_WELLKNOWN_INT64VALUE:
+    case UPB_WELLKNOWN_UINT64VALUE:
+    case UPB_WELLKNOWN_INT32VALUE:
+    case UPB_WELLKNOWN_UINT32VALUE:
+    case UPB_WELLKNOWN_STRINGVALUE:
+    case UPB_WELLKNOWN_BYTESVALUE:
+    case UPB_WELLKNOWN_BOOLVALUE:
+      return true;
+    default:
+      return false;
+  }
 }
 
 // Get a new Ruby wrapper type and set the initial value
-static VALUE ruby_wrapper_type(const MessageLayout* layout,
-                               const upb_fielddef* field, const VALUE value) {
-  if (is_wrapper_type_field(layout, field) && value != Qnil) {
+VALUE ruby_wrapper_type(VALUE type_class, VALUE value) {
+  if (value != Qnil) {
     VALUE hash = rb_hash_new();
     rb_hash_aset(hash, rb_str_new2("value"), value);
     {
       VALUE args[1] = {hash};
-      return rb_class_new_instance(1, args, field_type_class(layout, field));
+      return rb_class_new_instance(1, args, type_class);
     }
   }
   return Qnil;
@@ -193,8 +198,7 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
     // Check if field exists and is a wrapper type
     if (upb_msgdef_lookupname(self->descriptor->msgdef, wrapper_field_name,
                               name_len - 9, &test_f_wrapper, &test_o_wrapper) &&
-        upb_fielddef_type(test_f_wrapper) == UPB_TYPE_MESSAGE &&
-        is_wrapper_type_field(self->descriptor->layout, test_f_wrapper)) {
+        is_wrapper_type_field(test_f_wrapper)) {
       // It does exist!
       has_field = true;
       if (accessor_type == METHOD_SETTER) {
@@ -238,9 +242,14 @@ static int extract_method_call(VALUE method_name, MessageHeader* self,
   // Method calls like 'has_foo?' are not allowed if field "foo" does not have
   // a hasbit (e.g. repeated fields or non-message type fields for proto3
   // syntax).
-  if (accessor_type == METHOD_PRESENCE && test_f != NULL &&
-      !upb_fielddef_haspresence(test_f)) {
-    return METHOD_UNKNOWN;
+  if (accessor_type == METHOD_PRESENCE && test_f != NULL) {
+    if (!upb_fielddef_haspresence(test_f)) return METHOD_UNKNOWN;
+
+    // TODO(haberman): remove this case, allow for proto3 oneofs.
+    if (upb_fielddef_realcontainingoneof(test_f) &&
+        upb_filedef_syntax(upb_fielddef_file(test_f)) == UPB_SYNTAX_PROTO3) {
+      return METHOD_UNKNOWN;
+    }
   }
 
   *o = test_o;
@@ -329,12 +338,17 @@ VALUE Message_method_missing(int argc, VALUE* argv, VALUE _self) {
     return layout_has(self->descriptor->layout, Message_data(self), f);
   } else if (accessor_type == METHOD_WRAPPER_GETTER) {
     VALUE value = layout_get(self->descriptor->layout, Message_data(self), f);
-    if (value != Qnil) {
-      value = rb_funcall(value, rb_intern("value"), 0);
+    switch (TYPE(value)) {
+      case T_DATA:
+        return rb_funcall(value, rb_intern("value"), 0);
+      case T_NIL:
+        return Qnil;
+      default:
+        return value;
     }
-    return value;
   } else if (accessor_type == METHOD_WRAPPER_SETTER) {
-    VALUE wrapper = ruby_wrapper_type(self->descriptor->layout, f, argv[1]);
+    VALUE wrapper = ruby_wrapper_type(
+        field_type_class(self->descriptor->layout, f), argv[1]);
     layout_set(self->descriptor->layout, Message_data(self), f, wrapper);
     return Qnil;
   } else if (accessor_type == METHOD_ENUM_GETTER) {
@@ -596,11 +610,17 @@ VALUE Message_inspect(VALUE _self) {
  */
 VALUE Message_to_h(VALUE _self) {
   MessageHeader* self;
-  VALUE hash;
+  VALUE hash = rb_hash_new();
   upb_msg_field_iter it;
+  bool is_proto2;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
 
-  hash = rb_hash_new();
+  // We currently have a few behaviors that are specific to proto2.
+  // This is unfortunate, we should key behaviors off field attributes (like
+  // whether a field has presence), not proto2 vs. proto3. We should see if we
+  // can change this without breaking users.
+  is_proto2 =
+      upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2;
 
   for (upb_msg_field_begin(&it, self->descriptor->msgdef);
        !upb_msg_field_done(&it);
@@ -609,10 +629,9 @@ VALUE Message_to_h(VALUE _self) {
     VALUE msg_value;
     VALUE msg_key;
 
-    // For proto2, do not include fields which are not set.
-    if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
-       field_contains_hasbit(self->descriptor->layout, field) &&
-       !layout_has(self->descriptor->layout, Message_data(self), field)) {
+    // Do not include fields that are not present (oneof or optional fields).
+    if (is_proto2 && upb_fielddef_haspresence(field) &&
+        !layout_has(self->descriptor->layout, Message_data(self), field)) {
       continue;
     }
 
@@ -622,8 +641,7 @@ VALUE Message_to_h(VALUE _self) {
       msg_value = Map_to_h(msg_value);
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       msg_value = RepeatedField_to_ary(msg_value);
-      if (upb_msgdef_syntax(self->descriptor->msgdef) == UPB_SYNTAX_PROTO2 &&
-          RARRAY_LEN(msg_value) == 0) {
+      if (is_proto2 && RARRAY_LEN(msg_value) == 0) {
         continue;
       }
 

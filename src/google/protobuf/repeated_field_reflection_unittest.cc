@@ -52,11 +52,7 @@ namespace {
 
 static int Func(int i, int j) { return i * j; }
 
-static std::string StrFunc(int i, int j) {
-  std::string str;
-  SStringPrintf(&str, "%d", Func(i, 4));
-  return str;
-}
+static std::string StrFunc(int i, int j) { return StrCat(Func(i, 4)); }
 
 TEST(RepeatedFieldReflectionTest, RegularFields) {
   TestAllTypes message;
@@ -344,7 +340,7 @@ TEST(RepeatedFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   }
   EXPECT_EQ(10, index);
 
-  // Test iterator operators that are not ususally used in regular for-loops.
+  // Test iterator operators that are not usually used in regular for-loops.
   // Including: post increment, assign, ==.
   MessageIterator old_it = rf_foreign_message.begin();
   MessageIterator new_it = old_it++;

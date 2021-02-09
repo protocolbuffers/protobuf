@@ -14,23 +14,34 @@ class Wrappers
         if (static::$is_initialized == true) {
           return;
         }
-        $pool->internalAddGeneratedFile(hex2bin(
-            "0abf030a1e676f6f676c652f70726f746f6275662f77726170706572732e" .
-            "70726f746f120f676f6f676c652e70726f746f627566221c0a0b446f7562" .
-            "6c6556616c7565120d0a0576616c7565180120012801221b0a0a466c6f61" .
-            "7456616c7565120d0a0576616c7565180120012802221b0a0a496e743634" .
-            "56616c7565120d0a0576616c7565180120012803221c0a0b55496e743634" .
-            "56616c7565120d0a0576616c7565180120012804221b0a0a496e74333256" .
-            "616c7565120d0a0576616c7565180120012805221c0a0b55496e74333256" .
-            "616c7565120d0a0576616c756518012001280d221a0a09426f6f6c56616c" .
-            "7565120d0a0576616c7565180120012808221c0a0b537472696e6756616c" .
-            "7565120d0a0576616c7565180120012809221b0a0a427974657356616c75" .
-            "65120d0a0576616c756518012001280c427c0a13636f6d2e676f6f676c65" .
-            "2e70726f746f627566420d577261707065727350726f746f50015a2a6769" .
-            "746875622e636f6d2f676f6c616e672f70726f746f6275662f7074797065" .
-            "732f7772617070657273f80101a20203475042aa021e476f6f676c652e50" .
-            "726f746f6275662e57656c6c4b6e6f776e5479706573620670726f746f33"
-        ));
+        $pool->internalAddGeneratedFile(
+            '
+Ç
+google/protobuf/wrappers.protogoogle.protobuf"
+DoubleValue
+value ("
+
+FloatValue
+value ("
+
+Int64Value
+value ("
+UInt64Value
+value ("
+
+Int32Value
+value ("
+UInt32Value
+value ("
+	BoolValue
+value ("
+StringValue
+value (	"
+
+BytesValue
+value (Bƒ
+com.google.protobufBWrappersProtoPZ1google.golang.org/protobuf/types/known/wrapperspbø¢GPBªGoogle.Protobuf.WellKnownTypesbproto3'
+        , true);
 
         static::$is_initialized = true;
     }

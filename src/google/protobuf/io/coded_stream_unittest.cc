@@ -132,7 +132,7 @@ namespace {
 class CodedStreamTest : public testing::Test {
  protected:
   // Buffer used during most of the tests. This assumes tests run sequentially.
-  static const int kBufferSize = 1024 * 64;
+  static constexpr int kBufferSize = 1024 * 64;
   static uint8 buffer_[kBufferSize];
 };
 

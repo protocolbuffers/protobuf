@@ -75,7 +75,13 @@ std::string MapValueImmutableClassdName(const Descriptor* descriptor,
 // ===================================================================
 
 MessageGenerator::MessageGenerator(const Descriptor* descriptor)
-    : descriptor_(descriptor) {}
+    : descriptor_(descriptor) {
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    if (IsRealOneof(descriptor_->field(i))) {
+      oneofs_.insert(descriptor_->field(i)->containing_oneof());
+    }
+  }
+}
 
 MessageGenerator::~MessageGenerator() {}
 
@@ -206,7 +212,7 @@ void ImmutableMessageGenerator::GenerateFieldAccessorTable(
 
   // 6 bytes per field and oneof
   *bytecode_estimate +=
-      10 + 6 * descriptor_->field_count() + 6 * descriptor_->oneof_decl_count();
+      10 + 6 * descriptor_->field_count() + 6 * oneofs_.size();
 }
 
 int ImmutableMessageGenerator::GenerateFieldAccessorTableInitializer(
@@ -225,6 +231,7 @@ int ImmutableMessageGenerator::GenerateFieldAccessorTableInitializer(
     bytecode_estimate += 6;
     printer->Print("\"$field_name$\", ", "field_name", info->capitalized_name);
   }
+  // We reproduce synthetic oneofs here since proto reflection needs these.
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = descriptor_->oneof_decl(i);
     const OneofGeneratorInfo* info = context_->GetOneofGeneratorInfo(oneof);
@@ -269,15 +276,13 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
     field_generators_.get(descriptor_->field(i))
         .GenerateInterfaceMembers(printer);
   }
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+  for (auto oneof : oneofs_) {
     printer->Print(
         "\n"
         "public $classname$.$oneof_capitalized_name$Case "
         "get$oneof_capitalized_name$Case();\n",
         "oneof_capitalized_name",
-        context_->GetOneofGeneratorInfo(descriptor_->oneof_decl(i))
-            ->capitalized_name,
-        "classname",
+        context_->GetOneofGeneratorInfo(oneof)->capitalized_name, "classname",
         context_->GetNameResolver()->GetImmutableClassName(descriptor_));
   }
   printer->Outdent();
@@ -291,7 +296,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
   std::map<std::string, std::string> variables;
-  variables["static"] = is_own_file ? " " : " static ";
+  variables["static"] = is_own_file ? "" : "static ";
   variables["classname"] = descriptor_->name();
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
   variables["ver"] = GeneratedCodeVersionSuffix();
@@ -330,7 +335,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                    "    $classname$OrBuilder {\n");
     builder_type =
         strings::Substitute("com.google.protobuf.GeneratedMessage$0.Builder<?>",
-                            GeneratedCodeVersionSuffix());
+                         GeneratedCodeVersionSuffix());
   }
   printer->Print("private static final long serialVersionUID = 0L;\n");
 
@@ -403,13 +408,11 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
   // oneof
   std::map<std::string, std::string> vars;
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    vars["oneof_name"] =
-        context_->GetOneofGeneratorInfo(descriptor_->oneof_decl(i))->name;
+  for (auto oneof : oneofs_) {
+    vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
-        context_->GetOneofGeneratorInfo(descriptor_->oneof_decl(i))
-            ->capitalized_name;
-    vars["oneof_index"] = StrCat(descriptor_->oneof_decl(i)->index());
+        context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
+    vars["oneof_index"] = StrCat((oneof)->index());
     // oneofCase_ and oneof_
     printer->Print(vars,
                    "private int $oneof_name$Case_ = 0;\n"
@@ -423,8 +426,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         "    implements com.google.protobuf.Internal.EnumLite,\n"
         "        com.google.protobuf.AbstractMessage.InternalOneOfEnum {\n");
     printer->Indent();
-    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
-      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
+    for (int j = 0; j < (oneof)->field_count(); j++) {
+      const FieldDescriptor* field = (oneof)->field(j);
       printer->Print(
           "$deprecation$$field_name$($field_number$),\n", "deprecation",
           field->options().deprecated() ? "@java.lang.Deprecated " : "",
@@ -452,8 +455,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         "\n"
         "public static $oneof_capitalized_name$Case forNumber(int value) {\n"
         "  switch (value) {\n");
-    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
-      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
+    for (int j = 0; j < (oneof)->field_count(); j++) {
+      const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("    case $field_number$: return $field_name$;\n",
                      "field_number", StrCat(field->number()),
                      "field_name", ToUpper(field->name()));
@@ -912,19 +915,8 @@ void ImmutableMessageGenerator::GenerateIsInitialized(io::Printer* printer) {
               "name", info->capitalized_name);
           break;
         case FieldDescriptor::LABEL_OPTIONAL:
-          if (!SupportFieldPresence(descriptor_->file()) &&
-              field->containing_oneof() != NULL) {
-            const OneofDescriptor* oneof = field->containing_oneof();
-            const OneofGeneratorInfo* oneof_info =
-                context_->GetOneofGeneratorInfo(oneof);
-            printer->Print("if ($oneof_name$Case_ == $field_number$) {\n",
-                           "oneof_name", oneof_info->name, "field_number",
-                           StrCat(field->number()));
-          } else {
-            printer->Print("if (has$name$()) {\n", "name",
-                           info->capitalized_name);
-          }
           printer->Print(
+              "if (has$name$()) {\n"
               "  if (!get$name$().isInitialized()) {\n"
               "    memoizedIsInitialized = 0;\n"
               "    return false;\n"
@@ -987,11 +979,10 @@ bool CheckHasBitsForEqualsAndHashCode(const FieldDescriptor* field) {
   if (field->is_repeated()) {
     return false;
   }
-  if (SupportFieldPresence(field->file())) {
+  if (HasHasbit(field)) {
     return true;
   }
-  return GetJavaType(field) == JAVATYPE_MESSAGE &&
-         field->containing_oneof() == NULL;
+  return GetJavaType(field) == JAVATYPE_MESSAGE && !IsRealOneof(field);
 }
 }  // namespace
 
@@ -999,7 +990,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     io::Printer* printer) {
   printer->Print(
       "@java.lang.Override\n"
-      "public boolean equals(final java.lang.Object obj) {\n");
+      "public boolean equals(");
+  printer->Print("final java.lang.Object obj) {\n");
   printer->Indent();
   printer->Print(
       "if (obj == this) {\n"
@@ -1014,7 +1006,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->containing_oneof() == NULL) {
+    if (!IsRealOneof(field)) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
       if (check_has_bits) {
@@ -1033,19 +1025,17 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   }
 
   // Compare oneofs.
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+  for (auto oneof : oneofs_) {
     printer->Print(
         "if (!get$oneof_capitalized_name$Case().equals("
         "other.get$oneof_capitalized_name$Case())) return false;\n",
         "oneof_capitalized_name",
-        context_->GetOneofGeneratorInfo(descriptor_->oneof_decl(i))
-            ->capitalized_name);
-    printer->Print(
-        "switch ($oneof_name$Case_) {\n", "oneof_name",
-        context_->GetOneofGeneratorInfo(descriptor_->oneof_decl(i))->name);
+        context_->GetOneofGeneratorInfo(oneof)->capitalized_name);
+    printer->Print("switch ($oneof_name$Case_) {\n", "oneof_name",
+                   context_->GetOneofGeneratorInfo(oneof)->name);
     printer->Indent();
-    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
-      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
+    for (int j = 0; j < (oneof)->field_count(); j++) {
+      const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("case $field_number$:\n", "field_number",
                      StrCat(field->number()));
       printer->Indent();
@@ -1098,7 +1088,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   // hashCode non-oneofs.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
-    if (field->containing_oneof() == NULL) {
+    if (!IsRealOneof(field)) {
       const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
       bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
       if (check_has_bits) {
@@ -1114,13 +1104,12 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   }
 
   // hashCode oneofs.
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    printer->Print(
-        "switch ($oneof_name$Case_) {\n", "oneof_name",
-        context_->GetOneofGeneratorInfo(descriptor_->oneof_decl(i))->name);
+  for (auto oneof : oneofs_) {
+    printer->Print("switch ($oneof_name$Case_) {\n", "oneof_name",
+                   context_->GetOneofGeneratorInfo(oneof)->name);
     printer->Indent();
-    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
-      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
+    for (int j = 0; j < (oneof)->field_count(); j++) {
+      const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("case $field_number$:\n", "field_number",
                      StrCat(field->number()));
       printer->Indent();
@@ -1359,13 +1348,12 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
 // ===================================================================
 void ImmutableMessageGenerator::GenerateInitializers(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (!descriptor_->field(i)->containing_oneof()) {
+    if (!IsRealOneof(descriptor_->field(i))) {
       field_generators_.get(descriptor_->field(i))
           .GenerateInitializationCode(printer);
     }
   }
 }
-
 
 void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
   printer->Print(

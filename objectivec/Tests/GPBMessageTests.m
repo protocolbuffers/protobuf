@@ -1131,10 +1131,10 @@
     XCTAssertNotNil(message.a.iArray);
     XCTAssertFalse([message hasA]);
     GPBInt32Array *iArray = [message.a.iArray retain];
-    XCTAssertEqual(iArray->_autocreator, message.a);  // Pointer comparision
+    XCTAssertEqual(iArray->_autocreator, message.a);  // Pointer comparison
     message.a.iArray = [GPBInt32Array arrayWithValue:1];
     XCTAssertTrue([message hasA]);
-    XCTAssertNotEqual(message.a.iArray, iArray);  // Pointer comparision
+    XCTAssertNotEqual(message.a.iArray, iArray);  // Pointer comparison
     XCTAssertNil(iArray->_autocreator);
     [iArray release];
   }
@@ -1148,10 +1148,10 @@
     GPBAutocreatedArray *strArray =
         (GPBAutocreatedArray *)[message.a.strArray retain];
     XCTAssertTrue([strArray isKindOfClass:[GPBAutocreatedArray class]]);
-    XCTAssertEqual(strArray->_autocreator, message.a);  // Pointer comparision
+    XCTAssertEqual(strArray->_autocreator, message.a);  // Pointer comparison
     message.a.strArray = [NSMutableArray arrayWithObject:@"foo"];
     XCTAssertTrue([message hasA]);
-    XCTAssertNotEqual(message.a.strArray, strArray);  // Pointer comparision
+    XCTAssertNotEqual(message.a.strArray, strArray);  // Pointer comparison
     XCTAssertNil(strArray->_autocreator);
     [strArray release];
   }
@@ -1348,11 +1348,11 @@
     XCTAssertNotNil(message.a.iToI);
     XCTAssertFalse([message hasA]);
     GPBInt32Int32Dictionary *iToI = [message.a.iToI retain];
-    XCTAssertEqual(iToI->_autocreator, message.a);  // Pointer comparision
+    XCTAssertEqual(iToI->_autocreator, message.a);  // Pointer comparison
     message.a.iToI = [[[GPBInt32Int32Dictionary alloc] init] autorelease];
     [message.a.iToI setInt32:6 forKey:7];
     XCTAssertTrue([message hasA]);
-    XCTAssertNotEqual(message.a.iToI, iToI);  // Pointer comparision
+    XCTAssertNotEqual(message.a.iToI, iToI);  // Pointer comparison
     XCTAssertNil(iToI->_autocreator);
     [iToI release];
   }
@@ -1366,11 +1366,11 @@
     GPBAutocreatedDictionary *strToStr =
         (GPBAutocreatedDictionary *)[message.a.strToStr retain];
     XCTAssertTrue([strToStr isKindOfClass:[GPBAutocreatedDictionary class]]);
-    XCTAssertEqual(strToStr->_autocreator, message.a);  // Pointer comparision
+    XCTAssertEqual(strToStr->_autocreator, message.a);  // Pointer comparison
     message.a.strToStr =
         [NSMutableDictionary dictionaryWithObject:@"abc" forKey:@"def"];
     XCTAssertTrue([message hasA]);
-    XCTAssertNotEqual(message.a.strToStr, strToStr);  // Pointer comparision
+    XCTAssertNotEqual(message.a.strToStr, strToStr);  // Pointer comparison
     XCTAssertNil(strToStr->_autocreator);
     [strToStr release];
   }
@@ -1918,7 +1918,7 @@
   aTime = Time_SomethingElse;
   Time_IsValidValue(aTime);
 
-  // This block confirms the names in the decriptors is what we wanted.
+  // This block confirms the names in the descriptors is what we wanted.
 
   GPBEnumDescriptor *descriptor;
   NSString *valueName;

@@ -20,18 +20,15 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    private $name = '';
-    private $has_name = false;
+    protected $name = null;
     /**
      * Generated from protobuf field <code>optional int32 number = 2;</code>
      */
-    private $number = 0;
-    private $has_number = false;
+    protected $number = null;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
      */
-    private $options = null;
-    private $has_options = false;
+    protected $options = null;
 
     /**
      * Constructor.
@@ -55,7 +52,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getName()
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : '';
+    }
+
+    public function hasName()
+    {
+        return isset($this->name);
+    }
+
+    public function clearName()
+    {
+        unset($this->name);
     }
 
     /**
@@ -67,14 +74,8 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
-    }
-
-    public function hasName()
-    {
-        return $this->has_name;
     }
 
     /**
@@ -83,7 +84,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getNumber()
     {
-        return $this->number;
+        return isset($this->number) ? $this->number : 0;
+    }
+
+    public function hasNumber()
+    {
+        return isset($this->number);
+    }
+
+    public function clearNumber()
+    {
+        unset($this->number);
     }
 
     /**
@@ -95,14 +106,8 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkInt32($var);
         $this->number = $var;
-        $this->has_number = true;
 
         return $this;
-    }
-
-    public function hasNumber()
-    {
-        return $this->has_number;
     }
 
     /**
@@ -111,7 +116,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getOptions()
     {
-        return $this->options;
+        return isset($this->options) ? $this->options : null;
+    }
+
+    public function hasOptions()
+    {
+        return isset($this->options);
+    }
+
+    public function clearOptions()
+    {
+        unset($this->options);
     }
 
     /**
@@ -123,14 +138,8 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\EnumValueOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
-    }
-
-    public function hasOptions()
-    {
-        return $this->has_options;
     }
 
 }

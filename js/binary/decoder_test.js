@@ -303,7 +303,7 @@ describe('binaryDecoderTest', function() {
     });
 
     it('does zigzag encoding properly', function() {
-      // Test cases direcly from the protobuf dev guide.
+      // Test cases directly from the protobuf dev guide.
       // https://engdoc.corp.google.com/eng/howto/protocolbuffers/developerguide/encoding.shtml?cl=head#types
       var testCases = [
         {original: '0', zigzag: '0'},

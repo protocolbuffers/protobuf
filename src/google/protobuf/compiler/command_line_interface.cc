@@ -58,8 +58,10 @@
 
 #include <memory>
 
-#ifdef __APPLE__
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
+#elif defined(__FreeBSD__)
+#include <sys/sysctl.h>
 #endif
 
 #include <google/protobuf/stubs/common.h>
@@ -202,6 +204,13 @@ bool GetProtocAbsolutePath(std::string* path) {
     realpath(dirtybuffer, buffer);
     len = strlen(buffer);
   }
+#elif defined(__FreeBSD__)
+  char buffer[PATH_MAX];
+  size_t len = PATH_MAX;
+  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
+  if (sysctl(mib, 4, &buffer, &len, NULL, 0) != 0) {
+    len = 0;
+  }
 #else
   char buffer[PATH_MAX];
   int len = readlink("/proc/self/exe", buffer, PATH_MAX);
@@ -263,8 +272,8 @@ void AddDefaultProtoPaths(
   }
 }
 
-string PluginName(const std::string& plugin_prefix,
-                  const std::string& directive) {
+std::string PluginName(const std::string& plugin_prefix,
+                       const std::string& directive) {
   // Assuming the directive starts with "--" and ends with "_out" or "_opt",
   // strip the "--" and "_out/_opt" and add the plugin prefix.
   return plugin_prefix + "gen-" + directive.substr(2, directive.size() - 6);
@@ -386,6 +395,9 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename);
   io::ZeroCopyOutputStream* OpenForInsert(const std::string& filename,
                                           const std::string& insertion_point);
+  io::ZeroCopyOutputStream* OpenForInsertWithGeneratedCodeInfo(
+      const std::string& filename, const std::string& insertion_point,
+      const google::protobuf::GeneratedCodeInfo& info);
   void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
     *output = parsed_files_;
   }
@@ -393,7 +405,8 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
  private:
   friend class MemoryOutputStream;
 
-  // map instead of unordered_map so that files are written in order (good when
+  // The files_ field maps from path keys to file content values. It's a map
+  // instead of an unordered_map so that files are written in order (good when
   // writing zips).
   std::map<std::string, std::string> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
@@ -408,6 +421,10 @@ class CommandLineInterface::MemoryOutputStream
   MemoryOutputStream(GeneratorContextImpl* directory,
                      const std::string& filename,
                      const std::string& insertion_point);
+  MemoryOutputStream(GeneratorContextImpl* directory,
+                     const std::string& filename,
+                     const std::string& insertion_point,
+                     const google::protobuf::GeneratedCodeInfo& info);
   virtual ~MemoryOutputStream();
 
   // implements ZeroCopyOutputStream ---------------------------------
@@ -418,12 +435,23 @@ class CommandLineInterface::MemoryOutputStream
   int64_t ByteCount() const override { return inner_->ByteCount(); }
 
  private:
-  // Checks to see if "filename_.meta" exists in directory_; if so, fixes the
+  // Checks to see if "filename_.pb.meta" exists in directory_; if so, fixes the
   // offsets in that GeneratedCodeInfo record to reflect bytes inserted in
   // filename_ at original offset insertion_offset with length insertion_length.
-  // We assume that insertions will not occur within any given annotated span
-  // of text.
-  void UpdateMetadata(size_t insertion_offset, size_t insertion_length);
+  // Also adds in the data from info_to_insert_ with updated offsets governed by
+  // insertion_offset and indent_length. We assume that insertions will not
+  // occur within any given annotated span of text. insertion_content must end
+  // with an endline.
+  void UpdateMetadata(const std::string& insertion_content,
+                      size_t insertion_offset, size_t insertion_length,
+                      size_t indent_length);
+
+  // Inserts info_to_insert_ into target_info, assuming that the relevant
+  // insertion was made at insertion_offset in file_content with the given
+  // indent_length. insertion_content must end with an endline.
+  void InsertShiftedInfo(const std::string& insertion_content,
+                         size_t insertion_offset, size_t indent_length,
+                         google::protobuf::GeneratedCodeInfo& target_info);
 
   // Where to insert the string when it's done.
   GeneratorContextImpl* directory_;
@@ -438,6 +466,9 @@ class CommandLineInterface::MemoryOutputStream
 
   // StringOutputStream writing to data_.
   std::unique_ptr<io::StringOutputStream> inner_;
+
+  // The GeneratedCodeInfo to insert at the insertion point.
+  google::protobuf::GeneratedCodeInfo info_to_insert_;
 };
 
 // -------------------------------------------------------------------
@@ -594,6 +625,13 @@ CommandLineInterface::GeneratorContextImpl::OpenForInsert(
   return new MemoryOutputStream(this, filename, insertion_point);
 }
 
+io::ZeroCopyOutputStream*
+CommandLineInterface::GeneratorContextImpl::OpenForInsertWithGeneratedCodeInfo(
+    const std::string& filename, const std::string& insertion_point,
+    const google::protobuf::GeneratedCodeInfo& info) {
+  return new MemoryOutputStream(this, filename, insertion_point, info);
+}
+
 // -------------------------------------------------------------------
 
 CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
@@ -612,40 +650,114 @@ CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
       insertion_point_(insertion_point),
       inner_(new io::StringOutputStream(&data_)) {}
 
+CommandLineInterface::MemoryOutputStream::MemoryOutputStream(
+    GeneratorContextImpl* directory, const std::string& filename,
+    const std::string& insertion_point, const google::protobuf::GeneratedCodeInfo& info)
+    : directory_(directory),
+      filename_(filename),
+      insertion_point_(insertion_point),
+      inner_(new io::StringOutputStream(&data_)),
+      info_to_insert_(info) {}
+
+void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
+    const std::string& insertion_content, size_t insertion_offset,
+    size_t indent_length, google::protobuf::GeneratedCodeInfo& target_info) {
+  // Keep track of how much extra data was added for indents before the
+  // current annotation being inserted. `pos` and `source_annotation.begin()`
+  // are offsets in `insertion_content`. `insertion_offset` is updated so that
+  // it can be added to an annotation's `begin` field to reflect that
+  // annotation's updated location after `insertion_content` was inserted into
+  // the target file.
+  size_t pos = 0;
+  insertion_offset += indent_length;
+  for (const auto& source_annotation : info_to_insert_.annotation()) {
+    GeneratedCodeInfo::Annotation* annotation = target_info.add_annotation();
+    int inner_indent = 0;
+    // insertion_content is guaranteed to end in an endline. This last endline
+    // has no effect on indentation.
+    for (; pos < source_annotation.end() && pos < insertion_content.size() - 1;
+         ++pos) {
+      if (insertion_content[pos] == '\n') {
+        if (pos >= source_annotation.begin()) {
+          // The beginning of the annotation is at insertion_offset, but the end
+          // can still move further in the target file.
+          inner_indent += indent_length;
+        } else {
+          insertion_offset += indent_length;
+        }
+      }
+    }
+    *annotation = source_annotation;
+    annotation->set_begin(annotation->begin() + insertion_offset);
+    insertion_offset += inner_indent;
+    annotation->set_end(annotation->end() + insertion_offset);
+  }
+}
+
 void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
-    size_t insertion_offset, size_t insertion_length) {
-  auto it = directory_->files_.find(filename_ + ".meta");
-  if (it == directory_->files_.end()) {
+    const std::string& insertion_content, size_t insertion_offset,
+    size_t insertion_length, size_t indent_length) {
+  auto it = directory_->files_.find(filename_ + ".pb.meta");
+  if (it == directory_->files_.end() && info_to_insert_.annotation().empty()) {
     // No metadata was recorded for this file.
     return;
   }
-  std::string& encoded_data = it->second;
   GeneratedCodeInfo metadata;
   bool is_text_format = false;
-  if (!metadata.ParseFromString(encoded_data)) {
-    if (!TextFormat::ParseFromString(encoded_data, &metadata)) {
-      // The metadata is invalid.
-      std::cerr << filename_
-                << ".meta: Could not parse metadata as wire or text format."
-                << std::endl;
-      return;
+  std::string* encoded_data = nullptr;
+  if (it != directory_->files_.end()) {
+    encoded_data = &it->second;
+    // Try to decode a GeneratedCodeInfo proto from the .pb.meta file. It may be
+    // in wire or text format. Keep the same format when the data is written out
+    // later.
+    if (!metadata.ParseFromString(*encoded_data)) {
+      if (!TextFormat::ParseFromString(*encoded_data, &metadata)) {
+        // The metadata is invalid.
+        std::cerr
+            << filename_
+            << ".pb.meta: Could not parse metadata as wire or text format."
+            << std::endl;
+        return;
+      }
+      // Generators that use the public plugin interface emit text-format
+      // metadata (because in the public plugin protocol, file content must be
+      // UTF8-encoded strings).
+      is_text_format = true;
     }
-    // Generators that use the public plugin interface emit text-format
-    // metadata (because in the public plugin protocol, file content must be
-    // UTF8-encoded strings).
-    is_text_format = true;
+  } else {
+    // Create a new file to store the new metadata in info_to_insert_.
+    encoded_data =
+        &directory_->files_.insert({filename_ + ".pb.meta", ""}).first->second;
   }
-  for (int i = 0; i < metadata.annotation_size(); ++i) {
-    GeneratedCodeInfo::Annotation* annotation = metadata.mutable_annotation(i);
-    if (annotation->begin() >= insertion_offset) {
-      annotation->set_begin(annotation->begin() + insertion_length);
-      annotation->set_end(annotation->end() + insertion_length);
+  GeneratedCodeInfo new_metadata;
+  bool crossed_offset = false;
+  size_t to_add = 0;
+  for (const auto& source_annotation : metadata.annotation()) {
+    // The first time an annotation at or after the insertion point is found,
+    // insert the new metadata from info_to_insert_. Shift all annotations
+    // after the new metadata by the length of the text that was inserted
+    // (including any additional indent length).
+    if (source_annotation.begin() >= insertion_offset && !crossed_offset) {
+      crossed_offset = true;
+      InsertShiftedInfo(insertion_content, insertion_offset, indent_length,
+                        new_metadata);
+      to_add += insertion_length;
     }
+    GeneratedCodeInfo::Annotation* annotation = new_metadata.add_annotation();
+    *annotation = source_annotation;
+    annotation->set_begin(annotation->begin() + to_add);
+    annotation->set_end(annotation->end() + to_add);
+  }
+  // If there were never any annotations at or after the insertion point,
+  // make sure to still insert the new metadata from info_to_insert_.
+  if (!crossed_offset) {
+    InsertShiftedInfo(insertion_content, insertion_offset, indent_length,
+                      new_metadata);
   }
   if (is_text_format) {
-    TextFormat::PrintToString(metadata, &encoded_data);
+    TextFormat::PrintToString(new_metadata, encoded_data);
   } else {
-    metadata.SerializeToString(&encoded_data);
+    new_metadata.SerializeToString(encoded_data);
   }
 }
 
@@ -728,7 +840,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     if (indent_.empty()) {
       // No indent.  This makes things easier.
       target->insert(pos, data_);
-      UpdateMetadata(pos, data_.size());
+      UpdateMetadata(data_, pos, data_.size(), 0);
     } else {
       // Calculate how much space we need.
       int indent_size = 0;
@@ -738,7 +850,6 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
       // Make a hole for it.
       target->insert(pos, data_.size() + indent_size, '\0');
-      UpdateMetadata(pos, data_.size() + indent_size);
 
       // Now copy in the data.
       std::string::size_type data_pos = 0;
@@ -757,6 +868,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
         target_ptr += line_length;
         data_pos += line_length;
       }
+      UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 
       GOOGLE_CHECK_EQ(target_ptr,
                ::google::protobuf::string_as_array(target) + pos + data_.size() + indent_size);
@@ -773,16 +885,9 @@ const char* const CommandLineInterface::kPathSeparator = ":";
 #endif
 
 CommandLineInterface::CommandLineInterface()
-    : mode_(MODE_COMPILE),
-      print_mode_(PRINT_NONE),
-      error_format_(ERROR_FORMAT_GCC),
-      direct_dependencies_explicitly_set_(false),
-      direct_dependencies_violation_msg_(
-          kDefaultDirectDependenciesViolationMsg),
-      imports_in_descriptor_set_(false),
-      source_info_in_descriptor_set_(false),
-      disallow_services_(false) {
-}
+    : direct_dependencies_violation_msg_(
+          kDefaultDirectDependenciesViolationMsg) {}
+
 CommandLineInterface::~CommandLineInterface() {}
 
 void CommandLineInterface::RegisterGenerator(const std::string& flag_name,
@@ -811,6 +916,40 @@ void CommandLineInterface::AllowPlugins(const std::string& exe_name_prefix) {
   plugin_prefix_ = exe_name_prefix;
 }
 
+namespace {
+
+bool ContainsProto3Optional(const Descriptor* desc) {
+  for (int i = 0; i < desc->field_count(); i++) {
+    if (desc->field(i)->has_optional_keyword()) {
+      return true;
+    }
+  }
+  for (int i = 0; i < desc->nested_type_count(); i++) {
+    if (ContainsProto3Optional(desc->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ContainsProto3Optional(const FileDescriptor* file) {
+  if (file->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    for (int i = 0; i < file->message_type_count(); i++) {
+      if (ContainsProto3Optional(file->message_type(i))) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
+namespace {
+std::unique_ptr<SimpleDescriptorDatabase>
+PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name);
+}
+
 int CommandLineInterface::Run(int argc, const char* const argv[]) {
   Clear();
   switch (ParseArguments(argc, argv)) {
@@ -826,16 +965,38 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   std::unique_ptr<DiskSourceTree> disk_source_tree;
   std::unique_ptr<ErrorPrinter> error_collector;
   std::unique_ptr<DescriptorPool> descriptor_pool;
-  std::unique_ptr<SimpleDescriptorDatabase> descriptor_set_in_database;
+
+  // The SimpleDescriptorDatabases here are the constituents of the
+  // MergedDescriptorDatabase descriptor_set_in_database, so this vector is for
+  // managing their lifetimes. Its scope should match descriptor_set_in_database
+  std::vector<std::unique_ptr<SimpleDescriptorDatabase>>
+      databases_per_descriptor_set;
+  std::unique_ptr<MergedDescriptorDatabase> descriptor_set_in_database;
+
   std::unique_ptr<SourceTreeDescriptorDatabase> source_tree_database;
 
   // Any --descriptor_set_in FileDescriptorSet objects will be used as a
   // fallback to input_files on command line, so create that db first.
   if (!descriptor_set_in_names_.empty()) {
-    descriptor_set_in_database.reset(new SimpleDescriptorDatabase());
-    if (!PopulateSimpleDescriptorDatabase(descriptor_set_in_database.get())) {
-      return 1;
+    for (const std::string& name : descriptor_set_in_names_) {
+      std::unique_ptr<SimpleDescriptorDatabase> database_for_descriptor_set =
+          PopulateSingleSimpleDescriptorDatabase(name);
+      if (!database_for_descriptor_set) {
+        return EXIT_FAILURE;
+      }
+      databases_per_descriptor_set.push_back(
+          std::move(database_for_descriptor_set));
     }
+
+    std::vector<DescriptorDatabase*> raw_databases_per_descriptor_set;
+    raw_databases_per_descriptor_set.reserve(
+        databases_per_descriptor_set.size());
+    for (const std::unique_ptr<SimpleDescriptorDatabase>& db :
+         databases_per_descriptor_set) {
+      raw_databases_per_descriptor_set.push_back(db.get());
+    }
+    descriptor_set_in_database.reset(
+        new MergedDescriptorDatabase(raw_databases_per_descriptor_set));
   }
 
   if (proto_path_.empty()) {
@@ -869,10 +1030,21 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
   descriptor_pool->EnforceWeakDependencies(true);
-  if (!ParseInputFiles(descriptor_pool.get(), &parsed_files)) {
+  if (!ParseInputFiles(descriptor_pool.get(), disk_source_tree.get(),
+                       &parsed_files)) {
     return 1;
   }
 
+
+  for (auto fd : parsed_files) {
+    if (!AllowProto3Optional(*fd) && ContainsProto3Optional(fd)) {
+      std::cerr << fd->name()
+                << ": This file contains proto3 optional fields, but "
+                   "--experimental_allow_proto3_optional was not set."
+                << std::endl;
+      return 1;
+    }
+  }
 
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
@@ -884,7 +1056,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     for (int i = 0; i < output_directives_.size(); i++) {
       std::string output_location = output_directives_[i].output_location;
       if (!HasSuffixString(output_location, ".zip") &&
-          !HasSuffixString(output_location, ".jar")) {
+          !HasSuffixString(output_location, ".jar") &&
+          !HasSuffixString(output_location, ".srcjar")) {
         AddTrailingSlash(&output_location);
       }
 
@@ -997,54 +1170,77 @@ bool CommandLineInterface::InitializeDiskSourceTree(
   return true;
 }
 
-bool CommandLineInterface::PopulateSimpleDescriptorDatabase(
-    SimpleDescriptorDatabase* database) {
-  for (int i = 0; i < descriptor_set_in_names_.size(); i++) {
-    int fd;
-    do {
-      fd = open(descriptor_set_in_names_[i].c_str(), O_RDONLY | O_BINARY);
-    } while (fd < 0 && errno == EINTR);
-    if (fd < 0) {
-      std::cerr << descriptor_set_in_names_[i] << ": " << strerror(ENOENT)
-                << std::endl;
-      return false;
-    }
+namespace {
+std::unique_ptr<SimpleDescriptorDatabase>
+PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
+  int fd;
+  do {
+    fd = open(descriptor_set_name.c_str(), O_RDONLY | O_BINARY);
+  } while (fd < 0 && errno == EINTR);
+  if (fd < 0) {
+    std::cerr << descriptor_set_name << ": " << strerror(ENOENT) << std::endl;
+    return nullptr;
+  }
 
-    FileDescriptorSet file_descriptor_set;
-    bool parsed = file_descriptor_set.ParseFromFileDescriptor(fd);
-    if (close(fd) != 0) {
-      std::cerr << descriptor_set_in_names_[i] << ": close: " << strerror(errno)
-                << std::endl;
-      return false;
-    }
+  FileDescriptorSet file_descriptor_set;
+  bool parsed = file_descriptor_set.ParseFromFileDescriptor(fd);
+  if (close(fd) != 0) {
+    std::cerr << descriptor_set_name << ": close: " << strerror(errno)
+              << std::endl;
+    return nullptr;
+  }
 
-    if (!parsed) {
-      std::cerr << descriptor_set_in_names_[i] << ": Unable to parse."
-                << std::endl;
-      return false;
-    }
+  if (!parsed) {
+    std::cerr << descriptor_set_name << ": Unable to parse." << std::endl;
+    return nullptr;
+  }
 
-    for (int j = 0; j < file_descriptor_set.file_size(); j++) {
-      FileDescriptorProto previously_added_file_descriptor_proto;
-      if (database->FindFileByName(file_descriptor_set.file(j).name(),
-                                   &previously_added_file_descriptor_proto)) {
-        // already present - skip
-        continue;
-      }
-      if (!database->Add(file_descriptor_set.file(j))) {
-        return false;
-      }
+  std::unique_ptr<SimpleDescriptorDatabase> database{
+      new SimpleDescriptorDatabase()};
+
+  for (int j = 0; j < file_descriptor_set.file_size(); j++) {
+    FileDescriptorProto previously_added_file_descriptor_proto;
+    if (database->FindFileByName(file_descriptor_set.file(j).name(),
+                                 &previously_added_file_descriptor_proto)) {
+      // already present - skip
+      continue;
+    }
+    if (!database->Add(file_descriptor_set.file(j))) {
+      return nullptr;
     }
   }
-  return true;
+  return database;
 }
+
+}  // namespace
+
+bool CommandLineInterface::AllowProto3Optional(
+    const FileDescriptor& file) const {
+  // If the --experimental_allow_proto3_optional flag was set, we allow.
+  if (allow_proto3_optional_) return true;
+
+  // Whitelist all ads protos. Ads is an early adopter of this feature.
+  if (file.name().find("google/ads/googleads") != std::string::npos) {
+    return true;
+  }
+
+  // Whitelist all protos testing proto3 optional.
+  if (file.name().find("test_proto3_optional") != std::string::npos) {
+    return true;
+  }
+
+
+  return false;
+}
+
 
 bool CommandLineInterface::VerifyInputFilesInDescriptors(
     DescriptorDatabase* database) {
   for (const auto& input_file : input_files_) {
     FileDescriptorProto file_descriptor;
     if (!database->FindFileByName(input_file, &file_descriptor)) {
-      std::cerr << input_file << ": " << strerror(ENOENT) << std::endl;
+      std::cerr << "Could not find file in descriptor database: " << input_file
+                << ": " << strerror(ENOENT) << std::endl;
       return false;
     }
 
@@ -1056,18 +1252,35 @@ bool CommandLineInterface::VerifyInputFilesInDescriptors(
                 << std::endl;
       return false;
     }
+
   }
   return true;
 }
 
 bool CommandLineInterface::ParseInputFiles(
-    DescriptorPool* descriptor_pool,
+    DescriptorPool* descriptor_pool, DiskSourceTree* source_tree,
     std::vector<const FileDescriptor*>* parsed_files) {
 
-  // Track unused imports in all source files
-  for (const auto& input_file : input_files_) {
-    descriptor_pool->AddUnusedImportTrackFile(input_file);
+  if (!proto_path_.empty()) {
+    // Track unused imports in all source files that were loaded from the
+    // filesystem. We do not track unused imports for files loaded from
+    // descriptor sets as they may be programmatically generated in which case
+    // exerting this level of rigor is less desirable. We're also making the
+    // assumption that the initial parse of the proto from the filesystem
+    // was rigorous in checking unused imports and that the descriptor set
+    // being parsed was produced then and that it was subsequent mutations
+    // of that descriptor set that left unused imports.
+    //
+    // Note that relying on proto_path exclusively is limited in that we may
+    // be loading descriptors from both the filesystem and descriptor sets
+    // depending on the invocation. At least for invocations that are
+    // exclusively reading from descriptor sets, we can eliminate this failure
+    // condition.
+    for (const auto& input_file : input_files_) {
+      descriptor_pool->AddUnusedImportTrackFile(input_file);
+    }
   }
+
   bool result = true;
   // Parse each file.
   for (const auto& input_file : input_files_) {
@@ -1089,6 +1302,7 @@ bool CommandLineInterface::ParseInputFiles(
       result = false;
       break;
     }
+
 
     // Enforce --direct_dependencies
     if (direct_dependencies_explicitly_set_) {
@@ -1135,6 +1349,8 @@ void CommandLineInterface::Clear() {
   source_info_in_descriptor_set_ = false;
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
+  allow_proto3_optional_ = false;
+  deterministic_output_ = false;
 }
 
 bool CommandLineInterface::MakeProtoProtoPathRelative(
@@ -1154,7 +1370,8 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
         in_fallback_database) {
       return true;
     } else {
-      std::cerr << *proto << ": " << strerror(ENOENT) << std::endl;
+      std::cerr << "Could not make proto path relative: " << *proto << ": "
+                << strerror(ENOENT) << std::endl;
       return false;
     }
   }
@@ -1173,12 +1390,17 @@ bool CommandLineInterface::MakeProtoProtoPathRelative(
                    "comes first."
                 << std::endl;
       return false;
-    case DiskSourceTree::CANNOT_OPEN:
+    case DiskSourceTree::CANNOT_OPEN: {
       if (in_fallback_database) {
         return true;
       }
-      std::cerr << *proto << ": " << strerror(errno) << std::endl;
+      std::string error_str = source_tree->GetLastErrorMessage().empty()
+                                  ? strerror(errno)
+                                  : source_tree->GetLastErrorMessage();
+      std::cerr << "Could not map to virtual file: " << *proto << ": "
+                << error_str << std::endl;
       return false;
+    }
     case DiskSourceTree::NO_MAPPING: {
       // Try to interpret the path as a virtual path.
       std::string disk_file;
@@ -1321,13 +1543,36 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
     proto_path_.push_back(std::pair<std::string, std::string>("", "."));
   }
 
-  // Check some error cases.
-  bool decoding_raw = (mode_ == MODE_DECODE) && codec_type_.empty();
-  if (decoding_raw && !input_files_.empty()) {
-    std::cerr << "When using --decode_raw, no input files should be given."
+  // Check error cases that span multiple flag values.
+  bool missing_proto_definitions = false;
+  switch (mode_) {
+    case MODE_COMPILE:
+      missing_proto_definitions = input_files_.empty();
+      break;
+    case MODE_DECODE:
+      // Handle --decode_raw separately, since it requires that no proto
+      // definitions are specified.
+      if (codec_type_.empty()) {
+        if (!input_files_.empty() || !descriptor_set_in_names_.empty()) {
+          std::cerr
+              << "When using --decode_raw, no input files should be given."
               << std::endl;
-    return PARSE_ARGUMENT_FAIL;
-  } else if (!decoding_raw && input_files_.empty()) {
+          return PARSE_ARGUMENT_FAIL;
+        }
+        missing_proto_definitions = false;
+        break;  // only for --decode_raw
+      }
+      // --decode (not raw) is handled the same way as the rest of the modes.
+      PROTOBUF_FALLTHROUGH_INTENDED;
+    case MODE_ENCODE:
+    case MODE_PRINT:
+      missing_proto_definitions =
+          input_files_.empty() && descriptor_set_in_names_.empty();
+      break;
+    default:
+      GOOGLE_LOG(FATAL) << "Unexpected mode: " << mode_;
+  }
+  if (missing_proto_definitions) {
     std::cerr << "Missing input file." << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -1338,6 +1583,11 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
   }
   if (mode_ != MODE_COMPILE && !dependency_out_name_.empty()) {
     std::cerr << "Can only use --dependency_out=FILE when generating code."
+              << std::endl;
+    return PARSE_ARGUMENT_FAIL;
+  }
+  if (mode_ != MODE_ENCODE && deterministic_output_) {
+    std::cerr << "Can only use --deterministic_output with --encode."
               << std::endl;
     return PARSE_ARGUMENT_FAIL;
   }
@@ -1408,7 +1658,9 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
   if (*name == "-h" || *name == "--help" || *name == "--disallow_services" ||
       *name == "--include_imports" || *name == "--include_source_info" ||
       *name == "--version" || *name == "--decode_raw" ||
-      *name == "--print_free_field_numbers") {
+      *name == "--print_free_field_numbers" ||
+      *name == "--experimental_allow_proto3_optional" ||
+      *name == "--deterministic_output") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1609,11 +1861,15 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       std::cout << version_info_ << std::endl;
     }
     std::cout << "libprotoc " << internal::VersionString(PROTOBUF_VERSION)
-              << std::endl;
+              << PROTOBUF_VERSION_SUFFIX << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
 
   } else if (name == "--disallow_services") {
     disallow_services_ = true;
+
+
+  } else if (name == "--experimental_allow_proto3_optional") {
+    allow_proto3_optional_ = true;
 
   } else if (name == "--encode" || name == "--decode" ||
              name == "--decode_raw") {
@@ -1644,6 +1900,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     }
 
     codec_type_ = value;
+
+  } else if (name == "--deterministic_output") {
+    deterministic_output_ = true;
 
   } else if (name == "--error_format") {
     if (value == "gcc") {
@@ -1787,6 +2046,12 @@ void CommandLineInterface::PrintHelpText() {
          "must\n"
          "                              be defined in PROTO_FILES or their "
          "imports.\n"
+         "  --deterministic_output      When using --encode, ensure map fields "
+         "are\n"
+         "                              deterministically ordered. Note that"
+         "this order is not\n"
+         "                              canonical, and changes across builds"
+         "or releases of protoc.\n"
          "  --decode=MESSAGE_TYPE       Read a binary message of the given "
          "type from\n"
          "                              standard input and write it in text "
@@ -1915,6 +2180,28 @@ void CommandLineInterface::PrintHelpText() {
             << std::endl;
 }
 
+bool CommandLineInterface::EnforceProto3OptionalSupport(
+    const std::string& codegen_name, uint64 supported_features,
+    const std::vector<const FileDescriptor*>& parsed_files) const {
+  bool supports_proto3_optional =
+      supported_features & CodeGenerator::FEATURE_PROTO3_OPTIONAL;
+  if (!supports_proto3_optional) {
+    for (const auto fd : parsed_files) {
+      if (ContainsProto3Optional(fd)) {
+        std::cerr << fd->name()
+                  << ": is a proto3 file that contains optional fields, but "
+                     "code generator "
+                  << codegen_name
+                  << " hasn't been updated to support optional fields in "
+                     "proto3. Please ask the owner of this code generator to "
+                     "support proto3 optional.";
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 bool CommandLineInterface::GenerateOutput(
     const std::vector<const FileDescriptor*>& parsed_files,
     const OutputDirective& output_directive,
@@ -1949,6 +2236,12 @@ bool CommandLineInterface::GenerateOutput(
       }
       parameters.append(generator_parameters_[output_directive.name]);
     }
+    if (!EnforceProto3OptionalSupport(
+            output_directive.name,
+            output_directive.generator->GetSupportedFeatures(), parsed_files)) {
+      return false;
+    }
+
     if (!output_directive.generator->GenerateAll(parsed_files, parameters,
                                                  generator_context, &error)) {
       // Generator returned an error.
@@ -2086,8 +2379,10 @@ bool CommandLineInterface::GeneratePluginOutput(
       // We reset current_output to NULL first so that the old file is closed
       // before the new one is opened.
       current_output.reset();
-      current_output.reset(generator_context->OpenForInsert(
-          filename, output_file.insertion_point()));
+      current_output.reset(
+          generator_context->OpenForInsertWithGeneratedCodeInfo(
+              filename, output_file.insertion_point(),
+              output_file.generated_code_info()));
     } else if (!output_file.name().empty()) {
       // Starting a new file.  Open it.
       // We reset current_output to NULL first so that the old file is closed
@@ -2112,6 +2407,9 @@ bool CommandLineInterface::GeneratePluginOutput(
   if (!response.error().empty()) {
     // Generator returned an error.
     *error = response.error();
+    return false;
+  } else if (!EnforceProto3OptionalSupport(
+                 plugin_name, response.supported_features(), parsed_files)) {
     return false;
   }
 
@@ -2166,7 +2464,9 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
 
   if (mode_ == MODE_ENCODE) {
     // Output is binary.
-    if (!message->SerializePartialToZeroCopyStream(&out)) {
+    io::CodedOutputStream coded_out(&out);
+    coded_out.SetSerializationDeterministic(deterministic_output_);
+    if (!message->SerializePartialToCodedStream(&coded_out)) {
       std::cerr << "output: I/O error." << std::endl;
       return false;
     }
@@ -2223,12 +2523,20 @@ bool CommandLineInterface::WriteDescriptorSet(
   }
 
   io::FileOutputStream out(fd);
-  if (!file_set.SerializeToZeroCopyStream(&out)) {
-    std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
-              << std::endl;
-    out.Close();
-    return false;
+
+  {
+    io::CodedOutputStream coded_out(&out);
+    // Determinism is useful here because build outputs are sometimes checked
+    // into version control.
+    coded_out.SetSerializationDeterministic(true);
+    if (!file_set.SerializeToCodedStream(&coded_out)) {
+      std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
+                << std::endl;
+      out.Close();
+      return false;
+    }
   }
+
   if (!out.Close()) {
     std::cerr << descriptor_set_out_name_ << ": " << strerror(out.GetErrno())
               << std::endl;
@@ -2275,7 +2583,7 @@ namespace {
 // Nested Messages:
 // Note that it only stores the nested message type, iff the nested type is
 // either a direct child of the given descriptor, or the nested type is a
-// decendent of the given descriptor and all the nodes between the
+// descendant of the given descriptor and all the nodes between the
 // nested type and the given descriptor are group types. e.g.
 //
 // message Foo {

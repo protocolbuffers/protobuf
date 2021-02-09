@@ -42,9 +42,12 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/casts.h>
 
@@ -65,7 +68,7 @@ namespace protobuf {
 namespace internal {
 
 // This class is for internal use by the protocol buffer library and by
-// protocol-complier-generated message classes.  It must not be called
+// protocol-compiler-generated message classes.  It must not be called
 // directly by clients.
 //
 // This class contains code for implementing the binary protocol buffer
@@ -106,6 +109,11 @@ class PROTOBUF_EXPORT WireFormat {
   static bool ParseAndMergePartial(io::CodedInputStream* input,
                                    Message* message);
 
+  // This is meant for internal protobuf use (WireFormat is an internal class).
+  // This is the reflective implementation of the _InternalParse functionality.
+  static const char* _InternalParse(Message* msg, const char* ptr,
+                                    internal::ParseContext* ctx);
+
   // Serialize a message in protocol buffer wire format.
   //
   // Any embedded messages within the message must have their correct sizes
@@ -116,15 +124,15 @@ class PROTOBUF_EXPORT WireFormat {
   static void SerializeWithCachedSizes(const Message& message, int size,
                                        io::CodedOutputStream* output) {
     int expected_endpoint = output->ByteCount() + size;
-    output->SetCur(InternalSerializeWithCachedSizesToArray(
-        message, output->Cur(), output->EpsCopy()));
+    output->SetCur(
+        _InternalSerialize(message, output->Cur(), output->EpsCopy()));
     GOOGLE_CHECK_EQ(output->ByteCount(), expected_endpoint)
         << ": Protocol message serialized to a size different from what was "
            "originally expected.  Perhaps it was modified by another thread "
            "during serialization?";
   }
-  static uint8* InternalSerializeWithCachedSizesToArray(
-      const Message& message, uint8* target, io::EpsCopyOutputStream* stream);
+  static uint8* _InternalSerialize(const Message& message, uint8* target,
+                                   io::EpsCopyOutputStream* stream);
 
   // Implements Message::ByteSize() via reflection.  WARNING:  The result
   // of this method is *not* cached anywhere.  However, all embedded messages
@@ -237,7 +245,7 @@ class PROTOBUF_EXPORT WireFormat {
                               const Message& message);
 
   // Parse/serialize a MessageSet::Item group.  Used with messages that use
-  // opion message_set_wire_format = true.
+  // option message_set_wire_format = true.
   static bool ParseAndMergeMessageSetItem(io::CodedInputStream* input,
                                           Message* message);
   static void SerializeMessageSetItemWithCachedSizes(
@@ -275,6 +283,7 @@ class PROTOBUF_EXPORT WireFormat {
                                          Operation op, const char* field_name);
 
  private:
+  struct MessageSetParser;
   // Skip a MessageSet field.
   static bool SkipMessageSetField(io::CodedInputStream* input,
                                   uint32 field_number,
@@ -285,6 +294,12 @@ class PROTOBUF_EXPORT WireFormat {
                                            const FieldDescriptor* field,
                                            Message* message,
                                            io::CodedInputStream* input);
+  // Parses the value from the wire that belongs to tag.
+  static const char* _InternalParseAndMergeField(Message* msg, const char* ptr,
+                                                 internal::ParseContext* ctx,
+                                                 uint64 tag,
+                                                 const Reflection* reflection,
+                                                 const FieldDescriptor* field);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormat);
 };
@@ -380,8 +395,8 @@ inline size_t ComputeUnknownMessageSetItemsSize(
 
 // Compute the size of the UnknownFieldSet on the wire.
 PROTOBUF_EXPORT
-size_t ComputeUnknownFieldsSize(const InternalMetadataWithArena& metadata,
-                                size_t size, CachedSize* cached_size);
+size_t ComputeUnknownFieldsSize(const InternalMetadata& metadata, size_t size,
+                                CachedSize* cached_size);
 
 }  // namespace internal
 }  // namespace protobuf
