@@ -166,6 +166,38 @@ void PrintEnumVerifierLogic(io::Printer* printer,
       StrCat(enum_verifier_string, terminating_string).c_str());
 }
 
+std::string ToCamelCase(const std::string& input, bool lower_first) {
+  bool capitalize_next = !lower_first;
+  std::string result;
+  result.reserve(input.size());
+
+  for (char i : input) {
+    if (i == '_') {
+      capitalize_next = true;
+    } else if (capitalize_next) {
+      result.push_back(ToUpperCh(i));
+      capitalize_next = false;
+    } else {
+      result.push_back(i);
+    }
+  }
+
+  // Lower-case the first letter.
+  if (lower_first && !result.empty()) {
+    result[0] = ToLowerCh(result[0]);
+  }
+
+  return result;
+}
+
+char ToUpperCh(char ch) {
+  return (ch >= 'a' && ch <= 'z') ? (ch - 'a' + 'A') : ch;
+}
+
+char ToLowerCh(char ch) {
+  return (ch >= 'A' && ch <= 'Z') ? (ch - 'A' + 'a') : ch;
+}
+
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter) {
   GOOGLE_CHECK(!input.empty());
@@ -462,7 +494,7 @@ const char* KotlinTypeName(JavaType type) {
       // JavaTypes are added.
   }
 
-  LOG(FATAL) << "Can't get here.";
+  GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
 }
 
