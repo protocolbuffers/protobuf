@@ -85,6 +85,9 @@ class MessageGenerator {
   // Generate code to register all contained extensions with an
   // ExtensionRegistry.
   virtual void GenerateExtensionRegistrationCode(io::Printer* printer) = 0;
+  virtual void GenerateKotlinDsl(io::Printer* printer) const = 0;
+  virtual void GenerateKotlinMembers(io::Printer* printer) const = 0;
+  virtual void GenerateTopLevelKotlinMembers(io::Printer* printer) const = 0;
 
  protected:
   const Descriptor* descriptor_;
@@ -107,6 +110,9 @@ class ImmutableMessageGenerator : public MessageGenerator {
 
   // Returns an estimate of the number of bytes the printed code will compile to
   virtual int GenerateStaticVariableInitializers(io::Printer* printer);
+  void GenerateKotlinDsl(io::Printer* printer) const override;
+  void GenerateKotlinMembers(io::Printer* printer) const override;
+  void GenerateTopLevelKotlinMembers(io::Printer* printer) const override;
 
  private:
   void GenerateFieldAccessorTable(io::Printer* printer, int* bytecode_estimate);
@@ -128,6 +134,7 @@ class ImmutableMessageGenerator : public MessageGenerator {
   void GenerateEqualsAndHashCode(io::Printer* printer);
   void GenerateParser(io::Printer* printer);
   void GenerateParsingConstructor(io::Printer* printer);
+  void GenerateKotlinExtensions(io::Printer* printer) const;
   void GenerateAnyMethods(io::Printer* printer);
 
   Context* context_;

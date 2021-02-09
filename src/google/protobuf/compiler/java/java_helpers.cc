@@ -90,6 +90,17 @@ const std::unordered_set<std::string>* kReservedNames =
         "transient",  "try",          "void",      "volatile",   "while",
     });
 
+// Names that should be avoided as field names in Kotlin.
+// All Kotlin hard keywords are in this list.
+const std::unordered_set<std::string>* kKotlinForbiddenNames =
+    new std::unordered_set<std::string>({
+        "as",    "as?",   "break", "class",  "continue",  "do",     "else",
+        "false", "for",   "fun",   "if",     "in",        "!in",    "interface",
+        "is",    "!is",   "null",  "object", "package",   "return", "super",
+        "this",  "throw", "true",  "try",    "typealias", "typeof", "val",
+        "var",   "when",  "while",
+    });
+
 bool IsForbidden(const std::string& field_name) {
   for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
     if (field_name == kForbiddenWordList[i]) {
@@ -216,6 +227,10 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   return name;
 }
 
+bool IsForbiddenKotlin(const std::string& field_name) {
+  return kKotlinForbiddenNames->find(field_name) !=
+         kKotlinForbiddenNames->end();
+}
 
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
   return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
@@ -420,6 +435,35 @@ const char* BoxedPrimitiveTypeName(JavaType type) {
 
 const char* BoxedPrimitiveTypeName(const FieldDescriptor* descriptor) {
   return BoxedPrimitiveTypeName(GetJavaType(descriptor));
+}
+
+const char* KotlinTypeName(JavaType type) {
+  switch (type) {
+    case JAVATYPE_INT:
+      return "kotlin.Int";
+    case JAVATYPE_LONG:
+      return "kotlin.Long";
+    case JAVATYPE_FLOAT:
+      return "kotlin.Float";
+    case JAVATYPE_DOUBLE:
+      return "kotlin.Double";
+    case JAVATYPE_BOOLEAN:
+      return "kotlin.Boolean";
+    case JAVATYPE_STRING:
+      return "kotlin.String";
+    case JAVATYPE_BYTES:
+      return "com.google.protobuf.ByteString";
+    case JAVATYPE_ENUM:
+      return NULL;
+    case JAVATYPE_MESSAGE:
+      return NULL;
+
+      // No default because we want the compiler to complain if any new
+      // JavaTypes are added.
+  }
+
+  LOG(FATAL) << "Can't get here.";
+  return NULL;
 }
 
 
