@@ -58,6 +58,7 @@
   * js/binary/utils.js: Fix jspb.utils.joinUnsignedDecimalString to work with negative bitsLow and low but non-zero bitsHigh parameter. (#8170)
 
   PHP
+  * Added support for PHP 8. (#8105)
   * unregister INI entries and fix invalid read on shutdown (#8042)
   * Fix PhpDoc comments for message accessors to include "|null". (#8136)
   * fix: convert native PHP floats to single precision (#8187)
@@ -68,9 +69,13 @@
   * Updated upb to allow nonzero offset minutes in JSON timestamps. (#8258)
 
   Ruby
+  * Added support for Ruby 3. (#8184)
+  * Rewrote the data storage layer to be based on upb_msg objects from the
+    upb library. This should lead to much better parsing performance,
+    particularly for large messages. (#8184).
   * Fill out JRuby support (#7923)
-  * [Ruby] Fix: (SIGSEGV) gRPC-Ruby issue on Windows. memory alloc infinite recursion/run out of memory (#8195)
-  * Ported Ruby extension to upb_msg (#8184)
+  * [Ruby] Fix: (SIGSEGV) gRPC-Ruby issue on Windows. memory alloc infinite
+    recursion/run out of memory (#8195)
   * Fix jruby support to handle messages nested more than 1 level deep (#8194)
 
   Java
