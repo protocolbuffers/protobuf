@@ -120,12 +120,12 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 // Assuming windows is always little-endian.
 #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
 #define PROTOBUF_LITTLE_ENDIAN 1
 #endif
-#if _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
+#if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
 // If MSVC has "/RTCc" set, it will complain about truncating casts at
 // runtime.  This file contains some intentional truncating casts.
 #pragma runtime_checks("c", off)
