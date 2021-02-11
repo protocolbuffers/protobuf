@@ -615,7 +615,7 @@
 #define PROTOBUF_PRAGMA_INIT_SEG
 #endif
 
-#if defined(__has_attribute)
+#if defined(__has_attribute) && !defined(__MINGW32__)
 #if __has_attribute(weak)
 #define PROTOBUF_ATTRIBUTE_WEAK __attribute__((weak))
 #endif
