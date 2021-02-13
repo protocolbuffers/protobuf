@@ -43,7 +43,7 @@ struct LazyMessage
 
 	LazyMessage& operator = (nullptr_t n)
 	{
-		Destroy();
+		ptr_ = 0;
 		return *this;
 	}
 
