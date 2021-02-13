@@ -1,4 +1,6 @@
 #pragma once
+#include <google/protobuf/arena.h>
+namespace google { namespace protobuf {
 
 template <typename MessageType>
 struct LazyMessage
@@ -15,7 +17,39 @@ struct LazyMessage
 		ptr_ = nullptr;
 	}
 
-	LazyMessage()
+	constexpr LazyMessage(nullptr_t n)
+	{
+		ptr_ = nullptr;
+	}
+
+	~LazyMessage()
+	{
+		Destroy();
+	}
+
+	LazyMessage& operator = (nullptr_t n)
+	{
+		Destroy();
+		return *this;
+	}
+
+	LazyMessage& operator = (MessageType* m)
+	{
+		message_ = m;
+		return *this;
+	}
+
+	bool operator == (nullptr_t other) const
+	{
+		return ptr_ == 0;
+	}
+
+	bool operator != (nullptr_t other) const
+	{
+		return ptr_ != 0;
+	}
+
+	void Destroy()
 	{
 		if (ptr_ & 1)
 		{
@@ -26,13 +60,22 @@ struct LazyMessage
 		{
 			delete lazy_message_;
 		}
+		ptr_ = nullptr;
 	}
 
-	LazyMessage* GetMessage()
+	MessageType* GetMessage(Arena* arena)
 	{
 		if (ptr_ & 1)
 		{
-			MessageType* new_message = new MessageType();
+			MessageType* new_message = nullptr;
+			if (arena != nullptr)
+			{
+				new_message = arena->CreateMaybeMessage< MessageType>();
+			}
+			else
+			{
+				new_message = new MessageType();
+			}
 			std::string* str = (std::string*)(ptr_ & ~1);
 			new_message->ParseFromString(*str);
 			message_ = new_message;
@@ -60,4 +103,27 @@ struct LazyMessage
 			return message_->ByteSizeLong();
 		}
 	}
+
+	void Clear()
+	{
+		if (ptr_ & 1)
+		{
+			std::string* str = (std::string*)(ptr_ & ~1);
+			str->clear();
+		}
+		else
+		{
+			lazy_message_->Clear();
+		}
+	}
+
+	LazyMessage* Release(Arena* arena)
+	{
+		LazyMessage* m = GetMessage(arena);
+		ptr_ = nullptr;
+		return m;
+	}
+
 };
+
+}}
