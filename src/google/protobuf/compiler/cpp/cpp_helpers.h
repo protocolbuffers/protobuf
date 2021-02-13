@@ -346,6 +346,12 @@ inline bool IsLazy(const FieldDescriptor* field, const Options& options) {
          !options.opensource_runtime;
 }
 
+inline bool IsLazyF(const FieldDescriptor* field, const Options& options) {
+    return field->options().lazy() && !field->is_repeated() &&
+        field->type() == FieldDescriptor::TYPE_MESSAGE &&
+        GetOptimizeFor(field->file(), options) != FileOptions::LITE_RUNTIME;
+}
+
 inline bool IsFieldUsed(const FieldDescriptor* field, const Options& options) {
   return true;
 }

@@ -61,6 +61,16 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["type"] = FieldMessageTypeName(descriptor, options);
   (*variables)["casted_member"] = ReinterpretCast(
       (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
+  if (IsLazyF(descriptor, options))
+  {
+      (*variables)["casted_lazy_member"] = ReinterpretCast(
+          (*variables)["type"] + "*", (*variables)["name"] + "_.GetMessage(GetArena())", implicit_weak);
+  }
+  else
+  {
+      (*variables)["casted_lazy_member"] = ReinterpretCast(
+          (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
+  }
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_default_instance_ptr"] =
@@ -225,8 +235,9 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   }
   format(
       "  }\n"
-      "  return $casted_member$;\n"
-      "}\n"
+      "  return $casted_lazy_member$;\n"
+      "}\n");
+  format(
       "inline $type$* $classname$::mutable_$name$() {\n"
       "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
