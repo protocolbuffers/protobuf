@@ -65,11 +65,15 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   {
       (*variables)["casted_lazy_member"] = ReinterpretCast(
           (*variables)["type"] + "*", (*variables)["name"] + "_.GetMessage(GetArena())", implicit_weak);
+      (*variables)["delete_field"] = (*variables)["name"] + "_.Delete()";
+      (*variables)["field_lazy_member"] = (*variables)["field_member"] + "_.GetMessage(GetArena())";
   }
   else
   {
       (*variables)["casted_lazy_member"] = ReinterpretCast(
           (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
+      (*variables)["delete_field"] = "delete " + (*variables)["name"];
+      (*variables)["field_lazy_member"] = (*variables)["field_member"];
   }
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
@@ -108,7 +112,14 @@ void MessageFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   if (implicit_weak_field_) {
     format("::$proto_ns$::MessageLite* $name$_;\n");
   } else {
-    format("$type$* $name$_;\n");
+    if (IsLazyF(descriptor_, this->options_))
+    {
+        format("::$proto_ns$::LazyMessage<$type$> $name$_;\n");
+    }
+    else
+    {
+        format("$type$* $name$_;\n");
+    }
   }
 }
 
@@ -166,7 +177,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline const $type$& $classname$::_internal_$name$() const {\n"
       "$type_reference_function$"
-      "  const $type$* p = $casted_member$;\n"
+      "  const $type$* p = $casted_lazy_member$;\n"
       "  return p != nullptr ? *p : reinterpret_cast<const $type$&>(\n"
       "      $type_default_instance$);\n"
       "}\n"
@@ -179,12 +190,25 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline void $classname$::unsafe_arena_set_allocated_$name$(\n"
       "    $type$* $name$) {\n"
-      "$annotate_accessor$"
-      // If we're not on an arena, free whatever we were holding before.
-      // (If we are on arena, we can just forget the earlier pointer.)
-      "  if (GetArena() == nullptr) {\n"
-      "    delete reinterpret_cast<::$proto_ns$::MessageLite*>($name$_);\n"
-      "  }\n");
+      "$annotate_accessor$");
+  if (IsLazyF(descriptor_, options_))
+  {
+      format(
+          // If we're not on an arena, free whatever we were holding before.
+          // (If we are on arena, we can just forget the earlier pointer.)
+          "  if (GetArena() == nullptr) {\n"
+          "    $delete_field$;\n"
+          "  }\n");
+  }
+  else
+  {
+      format(
+          // If we're not on an arena, free whatever we were holding before.
+          // (If we are on arena, we can just forget the earlier pointer.)
+          "  if (GetArena() == nullptr) {\n"
+          "    delete reinterpret_cast<::$proto_ns$::MessageLite*>($name$_);\n"
+          "  }\n");
+  }
   if (implicit_weak_field_) {
     format(
         "  $name$_ = "
@@ -205,7 +229,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline $type$* $classname$::$release_name$() {\n"
       "$type_reference_function$"
       "  $clear_hasbit$\n"
-      "  $type$* temp = $casted_member$;\n"
+      "  $type$* temp = $casted_lazy_member$;\n"
       "  $name$_ = nullptr;\n"
       "  if (GetArena() != nullptr) {\n"
       "    temp = ::$proto_ns$::internal::DuplicateIfNonNull(temp);\n"
@@ -217,7 +241,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "$type_reference_function$"
       "  $clear_hasbit$\n"
-      "  $type$* temp = $casted_member$;\n"
+      "  $type$* temp = $casted_lazy_member$;\n"
       "  $name$_ = nullptr;\n"
       "  return temp;\n"
       "}\n");
@@ -251,12 +275,15 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "$annotate_accessor$"
       "  ::$proto_ns$::Arena* message_arena = GetArena();\n");
   format("  if (message_arena == nullptr) {\n");
-  if (IsCrossFileMessage(descriptor_)) {
+
+  if (IsCrossFileMessage(descriptor_) && !IsLazyF(descriptor_, options_)) {
     format(
         "    delete reinterpret_cast< ::$proto_ns$::MessageLite*>($name$_);\n");
-  } else {
-    format("    delete $name$_;\n");
   }
+  else {
+    format("    $delete_field$;\n");
+  }
+
   format(
       "  }\n"
       "  if ($name$) {\n");
@@ -301,7 +328,14 @@ void MessageFieldGenerator::GenerateInternalAccessorDeclarations(
         "static ::$proto_ns$::MessageLite* mutable_$name$("
         "$classname$* msg);\n");
   } else {
-    format("static const $type$& $name$(const $classname$* msg);\n");
+      if (IsLazyF(descriptor_, options_))
+      {
+          format("static const ::$proto_ns$::LazyMessage<$type$>& $name$(const $classname$* msg);\n");
+      }
+      else
+      {
+          format("static const $type$& $name$(const $classname$* msg);\n");
+      }
   }
 }
 
@@ -352,11 +386,23 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
     // This inline accessor directly returns member field and is used in
     // Serialize such that AFDO profile correctly captures access information to
     // message fields under serialize.
-    format(
-        "const $type$&\n"
-        "$classname$::_Internal::$name$(const $classname$* msg) {\n"
-        "  return *msg->$field_member$;\n"
-        "}\n");
+      if (IsLazyF(descriptor_, options_))
+      {
+          format(
+              "const ::$proto_ns$::LazyMessage<$type$>&\n"
+              "$classname$::_Internal::$name$(const $classname$* msg) {\n"
+              "  return msg->$field_member$;\n"
+              "}\n");
+      }
+      else
+      {
+          format(
+              "const $type$&\n"
+              "$classname$::_Internal::$name$(const $classname$* msg) {\n"
+              "  return *msg->$field_member$;\n"
+              "}\n");
+      }
+
   }
 }
 
@@ -373,7 +419,14 @@ void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
         "}\n"
         "$name$_ = nullptr;\n");
   } else {
-    format("if ($name$_ != nullptr) $name$_->Clear();\n");
+    if (IsLazyF(descriptor_, options_))
+    {
+        format("if ($name$_ != nullptr) $name$_.Clear();\n");
+    }
+    else
+    {
+        format("if ($name$_ != nullptr) $name$_->Clear();\n");
+    }
   }
 }
 
@@ -387,13 +440,23 @@ void MessageFieldGenerator::GenerateMessageClearingCode(
     // NULL. Thus on clear, we need to delete the object.
     format(
         "if (GetArena() == nullptr && $name$_ != nullptr) {\n"
-        "  delete $name$_;\n"
+        "  $delete_field$;\n"
         "}\n"
         "$name$_ = nullptr;\n");
   } else {
-    format(
-        "$DCHK$($name$_ != nullptr);\n"
-        "$name$_->Clear();\n");
+    if (IsLazyF(descriptor_, options_))
+    {
+        format(
+            "$DCHK$($name$_ != nullptr);\n"
+            "$name$_.Clear();\n");
+    }
+    else
+    {
+        format(
+            "$DCHK$($name$_ != nullptr);\n"
+            "$name$_->Clear();\n");
+    }
+
   }
 }
 
@@ -431,7 +494,7 @@ void MessageFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
     // care when handling them.
     format("if (this != internal_default_instance()) ");
   }
-  format("delete $name$_;\n");
+  format("$delete_field$;\n");
 }
 
 void MessageFieldGenerator::GenerateConstructorCode(
@@ -448,8 +511,16 @@ void MessageFieldGenerator::GenerateCopyConstructorCode(
 
   Formatter format(printer, variables_);
   format(
-      "if (from._internal_has_$name$()) {\n"
-      "  $name$_ = new $type$(*from.$name$_);\n"
+      "if (from._internal_has_$name$()) {\n");
+  if (IsLazyF(descriptor_, options_))
+  {
+      format("  $name$_.CopyFrom(from.$name$_);\n");
+  }
+  else
+  {
+      format("  $name$_ = new $type$(*from.$name$_);\n");
+  }
+  format(
       "} else {\n"
       "  $name$_ = nullptr;\n"
       "}\n");
@@ -471,10 +542,20 @@ void MessageFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
-  format(
-      "total_size += $tag_size$ +\n"
-      "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
-      "    *$field_member$);\n");
+  if (IsLazyF(descriptor_, options_))
+  {
+      format(
+          "total_size += $tag_size$ +\n"
+          "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
+          "    $field_member$);\n");
+  }
+  else
+  {
+      format(
+          "total_size += $tag_size$ +\n"
+          "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
+          "    *$field_member$);\n");
+  }
 }
 
 void MessageFieldGenerator::GenerateConstinitInitializer(
@@ -536,7 +617,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "  if (_internal_has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
-      "      $type$* temp = $field_member$;\n"
+      "      $type$* temp = $field_lazy_member$;\n"
       "    if (GetArena() != nullptr) {\n"
       "      temp = ::$proto_ns$::internal::DuplicateIfNonNull(temp);\n"
       "    }\n"
@@ -564,7 +645,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       ":$full_name$)\n"
       "  if (_internal_has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
-      "    $type$* temp = $field_member$;\n"
+      "    $type$* temp = $field_lazy_member$;\n"
       "    $field_member$ = nullptr;\n"
       "    return temp;\n"
       "  } else {\n"
@@ -605,10 +686,20 @@ void MessageOneofFieldGenerator::GenerateClearingCode(
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
-  format(
-      "if (GetArena() == nullptr) {\n"
-      "  delete $field_member$;\n"
-      "}\n");
+  if (IsLazyF(descriptor_, options_))
+  {
+      format(
+          "if (GetArena() == nullptr) {\n"
+          "  delete $field_member$;\n"
+          "}\n");
+  }
+  else
+  {
+      format(
+          "if (GetArena() == nullptr) {\n"
+          "  $field_member$.Delete();\n"
+          "}\n");
+  }
 }
 
 void MessageOneofFieldGenerator::GenerateMessageClearingCode(

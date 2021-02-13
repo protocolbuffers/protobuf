@@ -23,9 +23,22 @@ struct LazyMessage
 		ptr_ = 0;
 	}
 
+	void CopyFrom(const LazyMessage& m)
+	{
+		if (m.ptr_ & 1)
+		{
+			lazy_message_ = new std::string(*(const std::string*)(m.ptr_ & ~1));
+			ptr_ |= 1; 
+		}
+		else
+		{
+			message_ = new MessageType(*m.message_);
+		}
+	}
+
 	~LazyMessage()
 	{
-		Destroy();
+		Delete();
 	}
 
 	LazyMessage& operator = (nullptr_t n)
@@ -50,7 +63,7 @@ struct LazyMessage
 		return ptr_ != 0;
 	}
 
-	void Destroy()
+	void Delete()
 	{
 		if (ptr_ & 1)
 		{
@@ -64,14 +77,14 @@ struct LazyMessage
 		ptr_ = 0;
 	}
 
-	MessageType* GetMessage(Arena* arena)
+	MessageType* GetMessage(Arena* arena) const
 	{
 		if (ptr_ & 1)
 		{
 			MessageType* new_message = CreateMessage(arena);
 			std::string* str = (std::string*)(ptr_ & ~1);
 			new_message->ParseFromString(*str);
-			message_ = new_message;
+			const_cast<LazyMessage*>(this)->message_ = new_message;
 		}
 		return message_;
 	}
@@ -107,6 +120,19 @@ struct LazyMessage
 		}
 	}
 
+	int GetCachedSize() const
+	{
+		if (ptr_ & 1)
+		{
+			std::string* str = (std::string*)(ptr_ & ~1);
+			return str->length();
+		}
+		else
+		{
+			return message_->GetCachedSize();
+		}
+	}
+
 	void Clear()
 	{
 		if (ptr_ & 1)
@@ -116,7 +142,7 @@ struct LazyMessage
 		}
 		else
 		{
-			lazy_message_->Clear();
+			message_->Clear();
 		}
 	}
 

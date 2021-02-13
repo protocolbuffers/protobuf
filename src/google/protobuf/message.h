@@ -122,7 +122,7 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/port.h>
-
+#include <google/protobuf/lazy_message.h>
 
 #define GOOGLE_PROTOBUF_HAS_ONEOF
 #define GOOGLE_PROTOBUF_HAS_ARENAS
