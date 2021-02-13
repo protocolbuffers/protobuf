@@ -5,7 +5,7 @@ Protobuf for the JVM uses reflection and some of its target classes are not poss
 Historically, there were good reasons to use reflection based on APIs that were published effectively requiring them, and this situation is unlikely to change.
 
 [The Lite version of protobuf for the JVM](https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md)
-avoids reflection and may be better suited for use with AOT compilation tooling. This Lite version was originally targetted for use on Android which has similar AOT compilation
+avoids reflection and may be better suited for use with AOT compilation tooling. This Lite version was originally targeted for use on Android which has similar AOT compilation
 goals as GraalVM's native-image tool.
 
 ## GraalVM native-image
