@@ -1,6 +1,8 @@
 #pragma once
 #include <google/protobuf/arena.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/parse_context.h>
+
 namespace google { namespace protobuf {
 
 template <typename MessageType>
@@ -100,6 +102,11 @@ struct LazyMessage
 			m = message_ = CreateMessage(arena);
 		}
 		return m;
+	}
+
+	const char* _InternalParse(const char* ptr, internal::ParseContext* ctx)
+	{
+		return ptr;
 	}
 
 	void Parse(std::string&& content)

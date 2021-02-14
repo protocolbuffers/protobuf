@@ -1555,17 +1555,17 @@ class ParseLoopGenerator {
               format_("ptr = ctx->ParseMessage(&$1$_, ptr);\n",
                       FieldName(field));
             }
-          } else if (IsLazy(field, options_)) {
+          } else if (IsLazyF(field, options_)) {
             if (field->real_containing_oneof()) {
               format_(
                   "if (!_internal_has_$1$()) {\n"
                   "  clear_$2$();\n"
                   "  $2$_.$1$_ = ::$proto_ns$::Arena::CreateMessage<\n"
-                  "      $pi_ns$::LazyField>(GetArena());\n"
+                  "      $3$>(GetArena());\n"
                   "  set_has_$1$();\n"
                   "}\n"
-                  "ptr = ctx->ParseMessage($2$_.$1$_, ptr);\n",
-                  FieldName(field), field->containing_oneof()->name());
+                  "ptr = ctx->ParseMessage(&$2$_.$1$_, ptr);\n",
+                  FieldName(field), field->containing_oneof()->name(), ClassName(field->message_type()));
             } else if (HasHasbit(field)) {
               format_(
                   "_Internal::set_has_$1$(&$has_bits$);\n"
