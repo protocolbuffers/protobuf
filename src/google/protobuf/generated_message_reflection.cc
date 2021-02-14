@@ -212,6 +212,43 @@ inline void CheckInvalidAccess(const internal::ReflectionSchema& schema,
 
 // ===================================================================
 
+static bool IsLazyField(const Message& msg, const FieldDescriptor* field)
+{
+    return (((uintptr_t)&msg) & 1) && field->options().lazy();
+}
+
+template <typename  MessagePtrType>
+static MessagePtrType& GetLazyMessage(const Message& message, MessagePtrType& msg, const FieldDescriptor* field)
+{
+    if (IsLazyField(*msg, field))
+    {
+        return (MessagePtrType&)((LazyMessageBase&)*msg).GetLazyMessage(message, *field);
+    }
+    else
+    {
+        return msg;
+    }
+}
+
+typedef const Message* MessageCPtr;
+
+template <>
+const MessageCPtr& Reflection::GetRaw<MessageCPtr>(const Message& message,
+    const FieldDescriptor* field) const {
+    GOOGLE_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
+        << "Field = " << field->full_name();
+    MessageCPtr msg = GetConstRefAtOffset<MessageCPtr>(message, schema_.GetFieldOffset(field));
+    return GetLazyMessage(message, msg, field);
+}
+
+typedef Message* MessagePtr;
+template <>
+MessagePtr* Reflection::MutableRaw<MessagePtr>(Message* message,
+    const FieldDescriptor* field) const {
+    MessagePtr* msg = GetPointerAtOffset<MessagePtr>(message, schema_.GetFieldOffset(field));
+    return &GetLazyMessage(*message, *msg, field);
+}
+
 Reflection::Reflection(const Descriptor* descriptor,
                        const internal::ReflectionSchema& schema,
                        const DescriptorPool* pool, MessageFactory* factory)
@@ -1949,43 +1986,11 @@ const Type& Reflection::GetRaw(const Message& message,
   return GetConstRefAtOffset<Type>(message, schema_.GetFieldOffset(field));
 }
 
-static bool IsLazyField(const Message& msg, const FieldDescriptor* field)
-{
-    return (((uintptr_t)&msg) & 1) && field->options().lazy();
-}
-
-static Message* GetLazyMessage(const Message& message, const Message& msg, const FieldDescriptor* field)
-{
-    if (IsLazyField(msg, field))
-    {
-        return ((LazyMessageBase&)msg).GetLazyMessage(message, *field);
-    }
-    else
-    {
-        return const_cast<Message*>(&msg);
-    }
-}
-
-template <>
-const Message& Reflection::GetRaw<Message>(const Message& message,
-    const FieldDescriptor* field) const {
-    GOOGLE_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
-        << "Field = " << field->full_name();
-    const Message& msg = GetConstRefAtOffset<Message>(message, schema_.GetFieldOffset(field));
-    return *GetLazyMessage(message, msg, field);
-}
 
 template <typename Type>
 Type* Reflection::MutableRaw(Message* message,
                              const FieldDescriptor* field) const {
   return GetPointerAtOffset<Type>(message, schema_.GetFieldOffset(field));
-}
-
-template <>
-Message* Reflection::MutableRaw<Message>(Message* message,
-    const FieldDescriptor* field) const {
-    Message* msg = GetPointerAtOffset<Message>(message, schema_.GetFieldOffset(field));
-    return GetLazyMessage(*message, *msg, field);
 }
 
 const uint32* Reflection::GetHasBits(const Message& message) const {

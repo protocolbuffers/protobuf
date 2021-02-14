@@ -4,7 +4,7 @@
 
 namespace google { namespace protobuf {
 
-Message* LazyMessageBase::GetLazyMessage(const Message& m, const FieldDescriptor& descriptor)
+Message*& LazyMessageBase::GetLazyMessage(const Message& m, const FieldDescriptor& descriptor)
 {
 	if (IsLazy())
 	{
@@ -16,7 +16,7 @@ Message* LazyMessageBase::GetLazyMessage(const Message& m, const FieldDescriptor
 		SetNull();
 		ptr_ = (uintptr_t)new_message;
 	}
-	return (Message*)ptr_;
+	return (Message*&)ptr_;
 }
 
 }}

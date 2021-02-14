@@ -39,7 +39,7 @@ struct LazyMessageBase
 		ptr_ = 0;
 	}
 
-	Message* GetLazyMessage(const Message& m, const FieldDescriptor& descriptor);
+	Message*& GetLazyMessage(const Message& m, const FieldDescriptor& descriptor);
 };
 
 template <typename MessageType>
@@ -63,7 +63,7 @@ struct LazyMessage : LazyMessageBase
 		}
 		else
 		{
-			GOOGLE_DCHECK(m.message_ != nullptr);
+			GOOGLE_DCHECK(!m.IsNull());
 			SetMessage(new MessageType(*m.GetMessage()));
 		}
 	}
@@ -202,7 +202,6 @@ struct LazyMessage : LazyMessageBase
 
 	void SetMessage(MessageType* m)
 	{
-		GOOGLE_DCHECK(ptr_ == 0);
 		ptr_ = (uintptr_t)m;
 	}
 
