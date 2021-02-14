@@ -209,7 +209,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
           // If we're not on an arena, free whatever we were holding before.
           // (If we are on arena, we can just forget the earlier pointer.)
           "  if (GetArena() == nullptr) {\n"
-          "    $delete_field$;\n"
+          "    $name$_.Delete<true>();\n"
           "  }\n");
   }
   else

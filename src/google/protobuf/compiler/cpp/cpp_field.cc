@@ -111,7 +111,7 @@ void SetCommonOneofFieldVariables(
       StrCat(prefix, (*variables)["name"], "_");
   if (IsLazyF(descriptor, options))
   {
-      (*variables)["field_lazy_member"] = (*variables)["field_member"] + ".GetMessage(GetArena())";
+      (*variables)["field_lazy_member"] = (*variables)["field_member"] + ".GetLazyMessage(GetArena())";
   }
   else
   {
