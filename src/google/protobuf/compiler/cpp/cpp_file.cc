@@ -454,7 +454,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
   // enough. However, the empty destructor fails to be elided in some
   // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
   // there just to improve performance and binary size in these builds.
-  format("PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY $1$ $2$;\n",
+  format("PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT $1$ $2$;\n",
          DefaultInstanceType(generator->descriptor_, options_),
          DefaultInstanceName(generator->descriptor_, options_));
 
