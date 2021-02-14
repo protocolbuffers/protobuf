@@ -35,7 +35,7 @@ struct ApiDefaultTypeInternal {
     Api _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY ApiDefaultTypeInternal _Api_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ApiDefaultTypeInternal _Api_default_instance_;
 constexpr Method::Method(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : options_()
@@ -54,7 +54,7 @@ struct MethodDefaultTypeInternal {
     Method _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY MethodDefaultTypeInternal _Method_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT MethodDefaultTypeInternal _Method_default_instance_;
 constexpr Mixin::Mixin(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
@@ -67,7 +67,7 @@ struct MixinDefaultTypeInternal {
     Mixin _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY MixinDefaultTypeInternal _Mixin_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT MixinDefaultTypeInternal _Mixin_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fapi_2eproto[3];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fapi_2eproto = nullptr;

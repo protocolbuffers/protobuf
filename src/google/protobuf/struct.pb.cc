@@ -27,7 +27,7 @@ struct Struct_FieldsEntry_DoNotUseDefaultTypeInternal {
     Struct_FieldsEntry_DoNotUse _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT Struct_FieldsEntry_DoNotUseDefaultTypeInternal _Struct_FieldsEntry_DoNotUse_default_instance_;
 constexpr Struct::Struct(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : fields_(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}){}
@@ -39,7 +39,7 @@ struct StructDefaultTypeInternal {
     Struct _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY StructDefaultTypeInternal _Struct_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT StructDefaultTypeInternal _Struct_default_instance_;
 constexpr Value::Value(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : _oneof_case_{}{}
@@ -51,7 +51,7 @@ struct ValueDefaultTypeInternal {
     Value _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY ValueDefaultTypeInternal _Value_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ValueDefaultTypeInternal _Value_default_instance_;
 constexpr ListValue::ListValue(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : values_(){}
@@ -63,7 +63,7 @@ struct ListValueDefaultTypeInternal {
     ListValue _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY ListValueDefaultTypeInternal _ListValue_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ListValueDefaultTypeInternal _ListValue_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fstruct_2eproto[4];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto[1];
