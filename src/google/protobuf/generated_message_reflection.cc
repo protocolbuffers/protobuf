@@ -1559,7 +1559,6 @@ const Message* Reflection::GetDefaultMessageInstance(
   return message_factory_->GetPrototype(field->message_type());
 }
 
-
 const Message& Reflection::GetMessage(const Message& message,
                                       const FieldDescriptor* field,
                                       MessageFactory* factory) const {
@@ -2003,7 +2002,6 @@ const Type& Reflection::GetRaw(const Message& message,
       << "Field = " << field->full_name();
   return GetConstRefAtOffset<Type>(message, schema_.GetFieldOffset(field));
 }
-
 
 template <typename Type>
 Type* Reflection::MutableRaw(Message* message,

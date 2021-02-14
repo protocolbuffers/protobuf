@@ -272,8 +272,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "  }\n"
       "  return $casted_lazy_member$;\n"
-      "}\n");
-  format(
+      "}\n"
       "inline $type$* $classname$::mutable_$name$() {\n"
       "$annotate_accessor$"
       "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"

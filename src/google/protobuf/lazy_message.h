@@ -123,9 +123,8 @@ struct LazyMessage : LazyMessageBase
 		{
 			MessageType* new_message = CreateMessage(arena);
 			std::string* str = GetLazyString();
-			new_message->ParseFromString(*str);
+			new_message->ParsePartialFromString(*str);
 			delete str;
-			SetNull();
 			SetMessage(new_message);
 		}
 		return *this;

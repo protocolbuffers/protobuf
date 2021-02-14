@@ -13,7 +13,6 @@ Message** LazyMessageBase::GetLazyMessage(const Message& m, const FieldDescripto
 		std::string* str = GetLazyString();
 		new_message->ParseFromString(*str);
 		delete str;
-		SetNull();
 		ptr_ = (uintptr_t)new_message;
 	}
 	return &((Message*)(ptr_));
