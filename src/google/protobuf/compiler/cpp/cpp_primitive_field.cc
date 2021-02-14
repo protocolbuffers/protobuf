@@ -228,7 +228,7 @@ void PrimitiveFieldGenerator::GenerateConstinitInitializer(
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
     : PrimitiveFieldGenerator(descriptor, options) {
-  SetCommonOneofFieldVariables(descriptor, &variables_);
+  SetCommonOneofFieldVariables(descriptor, &variables_, options);
 }
 
 PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {}

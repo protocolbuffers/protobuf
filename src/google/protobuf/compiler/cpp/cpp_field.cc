@@ -104,11 +104,19 @@ void FieldGenerator::SetHasBitIndex(int32 has_bit_index) {
 
 void SetCommonOneofFieldVariables(
     const FieldDescriptor* descriptor,
-    std::map<std::string, std::string>* variables) {
+    std::map<std::string, std::string>* variables, const Options& options) {
   const std::string prefix = descriptor->containing_oneof()->name() + "_.";
   (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
   (*variables)["field_member"] =
       StrCat(prefix, (*variables)["name"], "_");
+  if (IsLazyF(descriptor, options))
+  {
+      (*variables)["field_lazy_member"] = (*variables)["field_member"] + ".GetMessage(GetArena())";
+  }
+  else
+  {
+      (*variables)["field_lazy_member"] = (*variables)["field_member"];
+  }
 }
 
 FieldGenerator::~FieldGenerator() {}

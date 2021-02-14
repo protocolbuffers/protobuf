@@ -1974,7 +1974,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
       std::map<std::string, std::string> vars;
       SetCommonFieldVariables(field, &vars, options_);
       if (field->real_containing_oneof()) {
-        SetCommonOneofFieldVariables(field, &vars);
+        SetCommonOneofFieldVariables(field, &vars, options_);
       }
       format.AddMap(vars);
       GenerateFieldClear(field, false, format);

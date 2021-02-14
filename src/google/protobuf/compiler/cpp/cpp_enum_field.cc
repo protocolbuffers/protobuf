@@ -167,7 +167,7 @@ void EnumFieldGenerator::GenerateConstinitInitializer(
 EnumOneofFieldGenerator::EnumOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
     : EnumFieldGenerator(descriptor, options) {
-  SetCommonOneofFieldVariables(descriptor, &variables_);
+  SetCommonOneofFieldVariables(descriptor, &variables_, options);
 }
 
 EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {}

@@ -467,7 +467,8 @@ class PROTOBUF_EXPORT MessageLite {
   static T* CreateMaybeMessage(Arena* arena) {
     return Arena::CreateMaybeMessage<T>(arena);
   }
-
+  template<typename>
+  friend struct LazyMessage;
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   internal::InternalMetadata _internal_metadata_;

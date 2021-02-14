@@ -66,7 +66,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
 void SetCommonOneofFieldVariables(
     const FieldDescriptor* descriptor,
-    std::map<std::string, std::string>* variables);
+    std::map<std::string, std::string>* variables, const Options& options);
 
 class FieldGenerator {
  public:

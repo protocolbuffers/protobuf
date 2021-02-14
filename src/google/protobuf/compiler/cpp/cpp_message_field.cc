@@ -66,14 +66,12 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       (*variables)["casted_lazy_member"] = ReinterpretCast(
           (*variables)["type"] + "*", (*variables)["name"] + "_.GetMessage(GetArena())", implicit_weak);
       (*variables)["delete_field"] = (*variables)["name"] + "_.Delete()";
-      (*variables)["field_lazy_member"] = (*variables)["field_member"] + "_.GetMessage(GetArena())";
   }
   else
   {
       (*variables)["casted_lazy_member"] = ReinterpretCast(
           (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
-      (*variables)["delete_field"] = "delete " + (*variables)["name"];
-      (*variables)["field_lazy_member"] = (*variables)["field_member"];
+      (*variables)["delete_field"] = "delete " + (*variables)["name"] + "_";
   }
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
@@ -415,7 +413,7 @@ void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
     // NULL. Thus on clear, we need to delete the object.
     format(
         "if (GetArena() == nullptr && $name$_ != nullptr) {\n"
-        "  delete $name$_;\n"
+        "  $delete_field$;\n"
         "}\n"
         "$name$_ = nullptr;\n");
   } else {
@@ -570,7 +568,7 @@ MessageOneofFieldGenerator::MessageOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options,
     MessageSCCAnalyzer* scc_analyzer)
     : MessageFieldGenerator(descriptor, options, scc_analyzer) {
-  SetCommonOneofFieldVariables(descriptor, &variables_);
+  SetCommonOneofFieldVariables(descriptor, &variables_, options);
 }
 
 MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {}
@@ -631,7 +629,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline const $type$& $classname$::_internal_$name$() const {\n"
       "  return _internal_has_$name$()\n"
-      "      ? *$field_member$\n"
+      "      ? *$field_lazy_member$\n"
       "      : reinterpret_cast< $type$&>($type_default_instance$);\n"
       "}\n"
       "inline const $type$& $classname$::$name$() const {\n"
@@ -672,7 +670,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "    set_has_$name$();\n"
       "    $field_member$ = CreateMaybeMessage< $type$ >(GetArena());\n"
       "  }\n"
-      "  return $field_member$;\n"
+      "  return $field_lazy_member$;\n"
       "}\n"
       "inline $type$* $classname$::mutable_$name$() {\n"
       "$annotate_accessor$"
@@ -690,14 +688,14 @@ void MessageOneofFieldGenerator::GenerateClearingCode(
   {
       format(
           "if (GetArena() == nullptr) {\n"
-          "  delete $field_member$;\n"
+          "  $field_member$.Delete();\n"
           "}\n");
   }
   else
   {
       format(
           "if (GetArena() == nullptr) {\n"
-          "  $field_member$.Delete();\n"
+          "  delete $field_member$;\n"
           "}\n");
   }
 }

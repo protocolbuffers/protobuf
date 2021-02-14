@@ -38,7 +38,7 @@ struct LazyMessage
 
 	~LazyMessage()
 	{
-		Delete();
+		assert(ptr_ == 0);
 	}
 
 	LazyMessage& operator = (nullptr_t n)
@@ -163,17 +163,16 @@ struct LazyMessage
 		}
 		else
 		{
-			return lazy_message_->_InternalSerialize(target, stream);
+			return message_->_InternalSerialize(target, stream);
 		}
 	}
 
 private:
-
 	static MessageType* CreateMessage(Arena* arena)
 	{
 		if (arena != nullptr)
 		{
-			return arena->CreateMaybeMessage< MessageType>();
+			return MessageType::CreateMaybeMessage< MessageType>(arena);
 		}
 		else
 		{

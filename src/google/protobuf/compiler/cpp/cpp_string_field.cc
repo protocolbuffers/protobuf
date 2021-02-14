@@ -414,7 +414,7 @@ void StringFieldGenerator::GenerateConstinitInitializer(
 StringOneofFieldGenerator::StringOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
     : StringFieldGenerator(descriptor, options) {
-  SetCommonOneofFieldVariables(descriptor, &variables_);
+  SetCommonOneofFieldVariables(descriptor, &variables_, options);
   variables_["field_name"] = UnderscoresToCamelCase(descriptor->name(), true);
   variables_["oneof_index"] =
       StrCat(descriptor->containing_oneof()->index());
