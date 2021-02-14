@@ -36,11 +36,6 @@ struct LazyMessage
 		}
 	}
 
-	~LazyMessage()
-	{
-		assert(ptr_ == 0);
-	}
-
 	LazyMessage& operator = (nullptr_t n)
 	{
 		ptr_ = 0;
@@ -63,6 +58,7 @@ struct LazyMessage
 		return ptr_ != 0;
 	}
 
+	template <typename bool lite>
 	void Delete()
 	{
 		if (ptr_ & 1)
@@ -72,12 +68,19 @@ struct LazyMessage
 		}
 		else
 		{
-			delete lazy_message_;
+			if (lite)
+			{
+				delete reinterpret_cast<::google::protobuf::MessageLite*>(lazy_message_);
+			}
+			else
+			{
+				delete lazy_message_;
+			}
 		}
 		ptr_ = 0;
 	}
 
-	MessageType* GetMessage(Arena* arena) const
+	MessageType* GetLazyMessage(Arena* arena) const
 	{
 		if (ptr_ & 1)
 		{

@@ -64,14 +64,28 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   if (IsLazyF(descriptor, options))
   {
       (*variables)["casted_lazy_member"] = ReinterpretCast(
-          (*variables)["type"] + "*", (*variables)["name"] + "_.GetMessage(GetArena())", implicit_weak);
-      (*variables)["delete_field"] = (*variables)["name"] + "_.Delete()";
+          (*variables)["type"] + "*", (*variables)["name"] + "_.GetLazyMessage(GetArena())", implicit_weak);
+      if (IsCrossFileMessage(descriptor))
+      {
+          (*variables)["delete_field"] = (*variables)["name"] + "_.Delete<true>()";
+      }
+      else
+      {
+          (*variables)["delete_field"] = (*variables)["name"] + "_.Delete<false>()";
+      }
   }
   else
   {
       (*variables)["casted_lazy_member"] = ReinterpretCast(
           (*variables)["type"] + "*", (*variables)["name"] + "_", implicit_weak);
-      (*variables)["delete_field"] = "delete " + (*variables)["name"] + "_";
+      if (IsCrossFileMessage(descriptor))
+      {
+          (*variables)["delete_field"] = "delete reinterpret_cast<::" + (*variables)["proto_ns"] +  "::MessageLite*>(" + (*variables)["name"] + "_)";
+      }
+      else
+      {
+          (*variables)["delete_field"] = "delete " + (*variables)["name"] + "_";
+      }
   }
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
@@ -273,15 +287,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "$annotate_accessor$"
       "  ::$proto_ns$::Arena* message_arena = GetArena();\n");
   format("  if (message_arena == nullptr) {\n");
-
-  if (IsCrossFileMessage(descriptor_) && !IsLazyF(descriptor_, options_)) {
-    format(
-        "    delete reinterpret_cast< ::$proto_ns$::MessageLite*>($name$_);\n");
-  }
-  else {
-    format("    $delete_field$;\n");
-  }
-
+  format("    $delete_field$;\n");
   format(
       "  }\n"
       "  if ($name$) {\n");
@@ -688,7 +694,7 @@ void MessageOneofFieldGenerator::GenerateClearingCode(
   {
       format(
           "if (GetArena() == nullptr) {\n"
-          "  $field_member$.Delete();\n"
+          "  $field_member$.Delete<false>();\n"
           "}\n");
   }
   else
