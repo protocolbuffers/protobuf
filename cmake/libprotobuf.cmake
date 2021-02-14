@@ -17,6 +17,7 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/io/gzip_stream.cc
   ${protobuf_source_dir}/src/google/protobuf/io/printer.cc
   ${protobuf_source_dir}/src/google/protobuf/io/tokenizer.cc
+  ${protobuf_source_dir}/src/google/protobuf/lazy_message.cc
   ${protobuf_source_dir}/src/google/protobuf/map_field.cc
   ${protobuf_source_dir}/src/google/protobuf/message.cc
   ${protobuf_source_dir}/src/google/protobuf/reflection_ops.cc
@@ -70,6 +71,7 @@ set(libprotobuf_includes
   ${protobuf_source_dir}/src/google/protobuf/io/gzip_stream.h
   ${protobuf_source_dir}/src/google/protobuf/io/printer.h
   ${protobuf_source_dir}/src/google/protobuf/io/tokenizer.h
+  ${protobuf_source_dir}/src/google/protobuf/lazy_message.h
   ${protobuf_source_dir}/src/google/protobuf/map_field.h
   ${protobuf_source_dir}/src/google/protobuf/message.h
   ${protobuf_source_dir}/src/google/protobuf/reflection_ops.h

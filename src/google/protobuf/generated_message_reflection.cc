@@ -50,7 +50,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-
+#include <google/protobuf/lazy_message.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -1504,6 +1504,7 @@ const Message* Reflection::GetDefaultMessageInstance(
   return message_factory_->GetPrototype(field->message_type());
 }
 
+
 const Message& Reflection::GetMessage(const Message& message,
                                       const FieldDescriptor* field,
                                       MessageFactory* factory) const {
@@ -1948,10 +1949,43 @@ const Type& Reflection::GetRaw(const Message& message,
   return GetConstRefAtOffset<Type>(message, schema_.GetFieldOffset(field));
 }
 
+static bool IsLazyField(const Message& msg, const FieldDescriptor* field)
+{
+    return (((uintptr_t)&msg) & 1) && field->options().lazy();
+}
+
+static Message* GetLazyMessage(const Message& message, const Message& msg, const FieldDescriptor* field)
+{
+    if (IsLazyField(msg, field))
+    {
+        return ((LazyMessageBase&)msg).GetLazyMessage(message, *field);
+    }
+    else
+    {
+        return const_cast<Message*>(&msg);
+    }
+}
+
+template <>
+const Message& Reflection::GetRaw<Message>(const Message& message,
+    const FieldDescriptor* field) const {
+    GOOGLE_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
+        << "Field = " << field->full_name();
+    const Message& msg = GetConstRefAtOffset<Message>(message, schema_.GetFieldOffset(field));
+    return *GetLazyMessage(message, msg, field);
+}
+
 template <typename Type>
 Type* Reflection::MutableRaw(Message* message,
                              const FieldDescriptor* field) const {
   return GetPointerAtOffset<Type>(message, schema_.GetFieldOffset(field));
+}
+
+template <>
+Message* Reflection::MutableRaw<Message>(Message* message,
+    const FieldDescriptor* field) const {
+    Message* msg = GetPointerAtOffset<Message>(message, schema_.GetFieldOffset(field));
+    return GetLazyMessage(*message, *msg, field);
 }
 
 const uint32* Reflection::GetHasBits(const Message& message) const {

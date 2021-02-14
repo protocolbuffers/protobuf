@@ -1038,6 +1038,8 @@ class PROTOBUF_EXPORT Reflection final {
   const Type& DefaultRaw(const FieldDescriptor* field) const;
 
   const Message* GetDefaultMessageInstance(const FieldDescriptor* field) const;
+  
+  friend struct LazyMessageBase;
 
   inline const uint32* GetHasBits(const Message& message) const;
   inline uint32* MutableHasBits(Message* message) const;

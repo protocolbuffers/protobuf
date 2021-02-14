@@ -6,24 +6,53 @@
 
 namespace google { namespace protobuf {
 
-template <typename MessageType>
-struct LazyMessage
+class FieldDescriptor;
+class Message;
+struct LazyMessageBase
 {
-	union
-	{
-		MessageType* message_;
-		std::string* lazy_message_;
-		uintptr_t ptr_;
-	};
+	uintptr_t ptr_;
 
-	LazyMessage()
+	bool IsLazy() const
+	{
+		return ptr_ & 1;
+	}
+
+	bool IsNull() const
+	{
+		return ptr_ == 0;
+	}
+
+	std::string* GetLazyString() const
+	{
+		return (std::string*)(ptr_ & ~1);
+	}
+
+	void SetLazyString(std::string* str)
+	{
+		GOOGLE_DCHECK(ptr_ == 0);
+		ptr_ = (uintptr_t)str;
+		ptr_ |= 1;
+	}
+
+	void SetNull()
 	{
 		ptr_ = 0;
 	}
 
+	Message* GetLazyMessage(const Message& m, const FieldDescriptor& descriptor);
+};
+
+template <typename MessageType>
+struct LazyMessage : LazyMessageBase
+{
+	LazyMessage()
+	{
+		SetNull();
+	}
+
 	constexpr LazyMessage(nullptr_t n)
 	{
-		ptr_ = 0;
+		SetNull();
 	}
 
 	void CopyLazyFrom(const LazyMessage& m)
@@ -35,7 +64,7 @@ struct LazyMessage
 		else
 		{
 			GOOGLE_DCHECK(m.message_ != nullptr);
-			SetMessage(new MessageType(*m.message_));
+			SetMessage(new MessageType(*m.GetMessage()));
 		}
 	}
 
@@ -47,7 +76,7 @@ struct LazyMessage
 
 	LazyMessage& operator = (MessageType* m)
 	{
-		message_ = m;
+		SetMessage(m);
 		return *this;
 	}
 
@@ -73,11 +102,11 @@ struct LazyMessage
 		{
 			if (lite)
 			{
-				delete reinterpret_cast<::google::protobuf::MessageLite*>(message_);
+				delete reinterpret_cast<::google::protobuf::MessageLite*>(GetMessage());
 			}
 			else
 			{
-				delete message_;
+				delete GetMessage();
 			}
 		}
 		SetNull();
@@ -85,7 +114,7 @@ struct LazyMessage
 
 	MessageType* GetLazyMessage(Arena* arena) const
 	{
-		return  const_cast<LazyMessage*>(this)->GetLazyLazyMessage(arena).message_;
+		return  const_cast<LazyMessage*>(this)->GetLazyLazyMessage(arena).GetMessage();
 	}
 
 	LazyMessage& GetLazyLazyMessage(Arena* arena)
@@ -114,7 +143,7 @@ struct LazyMessage
 		else
 		{
 			GOOGLE_CHECK(!IsLazy());
-			return message_->_InternalParse(ptr, ctx);
+			return GetMessage()->_InternalParse(ptr, ctx);
 		}
 	}
 
@@ -127,7 +156,7 @@ struct LazyMessage
 		}
 		else
 		{
-			return message_->ByteSizeLong();
+			return GetMessage()->ByteSizeLong();
 		}
 	}
 
@@ -140,7 +169,7 @@ struct LazyMessage
 		}
 		else
 		{
-			return message_->GetCachedSize();
+			return GetMessage()->GetCachedSize();
 		}
 	}
 
@@ -153,15 +182,8 @@ struct LazyMessage
 		}
 		else
 		{
-			message_->Clear();
+			GetMessage()->Clear();
 		}
-	}
-
-	LazyMessage* Release(Arena* arena)
-	{
-		LazyMessage* m = GetMessage(arena);
-		SetNull();
-		return m;
 	}
 
 	uint8* _InternalSerialize(
@@ -174,41 +196,19 @@ struct LazyMessage
 		}
 		else
 		{
-			return message_->_InternalSerialize(target, stream);
+			return GetMessage()->_InternalSerialize(target, stream);
 		}
-	}
-
-	bool IsLazy() const
-	{
-		return ptr_ & 1;
-	}
-
-	bool IsNull() const
-	{
-		return ptr_ == 0;
-	}
-
-	std::string* GetLazyString() const
-	{
-		return (std::string*)(ptr_ & ~1);
-	}
-
-	void SetLazyString(std::string* str)
-	{
-		GOOGLE_DCHECK(ptr_ == 0);
-		lazy_message_ = str;
-		ptr_ |= 1;
 	}
 
 	void SetMessage(MessageType* m)
 	{
 		GOOGLE_DCHECK(ptr_ == 0);
-		message_ = m;
+		ptr_ = (uintptr_t)m;
 	}
 
-	void SetNull()
+	MessageType* GetMessage() const
 	{
-		ptr_ = 0;
+		return (MessageType*)ptr_;
 	}
 
 private:
