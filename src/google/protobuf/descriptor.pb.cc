@@ -28,7 +28,7 @@ struct FileDescriptorSetDefaultTypeInternal {
     FileDescriptorSet _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
 constexpr FileDescriptorProto::FileDescriptorProto(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : dependency_()
@@ -51,7 +51,7 @@ struct FileDescriptorProtoDefaultTypeInternal {
     FileDescriptorProto _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
 constexpr DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : options_(nullptr)
@@ -65,7 +65,7 @@ struct DescriptorProto_ExtensionRangeDefaultTypeInternal {
     DescriptorProto_ExtensionRange _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
 constexpr DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : start_(0)
@@ -78,7 +78,7 @@ struct DescriptorProto_ReservedRangeDefaultTypeInternal {
     DescriptorProto_ReservedRange _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
 constexpr DescriptorProto::DescriptorProto(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : field_()
@@ -99,7 +99,7 @@ struct DescriptorProtoDefaultTypeInternal {
     DescriptorProto _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
 constexpr ExtensionRangeOptions::ExtensionRangeOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_(){}
@@ -111,7 +111,7 @@ struct ExtensionRangeOptionsDefaultTypeInternal {
     ExtensionRangeOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
 constexpr FieldDescriptorProto::FieldDescriptorProto(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
@@ -135,7 +135,7 @@ struct FieldDescriptorProtoDefaultTypeInternal {
     FieldDescriptorProto _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
 constexpr OneofDescriptorProto::OneofDescriptorProto(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
@@ -148,7 +148,7 @@ struct OneofDescriptorProtoDefaultTypeInternal {
     OneofDescriptorProto _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
 constexpr EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : start_(0)
@@ -161,7 +161,7 @@ struct EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal {
     EnumDescriptorProto_EnumReservedRange _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal _EnumDescriptorProto_EnumReservedRange_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EnumDescriptorProto_EnumReservedRangeDefaultTypeInternal _EnumDescriptorProto_EnumReservedRange_default_instance_;
 constexpr EnumDescriptorProto::EnumDescriptorProto(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_()
@@ -177,7 +177,7 @@ struct EnumDescriptorProtoDefaultTypeInternal {
     EnumDescriptorProto _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
 constexpr EnumValueDescriptorProto::EnumValueDescriptorProto(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
@@ -191,7 +191,7 @@ struct EnumValueDescriptorProtoDefaultTypeInternal {
     EnumValueDescriptorProto _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
 constexpr ServiceDescriptorProto::ServiceDescriptorProto(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : method_()
@@ -205,7 +205,7 @@ struct ServiceDescriptorProtoDefaultTypeInternal {
     ServiceDescriptorProto _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
 constexpr MethodDescriptorProto::MethodDescriptorProto(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
@@ -222,7 +222,7 @@ struct MethodDescriptorProtoDefaultTypeInternal {
     MethodDescriptorProto _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
 constexpr FileOptions::FileOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_()
@@ -255,7 +255,7 @@ struct FileOptionsDefaultTypeInternal {
     FileOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
 constexpr MessageOptions::MessageOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_()
@@ -271,7 +271,7 @@ struct MessageOptionsDefaultTypeInternal {
     MessageOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
 constexpr FieldOptions::FieldOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_()
@@ -291,7 +291,7 @@ struct FieldOptionsDefaultTypeInternal {
     FieldOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
 constexpr OneofOptions::OneofOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_(){}
@@ -303,7 +303,7 @@ struct OneofOptionsDefaultTypeInternal {
     OneofOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
 constexpr EnumOptions::EnumOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_()
@@ -317,7 +317,7 @@ struct EnumOptionsDefaultTypeInternal {
     EnumOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
 constexpr EnumValueOptions::EnumValueOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_()
@@ -330,7 +330,7 @@ struct EnumValueOptionsDefaultTypeInternal {
     EnumValueOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
 constexpr ServiceOptions::ServiceOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_()
@@ -343,7 +343,7 @@ struct ServiceOptionsDefaultTypeInternal {
     ServiceOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
 constexpr MethodOptions::MethodOptions(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : uninterpreted_option_()
@@ -358,7 +358,7 @@ struct MethodOptionsDefaultTypeInternal {
     MethodOptions _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
 constexpr UninterpretedOption_NamePart::UninterpretedOption_NamePart(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_part_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
@@ -371,7 +371,7 @@ struct UninterpretedOption_NamePartDefaultTypeInternal {
     UninterpretedOption_NamePart _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
 constexpr UninterpretedOption::UninterpretedOption(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_()
@@ -389,7 +389,7 @@ struct UninterpretedOptionDefaultTypeInternal {
     UninterpretedOption _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
 constexpr SourceCodeInfo_Location::SourceCodeInfo_Location(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : path_()
@@ -407,7 +407,7 @@ struct SourceCodeInfo_LocationDefaultTypeInternal {
     SourceCodeInfo_Location _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
 constexpr SourceCodeInfo::SourceCodeInfo(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : location_(){}
@@ -419,7 +419,7 @@ struct SourceCodeInfoDefaultTypeInternal {
     SourceCodeInfo _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
 constexpr GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : path_()
@@ -435,7 +435,7 @@ struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
     GeneratedCodeInfo_Annotation _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
 constexpr GeneratedCodeInfo::GeneratedCodeInfo(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : annotation_(){}
@@ -447,7 +447,7 @@ struct GeneratedCodeInfoDefaultTypeInternal {
     GeneratedCodeInfo _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[27];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];

@@ -28,7 +28,7 @@ struct DoubleValueDefaultTypeInternal {
     DoubleValue _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
 constexpr FloatValue::FloatValue(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_(0){}
@@ -40,7 +40,7 @@ struct FloatValueDefaultTypeInternal {
     FloatValue _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY FloatValueDefaultTypeInternal _FloatValue_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FloatValueDefaultTypeInternal _FloatValue_default_instance_;
 constexpr Int64Value::Int64Value(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_(PROTOBUF_LONGLONG(0)){}
@@ -52,7 +52,7 @@ struct Int64ValueDefaultTypeInternal {
     Int64Value _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
 constexpr UInt64Value::UInt64Value(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_(PROTOBUF_ULONGLONG(0)){}
@@ -64,7 +64,7 @@ struct UInt64ValueDefaultTypeInternal {
     UInt64Value _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
 constexpr Int32Value::Int32Value(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_(0){}
@@ -76,7 +76,7 @@ struct Int32ValueDefaultTypeInternal {
     Int32Value _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
 constexpr UInt32Value::UInt32Value(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_(0u){}
@@ -88,7 +88,7 @@ struct UInt32ValueDefaultTypeInternal {
     UInt32Value _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
 constexpr BoolValue::BoolValue(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_(false){}
@@ -100,7 +100,7 @@ struct BoolValueDefaultTypeInternal {
     BoolValue _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY BoolValueDefaultTypeInternal _BoolValue_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 constexpr StringValue::StringValue(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
@@ -112,7 +112,7 @@ struct StringValueDefaultTypeInternal {
     StringValue _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY StringValueDefaultTypeInternal _StringValue_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT StringValueDefaultTypeInternal _StringValue_default_instance_;
 constexpr BytesValue::BytesValue(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : value_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
@@ -124,7 +124,7 @@ struct BytesValueDefaultTypeInternal {
     BytesValue _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY BytesValueDefaultTypeInternal _BytesValue_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT BytesValueDefaultTypeInternal _BytesValue_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[9];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fwrappers_2eproto = nullptr;
