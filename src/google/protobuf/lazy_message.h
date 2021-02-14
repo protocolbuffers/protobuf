@@ -39,7 +39,7 @@ struct LazyMessageBase
 		ptr_ = 0;
 	}
 
-	Message*& GetLazyMessage(const Message& m, const FieldDescriptor& descriptor);
+	Message** GetLazyMessage(const Message& m, const FieldDescriptor& descriptor);
 };
 
 template <typename MessageType>

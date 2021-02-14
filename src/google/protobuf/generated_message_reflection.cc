@@ -218,15 +218,16 @@ static bool IsLazyField(const Message& msg, const FieldDescriptor* field)
 }
 
 template <typename  MessagePtrType>
-static MessagePtrType& GetLazyMessage(const Message& message, MessagePtrType& msg, const FieldDescriptor* field)
+static MessagePtrType* GetLazyMessage(const Message& message, MessagePtrType& msg, const FieldDescriptor* field)
 {
     if (IsLazyField(*msg, field))
     {
-        return (MessagePtrType&)((LazyMessageBase&)*msg).GetLazyMessage(message, *field);
+        Message** m = ((LazyMessageBase&)*msg).GetLazyMessage(message, *field);
+        return m;
     }
     else
     {
-        return msg;
+        return &msg;
     }
 }
 
@@ -237,8 +238,8 @@ const MessageCPtr& Reflection::GetRaw<MessageCPtr>(const Message& message,
     const FieldDescriptor* field) const {
     GOOGLE_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
         << "Field = " << field->full_name();
-    MessageCPtr msg = GetConstRefAtOffset<MessageCPtr>(message, schema_.GetFieldOffset(field));
-    return GetLazyMessage(message, msg, field);
+    const MessageCPtr& msg = GetConstRefAtOffset<MessageCPtr>(message, schema_.GetFieldOffset(field));
+    return *GetLazyMessage(message, msg, field);
 }
 
 typedef Message* MessagePtr;
@@ -246,8 +247,25 @@ template <>
 MessagePtr* Reflection::MutableRaw<MessagePtr>(Message* message,
     const FieldDescriptor* field) const {
     MessagePtr* msg = GetPointerAtOffset<MessagePtr>(message, schema_.GetFieldOffset(field));
-    return &GetLazyMessage(*message, *msg, field);
+    if (schema_.InRealOneof(field) && !HasOneofField(*message, field))
+    {
+        return msg;
+    }
+    else
+    {
+        return GetLazyMessage(*message, *msg, field);
+    }
 }
+
+template <>
+MessagePtr* Reflection::MutableField<MessagePtr>(Message* message,
+    const FieldDescriptor* field) const {
+    MessagePtr* msg = MutableRaw<MessagePtr>(message, field);
+    schema_.InRealOneof(field) ? SetOneofCase(message, field)
+        : SetBit(message, field);
+    return msg;
+}
+
 
 Reflection::Reflection(const Descriptor* descriptor,
                        const internal::ReflectionSchema& schema,
