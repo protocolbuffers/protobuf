@@ -1,7 +1,0 @@
-syntax = "proto2";
-import "unittest_lazy.proto";
-
-message Test3
-{
-	optional Test t = 1[lazy = true];
-}
