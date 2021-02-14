@@ -520,7 +520,7 @@ TEST(NoFieldPresenceTest, LazyMessageFieldHasBit) {
   EXPECT_EQ(true, r->HasField(message2, field));
 
   // Access field to force lazy parse.
-  EXPECT_EQ(42, message.optional_lazy_message().bb());
+  EXPECT_EQ(42, message2.optional_lazy_message().bb());
   EXPECT_EQ(true, message2.has_optional_lazy_message());
   EXPECT_EQ(true, r->HasField(message2, field));
 }

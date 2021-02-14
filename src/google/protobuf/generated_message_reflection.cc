@@ -218,16 +218,16 @@ static bool IsLazyField(const Message& msg, const FieldDescriptor* field)
 }
 
 template <typename  MessagePtrType>
-static MessagePtrType* GetLazyMessage(const Message& message, MessagePtrType& msg, const FieldDescriptor* field)
+static MessagePtrType* GetLazyMessage(const Message& message, MessagePtrType* msg, const FieldDescriptor* field)
 {
-    if (IsLazyField(*msg, field))
+    if (IsLazyField(**msg, field))
     {
-        Message** m = ((LazyMessageBase&)*msg).GetLazyMessage(message, *field);
+        Message** m = ((LazyMessageBase*)msg)->GetLazyMessage(message, *field);
         return m;
     }
     else
     {
-        return &msg;
+        return msg;
     }
 }
 
@@ -239,7 +239,7 @@ const MessageCPtr& Reflection::GetRaw<MessageCPtr>(const Message& message,
     GOOGLE_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
         << "Field = " << field->full_name();
     const MessageCPtr& msg = GetConstRefAtOffset<MessageCPtr>(message, schema_.GetFieldOffset(field));
-    return *GetLazyMessage(message, msg, field);
+    return *GetLazyMessage(message, &msg, field);
 }
 
 typedef Message* MessagePtr;
@@ -253,7 +253,7 @@ MessagePtr* Reflection::MutableRaw<MessagePtr>(Message* message,
     }
     else
     {
-        return GetLazyMessage(*message, *msg, field);
+        return GetLazyMessage(*message, msg, field);
     }
 }
 
