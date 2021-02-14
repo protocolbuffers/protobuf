@@ -34,7 +34,7 @@ struct TypeDefaultTypeInternal {
     Type _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY TypeDefaultTypeInternal _Type_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT TypeDefaultTypeInternal _Type_default_instance_;
 constexpr Field::Field(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : options_()
@@ -57,7 +57,7 @@ struct FieldDefaultTypeInternal {
     Field _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY FieldDefaultTypeInternal _Field_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FieldDefaultTypeInternal _Field_default_instance_;
 constexpr Enum::Enum(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : enumvalue_()
@@ -74,7 +74,7 @@ struct EnumDefaultTypeInternal {
     Enum _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumDefaultTypeInternal _Enum_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EnumDefaultTypeInternal _Enum_default_instance_;
 constexpr EnumValue::EnumValue(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : options_()
@@ -88,7 +88,7 @@ struct EnumValueDefaultTypeInternal {
     EnumValue _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT EnumValueDefaultTypeInternal _EnumValue_default_instance_;
 constexpr Option::Option(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
@@ -101,7 +101,7 @@ struct OptionDefaultTypeInternal {
     Option _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY OptionDefaultTypeInternal _Option_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT OptionDefaultTypeInternal _Option_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2ftype_2eproto[5];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[3];
