@@ -11,7 +11,7 @@ Message** LazyMessageBase::GetLazyMessage(const Message& m, const FieldDescripto
 		const Message* default_message = m.GetReflection()->GetDefaultMessageInstance(&descriptor);
 		Message* new_message = default_message->New(m.GetArena());
 		std::string* str = GetLazyString();
-		new_message->ParseFromString(*str);
+		new_message->ParsePartialFromString(*str);
 		delete str;
 		ptr_ = (uintptr_t)new_message;
 	}
