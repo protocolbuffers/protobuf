@@ -32,7 +32,7 @@ struct VersionDefaultTypeInternal {
     Version _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY VersionDefaultTypeInternal _Version_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT VersionDefaultTypeInternal _Version_default_instance_;
 constexpr CodeGeneratorRequest::CodeGeneratorRequest(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : file_to_generate_()
@@ -47,7 +47,7 @@ struct CodeGeneratorRequestDefaultTypeInternal {
     CodeGeneratorRequest _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
 constexpr CodeGeneratorResponse_File::CodeGeneratorResponse_File(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
@@ -62,7 +62,7 @@ struct CodeGeneratorResponse_FileDefaultTypeInternal {
     CodeGeneratorResponse_File _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
 constexpr CodeGeneratorResponse::CodeGeneratorResponse(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : file_()
@@ -76,7 +76,7 @@ struct CodeGeneratorResponseDefaultTypeInternal {
     CodeGeneratorResponse _instance;
   };
 };
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
 }  // namespace compiler
 PROTOBUF_NAMESPACE_CLOSE
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[4];
