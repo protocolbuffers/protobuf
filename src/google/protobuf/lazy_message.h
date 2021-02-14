@@ -2,6 +2,7 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/parse_context.h>
+#include <google/protobuf/stubs/logging.h>
 
 namespace google { namespace protobuf {
 
@@ -25,22 +26,22 @@ struct LazyMessage
 		ptr_ = 0;
 	}
 
-	void CopyFrom(const LazyMessage& m)
+	void CopyLazyFrom(const LazyMessage& m)
 	{
-		if (m.ptr_ & 1)
+		if (m.IsLazy())
 		{
-			lazy_message_ = new std::string(*(const std::string*)(m.ptr_ & ~1));
-			ptr_ |= 1; 
+			SetLazyString(new std::string(*m.GetLazyString()));
 		}
 		else
 		{
-			message_ = new MessageType(*m.message_);
+			GOOGLE_DCHECK(m.message_ != nullptr);
+			SetMessage(new MessageType(*m.message_));
 		}
 	}
 
 	LazyMessage& operator = (nullptr_t n)
 	{
-		ptr_ = 0;
+		SetNull();
 		return *this;
 	}
 
@@ -63,65 +64,54 @@ struct LazyMessage
 	template <typename bool lite>
 	void Delete()
 	{
-		if (ptr_ & 1)
+		if (IsLazy())
 		{
-			std::string* str = (std::string*)(ptr_ & ~1);
+			std::string* str = GetLazyString();
 			delete str;
 		}
 		else
 		{
 			if (lite)
 			{
-				delete reinterpret_cast<::google::protobuf::MessageLite*>(lazy_message_);
+				delete reinterpret_cast<::google::protobuf::MessageLite*>(message_);
 			}
 			else
 			{
-				delete lazy_message_;
+				delete message_;
 			}
 		}
-		ptr_ = 0;
+		SetNull();
 	}
 
 	MessageType* GetLazyMessage(Arena* arena) const
 	{
-		if (ptr_ & 1)
+		if (IsLazy())
 		{
 			MessageType* new_message = CreateMessage(arena);
-			std::string* str = (std::string*)(ptr_ & ~1);
+			std::string* str = GetLazyString();
 			new_message->ParseFromString(*str);
-			const_cast<LazyMessage*>(this)->message_ = new_message;
+			delete str;
+			SetNull();
+			const_cast<LazyMessage*>(this)->SetMessage(new_message);
 		}
 		return message_;
 	}
 
-	MessageType* MutableMessage(Arena* arena)
-	{
-		MessageType* m = GetMessage(arena);
-		if (m == nullptr)
-		{
-			m = message_ = CreateMessage(arena);
-		}
-		return m;
-	}
-
 	const char* _InternalParse(const char* ptr, internal::ParseContext* ctx)
 	{
-		return ptr;
-	}
-
-	void Parse(std::string&& content)
-	{
+		GOOGLE_DCHECK(ptr_ == 0);
 		std::string* str = new std::string();
-		*str = std::move(content);
+		ptr = ctx->ReadString(ptr, ctx->size(), str);
 		ptr_ = (uintptr_t)str;
 		ptr_ |= 1;
+		return ptr;
 	}
 
 	size_t ByteSizeLong() const
 	{
-		if (ptr_ & 1)
+		if (IsLazy())
 		{
-			std::string* str = (std::string*)(ptr_ & ~1);
+			std::string* str = GetLazyString();
 			return str->length();
 		}
 		else
@@ -132,9 +122,9 @@ struct LazyMessage
 
 	int GetCachedSize() const
 	{
-		if (ptr_ & 1)
+		if (IsLazy())
 		{
-			std::string* str = (std::string*)(ptr_ & ~1);
+			std::string* str = GetLazyString();
 			return str->length();
 		}
 		else
@@ -145,9 +135,9 @@ struct LazyMessage
 
 	void Clear()
 	{
-		if (ptr_ & 1)
+		if (IsLazy())
 		{
-			std::string* str = (std::string*)(ptr_ & ~1);
+			std::string* str = GetLazyString();
 			str->clear();
 		}
 		else
@@ -159,22 +149,50 @@ struct LazyMessage
 	LazyMessage* Release(Arena* arena)
 	{
 		LazyMessage* m = GetMessage(arena);
-		ptr_ = 0;
+		SetNull();
 		return m;
 	}
 
 	uint8* _InternalSerialize(
 		uint8* target, io::EpsCopyOutputStream* stream) const
 	{
-		if (ptr_ & 1)
+		if (IsLazy())
 		{
-			std::string* str = (std::string*)(ptr_ & ~1);
+			std::string* str = GetLazyString();
 			return stream->WriteRaw(str->data(), str->length(), target);
 		}
 		else
 		{
 			return message_->_InternalSerialize(target, stream);
 		}
+	}
+
+	bool IsLazy() const
+	{
+		return ptr_ & 1;
+	}
+
+	std::string* GetLazyString() const
+	{
+		return (std::string*)(ptr_ & ~1);
+	}
+
+	void SetLazyString(std::string* str)
+	{
+		GOOGLE_DCHECK(ptr_ == 0);
+		lazy_message_ = str;
+		ptr_ |= 1;
+	}
+
+	void SetMessage(MessageType* m)
+	{
+		GOOGLE_DCHECK(ptr_ == 0);
+		message_ = m;
+	}
+
+	void SetNull()
+	{
+		ptr_ = 0;
 	}
 
 private:

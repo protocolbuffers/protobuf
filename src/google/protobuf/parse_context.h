@@ -391,6 +391,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 
   int depth() const { return depth_; }
 
+  int size() const {return size_;}
+
   Data& data() { return data_; }
   const Data& data() const { return data_; }
 
@@ -422,6 +424,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // Unfortunately necessary for the fringe case of ending on 0 or end-group tag
   // in the last kSlopBytes of a ZeroCopyInputStream chunk.
   int group_depth_ = INT_MIN;
+  int size_ = 0;
   Data data_;
 };
 
@@ -640,9 +643,9 @@ inline int32 ReadVarintZigZag32(const char** p) {
 template <typename T>
 PROTOBUF_MUST_USE_RESULT const char* ParseContext::ParseMessage(
     T* msg, const char* ptr) {
-  int size = ReadSize(&ptr);
+  size_ = ReadSize(&ptr);
   if (!ptr) return nullptr;
-  auto old = PushLimit(ptr, size);
+  auto old = PushLimit(ptr, size_);
   if (--depth_ < 0) return nullptr;
   ptr = msg->_InternalParse(ptr, this);
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;

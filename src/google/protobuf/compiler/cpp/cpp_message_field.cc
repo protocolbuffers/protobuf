@@ -518,7 +518,7 @@ void MessageFieldGenerator::GenerateCopyConstructorCode(
       "if (from._internal_has_$name$()) {\n");
   if (IsLazyF(descriptor_, options_))
   {
-      format("  $name$_.CopyFrom(from.$name$_);\n");
+      format("  $name$_.CopyLazyFrom(from.$name$_);\n");
   }
   else
   {
