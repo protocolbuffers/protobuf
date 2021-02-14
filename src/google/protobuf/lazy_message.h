@@ -85,6 +85,11 @@ struct LazyMessage
 
 	MessageType* GetLazyMessage(Arena* arena) const
 	{
+		return  const_cast<LazyMessage*>(this)->GetLazyLazyMessage(arena).message_;
+	}
+
+	LazyMessage& GetLazyLazyMessage(Arena* arena)
+	{
 		if (IsLazy())
 		{
 			MessageType* new_message = CreateMessage(arena);
@@ -92,19 +97,25 @@ struct LazyMessage
 			new_message->ParseFromString(*str);
 			delete str;
 			SetNull();
-			const_cast<LazyMessage*>(this)->SetMessage(new_message);
+			SetMessage(new_message);
 		}
-		return message_;
+		return *this;
 	}
 
 	const char* _InternalParse(const char* ptr, internal::ParseContext* ctx)
 	{
-		GOOGLE_DCHECK(ptr_ == 0);
-		std::string* str = new std::string();
-		ptr = ctx->ReadString(ptr, ctx->size(), str);
-		ptr_ = (uintptr_t)str;
-		ptr_ |= 1;
-		return ptr;
+		if (IsNull())
+		{
+			std::string* str = new std::string();
+			ptr = ctx->ReadString(ptr, ctx->size(), str);
+			SetLazyString(str);
+			return ptr;
+		}
+		else
+		{
+			GOOGLE_CHECK(!IsLazy());
+			return message_->_InternalParse(ptr, ctx);
+		}
 	}
 
 	size_t ByteSizeLong() const
@@ -170,6 +181,11 @@ struct LazyMessage
 	bool IsLazy() const
 	{
 		return ptr_ & 1;
+	}
+
+	bool IsNull() const
+	{
+		return ptr_ == 0;
 	}
 
 	std::string* GetLazyString() const

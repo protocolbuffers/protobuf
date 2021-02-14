@@ -1569,10 +1569,10 @@ class ParseLoopGenerator {
             } else if (HasHasbit(field)) {
               format_(
                   "_Internal::set_has_$1$(&$has_bits$);\n"
-                  "ptr = ctx->ParseMessage(&$1$_, ptr);\n",
+                  "ptr = ctx->ParseMessage(&$1$_.GetLazyLazyMessage(GetArena()), ptr);\n",
                   FieldName(field));
             } else {
-              format_("ptr = ctx->ParseMessage(&$1$_, ptr);\n",
+              format_("ptr = ctx->ParseMessage(&$1$_.GetLazyLazyMessage(GetArena()), ptr);\n",
                       FieldName(field));
             }
           } else if (IsImplicitWeakField(field, options_, scc_analyzer_)) {
