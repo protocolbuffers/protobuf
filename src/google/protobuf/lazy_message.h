@@ -175,7 +175,8 @@ struct LazyMessage : LazyMessageBase
 		if (IsLazy())
 		{
 			std::string* str = GetLazyString();
-			str->clear();
+			delete str;
+			SetNull();
 		}
 		else
 		{
