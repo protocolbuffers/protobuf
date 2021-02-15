@@ -11,7 +11,7 @@ class Message;
 struct LazyMessageBase
 {
 	uintptr_t ptr_;
-
+	LazyMessageBase():ptr_(0){}
 	bool IsLazy() const
 	{
 		return ptr_ & 1;
@@ -47,12 +47,10 @@ struct LazyMessage : LazyMessageBase
 {
 	LazyMessage()
 	{
-		SetNull();
 	}
 
 	constexpr LazyMessage(nullptr_t n)
 	{
-		SetNull();
 	}
 
 	void CopyLazyFrom(const LazyMessage& m)
@@ -90,7 +88,7 @@ struct LazyMessage : LazyMessageBase
 		return ptr_ != 0;
 	}
 
-	template <typename bool lite>
+	template <bool lite>
 	void Delete()
 	{
 		if (IsLazy())
@@ -214,7 +212,7 @@ private:
 	{
 		if (arena != nullptr)
 		{
-			return MessageType::CreateMaybeMessage< MessageType>(arena);
+			return MessageType::template CreateMaybeMessage<MessageType>(arena);
 		}
 		else
 		{
@@ -224,3 +222,4 @@ private:
 };
 
 }}
+
