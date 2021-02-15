@@ -213,6 +213,8 @@ namespace Google.Protobuf
             }
         }
 
+        // Calling this method with non-ASCII content will break.
+        // Content must be verified to be all ASCII before using this method.
         private static void WriteAsciiStringToBuffer(Span<byte> buffer, ref WriterInternalState state, string value, int length)
         {
             ref char sourceChars = ref MemoryMarshal.GetReference(value.AsSpan());
@@ -283,6 +285,9 @@ namespace Google.Protobuf
             else
 #endif
             {
+                // Fallback to non-SIMD approach when SIMD is not available.
+                // This could happen either because the APIs are not available, or hardware doesn't support it.
+                // Processing 4 chars at a time in this fallback is still faster than casting one char at a time.
                 if (BitConverter.IsLittleEndian)
                 {
                     outputBuffer = (byte)value;
