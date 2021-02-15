@@ -230,6 +230,7 @@ cc_library(
         "src/google/protobuf/io/printer.cc",
         "src/google/protobuf/io/tokenizer.cc",
         "src/google/protobuf/map_field.cc",
+        "src/google/protobuf/lazy_message.cc",
         "src/google/protobuf/message.cc",
         "src/google/protobuf/reflection_ops.cc",
         "src/google/protobuf/service.cc",

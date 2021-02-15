@@ -241,6 +241,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/generated_message_table_driven_lite.h        \
   google/protobuf/generated_message_table_driven.cc            \
   google/protobuf/map_field.cc                                 \
+  google/protobuf/lazy_message.cc                              \
   google/protobuf/message.cc                                   \
   google/protobuf/reflection_internal.h                        \
   google/protobuf/reflection_ops.cc                            \
