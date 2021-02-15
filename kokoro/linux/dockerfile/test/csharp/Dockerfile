@@ -27,7 +27,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get update && apt-get install -y ca-certificates && apt-get clean
 
 # dotnet SDK prerequisites
-RUN apt-get update && apt-get install -y libunwind8 && apt-get clean
+RUN apt-get update && apt-get install -y libunwind8 libicu63 && apt-get clean
 
 # Install dotnet SDK via install script
 RUN wget -q https://dot.net/v1/dotnet-install.sh && \
