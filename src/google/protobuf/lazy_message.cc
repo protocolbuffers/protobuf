@@ -15,7 +15,8 @@ Message** LazyMessageBase::GetLazyMessage(const Message& m, const FieldDescripto
 		delete str;
 		ptr_ = (uintptr_t)new_message;
 	}
-	return &((Message*)(ptr_));
+	return (Message**)(&ptr_);
 }
 
 }}
+
