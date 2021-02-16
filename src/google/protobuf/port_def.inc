@@ -477,7 +477,7 @@
 #endif  // _MSC_VER
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
-// Don't let Objective-C Macros interfere with proto identifiers with the same 
+// Don't let Objective-C Macros interfere with proto identifiers with the same
 // name.
 #pragma push_macro("DEBUG")
 #undef DEBUG
@@ -561,17 +561,6 @@
 // This experiment is purely for the purpose of gathering data. All code guarded
 // by this flag is supposed to be removed after this experiment.
 // #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
-
-#if defined(__cpp_constinit)
-#define PROTOBUF_CONSTINIT constinit
-#elif defined(__has_cpp_attribute)
-#if __has_cpp_attribute(clang::require_constant_initialization)
-#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#endif
-#endif
-#ifndef PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTINIT
-#endif
 
 #if defined(__cpp_constinit)
 #define PROTOBUF_CONSTINIT constinit
