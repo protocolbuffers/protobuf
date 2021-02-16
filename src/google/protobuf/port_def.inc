@@ -562,11 +562,13 @@
 // by this flag is supposed to be removed after this experiment.
 // #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
 
+#ifndef __MINGW32__
 #if defined(__cpp_constinit)
 #define PROTOBUF_CONSTINIT constinit
 #elif defined(__has_cpp_attribute)
 #if __has_cpp_attribute(clang::require_constant_initialization)
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#endif
 #endif
 #endif
 #ifndef PROTOBUF_CONSTINIT
