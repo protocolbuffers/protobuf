@@ -142,6 +142,15 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Checks if the given message descriptor has a special well-known type handler.
+        /// </summary>
+        /// <param name="descriptor">Descriptor of message type to check.</param>
+        private bool IsWellKnownType(MessageDescriptor descriptor)
+        {
+            return WellKnownTypeHandlers.ContainsKey(descriptor.FullName);
+        }
+
+        /// <summary>
         /// Merges the given message using data from the given tokenizer. In most cases, the next
         /// token should be a "start object" token, but wrapper types and nullity can invalidate
         /// that assumption. This is implemented as an LL(1) recursive descent parser over the stream
@@ -154,7 +163,7 @@ namespace Google.Protobuf
             {
                 throw InvalidProtocolBufferException.JsonRecursionLimitExceeded();
             }
-            if (message.Descriptor.IsWellKnownType)
+            if (IsWellKnownType(message.Descriptor))
             {
                 if (WellKnownTypeHandlers.TryGetValue(message.Descriptor.FullName, out var handler))
                 {
@@ -543,7 +552,7 @@ namespace Google.Protobuf
             // as normal. Our original tokenizer should end up at the end of the object.
             var replay = JsonTokenizer.FromReplayedTokens(tokens, tokenizer);
             var body = descriptor.Parser.CreateTemplate();
-            if (descriptor.IsWellKnownType)
+            if (IsWellKnownType(descriptor))
             {
                 MergeWellKnownTypeAnyBody(body, replay);
             }

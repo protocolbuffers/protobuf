@@ -196,7 +196,7 @@ namespace Google.Protobuf
             ProtoPreconditions.CheckNotNull(message, nameof(message));
             ProtoPreconditions.CheckNotNull(writer, nameof(writer));
 
-            if (message.Descriptor.IsWellKnownType)
+            if (IsWellKnownType(message.Descriptor))
             {
                 WriteWellKnownTypeValue(writer, message.Descriptor, message);
             }
@@ -204,6 +204,15 @@ namespace Google.Protobuf
             {
                 WriteMessage(writer, message);
             }
+        }
+
+        /// <summary>
+        /// Checks if the given message descriptor has a special well-known type handler.
+        /// </summary>
+        /// <param name="descriptor">Descriptor of message type to check.</param>
+        private bool IsWellKnownType(MessageDescriptor descriptor)
+        {
+            return WellKnownTypeHandlers.ContainsKey(descriptor.FullName);
         }
 
         /// <summary>
@@ -549,7 +558,7 @@ namespace Google.Protobuf
             writer.Write(NameValueSeparator);
             WriteString(writer, typeUrl);
 
-            if (descriptor.IsWellKnownType)
+            if (IsWellKnownType(descriptor))
             {
                 writer.Write(PropertySeparator);
                 WriteString(writer, AnyWellKnownTypeValueField);
