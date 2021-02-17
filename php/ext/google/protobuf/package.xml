@@ -10,10 +10,10 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2021-02-05</date>
- <time>14:15:36</time>
+ <date>2021-02-17</date>
+ <time>09:10:33</time>
  <version>
-  <release>3.15.0RC1</release>
+  <release>3.15.0RC2</release>
   <api>3.15.0</api>
  </version>
  <stability>
@@ -24,9 +24,9 @@
  <notes>
  New changes in 3.15.0:
   * unregister INI entries and fix invalid read on shutdown (#8042)
-  * Fix PhpDoc comments for message accessors to include "|null". (#8136)
+  * Fix PhpDoc comments for message accessors to include &quot;|null&quot;. (#8136)
   * fix: convert native PHP floats to single precision (#8187)
-  * Fixed PHP to support field numbers >=2**28. (#8235)
+  * Fixed PHP to support field numbers &gt;=2**28. (#8235)
   * feat: add support for deprecated fields to PHP compiler (#8223)
   * Protect against stack overflow if the user derives from Message. (#8248)
   * Fixed clone for Message, RepeatedField, and MapField. (#8245)
@@ -771,6 +771,21 @@ G  A release.
    </stability>
    <date>2021-02-05</date>
    <time>14:15:36</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.15.0RC2</release>
+    <api>3.15.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2021-02-17</date>
+   <time>09:10:33</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>
