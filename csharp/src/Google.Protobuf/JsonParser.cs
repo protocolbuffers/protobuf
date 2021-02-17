@@ -156,8 +156,7 @@ namespace Google.Protobuf
             }
             if (message.Descriptor.IsWellKnownType)
             {
-                Action<JsonParser, IMessage, JsonTokenizer> handler;
-                if (WellKnownTypeHandlers.TryGetValue(message.Descriptor.FullName, out handler))
+                if (WellKnownTypeHandlers.TryGetValue(message.Descriptor.FullName, out var handler))
                 {
                     handler(this, message, tokenizer);
                     return;
