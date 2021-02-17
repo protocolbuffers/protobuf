@@ -16,8 +16,8 @@ generation functionality.
 
 To use PHP runtime library requires:
 
-- C extension: PHP 5.5, 5.6, or 7.
-- [PHP package](http://php.net/downloads.php): PHP 5.5, 5.6 or 7.
+- C extension: PHP 7.x, 8.0
+- [PHP package](http://php.net/downloads.php): PHP 5.5, 5.6, 7.x, or 8.0.
 
 ## Installation
 
