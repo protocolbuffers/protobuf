@@ -676,6 +676,80 @@ namespace Google.Protobuf
             AssertWriteValue(value, "{ 'FieldName13': 0 }");
         }
 
+        [Test]
+        public void CustomHandler_Message()
+        {
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default);
+            formatter.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+            var message = new ForeignMessage {C = 10};
+
+            AssertJson("10", formatter.Format(message));
+            // Ensure that the formatter has no effect on any other instance:
+            AssertJson("{ 'c': 10 }", JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void CustomHandler_RepeatedMessage()
+        {
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default);
+            formatter.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+            var message = new TestAllTypes
+                {RepeatedForeignMessage = {new ForeignMessage {C = 10}, new ForeignMessage {C = 20}}};
+
+            AssertJson("{ 'repeatedForeignMessage': [ 10, 20 ] }",
+                formatter.Format(message));
+            // Ensure that the formatter has no effect on any other instance:
+            AssertJson("{ 'repeatedForeignMessage': [ { 'c': 10 }, { 'c': 20 } ] }",
+                JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void CustomHandler_MapField_IntWellKnown()
+        {
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default);
+            formatter.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+            var message = new TestMap
+                {MapInt32ForeignMessage = {{42, new ForeignMessage {C = 10}}, {36, new ForeignMessage {C = 20}}}};
+
+            AssertJson("{ 'mapInt32ForeignMessage': { '42': 10, '36': 20 } }",
+                formatter.Format(message));
+
+            // Ensure that the formatter has no effect on any other instance:
+            AssertJson("{ 'mapInt32ForeignMessage': { '42': { 'c': 10 }, '36': { 'c': 20 } } }",
+                JsonFormatter.Default.Format(message));
+        }
+
+        [Test]
+        public void CustomHandler_AnyWellKnownType()
+        {
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithTypeRegistry(TypeRegistry.FromMessages(ForeignMessage.Descriptor)));
+            formatter.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+            var message = new ForeignMessage {C = 10};
+            var any = Any.Pack(message);
+            AssertJson("{ '@type': 'type.googleapis.com/protobuf_unittest3.ForeignMessage', 'value': 10 }", formatter.Format(any));
+        }
+
+        [Test]
+        public void CustomHandler_AnyNested()
+        {
+            var registry = TypeRegistry.FromMessages(TestWellKnownTypes.Descriptor, ForeignMessage.Descriptor);
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithTypeRegistry(registry));
+            formatter.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+
+            // Nest an Any as the value of an Any.
+            var doubleNestedMessage = new ForeignMessage { C = 20 };
+            var nestedMessage = Any.Pack(doubleNestedMessage);
+            var message = new TestWellKnownTypes { AnyField = Any.Pack(nestedMessage) };
+            AssertJson("{ 'anyField': { '@type': 'type.googleapis.com/google.protobuf.Any', 'value': { '@type': 'type.googleapis.com/protobuf_unittest3.ForeignMessage', 'value': 20 } } }",
+                formatter.Format(message));
+        }
+
+        private static void ForeignMessageCustomHandler(JsonFormatter formatter, TextWriter writer, MessageDescriptor descriptor, object value)
+        {
+            var m = (ForeignMessage) value;
+            writer.Write(m.C);
+        }
+
         private static void AssertWriteValue(object value, string expectedJson)
         {
             var writer = new StringWriter();

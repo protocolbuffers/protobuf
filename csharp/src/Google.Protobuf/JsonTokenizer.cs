@@ -50,7 +50,7 @@ namespace Google.Protobuf
     /// <para>Implementation details: the base class handles single token push-back and </para>
     /// <para>Not thread-safe.</para>
     /// </remarks>
-    internal abstract class JsonTokenizer
+    public abstract class JsonTokenizer
     {
         private JsonToken bufferedToken;
 

@@ -70,7 +70,7 @@ namespace Google.Protobuf
 
         // TODO: Consider introducing a class containing parse state of the parser, tokenizer and depth. That would simplify these handlers
         // and the signatures of various methods.
-        private static readonly Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
+        private readonly Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
             WellKnownTypeHandlers = new Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
         {
             { Timestamp.Descriptor.FullName, (parser, message, tokenizer) => MergeTimestamp(message, tokenizer.Next()) },
@@ -448,6 +448,28 @@ namespace Google.Protobuf
             IMessage message = descriptor.Parser.CreateTemplate();
             Merge(message, jsonReader);
             return message;
+        }
+
+        /// <summary>
+        /// Adds a new well-known type with it's handler to the parser.
+        /// </summary>
+        /// <param name="handler">Handler to execute for parsing messages of the well-known type.</param>
+        /// <typeparam name="T">The well-known type of message.</typeparam>
+        public void AddWellKnownTypeHandlers<T>(Action<JsonParser, IMessage, JsonTokenizer> handler) where T : IMessage, new()
+        {
+            T message = new T();
+            AddWellKnownTypeHandlers(message.Descriptor, handler);
+        }
+
+        /// <summary>
+        /// Adds a new well-known type with it's handler to the parser.
+        /// </summary>
+        /// <param name="descriptor">Descriptor of the well-known type.</param>
+        /// <param name="handler">Handler to execute for parsing messages of the well-known type.</param>
+        /// <exception cref="ArgumentException">An handler for the same well-known type is already registered.</exception>
+        public void AddWellKnownTypeHandlers(MessageDescriptor descriptor, Action<JsonParser, IMessage, JsonTokenizer> handler)
+        {
+            WellKnownTypeHandlers.Add(descriptor.FullName, handler);
         }
 
         private void MergeStructValue(IMessage message, JsonTokenizer tokenizer)

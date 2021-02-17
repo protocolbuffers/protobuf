@@ -194,9 +194,9 @@ namespace Google.Protobuf
             new MessageParser(factory, discardUnknownFields, Extensions);
 
         /// <summary>
-        /// Creates a new message parser which registers extensions from the specified registry upon creating the message instance
+        /// Creates a new message parser which registers extensions from the specified registry upon creating the message instance.
         /// </summary>
-        /// <param name="registry">The extensions to register</param>
+        /// <param name="registry">The extensions to register.</param>
         /// <returns>A newly configured message parser.</returns>
         public MessageParser WithExtensionRegistry(ExtensionRegistry registry) =>
             new MessageParser(factory, DiscardUnknownFields, registry);
@@ -366,9 +366,9 @@ namespace Google.Protobuf
             new MessageParser<T>(factory, discardUnknownFields, Extensions);
 
         /// <summary>
-        /// Creates a new message parser which registers extensions from the specified registry upon creating the message instance
+        /// Creates a new message parser which registers extensions from the specified registry upon creating the message instance.
         /// </summary>
-        /// <param name="registry">The extensions to register</param>
+        /// <param name="registry">The extensions to register.</param>
         /// <returns>A newly configured message parser.</returns>
         public new MessageParser<T> WithExtensionRegistry(ExtensionRegistry registry) =>
             new MessageParser<T>(factory, DiscardUnknownFields, registry);

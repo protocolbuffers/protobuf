@@ -1016,6 +1016,84 @@ namespace Google.Protobuf
             Assert.AreEqual(NullValue.NullValue, message.NullValue);
         }
 
+        [Test]
+        public void CustomHandler_Message()
+        {
+            var jsonParser = new JsonParser(JsonParser.Settings.Default);
+            jsonParser.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+            string json = "10";
+
+            Assert.AreEqual(new ForeignMessage {C = 10}, jsonParser.Parse<ForeignMessage>(json));
+        }
+
+        [Test]
+        public void CustomHandler_RepeatedMessage()
+        {
+            var jsonParser = new JsonParser(JsonParser.Settings.Default);
+            jsonParser.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+
+            string json = "{ \"repeatedForeignMessage\": [ 10, 20 ] }";
+            Assert.AreEqual(new TestAllTypes{RepeatedForeignMessage = {new ForeignMessage {C = 10}, new ForeignMessage {C = 20}}},
+                jsonParser.Parse<TestAllTypes>(json));
+        }
+
+        [Test]
+        public void CustomHandler_MapField_IntWellKnown()
+        {
+            var jsonParser = new JsonParser(JsonParser.Settings.Default);
+            jsonParser.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+
+            string json = "{ \"mapInt32ForeignMessage\": { \"42\": 10, \"36\": 20 } }";
+            Assert.AreEqual(new TestMap{MapInt32ForeignMessage = {{42, new ForeignMessage {C = 10}}, {36, new ForeignMessage {C = 20}}}},
+                jsonParser.Parse<TestMap>(json));
+        }
+
+        [Test]
+        public void CustomHandler_Any_WellKnownType()
+        {
+            var registry = TypeRegistry.FromMessages(ForeignMessage.Descriptor);
+            var jsonParser = new JsonParser(JsonParser.Settings.Default.WithTypeRegistry(registry));
+            jsonParser.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+
+            string json = "{ \"@type\": \"type.googleapis.com/protobuf_unittest3.ForeignMessage\", \"value\": 10 }";
+            Assert.AreEqual(Any.Pack(new ForeignMessage {C = 10}), jsonParser.Parse<Any>(json));
+            string valueFirstJson = "{ \"value\": 10, \"@type\": \"type.googleapis.com/protobuf_unittest3.ForeignMessage\" }";
+            Assert.AreEqual(Any.Pack(new ForeignMessage {C = 10}), jsonParser.Parse<Any>(valueFirstJson));
+        }
+
+        [Test]
+        public void CustomHandler_Any_Nested()
+        {
+            var registry = TypeRegistry.FromMessages(TestWellKnownTypes.Descriptor, ForeignMessage.Descriptor);
+            var jsonParser = new JsonParser(JsonParser.Settings.Default.WithTypeRegistry(registry));
+            jsonParser.AddWellKnownTypeHandlers<ForeignMessage>(ForeignMessageCustomHandler);
+
+            var doubleNestedMessage = new ForeignMessage { C = 20 };
+            var nestedMessage = Any.Pack(doubleNestedMessage);
+            var message = new TestWellKnownTypes { AnyField = Any.Pack(nestedMessage) };
+
+            string json = "{ \"anyField\": { \"@type\": \"type.googleapis.com/google.protobuf.Any\", \"value\": { \"@type\": \"type.googleapis.com/protobuf_unittest3.ForeignMessage\", \"value\": 20 } } }";
+            Assert.AreEqual(message, jsonParser.Parse<TestWellKnownTypes>(json));
+        }
+
+        private void ForeignMessageCustomHandler(JsonParser parser, IMessage message, JsonTokenizer tokenizer)
+        {
+            var token = tokenizer.Next();
+            if (token.Type != JsonToken.TokenType.Number)
+            {
+                throw new InvalidProtocolBufferException("Expected number value for ForeignMessage");
+            }
+
+            try
+            {
+                message.Descriptor.Fields[ForeignMessage.CFieldNumber].Accessor.SetValue(message, (int) token.NumberValue);
+            }
+            catch
+            {
+                throw new InvalidProtocolBufferException("Invalid ForeignMessage value: " + token.NumberValue);
+            }
+        }
+
         /// <summary>
         /// Various tests use strings which have quotes round them for parsing or as the result
         /// of formatting, but without those quotes being specified in the tests (for the sake of readability).

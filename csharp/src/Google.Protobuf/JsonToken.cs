@@ -34,7 +34,10 @@ using System;
 
 namespace Google.Protobuf
 {
-    internal sealed class JsonToken : IEquatable<JsonToken>
+    /// <summary>
+    /// Represents one JSON tokenizer.
+    /// </summary>
+    public sealed class JsonToken : IEquatable<JsonToken>
     {
         // Tokens with no value can be reused.
         private static readonly JsonToken _true = new JsonToken(TokenType.True);

@@ -111,7 +111,7 @@ namespace Google.Protobuf
           "\\u009c", "\\u009d", "\\u009e", "\\u009f"
         };
 
-        private static readonly Dictionary<string, Action<JsonFormatter, TextWriter, MessageDescriptor, object>>
+        private readonly Dictionary<string, Action<JsonFormatter, TextWriter, MessageDescriptor, object>>
             WellKnownTypeHandlers = new Dictionary<string, Action<JsonFormatter, TextWriter, MessageDescriptor, object>>
             {
                 { Timestamp.Descriptor.FullName, (formatter, writer, descriptor, value) => formatter.WriteTimestamp(writer, (IMessage)value) },
@@ -204,6 +204,28 @@ namespace Google.Protobuf
             {
                 WriteMessage(writer, message);
             }
+        }
+
+        /// <summary>
+        /// Adds a new well-known type with it's handler to the formatter.
+        /// </summary>
+        /// <param name="handler">Handler to execute for parsing messages of the well-known type.</param>
+        /// <typeparam name="T">The well-known type of message.</typeparam>
+        public void AddWellKnownTypeHandlers<T>(Action<JsonFormatter, TextWriter, MessageDescriptor, object> handler) where T : IMessage, new()
+        {
+            T message = new T();
+            AddWellKnownTypeHandlers(message.Descriptor, handler);
+        }
+
+        /// <summary>
+        /// Adds a new well-known type with it's handler to the formatter.
+        /// </summary>
+        /// <param name="descriptor">Descriptor of the well-known type.</param>
+        /// <param name="handler">Handler to execute for parsing messages of the well-known type.</param>
+        /// <exception cref="ArgumentException">An handler for the same well-known type is already registered.</exception>
+        public void AddWellKnownTypeHandlers(MessageDescriptor descriptor, Action<JsonFormatter, TextWriter, MessageDescriptor, object> handler)
+        {
+            WellKnownTypeHandlers.Add(descriptor.FullName, handler);
         }
 
         /// <summary>
