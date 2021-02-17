@@ -32,10 +32,7 @@
 
 using Google.Protobuf.Collections;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security;
 
 namespace Google.Protobuf

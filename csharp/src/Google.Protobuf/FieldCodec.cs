@@ -31,7 +31,6 @@
 #endregion
 
 using Google.Protobuf.Collections;
-using Google.Protobuf.Compatibility;
 using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;

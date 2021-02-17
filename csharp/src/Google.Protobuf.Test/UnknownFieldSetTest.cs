@@ -33,7 +33,6 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
-using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 
 namespace Google.Protobuf

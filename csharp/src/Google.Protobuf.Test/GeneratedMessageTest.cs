@@ -33,10 +33,7 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
-using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Google.Protobuf.WellKnownTypes;
 

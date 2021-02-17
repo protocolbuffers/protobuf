@@ -35,7 +35,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Security;
-using System.Threading;
 
 namespace Google.Protobuf.Collections
 {

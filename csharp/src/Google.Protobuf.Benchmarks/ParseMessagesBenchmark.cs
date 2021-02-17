@@ -34,7 +34,6 @@ using BenchmarkDotNet.Attributes;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Buffers;
 using Google.Protobuf.WellKnownTypes;
 using Benchmarks.Proto3;

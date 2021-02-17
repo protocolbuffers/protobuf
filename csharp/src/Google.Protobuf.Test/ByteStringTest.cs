@@ -39,8 +39,6 @@ using System.Collections;
 using System.Linq;
 using System.Buffers;
 using System.Runtime.InteropServices;
-using System.Threading;
-using System.Runtime.CompilerServices;
 #if !NET35
 using System.Threading.Tasks;
 #endif

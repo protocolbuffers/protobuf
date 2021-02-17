@@ -32,7 +32,6 @@
 
 using Google.Protobuf.Collections;
 using System;
-using System.Linq;
 
 namespace Google.Protobuf
 {
