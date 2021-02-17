@@ -1,4 +1,4 @@
-# Native images for the Java Virtual Machine (JVM)
+# Ahead Of Time (AOT) compilation for the Java Virtual Machine (JVM)"
 
 Ahead Of Time (AOT) compilation build tools such as those provided by [GraalVM's `native-image`](https://www.graalvm.org/reference-manual/native-image/) can require some configuration when using protobuf.
 Protobuf for the JVM uses reflection and some of its target classes are not possible to determine in advance.
