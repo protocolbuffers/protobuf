@@ -61,7 +61,6 @@ namespace Google.Protobuf
         internal const string AnyTypeUrlField = "@type";
         internal const string AnyDiagnosticValueField = "@value";
         internal const string AnyWellKnownTypeValueField = "value";
-        private const string TypeUrlPrefix = "type.googleapis.com";
         private const string NameValueSeparator = ": ";
         private const string PropertySeparator = ", ";
 
