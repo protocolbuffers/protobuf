@@ -32,7 +32,7 @@ static void jsonenc_scalar(jsonenc *e, upb_msgval val, const upb_fielddef *f);
 static void jsonenc_msgfield(jsonenc *e, const upb_msg *msg,
                              const upb_msgdef *m);
 static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
-                              const upb_msgdef *m);
+                              const upb_msgdef *m, bool first);
 static void jsonenc_value(jsonenc *e, const upb_msg *msg, const upb_msgdef *m);
 
 UPB_NORETURN static void jsonenc_err(jsonenc *e, const char *msg) {
@@ -342,14 +342,13 @@ static void jsonenc_any(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
 
   jsonenc_putstr(e, "{\"@type\":");
   jsonenc_string(e, type_url);
-  jsonenc_putstr(e, ",");
 
   if (upb_msgdef_wellknowntype(any_m) == UPB_WELLKNOWN_UNSPECIFIED) {
     /* Regular messages: {"@type": "...","foo": 1, "bar": 2} */
-    jsonenc_msgfields(e, any, any_m);
+    jsonenc_msgfields(e, any, any_m, false);
   } else {
     /* Well-known type: {"@type": "...","value": <well-known encoding>} */
-    jsonenc_putstr(e, "\"value\":");
+    jsonenc_putstr(e, ",\"value\":");
     jsonenc_msgfield(e, any, any_m);
   }
 
@@ -652,10 +651,9 @@ static void jsonenc_fieldval(jsonenc *e, const upb_fielddef *f,
 }
 
 static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
-                              const upb_msgdef *m) {
+                              const upb_msgdef *m, bool first) {
   upb_msgval val;
   const upb_fielddef *f;
-  bool first = true;
 
   if (e->options & UPB_JSONENC_EMITDEFAULTS) {
     /* Iterate over all fields. */
@@ -678,7 +676,7 @@ static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
 
 static void jsonenc_msg(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
   jsonenc_putstr(e, "{");
-  jsonenc_msgfields(e, msg, m);
+  jsonenc_msgfields(e, msg, m, true);
   jsonenc_putstr(e, "}");
 }
 
