@@ -1287,7 +1287,7 @@ const upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
         if (!rb_obj_is_kind_of(value, rb_cNumeric)) goto badtype;
 
         sec.int64_val = NUM2LL(value);
-        nsec.int32_val = (NUM2DBL(value) - NUM2LL(value)) * 1000000000;
+        nsec.int32_val = round((NUM2DBL(value) - NUM2LL(value)) * 1000000000);
         upb_msg_set(msg, sec_f, sec, arena);
         upb_msg_set(msg, nsec_f, nsec, arena);
         return msg;
