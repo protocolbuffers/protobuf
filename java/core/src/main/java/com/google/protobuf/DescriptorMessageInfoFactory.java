@@ -63,7 +63,7 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   private static final DescriptorMessageInfoFactory instance = new DescriptorMessageInfoFactory();
 
   /**
-   * Names that should be avoided as field names (in lowerCamelCase format).
+   * Names that should be avoided (in UpperCamelCase format).
    * Using them will cause the compiler to generate accessors whose names are
    * colliding with methods defined in base classes.
    *
@@ -73,19 +73,19 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
   private static final Set<String> specialFieldNames =
       new HashSet<>(Arrays.asList(
         // java.lang.Object:
-        "class",
+        "Class",
         // com.google.protobuf.MessageLiteOrBuilder:
-        "defaultInstanceForType",
+        "DefaultInstanceForType",
         // com.google.protobuf.MessageLite:
-        "parserForType",
-        "serializedSize",
+        "ParserForType",
+        "SerializedSize",
         // com.google.protobuf.MessageOrBuilder:
-        "allFields",
-        "descriptorForType",
-        "initializationErrorString",
-        "unknownFields",
+        "AllFields",
+        "DescriptorForType",
+        "InitializationErrorString",
+        "UnknownFields",
         // obsolete. kept for backwards compatibility of generated code
-        "cachedSize"));
+        "CachedSize"));
 
   // Disallow construction - it's a singleton.
   private DescriptorMessageInfoFactory() {}
@@ -616,22 +616,25 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     String name = (fd.getType() == FieldDescriptor.Type.GROUP)
                   ? fd.getMessageType().getName()
                   : fd.getName();
-    String nameInCamelCase = snakeCaseToCamelCase(name);
-    String suffix = specialFieldNames.contains(nameInCamelCase) ? "__" : "_";
-    return nameInCamelCase + suffix;
+    String suffix = specialFieldNames.contains(snakeCaseToCamelCase(name, true)) ? "__" : "_";
+    return snakeCaseToCamelCase(name, false) + suffix;
   }
 
   private static String getCachedSizeFieldName(FieldDescriptor fd) {
     return snakeCaseToCamelCase(fd.getName()) + "MemoizedSerializedSize";
   }
 
+  private static String snakeCaseToCamelCase(String snakeCase) {
+  	return snakeCaseToCamelCase(snakeCase, false);
+  }
+
   /**
    * This method must match exactly with the corresponding function in protocol compiler. See:
-   * https://github.com/google/protobuf/blob/v3.0.0/src/google/protobuf/compiler/java/java_helpers.cc#L153
+   * https://github.com/protocolbuffers/protobuf/blob/v3.15.0/src/google/protobuf/compiler/java/java_helpers.cc#L158
    */
-  private static String snakeCaseToCamelCase(String snakeCase) {
+  private static String snakeCaseToCamelCase(String snakeCase, boolean capFirst) {
     StringBuilder sb = new StringBuilder(snakeCase.length() + 1);
-    boolean capNext = false;
+    boolean capNext = capFirst;
     for (int ctr = 0; ctr < snakeCase.length(); ctr++) {
       char next = snakeCase.charAt(ctr);
       if (next == '_') {

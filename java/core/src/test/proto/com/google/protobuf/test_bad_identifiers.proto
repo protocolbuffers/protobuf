@@ -62,6 +62,25 @@ message ForbiddenWordsUnderscoreMessage {
   optional bool cached_size = 9;
 }
 
+// Message with field names using leading underscores that conflict with accessors in the base message class in java.
+// See kForbiddenWordList in src/google/protobuf/compiler/java/java_helpers.cc
+message ForbiddenWordsLeadingUnderscoreMessage {
+  // java.lang.Object
+  optional bool _class = 1;
+  // com.google.protobuf.MessageLiteOrBuilder
+  optional bool _default_instance_for_type = 2;
+  // com.google.protobuf.MessageLite
+  optional bool _parser_for_type = 3;
+  optional bool _serialized_size = 4;
+  // com.google.protobuf.MessageOrBuilder
+  optional bool _all_fields = 5;
+  optional bool _descriptor_for_type = 6;
+  optional bool _initialization_error_string = 7;
+  optional bool _unknown_fields = 8;
+  // obsolete. kept for backwards compatibility of generated code
+  optional bool _cached_size = 9;
+}
+
 // Message with field names in camel case that conflict with accessors in the base message class in java.
 // See kForbiddenWordList in src/google/protobuf/compiler/java/java_helpers.cc
 message ForbiddenWordsCamelMessage {
