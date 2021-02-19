@@ -1399,7 +1399,8 @@ static const void *symtab_resolve(symtab_addctx *ctx, const upb_fielddef *f,
   }
 
 notfound:
-  symtab_errf(ctx, "couldn't resolve name '%s'", sym.data);
+  symtab_errf(ctx, "couldn't resolve name '" UPB_STRVIEW_FORMAT "'",
+              UPB_STRVIEW_ARGS(sym));
 }
 
 static void create_oneofdef(
