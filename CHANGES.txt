@@ -1,3 +1,8 @@
+2021-02-05 version 3.15.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Bugfix for Message.[] for repeated or map fields (#8313)
+
 2021-02-05 version 3.15.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler
