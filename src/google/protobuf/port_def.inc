@@ -575,17 +575,6 @@
 #define PROTOBUF_CONSTINIT
 #endif
 
-#if defined(__cpp_constinit)
-#define PROTOBUF_CONSTINIT constinit
-#elif defined(__has_cpp_attribute)
-#if __has_cpp_attribute(clang::require_constant_initialization)
-#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#endif
-#endif
-#ifndef PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTINIT
-#endif
-
 // Some globals with an empty non-trivial destructor are annotated with
 // no_destroy for performance reasons. It reduces the cost of these globals in
 // non-opt mode and under sanitizers.
