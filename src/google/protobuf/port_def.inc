@@ -335,7 +335,7 @@
 
 // Shared google3/opensource definitions. //////////////////////////////////////
 
-#define PROTOBUF_VERSION 3015000
+#define PROTOBUF_VERSION 3015001
 #define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3015000
 #define PROTOBUF_MIN_PROTOC_VERSION 3015000
 #define PROTOBUF_VERSION_SUFFIX ""
@@ -562,7 +562,9 @@
 // by this flag is supposed to be removed after this experiment.
 // #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
 
-#if defined(__cpp_constinit)
+// Our use of constinit does not yet work with GCC:
+// https://github.com/protocolbuffers/protobuf/issues/8310
+#if defined(__cpp_constinit) && !defined(__GNUC__)
 #define PROTOBUF_CONSTINIT constinit
 #elif defined(__has_cpp_attribute)
 #if __has_cpp_attribute(clang::require_constant_initialization)

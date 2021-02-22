@@ -1701,6 +1701,12 @@ module CommonTests
     m = proto_module::TimeMessage.new(duration: 1.1)
     assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 100_000_000), m.duration
 
+    m = proto_module::TimeMessage.new(duration: 123.321)
+    assert_equal Google::Protobuf::Duration.new(seconds: 123, nanos: 321_000_000), m.duration
+
+    m = proto_module::TimeMessage.new(duration: -123.321)
+    assert_equal Google::Protobuf::Duration.new(seconds: -123, nanos: -321_000_000), m.duration
+
     assert_raise(Google::Protobuf::TypeError) { m.duration = '2' }
     assert_raise(Google::Protobuf::TypeError) { m.duration = proto_module::TimeMessage.new }
   end
