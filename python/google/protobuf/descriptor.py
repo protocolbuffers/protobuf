@@ -912,6 +912,24 @@ class MethodDescriptor(DescriptorBase):
     self.containing_service = containing_service
     self.input_type = input_type
     self.output_type = output_type
+  
+  def CopyToProto(self, proto):
+    """Copies this to a descriptor_pb2.MethodDescriptorProto.
+
+    Args:
+      proto (descriptor_pb2.MethodDescriptorProto): An empty descriptor proto.
+
+    Raises:
+      Error: If self couldn't be serialized, due to too few constructor
+        arguments.
+    """
+    if self.containing_service is not None:
+      from google.protobuf import descriptor_pb2
+      service_proto = descriptor_pb2.ServiceDescriptorProto()
+      self.containing_service.CopyToProto(service_proto)
+      proto.CopyFrom(service_proto.method[self.index])
+    else:
+      raise Error('Descriptor does not contain a service.')
 
 
 class FileDescriptor(DescriptorBase):
