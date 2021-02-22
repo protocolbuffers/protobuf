@@ -111,16 +111,6 @@ Then in your `.c` file you can #include the generated header:
 /* Insert code that uses generated types. */
 ```
 
-## Old "handlers" interfaces
-
-This library contains several semi-deprecated interfaces (see BUILD
-file for more info about which interfaces are deprecated).  These
-deprecated interfaces are still used in some significant projects,
-such as the Ruby and PHP C bindings for protobuf in the [main protobuf
-repo](https://github.com/protocolbuffers/protobuf).  The goal is to
-migrate the Ruby/PHP bindings to use the newer, simpler interfaces
-instead.  Please do not use the old interfaces in new code.
-
 ## Lua bindings
 
 This repo has some Lua bindings for the core library.  These are

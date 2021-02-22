@@ -109,9 +109,6 @@ const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
 const upb_msglayout_field *upb_fielddef_layout(const upb_fielddef *f);
 
-/* Internal only. */
-uint32_t upb_fielddef_selectorbase(const upb_fielddef *f);
-
 /* upb_oneofdef ***************************************************************/
 
 typedef upb_inttable_iter upb_oneof_iter;
@@ -195,10 +192,6 @@ UPB_INLINE const upb_fielddef *upb_msgdef_ntofz(const upb_msgdef *m,
                                                 const char *name) {
   return upb_msgdef_ntof(m, name, strlen(name));
 }
-
-/* Internal-only. */
-size_t upb_msgdef_selectorcount(const upb_msgdef *m);
-uint32_t upb_msgdef_submsgfieldcount(const upb_msgdef *m);
 
 /* Lookup of either field or oneof by name.  Returns whether either was found.
  * If the return is true, then the found def will be set, and the non-found
