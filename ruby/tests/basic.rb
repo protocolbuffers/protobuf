@@ -31,6 +31,33 @@ module BasicTest
     end
     include CommonTests
 
+    def test_issue_8311_crash
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("inner.proto", :syntax => :proto3) do
+          add_message "Inner" do
+            # Removing either of these fixes the segfault.
+            optional :foo, :string, 1
+            optional :bar, :string, 2
+          end
+        end
+      end
+
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("outer.proto", :syntax => :proto3) do
+          add_message "Outer" do
+            repeated :inners, :message, 1, "Inner"
+          end
+        end
+      end
+
+      outer = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("Outer").msgclass
+
+      outer_proto = outer.new(
+          inners: []
+      )
+      outer_proto['inners'].to_s
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?
