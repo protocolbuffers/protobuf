@@ -53,6 +53,7 @@ from google.protobuf import wrappers_pb2
 from google.protobuf import any_test_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
+from google.protobuf.internal import type_checkers
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import json_format
@@ -1257,6 +1258,14 @@ class JsonFormatTest(JsonFormatBase):
         json.dumps({'boolValue': True, 'int32Value': 1, 'int64Value': '3',
                     'uint32Value': 4, 'stringValue': 'bla'},
                    indent=2, sort_keys=True))
+
+
+  def testFloatRoundTrip(self):
+    expected = type_checkers._FLOAT_MAX
+    message = json_format_proto3_pb2.TestMessage(float_value=expected)
+    python_encoding = json_format.MessageToDict(message)
+    re_encoded_message = json_format.ParseDict(python_encoding, json_format_proto3_pb2.TestMessage())
+    assert re_encoded_message.float_value == expected
 
 
 if __name__ == '__main__':
