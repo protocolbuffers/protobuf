@@ -1265,6 +1265,8 @@ class JsonFormatTest(JsonFormatBase):
     message = json_format_proto3_pb2.TestMessage(float_value=expected)
     python_encoding = json_format.MessageToDict(message)
     re_encoded_message = json_format.ParseDict(python_encoding, json_format_proto3_pb2.TestMessage())
+    # this assertion fails because it raises.
+    # google.protobuf.json_format.ParseError: Failed to parse floatValue field: Float value too large.
     assert re_encoded_message.float_value == expected
 
 
