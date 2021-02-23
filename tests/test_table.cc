@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "tests/upb_test.h"
+#include "upb/upb.hpp"
 #include "upb/table.int.h"
 
 #include "upb/port_def.inc"
@@ -25,12 +26,10 @@ namespace upb {
 
 template <class T> upb_value MakeUpbValue(T val);
 template <class T> T GetUpbValue(upb_value val);
-template <class T> upb_ctype_t GetUpbValueType();
 
 #define FUNCS(name, type_t, enumval) \
   template<> upb_value MakeUpbValue<type_t>(type_t val) { return upb_value_ ## name(val); } \
   template<> type_t GetUpbValue<type_t>(upb_value val) { return upb_value_get ## name(val); } \
-  template<> upb_ctype_t GetUpbValueType<type_t>() { return enumval; }
 
 FUNCS(int32,    int32_t,      UPB_CTYPE_INT32)
 FUNCS(int64,    int64_t,      UPB_CTYPE_INT64)
@@ -46,13 +45,12 @@ FUNCS(fptr,     upb_func*,    UPB_CTYPE_FPTR)
 
 class IntTable {
  public:
-  IntTable(upb_ctype_t value_type) { upb_inttable_init(&table_, value_type); }
-  ~IntTable() { upb_inttable_uninit(&table_); }
+  IntTable() { upb_inttable_init(&table_, arena_.ptr()); }
 
   size_t count() { return upb_inttable_count(&table_); }
 
   bool Insert(uintptr_t key, upb_value val) {
-    return upb_inttable_insert(&table_, key, val);
+    return upb_inttable_insert(&table_, key, val, arena_.ptr());
   }
 
   bool Replace(uintptr_t key, upb_value val) {
@@ -73,11 +71,11 @@ class IntTable {
 
   std::pair<bool, upb_value> Lookup32(uint32_t key) const {
     std::pair<bool, upb_value> ret;
-    ret.first = upb_inttable_lookup32(&table_, key, &ret.second);
+    ret.first = upb_inttable_lookup(&table_, key, &ret.second);
     return ret;
   }
 
-  void Compact() { upb_inttable_compact(&table_); }
+  void Compact() { upb_inttable_compact(&table_, arena_.ptr()); }
 
   class iterator : public std::iterator<std::forward_iterator_tag,
                                         std::pair<uintptr_t, upb_value> > {
@@ -115,24 +113,25 @@ class IntTable {
     upb_inttable_iter iter_;
   };
 
+  upb::Arena arena_;
   upb_inttable table_;
 };
 
 class StrTable {
  public:
-  StrTable(upb_ctype_t value_type) { upb_strtable_init(&table_, value_type); }
-  ~StrTable() { upb_strtable_uninit(&table_); }
+  StrTable() { upb_strtable_init(&table_, 4, arena_.ptr()); }
 
   size_t count() { return upb_strtable_count(&table_); }
 
   bool Insert(const std::string& key, upb_value val) {
-    return upb_strtable_insert2(&table_, key.c_str(), key.size(), val);
+    return upb_strtable_insert(&table_, key.c_str(), key.size(), val,
+                               arena_.ptr());
   }
 
   std::pair<bool, upb_value> Remove(const std::string& key) {
     std::pair<bool, upb_value> ret;
     ret.first =
-        upb_strtable_remove2(&table_, key.c_str(), key.size(), &ret.second);
+        upb_strtable_remove(&table_, key.c_str(), key.size(), &ret.second);
     return ret;
   }
 
@@ -144,7 +143,7 @@ class StrTable {
   }
 
   void Resize(size_t size_lg2) {
-    upb_strtable_resize(&table_, size_lg2, &upb_alloc_global);
+    upb_strtable_resize(&table_, size_lg2, arena_.ptr());
   }
 
   class iterator : public std::iterator<std::forward_iterator_tag,
@@ -184,13 +183,12 @@ class StrTable {
     upb_strtable_iter iter_;
   };
 
+  upb::Arena arena_;
   upb_strtable table_;
 };
 
 template <class T> class TypedStrTable {
  public:
-  TypedStrTable() : table_(GetUpbValueType<T>()) {}
-
   size_t count() { return table_.count(); }
 
   bool Insert(const std::string &key, T val) {
@@ -260,8 +258,6 @@ template <class T> class TypedStrTable {
 
 template <class T> class TypedIntTable {
  public:
-  TypedIntTable() : table_(GetUpbValueType<T>()) {}
-
   size_t count() { return table_.count(); }
 
   bool Insert(uintptr_t key, T val) {
@@ -507,7 +503,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     MAYBE_BREAK;
     int32_t key = keys[i & mask];
     upb_value v;
-    bool ok = upb_inttable_lookup32(&table.table_.table_, key, &v);
+    bool ok = upb_inttable_lookup(&table.table_.table_, key, &v);
     x += (uintptr_t)ok;
   }
   double total = get_usertime() - before;
@@ -521,7 +517,7 @@ void test_inttable(int32_t *keys, uint16_t num_entries, const char *desc) {
     MAYBE_BREAK;
     int32_t key = keys[rand_order[i & mask]];
     upb_value v;
-    bool ok = upb_inttable_lookup32(&table.table_.table_, key, &v);
+    bool ok = upb_inttable_lookup(&table.table_.table_, key, &v);
     x += (uintptr_t)ok;
   }
   total = get_usertime() - before;
@@ -599,12 +595,13 @@ int32_t *get_contiguous_keys(int32_t num) {
 }
 
 void test_delete() {
+  upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, UPB_CTYPE_BOOL);
-  upb_inttable_insert(&t, 0, upb_value_bool(true));
-  upb_inttable_insert(&t, 2, upb_value_bool(true));
-  upb_inttable_insert(&t, 4, upb_value_bool(true));
-  upb_inttable_compact(&t);
+  upb_inttable_init(&t, arena.ptr());
+  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
+  upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
+  upb_inttable_compact(&t, arena.ptr());
   upb_inttable_remove(&t, 0, NULL);
   upb_inttable_remove(&t, 2, NULL);
   upb_inttable_remove(&t, 4, NULL);
@@ -614,17 +611,15 @@ void test_delete() {
        upb_inttable_next(&iter)) {
     ASSERT(false);
   }
-
-  upb_inttable_uninit(&t);
 }
 
 void test_init() {
   for (int i = 0; i < 2048; i++) {
     /* Tests that the size calculations in init() (lg2 size for target load)
      * work for all expected sizes. */
+    upb::Arena arena;
     upb_strtable t;
-    upb_strtable_init2(&t, UPB_CTYPE_BOOL, i, &upb_alloc_global);
-    upb_strtable_uninit(&t);
+    upb_strtable_init(&t, i, arena.ptr());
   }
 }
 

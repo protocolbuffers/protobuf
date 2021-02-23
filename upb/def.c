@@ -272,8 +272,7 @@ bool upb_enumdef_ntoi(const upb_enumdef *def, const char *name,
 
 const char *upb_enumdef_iton(const upb_enumdef *def, int32_t num) {
   upb_value v;
-  return upb_inttable_lookup32(&def->iton, num, &v) ?
-      upb_value_getcstr(v) : NULL;
+  return upb_inttable_lookup(&def->iton, num, &v) ? upb_value_getcstr(v) : NULL;
 }
 
 const char *upb_enum_iter_name(upb_enum_iter *iter) {
@@ -526,8 +525,8 @@ upb_syntax_t upb_msgdef_syntax(const upb_msgdef *m) {
 
 const upb_fielddef *upb_msgdef_itof(const upb_msgdef *m, uint32_t i) {
   upb_value val;
-  return upb_inttable_lookup32(&m->itof, i, &val) ?
-      upb_value_getconstptr(val) : NULL;
+  return upb_inttable_lookup(&m->itof, i, &val) ? upb_value_getconstptr(val)
+                                                : NULL;
 }
 
 const upb_fielddef *upb_msgdef_ntof(const upb_msgdef *m, const char *name,
@@ -735,8 +734,8 @@ const upb_fielddef *upb_oneofdef_ntof(const upb_oneofdef *o,
 
 const upb_fielddef *upb_oneofdef_itof(const upb_oneofdef *o, uint32_t num) {
   upb_value val;
-  return upb_inttable_lookup32(&o->itof, num, &val) ?
-      upb_value_getptr(val) : NULL;
+  return upb_inttable_lookup(&o->itof, num, &val) ? upb_value_getptr(val)
+                                                  : NULL;
 }
 
 void upb_oneof_begin(upb_oneof_iter *iter, const upb_oneofdef *o) {
@@ -826,8 +825,8 @@ upb_symtab *upb_symtab_new(void) {
   s->bytes_loaded = 0;
   alloc = upb_arena_alloc(s->arena);
 
-  if (!upb_strtable_init2(&s->syms, UPB_CTYPE_CONSTPTR, 32, alloc) ||
-      !upb_strtable_init2(&s->files, UPB_CTYPE_CONSTPTR, 4, alloc)) {
+  if (!upb_strtable_init(&s->syms, 32, s->arena) ||
+      !upb_strtable_init(&s->files, 4, s->arena)) {
     upb_arena_free(s->arena);
     upb_gfree(s);
     s = NULL;
@@ -883,8 +882,7 @@ int upb_symtab_filecount(const upb_symtab *s) {
 typedef struct {
   upb_symtab *symtab;
   upb_filedef *file;              /* File we are building. */
-  upb_arena *file_arena;          /* Allocate defs here. */
-  upb_alloc *alloc;               /* Alloc of file_arena, for tables. */
+  upb_arena *arena;               /* Allocate defs here. */
   const upb_msglayout **layouts;  /* NULL if we should build layouts. */
   upb_status *status;             /* Record errors here. */
   jmp_buf err;                    /* longjmp() on error. */
@@ -906,7 +904,7 @@ static void symtab_oomerr(symtab_addctx *ctx) {
 }
 
 void *symtab_alloc(symtab_addctx *ctx, size_t bytes) {
-  void *ret = upb_arena_malloc(ctx->file_arena, bytes);
+  void *ret = upb_arena_malloc(ctx->arena, bytes);
   if (!ret) symtab_oomerr(ctx);
   return ret;
 }
@@ -1179,7 +1177,7 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
 }
 
 static char *strviewdup(symtab_addctx *ctx, upb_strview view) {
-  return upb_strdup2(view.data, view.size, ctx->alloc);
+  return upb_strdup2(view.data, view.size, ctx->arena);
 }
 
 static bool streql2(const char *a, size_t n, const char *b) {
@@ -1290,9 +1288,9 @@ static void symtab_add(symtab_addctx *ctx, const char *name, upb_value v) {
   if (upb_strtable_lookup(&ctx->symtab->syms, name, NULL)) {
     symtab_errf(ctx, "duplicate symbol '%s'", name);
   }
-  upb_alloc *alloc = upb_arena_alloc(ctx->symtab->arena);
   size_t len = strlen(name);
-  CHK_OOM(upb_strtable_insert3(&ctx->symtab->syms, name, len, v, alloc));
+  CHK_OOM(upb_strtable_insert(&ctx->symtab->syms, name, len, v,
+                              ctx->symtab->arena));
 }
 
 /* Given a symbol and the base symbol inside which it is defined, find the
@@ -1344,10 +1342,10 @@ static void create_oneofdef(
 
   v = pack_def(o, UPB_DEFTYPE_ONEOF);
   symtab_add(ctx, o->full_name, v);
-  CHK_OOM(upb_strtable_insert3(&m->ntof, name.data, name.size, v, ctx->alloc));
+  CHK_OOM(upb_strtable_insert(&m->ntof, name.data, name.size, v, ctx->arena));
 
-  CHK_OOM(upb_inttable_init2(&o->itof, UPB_CTYPE_CONSTPTR, ctx->alloc));
-  CHK_OOM(upb_strtable_init2(&o->ntof, UPB_CTYPE_CONSTPTR, 4, ctx->alloc));
+  CHK_OOM(upb_inttable_init(&o->itof, ctx->arena));
+  CHK_OOM(upb_strtable_init(&o->ntof, 4, ctx->arena));
 }
 
 static str_t *newstr(symtab_addctx *ctx, const char *data, size_t len) {
@@ -1504,7 +1502,6 @@ static void set_default_default(symtab_addctx *ctx, upb_fielddef *f) {
 static void create_fielddef(
     symtab_addctx *ctx, const char *prefix, upb_msgdef *m,
     const google_protobuf_FieldDescriptorProto *field_proto) {
-  upb_alloc *alloc = ctx->alloc;
   upb_fielddef *f;
   const google_protobuf_FieldOptions *options;
   upb_strview name;
@@ -1562,12 +1559,12 @@ static void create_fielddef(
     v = upb_value_constptr(f);
     json_size = strlen(json_name);
 
-    CHK_OOM(
-        upb_strtable_insert3(&m->ntof, name.data, name.size, field_v, alloc));
-    CHK_OOM(upb_inttable_insert2(&m->itof, field_number, v, alloc));
+    CHK_OOM(upb_strtable_insert(&m->ntof, name.data, name.size, field_v,
+                                ctx->arena));
+    CHK_OOM(upb_inttable_insert(&m->itof, field_number, v, ctx->arena));
 
     if (strcmp(shortname, json_name) != 0) {
-      upb_strtable_insert3(&m->ntof, json_name, json_size, json_v, alloc);
+      upb_strtable_insert(&m->ntof, json_name, json_size, json_v, ctx->arena);
     }
 
     if (ctx->layouts) {
@@ -1630,15 +1627,16 @@ static void create_fielddef(
       symtab_errf(ctx, "oneof_index out of range (%s)", f->full_name);
     }
 
-    oneof = (upb_oneofdef*)&m->oneofs[oneof_index];
+    oneof = (upb_oneofdef *)&m->oneofs[oneof_index];
     f->oneof = oneof;
 
     oneof->field_count++;
     if (f->proto3_optional_) {
       oneof->synthetic = true;
     }
-    CHK_OOM(upb_inttable_insert2(&oneof->itof, f->number_, v, alloc));
-    CHK_OOM(upb_strtable_insert3(&oneof->ntof, name.data, name.size, v, alloc));
+    CHK_OOM(upb_inttable_insert(&oneof->itof, f->number_, v, ctx->arena));
+    CHK_OOM(
+        upb_strtable_insert(&oneof->ntof, name.data, name.size, v, ctx->arena));
   } else {
     f->oneof = NULL;
     if (f->proto3_optional_) {
@@ -1681,8 +1679,8 @@ static void create_enumdef(
   symtab_add(ctx, e->full_name, pack_def(e, UPB_DEFTYPE_ENUM));
 
   values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n);
-  CHK_OOM(upb_strtable_init2(&e->ntoi, UPB_CTYPE_INT32, n, ctx->alloc));
-  CHK_OOM(upb_inttable_init2(&e->iton, UPB_CTYPE_CSTR, ctx->alloc));
+  CHK_OOM(upb_strtable_init(&e->ntoi, n, ctx->arena));
+  CHK_OOM(upb_inttable_init(&e->iton, ctx->arena));
 
   e->file = ctx->file;
   e->defaultval = 0;
@@ -1709,16 +1707,15 @@ static void create_enumdef(
     }
 
     CHK_OOM(name2)
-    CHK_OOM(
-        upb_strtable_insert3(&e->ntoi, name2, strlen(name2), v, ctx->alloc));
+    CHK_OOM(upb_strtable_insert(&e->ntoi, name2, strlen(name2), v, ctx->arena));
 
     if (!upb_inttable_lookup(&e->iton, num, NULL)) {
       upb_value v = upb_value_cstr(name2);
-      CHK_OOM(upb_inttable_insert2(&e->iton, num, v, ctx->alloc));
+      CHK_OOM(upb_inttable_insert(&e->iton, num, v, ctx->arena));
     }
   }
 
-  upb_inttable_compact2(&e->iton, ctx->alloc);
+  upb_inttable_compact(&e->iton, ctx->arena);
 }
 
 static void create_msgdef(symtab_addctx *ctx, const char *prefix,
@@ -1742,9 +1739,8 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
   oneofs = google_protobuf_DescriptorProto_oneof_decl(msg_proto, &n_oneof);
   fields = google_protobuf_DescriptorProto_field(msg_proto, &n_field);
 
-  CHK_OOM(upb_inttable_init2(&m->itof, UPB_CTYPE_CONSTPTR, ctx->alloc));
-  CHK_OOM(upb_strtable_init2(&m->ntof, UPB_CTYPE_CONSTPTR, n_oneof + n_field,
-                             ctx->alloc));
+  CHK_OOM(upb_inttable_init(&m->itof, ctx->arena));
+  CHK_OOM(upb_strtable_init(&m->ntof, n_oneof + n_field, ctx->arena));
 
   m->file = ctx->file;
   m->map_entry = false;
@@ -1778,7 +1774,7 @@ static void create_msgdef(symtab_addctx *ctx, const char *prefix,
 
   finalize_oneofs(ctx, m);
   assign_msg_wellknowntype(m);
-  upb_inttable_compact2(&m->itof, ctx->alloc);
+  upb_inttable_compact(&m->itof, ctx->arena);
 
   /* This message is built.  Now build nested messages and enums. */
 
@@ -2007,19 +2003,18 @@ static void build_filedef(
 }
 
 static void remove_filedef(upb_symtab *s, upb_filedef *file) {
-  upb_alloc *alloc = upb_arena_alloc(s->arena);
   int i;
   for (i = 0; i < file->msg_count; i++) {
     const char *name = file->msgs[i].full_name;
-    upb_strtable_remove3(&s->syms, name, strlen(name), NULL, alloc);
+    upb_strtable_remove(&s->syms, name, strlen(name), NULL);
   }
   for (i = 0; i < file->enum_count; i++) {
     const char *name = file->enums[i].full_name;
-    upb_strtable_remove3(&s->syms, name, strlen(name), NULL, alloc);
+    upb_strtable_remove(&s->syms, name, strlen(name), NULL);
   }
   for (i = 0; i < file->ext_count; i++) {
     const char *name = file->exts[i].full_name;
-    upb_strtable_remove3(&s->syms, name, strlen(name), NULL, alloc);
+    upb_strtable_remove(&s->syms, name, strlen(name), NULL);
   }
 }
 
@@ -2037,8 +2032,7 @@ static const upb_filedef *_upb_symtab_addfile(
 
   ctx.file = file;
   ctx.symtab = s;
-  ctx.file_arena = file_arena;
-  ctx.alloc = upb_arena_alloc(file_arena);
+  ctx.arena = file_arena;
   ctx.layouts = layouts;
   ctx.status = status;
 
@@ -2053,8 +2047,8 @@ static const upb_filedef *_upb_symtab_addfile(
     file = NULL;
   } else {
     build_filedef(&ctx, file, file_proto);
-    upb_strtable_insert3(&s->files, file->name, strlen(file->name),
-                         upb_value_constptr(file), ctx.alloc);
+    upb_strtable_insert(&s->files, file->name, strlen(file->name),
+                        upb_value_constptr(file), ctx.arena);
     UPB_ASSERT(upb_ok(status));
     upb_arena_fuse(s->arena, file_arena);
   }

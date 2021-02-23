@@ -460,20 +460,19 @@ UPB_INLINE void* _upb_map_next(const upb_map *map, size_t *iter) {
 }
 
 UPB_INLINE bool _upb_map_set(upb_map *map, const void *key, size_t key_size,
-                             void *val, size_t val_size, upb_arena *arena) {
+                             void *val, size_t val_size, upb_arena *a) {
   upb_strview strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};
-  if (!_upb_map_tovalue(val, val_size, &tabval, arena)) return false;
-  upb_alloc *a = upb_arena_alloc(arena);
+  if (!_upb_map_tovalue(val, val_size, &tabval, a)) return false;
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  upb_strtable_remove3(&map->table, strkey.data, strkey.size, NULL, a);
-  return upb_strtable_insert3(&map->table, strkey.data, strkey.size, tabval, a);
+  upb_strtable_remove(&map->table, strkey.data, strkey.size, NULL);
+  return upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a);
 }
 
 UPB_INLINE bool _upb_map_delete(upb_map *map, const void *key, size_t key_size) {
   upb_strview k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove3(&map->table, k.data, k.size, NULL, NULL);
+  return upb_strtable_remove(&map->table, k.data, k.size, NULL);
 }
 
 UPB_INLINE void _upb_map_clear(upb_map *map) {
@@ -538,8 +537,7 @@ UPB_INLINE void _upb_msg_map_key(const void* msg, void* key, size_t size) {
 
 UPB_INLINE void _upb_msg_map_value(const void* msg, void* val, size_t size) {
   const upb_tabent *ent = (const upb_tabent*)msg;
-  upb_value v;
-  _upb_value_setval(&v, ent->val.val);
+  upb_value v = {ent->val.val};
   _upb_map_fromvalue(v, val, size);
 }
 

@@ -133,7 +133,7 @@ upb_map *_upb_map_new(upb_arena *a, size_t key_size, size_t value_size) {
     return NULL;
   }
 
-  upb_strtable_init2(&map->table, UPB_CTYPE_INT32, 4, upb_arena_alloc(a));
+  upb_strtable_init(&map->table, 4, a);
   map->key_size = key_size;
   map->val_size = value_size;
 
