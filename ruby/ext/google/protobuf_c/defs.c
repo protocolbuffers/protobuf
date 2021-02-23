@@ -960,16 +960,14 @@ static VALUE FieldDescriptor_subtype(VALUE _self) {
 static VALUE FieldDescriptor_get(VALUE _self, VALUE msg_rb) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_msgdef *m;
-  const upb_msgdef *msg = Message_Get(msg_rb, &m);
-  VALUE arena = Message_GetArena(msg_rb);
-  upb_msgval msgval;
+
+  Message_Get(msg_rb, &m);
 
   if (m != upb_fielddef_containingtype(self->fielddef)) {
     rb_raise(cTypeError, "get method called on wrong message type");
   }
 
-  msgval = upb_msg_get(msg, self->fielddef);
-  return Convert_UpbToRuby(msgval, TypeInfo_get(self->fielddef), arena);
+  return Message_getfield(msg_rb, self->fielddef);
 }
 
 /*
