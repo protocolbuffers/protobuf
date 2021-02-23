@@ -1,3 +1,11 @@
+2021-02-23 version 3.15.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Fix for FieldDescriptor.get(msg) (#8330)
+
+  C++
+  * Fix PROTOBUF_CONSTINIT macro redefinition (#8323)
+
 2021-02-05 version 3.15.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Ruby
