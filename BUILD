@@ -325,5 +325,3 @@ filegroup(
     ]),
     visibility = ["//cmake:__pkg__"],
 )
-
-# copybara:strip_end
