@@ -40,6 +40,7 @@ endif()
 if(WITH_PROTOC)
   set(protobuf_PROTOC_EXE ${WITH_PROTOC} CACHE FILEPATH "Protocol Buffer Compiler executable" FORCE)
 endif()
+option(protobuf_DISABLE_RTTI "Remove runtime type information in the binaries" ON)
 option(protobuf_BUILD_TESTS "Build tests" ON)
 option(protobuf_BUILD_CONFORMANCE "Build conformance tests" OFF)
 option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
@@ -116,6 +117,10 @@ if(protobuf_VERBOSE)
 endif()
 
 add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
+
+if (protobuf_DISABLE_RTTI)
+  add_definitions(-DGOOGLE_PROTOBUF_NO_RTTI=1)
+endif()
 
 find_package(Threads REQUIRED)
 if (CMAKE_USE_PTHREADS_INIT)
