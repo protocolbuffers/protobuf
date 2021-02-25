@@ -105,7 +105,7 @@ void Message_InitPtr(VALUE self_, upb_msg *msg, VALUE arena) {
   Message* self = ruby_to_Message(self_);
   self->msg = msg;
   self->arena = arena;
-  ObjectCache_Add(msg, self_, Arena_get(arena));
+  ObjectCache_Add(msg, self_);
 }
 
 VALUE Message_GetArena(VALUE msg_rb) {
@@ -855,8 +855,10 @@ static VALUE Message_to_h(VALUE _self) {
  */
 static VALUE Message_freeze(VALUE _self) {
   Message* self = ruby_to_Message(_self);
-  ObjectCache_Pin(self->msg, _self, Arena_get(self->arena));
-  RB_OBJ_FREEZE(_self);
+  if (!RB_OBJ_FROZEN(_self)) {
+    Arena_Pin(self->arena, _self);
+    RB_OBJ_FREEZE(_self);
+  }
   return _self;
 }
 
