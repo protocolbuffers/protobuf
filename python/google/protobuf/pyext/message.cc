@@ -201,7 +201,7 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   const char* name;
 
   // Check arguments: (name, bases, dict)
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO!O!:type", (char**)kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO!O!:type", const_cast<char**>(kwlist),
                                    &name,
                                    &PyTuple_Type, &bases,
                                    &PyDict_Type, &dict)) {
@@ -1681,7 +1681,7 @@ static PyObject* InternalSerializeToString(
   // Parse the "deterministic" kwarg; defaults to False.
   static const char* kwlist[] = { "deterministic", 0 };
   PyObject* deterministic_obj = Py_None;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", (char**)kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", const_cast<char**>(kwlist),
                                    &deterministic_obj)) {
     return NULL;
   }

@@ -465,7 +465,7 @@ static PyObject* ScalarMapGet(PyObject* self, PyObject* args,
   static const char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
   PyObject* default_value = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", (char**)kwlist, &key,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", const_cast<char**>(kwlist), &key,
                                    &default_value)) {
     return NULL;
   }
@@ -760,7 +760,7 @@ PyObject* MessageMapGet(PyObject* self, PyObject* args, PyObject* kwargs) {
   static const char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
   PyObject* default_value = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", (char**)kwlist, &key,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", const_cast<char**>(kwlist), &key,
                                    &default_value)) {
     return NULL;
   }
