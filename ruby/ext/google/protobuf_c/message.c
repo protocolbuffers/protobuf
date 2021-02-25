@@ -292,7 +292,7 @@ static void Message_setfield(upb_msg* msg, const upb_fielddef* f, VALUE val,
   upb_msg_set(msg, f, msgval, arena);
 }
 
-static VALUE Message_getfield(VALUE _self, const upb_fielddef* f) {
+VALUE Message_getfield(VALUE _self, const upb_fielddef* f) {
   Message* self = ruby_to_Message(_self);
   // This is a special-case: upb_msg_mutable() for map & array are logically
   // const (they will not change what is serialized) but physically

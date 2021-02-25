@@ -193,4 +193,12 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal false, s['b'][:y]
     assert_equal false, s[:b]['y']
   end
+
+  def test_b8325
+    value_field = Google::Protobuf::ListValue.descriptor.lookup("values")
+    proto = Google::Protobuf::ListValue.new(
+        values: [Google::Protobuf::Value.new(string_value: "Hello")]
+    )
+    assert_equal '[<Google::Protobuf::Value: string_value: "Hello">]', value_field.get(proto).inspect
+  end
 end
