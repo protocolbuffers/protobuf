@@ -176,9 +176,9 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
 // The public DescriptorPool constructor.
 static PyObject* New(PyTypeObject* type,
                      PyObject* args, PyObject* kwargs) {
-  static char* kwlist[] = {"descriptor_db", 0};
+  static const char* kwlist[] = {"descriptor_db", 0};
   PyObject* py_database = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist, &py_database)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", (char**)kwlist, &py_database)) {
     return NULL;
   }
   DescriptorDatabase* database = NULL;
