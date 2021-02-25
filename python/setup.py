@@ -192,6 +192,18 @@ if __name__ == '__main__':
 
     extra_compile_args = []
 
+    message_extra_link_args = None
+    api_implementation_link_args = None
+    if "darwin" in sys.platform:
+      if sys.version_info[0] == 2:
+          message_init_symbol = 'init_message'
+          api_implementation_init_symbol = 'init_api_implementation'
+      else:
+          message_init_symbol = 'PyInit__message'
+          api_implementation_init_symbol = 'PyInit__api_implementation'
+      message_extra_link_args = ['-Wl,-exported_symbol,_%s' % message_init_symbol]
+      api_implementation_link_args = ['-Wl,-exported_symbol,_%s' % api_implementation_init_symbol]
+
     if sys.platform != 'win32':
         extra_compile_args.append('-Wno-write-strings')
         extra_compile_args.append('-Wno-invalid-offsetof')
@@ -242,6 +254,7 @@ if __name__ == '__main__':
             include_dirs=[".", "../src"],
             libraries=libraries,
             extra_objects=extra_objects,
+            extra_link_args=message_extra_link_args,
             library_dirs=['../src/.libs'],
             extra_compile_args=extra_compile_args,
         ),
@@ -249,6 +262,7 @@ if __name__ == '__main__':
             "google.protobuf.internal._api_implementation",
             glob.glob('google/protobuf/internal/api_implementation.cc'),
             extra_compile_args=extra_compile_args + ['-DPYTHON_PROTO2_CPP_IMPL_V2'],
+            extra_link_args=api_implementation_link_args,
         ),
     ])
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
