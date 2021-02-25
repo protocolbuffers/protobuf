@@ -295,7 +295,7 @@ static VALUE DescriptorPool_alloc(VALUE klass) {
 
   self->def_to_descriptor = rb_hash_new();
   self->symtab = upb_symtab_new();
-  ObjectCache_Add(self->symtab, ret, _upb_symtab_arena(self->symtab));
+  ObjectCache_Add(self->symtab, ret);
 
   return ret;
 }
