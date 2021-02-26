@@ -193,6 +193,34 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   void Set(EmptyDefault, std::string&& value, ::google::protobuf::Arena* arena);
   void Set(NonEmptyDefault, ConstStringParam value, ::google::protobuf::Arena* arena);
   void Set(NonEmptyDefault, std::string&& value, ::google::protobuf::Arena* arena);
+  template <typename FirstParam>
+  void Set(FirstParam p1, const char* str, ::google::protobuf::Arena* arena) {
+    Set(p1, ConstStringParam(str), arena);
+  }
+  template <typename FirstParam>
+  void Set(FirstParam p1, const char* str, size_t size,
+           ::google::protobuf::Arena* arena) {
+    ConstStringParam sp{str, size};  // for string_view and `const string &`
+    Set(p1, sp, arena);
+  }
+  template <typename FirstParam, typename RefWrappedType>
+  void Set(FirstParam p1,
+           std::reference_wrapper<RefWrappedType> const_string_ref,
+           ::google::protobuf::Arena* arena) {
+    Set(p1, const_string_ref.get(), arena);
+  }
+
+  template <typename FirstParam, typename SecondParam>
+  void SetBytes(FirstParam p1, SecondParam&& p2, ::google::protobuf::Arena* arena) {
+    Set(p1, static_cast<SecondParam&&>(p2), arena);
+  }
+  template <typename FirstParam>
+  void SetBytes(FirstParam p1, const void* str, size_t size,
+                ::google::protobuf::Arena* arena) {
+    // must work whether ConstStringParam is string_view or `const string &`
+    ConstStringParam sp{static_cast<const char*>(str), size};
+    Set(p1, sp, arena);
+  }
 
   // Basic accessors.
   const std::string& Get() const PROTOBUF_NDEBUG_INLINE {

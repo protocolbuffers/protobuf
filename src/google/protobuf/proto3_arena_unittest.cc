@@ -317,6 +317,35 @@ TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
   }
 }
 
+TEST(Proto3OptionalTest, Extensions) {
+  const DescriptorPool* p = DescriptorPool::generated_pool();
+  const FieldDescriptor* no_optional = p->FindExtensionByName(
+      "protobuf_unittest.Proto3OptionalExtensions.ext_no_optional");
+  const FieldDescriptor* with_optional = p->FindExtensionByName(
+      "protobuf_unittest.Proto3OptionalExtensions.ext_with_optional");
+  GOOGLE_CHECK(no_optional);
+  GOOGLE_CHECK(with_optional);
+  EXPECT_FALSE(no_optional->has_optional_keyword());
+  EXPECT_TRUE(with_optional->has_optional_keyword());
+
+  const Descriptor* d = protobuf_unittest::Proto3OptionalExtensions::descriptor();
+  EXPECT_TRUE(d->options().HasExtension(
+      protobuf_unittest::Proto3OptionalExtensions::ext_no_optional));
+  EXPECT_TRUE(d->options().HasExtension(
+      protobuf_unittest::Proto3OptionalExtensions::ext_with_optional));
+  EXPECT_EQ(8, d->options().GetExtension(
+                   protobuf_unittest::Proto3OptionalExtensions::ext_no_optional));
+  EXPECT_EQ(16,
+            d->options().GetExtension(
+                protobuf_unittest::Proto3OptionalExtensions::ext_with_optional));
+
+  const Descriptor* d2 = protobuf_unittest::TestProto3Optional::descriptor();
+  EXPECT_FALSE(d2->options().HasExtension(
+      protobuf_unittest::Proto3OptionalExtensions::ext_no_optional));
+  EXPECT_FALSE(d2->options().HasExtension(
+      protobuf_unittest::Proto3OptionalExtensions::ext_with_optional));
+}
+
 TEST(Proto3OptionalTest, OptionalField) {
   protobuf_unittest::TestProto3Optional msg;
   EXPECT_FALSE(msg.has_optional_int32());

@@ -454,7 +454,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
   // enough. However, the empty destructor fails to be elided in some
   // configurations (like non-opt or with certain sanitizers). NO_DESTROY is
   // there just to improve performance and binary size in these builds.
-  format("PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_NO_DESTROY $1$ $2$;\n",
+  format("PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT $1$ $2$;\n",
          DefaultInstanceType(generator->descriptor_, options_),
          DefaultInstanceName(generator->descriptor_, options_));
 
@@ -694,10 +694,6 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   if (!message_generators_.empty()) {
     format("static ::$proto_ns$::Metadata $file_level_metadata$[$1$];\n",
            message_generators_.size());
-  } else {
-    format(
-        "static "
-        "constexpr ::$proto_ns$::Metadata* $file_level_metadata$ = nullptr;\n");
   }
   if (!enum_generators_.empty()) {
     format(
@@ -855,24 +851,30 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       "  false, $1$, $2$, $3$, \"$filename$\", \n"
       "  &$desc_table$_once, $4$, $5$, $6$,\n"
       "  schemas, file_default_instances, $tablename$::offsets,\n"
-      "  $file_level_metadata$, $file_level_enum_descriptors$, "
+      "  $7$, $file_level_enum_descriptors$, "
       "$file_level_service_descriptors$,\n"
       "};\n"
       // This function exists to be marked as weak.
-      // It can significantly speed up compilation by breaking up the SCC.
+      // It can significantly speed up compilation by breaking up LLVM's SCC in
+      // the .pb.cc tranlation units. Large translation units see a reduction of
+      // more than 35% of walltime for optimized builds.
       // Without the weak attribute all the messages in the file, including all
-      // the vtables and everything they use become part of the same SCC.
+      // the vtables and everything they use become part of the same SCC through
+      // a cycle like:
+      // GetMetadata -> descriptor table -> default instances ->
+      //   vtables -> GetMetadata
       // By adding a weak function here we break the connection from the
       // individual vtables back into the descriptor table.
-      "PROTOBUF_ATTRIBUTE_WEAK ::$proto_ns$::Metadata\n"
-      "$desc_table$_metadata_getter(int index) {\n"
-      "  ::$proto_ns$::internal::AssignDescriptors(&$desc_table$);\n"
-      "  return $desc_table$.file_level_metadata[index];\n"
+      "PROTOBUF_ATTRIBUTE_WEAK const ::$proto_ns$::internal::DescriptorTable* "
+      "$desc_table$_getter() {\n"
+      "  return &$desc_table$;\n"
       "}\n"
       "\n",
       eager ? "true" : "false", file_data.size(), protodef_name,
       num_deps == 0 ? "nullptr" : variables_["desc_table"] + "_deps", num_deps,
-      message_generators_.size());
+      message_generators_.size(),
+      message_generators_.empty() ? "nullptr"
+                                  : variables_["file_level_metadata"]);
 
   // For descriptor.proto we want to avoid doing any dynamic initialization,
   // because in some situations that would otherwise pull in a lot of
@@ -1288,9 +1290,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
   if (HasDescriptorMethods(file_, options_)) {
     format(
         "extern $dllexport_decl $const ::$proto_ns$::internal::DescriptorTable "
-        "$desc_table$;\n"
-        "$dllexport_decl $::$proto_ns$::Metadata "
-        "$desc_table$_metadata_getter(int index);\n");
+        "$desc_table$;\n");
   }
 }
 

@@ -105,7 +105,7 @@ void Message_InitPtr(VALUE self_, upb_msg *msg, VALUE arena) {
   Message* self = ruby_to_Message(self_);
   self->msg = msg;
   self->arena = arena;
-  ObjectCache_Add(msg, self_, Arena_get(arena));
+  ObjectCache_Add(msg, self_);
 }
 
 VALUE Message_GetArena(VALUE msg_rb) {
@@ -292,6 +292,35 @@ static void Message_setfield(upb_msg* msg, const upb_fielddef* f, VALUE val,
   upb_msg_set(msg, f, msgval, arena);
 }
 
+VALUE Message_getfield(VALUE _self, const upb_fielddef* f) {
+  Message* self = ruby_to_Message(_self);
+  // This is a special-case: upb_msg_mutable() for map & array are logically
+  // const (they will not change what is serialized) but physically
+  // non-const, as they do allocate a repeated field or map. The logical
+  // constness means it's ok to do even if the message is frozen.
+  upb_msg *msg = (upb_msg*)self->msg;
+  upb_arena *arena = Arena_get(self->arena);
+  if (upb_fielddef_ismap(f)) {
+    upb_map *map = upb_msg_mutable(msg, f, arena).map;
+    const upb_fielddef *key_f = map_field_key(f);
+    const upb_fielddef *val_f = map_field_value(f);
+    upb_fieldtype_t key_type = upb_fielddef_type(key_f);
+    TypeInfo value_type_info = TypeInfo_get(val_f);
+    return Map_GetRubyWrapper(map, key_type, value_type_info, self->arena);
+  } else if (upb_fielddef_isseq(f)) {
+    upb_array *arr = upb_msg_mutable(msg, f, arena).array;
+    return RepeatedField_GetRubyWrapper(arr, TypeInfo_get(f), self->arena);
+  } else if (upb_fielddef_issubmsg(f)) {
+    if (!upb_msg_has(self->msg, f)) return Qnil;
+    upb_msg *submsg = upb_msg_mutable(msg, f, arena).msg;
+    const upb_msgdef *m = upb_fielddef_msgsubdef(f);
+    return Message_GetRubyWrapper(submsg, m, self->arena);
+  } else {
+    upb_msgval msgval = upb_msg_get(self->msg, f);
+    return Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
+  }
+}
+
 static VALUE Message_field_accessor(VALUE _self, const upb_fielddef* f,
                                     int accessor_type, int argc, VALUE* argv) {
   upb_arena *arena = Arena_get(Message_GetArena(_self));
@@ -350,36 +379,11 @@ static VALUE Message_field_accessor(VALUE _self, const upb_fielddef* f,
         return INT2NUM(msgval.int32_val);
       }
     }
-    case METHOD_GETTER: {
-      Message* self = ruby_to_Message(_self);
-      // This is a special-case: upb_msg_mutable() for map & array are logically
-      // const (they will not change what is serialized) but physically
-      // non-const, as they do allocate a repeated field or map. The logical
-      // constness means it's ok to do even if the message is frozen.
-      upb_msg *msg = (upb_msg*)self->msg;
-      if (upb_fielddef_ismap(f)) {
-        upb_map *map = upb_msg_mutable(msg, f, arena).map;
-        const upb_fielddef *key_f = map_field_key(f);
-        const upb_fielddef *val_f = map_field_value(f);
-        upb_fieldtype_t key_type = upb_fielddef_type(key_f);
-        TypeInfo value_type_info = TypeInfo_get(val_f);
-        return Map_GetRubyWrapper(map, key_type, value_type_info, self->arena);
-      } else if (upb_fielddef_isseq(f)) {
-        upb_array *arr = upb_msg_mutable(msg, f, arena).array;
-        return RepeatedField_GetRubyWrapper(arr, TypeInfo_get(f), self->arena);
-      } else if (upb_fielddef_issubmsg(f)) {
-        if (!upb_msg_has(self->msg, f)) return Qnil;
-        upb_msg *submsg = upb_msg_mutable(msg, f, arena).msg;
-        const upb_msgdef *m = upb_fielddef_msgsubdef(f);
-        return Message_GetRubyWrapper(submsg, m, self->arena);
-      } else {
-        upb_msgval msgval = upb_msg_get(self->msg, f);
-        return Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
-      }
+    case METHOD_GETTER:
+      return Message_getfield(_self, f);
     default:
       rb_raise(rb_eRuntimeError, "Internal error, no such accessor: %d",
                accessor_type);
-    }
   }
 }
 
@@ -851,8 +855,10 @@ static VALUE Message_to_h(VALUE _self) {
  */
 static VALUE Message_freeze(VALUE _self) {
   Message* self = ruby_to_Message(_self);
-  ObjectCache_Pin(self->msg, _self, Arena_get(self->arena));
-  RB_OBJ_FREEZE(_self);
+  if (!RB_OBJ_FROZEN(_self)) {
+    Arena_Pin(self->arena, _self);
+    RB_OBJ_FREEZE(_self);
+  }
   return _self;
 }
 
@@ -866,7 +872,6 @@ static VALUE Message_freeze(VALUE _self) {
 static VALUE Message_index(VALUE _self, VALUE field_name) {
   Message* self = ruby_to_Message(_self);
   const upb_fielddef* field;
-  upb_msgval val;
 
   Check_Type(field_name, T_STRING);
   field = upb_msgdef_ntofz(self->msgdef, RSTRING_PTR(field_name));
@@ -875,8 +880,7 @@ static VALUE Message_index(VALUE _self, VALUE field_name) {
     return Qnil;
   }
 
-  val = upb_msg_get(self->msg, field);
-  return Convert_UpbToRuby(val, TypeInfo_get(field), self->arena);
+  return Message_getfield(_self, field);
 }
 
 /*
@@ -1285,7 +1289,7 @@ const upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
         if (!rb_obj_is_kind_of(value, rb_cNumeric)) goto badtype;
 
         sec.int64_val = NUM2LL(value);
-        nsec.int32_val = (NUM2DBL(value) - NUM2LL(value)) * 1000000000;
+        nsec.int32_val = round((NUM2DBL(value) - NUM2LL(value)) * 1000000000);
         upb_msg_set(msg, sec_f, sec, arena);
         upb_msg_set(msg, nsec_f, nsec, arena);
         return msg;

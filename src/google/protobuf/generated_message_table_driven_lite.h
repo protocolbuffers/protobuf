@@ -87,8 +87,7 @@ inline ExtensionSet* GetExtensionSet(MessageLite* msg, int64 extension_offset) {
 
 template <typename Type>
 inline Type* AddField(MessageLite* msg, int64 offset) {
-  static_assert(std::is_trivially_copy_assignable<Type>::value,
-                "Do not assign");
+  static_assert(std::is_trivial<Type>::value, "Do not assign");
 
   RepeatedField<Type>* repeated = Raw<RepeatedField<Type>>(msg, offset);
   return repeated->Add();
@@ -104,8 +103,7 @@ inline std::string* AddField<std::string>(MessageLite* msg, int64 offset) {
 
 template <typename Type>
 inline void AddField(MessageLite* msg, int64 offset, Type value) {
-  static_assert(std::is_trivially_copy_assignable<Type>::value,
-                "Do not assign");
+  static_assert(std::is_trivial<Type>::value, "Do not assign");
   *AddField<Type>(msg, offset) = value;
 }
 
@@ -126,8 +124,7 @@ inline Type* MutableField(MessageLite* msg, uint32* has_bits,
 template <typename Type>
 inline void SetField(MessageLite* msg, uint32* has_bits, uint32 has_bit_index,
                      int64 offset, Type value) {
-  static_assert(std::is_trivially_copy_assignable<Type>::value,
-                "Do not assign");
+  static_assert(std::is_trivial<Type>::value, "Do not assign");
   *MutableField<Type>(msg, has_bits, has_bit_index, offset) = value;
 }
 

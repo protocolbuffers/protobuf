@@ -64,7 +64,6 @@ using google::protobuf::Type;
 using google::protobuf::UInt32Value;
 using google::protobuf::UInt64Value;
 
-using util::Status;
 using util::error::INVALID_ARGUMENT;
 using util::error::NOT_FOUND;
 

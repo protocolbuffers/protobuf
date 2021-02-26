@@ -1628,7 +1628,7 @@ void Generator::GenerateHeader(const GeneratorOptions& options,
       " * @fileoverview\n"
       " * @enhanceable\n"
       // TODO(b/152440355): requireType/requires diverged from internal version.
-      " * @suppress {missingRequire} reports error on implict type usages.\n"
+      " * @suppress {missingRequire} reports error on implicit type usages.\n"
       " * @suppress {messageConventions} JS Compiler reports an "
       "error if a variable or\n"
       " *     field starts with 'MSG_' and isn't a translatable "

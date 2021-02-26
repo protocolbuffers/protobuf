@@ -1,4 +1,26 @@
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2021-02-25 version 3.15.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Ruby <2.7 now uses WeakMap too, which prevents memory leaks. (#8341)
+
+2021-02-23 version 3.15.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Fix for FieldDescriptor.get(msg) (#8330)
+
+  C++
+  * Fix PROTOBUF_CONSTINIT macro redefinition (#8323)
+
+2021-02-05 version 3.15.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Bugfix for Message.[] for repeated or map fields (#8313)
+
+2021-02-05 version 3.15.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Protocol Compiler
+  * Optional fields for proto3 are enabled by default, and no longer require
+    the --experimental_allow_proto3_optional flag.
 
   C++
   * MessageDifferencer: fixed bug when using custom ignore with multiple
@@ -23,11 +45,56 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     output (does not affect comparison logic) and stop printing 'value' in the
     path. The modified print functionality is in the
     MessageDifferencer::StreamReporter.
-  * Fixes https://github.com/protocolbuffers/protobuf/issues/8129
+  * Fixed https://github.com/protocolbuffers/protobuf/issues/8129
   * Ensure that null char symbol, package and file names do not result in a
     crash.
   * Constant initialize the global message instances
   * Pretty print 'max' instead of numeric values in reserved ranges.
+  * Removed remaining instances of std::is_pod, which is deprecated in C++20.
+  * Changes to reduce code size for unknown field handling by making uncommon
+    cases out of line.
+  * Fix std::is_pod deprecated in C++20 (#7180)
+  * Fix some -Wunused-parameter warnings (#8053)
+  * Fix detecting file as directory on zOS issue #8051 (#8052)
+  * Don't include sys/param.h for _BYTE_ORDER (#8106)
+  * remove CMAKE_THREAD_LIBS_INIT from pkgconfig CFLAGS (#8154)
+  * Fix TextFormatMapTest.DynamicMessage issue#5136 (#8159)
+  * Fix for compiler warning issue#8145 (#8160)
+  * fix: support deprecated enums for GCC < 6 (#8164)
+  * Fix some warning when compiling with Visual Studio 2019 on x64 target (#8125)
+
+  Python
+  * Provided an override for the reverse() method that will reverse the internal
+    collection directly instead of using the other methods of the BaseContainer.
+  * MessageFactory.CreateProtoype can be overridden to customize class creation.
+  * Fix PyUnknownFields memory leak (#7928)
+  * Add macOS big sur compatibility (#8126)
+
+  JavaScript
+  * Generate `getDescriptor` methods with `*` as their `this` type.
+  * Enforce `let/const` for generated messages.
+  * js/binary/utils.js: Fix jspb.utils.joinUnsignedDecimalString to work with negative bitsLow and low but non-zero bitsHigh parameter. (#8170)
+
+  PHP
+  * Added support for PHP 8. (#8105)
+  * unregister INI entries and fix invalid read on shutdown (#8042)
+  * Fix PhpDoc comments for message accessors to include "|null". (#8136)
+  * fix: convert native PHP floats to single precision (#8187)
+  * Fixed PHP to support field numbers >=2**28. (#8235)
+  * feat: add support for deprecated fields to PHP compiler (#8223)
+  * Protect against stack overflow if the user derives from Message. (#8248)
+  * Fixed clone for Message, RepeatedField, and MapField. (#8245)
+  * Updated upb to allow nonzero offset minutes in JSON timestamps. (#8258)
+
+  Ruby
+  * Added support for Ruby 3. (#8184)
+  * Rewrote the data storage layer to be based on upb_msg objects from the
+    upb library. This should lead to much better parsing performance,
+    particularly for large messages. (#8184).
+  * Fill out JRuby support (#7923)
+  * [Ruby] Fix: (SIGSEGV) gRPC-Ruby issue on Windows. memory alloc infinite
+    recursion/run out of memory (#8195)
+  * Fix jruby support to handle messages nested more than 1 level deep (#8194)
 
   Java
   * Avoid possible UnsupportedOperationException when using CodedInputSteam
@@ -40,15 +107,14 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Now Proto3 Oneof fields have "has" methods for checking their presence in
     Java.
   * Annotates Java proto generated *_FIELD_NUMBER constants.
+  * Add -assumevalues to remove JvmMemoryAccessor on Android.
 
-  Python
-  * Provided an override for the reverse() method that will reverse the internal
-    collection directly instead of using the other methods of the BaseContainer.
-  * MessageFactory.CreateProtoype can be overridden to customize class creation.
-
-  Javascript
-  * Generate `getDescriptor` methods with `*` as their `this` type.
-  * Enforce `let/const` for generated messages.
+  C#
+  * Fix parsing negative Int32Value that crosses segment boundary (#8035)
+  * Change ByteString to use memory and support unsafe create without copy (#7645)
+  * Optimize MapField serialization by removing MessageAdapter (#8143)
+  * Allow FileDescriptors to be parsed with extension registries (#8220)
+  * Optimize writing small strings (#8149)
 
 2020-11-11 version 3.14.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 

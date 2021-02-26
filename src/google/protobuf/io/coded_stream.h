@@ -120,12 +120,12 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 // Assuming windows is always little-endian.
 #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
 #define PROTOBUF_LITTLE_ENDIAN 1
 #endif
-#if _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
+#if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
 // If MSVC has "/RTCc" set, it will complain about truncating casts at
 // runtime.  This file contains some intentional truncating casts.
 #pragma runtime_checks("c", off)
@@ -851,11 +851,11 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
   static constexpr int TagSize(uint32 tag) {
-    return (tag < (1 << 7))
-               ? 1
-               : (tag < (1 << 14))
-                     ? 2
-                     : (tag < (1 << 21)) ? 3 : (tag < (1 << 28)) ? 4 : 5;
+    return (tag < (1 << 7))    ? 1
+           : (tag < (1 << 14)) ? 2
+           : (tag < (1 << 21)) ? 3
+           : (tag < (1 << 28)) ? 4
+                               : 5;
   }
 
   PROTOBUF_ALWAYS_INLINE uint8* WriteTag(uint32 num, uint32 wt, uint8* ptr) {
@@ -1181,12 +1181,11 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Compile-time equivalent of VarintSize32().
   template <uint32 Value>
   struct StaticVarintSize32 {
-    static const size_t value =
-        (Value < (1 << 7))
-            ? 1
-            : (Value < (1 << 14))
-                  ? 2
-                  : (Value < (1 << 21)) ? 3 : (Value < (1 << 28)) ? 4 : 5;
+    static const size_t value = (Value < (1 << 7))    ? 1
+                                : (Value < (1 << 14)) ? 2
+                                : (Value < (1 << 21)) ? 3
+                                : (Value < (1 << 28)) ? 4
+                                                      : 5;
   };
 
   // Returns the total number of bytes written since this object was created.

@@ -431,7 +431,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // + n^3) in which n^3 is the time complexity of the maximum matching
   // algorithm.
   //
-  // REQUIRES:  field->is_repeated() and field not registered with TreatAsList
+  // REQUIRES: field->is_repeated() and field not registered with TreatAsMap*
   void TreatAsSet(const FieldDescriptor* field);
   void TreatAsSmartSet(const FieldDescriptor* field);
 
@@ -439,7 +439,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // diffing purposes, so different orderings of the same elements will NOT be
   // considered equal.
   //
-  // REQUIRED: field->is_repeated() and field not registered with TreatAsSet
+  // REQUIRES: field->is_repeated() and field not registered with TreatAsMap*
   void TreatAsList(const FieldDescriptor* field);
   // Note that the complexity is similar to treating as SET.
   void TreatAsSmartList(const FieldDescriptor* field);
