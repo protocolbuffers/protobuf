@@ -93,7 +93,7 @@ VALUE Map_GetRubyWrapper(upb_map* map, upb_fieldtype_t key_type,
   if (val == Qnil) {
     val = Map_alloc(cMap);
     Map* self;
-    ObjectCache_Add(map, val, Arena_get(arena));
+    ObjectCache_Add(map, val);
     TypedData_Get_Struct(val, Map, &Map_type, self);
     self->map = map;
     self->arena = arena;
@@ -318,7 +318,7 @@ static VALUE Map_init(int argc, VALUE* argv, VALUE _self) {
 
   self->map = upb_map_new(Arena_get(self->arena), self->key_type,
                           self->value_type_info.type);
-  ObjectCache_Add(self->map, _self, Arena_get(self->arena));
+  ObjectCache_Add(self->map, _self);
 
   if (init_arg != Qnil) {
     Map_merge_into_self(_self, init_arg);
@@ -590,9 +590,10 @@ VALUE Map_eq(VALUE _self, VALUE _other) {
  */
 static VALUE Map_freeze(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-
-  ObjectCache_Pin(self->map, _self, Arena_get(self->arena));
-  RB_OBJ_FREEZE(_self);
+  if (!RB_OBJ_FROZEN(_self)) {
+    Arena_Pin(self->arena, _self);
+    RB_OBJ_FREEZE(_self);
+  }
   return _self;
 }
 
