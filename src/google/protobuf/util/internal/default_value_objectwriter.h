@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_DEFAULT_VALUE_OBJECTWRITER_H__
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <stack>
@@ -95,16 +96,16 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
                                        bool value) override;
 
   DefaultValueObjectWriter* RenderInt32(StringPiece name,
-                                        int32 value) override;
+                                        int32_t value) override;
 
   DefaultValueObjectWriter* RenderUint32(StringPiece name,
-                                         uint32 value) override;
+                                         uint32_t value) override;
 
   DefaultValueObjectWriter* RenderInt64(StringPiece name,
-                                        int64 value) override;
+                                        int64_t value) override;
 
   DefaultValueObjectWriter* RenderUint64(StringPiece name,
-                                         uint64 value) override;
+                                         uint64_t value) override;
 
   DefaultValueObjectWriter* RenderDouble(StringPiece name,
                                          double value) override;

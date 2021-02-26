@@ -95,9 +95,13 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   // We use `x.getClass()` as a null check because it generates less bytecode
   // than an `if (x == null) { throw ... }` statement.
   (*variables)["key_null_check"] =
-      IsReferenceType(keyJavaType) ? "key.getClass();" : "";
+      IsReferenceType(keyJavaType)
+          ? "java.lang.Class<?> keyClass = key.getClass();"
+          : "";
   (*variables)["value_null_check"] =
-      IsReferenceType(valueJavaType) ? "value.getClass();" : "";
+      IsReferenceType(valueJavaType)
+          ? "java.lang.Class<?> valueClass = value.getClass();"
+          : "";
 
   if (GetJavaType(value) == JAVATYPE_ENUM) {
     // We store enums as Integers internally.

@@ -31,6 +31,7 @@
 #include <google/protobuf/util/internal/datapiece.h>
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 #include <google/protobuf/struct.pb.h>
@@ -114,54 +115,56 @@ util::StatusOr<float> DoubleToFloat(double before) {
 
 }  // namespace
 
-util::StatusOr<int32> DataPiece::ToInt32() const {
-  if (type_ == TYPE_STRING) return StringToNumber<int32>(safe_strto32);
-
-  if (type_ == TYPE_DOUBLE)
-    return FloatingPointToIntConvertAndCheck<int32, double>(double_);
-
-  if (type_ == TYPE_FLOAT)
-    return FloatingPointToIntConvertAndCheck<int32, float>(float_);
-
-  return GenericConvert<int32>();
-}
-
-util::StatusOr<uint32> DataPiece::ToUint32() const {
+util::StatusOr<int32_t> DataPiece::ToInt32() const {
   if (type_ == TYPE_STRING)
-    return StringToNumber<uint32>(safe_strtou32);
+    return StringToNumber<int32_t>(safe_strto32);
 
   if (type_ == TYPE_DOUBLE)
-    return FloatingPointToIntConvertAndCheck<uint32, double>(double_);
+    return FloatingPointToIntConvertAndCheck<int32_t, double>(double_);
 
   if (type_ == TYPE_FLOAT)
-    return FloatingPointToIntConvertAndCheck<uint32, float>(float_);
+    return FloatingPointToIntConvertAndCheck<int32_t, float>(float_);
 
-  return GenericConvert<uint32>();
+  return GenericConvert<int32_t>();
 }
 
-util::StatusOr<int64> DataPiece::ToInt64() const {
-  if (type_ == TYPE_STRING) return StringToNumber<int64>(safe_strto64);
-
-  if (type_ == TYPE_DOUBLE)
-    return FloatingPointToIntConvertAndCheck<int64, double>(double_);
-
-  if (type_ == TYPE_FLOAT)
-    return FloatingPointToIntConvertAndCheck<int64, float>(float_);
-
-  return GenericConvert<int64>();
-}
-
-util::StatusOr<uint64> DataPiece::ToUint64() const {
+util::StatusOr<uint32_t> DataPiece::ToUint32() const {
   if (type_ == TYPE_STRING)
-    return StringToNumber<uint64>(safe_strtou64);
+    return StringToNumber<uint32_t>(safe_strtou32);
 
   if (type_ == TYPE_DOUBLE)
-    return FloatingPointToIntConvertAndCheck<uint64, double>(double_);
+    return FloatingPointToIntConvertAndCheck<uint32_t, double>(double_);
 
   if (type_ == TYPE_FLOAT)
-    return FloatingPointToIntConvertAndCheck<uint64, float>(float_);
+    return FloatingPointToIntConvertAndCheck<uint32_t, float>(float_);
 
-  return GenericConvert<uint64>();
+  return GenericConvert<uint32_t>();
+}
+
+util::StatusOr<int64_t> DataPiece::ToInt64() const {
+  if (type_ == TYPE_STRING)
+    return StringToNumber<int64_t>(safe_strto64);
+
+  if (type_ == TYPE_DOUBLE)
+    return FloatingPointToIntConvertAndCheck<int64_t, double>(double_);
+
+  if (type_ == TYPE_FLOAT)
+    return FloatingPointToIntConvertAndCheck<int64_t, float>(float_);
+
+  return GenericConvert<int64_t>();
+}
+
+util::StatusOr<uint64_t> DataPiece::ToUint64() const {
+  if (type_ == TYPE_STRING)
+    return StringToNumber<uint64_t>(safe_strtou64);
+
+  if (type_ == TYPE_DOUBLE)
+    return FloatingPointToIntConvertAndCheck<uint64_t, double>(double_);
+
+  if (type_ == TYPE_FLOAT)
+    return FloatingPointToIntConvertAndCheck<uint64_t, float>(float_);
+
+  return GenericConvert<uint64_t>();
 }
 
 util::StatusOr<double> DataPiece::ToDouble() const {
@@ -286,7 +289,7 @@ util::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     if (value != nullptr) return value->number();
 
     // Check if int version of enum is sent as string.
-    util::StatusOr<int32> int_value = ToInt32();
+    util::StatusOr<int32_t> int_value = ToInt32();
     if (int_value.ok()) {
       if (const google::protobuf::EnumValue* enum_value =
               FindEnumValueByNumberOrNull(enum_type, int_value.value())) {
@@ -334,13 +337,13 @@ template <typename To>
 util::StatusOr<To> DataPiece::GenericConvert() const {
   switch (type_) {
     case TYPE_INT32:
-      return NumberConvertAndCheck<To, int32>(i32_);
+      return NumberConvertAndCheck<To, int32_t>(i32_);
     case TYPE_INT64:
-      return NumberConvertAndCheck<To, int64>(i64_);
+      return NumberConvertAndCheck<To, int64_t>(i64_);
     case TYPE_UINT32:
-      return NumberConvertAndCheck<To, uint32>(u32_);
+      return NumberConvertAndCheck<To, uint32_t>(u32_);
     case TYPE_UINT64:
-      return NumberConvertAndCheck<To, uint64>(u64_);
+      return NumberConvertAndCheck<To, uint64_t>(u64_);
     case TYPE_DOUBLE:
       return NumberConvertAndCheck<To, double>(double_);
     case TYPE_FLOAT:

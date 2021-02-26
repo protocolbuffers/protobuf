@@ -290,6 +290,14 @@ enum {
 void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
                                        bool eager = false);
 
+// Overload used to implement GetMetadataStatic in the generated code.
+// See comments in compiler/cpp/internal/file.cc as to why.
+// It takes a `Metadata` and returns it to allow for tail calls and reduce
+// binary size.
+Metadata PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* (*table)(),
+                                           internal::once_flag* once,
+                                           const Metadata& metadata);
+
 // These cannot be in lite so we put them in the reflection.
 PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset,
                                                uint32 tag, uint32 has_offset,

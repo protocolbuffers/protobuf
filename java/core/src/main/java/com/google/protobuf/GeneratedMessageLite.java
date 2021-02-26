@@ -1537,11 +1537,16 @@ public abstract class GeneratedMessageLite<
       Schema<T> schema = Protobuf.getInstance().schemaFor(result);
       schema.mergeFrom(result, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
       schema.makeImmutable(result);
+    } catch (InvalidProtocolBufferException e) {
+      if (e.getThrownFromInputStream()) {
+        e = new InvalidProtocolBufferException(e);
+      }
+      throw e.setUnfinishedMessage(result);
     } catch (IOException e) {
       if (e.getCause() instanceof InvalidProtocolBufferException) {
         throw (InvalidProtocolBufferException) e.getCause();
       }
-      throw new InvalidProtocolBufferException(e.getMessage()).setUnfinishedMessage(result);
+      throw new InvalidProtocolBufferException(e).setUnfinishedMessage(result);
     } catch (RuntimeException e) {
       if (e.getCause() instanceof InvalidProtocolBufferException) {
         throw (InvalidProtocolBufferException) e.getCause();
@@ -1565,11 +1570,16 @@ public abstract class GeneratedMessageLite<
       if (result.memoizedHashCode != 0) {
         throw new RuntimeException();
       }
+    } catch (InvalidProtocolBufferException e) {
+      if (e.getThrownFromInputStream()) {
+        e = new InvalidProtocolBufferException(e);
+      }
+      throw e.setUnfinishedMessage(result);
     } catch (IOException e) {
       if (e.getCause() instanceof InvalidProtocolBufferException) {
         throw (InvalidProtocolBufferException) e.getCause();
       }
-      throw new InvalidProtocolBufferException(e.getMessage()).setUnfinishedMessage(result);
+      throw new InvalidProtocolBufferException(e).setUnfinishedMessage(result);
     } catch (IndexOutOfBoundsException e) {
       throw InvalidProtocolBufferException.truncatedMessage().setUnfinishedMessage(result);
     }
@@ -1727,8 +1737,13 @@ public abstract class GeneratedMessageLite<
         return null;
       }
       size = CodedInputStream.readRawVarint32(firstByte, input);
+    } catch (InvalidProtocolBufferException e) {
+      if (e.getThrownFromInputStream()) {
+        e = new InvalidProtocolBufferException(e);
+      }
+      throw e;
     } catch (IOException e) {
-      throw new InvalidProtocolBufferException(e.getMessage());
+      throw new InvalidProtocolBufferException(e);
     }
     InputStream limitedInput = new LimitedInputStream(input, size);
     CodedInputStream codedInput = CodedInputStream.newInstance(limitedInput);
