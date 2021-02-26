@@ -856,8 +856,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       "};\n"
       // This function exists to be marked as weak.
       // It can significantly speed up compilation by breaking up LLVM's SCC in
-      // the .pb.cc tranlation units. Large translation units see a reduction of
-      // more than 35% of walltime for optimized builds.
+      // the .pb.cc translation units. Large translation units see a reduction
+      // of more than 35% of walltime for optimized builds.
       // Without the weak attribute all the messages in the file, including all
       // the vtables and everything they use become part of the same SCC through
       // a cycle like:
