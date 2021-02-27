@@ -6,16 +6,20 @@ def upb_deps():
     maybe(
         git_repository,
         name = "com_google_absl",
-        commit = "df3ea785d8c30a9503321a3d35ee7d35808f190d",  # LTS 2020-02-25
+        commit = "998805a4c79d5d7a771f7e5a8ee3cbbbcba04f94",
         remote = "https://github.com/abseil/abseil-cpp.git",
         shallow_since = "1583355457 -0500",
     )
 
     maybe(
-        git_repository,
+        http_archive,
         name = "com_google_protobuf",
-        remote = "https://github.com/protocolbuffers/protobuf.git",
-        commit = "c8f76331abf682c289fa79f05b2ee39cc7bf5a48",  # Need to use Git until proto3 optional is released
+        sha256 = "b10bf4e2d1a7586f54e64a5d9e7837e5188fc75ae69e36f215eb01def4f9721b",
+        strip_prefix = "protobuf-3.15.3",
+        urls = [
+            "https://mirror.bazel.build/github.com/protocolbuffers/protobuf/archive/v3.15.3.tar.gz",
+            "https://github.com/protocolbuffers/protobuf/archive/v3.15.3.tar.gz",
+        ],
     )
 
     maybe(
