@@ -17,7 +17,7 @@ exports_files(["LICENSE"])
 # TODO(yannic): Remove in 3.14.0.
 string_flag(
     name = "incompatible_use_com_google_googletest",
-    build_setting_default = "true",
+    build_setting_default = "false",
     values = ["true", "false"]
 )
 
