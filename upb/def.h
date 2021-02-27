@@ -18,6 +18,7 @@
 #include "upb/table.int.h"
 #include "google/protobuf/descriptor.upb.h"
 
+/* Must be last. */
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus
@@ -108,9 +109,6 @@ const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
 const upb_msglayout_field *upb_fielddef_layout(const upb_fielddef *f);
 
-/* Internal only. */
-uint32_t upb_fielddef_selectorbase(const upb_fielddef *f);
-
 /* upb_oneofdef ***************************************************************/
 
 typedef upb_inttable_iter upb_oneof_iter;
@@ -195,10 +193,6 @@ UPB_INLINE const upb_fielddef *upb_msgdef_ntofz(const upb_msgdef *m,
   return upb_msgdef_ntof(m, name, strlen(name));
 }
 
-/* Internal-only. */
-size_t upb_msgdef_selectorcount(const upb_msgdef *m);
-uint32_t upb_msgdef_submsgfieldcount(const upb_msgdef *m);
-
 /* Lookup of either field or oneof by name.  Returns whether either was found.
  * If the return is true, then the found def will be set, and the non-found
  * one set to NULL. */
@@ -277,6 +271,7 @@ int upb_filedef_enumcount(const upb_filedef *f);
 const upb_filedef *upb_filedef_dep(const upb_filedef *f, int i);
 const upb_msgdef *upb_filedef_msg(const upb_filedef *f, int i);
 const upb_enumdef *upb_filedef_enum(const upb_filedef *f, int i);
+const upb_symtab *upb_filedef_symtab(const upb_filedef *f);
 
 /* upb_symtab *****************************************************************/
 
@@ -294,6 +289,7 @@ const upb_filedef *upb_symtab_addfile(
     upb_symtab *s, const google_protobuf_FileDescriptorProto *file,
     upb_status *status);
 size_t _upb_symtab_bytesloaded(const upb_symtab *s);
+upb_arena *_upb_symtab_arena(const upb_symtab *s);
 
 /* For generated code only: loads a generated descriptor. */
 typedef struct upb_def_init {

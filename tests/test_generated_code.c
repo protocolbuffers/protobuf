@@ -410,6 +410,73 @@ void test_status_truncation(void) {
   }
 }
 
+void decrement_int(void *ptr) {
+  int* iptr = ptr;
+  (*iptr)--;
+}
+
+void test_arena_fuse(void) {
+  int i1 = 5;
+  int i2 = 5;
+  int i3 = 5;
+  int i4 = 5;
+
+  upb_arena *arena1 = upb_arena_new();
+  upb_arena *arena2 = upb_arena_new();
+
+  upb_arena_addcleanup(arena1, &i1, decrement_int);
+  upb_arena_addcleanup(arena2, &i2, decrement_int);
+
+  upb_arena_fuse(arena1, arena2);
+
+  upb_arena_addcleanup(arena1, &i3, decrement_int);
+  upb_arena_addcleanup(arena2, &i4, decrement_int);
+
+  upb_arena_free(arena1);
+  ASSERT(i1 == 5);
+  ASSERT(i2 == 5);
+  ASSERT(i3 == 5);
+  ASSERT(i4 == 5);
+  upb_arena_free(arena2);
+  ASSERT(i1 == 4);
+  ASSERT(i2 == 4);
+  ASSERT(i3 == 4);
+  ASSERT(i4 == 4);
+}
+
+void test_arena_decode(void) {
+  // Tests against a bug that previously existed when passing an arena to
+  // upb_decode().
+  char large_string[1024] = {0};
+  upb_strview large_string_view = {large_string, sizeof(large_string)};
+  upb_arena *tmp = upb_arena_new();
+
+  protobuf_test_messages_proto3_TestAllTypesProto3 *msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(tmp);
+
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_bytes(
+      msg, large_string_view);
+
+  upb_strview serialized;
+  serialized.data = protobuf_test_messages_proto3_TestAllTypesProto3_serialize(
+      msg, tmp, &serialized.size);
+
+  upb_arena *arena = upb_arena_new();
+  // Parse the large payload, forcing an arena block to be allocated. This used
+  // to corrupt the cleanup list, preventing subsequent upb_arena_addcleanup()
+  // calls from working properly.
+  protobuf_test_messages_proto3_TestAllTypesProto3_parse(
+      serialized.data, serialized.size, arena);
+
+  int i1 = 5;
+  upb_arena_addcleanup(arena, &i1, decrement_int);
+  ASSERT(i1 == 5);
+  upb_arena_free(arena);
+  ASSERT(i1 == 4);
+
+  upb_arena_free(tmp);
+}
+
 int run_tests(int argc, char *argv[]) {
   test_scalars();
   test_utf8();
@@ -419,5 +486,7 @@ int run_tests(int argc, char *argv[]) {
   test_repeated();
   test_null_decode_buf();
   test_status_truncation();
+  test_arena_fuse();
+  test_arena_decode();
   return 0;
 }

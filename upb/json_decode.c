@@ -62,6 +62,7 @@ UPB_NORETURN static void jsondec_err(jsondec *d, const char *msg) {
   UPB_LONGJMP(d->err, 1);
 }
 
+UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsondec_errf(jsondec *d, const char *fmt, ...) {
   va_list argp;
   upb_status_seterrf(d->status, "Error parsing JSON @%d:%d: ", d->line,
@@ -678,7 +679,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
       }
       val.int64_val = dbl;  /* must be guarded, overflow here is UB */
       if (val.int64_val != dbl) {
-        jsondec_errf(d, "JSON number was not integral (%d != %" PRId64 ")", dbl,
+        jsondec_errf(d, "JSON number was not integral (%f != %" PRId64 ")", dbl,
                      val.int64_val);
       }
       break;
@@ -704,7 +705,7 @@ static upb_msgval jsondec_int(jsondec *d, const upb_fielddef *f) {
 
 /* Parse UINT32 or UINT64 value. */
 static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
-  upb_msgval val;
+  upb_msgval val = {0};
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER: {
@@ -714,7 +715,7 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
       }
       val.uint64_val = dbl;  /* must be guarded, overflow here is UB */
       if (val.uint64_val != dbl) {
-        jsondec_errf(d, "JSON number was not integral (%d != %" PRIu64 ")", dbl,
+        jsondec_errf(d, "JSON number was not integral (%f != %" PRIu64 ")", dbl,
                      val.uint64_val);
       }
       break;
@@ -741,7 +742,7 @@ static upb_msgval jsondec_uint(jsondec *d, const upb_fielddef *f) {
 /* Parse DOUBLE or FLOAT value. */
 static upb_msgval jsondec_double(jsondec *d, const upb_fielddef *f) {
   upb_strview str;
-  upb_msgval val;
+  upb_msgval val = {0};
 
   switch (jsondec_peek(d)) {
     case JD_NUMBER:
@@ -905,7 +906,7 @@ static void jsondec_field(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
 
   if (!f) {
     if ((d->options & UPB_JSONDEC_IGNOREUNKNOWN) == 0) {
-      jsondec_errf(d, "Unknown field: '" UPB_STRVIEW_FORMAT "'",
+      jsondec_errf(d, "No such field: " UPB_STRVIEW_FORMAT,
                    UPB_STRVIEW_ARGS(name));
     }
     jsondec_skipval(d);
@@ -1058,7 +1059,8 @@ static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
 
   {
     /* [+-]08:00 or Z */
-    int ofs = 0;
+    int ofs_hour = 0;
+    int ofs_min = 0;
     bool neg = false;
 
     if (ptr == end) goto malformed;
@@ -1069,9 +1071,10 @@ static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
         /* fallthrough */
       case '+':
         if ((end - ptr) != 5) goto malformed;
-        ofs = jsondec_tsdigits(d, &ptr, 2, ":00");
-        ofs *= 60 * 60;
-        seconds.int64_val += (neg ? ofs : -ofs);
+        ofs_hour = jsondec_tsdigits(d, &ptr, 2, ":");
+        ofs_min = jsondec_tsdigits(d, &ptr, 2, NULL);
+        ofs_min = ((ofs_hour * 60) + ofs_min) * 60;
+        seconds.int64_val += (neg ? ofs_min : -ofs_min);
         break;
       case 'Z':
         if (ptr != end) goto malformed;

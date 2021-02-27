@@ -75,7 +75,7 @@ void lupb_def_registertypes(lua_State *L);
 
 /** From msg.c. ***************************************************************/
 
-int lupb_msg_pushnew(lua_State *L);
+int lupb_msgdef_call(lua_State *L);
 upb_arena *lupb_arena_pushnew(lua_State *L);
 
 void lupb_msg_registertypes(lua_State *L);

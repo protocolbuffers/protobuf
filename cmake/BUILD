@@ -37,13 +37,6 @@ genrule(
 )
 
 genrule(
-    name = "copy_json_ragel",
-    srcs = ["//:upb/json/parser.c"],
-    outs = ["generated-in/upb/json/parser.c"],
-    cmd = "cp $< $@",
-)
-
-genrule(
     name = "copy_protos",
     srcs = ["//:descriptor_upb_proto"],
     outs = [
@@ -59,7 +52,6 @@ generated_file_staleness_test(
         "CMakeLists.txt",
         "google/protobuf/descriptor.upb.c",
         "google/protobuf/descriptor.upb.h",
-        "upb/json/parser.c",
     ],
     generated_pattern = "generated-in/%s",
 )

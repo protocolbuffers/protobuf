@@ -45,7 +45,9 @@ def Benchmark(outbase, bench_cpu=True, runs=12, fasttable=False):
     # Translate into the format expected by benchstat.
     with open(outbase + ".txt", "w") as f:
       for run in bench_json["benchmarks"]:
-        name = re.sub(r'^BM_', 'Benchmark', run["name"])
+        name = run["name"]
+        name = name.replace(" ", "")
+        name = re.sub(r'^BM_', 'Benchmark', name)
         if name.endswith("_mean") or name.endswith("_median") or name.endswith("_stddev"):
           continue
         values = (name, run["iterations"], run["cpu_time"])

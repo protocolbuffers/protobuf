@@ -8,6 +8,10 @@
 
 #include "upb/port_def.inc"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef union {
   bool bool_val;
   float float_val;
@@ -27,6 +31,8 @@ typedef union {
   upb_msg* msg;
   upb_array* array;
 } upb_mutmsgval;
+
+upb_msgval upb_fielddef_default(const upb_fielddef *f);
 
 /** upb_msg *******************************************************************/
 
@@ -162,6 +168,10 @@ upb_msgval upb_mapiter_value(const upb_map *map, size_t iter);
 /* Sets the value for this entry.  The iterator must not be done, and the
  * iterator must not have been initialized const. */
 void upb_mapiter_setvalue(upb_map *map, size_t iter, upb_msgval value);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #include "upb/port_undef.inc"
 

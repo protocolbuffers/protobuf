@@ -9,11 +9,13 @@
 #define UPB_MSG_H_
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "upb/table.int.h"
 #include "upb/upb.h"
 
+/* Must be last. */
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus
@@ -458,20 +460,19 @@ UPB_INLINE void* _upb_map_next(const upb_map *map, size_t *iter) {
 }
 
 UPB_INLINE bool _upb_map_set(upb_map *map, const void *key, size_t key_size,
-                             void *val, size_t val_size, upb_arena *arena) {
+                             void *val, size_t val_size, upb_arena *a) {
   upb_strview strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};
-  if (!_upb_map_tovalue(val, val_size, &tabval, arena)) return false;
-  upb_alloc *a = upb_arena_alloc(arena);
+  if (!_upb_map_tovalue(val, val_size, &tabval, a)) return false;
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  upb_strtable_remove3(&map->table, strkey.data, strkey.size, NULL, a);
-  return upb_strtable_insert3(&map->table, strkey.data, strkey.size, tabval, a);
+  upb_strtable_remove(&map->table, strkey.data, strkey.size, NULL);
+  return upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a);
 }
 
 UPB_INLINE bool _upb_map_delete(upb_map *map, const void *key, size_t key_size) {
   upb_strview k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove3(&map->table, k.data, k.size, NULL, NULL);
+  return upb_strtable_remove(&map->table, k.data, k.size, NULL);
 }
 
 UPB_INLINE void _upb_map_clear(upb_map *map) {
@@ -536,8 +537,7 @@ UPB_INLINE void _upb_msg_map_key(const void* msg, void* key, size_t size) {
 
 UPB_INLINE void _upb_msg_map_value(const void* msg, void* val, size_t size) {
   const upb_tabent *ent = (const upb_tabent*)msg;
-  upb_value v;
-  _upb_value_setval(&v, ent->val.val);
+  upb_value v = {ent->val.val};
   _upb_map_fromvalue(v, val, size);
 }
 
@@ -551,6 +551,53 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val, size_t size) 
   } else {
     memcpy(&ent->val.val, val, size);
   }
+}
+
+/** _upb_mapsorter *************************************************************/
+
+/* _upb_mapsorter sorts maps and provides ordered iteration over the entries.
+ * Since maps can be recursive (map values can be messages which contain other maps).
+ * _upb_mapsorter can contain a stack of maps. */
+
+typedef struct {
+  upb_tabent const**entries;
+  int size;
+  int cap;
+} _upb_mapsorter;
+
+typedef struct {
+  int start;
+  int pos;
+  int end;
+} _upb_sortedmap;
+
+UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter *s) {
+  s->entries = NULL;
+  s->size = 0;
+  s->cap = 0;
+}
+
+UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter *s) {
+  if (s->entries) free(s->entries);
+}
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
+                            const upb_map *map, _upb_sortedmap *sorted);
+
+UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter *s, _upb_sortedmap *sorted) {
+  s->size = sorted->start;
+}
+
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter *s, const upb_map *map,
+                                    _upb_sortedmap *sorted,
+                                    upb_map_entry *ent) {
+  if (sorted->pos == sorted->end) return false;
+  const upb_tabent *tabent = s->entries[sorted->pos++];
+  upb_strview key = upb_tabstrview(tabent->key);
+  _upb_map_fromkey(key, &ent->k, map->key_size);
+  upb_value val = {tabent->val.val};
+  _upb_map_fromvalue(val, &ent->v, map->val_size);
+  return true;
 }
 
 #undef PTR_AT

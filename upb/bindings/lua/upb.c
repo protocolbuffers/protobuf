@@ -84,6 +84,24 @@ int lua_getiuservalue(lua_State *L, int index, int n) {
 }
 #endif
 
+/* We use this function as the __index metamethod when a type has both methods
+ * and an __index metamethod. */
+int lupb_indexmm(lua_State *L) {
+  /* Look up in __index table (which is a closure param). */
+  lua_pushvalue(L, 2);
+  lua_rawget(L, lua_upvalueindex(1));
+  if (!lua_isnil(L, -1)) {
+    return 1;
+  }
+
+  /* Not found, chain to user __index metamethod. */
+  lua_pushvalue(L, lua_upvalueindex(2));
+  lua_pushvalue(L, 1);
+  lua_pushvalue(L, 2);
+  lua_call(L, 2, 1);
+  return 1;
+}
+
 void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
                         const luaL_Reg *mm) {
   luaL_newmetatable(L, name);
@@ -93,14 +111,17 @@ void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
   }
 
   if (m) {
-    /* Methods go in the mt's __index method.  This implies that you can'
-     * implement __index and also have methods. */
-    lua_getfield(L, -1, "__index");
-    lupb_assert(L, lua_isnil(L, -1));
-    lua_pop(L, 1);
-
-    lua_createtable(L, 0, 0);
+    lua_createtable(L, 0, 0);  /* __index table */
     lupb_setfuncs(L, m);
+
+    /* Methods go in the mt's __index slot.  If the user also specified an
+     * __index metamethod, use our custom lupb_indexmm() that can check both. */
+    lua_getfield(L, -2, "__index");
+    if (lua_isnil(L, -1)) {
+      lua_pop(L, 1);
+    } else {
+      lua_pushcclosure(L, &lupb_indexmm, 2);
+    }
     lua_setfield(L, -2, "__index");
   }
 

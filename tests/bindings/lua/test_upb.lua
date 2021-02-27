@@ -5,6 +5,7 @@ local upb_test = require "tests.bindings.lua.test_pb"
 local test_messages_proto3 = require "google.protobuf.test_messages_proto3_pb"
 local test_messages_proto2 = require "google.protobuf.test_messages_proto2_pb"
 local descriptor = require "google.protobuf.descriptor_pb"
+local empty = require "google.protobuf.empty_pb"
 
 if _VERSION >= 'Lua 5.2' then
   _ENV = lunit.module("testupb", "seeall")
@@ -89,6 +90,69 @@ function test_msg_map()
   local msg2 = upb.decode(test_messages_proto3.TestAllTypesProto3, serialized)
   assert_equal(10, msg2.map_int32_int32[5])
   assert_equal(12, msg2.map_int32_int32[6])
+end
+
+function test_map_sorting()
+  function msg_with_int32_entries(start, expand)
+    local msg = test_messages_proto3.TestAllTypesProto3()
+    for i=start,start + 8 do
+      msg.map_int32_int32[i] = i * 2
+    end
+
+    if expand then
+      for i=start+20,200 do
+        msg.map_int32_int32[i] = i
+      end
+      for i=start+20,200 do
+        msg.map_int32_int32[i] = nil
+      end
+    end
+    return msg
+  end
+
+  function msg_with_msg_entries(expand)
+    local msg = test_messages_proto3.TestAllTypesProto3()
+    -- 8! = 40320 possible orderings makes it overwhelmingly likely that two
+    -- random orderings will be different.
+    for i=1,8 do
+      local submsg = test_messages_proto3.TestAllTypesProto3.NestedMessage()
+      submsg.corecursive = msg_with_int32_entries(i, expand)
+      msg.map_string_nested_message[tostring(i)] = submsg
+    end
+
+    expand = false
+    if expand then
+      for i=21,2000 do
+        local submsg = test_messages_proto3.TestAllTypesProto3.NestedMessage()
+        submsg.corecursive = msg_with_int32_entries(i, expand)
+        msg.map_string_nested_message[tostring(i)] = submsg
+      end
+      for i=21,2000 do
+        msg.map_string_nested_message[tostring(i)] = nil
+      end
+    end
+    return msg
+  end
+
+  -- Create two messages with the same contents but (hopefully) different
+  -- map table orderings.
+  local msg = msg_with_msg_entries(false)
+  local msg2 = msg_with_msg_entries(true)
+
+  local text1 = upb.text_encode(msg)
+  local text2 = upb.text_encode(msg2)
+  assert_equal(text1, text2)
+
+  local binary1 = upb.encode(msg, {upb.ENCODE_DETERMINISTIC})
+  local binary2 = upb.encode(msg2, {upb.ENCODE_DETERMINISTIC})
+  assert_equal(binary1, binary2)
+
+  -- Non-sorted map should compare different.
+  local text3 = upb.text_encode(msg, {upb.TXTENC_NOSORT})
+  assert_not_equal(text1, text3)
+
+  local binary3 = upb.encode(msg)
+  assert_not_equal(binary1, binary3)
 end
 
 function test_utf8()
@@ -587,6 +651,20 @@ function test_foo()
   assert_equal(set.file[1].name, "google/protobuf/descriptor.proto")
 end
 
+function test_descriptor()
+  local symtab = upb.SymbolTable()
+  local file_proto = descriptor.FileDescriptorProto {
+    name = "test.proto",
+    message_type = upb.Array(descriptor.DescriptorProto, {
+      descriptor.DescriptorProto{
+        name = "ABC",
+      },
+    })
+  }
+  local file = symtab:add_file(upb.encode(file_proto))
+  assert_equal(file:symtab(), symtab)
+end
+
 function test_descriptor_error()
   local symtab = upb.SymbolTable()
   local file = descriptor.FileDescriptorProto()
@@ -599,6 +677,46 @@ function test_descriptor_error()
   }
   assert_error(function () symtab:add_file(upb.encode(file)) end)
   assert_nil(symtab:lookup_msg("ABC"))
+end
+
+function test_encode_skipunknown()
+  -- Test that upb.ENCODE_SKIPUNKNOWN does not encode unknown fields.
+  local msg = test_messages_proto3.TestAllTypesProto3{
+    optional_int32 = 10,
+    optional_uint32 = 20,
+    optional_int64 = 30,
+  }
+  -- SKIPUNKNOWN here tests that it does *not* affect regular fields.
+  local serialized = upb.encode(msg, {upb.ENCODE_SKIPUNKNOWN})
+  assert_true(#serialized > 0)
+  local empty_with_unknown = upb.decode(empty.Empty, serialized)
+  assert_true(#upb.encode(empty_with_unknown) > 0)
+  -- Verify that unknown fields are not serialized.
+  assert_true(#upb.encode(empty_with_unknown, {upb.ENCODE_SKIPUNKNOWN}) == 0)
+end
+
+function test_json_emit_defaults()
+  local msg = test_messages_proto3.TestAllTypesProto3()
+  local json = upb.json_encode(msg, {upb.JSONENC_EMITDEFAULTS})
+end
+
+function test_encode_depth_limit()
+  local msg = test_messages_proto3.TestAllTypesProto3()
+  msg.recursive_message = msg
+  assert_error(function() upb.encode(msg) end)
+end
+
+function test_large_field_number()
+  local msg = upb_test.TestLargeFieldNumber()
+  msg.i32 = 5
+  local serialized = upb.encode(msg)
+  local msg2 = upb.decode(upb_test.TestLargeFieldNumber, serialized)
+  assert_equal(msg.i32, msg2.i32)
+end
+
+function test_timestamp_minutes()
+  local msg = upb.json_decode(upb_test.TestTimestamp, '{"ts": "2000-01-01T00:00:00-06:59"}')
+  assert_equal(msg.ts.seconds, 946684800 + ((6 * 60) + 59) * 60)
 end
 
 function test_gc()

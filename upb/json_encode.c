@@ -32,7 +32,7 @@ static void jsonenc_scalar(jsonenc *e, upb_msgval val, const upb_fielddef *f);
 static void jsonenc_msgfield(jsonenc *e, const upb_msg *msg,
                              const upb_msgdef *m);
 static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
-                              const upb_msgdef *m);
+                              const upb_msgdef *m, bool first);
 static void jsonenc_value(jsonenc *e, const upb_msg *msg, const upb_msgdef *m);
 
 UPB_NORETURN static void jsonenc_err(jsonenc *e, const char *msg) {
@@ -40,6 +40,7 @@ UPB_NORETURN static void jsonenc_err(jsonenc *e, const char *msg) {
   longjmp(e->err, 1);
 }
 
+UPB_PRINTF(2, 3)
 UPB_NORETURN static void jsonenc_errf(jsonenc *e, const char *fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
@@ -72,6 +73,7 @@ static void jsonenc_putstr(jsonenc *e, const char *str) {
   jsonenc_putbytes(e, str, strlen(str));
 }
 
+UPB_PRINTF(2, 3)
 static void jsonenc_printf(jsonenc *e, const char *fmt, ...) {
   size_t n;
   size_t have = e->end - e->ptr;
@@ -102,7 +104,7 @@ static void jsonenc_nanos(jsonenc *e, int32_t nanos) {
     digits -= 3;
   }
 
-  jsonenc_printf(e, ".%0.*" PRId32, digits, nanos);
+  jsonenc_printf(e, ".%.*" PRId32, digits, nanos);
 }
 
 static void jsonenc_timestamp(jsonenc *e, const upb_msg *msg,
@@ -340,14 +342,13 @@ static void jsonenc_any(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
 
   jsonenc_putstr(e, "{\"@type\":");
   jsonenc_string(e, type_url);
-  jsonenc_putstr(e, ",");
 
   if (upb_msgdef_wellknowntype(any_m) == UPB_WELLKNOWN_UNSPECIFIED) {
     /* Regular messages: {"@type": "...","foo": 1, "bar": 2} */
-    jsonenc_msgfields(e, any, any_m);
+    jsonenc_msgfields(e, any, any_m, false);
   } else {
     /* Well-known type: {"@type": "...","value": <well-known encoding>} */
-    jsonenc_putstr(e, "\"value\":");
+    jsonenc_putstr(e, ",\"value\":");
     jsonenc_msgfield(e, any, any_m);
   }
 
@@ -594,7 +595,7 @@ static void jsonenc_mapkey(jsonenc *e, upb_msgval val, const upb_fielddef *f) {
 static void jsonenc_array(jsonenc *e, const upb_array *arr,
                          const upb_fielddef *f) {
   size_t i;
-  size_t size = upb_array_size(arr);
+  size_t size = arr ? upb_array_size(arr) : 0;
   bool first = true;
 
   jsonenc_putstr(e, "[");
@@ -616,10 +617,12 @@ static void jsonenc_map(jsonenc *e, const upb_map *map, const upb_fielddef *f) {
 
   jsonenc_putstr(e, "{");
 
-  while (upb_mapiter_next(map, &iter)) {
-    jsonenc_putsep(e, ",", &first);
-    jsonenc_mapkey(e, upb_mapiter_key(map, iter), key_f);
-    jsonenc_scalar(e, upb_mapiter_value(map, iter), val_f);
+  if (map) {
+    while (upb_mapiter_next(map, &iter)) {
+      jsonenc_putsep(e, ",", &first);
+      jsonenc_mapkey(e, upb_mapiter_key(map, iter), key_f);
+      jsonenc_scalar(e, upb_mapiter_value(map, iter), val_f);
+    }
   }
 
   jsonenc_putstr(e, "}");
@@ -648,10 +651,9 @@ static void jsonenc_fieldval(jsonenc *e, const upb_fielddef *f,
 }
 
 static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
-                              const upb_msgdef *m) {
+                              const upb_msgdef *m, bool first) {
   upb_msgval val;
   const upb_fielddef *f;
-  bool first = true;
 
   if (e->options & UPB_JSONENC_EMITDEFAULTS) {
     /* Iterate over all fields. */
@@ -659,7 +661,9 @@ static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
     int n = upb_msgdef_fieldcount(m);
     for (i = 0; i < n; i++) {
       f = upb_msgdef_field(m, i);
-      jsonenc_fieldval(e, f, upb_msg_get(msg, f), &first);
+      if (!upb_fielddef_haspresence(f) || upb_msg_has(msg, f)) {
+        jsonenc_fieldval(e, f, upb_msg_get(msg, f), &first);
+      }
     }
   } else {
     /* Iterate over non-empty fields. */
@@ -672,7 +676,7 @@ static void jsonenc_msgfields(jsonenc *e, const upb_msg *msg,
 
 static void jsonenc_msg(jsonenc *e, const upb_msg *msg, const upb_msgdef *m) {
   jsonenc_putstr(e, "{");
-  jsonenc_msgfields(e, msg, m);
+  jsonenc_msgfields(e, msg, m, true);
   jsonenc_putstr(e, "}");
 }
 

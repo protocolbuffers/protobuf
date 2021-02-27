@@ -16,6 +16,7 @@ cc_test(
     data = [
         "test_upb.lua",
         ":descriptor_proto_lua",
+        ":empty_proto_lua",
         ":test_messages_proto2_proto_lua",
         ":test_messages_proto3_proto_lua",
         ":test_proto_lua",
@@ -36,6 +37,7 @@ proto_library(
     name = "test_proto",
     testonly = 1,
     srcs = ["test.proto"],
+    deps = ["@com_google_protobuf//:timestamp_proto"],
 )
 
 lua_proto_library(
@@ -47,6 +49,11 @@ lua_proto_library(
 lua_proto_library(
     name = "descriptor_proto_lua",
     deps = ["@com_google_protobuf//:descriptor_proto"],
+)
+
+lua_proto_library(
+    name = "empty_proto_lua",
+    deps = ["@com_google_protobuf//:empty_proto"],
 )
 
 lua_proto_library(

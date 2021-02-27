@@ -18,14 +18,6 @@ http_archive(
 )
 
 http_archive(
-    name = "ragel",
-    build_file = "//bazel:ragel.BUILD",
-    sha256 = "5f156edb65d20b856d638dd9ee2dfb43285914d9aa2b6ec779dac0270cd56c3f",
-    strip_prefix = "ragel-6.10",
-    urls = ["http://www.colm.net/files/ragel/ragel-6.10.tar.gz"],
-)
-
-http_archive(
      name = "com_google_googletest",
      urls = ["https://github.com/google/googletest/archive/b6cd405286ed8635ece71c72f118e659f4ade3fb.zip"],  # 2019-01-07
      strip_prefix = "googletest-b6cd405286ed8635ece71c72f118e659f4ade3fb",

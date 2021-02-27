@@ -8,9 +8,12 @@
 #include <vector>
 
 #include "upb/def.h"
+#include "upb/reflection.h"
 #include "upb/upb.hpp"
 
 namespace upb {
+
+typedef upb_msgval MessageValue;
 
 class EnumDefPtr;
 class MessageDefPtr;
@@ -105,6 +108,8 @@ class FieldDefPtr {
   bool default_bool() const { return upb_fielddef_defaultbool(ptr_); }
   float default_float() const { return upb_fielddef_defaultfloat(ptr_); }
   double default_double() const { return upb_fielddef_defaultdouble(ptr_); }
+
+  MessageValue default_value() const { return upb_fielddef_default(ptr_); }
 
   // The resulting string is always NULL-terminated.  If non-NULL, the length
   // will be stored in *len.

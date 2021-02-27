@@ -33,45 +33,18 @@ extern "C" {
 
 /* upb_value ******************************************************************/
 
-/* A tagged union (stored untagged inside the table) so that we can check that
- * clients calling table accessors are correctly typed without having to have
- * an explosion of accessors. */
-typedef enum {
-  UPB_CTYPE_INT32    = 1,
-  UPB_CTYPE_INT64    = 2,
-  UPB_CTYPE_UINT32   = 3,
-  UPB_CTYPE_UINT64   = 4,
-  UPB_CTYPE_BOOL     = 5,
-  UPB_CTYPE_CSTR     = 6,
-  UPB_CTYPE_PTR      = 7,
-  UPB_CTYPE_CONSTPTR = 8,
-  UPB_CTYPE_FPTR     = 9,
-  UPB_CTYPE_FLOAT    = 10,
-  UPB_CTYPE_DOUBLE   = 11
-} upb_ctype_t;
-
 typedef struct {
   uint64_t val;
 } upb_value;
 
 /* Like strdup(), which isn't always available since it's not ANSI C. */
-char *upb_strdup(const char *s, upb_alloc *a);
+char *upb_strdup(const char *s, upb_arena *a);
 /* Variant that works with a length-delimited rather than NULL-delimited string,
  * as supported by strtable. */
-char *upb_strdup2(const char *s, size_t len, upb_alloc *a);
-
-UPB_INLINE char *upb_gstrdup(const char *s) {
-  return upb_strdup(s, &upb_alloc_global);
-}
+char *upb_strdup2(const char *s, size_t len, upb_arena *a);
 
 UPB_INLINE void _upb_value_setval(upb_value *v, uint64_t val) {
   v->val = val;
-}
-
-UPB_INLINE upb_value _upb_value_val(uint64_t val) {
-  upb_value ret;
-  _upb_value_setval(&ret, val);
-  return ret;
 }
 
 /* For each value ctype, define the following set of functions:
@@ -147,10 +120,17 @@ UPB_INLINE char *upb_tabstr(upb_tabkey key, uint32_t *len) {
   return mem + sizeof(*len);
 }
 
+UPB_INLINE upb_strview upb_tabstrview(upb_tabkey key) {
+  upb_strview ret;
+  uint32_t len;
+  ret.data = upb_tabstr(key, &len);
+  ret.size = len;
+  return ret;
+}
 
 /* upb_tabval *****************************************************************/
 
-typedef struct {
+typedef struct upb_tabval {
   uint64_t val;
 } upb_tabval;
 
@@ -174,14 +154,7 @@ typedef struct {
   uint32_t mask;         /* Mask to turn hash value -> bucket. */
   uint32_t max_count;    /* Max count before we hit our load limit. */
   uint8_t size_lg2;      /* Size of the hashtable part is 2^size_lg2 entries. */
-
-  /* Hash table entries.
-   * Making this const isn't entirely accurate; what we really want is for it to
-   * have the same const-ness as the table it's inside.  But there's no way to
-   * declare that in C.  So we have to make it const so that we can statically
-   * initialize const hash tables.  Then we cast away const when we have to.
-   */
-  const upb_tabent *entries;
+  upb_tabent *entries;
 } upb_table;
 
 typedef struct {
@@ -195,8 +168,6 @@ typedef struct {
   size_t array_count;       /* Array part number of elements. */
 } upb_inttable;
 
-#define UPB_ARRAY_EMPTYENT -1
-
 UPB_INLINE size_t upb_table_size(const upb_table *t) {
   if (t->size_lg2 == 0)
     return 0;
@@ -209,48 +180,10 @@ UPB_INLINE bool upb_tabent_isempty(const upb_tabent *e) {
   return e->key == 0;
 }
 
-/* Used by some of the unit tests for generic hashing functionality. */
-uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed);
-
-UPB_INLINE uintptr_t upb_intkey(uintptr_t key) {
-  return key;
-}
-
-UPB_INLINE uint32_t upb_inthash(uintptr_t key) {
-  return (uint32_t)key;
-}
-
-static const upb_tabent *upb_getentry(const upb_table *t, uint32_t hash) {
-  return t->entries + (hash & t->mask);
-}
-
-UPB_INLINE bool upb_arrhas(upb_tabval key) {
-  return key.val != (uint64_t)-1;
-}
-
 /* Initialize and uninitialize a table, respectively.  If memory allocation
  * failed, false is returned that the table is uninitialized. */
-bool upb_inttable_init2(upb_inttable *table, upb_ctype_t ctype, upb_alloc *a);
-bool upb_strtable_init2(upb_strtable *table, upb_ctype_t ctype,
-                        size_t expected_size, upb_alloc *a);
-void upb_inttable_uninit2(upb_inttable *table, upb_alloc *a);
-void upb_strtable_uninit2(upb_strtable *table, upb_alloc *a);
-
-UPB_INLINE bool upb_inttable_init(upb_inttable *table, upb_ctype_t ctype) {
-  return upb_inttable_init2(table, ctype, &upb_alloc_global);
-}
-
-UPB_INLINE bool upb_strtable_init(upb_strtable *table, upb_ctype_t ctype) {
-  return upb_strtable_init2(table, ctype, 4, &upb_alloc_global);
-}
-
-UPB_INLINE void upb_inttable_uninit(upb_inttable *table) {
-  upb_inttable_uninit2(table, &upb_alloc_global);
-}
-
-UPB_INLINE void upb_strtable_uninit(upb_strtable *table) {
-  upb_strtable_uninit2(table, &upb_alloc_global);
-}
+bool upb_inttable_init(upb_inttable *table, upb_arena *a);
+bool upb_strtable_init(upb_strtable *table, size_t expected_size, upb_arena *a);
 
 /* Returns the number of values in the table. */
 size_t upb_inttable_count(const upb_inttable *t);
@@ -258,12 +191,6 @@ UPB_INLINE size_t upb_strtable_count(const upb_strtable *t) {
   return t->t.count;
 }
 
-void upb_inttable_packedsize(const upb_inttable *t, size_t *size);
-void upb_strtable_packedsize(const upb_strtable *t, size_t *size);
-upb_inttable *upb_inttable_pack(const upb_inttable *t, void *p, size_t *ofs,
-                                size_t size);
-upb_strtable *upb_strtable_pack(const upb_strtable *t, void *p, size_t *ofs,
-                                size_t size);
 void upb_strtable_clear(upb_strtable *t);
 
 /* Inserts the given key into the hashtable with the given value.  The key must
@@ -273,26 +200,10 @@ void upb_strtable_clear(upb_strtable *t);
  *
  * If a table resize was required but memory allocation failed, false is
  * returned and the table is unchanged. */
-bool upb_inttable_insert2(upb_inttable *t, uintptr_t key, upb_value val,
-                          upb_alloc *a);
-bool upb_strtable_insert3(upb_strtable *t, const char *key, size_t len,
-                          upb_value val, upb_alloc *a);
-
-UPB_INLINE bool upb_inttable_insert(upb_inttable *t, uintptr_t key,
-                                    upb_value val) {
-  return upb_inttable_insert2(t, key, val, &upb_alloc_global);
-}
-
-UPB_INLINE bool upb_strtable_insert2(upb_strtable *t, const char *key,
-                                     size_t len, upb_value val) {
-  return upb_strtable_insert3(t, key, len, val, &upb_alloc_global);
-}
-
-/* For NULL-terminated strings. */
-UPB_INLINE bool upb_strtable_insert(upb_strtable *t, const char *key,
-                                    upb_value val) {
-  return upb_strtable_insert2(t, key, strlen(key), val);
-}
+bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val,
+                         upb_arena *a);
+bool upb_strtable_insert(upb_strtable *t, const char *key, size_t len,
+                         upb_value val, upb_arena *a);
 
 /* Looks up key in this table, returning "true" if the key was found.
  * If v is non-NULL, copies the value for this key into *v. */
@@ -309,74 +220,21 @@ UPB_INLINE bool upb_strtable_lookup(const upb_strtable *t, const char *key,
 /* Removes an item from the table.  Returns true if the remove was successful,
  * and stores the removed item in *val if non-NULL. */
 bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val);
-bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
-                          upb_value *val, upb_alloc *alloc);
-
-UPB_INLINE bool upb_strtable_remove2(upb_strtable *t, const char *key,
-                                     size_t len, upb_value *val) {
-  return upb_strtable_remove3(t, key, len, val, &upb_alloc_global);
-}
-
-/* For NULL-terminated strings. */
-UPB_INLINE bool upb_strtable_remove(upb_strtable *t, const char *key,
-                                    upb_value *v) {
-  return upb_strtable_remove2(t, key, strlen(key), v);
-}
+bool upb_strtable_remove(upb_strtable *t, const char *key, size_t len,
+                          upb_value *val);
 
 /* Updates an existing entry in an inttable.  If the entry does not exist,
  * returns false and does nothing.  Unlike insert/remove, this does not
  * invalidate iterators. */
 bool upb_inttable_replace(upb_inttable *t, uintptr_t key, upb_value val);
 
-/* Convenience routines for inttables with pointer keys. */
-bool upb_inttable_insertptr2(upb_inttable *t, const void *key, upb_value val,
-                             upb_alloc *a);
-bool upb_inttable_removeptr(upb_inttable *t, const void *key, upb_value *val);
-bool upb_inttable_lookupptr(
-    const upb_inttable *t, const void *key, upb_value *val);
-
-UPB_INLINE bool upb_inttable_insertptr(upb_inttable *t, const void *key,
-                                       upb_value val) {
-  return upb_inttable_insertptr2(t, key, val, &upb_alloc_global);
-}
-
 /* Optimizes the table for the current set of entries, for both memory use and
  * lookup time.  Client should call this after all entries have been inserted;
  * inserting more entries is legal, but will likely require a table resize. */
-void upb_inttable_compact2(upb_inttable *t, upb_alloc *a);
-
-UPB_INLINE void upb_inttable_compact(upb_inttable *t) {
-  upb_inttable_compact2(t, &upb_alloc_global);
-}
-
-/* A special-case inlinable version of the lookup routine for 32-bit
- * integers. */
-UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
-                                      upb_value *v) {
-  *v = upb_value_int32(0);  /* Silence compiler warnings. */
-  if (key < t->array_size) {
-    upb_tabval arrval = t->array[key];
-    if (upb_arrhas(arrval)) {
-      _upb_value_setval(v, arrval.val);
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    const upb_tabent *e;
-    if (t->t.entries == NULL) return false;
-    for (e = upb_getentry(&t->t, upb_inthash(key)); true; e = e->next) {
-      if ((uint32_t)e->key == key) {
-        _upb_value_setval(v, e->val.val);
-        return true;
-      }
-      if (e->next == NULL) return false;
-    }
-  }
-}
+void upb_inttable_compact(upb_inttable *t, upb_arena *a);
 
 /* Exposed for testing only. */
-bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_alloc *a);
+bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_arena *a);
 
 /* Iterators ******************************************************************/
 
