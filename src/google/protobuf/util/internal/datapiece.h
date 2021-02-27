@@ -93,12 +93,12 @@ class PROTOBUF_EXPORT DataPiece {
       : type_(TYPE_BOOL), bool_(value), use_strict_base64_decoding_(false) {}
   DataPiece(StringPiece value, bool use_strict_base64_decoding)
       : type_(TYPE_STRING),
-        str_(StringPiecePod::CreateFromStringPiece(value)),
+        str_(value),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}
   // Constructor for bytes. The second parameter is not used.
   DataPiece(StringPiece value, bool dummy, bool use_strict_base64_decoding)
       : type_(TYPE_BYTES),
-        str_(StringPiecePod::CreateFromStringPiece(value)),
+        str_(value),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}
 
   DataPiece(const DataPiece& r) : type_(r.type_) { InternalCopy(r); }
@@ -191,8 +191,6 @@ class PROTOBUF_EXPORT DataPiece {
   // Data type for this piece of data.
   Type type_;
 
-  typedef ::google::protobuf::internal::StringPiecePod StringPiecePod;
-
   // Stored piece of data.
   union {
     int32 i32_;
@@ -202,7 +200,7 @@ class PROTOBUF_EXPORT DataPiece {
     double double_;
     float float_;
     bool bool_;
-    StringPiecePod str_;
+    StringPiece str_;
   };
 
   // Uses a stricter version of base64 decoding for byte fields.
