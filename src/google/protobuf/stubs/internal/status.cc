@@ -37,42 +37,44 @@
 namespace google {
 namespace protobuf {
 namespace util {
-namespace error {
-inline std::string CodeEnumToString(error::Code code) {
+namespace status_internal {
+namespace {
+
+inline std::string StatusCodeToString(StatusCode code) {
   switch (code) {
-    case OK:
+    case StatusCode::kOk:
       return "OK";
-    case CANCELLED:
+    case StatusCode::kCancelled:
       return "CANCELLED";
-    case UNKNOWN:
+    case StatusCode::kUnknown:
       return "UNKNOWN";
-    case INVALID_ARGUMENT:
+    case StatusCode::kInvalidArgument:
       return "INVALID_ARGUMENT";
-    case DEADLINE_EXCEEDED:
+    case StatusCode::kDeadlineExceeded:
       return "DEADLINE_EXCEEDED";
-    case NOT_FOUND:
+    case StatusCode::kNotFound:
       return "NOT_FOUND";
-    case ALREADY_EXISTS:
+    case StatusCode::kAlreadyExists:
       return "ALREADY_EXISTS";
-    case PERMISSION_DENIED:
+    case StatusCode::kPermissionDenied:
       return "PERMISSION_DENIED";
-    case UNAUTHENTICATED:
+    case StatusCode::kUnauthenticated:
       return "UNAUTHENTICATED";
-    case RESOURCE_EXHAUSTED:
+    case StatusCode::kResourceExhausted:
       return "RESOURCE_EXHAUSTED";
-    case FAILED_PRECONDITION:
+    case StatusCode::kFailedPrecondition:
       return "FAILED_PRECONDITION";
-    case ABORTED:
+    case StatusCode::kAborted:
       return "ABORTED";
-    case OUT_OF_RANGE:
+    case StatusCode::kOutOfRange:
       return "OUT_OF_RANGE";
-    case UNIMPLEMENTED:
+    case StatusCode::kUnimplemented:
       return "UNIMPLEMENTED";
-    case INTERNAL:
+    case StatusCode::kInternal:
       return "INTERNAL";
-    case UNAVAILABLE:
+    case StatusCode::kUnavailable:
       return "UNAVAILABLE";
-    case DATA_LOSS:
+    case StatusCode::kDataLoss:
       return "DATA_LOSS";
   }
 
@@ -80,18 +82,19 @@ inline std::string CodeEnumToString(error::Code code) {
   // above switch.
   return "UNKNOWN";
 }
-}  // namespace error.
+
+}  // namespace
 
 const Status Status::OK = Status();
-const Status Status::CANCELLED = Status(error::CANCELLED, "");
-const Status Status::UNKNOWN = Status(error::UNKNOWN, "");
+const Status Status::CANCELLED = Status(StatusCode::kCancelled, "");
+const Status Status::UNKNOWN = Status(StatusCode::kUnknown, "");
 
-Status::Status() : error_code_(error::OK) {
+Status::Status() : error_code_(StatusCode::kOk) {
 }
 
-Status::Status(error::Code error_code, StringPiece error_message)
+Status::Status(StatusCode error_code, StringPiece error_message)
     : error_code_(error_code) {
-  if (error_code != error::OK) {
+  if (error_code != StatusCode::kOk) {
     error_message_ = error_message.ToString();
   }
 }
@@ -112,13 +115,13 @@ bool Status::operator==(const Status& x) const {
 }
 
 std::string Status::ToString() const {
-  if (error_code_ == error::OK) {
+  if (error_code_ == StatusCode::kOk) {
     return "OK";
   } else {
     if (error_message_.empty()) {
-      return error::CodeEnumToString(error_code_);
+      return StatusCodeToString(error_code_);
     } else {
-      return error::CodeEnumToString(error_code_) + ":" +
+      return StatusCodeToString(error_code_) + ":" +
           error_message_;
     }
   }
@@ -129,6 +132,7 @@ std::ostream& operator<<(std::ostream& os, const Status& x) {
   return os;
 }
 
+}  // namespace status_internal
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google

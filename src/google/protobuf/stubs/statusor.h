@@ -32,7 +32,7 @@
 // object. StatusOr models the concept of an object that is either a
 // usable value, or an error Status explaining why such a value is
 // not present. To this end, StatusOr<T> does not allow its Status
-// value to be Status::OK. Further, StatusOr<T*> does not allow the
+// value to be Status::kOk. Further, StatusOr<T*> does not allow the
 // contained pointer to be nullptr.
 //
 // The primary use-case for StatusOr<T> is as the return value of a
@@ -110,8 +110,8 @@ class StatusOr {
   // value, so it is convenient and sensible to be able to do 'return
   // Status()' when the return type is StatusOr<T>.
   //
-  // REQUIRES: status != Status::OK. This requirement is DCHECKed.
-  // In optimized builds, passing Status::OK here will have the effect
+  // REQUIRES: status != Status::kOk. This requirement is DCHECKed.
+  // In optimized builds, passing Status::kOk here will have the effect
   // of passing PosixErrorSpace::EINVAL as a fallback.
   StatusOr(const Status& status);  // NOLINT
 
@@ -143,7 +143,7 @@ class StatusOr {
   StatusOr& operator=(const StatusOr<U>& other);
 
   // Returns a reference to our status. If this contains a T, then
-  // returns Status::OK.
+  // returns Status::kOk.
   const Status& status() const;
 
   // Returns this->status().ok()
@@ -196,7 +196,8 @@ inline StatusOr<T>::StatusOr()
 template<typename T>
 inline StatusOr<T>::StatusOr(const Status& status) {
   if (status.ok()) {
-    status_ = Status(error::INTERNAL, "Status::OK is not a valid argument.");
+    status_ =
+        Status(StatusCode::kInternal, "Status::kOk is not a valid argument.");
   } else {
     status_ = status;
   }
@@ -205,7 +206,7 @@ inline StatusOr<T>::StatusOr(const Status& status) {
 template<typename T>
 inline StatusOr<T>::StatusOr(const T& value) {
   if (internal::StatusOrHelper::Specialize<T>::IsValueNull(value)) {
-    status_ = Status(error::INTERNAL, "nullptr is not a valid argument.");
+    status_ = Status(StatusCode::kInternal, "nullptr is not a valid argument.");
   } else {
     status_ = Status::OK;
     value_ = value;

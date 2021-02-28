@@ -20,7 +20,7 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/status.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/internal/status.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/statusor.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/stringpiece.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/stringprintf.cc
