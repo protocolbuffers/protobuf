@@ -11,15 +11,7 @@ load(
     "upb_proto_reflection_library",
 )
 
-# copybara:strip_for_google3_begin
-load(
-    "@rules_proto//proto:defs.bzl",
-    "proto_library",
-)
-
-# copybara:strip_end
-
-licenses(["notice"])  # BSD (Google-authored w/ possible external contributions)
+licenses(["notice"])
 
 exports_files([
     "LICENSE",
@@ -212,6 +204,8 @@ cc_library(
 
 # Amalgamation #################################################################
 
+# copybara:strip_for_google3_begin
+
 py_binary(
     name = "amalgamate",
     srcs = ["tools/amalgamate.py"],
@@ -314,9 +308,6 @@ exports_files(
 filegroup(
     name = "cmake_files",
     srcs = glob([
-        "upb/json/parser.c",
-        "CMakeLists.txt",
-        "generated_for_cmake/**/*",
         "google/**/*",
         "upbc/**/*",
         "upb/**/*",
@@ -325,3 +316,5 @@ filegroup(
     ]),
     visibility = ["//cmake:__pkg__"],
 )
+
+# copybara:strip_end

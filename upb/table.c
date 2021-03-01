@@ -25,7 +25,7 @@ static const double MAX_LOAD = 0.85;
  * cache effects).  The lower this is, the more memory we'll use. */
 static const double MIN_DENSITY = 0.1;
 
-bool is_pow2(uint64_t v) { return v == 0 || (v & (v - 1)) == 0; }
+static bool is_pow2(uint64_t v) { return v == 0 || (v & (v - 1)) == 0; }
 
 static upb_value _upb_value_val(uint64_t val) {
   upb_value ret;
@@ -33,16 +33,12 @@ static upb_value _upb_value_val(uint64_t val) {
   return ret;
 }
 
-int log2ceil(uint64_t v) {
+static int log2ceil(uint64_t v) {
   int ret = 0;
   bool pow2 = is_pow2(v);
   while (v >>= 1) ret++;
   ret = pow2 ? ret : ret + 1;  /* Ceiling. */
   return UPB_MIN(UPB_MAXARRSIZE, ret);
-}
-
-char *upb_strdup(const char *s, upb_arena *a) {
-  return upb_strdup2(s, strlen(s), a);
 }
 
 char *upb_strdup2(const char *s, size_t len, upb_arena *a) {

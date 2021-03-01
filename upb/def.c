@@ -815,7 +815,6 @@ void upb_symtab_free(upb_symtab *s) {
 
 upb_symtab *upb_symtab_new(void) {
   upb_symtab *s = upb_gmalloc(sizeof(*s));
-  upb_alloc *alloc;
 
   if (!s) {
     return NULL;
@@ -823,7 +822,6 @@ upb_symtab *upb_symtab_new(void) {
 
   s->arena = upb_arena_new();
   s->bytes_loaded = 0;
-  alloc = upb_arena_alloc(s->arena);
 
   if (!upb_strtable_init(&s->syms, 32, s->arena) ||
       !upb_strtable_init(&s->files, 4, s->arena)) {
@@ -1401,8 +1399,7 @@ static void parse_default(symtab_addctx *ctx, const char *str, size_t len,
       break;
     }
     case UPB_TYPE_INT64: {
-      /* XXX: Need to write our own strtoll, since it's not available in c89. */
-      int64_t val = strtol(str, &end, 0);
+      long long val = strtoll(str, &end, 0);
       if (val > INT64_MAX || val < INT64_MIN || errno == ERANGE || *end) {
         goto invalid;
       }
@@ -1418,8 +1415,7 @@ static void parse_default(symtab_addctx *ctx, const char *str, size_t len,
       break;
     }
     case UPB_TYPE_UINT64: {
-      /* XXX: Need to write our own strtoull, since it's not available in c89. */
-      uint64_t val = strtoul(str, &end, 0);
+      unsigned long long val = strtoull(str, &end, 0);
       if (val > UINT64_MAX || errno == ERANGE || *end) {
         goto invalid;
       }
@@ -1435,8 +1431,7 @@ static void parse_default(symtab_addctx *ctx, const char *str, size_t len,
       break;
     }
     case UPB_TYPE_FLOAT: {
-      /* XXX: Need to write our own strtof, since it's not available in c89. */
-      float val = strtod(str, &end);
+      float val = strtof(str, &end);
       if (errno == ERANGE || *end) {
         goto invalid;
       }

@@ -113,40 +113,7 @@ upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f) {
   if (!upb_fielddef_haspresence(f) || upb_msg_has(msg, f)) {
     return _upb_msg_getraw(msg, f);
   } else {
-    /* TODO(haberman): change upb_fielddef to not require this switch(). */
-    upb_msgval val = {0};
-    switch (upb_fielddef_type(f)) {
-      case UPB_TYPE_INT32:
-      case UPB_TYPE_ENUM:
-        val.int32_val = upb_fielddef_defaultint32(f);
-        break;
-      case UPB_TYPE_INT64:
-        val.int64_val = upb_fielddef_defaultint64(f);
-        break;
-      case UPB_TYPE_UINT32:
-        val.uint32_val = upb_fielddef_defaultuint32(f);
-        break;
-      case UPB_TYPE_UINT64:
-        val.uint64_val = upb_fielddef_defaultuint64(f);
-        break;
-      case UPB_TYPE_FLOAT:
-        val.float_val = upb_fielddef_defaultfloat(f);
-        break;
-      case UPB_TYPE_DOUBLE:
-        val.double_val = upb_fielddef_defaultdouble(f);
-        break;
-      case UPB_TYPE_BOOL:
-        val.bool_val = upb_fielddef_defaultbool(f);
-        break;
-      case UPB_TYPE_STRING:
-      case UPB_TYPE_BYTES:
-        val.str_val.data = upb_fielddef_defaultstr(f, &val.str_val.size);
-        break;
-      case UPB_TYPE_MESSAGE:
-        val.msg_val = NULL;
-        break;
-    }
-    return val;
+    return upb_fielddef_default(f);
   }
 }
 
