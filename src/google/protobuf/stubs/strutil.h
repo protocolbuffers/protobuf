@@ -664,9 +664,6 @@ struct PROTOBUF_EXPORT AlphaNum {
   AlphaNum(StringPiece str)
       : piece_data_(str.data()), piece_size_(str.size()) {}
 
-  AlphaNum(internal::StringPiecePod str)
-      : piece_data_(str.data()), piece_size_(str.size()) {}
-
   size_t size() const { return piece_size_; }
   const char *data() const { return piece_data_; }
 
