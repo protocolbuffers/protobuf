@@ -339,18 +339,6 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
   end
 
-  def test_compact!
-    m = TestMessage.new
-    m.repeated_msg << TestMessage2.new(:foo => 1)
-    m.repeated_msg << nil
-    m.repeated_msg << TestMessage2.new(:foo => 2)
-    reference_arr = m.repeated_string.to_a
-
-    check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
-      arr.compact!
-    end
-  end
-
   def test_delete
     m = TestMessage.new
     reference_arr = %w(foo bar baz)
