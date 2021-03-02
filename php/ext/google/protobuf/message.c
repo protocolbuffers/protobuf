@@ -334,7 +334,7 @@ static zval *Message_read_property(PROTO_VAL *obj, PROTO_STR *member,
   Message* intern = PROTO_VAL_P(obj);
   const upb_fielddef *f = get_field(intern, member);
 
-  if (!f) return NULL;
+  if (!f) return &EG(uninitialized_zval);
   Message_get(intern, f, rv);
   return rv;
 }
