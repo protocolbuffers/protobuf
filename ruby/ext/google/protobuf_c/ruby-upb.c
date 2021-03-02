@@ -6663,10 +6663,9 @@ void upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
 }
 
 bool upb_array_append(upb_array *arr, upb_msgval val, upb_arena *arena) {
-  if (!_upb_array_realloc(arr, arr->len + 1, arena)) {
+  if (!upb_array_resize(arr, arr->len + 1, arena)) {
     return false;
   }
-  arr->len++;
   upb_array_set(arr, arr->len - 1, val);
   return true;
 }
