@@ -1,3 +1,15 @@
+2021-03-02 version 3.15.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Fixed SEGV when users pass nil messages (#8363)
+  * Fixed quadratic memory usage when appending to arrays (#8364)
+
+  C++
+  * Create a CMake option to control whether or not RTTI is enabled (#8361)
+
+  PHP
+  * read_property() handler is not supposed to return NULL (#8362)
+
 2021-02-25 version 3.15.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Ruby
