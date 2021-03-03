@@ -2520,6 +2520,17 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
 
 namespace internal {
 
+Metadata AssignDescriptors(const DescriptorTable* (*table)(),
+                           internal::once_flag* once,
+                           const Metadata& metadata) {
+  call_once(*once, [=] {
+    auto* t = table();
+    AssignDescriptorsImpl(t, t->is_eager);
+  });
+
+  return metadata;
+}
+
 void AssignDescriptors(const DescriptorTable* table, bool eager) {
   if (!eager) eager = table->is_eager;
   call_once(*table->once, AssignDescriptorsImpl, table, eager);

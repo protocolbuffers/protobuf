@@ -2055,6 +2055,44 @@ public abstract class CodedInputStream {
       totalBytesRetired = 0;
     }
 
+    /*
+     * The following wrapper methods exist so that InvalidProtocolBufferExceptions thrown by the
+     * InputStream can be differentiated from ones thrown by CodedInputStream itself. Each call to
+     * an InputStream method that can throw IOException must be wrapped like this. We do this
+     * because we sometimes need to modify IPBE instances after they are thrown far away from where
+     * they are thrown (ex. to add unfinished messages) and we use this signal elsewhere in the
+     * exception catch chain to know when to perform these operations directly or to wrap the
+     * exception in their own IPBE so the extra information can be communicated without trampling
+     * downstream information.
+     */
+    private static int read(InputStream input, byte[] data, int offset, int length)
+        throws IOException {
+      try {
+        return input.read(data, offset, length);
+      } catch (InvalidProtocolBufferException e) {
+        e.setThrownFromInputStream();
+        throw e;
+      }
+    }
+
+    private static long skip(InputStream input, long length) throws IOException {
+      try {
+        return input.skip(length);
+      } catch (InvalidProtocolBufferException e) {
+        e.setThrownFromInputStream();
+        throw e;
+      }
+    }
+
+    private static int available(InputStream input) throws IOException {
+      try {
+        return input.available();
+      } catch (InvalidProtocolBufferException e) {
+        e.setThrownFromInputStream();
+        throw e;
+      }
+    }
+
     @Override
     public int readTag() throws IOException {
       if (isAtEnd()) {
@@ -2783,7 +2821,8 @@ public abstract class CodedInputStream {
 
       // Here we should refill the buffer as many bytes as possible.
       int bytesRead =
-          input.read(
+          read(
+              input,
               buffer,
               bufferSize,
               Math.min(
@@ -2905,7 +2944,7 @@ public abstract class CodedInputStream {
       // Determine the number of bytes we need to read from the input stream.
       int sizeLeft = size - bufferedBytes;
       // TODO(nathanmittler): Consider using a value larger than DEFAULT_BUFFER_SIZE.
-      if (sizeLeft < DEFAULT_BUFFER_SIZE || sizeLeft <= input.available()) {
+      if (sizeLeft < DEFAULT_BUFFER_SIZE || sizeLeft <= available(input)) {
         // Either the bytes we need are known to be available, or the required buffer is
         // within an allowed threshold - go ahead and allocate the buffer now.
         final byte[] bytes = new byte[size];
@@ -2919,7 +2958,7 @@ public abstract class CodedInputStream {
         // Fill the remaining bytes from the input stream.
         int tempPos = bufferedBytes;
         while (tempPos < bytes.length) {
-          int n = input.read(bytes, tempPos, size - tempPos);
+          int n = read(input, bytes, tempPos, size - tempPos);
           if (n == -1) {
             throw InvalidProtocolBufferException.truncatedMessage();
           }
@@ -3047,7 +3086,7 @@ public abstract class CodedInputStream {
         try {
           while (totalSkipped < size) {
             int toSkip = size - totalSkipped;
-            long skipped = input.skip(toSkip);
+            long skipped = skip(input, toSkip);
             if (skipped < 0 || skipped > toSkip) {
               throw new IllegalStateException(
                   input.getClass()

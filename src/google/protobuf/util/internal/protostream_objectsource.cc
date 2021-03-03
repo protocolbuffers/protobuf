@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 
+#include <cstdint>
 #include <unordered_map>
 #include <utility>
 
@@ -83,7 +84,7 @@ const google::protobuf::EnumValue* FindEnumValueByNumber(
     const google::protobuf::Enum& tech_enum, int number);
 
 // Utility function to format nanos.
-const std::string FormatNanos(uint32 nanos, bool with_trailing_zeros);
+const std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros);
 
 util::StatusOr<std::string> MapKeyDefaultValueAsString(
     const google::protobuf::Field& field) {
@@ -148,7 +149,7 @@ util::Status ProtoStreamObjectSource::NamedWriteTo(StringPiece name,
 }
 
 const google::protobuf::Field* ProtoStreamObjectSource::FindAndVerifyField(
-    const google::protobuf::Type& type, uint32 tag) const {
+    const google::protobuf::Type& type, uint32_t tag) const {
   // Lookup the new field in the type by tag number.
   const google::protobuf::Field* field = FindFieldByNumber(type, tag >> 3);
   // Verify if the field corresponds to the wire type in tag.
@@ -169,7 +170,8 @@ const google::protobuf::Field* ProtoStreamObjectSource::FindAndVerifyField(
 
 util::Status ProtoStreamObjectSource::WriteMessage(
     const google::protobuf::Type& type, StringPiece name,
-    const uint32 end_tag, bool include_start_and_end, ObjectWriter* ow) const {
+    const uint32_t end_tag, bool include_start_and_end,
+    ObjectWriter* ow) const {
 
   const TypeRenderer* type_renderer = FindTypeRenderer(type.name());
   if (type_renderer != nullptr) {
@@ -179,7 +181,7 @@ util::Status ProtoStreamObjectSource::WriteMessage(
   const google::protobuf::Field* field = nullptr;
   std::string field_name;
   // last_tag set to dummy value that is different from tag.
-  uint32 tag = stream_->ReadTag(), last_tag = tag + 1;
+  uint32_t tag = stream_->ReadTag(), last_tag = tag + 1;
   UnknownFieldSet unknown_fields;
 
 
@@ -230,10 +232,10 @@ util::Status ProtoStreamObjectSource::WriteMessage(
   return util::Status();
 }
 
-util::StatusOr<uint32> ProtoStreamObjectSource::RenderList(
+util::StatusOr<uint32_t> ProtoStreamObjectSource::RenderList(
     const google::protobuf::Field* field, StringPiece name,
-    uint32 list_tag, ObjectWriter* ow) const {
-  uint32 tag_to_return = 0;
+    uint32_t list_tag, ObjectWriter* ow) const {
+  uint32_t tag_to_return = 0;
   ow->StartList(name);
   if (IsPackable(*field) &&
       list_tag ==
@@ -252,19 +254,20 @@ util::StatusOr<uint32> ProtoStreamObjectSource::RenderList(
   return tag_to_return;
 }
 
-util::StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
+util::StatusOr<uint32_t> ProtoStreamObjectSource::RenderMap(
     const google::protobuf::Field* field, StringPiece name,
-    uint32 list_tag, ObjectWriter* ow) const {
+    uint32_t list_tag, ObjectWriter* ow) const {
   const google::protobuf::Type* field_type =
       typeinfo_->GetTypeByTypeUrl(field->type_url());
-  uint32 tag_to_return = 0;
+  uint32_t tag_to_return = 0;
   do {
     // Render map entry message type.
-    uint32 buffer32;
+    uint32_t buffer32;
     stream_->ReadVarint32(&buffer32);  // message length
     int old_limit = stream_->PushLimit(buffer32);
     std::string map_key;
-    for (uint32 tag = stream_->ReadTag(); tag != 0; tag = stream_->ReadTag()) {
+    for (uint32_t tag = stream_->ReadTag(); tag != 0;
+         tag = stream_->ReadTag()) {
       const google::protobuf::Field* field =
           FindAndVerifyField(*field_type, tag);
       if (field == nullptr) {
@@ -301,7 +304,7 @@ util::StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
 
 util::Status ProtoStreamObjectSource::RenderPacked(
     const google::protobuf::Field* field, ObjectWriter* ow) const {
-  uint32 length;
+  uint32_t length;
   stream_->ReadVarint32(&length);
   int old_limit = stream_->PushLimit(length);
   while (stream_->BytesUntilLimit() > 0) {
@@ -314,9 +317,9 @@ util::Status ProtoStreamObjectSource::RenderPacked(
 util::Status ProtoStreamObjectSource::RenderTimestamp(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  std::pair<int64, int32> p = os->ReadSecondsAndNanos(type);
-  int64 seconds = p.first;
-  int32 nanos = p.second;
+  std::pair<int64_t, int32_t> p = os->ReadSecondsAndNanos(type);
+  int64_t seconds = p.first;
+  int32_t nanos = p.second;
   if (seconds > kTimestampMaxSeconds || seconds < kTimestampMinSeconds) {
     return util::Status(
         util::error::INTERNAL,
@@ -339,9 +342,9 @@ util::Status ProtoStreamObjectSource::RenderTimestamp(
 util::Status ProtoStreamObjectSource::RenderDuration(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  std::pair<int64, int32> p = os->ReadSecondsAndNanos(type);
-  int64 seconds = p.first;
-  int32 nanos = p.second;
+  std::pair<int64_t, int32_t> p = os->ReadSecondsAndNanos(type);
+  int64_t seconds = p.first;
+  int32_t nanos = p.second;
   if (seconds > kDurationMaxSeconds || seconds < kDurationMinSeconds) {
     return util::Status(
         util::error::INTERNAL,
@@ -384,8 +387,8 @@ util::Status ProtoStreamObjectSource::RenderDuration(
 util::Status ProtoStreamObjectSource::RenderDouble(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint64 buffer64 = 0;  // default value of Double wrapper value
+  uint32_t tag = os->stream_->ReadTag();
+  uint64_t buffer64 = 0;  // default value of Double wrapper value
   if (tag != 0) {
     os->stream_->ReadLittleEndian64(&buffer64);
     os->stream_->ReadTag();
@@ -397,8 +400,8 @@ util::Status ProtoStreamObjectSource::RenderDouble(
 util::Status ProtoStreamObjectSource::RenderFloat(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint32 buffer32 = 0;  // default value of Float wrapper value
+  uint32_t tag = os->stream_->ReadTag();
+  uint32_t buffer32 = 0;  // default value of Float wrapper value
   if (tag != 0) {
     os->stream_->ReadLittleEndian32(&buffer32);
     os->stream_->ReadTag();
@@ -410,61 +413,61 @@ util::Status ProtoStreamObjectSource::RenderFloat(
 util::Status ProtoStreamObjectSource::RenderInt64(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint64 buffer64 = 0;  // default value of Int64 wrapper value
+  uint32_t tag = os->stream_->ReadTag();
+  uint64_t buffer64 = 0;  // default value of Int64 wrapper value
   if (tag != 0) {
     os->stream_->ReadVarint64(&buffer64);
     os->stream_->ReadTag();
   }
-  ow->RenderInt64(field_name, bit_cast<int64>(buffer64));
+  ow->RenderInt64(field_name, bit_cast<int64_t>(buffer64));
   return util::Status();
 }
 
 util::Status ProtoStreamObjectSource::RenderUInt64(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint64 buffer64 = 0;  // default value of UInt64 wrapper value
+  uint32_t tag = os->stream_->ReadTag();
+  uint64_t buffer64 = 0;  // default value of UInt64 wrapper value
   if (tag != 0) {
     os->stream_->ReadVarint64(&buffer64);
     os->stream_->ReadTag();
   }
-  ow->RenderUint64(field_name, bit_cast<uint64>(buffer64));
+  ow->RenderUint64(field_name, bit_cast<uint64_t>(buffer64));
   return util::Status();
 }
 
 util::Status ProtoStreamObjectSource::RenderInt32(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint32 buffer32 = 0;  // default value of Int32 wrapper value
+  uint32_t tag = os->stream_->ReadTag();
+  uint32_t buffer32 = 0;  // default value of Int32 wrapper value
   if (tag != 0) {
     os->stream_->ReadVarint32(&buffer32);
     os->stream_->ReadTag();
   }
-  ow->RenderInt32(field_name, bit_cast<int32>(buffer32));
+  ow->RenderInt32(field_name, bit_cast<int32_t>(buffer32));
   return util::Status();
 }
 
 util::Status ProtoStreamObjectSource::RenderUInt32(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint32 buffer32 = 0;  // default value of UInt32 wrapper value
+  uint32_t tag = os->stream_->ReadTag();
+  uint32_t buffer32 = 0;  // default value of UInt32 wrapper value
   if (tag != 0) {
     os->stream_->ReadVarint32(&buffer32);
     os->stream_->ReadTag();
   }
-  ow->RenderUint32(field_name, bit_cast<uint32>(buffer32));
+  ow->RenderUint32(field_name, bit_cast<uint32_t>(buffer32));
   return util::Status();
 }
 
 util::Status ProtoStreamObjectSource::RenderBool(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint64 buffer64 = 0;  // results in 'false' value as default, which is the
-                        // default value of Bool wrapper
+  uint32_t tag = os->stream_->ReadTag();
+  uint64_t buffer64 = 0;  // results in 'false' value as default, which is the
+                          // default value of Bool wrapper
   if (tag != 0) {
     os->stream_->ReadVarint64(&buffer64);
     os->stream_->ReadTag();
@@ -476,8 +479,8 @@ util::Status ProtoStreamObjectSource::RenderBool(
 util::Status ProtoStreamObjectSource::RenderString(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint32 buffer32;
+  uint32_t tag = os->stream_->ReadTag();
+  uint32_t buffer32;
   std::string str;  // default value of empty for String wrapper
   if (tag != 0) {
     os->stream_->ReadVarint32(&buffer32);  // string size.
@@ -491,8 +494,8 @@ util::Status ProtoStreamObjectSource::RenderString(
 util::Status ProtoStreamObjectSource::RenderBytes(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
-  uint32 buffer32;
+  uint32_t tag = os->stream_->ReadTag();
+  uint32_t buffer32;
   std::string str;
   if (tag != 0) {
     os->stream_->ReadVarint32(&buffer32);
@@ -507,7 +510,7 @@ util::Status ProtoStreamObjectSource::RenderStruct(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
   const google::protobuf::Field* field = nullptr;
-  uint32 tag = os->stream_->ReadTag();
+  uint32_t tag = os->stream_->ReadTag();
   ow->StartObject(field_name);
   while (tag != 0) {
     field = os->FindAndVerifyField(type, tag);
@@ -530,7 +533,7 @@ util::Status ProtoStreamObjectSource::RenderStructValue(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
   const google::protobuf::Field* field = nullptr;
-  for (uint32 tag = os->stream_->ReadTag(); tag != 0;
+  for (uint32_t tag = os->stream_->ReadTag(); tag != 0;
        tag = os->stream_->ReadTag()) {
     field = os->FindAndVerifyField(type, tag);
     if (field == nullptr) {
@@ -546,7 +549,7 @@ util::Status ProtoStreamObjectSource::RenderStructValue(
 util::Status ProtoStreamObjectSource::RenderStructListValue(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
-  uint32 tag = os->stream_->ReadTag();
+  uint32_t tag = os->stream_->ReadTag();
 
   // Render empty list when we find empty ListValue message.
   if (tag == 0) {
@@ -571,7 +574,7 @@ util::Status ProtoStreamObjectSource::RenderAny(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
   // An Any is of the form { string type_url = 1; bytes value = 2; }
-  uint32 tag;
+  uint32_t tag;
   std::string type_url;
   std::string value;
 
@@ -586,12 +589,12 @@ util::Status ProtoStreamObjectSource::RenderAny(
     // //google/protobuf/any.proto
     if (field->number() == 1) {
       // read type_url
-      uint32 type_url_size;
+      uint32_t type_url_size;
       os->stream_->ReadVarint32(&type_url_size);
       os->stream_->ReadString(&type_url, type_url_size);
     } else if (field->number() == 2) {
       // read value
-      uint32 value_size;
+      uint32_t value_size;
       os->stream_->ReadVarint32(&value_size);
       os->stream_->ReadString(&value, value_size);
     }
@@ -647,9 +650,9 @@ util::Status ProtoStreamObjectSource::RenderFieldMask(
     const ProtoStreamObjectSource* os, const google::protobuf::Type& type,
     StringPiece field_name, ObjectWriter* ow) {
   std::string combined;
-  uint32 buffer32;
-  uint32 paths_field_tag = 0;
-  for (uint32 tag = os->stream_->ReadTag(); tag != 0;
+  uint32_t buffer32;
+  uint32_t paths_field_tag = 0;
+  for (uint32_t tag = os->stream_->ReadTag(); tag != 0;
        tag = os->stream_->ReadTag()) {
     if (paths_field_tag == 0) {
       const google::protobuf::Field* field = os->FindAndVerifyField(type, tag);
@@ -737,7 +740,7 @@ util::Status ProtoStreamObjectSource::RenderField(
   // and ends up using a lot of stack space. Keep the stack usage of this
   // message small in order to preserve stack space and not crash.
   if (field->kind() == google::protobuf::Field::TYPE_MESSAGE) {
-    uint32 buffer32;
+    uint32_t buffer32;
     stream_->ReadVarint32(&buffer32);  // message length
     int old_limit = stream_->PushLimit(buffer32);
     // Get the nested message type for this field.
@@ -778,8 +781,8 @@ util::Status ProtoStreamObjectSource::RenderNonMessageField(
     const google::protobuf::Field* field, StringPiece field_name,
     ObjectWriter* ow) const {
   // Temporary buffers of different types.
-  uint32 buffer32 = 0;
-  uint64 buffer64 = 0;
+  uint32_t buffer32 = 0;
+  uint64_t buffer64 = 0;
   std::string strbuffer;
   switch (field->kind()) {
     case google::protobuf::Field::TYPE_BOOL: {
@@ -789,7 +792,7 @@ util::Status ProtoStreamObjectSource::RenderNonMessageField(
     }
     case google::protobuf::Field::TYPE_INT32: {
       stream_->ReadVarint32(&buffer32);
-      ow->RenderInt32(field_name, bit_cast<int32>(buffer32));
+      ow->RenderInt32(field_name, bit_cast<int32_t>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_INT64: {
@@ -799,7 +802,7 @@ util::Status ProtoStreamObjectSource::RenderNonMessageField(
     }
     case google::protobuf::Field::TYPE_UINT32: {
       stream_->ReadVarint32(&buffer32);
-      ow->RenderUint32(field_name, bit_cast<uint32>(buffer32));
+      ow->RenderUint32(field_name, bit_cast<uint32_t>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_UINT64: {
@@ -819,7 +822,7 @@ util::Status ProtoStreamObjectSource::RenderNonMessageField(
     }
     case google::protobuf::Field::TYPE_SFIXED32: {
       stream_->ReadLittleEndian32(&buffer32);
-      ow->RenderInt32(field_name, bit_cast<int32>(buffer32));
+      ow->RenderInt32(field_name, bit_cast<int32_t>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_SFIXED64: {
@@ -829,7 +832,7 @@ util::Status ProtoStreamObjectSource::RenderNonMessageField(
     }
     case google::protobuf::Field::TYPE_FIXED32: {
       stream_->ReadLittleEndian32(&buffer32);
-      ow->RenderUint32(field_name, bit_cast<uint32>(buffer32));
+      ow->RenderUint32(field_name, bit_cast<uint32_t>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_FIXED64: {
@@ -907,85 +910,85 @@ const std::string ProtoStreamObjectSource::ReadFieldValueAsString(
   std::string result;
   switch (field.kind()) {
     case google::protobuf::Field::TYPE_BOOL: {
-      uint64 buffer64;
+      uint64_t buffer64;
       stream_->ReadVarint64(&buffer64);
       result = buffer64 != 0 ? "true" : "false";
       break;
     }
     case google::protobuf::Field::TYPE_INT32: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadVarint32(&buffer32);
-      result = StrCat(bit_cast<int32>(buffer32));
+      result = StrCat(bit_cast<int32_t>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_INT64: {
-      uint64 buffer64;
+      uint64_t buffer64;
       stream_->ReadVarint64(&buffer64);
-      result = StrCat(bit_cast<int64>(buffer64));
+      result = StrCat(bit_cast<int64_t>(buffer64));
       break;
     }
     case google::protobuf::Field::TYPE_UINT32: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadVarint32(&buffer32);
-      result = StrCat(bit_cast<uint32>(buffer32));
+      result = StrCat(bit_cast<uint32_t>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_UINT64: {
-      uint64 buffer64;
+      uint64_t buffer64;
       stream_->ReadVarint64(&buffer64);
-      result = StrCat(bit_cast<uint64>(buffer64));
+      result = StrCat(bit_cast<uint64_t>(buffer64));
       break;
     }
     case google::protobuf::Field::TYPE_SINT32: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadVarint32(&buffer32);
       result = StrCat(WireFormatLite::ZigZagDecode32(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_SINT64: {
-      uint64 buffer64;
+      uint64_t buffer64;
       stream_->ReadVarint64(&buffer64);
       result = StrCat(WireFormatLite::ZigZagDecode64(buffer64));
       break;
     }
     case google::protobuf::Field::TYPE_SFIXED32: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadLittleEndian32(&buffer32);
-      result = StrCat(bit_cast<int32>(buffer32));
+      result = StrCat(bit_cast<int32_t>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_SFIXED64: {
-      uint64 buffer64;
+      uint64_t buffer64;
       stream_->ReadLittleEndian64(&buffer64);
-      result = StrCat(bit_cast<int64>(buffer64));
+      result = StrCat(bit_cast<int64_t>(buffer64));
       break;
     }
     case google::protobuf::Field::TYPE_FIXED32: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadLittleEndian32(&buffer32);
-      result = StrCat(bit_cast<uint32>(buffer32));
+      result = StrCat(bit_cast<uint32_t>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_FIXED64: {
-      uint64 buffer64;
+      uint64_t buffer64;
       stream_->ReadLittleEndian64(&buffer64);
-      result = StrCat(bit_cast<uint64>(buffer64));
+      result = StrCat(bit_cast<uint64_t>(buffer64));
       break;
     }
     case google::protobuf::Field::TYPE_FLOAT: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadLittleEndian32(&buffer32);
       result = SimpleFtoa(bit_cast<float>(buffer32));
       break;
     }
     case google::protobuf::Field::TYPE_DOUBLE: {
-      uint64 buffer64;
+      uint64_t buffer64;
       stream_->ReadLittleEndian64(&buffer64);
       result = SimpleDtoa(bit_cast<double>(buffer64));
       break;
     }
     case google::protobuf::Field::TYPE_ENUM: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadVarint32(&buffer32);
       // Get the nested enum type for this field.
       // TODO(skarvaje): Avoid string manipulation. Find ways to speed this
@@ -1003,13 +1006,13 @@ const std::string ProtoStreamObjectSource::ReadFieldValueAsString(
       break;
     }
     case google::protobuf::Field::TYPE_STRING: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadVarint32(&buffer32);  // string size.
       stream_->ReadString(&result, buffer32);
       break;
     }
     case google::protobuf::Field::TYPE_BYTES: {
-      uint32 buffer32;
+      uint32_t buffer32;
       stream_->ReadVarint32(&buffer32);  // bytes size.
       stream_->ReadString(&result, buffer32);
       break;
@@ -1030,13 +1033,13 @@ bool ProtoStreamObjectSource::IsMap(
          util::converter::IsMap(field, *field_type);
 }
 
-std::pair<int64, int32> ProtoStreamObjectSource::ReadSecondsAndNanos(
+std::pair<int64_t, int32_t> ProtoStreamObjectSource::ReadSecondsAndNanos(
     const google::protobuf::Type& type) const {
-  uint64 seconds = 0;
-  uint32 nanos = 0;
-  uint32 tag = 0;
-  int64 signed_seconds = 0;
-  int32 signed_nanos = 0;
+  uint64_t seconds = 0;
+  uint32_t nanos = 0;
+  uint32_t tag = 0;
+  int64_t signed_seconds = 0;
+  int32_t signed_nanos = 0;
 
   for (tag = stream_->ReadTag(); tag != 0; tag = stream_->ReadTag()) {
     const google::protobuf::Field* field = FindAndVerifyField(type, tag);
@@ -1049,14 +1052,14 @@ std::pair<int64, int32> ProtoStreamObjectSource::ReadSecondsAndNanos(
     if (field->number() == 1) {
       // read seconds
       stream_->ReadVarint64(&seconds);
-      signed_seconds = bit_cast<int64>(seconds);
+      signed_seconds = bit_cast<int64_t>(seconds);
     } else if (field->number() == 2) {
       // read nanos
       stream_->ReadVarint32(&nanos);
-      signed_nanos = bit_cast<int32>(nanos);
+      signed_nanos = bit_cast<int32_t>(nanos);
     }
   }
-  return std::pair<int64, int32>(signed_seconds, signed_nanos);
+  return std::pair<int64_t, int32_t>(signed_seconds, signed_nanos);
 }
 
 util::Status ProtoStreamObjectSource::IncrementRecursionDepth(
@@ -1104,7 +1107,7 @@ const google::protobuf::EnumValue* FindEnumValueByNumber(
 
 // TODO(skarvaje): Look into optimizing this by not doing computation on
 // double.
-const std::string FormatNanos(uint32 nanos, bool with_trailing_zeros) {
+const std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros) {
   if (nanos == 0) {
     return with_trailing_zeros ? ".000" : "";
   }

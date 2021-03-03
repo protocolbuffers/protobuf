@@ -1060,6 +1060,42 @@ TEST(MessageDifferencerTest,
   EXPECT_TRUE(differencer.CompareWithFields(msg1, msg2, fields1, fields2));
 }
 
+TEST(MessageDifferencerTest, RepeatedFieldTreatmentChangeListToSet) {
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+
+  msg1.add_rv(1);
+  msg1.add_rv(2);
+  msg2.add_rv(2);
+  msg2.add_rv(1);
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsList(
+      protobuf_unittest::TestDiffMessage::descriptor()->FindFieldByName("rv"));
+  differencer.TreatAsSet(
+      protobuf_unittest::TestDiffMessage::descriptor()->FindFieldByName("rv"));
+
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldTreatmentChangeSetToList) {
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+
+  msg1.add_rv(1);
+  msg1.add_rv(2);
+  msg2.add_rv(2);
+  msg2.add_rv(1);
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsSet(
+      protobuf_unittest::TestDiffMessage::descriptor()->FindFieldByName("rv"));
+  differencer.TreatAsList(
+      protobuf_unittest::TestDiffMessage::descriptor()->FindFieldByName("rv"));
+
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+}
+
 TEST(MessageDifferencerTest, RepeatedFieldSmartListTest) {
   // Create the testing protos
   protobuf_unittest::TestDiffMessage msg1;

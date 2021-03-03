@@ -1,3 +1,18 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Allow MessageDifferencer::TreatAsSet() (and friends) to override previous
+    calls instead of crashing.
+  * Reduce the size of generated proto headers for protos with `string` or
+    `bytes` fields.
+  * Move arena() operation on uncommon path to out-of-line routine
+  * For iterator-pair function parameter types, take both iterators by value.
+  * Code-space savings and perhaps some modest performance improvements in
+    RepeatedPtrField.
+
+  Java:
+  * Exceptions thrown while reading from an InputStream in parseFrom are now included as causes.
+
 2021-03-02 version 3.15.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Ruby
