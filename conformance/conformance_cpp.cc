@@ -55,6 +55,7 @@ using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::TypeResolver;
 using protobuf_test_messages::proto3::TestAllTypesProto3;
+using protobuf_test_messages::proto2::TestAllTypesProto2;
 using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
@@ -102,6 +103,8 @@ void CheckedWrite(int fd, const void *buf, size_t len) {
 
 void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
   Message *test_message;
+  google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
+  google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
   const Descriptor *descriptor = DescriptorPool::generated_pool()->FindMessageTypeByName(
       request.message_type());
   if (!descriptor) {

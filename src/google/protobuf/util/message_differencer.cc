@@ -325,14 +325,7 @@ void MessageDifferencer::CheckRepeatedFieldComparisons(
   const MapKeyComparator* key_comparator = GetMapKeyComparator(field);
   GOOGLE_CHECK(key_comparator == NULL)
       << "Cannot treat this repeated field as both MAP and " << new_comparison
-      << " for"
-      << " comparison.  Field name is: " << field->full_name();
-  GOOGLE_CHECK(repeated_field_comparisons_.find(field) ==
-            repeated_field_comparisons_.end() ||
-        repeated_field_comparisons_[field] == new_comparison)
-      << "Cannot treat the same field as both "
-      << repeated_field_comparisons_[field] << " and " << new_comparison
-      << ". Field name is: " << field->full_name();
+      << " for comparison.  Field name is: " << field->full_name();
 }
 
 void MessageDifferencer::TreatAsSet(const FieldDescriptor* field) {

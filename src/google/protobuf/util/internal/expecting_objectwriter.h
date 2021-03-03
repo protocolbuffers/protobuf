@@ -50,6 +50,8 @@
 //         ->RenderString("key", "value")
 //       ->EndObject();
 
+#include <cstdint>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/util/internal/object_writer.h>
 #include <gmock/gmock.h>
@@ -77,13 +79,13 @@ class MockObjectWriter : public ObjectWriter {
   MOCK_METHOD(ObjectWriter*, StartList, (StringPiece), (override));
   MOCK_METHOD(ObjectWriter*, EndList, (), (override));
   MOCK_METHOD(ObjectWriter*, RenderBool, (StringPiece, bool), (override));
-  MOCK_METHOD(ObjectWriter*, RenderInt32, (StringPiece, int32),
+  MOCK_METHOD(ObjectWriter*, RenderInt32, (StringPiece, int32_t),
               (override));
-  MOCK_METHOD(ObjectWriter*, RenderUint32, (StringPiece, uint32),
+  MOCK_METHOD(ObjectWriter*, RenderUint32, (StringPiece, uint32_t),
               (override));
-  MOCK_METHOD(ObjectWriter*, RenderInt64, (StringPiece, int64),
+  MOCK_METHOD(ObjectWriter*, RenderInt64, (StringPiece, int64_t),
               (override));
-  MOCK_METHOD(ObjectWriter*, RenderUint64, (StringPiece, uint64),
+  MOCK_METHOD(ObjectWriter*, RenderUint64, (StringPiece, uint64_t),
               (override));
   MOCK_METHOD(ObjectWriter*, RenderDouble, (StringPiece, double),
               (override));
@@ -139,41 +141,41 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  virtual ObjectWriter* RenderInt32(StringPiece name, int32 value) {
+  virtual ObjectWriter* RenderInt32(StringPiece name, int32_t value) {
     (name.empty()
-         ? EXPECT_CALL(*mock_, RenderInt32(IsEmpty(), TypedEq<int32>(value)))
+         ? EXPECT_CALL(*mock_, RenderInt32(IsEmpty(), TypedEq<int32_t>(value)))
          : EXPECT_CALL(*mock_, RenderInt32(Eq(std::string(name)),
-                                           TypedEq<int32>(value))))
+                                           TypedEq<int32_t>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
   }
 
-  virtual ObjectWriter* RenderUint32(StringPiece name, uint32 value) {
-    (name.empty()
-         ? EXPECT_CALL(*mock_, RenderUint32(IsEmpty(), TypedEq<uint32>(value)))
-         : EXPECT_CALL(*mock_, RenderUint32(Eq(std::string(name)),
-                                            TypedEq<uint32>(value))))
+  virtual ObjectWriter* RenderUint32(StringPiece name, uint32_t value) {
+    (name.empty() ? EXPECT_CALL(*mock_, RenderUint32(IsEmpty(),
+                                                     TypedEq<uint32_t>(value)))
+                  : EXPECT_CALL(*mock_, RenderUint32(Eq(std::string(name)),
+                                                     TypedEq<uint32_t>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
   }
 
-  virtual ObjectWriter* RenderInt64(StringPiece name, int64 value) {
+  virtual ObjectWriter* RenderInt64(StringPiece name, int64_t value) {
     (name.empty()
-         ? EXPECT_CALL(*mock_, RenderInt64(IsEmpty(), TypedEq<int64>(value)))
+         ? EXPECT_CALL(*mock_, RenderInt64(IsEmpty(), TypedEq<int64_t>(value)))
          : EXPECT_CALL(*mock_, RenderInt64(Eq(std::string(name)),
-                                           TypedEq<int64>(value))))
+                                           TypedEq<int64_t>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
   }
 
-  virtual ObjectWriter* RenderUint64(StringPiece name, uint64 value) {
-    (name.empty()
-         ? EXPECT_CALL(*mock_, RenderUint64(IsEmpty(), TypedEq<uint64>(value)))
-         : EXPECT_CALL(*mock_, RenderUint64(Eq(std::string(name)),
-                                            TypedEq<uint64>(value))))
+  virtual ObjectWriter* RenderUint64(StringPiece name, uint64_t value) {
+    (name.empty() ? EXPECT_CALL(*mock_, RenderUint64(IsEmpty(),
+                                                     TypedEq<uint64_t>(value)))
+                  : EXPECT_CALL(*mock_, RenderUint64(Eq(std::string(name)),
+                                                     TypedEq<uint64_t>(value))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;

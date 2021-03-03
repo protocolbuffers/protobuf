@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
 
+#include <cstdint>
 #include <unordered_map>
 
 #include <google/protobuf/util/internal/constants.h>
@@ -85,7 +86,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderBool(
 }
 
 DefaultValueObjectWriter* DefaultValueObjectWriter::RenderInt32(
-    StringPiece name, int32 value) {
+    StringPiece name, int32_t value) {
   if (current_ == nullptr) {
     ow_->RenderInt32(name, value);
   } else {
@@ -95,7 +96,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderInt32(
 }
 
 DefaultValueObjectWriter* DefaultValueObjectWriter::RenderUint32(
-    StringPiece name, uint32 value) {
+    StringPiece name, uint32_t value) {
   if (current_ == nullptr) {
     ow_->RenderUint32(name, value);
   } else {
@@ -105,7 +106,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderUint32(
 }
 
 DefaultValueObjectWriter* DefaultValueObjectWriter::RenderInt64(
-    StringPiece name, int64 value) {
+    StringPiece name, int64_t value) {
   if (current_ == nullptr) {
     ow_->RenderInt64(name, value);
   } else {
@@ -115,7 +116,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::RenderInt64(
 }
 
 DefaultValueObjectWriter* DefaultValueObjectWriter::RenderUint64(
-    StringPiece name, uint64 value) {
+    StringPiece name, uint64_t value) {
   if (current_ == nullptr) {
     ow_->RenderUint64(name, value);
   } else {
@@ -445,19 +446,20 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
     case google::protobuf::Field::TYPE_INT64:
     case google::protobuf::Field::TYPE_SINT64:
     case google::protobuf::Field::TYPE_SFIXED64: {
-      return DataPiece(ConvertTo<int64>(
-          field.default_value(), &DataPiece::ToInt64, static_cast<int64>(0)));
+      return DataPiece(ConvertTo<int64_t>(
+          field.default_value(), &DataPiece::ToInt64, static_cast<int64_t>(0)));
     }
     case google::protobuf::Field::TYPE_UINT64:
     case google::protobuf::Field::TYPE_FIXED64: {
-      return DataPiece(ConvertTo<uint64>(
-          field.default_value(), &DataPiece::ToUint64, static_cast<uint64>(0)));
+      return DataPiece(ConvertTo<uint64_t>(field.default_value(),
+                                           &DataPiece::ToUint64,
+                                           static_cast<uint64_t>(0)));
     }
     case google::protobuf::Field::TYPE_INT32:
     case google::protobuf::Field::TYPE_SINT32:
     case google::protobuf::Field::TYPE_SFIXED32: {
-      return DataPiece(ConvertTo<int32>(
-          field.default_value(), &DataPiece::ToInt32, static_cast<int32>(0)));
+      return DataPiece(ConvertTo<int32_t>(
+          field.default_value(), &DataPiece::ToInt32, static_cast<int32_t>(0)));
     }
     case google::protobuf::Field::TYPE_BOOL: {
       return DataPiece(
@@ -471,8 +473,9 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
     }
     case google::protobuf::Field::TYPE_UINT32:
     case google::protobuf::Field::TYPE_FIXED32: {
-      return DataPiece(ConvertTo<uint32>(
-          field.default_value(), &DataPiece::ToUint32, static_cast<uint32>(0)));
+      return DataPiece(ConvertTo<uint32_t>(field.default_value(),
+                                           &DataPiece::ToUint32,
+                                           static_cast<uint32_t>(0)));
     }
     case google::protobuf::Field::TYPE_ENUM: {
       return FindEnumDefault(field, typeinfo, use_ints_for_enums);

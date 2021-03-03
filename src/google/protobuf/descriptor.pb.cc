@@ -1055,10 +1055,8 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto, file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto, file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto,
 };
-PROTOBUF_ATTRIBUTE_WEAK ::PROTOBUF_NAMESPACE_ID::Metadata
-descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_metadata_getter(int index) {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return descriptor_table_google_2fprotobuf_2fdescriptor_2eproto.file_level_metadata[index];
+PROTOBUF_ATTRIBUTE_WEAK const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter() {
+  return &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
 }
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -1424,9 +1422,10 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileDescriptorSet::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[0]);
 }
-
 
 // ===================================================================
 
@@ -2077,9 +2076,10 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileDescriptorProto::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[1]);
 }
-
 
 // ===================================================================
 
@@ -2372,9 +2372,10 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto_ExtensionRange::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[2]);
 }
-
 
 // ===================================================================
 
@@ -2621,9 +2622,10 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto_ReservedRange::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[3]);
 }
-
 
 // ===================================================================
 
@@ -3161,9 +3163,10 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[4]);
 }
-
 
 // ===================================================================
 
@@ -3377,9 +3380,10 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ExtensionRangeOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[5]);
 }
-
 
 // ===================================================================
 
@@ -4000,9 +4004,10 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldDescriptorProto::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[6]);
 }
-
 
 // ===================================================================
 
@@ -4271,9 +4276,10 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata OneofDescriptorProto::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[7]);
 }
-
 
 // ===================================================================
 
@@ -4520,9 +4526,10 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumDescriptorProto_EnumReservedRange::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[8]);
 }
-
 
 // ===================================================================
 
@@ -4895,9 +4902,10 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumDescriptorProto::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[9]);
 }
-
 
 // ===================================================================
 
@@ -5204,9 +5212,10 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValueDescriptorProto::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[10]);
 }
-
 
 // ===================================================================
 
@@ -5508,9 +5517,10 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ServiceDescriptorProto::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[11]);
 }
-
 
 // ===================================================================
 
@@ -5934,9 +5944,10 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MethodDescriptorProto::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[12]);
 }
-
 
 // ===================================================================
 
@@ -6913,9 +6924,10 @@ void FileOptions::InternalSwap(FileOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[13]);
 }
-
 
 // ===================================================================
 
@@ -7259,9 +7271,10 @@ void MessageOptions::InternalSwap(MessageOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MessageOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[14]);
 }
-
 
 // ===================================================================
 
@@ -7670,9 +7683,10 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[15]);
 }
-
 
 // ===================================================================
 
@@ -7886,9 +7900,10 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata OneofOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[16]);
 }
-
 
 // ===================================================================
 
@@ -8182,9 +8197,10 @@ void EnumOptions::InternalSwap(EnumOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[17]);
 }
-
 
 // ===================================================================
 
@@ -8435,9 +8451,10 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValueOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[18]);
 }
-
 
 // ===================================================================
 
@@ -8688,9 +8705,10 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ServiceOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[19]);
 }
-
 
 // ===================================================================
 
@@ -8993,9 +9011,10 @@ void MethodOptions::InternalSwap(MethodOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MethodOptions::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[20]);
 }
-
 
 // ===================================================================
 
@@ -9263,9 +9282,10 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* ot
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UninterpretedOption_NamePart::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[21]);
 }
-
 
 // ===================================================================
 
@@ -9700,9 +9720,10 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UninterpretedOption::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[22]);
 }
-
 
 // ===================================================================
 
@@ -10085,9 +10106,10 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceCodeInfo_Location::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[23]);
 }
-
 
 // ===================================================================
 
@@ -10279,9 +10301,10 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceCodeInfo::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[24]);
 }
-
 
 // ===================================================================
 
@@ -10612,9 +10635,10 @@ void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* ot
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata GeneratedCodeInfo_Annotation::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[25]);
 }
-
 
 // ===================================================================
 
@@ -10806,9 +10830,10 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata GeneratedCodeInfo::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[26]);
 }
-
 
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_CLOSE

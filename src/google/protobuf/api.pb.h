@@ -55,7 +55,6 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fapi_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fapi_2eproto;
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 class Api;
 struct ApiDefaultTypeInternal;
@@ -106,10 +105,10 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
     return GetDescriptor();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
+    return default_instance().GetMetadata().descriptor;
   }
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
+    return default_instance().GetMetadata().reflection;
   }
   static const Api& default_instance() {
     return *internal_default_instance();
@@ -177,12 +176,6 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(kIndexInFileMessages);
-  }
-
-  public:
 
   // nested types ----------------------------------------------------
 
@@ -254,10 +247,8 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
   // string name = 1;
   void clear_name();
   const std::string& name() const;
-  void set_name(const std::string& value);
-  void set_name(std::string&& value);
-  void set_name(const char* value);
-  void set_name(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
   std::string* release_name();
   void set_allocated_name(std::string* name);
@@ -270,10 +261,8 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
   // string version = 4;
   void clear_version();
   const std::string& version() const;
-  void set_version(const std::string& value);
-  void set_version(std::string&& value);
-  void set_version(const char* value);
-  void set_version(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_version(ArgT0&& arg0, ArgT... args);
   std::string* mutable_version();
   std::string* release_version();
   void set_allocated_version(std::string* version);
@@ -359,10 +348,10 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
     return GetDescriptor();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
+    return default_instance().GetMetadata().descriptor;
   }
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
+    return default_instance().GetMetadata().reflection;
   }
   static const Method& default_instance() {
     return *internal_default_instance();
@@ -430,12 +419,6 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(kIndexInFileMessages);
-  }
-
-  public:
 
   // nested types ----------------------------------------------------
 
@@ -471,10 +454,8 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
   // string name = 1;
   void clear_name();
   const std::string& name() const;
-  void set_name(const std::string& value);
-  void set_name(std::string&& value);
-  void set_name(const char* value);
-  void set_name(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
   std::string* release_name();
   void set_allocated_name(std::string* name);
@@ -487,10 +468,8 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
   // string request_type_url = 2;
   void clear_request_type_url();
   const std::string& request_type_url() const;
-  void set_request_type_url(const std::string& value);
-  void set_request_type_url(std::string&& value);
-  void set_request_type_url(const char* value);
-  void set_request_type_url(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_request_type_url(ArgT0&& arg0, ArgT... args);
   std::string* mutable_request_type_url();
   std::string* release_request_type_url();
   void set_allocated_request_type_url(std::string* request_type_url);
@@ -503,10 +482,8 @@ class PROTOBUF_EXPORT Method PROTOBUF_FINAL :
   // string response_type_url = 4;
   void clear_response_type_url();
   const std::string& response_type_url() const;
-  void set_response_type_url(const std::string& value);
-  void set_response_type_url(std::string&& value);
-  void set_response_type_url(const char* value);
-  void set_response_type_url(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_response_type_url(ArgT0&& arg0, ArgT... args);
   std::string* mutable_response_type_url();
   std::string* release_response_type_url();
   void set_allocated_response_type_url(std::string* response_type_url);
@@ -592,10 +569,10 @@ class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
     return GetDescriptor();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
+    return default_instance().GetMetadata().descriptor;
   }
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
+    return default_instance().GetMetadata().reflection;
   }
   static const Mixin& default_instance() {
     return *internal_default_instance();
@@ -663,12 +640,6 @@ class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    return ::descriptor_table_google_2fprotobuf_2fapi_2eproto_metadata_getter(kIndexInFileMessages);
-  }
-
-  public:
 
   // nested types ----------------------------------------------------
 
@@ -681,10 +652,8 @@ class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
   // string name = 1;
   void clear_name();
   const std::string& name() const;
-  void set_name(const std::string& value);
-  void set_name(std::string&& value);
-  void set_name(const char* value);
-  void set_name(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
   std::string* release_name();
   void set_allocated_name(std::string* name);
@@ -697,10 +666,8 @@ class PROTOBUF_EXPORT Mixin PROTOBUF_FINAL :
   // string root = 2;
   void clear_root();
   const std::string& root() const;
-  void set_root(const std::string& value);
-  void set_root(std::string&& value);
-  void set_root(const char* value);
-  void set_root(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_root(ArgT0&& arg0, ArgT... args);
   std::string* mutable_root();
   std::string* release_root();
   void set_allocated_root(std::string* root);
@@ -741,8 +708,11 @@ inline const std::string& Api::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.name)
   return _internal_name();
 }
-inline void Api::set_name(const std::string& value) {
-  _internal_set_name(value);
+template <typename ArgT0, typename... ArgT>
+PROTOBUF_ALWAYS_INLINE
+inline void Api::set_name(ArgT0&& arg0, ArgT... args) {
+ 
+ name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.name)
 }
 inline std::string* Api::mutable_name() {
@@ -755,25 +725,6 @@ inline const std::string& Api::_internal_name() const {
 inline void Api::_internal_set_name(const std::string& value) {
   
   name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void Api::set_name(std::string&& value) {
-  
-  name_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Api.name)
-}
-inline void Api::set_name(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.Api.name)
-}
-inline void Api::set_name(const char* value,
-    size_t size) {
-  
-  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Api.name)
 }
 inline std::string* Api::_internal_mutable_name() {
   
@@ -877,8 +828,11 @@ inline const std::string& Api::version() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.version)
   return _internal_version();
 }
-inline void Api::set_version(const std::string& value) {
-  _internal_set_version(value);
+template <typename ArgT0, typename... ArgT>
+PROTOBUF_ALWAYS_INLINE
+inline void Api::set_version(ArgT0&& arg0, ArgT... args) {
+ 
+ version_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Api.version)
 }
 inline std::string* Api::mutable_version() {
@@ -891,25 +845,6 @@ inline const std::string& Api::_internal_version() const {
 inline void Api::_internal_set_version(const std::string& value) {
   
   version_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void Api::set_version(std::string&& value) {
-  
-  version_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Api.version)
-}
-inline void Api::set_version(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  version_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.Api.version)
-}
-inline void Api::set_version(const char* value,
-    size_t size) {
-  
-  version_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Api.version)
 }
 inline std::string* Api::_internal_mutable_version() {
   
@@ -1078,8 +1013,11 @@ inline const std::string& Method::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.name)
   return _internal_name();
 }
-inline void Method::set_name(const std::string& value) {
-  _internal_set_name(value);
+template <typename ArgT0, typename... ArgT>
+PROTOBUF_ALWAYS_INLINE
+inline void Method::set_name(ArgT0&& arg0, ArgT... args) {
+ 
+ name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.name)
 }
 inline std::string* Method::mutable_name() {
@@ -1092,25 +1030,6 @@ inline const std::string& Method::_internal_name() const {
 inline void Method::_internal_set_name(const std::string& value) {
   
   name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void Method::set_name(std::string&& value) {
-  
-  name_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.name)
-}
-inline void Method::set_name(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.Method.name)
-}
-inline void Method::set_name(const char* value,
-    size_t size) {
-  
-  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.name)
 }
 inline std::string* Method::_internal_mutable_name() {
   
@@ -1139,8 +1058,11 @@ inline const std::string& Method::request_type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.request_type_url)
   return _internal_request_type_url();
 }
-inline void Method::set_request_type_url(const std::string& value) {
-  _internal_set_request_type_url(value);
+template <typename ArgT0, typename... ArgT>
+PROTOBUF_ALWAYS_INLINE
+inline void Method::set_request_type_url(ArgT0&& arg0, ArgT... args) {
+ 
+ request_type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_type_url)
 }
 inline std::string* Method::mutable_request_type_url() {
@@ -1153,25 +1075,6 @@ inline const std::string& Method::_internal_request_type_url() const {
 inline void Method::_internal_set_request_type_url(const std::string& value) {
   
   request_type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void Method::set_request_type_url(std::string&& value) {
-  
-  request_type_url_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.request_type_url)
-}
-inline void Method::set_request_type_url(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  request_type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.Method.request_type_url)
-}
-inline void Method::set_request_type_url(const char* value,
-    size_t size) {
-  
-  request_type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.request_type_url)
 }
 inline std::string* Method::_internal_mutable_request_type_url() {
   
@@ -1220,8 +1123,11 @@ inline const std::string& Method::response_type_url() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Method.response_type_url)
   return _internal_response_type_url();
 }
-inline void Method::set_response_type_url(const std::string& value) {
-  _internal_set_response_type_url(value);
+template <typename ArgT0, typename... ArgT>
+PROTOBUF_ALWAYS_INLINE
+inline void Method::set_response_type_url(ArgT0&& arg0, ArgT... args) {
+ 
+ response_type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_type_url)
 }
 inline std::string* Method::mutable_response_type_url() {
@@ -1234,25 +1140,6 @@ inline const std::string& Method::_internal_response_type_url() const {
 inline void Method::_internal_set_response_type_url(const std::string& value) {
   
   response_type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void Method::set_response_type_url(std::string&& value) {
-  
-  response_type_url_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.response_type_url)
-}
-inline void Method::set_response_type_url(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  response_type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.Method.response_type_url)
-}
-inline void Method::set_response_type_url(const char* value,
-    size_t size) {
-  
-  response_type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Method.response_type_url)
 }
 inline std::string* Method::_internal_mutable_response_type_url() {
   
@@ -1361,8 +1248,11 @@ inline const std::string& Mixin::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Mixin.name)
   return _internal_name();
 }
-inline void Mixin::set_name(const std::string& value) {
-  _internal_set_name(value);
+template <typename ArgT0, typename... ArgT>
+PROTOBUF_ALWAYS_INLINE
+inline void Mixin::set_name(ArgT0&& arg0, ArgT... args) {
+ 
+ name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.name)
 }
 inline std::string* Mixin::mutable_name() {
@@ -1375,25 +1265,6 @@ inline const std::string& Mixin::_internal_name() const {
 inline void Mixin::_internal_set_name(const std::string& value) {
   
   name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void Mixin::set_name(std::string&& value) {
-  
-  name_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Mixin.name)
-}
-inline void Mixin::set_name(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.Mixin.name)
-}
-inline void Mixin::set_name(const char* value,
-    size_t size) {
-  
-  name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Mixin.name)
 }
 inline std::string* Mixin::_internal_mutable_name() {
   
@@ -1422,8 +1293,11 @@ inline const std::string& Mixin::root() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Mixin.root)
   return _internal_root();
 }
-inline void Mixin::set_root(const std::string& value) {
-  _internal_set_root(value);
+template <typename ArgT0, typename... ArgT>
+PROTOBUF_ALWAYS_INLINE
+inline void Mixin::set_root(ArgT0&& arg0, ArgT... args) {
+ 
+ root_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.root)
 }
 inline std::string* Mixin::mutable_root() {
@@ -1436,25 +1310,6 @@ inline const std::string& Mixin::_internal_root() const {
 inline void Mixin::_internal_set_root(const std::string& value) {
   
   root_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void Mixin::set_root(std::string&& value) {
-  
-  root_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Mixin.root)
-}
-inline void Mixin::set_root(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  root_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.Mixin.root)
-}
-inline void Mixin::set_root(const char* value,
-    size_t size) {
-  
-  root_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Mixin.root)
 }
 inline std::string* Mixin::_internal_mutable_root() {
   
