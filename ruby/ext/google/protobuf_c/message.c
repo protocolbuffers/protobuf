@@ -1250,7 +1250,9 @@ upb_msg* Message_deep_copy(const upb_msg* msg, const upb_msgdef* m,
 
 const upb_msg* Message_GetUpbMessage(VALUE value, const upb_msgdef* m,
                                      const char* name, upb_arena* arena) {
-  if (value == Qnil) return NULL;
+  if (value == Qnil) {
+    rb_raise(cTypeError, "nil message not allowed here.");
+  }
 
   VALUE klass = CLASS_OF(value);
   VALUE desc_rb = rb_ivar_get(klass, descriptor_instancevar_interned);

@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2021-02-24</date>
- <time>16:49:52</time>
+ <date>2021-03-02</date>
+ <time>15:25:02</time>
  <version>
-  <release>3.15.3</release>
-  <api>3.15.3</api>
+  <release>3.15.4</release>
+  <api>3.15.4</api>
  </version>
  <stability>
   <release>stable</release>
@@ -22,15 +22,8 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- New changes in 3.15.0:
-  * unregister INI entries and fix invalid read on shutdown (#8042)
-  * Fix PhpDoc comments for message accessors to include &quot;|null&quot;. (#8136)
-  * fix: convert native PHP floats to single precision (#8187)
-  * Fixed PHP to support field numbers &gt;=2**28. (#8235)
-  * feat: add support for deprecated fields to PHP compiler (#8223)
-  * Protect against stack overflow if the user derives from Message. (#8248)
-  * Fixed clone for Message, RepeatedField, and MapField. (#8245)
-  * Updated upb to allow nonzero offset minutes in JSON timestamps. (#8258)
+ New changes in 3.15.4:
+ * read_property() handler is not supposed to return NULL (#8362)
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -846,6 +839,21 @@ G  A release.
    </stability>
    <date>2021-02-24</date>
    <time>16:49:52</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.15.4</release>
+    <api>3.15.4</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2021-03-02</date>
+   <time>15:25:02</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>
