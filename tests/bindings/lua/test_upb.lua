@@ -321,6 +321,16 @@ function test_msg_array()
   assert_error_match("array expected", function() msg.repeated_int32 = print end)
 end
 
+function test_array_append()
+  local arr = upb.Array(upb.TYPE_INT32)
+  for i=1,200000 do
+    arr[i] = i
+  end
+  for i=1,200000 do
+    assert_equal(i, arr[i])
+  end
+end
+
 function test_msg_submsg()
   --msg = test_messages_proto3.TestAllTypesProto3()
   msg = test_messages_proto3['TestAllTypesProto3']()
