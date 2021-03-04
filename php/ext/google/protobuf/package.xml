@@ -22,8 +22,8 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- New changes in 3.15.4:
- * read_property() handler is not supposed to return NULL (#8362)
+ New changes in 3.15.5:
+ * Fixed quadratic memory use in array append (#8379)
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
