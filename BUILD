@@ -183,7 +183,7 @@ cc_library(
         "src/google/protobuf/stubs/bytestream.cc",
         "src/google/protobuf/stubs/common.cc",
         "src/google/protobuf/stubs/int128.cc",
-        "src/google/protobuf/stubs/internal/status.cc",
+        "src/google/protobuf/stubs/status.cc",
         "src/google/protobuf/stubs/statusor.cc",
         "src/google/protobuf/stubs/stringpiece.cc",
         "src/google/protobuf/stubs/stringprintf.cc",

@@ -185,7 +185,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/io_win32.cc                               \
   google/protobuf/stubs/map_util.h                             \
   google/protobuf/stubs/mathutil.h                             \
-  google/protobuf/stubs/internal/status.cc                     \
+  google/protobuf/stubs/status.cc                              \
   google/protobuf/stubs/status.h                               \
   google/protobuf/stubs/status_macros.h                        \
   google/protobuf/stubs/statusor.cc                            \
