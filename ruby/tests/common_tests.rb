@@ -436,6 +436,18 @@ module CommonTests
     end
   end
 
+  def test_b_8385
+    m1 = Google::Protobuf::Map.new(:string, :string)
+    m2 = Google::Protobuf::Map.new(:string, :string)
+
+    assert_equal m1, m2
+
+    m1["counter"] = "a"
+    m2["counter"] = "aa"
+
+    assert_not_equal m1, m2
+  end
+
   def test_map_ctor
     m = Google::Protobuf::Map.new(:string, :int32,
                                   {"a" => 1, "b" => 2, "c" => 3})
