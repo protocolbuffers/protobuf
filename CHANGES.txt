@@ -13,6 +13,17 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Java:
   * Exceptions thrown while reading from an InputStream in parseFrom are now included as causes.
 
+2021-03-04 version 3.15.5 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Fixed quadratic memory use in array append (#8379)
+
+  PHP
+  * Fixed quadratic memory use in array append (#8379)
+
+  C++
+  * Do not disable RTTI by default in the CMake build (#8377)
+
 2021-03-02 version 3.15.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Ruby
