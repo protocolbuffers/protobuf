@@ -83,7 +83,7 @@ namespace Google.Protobuf
             var bytes = message.ToByteArray();
 
             // also serialize using IBufferWriter and check it leads to the same data
-            var bufferWriter = new ArrayBufferWriter<byte>();
+            var bufferWriter = new TestArrayBufferWriter<byte>();
             message.WriteTo(bufferWriter);
             Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray(), "Both serialization approaches need to result in the same data.");
 
@@ -112,7 +112,7 @@ namespace Google.Protobuf
             Assert.AreEqual(message.CalculateSize(), bytes.Length);
 
             // serialize using IBufferWriter and check it leads to the same output
-            var bufferWriter = new ArrayBufferWriter<byte>();
+            var bufferWriter = new TestArrayBufferWriter<byte>();
             message.WriteTo(bufferWriter);
             Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray());
 
@@ -124,7 +124,7 @@ namespace Google.Protobuf
             // test for different IBufferWriter.GetSpan() segment sizes
             for (int blockSize = 1; blockSize < 256; blockSize *= 2)
             {
-                var segmentedBufferWriter = new ArrayBufferWriter<byte>();
+                var segmentedBufferWriter = new TestArrayBufferWriter<byte>();
                 segmentedBufferWriter.MaxGrowBy = blockSize;
                 message.WriteTo(segmentedBufferWriter);
                 Assert.AreEqual(bytes, segmentedBufferWriter.WrittenSpan.ToArray());

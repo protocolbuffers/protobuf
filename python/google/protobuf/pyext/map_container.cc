@@ -462,10 +462,10 @@ int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
 
 static PyObject* ScalarMapGet(PyObject* self, PyObject* args,
                               PyObject* kwargs) {
-  static char* kwlist[] = {"key", "default", nullptr};
+  static const char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
   PyObject* default_value = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &key,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", const_cast<char**>(kwlist), &key,
                                    &default_value)) {
     return NULL;
   }
@@ -757,10 +757,10 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
 }
 
 PyObject* MessageMapGet(PyObject* self, PyObject* args, PyObject* kwargs) {
-  static char* kwlist[] = {"key", "default", nullptr};
+  static const char* kwlist[] = {"key", "default", nullptr};
   PyObject* key;
   PyObject* default_value = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist, &key,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", const_cast<char**>(kwlist), &key,
                                    &default_value)) {
     return NULL;
   }

@@ -571,6 +571,7 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
       SortFieldsByNumber(descriptor_));
 
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  sorted_extensions.reserve(descriptor_->extension_range_count());
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }

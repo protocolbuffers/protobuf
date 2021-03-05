@@ -53,7 +53,6 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto 
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto;
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 class SourceContext;
 struct SourceContextDefaultTypeInternal;
@@ -96,10 +95,10 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
     return GetDescriptor();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
+    return default_instance().GetMetadata().descriptor;
   }
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
+    return default_instance().GetMetadata().reflection;
   }
   static const SourceContext& default_instance() {
     return *internal_default_instance();
@@ -167,12 +166,6 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    return ::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_metadata_getter(kIndexInFileMessages);
-  }
-
-  public:
 
   // nested types ----------------------------------------------------
 
@@ -184,10 +177,8 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
   // string file_name = 1;
   void clear_file_name();
   const std::string& file_name() const;
-  void set_file_name(const std::string& value);
-  void set_file_name(std::string&& value);
-  void set_file_name(const char* value);
-  void set_file_name(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_file_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_file_name();
   std::string* release_file_name();
   void set_allocated_file_name(std::string* file_name);
@@ -227,8 +218,11 @@ inline const std::string& SourceContext::file_name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
   return _internal_file_name();
 }
-inline void SourceContext::set_file_name(const std::string& value) {
-  _internal_set_file_name(value);
+template <typename ArgT0, typename... ArgT>
+PROTOBUF_ALWAYS_INLINE
+inline void SourceContext::set_file_name(ArgT0&& arg0, ArgT... args) {
+ 
+ file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
 inline std::string* SourceContext::mutable_file_name() {
@@ -241,25 +235,6 @@ inline const std::string& SourceContext::_internal_file_name() const {
 inline void SourceContext::_internal_set_file_name(const std::string& value) {
   
   file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void SourceContext::set_file_name(std::string&& value) {
-  
-  file_name_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.SourceContext.file_name)
-}
-inline void SourceContext::set_file_name(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.SourceContext.file_name)
-}
-inline void SourceContext::set_file_name(const char* value,
-    size_t size) {
-  
-  file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size), GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceContext.file_name)
 }
 inline std::string* SourceContext::_internal_mutable_file_name() {
   

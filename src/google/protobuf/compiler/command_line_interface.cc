@@ -1036,16 +1036,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
 
-  for (auto fd : parsed_files) {
-    if (!AllowProto3Optional(*fd) && ContainsProto3Optional(fd)) {
-      std::cerr << fd->name()
-                << ": This file contains proto3 optional fields, but "
-                   "--experimental_allow_proto3_optional was not set."
-                << std::endl;
-      return 1;
-    }
-  }
-
   // We construct a separate GeneratorContext for each output location.  Note
   // that two code generators may output to the same location, in which case
   // they should share a single GeneratorContext so that OpenForInsert() works.
@@ -1214,13 +1204,6 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name) {
 
 }  // namespace
 
-bool CommandLineInterface::AllowProto3Optional(
-    const FileDescriptor& file) const {
-  // Proto3 optional is enabled by default now, the experimental flag is no
-  // longer required.
-  return true;
-}
-
 
 bool CommandLineInterface::VerifyInputFilesInDescriptors(
     DescriptorDatabase* database) {
@@ -1337,7 +1320,6 @@ void CommandLineInterface::Clear() {
   source_info_in_descriptor_set_ = false;
   disallow_services_ = false;
   direct_dependencies_explicitly_set_ = false;
-  allow_proto3_optional_ = false;
   deterministic_output_ = false;
 }
 
@@ -1857,8 +1839,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
 
   } else if (name == "--experimental_allow_proto3_optional") {
-    allow_proto3_optional_ = true;
-
+    // Flag is no longer observed, but we allow it for backward compat.
   } else if (name == "--encode" || name == "--decode" ||
              name == "--decode_raw") {
     if (mode_ != MODE_COMPILE) {

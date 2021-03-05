@@ -23,7 +23,7 @@ If you are using Maven, use the following:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java</artifactId>
-  <version>3.11.0</version>
+  <version>3.15.3</version>
 </dependency>
 ```
 
@@ -37,7 +37,7 @@ protobuf-java-util package:
 <dependency>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-java-util</artifactId>
-  <version>3.11.0</version>
+  <version>3.15.3</version>
 </dependency>
 ```
 

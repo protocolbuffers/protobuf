@@ -2378,7 +2378,6 @@ TEST_F(CommandLineInterfaceTest, MissingValueAtEndError) {
   ExpectErrorText("Missing value for flag: --test_out\n");
 }
 
-
 TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedNoCodegenSupport) {
   CreateTempFile("google/foo.proto",
                  "syntax = \"proto3\";\n"

@@ -38,6 +38,7 @@ import com.google.protobuf.UnittestImportLite.ImportEnumLite;
 import com.google.protobuf.UnittestImportPublicLite.PublicImportMessageLite;
 import com.google.protobuf.UnittestLite.ForeignEnumLite;
 import com.google.protobuf.UnittestLite.ForeignMessageLite;
+import com.google.protobuf.UnittestLite.RecursiveMessage;
 import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite.NestedEnum;
@@ -61,6 +62,7 @@ import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOne
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -1636,6 +1638,160 @@ public class LiteTest extends TestCase {
       fail();
     } catch (InvalidProtocolBufferException expected) {
     }
+  }
+
+  public void testParseFromStream_IOExceptionNotLost() throws Exception {
+    final IOException readException = new IOException();
+    try {
+      TestAllTypesLite.parseFrom(
+          CodedInputStream.newInstance(
+              new InputStream() {
+                @Override
+                public int read() throws IOException {
+                  throw readException;
+                }
+              }));
+      fail();
+    } catch (InvalidProtocolBufferException expected) {
+      boolean found = false;
+      for (Throwable exception = expected; exception != null; exception = exception.getCause()) {
+        if (exception == readException) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        throw new AssertionError("Lost cause of parsing error", expected);
+      }
+    }
+  }
+
+  public void testParseDelimitedFromStream_IOExceptionNotLost() throws Exception {
+    final IOException readException = new IOException();
+    try {
+      TestAllTypesLite.parseDelimitedFrom(
+          new InputStream() {
+            @Override
+            public int read() throws IOException {
+              throw readException;
+            }
+          });
+      fail();
+    } catch (InvalidProtocolBufferException expected) {
+      boolean found = false;
+      for (Throwable exception = expected; exception != null; exception = exception.getCause()) {
+        if (exception == readException) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        throw new AssertionError("Lost cause of parsing error", expected);
+      }
+    }
+  }
+
+  public void testParseFromArray_manyNestedMessagesError() throws Exception {
+    RecursiveMessage.Builder recursiveMessage =
+        RecursiveMessage.newBuilder().setPayload(ByteString.copyFrom(new byte[1]));
+    for (int i = 0; i < 20; i++) {
+      recursiveMessage = RecursiveMessage.newBuilder().setRecurse(recursiveMessage.build());
+    }
+    byte[] result = recursiveMessage.build().toByteArray();
+    result[
+            result.length
+                - CodedOutputStream.computeTagSize(RecursiveMessage.PAYLOAD_FIELD_NUMBER)
+                - CodedOutputStream.computeLengthDelimitedFieldSize(1)] =
+        0; // Set invalid tag
+    try {
+      RecursiveMessage.parseFrom(result);
+      fail("Result was: " + Arrays.toString(result));
+    } catch (InvalidProtocolBufferException expected) {
+      boolean found = false;
+      int exceptionCount = 0;
+      for (Throwable exception = expected; exception != null; exception = exception.getCause()) {
+        if (exception instanceof InvalidProtocolBufferException) {
+          exceptionCount++;
+        }
+        for (StackTraceElement element : exception.getStackTrace()) {
+          if (InvalidProtocolBufferException.class.getName().equals(element.getClassName())
+              && "invalidTag".equals(element.getMethodName())) {
+            found = true;
+          } else if (Android.isOnAndroidDevice()
+              && "decodeUnknownField".equals(element.getMethodName())) {
+            // Android is missing the first element of the stack trace - b/181147885
+            found = true;
+          }
+        }
+      }
+      if (!found) {
+        throw new AssertionError("Lost cause of parsing error", expected);
+      }
+      if (exceptionCount > 1) {
+        throw new AssertionError(exceptionCount + " nested parsing exceptions", expected);
+      }
+    }
+  }
+
+  public void testParseFromStream_manyNestedMessagesError() throws Exception {
+    RecursiveMessage.Builder recursiveMessage =
+        RecursiveMessage.newBuilder().setPayload(ByteString.copyFrom(new byte[1]));
+    for (int i = 0; i < 20; i++) {
+      recursiveMessage = RecursiveMessage.newBuilder().setRecurse(recursiveMessage.build());
+    }
+    byte[] result = recursiveMessage.build().toByteArray();
+    result[
+            result.length
+                - CodedOutputStream.computeTagSize(RecursiveMessage.PAYLOAD_FIELD_NUMBER)
+                - CodedOutputStream.computeLengthDelimitedFieldSize(1)] =
+        0; // Set invalid tag
+    try {
+      RecursiveMessage.parseFrom(CodedInputStream.newInstance(new ByteArrayInputStream(result)));
+      fail("Result was: " + Arrays.toString(result));
+    } catch (InvalidProtocolBufferException expected) {
+      boolean found = false;
+      int exceptionCount = 0;
+      for (Throwable exception = expected; exception != null; exception = exception.getCause()) {
+        if (exception instanceof InvalidProtocolBufferException) {
+          exceptionCount++;
+        }
+        for (StackTraceElement element : exception.getStackTrace()) {
+          if (InvalidProtocolBufferException.class.getName().equals(element.getClassName())
+              && "invalidTag".equals(element.getMethodName())) {
+            found = true;
+          } else if (Android.isOnAndroidDevice() && "readTag".equals(element.getMethodName())) {
+            // Android is missing the first element of the stack trace - b/181147885
+            found = true;
+          }
+        }
+      }
+      if (!found) {
+        throw new AssertionError("Lost cause of parsing error", expected);
+      }
+      if (exceptionCount > 1) {
+        throw new AssertionError(exceptionCount + " nested parsing exceptions", expected);
+      }
+    }
+  }
+
+  public void testParseFromStream_sneakyNestedException() throws Exception {
+    final InvalidProtocolBufferException sketchy =
+        new InvalidProtocolBufferException("Created in a sketchy way!")
+            .setUnfinishedMessage(TestAllTypesLite.getDefaultInstance());
+    try {
+      RecursiveMessage.parseFrom(
+          CodedInputStream.newInstance(
+              new InputStream() {
+                @Override
+                public int read() throws IOException {
+                  throw sketchy;
+                }
+              }));
+      fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertNotSame(expected, sketchy);
+    }
+    assertEquals(sketchy.getUnfinishedMessage(), TestAllTypesLite.getDefaultInstance());
   }
 
   public void testMergeFrom_sanity() throws Exception {

@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/internal/proto_writer.h>
 
+#include <cstdint>
 #include <functional>
 #include <stack>
 
@@ -122,7 +123,7 @@ namespace {
 // Writes an INT32 field, including tag to the stream.
 inline util::Status WriteInt32(int field_number, const DataPiece& data,
                                CodedOutputStream* stream) {
-  util::StatusOr<int32> i32 = data.ToInt32();
+  util::StatusOr<int32_t> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteInt32(field_number, i32.value(), stream);
   }
@@ -132,7 +133,7 @@ inline util::Status WriteInt32(int field_number, const DataPiece& data,
 // writes an SFIXED32 field, including tag, to the stream.
 inline util::Status WriteSFixed32(int field_number, const DataPiece& data,
                                   CodedOutputStream* stream) {
-  util::StatusOr<int32> i32 = data.ToInt32();
+  util::StatusOr<int32_t> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteSFixed32(field_number, i32.value(), stream);
   }
@@ -142,7 +143,7 @@ inline util::Status WriteSFixed32(int field_number, const DataPiece& data,
 // Writes an SINT32 field, including tag, to the stream.
 inline util::Status WriteSInt32(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<int32> i32 = data.ToInt32();
+  util::StatusOr<int32_t> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteSInt32(field_number, i32.value(), stream);
   }
@@ -152,7 +153,7 @@ inline util::Status WriteSInt32(int field_number, const DataPiece& data,
 // Writes a FIXED32 field, including tag, to the stream.
 inline util::Status WriteFixed32(int field_number, const DataPiece& data,
                                  CodedOutputStream* stream) {
-  util::StatusOr<uint32> u32 = data.ToUint32();
+  util::StatusOr<uint32_t> u32 = data.ToUint32();
   if (u32.ok()) {
     WireFormatLite::WriteFixed32(field_number, u32.value(), stream);
   }
@@ -162,7 +163,7 @@ inline util::Status WriteFixed32(int field_number, const DataPiece& data,
 // Writes a UINT32 field, including tag, to the stream.
 inline util::Status WriteUInt32(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<uint32> u32 = data.ToUint32();
+  util::StatusOr<uint32_t> u32 = data.ToUint32();
   if (u32.ok()) {
     WireFormatLite::WriteUInt32(field_number, u32.value(), stream);
   }
@@ -172,7 +173,7 @@ inline util::Status WriteUInt32(int field_number, const DataPiece& data,
 // Writes an INT64 field, including tag, to the stream.
 inline util::Status WriteInt64(int field_number, const DataPiece& data,
                                CodedOutputStream* stream) {
-  util::StatusOr<int64> i64 = data.ToInt64();
+  util::StatusOr<int64_t> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteInt64(field_number, i64.value(), stream);
   }
@@ -182,7 +183,7 @@ inline util::Status WriteInt64(int field_number, const DataPiece& data,
 // Writes an SFIXED64 field, including tag, to the stream.
 inline util::Status WriteSFixed64(int field_number, const DataPiece& data,
                                   CodedOutputStream* stream) {
-  util::StatusOr<int64> i64 = data.ToInt64();
+  util::StatusOr<int64_t> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteSFixed64(field_number, i64.value(), stream);
   }
@@ -192,7 +193,7 @@ inline util::Status WriteSFixed64(int field_number, const DataPiece& data,
 // Writes an SINT64 field, including tag, to the stream.
 inline util::Status WriteSInt64(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<int64> i64 = data.ToInt64();
+  util::StatusOr<int64_t> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteSInt64(field_number, i64.value(), stream);
   }
@@ -202,7 +203,7 @@ inline util::Status WriteSInt64(int field_number, const DataPiece& data,
 // Writes a FIXED64 field, including tag, to the stream.
 inline util::Status WriteFixed64(int field_number, const DataPiece& data,
                                  CodedOutputStream* stream) {
-  util::StatusOr<uint64> u64 = data.ToUint64();
+  util::StatusOr<uint64_t> u64 = data.ToUint64();
   if (u64.ok()) {
     WireFormatLite::WriteFixed64(field_number, u64.value(), stream);
   }
@@ -212,7 +213,7 @@ inline util::Status WriteFixed64(int field_number, const DataPiece& data,
 // Writes a UINT64 field, including tag, to the stream.
 inline util::Status WriteUInt64(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<uint64> u64 = data.ToUint64();
+  util::StatusOr<uint64_t> u64 = data.ToUint64();
   if (u64.ok()) {
     WireFormatLite::WriteUInt64(field_number, u64.value(), stream);
   }
@@ -431,11 +432,11 @@ std::string ProtoWriter::ProtoElement::ToString() const {
   return loc;
 }
 
-bool ProtoWriter::ProtoElement::IsOneofIndexTaken(int32 index) {
+bool ProtoWriter::ProtoElement::IsOneofIndexTaken(int32_t index) {
   return oneof_indices_[index];
 }
 
-void ProtoWriter::ProtoElement::TakeOneofIndex(int32 index) {
+void ProtoWriter::ProtoElement::TakeOneofIndex(int32_t index) {
   oneof_indices_[index] = true;
 }
 
@@ -801,8 +802,8 @@ void ProtoWriter::WriteRootMessage() {
     //   size_insert_.front().size: the size (integer) to be inserted.
     if (!size_insert_.empty() && curr_pos == size_insert_.front().pos) {
       // Varint32 occupies at most 10 bytes.
-      uint8 insert_buffer[10];
-      uint8* insert_buffer_pos = CodedOutputStream::WriteVarint32ToArray(
+      uint8_t insert_buffer[10];
+      uint8_t* insert_buffer_pos = CodedOutputStream::WriteVarint32ToArray(
           size_insert_.front().size, insert_buffer);
       output_->Append(reinterpret_cast<const char*>(insert_buffer),
                       insert_buffer_pos - insert_buffer);
