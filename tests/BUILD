@@ -97,6 +97,7 @@ cc_test(
         "//:port",
         "//:reflection",
         "//:upb",
+        "//:json",
     ],
 )
 
