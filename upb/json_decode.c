@@ -1427,6 +1427,9 @@ bool upb_json_decode(const char *buf, size_t size, upb_msg *msg,
                      const upb_msgdef *m, const upb_symtab *any_pool,
                      int options, upb_arena *arena, upb_status *status) {
   jsondec d;
+
+  if (size == 0) return true;
+
   d.ptr = buf;
   d.end = buf + size;
   d.arena = arena;

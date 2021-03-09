@@ -28,8 +28,10 @@ static void txtenc_putbytes(txtenc *e, const void *data, size_t len) {
     memcpy(e->ptr, data, len);
     e->ptr += len;
   } else {
-    if (have) memcpy(e->ptr, data, have);
-    e->ptr += have;
+    if (have) {
+      memcpy(e->ptr, data, have);
+      e->ptr += have;
+    }
     e->overflow += (len - have);
   }
 }
@@ -50,7 +52,7 @@ static void txtenc_printf(txtenc *e, const char *fmt, ...) {
   if (UPB_LIKELY(have > n)) {
     e->ptr += n;
   } else {
-    e->ptr += have;
+    e->ptr = UPB_PTRADD(e->ptr, have);
     e->overflow += (n - have);
   }
 }
@@ -408,7 +410,7 @@ size_t upb_text_encode(const upb_msg *msg, const upb_msgdef *m,
 
   e.buf = buf;
   e.ptr = buf;
-  e.end = buf + size;
+  e.end = UPB_PTRADD(buf, size);
   e.overflow = 0;
   e.indent_depth = 0;
   e.options = options;

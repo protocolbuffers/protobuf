@@ -63,8 +63,10 @@ static void jsonenc_putbytes(jsonenc *e, const void *data, size_t len) {
     memcpy(e->ptr, data, len);
     e->ptr += len;
   } else {
-    if (have) memcpy(e->ptr, data, have);
-    e->ptr += have;
+    if (have) {
+      memcpy(e->ptr, data, have);
+      e->ptr += have;
+    }
     e->overflow += (len - have);
   }
 }
@@ -86,7 +88,7 @@ static void jsonenc_printf(jsonenc *e, const char *fmt, ...) {
   if (UPB_LIKELY(have > n)) {
     e->ptr += n;
   } else {
-    e->ptr += have;
+    e->ptr = UPB_PTRADD(e->ptr, have);
     e->overflow += (n - have);
   }
 }
@@ -190,7 +192,7 @@ static void jsonenc_bytes(jsonenc *e, upb_strview str) {
   static const char base64[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   const unsigned char *ptr = (unsigned char*)str.data;
-  const unsigned char *end = ptr + str.size;
+  const unsigned char *end = UPB_PTRADD(ptr, str.size);
   char buf[4];
 
   jsonenc_putstr(e, "\"");
@@ -226,7 +228,7 @@ static void jsonenc_bytes(jsonenc *e, upb_strview str) {
 
 static void jsonenc_stringbody(jsonenc *e, upb_strview str) {
   const char *ptr = str.data;
-  const char *end = ptr + str.size;
+  const char *end = UPB_PTRADD(ptr, str.size);
 
   while (ptr < end) {
     switch (*ptr) {
@@ -698,7 +700,7 @@ size_t upb_json_encode(const upb_msg *msg, const upb_msgdef *m,
 
   e.buf = buf;
   e.ptr = buf;
-  e.end = buf + size;
+  e.end = UPB_PTRADD(buf, size);
   e.overflow = 0;
   e.options = options;
   e.ext_pool = ext_pool;

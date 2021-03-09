@@ -12,9 +12,12 @@
 #include <sstream>
 
 #include "tests/test_cpp.upbdefs.h"
+#include "tests/test_cpp.upb.h"
 #include "tests/upb_test.h"
 #include "upb/def.h"
 #include "upb/def.hpp"
+#include "upb/json_decode.h"
+#include "upb/json_encode.h"
 #include "upb/upb.h"
 
 // Must be last.
@@ -102,6 +105,15 @@ void TestInlinedArena() {
 }
 
 void TestDefault() {
+  upb::SymbolTable symtab;
+  upb::Arena arena;
+  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
+  upb_test_TestMessage *msg = upb_test_TestMessage_new(arena.ptr());
+  size_t size = upb_json_encode(msg, md.ptr(), NULL, 0, NULL, 0, NULL);
+  ASSERT(size == 2);  // "{}"
+}
+
+void TestJsonNull() {
   upb::SymbolTable symtab;
   upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
   upb::FieldDefPtr i32_f = md.FindFieldByName("i32");

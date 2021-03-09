@@ -8,6 +8,8 @@ build:ubsan --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_
 # Workaround for the fact that Bazel links with $CC, not $CXX
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+# Workaround for https://bugs.llvm.org/show_bug.cgi?id=16404
+build:ubsan --linkopt=--rtlib=compiler-rt --linkopt=-lunwind
 
 build:Werror --copt=-Werror
 build:Werror --per_file_copt=json/parser@-Wno-error
