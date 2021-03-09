@@ -135,6 +135,9 @@
 #define UPB_LONGJMP(buf, val) longjmp(buf, val)
 #endif
 
+/* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
+#define UPB_PTRADD(ptr, ofs) ((ofs) ? (ptr) + (ofs) : (ptr))
+
 /* Configure whether fasttable is switched on or not. *************************/
 
 #if (defined(__x86_64__) || defined(__aarch64__)) && defined(__GNUC__)
