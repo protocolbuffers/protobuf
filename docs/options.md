@@ -272,3 +272,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Coach Client Connect (planned release in March 2021)
    * Website: https://www.coachclientconnect.com
    * Extension: 1107
+
+1. Kratos API Errors
+   * Website: https://go-kratos.dev
+   * Extension: 1108
