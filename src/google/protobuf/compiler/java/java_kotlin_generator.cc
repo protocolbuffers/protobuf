@@ -1,12 +1,15 @@
-#include "net/proto2/compiler/java/public/kotlin_generator.h"
+#include <google/protobuf/compiler/java/java_kotlin_generator.h>
 
-#include "net/proto2/compiler/java/internal/file.h"
-#include "net/proto2/compiler/java/internal/helpers.h"
-#include "net/proto2/compiler/java/internal/options.h"
-#include "net/proto2/compiler/java/public/generator.h"
-#include "net/proto2/compiler/public/code_generator.h"
+#include <memory>
 
-namespace proto2 {
+#include <google/protobuf/compiler/java/java_file.h>
+#include <google/protobuf/compiler/java/java_helpers.h>
+#include <google/protobuf/compiler/java/java_options.h>
+
+#include <google/protobuf/stubs/strutil.h>
+
+namespace google {
+namespace protobuf {
 namespace compiler {
 namespace java {
 
@@ -60,11 +63,7 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
   std::vector<std::string> all_files;
   std::vector<std::string> all_annotations;
 
-  std::unique_ptr<FileGenerator> file_generator;
-  if (file_options.generate_immutable_code) {
-    file_generator = absl::make_unique<FileGenerator>(
-        file, file_options, /* immutable_api = */ true);
-  }
+  std::unique_ptr<FileGenerator> file_generator(new FileGenerator(file, file_options, /* immutable_api = */ true));
 
   if (!file_generator->Validate(error)) {
     return false;
@@ -127,4 +126,5 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
 
 }  // namespace java
 }  // namespace compiler
-}  // namespace proto2
+} //namespace protobuf
+}  // namespace google

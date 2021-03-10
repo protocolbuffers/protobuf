@@ -48,4 +48,11 @@
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/test_check_utf8_size.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/wrappers_test.proto"/>
     </exec>
+    <exec executable="${protoc}">
+      <arg value="--kotlin_out=lite:${generated.testsources.dir}"/>
+      <arg value="--proto_path=${protobuf.source.dir}"/>
+      <arg value="--proto_path=${protobuf.basedir}/java/core/${test.proto.dir}"/>
+      <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
+      <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+    </exec>
 </project>
