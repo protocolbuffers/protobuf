@@ -22,8 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- New changes in 3.15.5:
- * Fixed quadratic memory use in array append (#8379)
+ No new changes in 3.15.6
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">

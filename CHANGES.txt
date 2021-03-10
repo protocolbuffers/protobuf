@@ -1,3 +1,8 @@
+2021-03-10 version 3.15.6 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Fixed bug in string comparison logic (#8386)
+
 2021-03-04 version 3.15.5 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Ruby
