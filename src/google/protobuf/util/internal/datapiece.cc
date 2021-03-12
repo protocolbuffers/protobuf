@@ -48,7 +48,6 @@ namespace util {
 namespace converter {
 
 using util::Status;
-using util::error::Code;
 
 namespace {
 
