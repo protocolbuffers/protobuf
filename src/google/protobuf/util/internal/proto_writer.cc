@@ -255,7 +255,7 @@ inline util::Status WriteBytes(int field_number, const DataPiece& data,
                                CodedOutputStream* stream) {
   util::StatusOr<std::string> c = data.ToBytes();
   if (c.ok()) {
-    WireFormatLite::WriteBytes(field_number, c.ValueOrDie(), stream);
+    WireFormatLite::WriteBytes(field_number, c.value(), stream);
   }
   return c.status();
 }
