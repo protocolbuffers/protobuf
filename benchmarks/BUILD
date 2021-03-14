@@ -8,12 +8,16 @@ proto_library(
         "benchmarks.proto",
     ],
     strip_import_prefix = "/benchmarks",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
 )
 
 cc_proto_library(
     name = "benchmarks_cc_proto",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
     deps = [
         "benchmarks_proto",
     ],
@@ -21,7 +25,9 @@ cc_proto_library(
 
 java_proto_library(
     name = "benchmarks_java_proto",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
     deps = [
         "benchmarks_proto",
     ],
@@ -33,12 +39,16 @@ proto_library(
         "google_size.proto",
     ],
     strip_import_prefix = "/benchmarks",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
 )
 
 cc_proto_library(
     name = "google_size_cc_proto",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
     deps = [
         "google_size_proto",
     ],
@@ -46,7 +56,9 @@ cc_proto_library(
 
 java_proto_library(
     name = "google_size_java_proto",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
     deps = [
         "google_size_proto",
     ],

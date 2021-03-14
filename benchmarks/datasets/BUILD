@@ -11,12 +11,16 @@ filegroup(
         "//benchmarks/datasets/google_message3:datasets",
         "//benchmarks/datasets/google_message4:datasets",
     ],
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
 )
 
 proto_library(
     name = "protos",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
     deps = [
         "//benchmarks/datasets/google_message1/proto2:benchmark_message1_proto2_proto",
         "//benchmarks/datasets/google_message1/proto3:benchmark_message1_proto3_proto",
@@ -28,7 +32,9 @@ proto_library(
 
 cc_library(
     name = "cc_protos",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
     deps = [
         "//benchmarks/datasets/google_message1/proto2:benchmark_message1_proto2_cc_proto",
         "//benchmarks/datasets/google_message1/proto3:benchmark_message1_proto3_cc_proto",
@@ -40,7 +46,9 @@ cc_library(
 
 java_library(
     name = "java_protos",
-    visibility = ["//visibility:public"],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
     exports = [
         "//benchmarks/datasets/google_message1/proto2:benchmark_message1_proto2_java_proto",
         "//benchmarks/datasets/google_message1/proto3:benchmark_message1_proto3_java_proto",
