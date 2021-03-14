@@ -597,7 +597,7 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
   }
 
   util::Status status = ExecuteTest(cyclic, Cyclic::descriptor());
-  EXPECT_EQ(util::error::INVALID_ARGUMENT, status.code());
+  EXPECT_TRUE(util::IsInvalidArgument(status));
 }
 
 class ProtostreamObjectSourceMapsTest : public ProtostreamObjectSourceTest {
@@ -943,7 +943,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, MissingTypeUrlError) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
@@ -959,7 +959,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
@@ -975,7 +975,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 class ProtostreamObjectSourceStructTest : public ProtostreamObjectSourceTest {
@@ -1108,7 +1108,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
@@ -1119,7 +1119,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
@@ -1130,7 +1130,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
@@ -1141,7 +1141,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, TimestampDurationDefaultValue) {
