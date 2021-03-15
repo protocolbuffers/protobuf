@@ -52,10 +52,6 @@ main:
 [[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java: Some input files use unchecked or unsafe operations.
 [[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java: Recompile with -Xlint:unchecked for details.
 [[1;34mINFO[m] 
-[[1;34mINFO[m] [1m--- [0;32mkotlin-maven-plugin:1.4.31:compile[m [1m(compile)[m @ [36mprotobuf-java[0;1m ---[m
-[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt: (8, 2) This class can only be used with the compiler argument '-Xopt-in=kotlin.RequiresOptIn'
-[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt: (14, 11) This class can only be used with the compiler argument '-Xopt-in=kotlin.RequiresOptIn'
-[[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-antrun-plugin:1.8:run[m [1m(generate-test-sources)[m @ [36mprotobuf-java[0;1m ---[m
 [[1;34mINFO[m] Executing tasks
 
@@ -186,8 +182,8 @@ public final inline operator fun <E> ExtensionList<String!, UnittestProto.TestAl
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;31mBUILD FAILURE[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  01:22 min
-[[1;34mINFO[m] Finished at: 2021-03-10T00:24:01Z
+[[1;34mINFO[m] Total time:  01:20 min
+[[1;34mINFO[m] Finished at: 2021-03-11T22:25:24Z
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;31mERROR[m] Failed to execute goal [32morg.jetbrains.kotlin:kotlin-maven-plugin:1.4.31:test-compile[m [1m(test-compile)[m on project [36mprotobuf-java[m: [1;31mCompilation failure[m: Compilation failure: 
 [[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[452,52] Assignment operators ambiguity: 
