@@ -32,7 +32,7 @@
 // object. StatusOr models the concept of an object that is either a
 // usable value, or an error Status explaining why such a value is
 // not present. To this end, StatusOr<T> does not allow its Status
-// value to be Status::kOk. Further, StatusOr<T*> does not allow the
+// value to be OkStatus(). Further, StatusOr<T*> does not allow the
 // contained pointer to be nullptr.
 //
 // The primary use-case for StatusOr<T> is as the return value of a
@@ -72,8 +72,7 @@
 //
 //  StatusOr<Foo*> FooFactory::MakeNewFoo(int arg) {
 //    if (arg <= 0) {
-//      return ::util::Status(::util::error::INVALID_ARGUMENT,
-//                            "Arg must be positive");
+//      return InvalidArgumentError("Arg must be positive");
 //    } else {
 //      return new Foo(arg);
 //    }
@@ -100,7 +99,7 @@ class StatusOr {
   template<typename U> friend class StatusOr;
 
  public:
-  // Construct a new StatusOr with Status::UNKNOWN status
+  // Construct a new StatusOr with UnknownError() status.
   StatusOr();
 
   // Construct a new StatusOr with the given non-ok status. After calling
@@ -110,8 +109,8 @@ class StatusOr {
   // value, so it is convenient and sensible to be able to do 'return
   // Status()' when the return type is StatusOr<T>.
   //
-  // REQUIRES: status != Status::kOk. This requirement is DCHECKed.
-  // In optimized builds, passing Status::kOk here will have the effect
+  // REQUIRES: status != OkStatus(). This requirement is DCHECKed.
+  // In optimized builds, passing OkStatus() here will have the effect
   // of passing PosixErrorSpace::EINVAL as a fallback.
   StatusOr(const Status& status);  // NOLINT
 
@@ -143,7 +142,7 @@ class StatusOr {
   StatusOr& operator=(const StatusOr<U>& other);
 
   // Returns a reference to our status. If this contains a T, then
-  // returns Status::kOk.
+  // returns OkStatus().
   const Status& status() const;
 
   // Returns this->status().ok()
@@ -190,14 +189,13 @@ struct StatusOrHelper::Specialize<T*> {
 
 template<typename T>
 inline StatusOr<T>::StatusOr()
-    : status_(util::Status::UNKNOWN) {
+    : status_(util::UnknownError("")) {
 }
 
 template<typename T>
 inline StatusOr<T>::StatusOr(const Status& status) {
   if (status.ok()) {
-    status_ =
-        Status(StatusCode::kInternal, "Status::kOk is not a valid argument.");
+    status_ = util::InternalError("OkStatus() is not a valid argument.");
   } else {
     status_ = status;
   }
@@ -206,9 +204,9 @@ inline StatusOr<T>::StatusOr(const Status& status) {
 template<typename T>
 inline StatusOr<T>::StatusOr(const T& value) {
   if (internal::StatusOrHelper::Specialize<T>::IsValueNull(value)) {
-    status_ = Status(StatusCode::kInternal, "nullptr is not a valid argument.");
+    status_ = util::InternalError("nullptr is not a valid argument.");
   } else {
-    status_ = Status::OK;
+    status_ = util::OkStatus();
     value_ = value;
   }
 }

@@ -77,11 +77,6 @@ class PROTOBUF_EXPORT Status {
   Status& operator=(const Status& x);
   ~Status() {}
 
-  // Some pre-defined Status objects
-  static const Status OK;             // Identical to 0-arg constructor
-  static const Status CANCELLED;
-  static const Status UNKNOWN;
-
   // Accessor
   bool ok() const {
     return error_code_ == StatusCode::kOk;
@@ -106,25 +101,96 @@ class PROTOBUF_EXPORT Status {
   std::string error_message_;
 };
 
+// Returns an OK status, equivalent to a default constructed instance. Prefer
+// usage of `OkStatus()` when constructing such an OK status.
+PROTOBUF_EXPORT Status OkStatus();
+
 // Prints a human-readable representation of 'x' to 'os'.
 PROTOBUF_EXPORT std::ostream& operator<<(std::ostream& os, const Status& x);
+
+// These convenience functions return `true` if a given status matches the
+// `StatusCode` error code of its associated function.
+PROTOBUF_EXPORT bool IsAborted(const Status& status);
+PROTOBUF_EXPORT bool IsAlreadyExists(const Status& status);
+PROTOBUF_EXPORT bool IsCancelled(const Status& status);
+PROTOBUF_EXPORT bool IsDataLoss(const Status& status);
+PROTOBUF_EXPORT bool IsDeadlineExceeded(const Status& status);
+PROTOBUF_EXPORT bool IsFailedPrecondition(const Status& status);
+PROTOBUF_EXPORT bool IsInternal(const Status& status);
+PROTOBUF_EXPORT bool IsInvalidArgument(const Status& status);
+PROTOBUF_EXPORT bool IsNotFound(const Status& status);
+PROTOBUF_EXPORT bool IsOutOfRange(const Status& status);
+PROTOBUF_EXPORT bool IsPermissionDenied(const Status& status);
+PROTOBUF_EXPORT bool IsResourceExhausted(const Status& status);
+PROTOBUF_EXPORT bool IsUnauthenticated(const Status& status);
+PROTOBUF_EXPORT bool IsUnavailable(const Status& status);
+PROTOBUF_EXPORT bool IsUnimplemented(const Status& status);
+PROTOBUF_EXPORT bool IsUnknown(const Status& status);
+
+// These convenience functions create an `Status` object with an error code as
+// indicated by the associated function name, using the error message passed in
+// `message`.
+//
+// These functions are intentionally named `*Error` rather than `*Status` to
+// match the names from Abseil:
+// https://github.com/abseil/abseil-cpp/blob/2e9532cc6c701a8323d0cffb468999ab804095ab/absl/status/status.h#L716
+PROTOBUF_EXPORT Status AbortedError(StringPiece message);
+PROTOBUF_EXPORT Status AlreadyExistsError(StringPiece message);
+PROTOBUF_EXPORT Status CancelledError(StringPiece message);
+PROTOBUF_EXPORT Status DataLossError(StringPiece message);
+PROTOBUF_EXPORT Status DeadlineExceededError(StringPiece message);
+PROTOBUF_EXPORT Status FailedPreconditionError(StringPiece message);
+PROTOBUF_EXPORT Status InternalError(StringPiece message);
+PROTOBUF_EXPORT Status InvalidArgumentError(StringPiece message);
+PROTOBUF_EXPORT Status NotFoundError(StringPiece message);
+PROTOBUF_EXPORT Status OutOfRangeError(StringPiece message);
+PROTOBUF_EXPORT Status PermissionDeniedError(StringPiece message);
+PROTOBUF_EXPORT Status ResourceExhaustedError(StringPiece message);
+PROTOBUF_EXPORT Status UnauthenticatedError(StringPiece message);
+PROTOBUF_EXPORT Status UnavailableError(StringPiece message);
+PROTOBUF_EXPORT Status UnimplementedError(StringPiece message);
+PROTOBUF_EXPORT Status UnknownError(StringPiece message);
 
 }  // namespace status_internal
 
 using ::google::protobuf::util::status_internal::Status;
 using ::google::protobuf::util::status_internal::StatusCode;
 
-namespace error {
+using ::google::protobuf::util::status_internal::IsAborted;
+using ::google::protobuf::util::status_internal::IsAlreadyExists;
+using ::google::protobuf::util::status_internal::IsCancelled;
+using ::google::protobuf::util::status_internal::IsDataLoss;
+using ::google::protobuf::util::status_internal::IsDeadlineExceeded;
+using ::google::protobuf::util::status_internal::IsFailedPrecondition;
+using ::google::protobuf::util::status_internal::IsInternal;
+using ::google::protobuf::util::status_internal::IsInvalidArgument;
+using ::google::protobuf::util::status_internal::IsNotFound;
+using ::google::protobuf::util::status_internal::IsOutOfRange;
+using ::google::protobuf::util::status_internal::IsPermissionDenied;
+using ::google::protobuf::util::status_internal::IsResourceExhausted;
+using ::google::protobuf::util::status_internal::IsUnauthenticated;
+using ::google::protobuf::util::status_internal::IsUnavailable;
+using ::google::protobuf::util::status_internal::IsUnimplemented;
+using ::google::protobuf::util::status_internal::IsUnknown;
 
-// TODO(yannic): Remove these.
-constexpr StatusCode OK = StatusCode::kOk;
-constexpr StatusCode CANCELLED = StatusCode::kCancelled;
-constexpr StatusCode UNKNOWN = StatusCode::kUnknown;
-constexpr StatusCode INVALID_ARGUMENT = StatusCode::kInvalidArgument;
-constexpr StatusCode NOT_FOUND = StatusCode::kNotFound;
-constexpr StatusCode INTERNAL = StatusCode::kInternal;
+using ::google::protobuf::util::status_internal::OkStatus;
+using ::google::protobuf::util::status_internal::AbortedError;
+using ::google::protobuf::util::status_internal::AlreadyExistsError;
+using ::google::protobuf::util::status_internal::CancelledError;
+using ::google::protobuf::util::status_internal::DataLossError;
+using ::google::protobuf::util::status_internal::DeadlineExceededError;
+using ::google::protobuf::util::status_internal::FailedPreconditionError;
+using ::google::protobuf::util::status_internal::InternalError;
+using ::google::protobuf::util::status_internal::InvalidArgumentError;
+using ::google::protobuf::util::status_internal::NotFoundError;
+using ::google::protobuf::util::status_internal::OutOfRangeError;
+using ::google::protobuf::util::status_internal::PermissionDeniedError;
+using ::google::protobuf::util::status_internal::ResourceExhaustedError;
+using ::google::protobuf::util::status_internal::UnauthenticatedError;
+using ::google::protobuf::util::status_internal::UnavailableError;
+using ::google::protobuf::util::status_internal::UnimplementedError;
+using ::google::protobuf::util::status_internal::UnknownError;
 
-}  // namespace error
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google

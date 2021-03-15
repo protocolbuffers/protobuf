@@ -138,7 +138,7 @@ class JsonStreamParserTest : public ::testing::Test {
       std::function<void(JsonStreamParser*)> setup = [](JsonStreamParser* p) {
       }) {
     util::Status result = RunTest(json, split, setup);
-    EXPECT_EQ(util::error::INVALID_ARGUMENT, result.code());
+    EXPECT_TRUE(util::IsInvalidArgument(result));
     StringPiece error_message(result.message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
   }
@@ -149,7 +149,7 @@ class JsonStreamParserTest : public ::testing::Test {
       std::function<void(JsonStreamParser*)> setup = [](JsonStreamParser* p) {
       }) {
     util::Status result = RunTest(json, split, setup);
-    EXPECT_EQ(util::error::INVALID_ARGUMENT, result.code());
+    EXPECT_TRUE(util::IsInvalidArgument(result));
     StringPiece error_message(result.message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
   }
