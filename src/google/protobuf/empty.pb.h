@@ -69,7 +69,7 @@ class PROTOBUF_EXPORT Empty PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   inline Empty() : Empty(nullptr) {}
-  virtual ~Empty();
+  ~Empty() override;
   explicit constexpr Empty(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Empty(const Empty& from);

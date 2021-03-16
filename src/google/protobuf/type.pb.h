@@ -182,7 +182,7 @@ class PROTOBUF_EXPORT Type PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
   inline Type() : Type(nullptr) {}
-  virtual ~Type();
+  ~Type() override;
   explicit constexpr Type(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Type(const Type& from);
@@ -415,7 +415,7 @@ class PROTOBUF_EXPORT Field PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
   inline Field() : Field(nullptr) {}
-  virtual ~Field();
+  ~Field() override;
   explicit constexpr Field(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Field(const Field& from);
@@ -772,7 +772,7 @@ class PROTOBUF_EXPORT Enum PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
   inline Enum() : Enum(nullptr) {}
-  virtual ~Enum();
+  ~Enum() override;
   explicit constexpr Enum(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Enum(const Enum& from);
@@ -979,7 +979,7 @@ class PROTOBUF_EXPORT EnumValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
   inline EnumValue() : EnumValue(nullptr) {}
-  virtual ~EnumValue();
+  ~EnumValue() override;
   explicit constexpr EnumValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   EnumValue(const EnumValue& from);
@@ -1146,7 +1146,7 @@ class PROTOBUF_EXPORT Option PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
   inline Option() : Option(nullptr) {}
-  virtual ~Option();
+  ~Option() override;
   explicit constexpr Option(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Option(const Option& from);

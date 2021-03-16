@@ -1092,7 +1092,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   format(
       "inline $classname$() : $classname$(nullptr) {}\n"
-      "virtual ~$classname$();\n"
+      "~$classname$() override;\n"
       "explicit constexpr "
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"

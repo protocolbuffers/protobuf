@@ -69,7 +69,7 @@ class PROTOBUF_EXPORT SourceContext PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
  public:
   inline SourceContext() : SourceContext(nullptr) {}
-  virtual ~SourceContext();
+  ~SourceContext() override;
   explicit constexpr SourceContext(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   SourceContext(const SourceContext& from);
