@@ -231,8 +231,7 @@ class PROTOBUF_EXPORT StringPiece {
 
   // returns {-1, 0, 1}
   int compare(StringPiece x) const {
-    const difference_type min_size =
-        length_ < x.length_ ? length_ : x.length_;
+    size_type min_size = length_ < x.length_ ? length_ : x.length_;
     int r = memcmp(ptr_, x.ptr_, static_cast<size_t>(min_size));
     if (r < 0) return -1;
     if (r > 0) return 1;
@@ -285,8 +284,8 @@ class PROTOBUF_EXPORT StringPiece {
   const_reverse_iterator rend() const {
     return const_reverse_iterator(ptr_);
   }
-  difference_type max_size() const { return length_; }
-  difference_type capacity() const { return length_; }
+  size_type max_size() const { return length_; }
+  size_type capacity() const { return length_; }
 
   // cpplint.py emits a false positive [build/include_what_you_use]
   difference_type copy(char* buf, size_type n, size_type pos = 0) const;  // NOLINT
@@ -321,7 +320,7 @@ class PROTOBUF_EXPORT StringPiece {
 // one of the arguments is a literal, the compiler can elide a lot of the
 // following comparisons.
 inline bool operator==(StringPiece x, StringPiece y) {
-  StringPiece::difference_type len = x.size();
+  StringPiece::size_type len = x.size();
   if (len != y.size()) {
     return false;
   }
@@ -335,7 +334,7 @@ inline bool operator!=(StringPiece x, StringPiece y) {
 }
 
 inline bool operator<(StringPiece x, StringPiece y) {
-  const StringPiece::difference_type min_size =
+  const StringPiece::size_type min_size =
       x.size() < y.size() ? x.size() : y.size();
   const int r = memcmp(x.data(), y.data(), static_cast<size_t>(min_size));
   return (r < 0) || (r == 0 && x.size() < y.size());

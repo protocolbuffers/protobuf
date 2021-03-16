@@ -59,7 +59,6 @@ namespace converter {
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using std::placeholders::_1;
 using util::Status;
-using util::error::INVALID_ARGUMENT;
 
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -144,14 +143,14 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
   // conversion to 'nanos', rather than a double, so that there is no
   // loss of precision.
   if (!s_nanos.empty() && !safe_strto32(s_nanos, &i_nanos)) {
-    return Status(util::error::INVALID_ARGUMENT, parse_failure_message);
+    return util::InvalidArgumentError(parse_failure_message);
   }
   if (i_nanos > kNanosPerSecond || i_nanos < 0) {
-    return Status(util::error::INVALID_ARGUMENT, exceeded_limit_message);
+    return util::InvalidArgumentError(exceeded_limit_message);
   }
   // s_nanos should only have digits. No whitespace.
   if (s_nanos.find_first_not_of("0123456789") != StringPiece::npos) {
-    return Status(util::error::INVALID_ARGUMENT, parse_failure_message);
+    return util::InvalidArgumentError(parse_failure_message);
   }
 
   if (i_nanos > 0) {
@@ -191,8 +190,7 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
         conversion = 1;
         break;
       default:
-        return Status(util::error::INVALID_ARGUMENT,
-                      exceeded_limit_message);
+        return util::InvalidArgumentError(exceeded_limit_message);
     }
     *nanos = i_nanos * conversion;
   }
@@ -1013,9 +1011,9 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
       break;
     }
     default: {
-      return Status(util::error::INVALID_ARGUMENT,
-                    "Invalid struct data type. Only number, string, boolean or "
-                    "null values are supported.");
+      return util::InvalidArgumentError(
+          "Invalid struct data type. Only number, string, boolean or  null "
+          "values are supported.");
     }
   }
   ow->ProtoWriter::RenderDataPiece(struct_field_name, data);
@@ -1026,9 +1024,10 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
                                                 const DataPiece& data) {
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
-    return Status(util::error::INVALID_ARGUMENT,
-                  StrCat("Invalid data type for timestamp, value is ",
-                               data.ValueAsStringOrDefault("")));
+    return util::InvalidArgumentError(
+        StrCat(
+            "Invalid data type for timestamp, value is ",
+            data.ValueAsStringOrDefault("")));
   }
 
   StringPiece value(data.str());
@@ -1037,7 +1036,7 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
   int32 nanos;
   if (!::google::protobuf::internal::ParseTime(value.ToString(), &seconds,
                                                &nanos)) {
-    return Status(INVALID_ARGUMENT, StrCat("Invalid time format: ", value));
+    return util::InvalidArgumentError(StrCat("Invalid time format: ", value));
   }
 
 
@@ -1057,9 +1056,10 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
                                                 const DataPiece& data) {
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
-    return Status(util::error::INVALID_ARGUMENT,
-                  StrCat("Invalid data type for field mask, value is ",
-                               data.ValueAsStringOrDefault("")));
+    return util::InvalidArgumentError(
+        StrCat(
+            "Invalid data type for field mask, value is ",
+            data.ValueAsStringOrDefault("")));
   }
 
   // TODO(tsun): figure out how to do proto descriptor based snake case
@@ -1073,16 +1073,17 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
                                                const DataPiece& data) {
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
-    return Status(util::error::INVALID_ARGUMENT,
-                  StrCat("Invalid data type for duration, value is ",
-                               data.ValueAsStringOrDefault("")));
+    return util::InvalidArgumentError(
+        StrCat(
+            "Invalid data type for duration, value is ",
+            data.ValueAsStringOrDefault("")));
   }
 
   StringPiece value(data.str());
 
   if (!HasSuffixString(value, "s")) {
-    return Status(util::error::INVALID_ARGUMENT,
-                  "Illegal duration format; duration must end with 's'");
+    return util::InvalidArgumentError(
+        "Illegal duration format; duration must end with 's'");
   }
   value = value.substr(0, value.size() - 1);
   int sign = 1;
@@ -1095,8 +1096,8 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
   SplitSecondsAndNanos(value, &s_secs, &s_nanos);
   uint64_t unsigned_seconds;
   if (!safe_strtou64(s_secs, &unsigned_seconds)) {
-    return Status(util::error::INVALID_ARGUMENT,
-                  "Invalid duration format, failed to parse seconds");
+    return util::InvalidArgumentError(
+        "Invalid duration format, failed to parse seconds");
   }
 
   int32_t nanos = 0;
@@ -1111,8 +1112,7 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
   int64_t seconds = sign * unsigned_seconds;
   if (seconds > kDurationMaxSeconds || seconds < kDurationMinSeconds ||
       nanos <= -kNanosPerSecond || nanos >= kNanosPerSecond) {
-    return Status(util::error::INVALID_ARGUMENT,
-                  "Duration value exceeds limits");
+    return util::InvalidArgumentError("Duration value exceeds limits");
   }
 
   ow->ProtoWriter::RenderDataPiece("seconds", DataPiece(seconds));
