@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2021-03-04</date>
- <time>10:45:30</time>
+ <date>2021-03-10</date>
+ <time>10:11:34</time>
  <version>
-  <release>3.15.5</release>
-  <api>3.15.5</api>
+  <release>3.15.6</release>
+  <api>3.15.6</api>
  </version>
  <stability>
   <release>stable</release>
@@ -22,8 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- New changes in 3.15.5:
- * Fixed quadratic memory use in array append (#8379)
+ No new changes in 3.15.6
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -869,6 +868,21 @@ G  A release.
    </stability>
    <date>2021-03-04</date>
    <time>10:45:30</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.15.6</release>
+    <api>3.15.6</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2021-03-10</date>
+   <time>10:11:34</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>

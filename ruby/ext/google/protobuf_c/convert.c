@@ -315,7 +315,7 @@ bool Msgval_IsEqual(upb_msgval val1, upb_msgval val2, TypeInfo type_info) {
       return memcmp(&val1, &val2, 8) == 0;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
-      return val1.str_val.size != val2.str_val.size ||
+      return val1.str_val.size == val2.str_val.size &&
              memcmp(val1.str_val.data, val2.str_val.data,
                     val1.str_val.size) == 0;
     case UPB_TYPE_MESSAGE:
