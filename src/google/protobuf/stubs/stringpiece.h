@@ -218,13 +218,13 @@ class PROTOBUF_EXPORT StringPiece {
     return ptr_[i];
   }
 
-  void remove_prefix(difference_type n) {
+  void remove_prefix(size_type n) {
     assert(length_ >= n);
     ptr_ += n;
     length_ -= n;
   }
 
-  void remove_suffix(difference_type n) {
+  void remove_suffix(size_type n) {
     assert(length_ >= n);
     length_ -= n;
   }
@@ -276,8 +276,8 @@ class PROTOBUF_EXPORT StringPiece {
 
   // standard STL container boilerplate
   static const size_type npos;
-  iterator begin() const { return ptr_; }
-  iterator end() const { return ptr_ + length_; }
+  const_iterator begin() const { return ptr_; }
+  const_iterator end() const { return ptr_ + length_; }
   const_reverse_iterator rbegin() const {
     return const_reverse_iterator(ptr_ + length_);
   }
@@ -288,30 +288,28 @@ class PROTOBUF_EXPORT StringPiece {
   size_type capacity() const { return length_; }
 
   // cpplint.py emits a false positive [build/include_what_you_use]
-  difference_type copy(char* buf, size_type n, size_type pos = 0) const;  // NOLINT
+  size_type copy(char* buf, size_type n, size_type pos = 0) const;  // NOLINT
 
   bool contains(StringPiece s) const;
 
-  difference_type find(StringPiece s, size_type pos = 0) const;
-  difference_type find(char c, size_type pos = 0) const;
-  difference_type rfind(StringPiece s, size_type pos = npos) const;
-  difference_type rfind(char c, size_type pos = npos) const;
+  size_type find(StringPiece s, size_type pos = 0) const;
+  size_type find(char c, size_type pos = 0) const;
+  size_type rfind(StringPiece s, size_type pos = npos) const;
+  size_type rfind(char c, size_type pos = npos) const;
 
-  difference_type find_first_of(StringPiece s, size_type pos = 0) const;
-  difference_type find_first_of(char c, size_type pos = 0) const {
+  size_type find_first_of(StringPiece s, size_type pos = 0) const;
+  size_type find_first_of(char c, size_type pos = 0) const {
     return find(c, pos);
   }
-  difference_type find_first_not_of(StringPiece s,
-                                           size_type pos = 0) const;
-  difference_type find_first_not_of(char c, size_type pos = 0) const;
-  difference_type find_last_of(StringPiece s,
-                                      size_type pos = npos) const;
-  difference_type find_last_of(char c, size_type pos = npos) const {
+  size_type find_first_not_of(StringPiece s, size_type pos = 0) const;
+  size_type find_first_not_of(char c, size_type pos = 0) const;
+  size_type find_last_of(StringPiece s, size_type pos = npos) const;
+  size_type find_last_of(char c, size_type pos = npos) const {
     return rfind(c, pos);
   }
-  difference_type find_last_not_of(StringPiece s,
+  size_type find_last_not_of(StringPiece s,
                                           size_type pos = npos) const;
-  difference_type find_last_not_of(char c, size_type pos = npos) const;
+  size_type find_last_not_of(char c, size_type pos = npos) const;
 
   StringPiece substr(size_type pos, size_type n = npos) const;
 };
