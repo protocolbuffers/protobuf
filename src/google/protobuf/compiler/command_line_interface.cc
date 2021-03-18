@@ -586,10 +586,12 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
 
   if (stream.GetErrno() != 0) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   if (!stream.Close()) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   return true;
