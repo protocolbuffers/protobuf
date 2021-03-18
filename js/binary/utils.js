@@ -1051,11 +1051,6 @@ jspb.utils.byteSourceToUint8Array = function(data) {
     return /** @type {!Uint8Array} */(new Uint8Array(data));
   }
 
-  if (typeof Buffer != 'undefined' && data.constructor === Buffer) {
-    return /** @type {!Uint8Array} */ (
-        new Uint8Array(/** @type {?} */ (data)));
-  }
-
   if (data.constructor === Array) {
     data = /** @type {!Array<number>} */(data);
     return /** @type {!Uint8Array} */(new Uint8Array(data));
@@ -1064,6 +1059,15 @@ jspb.utils.byteSourceToUint8Array = function(data) {
   if (data.constructor === String) {
     data = /** @type {string} */(data);
     return goog.crypt.base64.decodeStringToUint8Array(data);
+  }
+
+  if (data instanceof Uint8Array) {
+    // Support types like nodejs Buffer and other subclasses of Uint8Array.
+    data = /** @type {!Uint8Array} */ (data);
+    // Make a shallow copy to ensure we only ever deal with Uint8Array
+    // exactly to ensure monomorphism.
+    return /** @type {!Uint8Array} */ (
+        new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
   }
 
   goog.asserts.fail('Type not convertible to Uint8Array.');
