@@ -134,7 +134,7 @@ class PROTOBUF_EXPORT Struct PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
  public:
   inline Struct() : Struct(nullptr) {}
-  virtual ~Struct();
+  ~Struct() override;
   explicit constexpr Struct(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Struct(const Struct& from);
@@ -278,7 +278,7 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
  public:
   inline Value() : Value(nullptr) {}
-  virtual ~Value();
+  ~Value() override;
   explicit constexpr Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Value(const Value& from);
@@ -530,7 +530,7 @@ class PROTOBUF_EXPORT ListValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
  public:
   inline ListValue() : ListValue(nullptr) {}
-  virtual ~ListValue();
+  ~ListValue() override;
   explicit constexpr ListValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ListValue(const ListValue& from);

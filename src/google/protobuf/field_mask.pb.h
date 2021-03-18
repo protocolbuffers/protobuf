@@ -69,7 +69,7 @@ class PROTOBUF_EXPORT FieldMask PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
  public:
   inline FieldMask() : FieldMask(nullptr) {}
-  virtual ~FieldMask();
+  ~FieldMask() override;
   explicit constexpr FieldMask(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   FieldMask(const FieldMask& from);

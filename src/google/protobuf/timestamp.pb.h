@@ -69,7 +69,7 @@ class PROTOBUF_EXPORT Timestamp PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
  public:
   inline Timestamp() : Timestamp(nullptr) {}
-  virtual ~Timestamp();
+  ~Timestamp() override;
   explicit constexpr Timestamp(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Timestamp(const Timestamp& from);

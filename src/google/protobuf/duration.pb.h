@@ -69,7 +69,7 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
  public:
   inline Duration() : Duration(nullptr) {}
-  virtual ~Duration();
+  ~Duration() override;
   explicit constexpr Duration(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Duration(const Duration& from);
