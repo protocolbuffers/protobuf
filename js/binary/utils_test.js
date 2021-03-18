@@ -715,6 +715,7 @@ describe('binaryUtilsTest', function() {
     var sourceBuffer = sourceBytes.buffer;
     var sourceBase64 = goog.crypt.base64.encodeByteArray(sourceData);
     var sourceString = goog.crypt.byteArrayToString(sourceData);
+    var sourceUint8Array = new Uint8Array(sourceData)
 
     function check(result) {
       expect(result.constructor).toEqual(Uint8Array);
@@ -735,5 +736,8 @@ describe('binaryUtilsTest', function() {
 
     // Converting base64-encoded strings into Uint8Arrays should work.
     check(convert(sourceBase64));
+
+    // Existing Uint8Array into Uint8Arrays should work.
+    check(convert(sourceUint8Array));
   });
 });

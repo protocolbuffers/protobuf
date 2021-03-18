@@ -1038,7 +1038,7 @@ jspb.utils.stringToByteArray = function(str) {
  * @suppress {invalidCasts}
  */
 jspb.utils.byteSourceToUint8Array = function(data) {
-  if (data.constructor === Uint8Array) {
+  if (data.constructor === Uint8Array || data instanceof Uint8Array) {
     return /** @type {!Uint8Array} */(data);
   }
 
