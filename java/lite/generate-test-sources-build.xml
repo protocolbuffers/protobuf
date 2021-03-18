@@ -4,6 +4,8 @@
         <arg value="--java_out=lite:${generated.testsources.dir}"/>
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="--proto_path=${protobuf.basedir}/java/core/${test.proto.dir}"/>
+        <arg value="--experimental_allow_proto3_optional"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/map_lite_unittest.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_lite.proto"/>
@@ -20,6 +22,9 @@
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/any_test.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/cached_field_size_test.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/deprecated_file.proto"/>
+        <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/evil_names_proto2.proto"/>
+        <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/evil_names_proto3.proto"/>
+        <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/example_extensible_message.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/field_presence_test.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/lazy_fields_lite.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/lite_equals_and_hash.proto"/>
@@ -29,6 +34,7 @@
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/map_lite_test.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/map_test.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/message_lite_extension_util_test.proto"/>
+        <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/multiple_files_proto3.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/nested_builders_test.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/nested_extension.proto"/>
         <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/nested_extension_lite.proto"/>
@@ -52,7 +58,13 @@
       <arg value="--kotlin_out=lite:${generated.testsources.dir}"/>
       <arg value="--proto_path=${protobuf.source.dir}"/>
       <arg value="--proto_path=${protobuf.basedir}/java/core/${test.proto.dir}"/>
-      <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
+      <arg value="--experimental_allow_proto3_optional"/>
+      <arg value="${protobuf.source.dir}/google/protobuf/map_lite_unittest.proto"/>
+      <arg value="${protobuf.source.dir}/google/protobuf/unittest_lite.proto"/>
       <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
+      <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/evil_names_proto2.proto"/>
+      <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/evil_names_proto3.proto"/>
+      <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/example_extensible_message.proto"/>
+      <arg value="${protobuf.basedir}/java/core/${test.proto.dir}/com/google/protobuf/multiple_files_proto3.proto"/>
     </exec>
 </project>

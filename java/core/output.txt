@@ -52,6 +52,10 @@ main:
 [[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java: Some input files use unchecked or unsafe operations.
 [[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java: Recompile with -Xlint:unchecked for details.
 [[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mkotlin-maven-plugin:1.4.31:compile[m [1m(compile)[m @ [36mprotobuf-java[0;1m ---[m
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt: (8, 2) This class can only be used with the compiler argument '-Xopt-in=kotlin.RequiresOptIn'
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt: (14, 11) This class can only be used with the compiler argument '-Xopt-in=kotlin.RequiresOptIn'
+[[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-antrun-plugin:1.8:run[m [1m(generate-test-sources)[m @ [36mprotobuf-java[0;1m ---[m
 [[1;34mINFO[m] Executing tasks
 
@@ -99,168 +103,66 @@ main:
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.6.1:testCompile[m [1m(default-testCompile)[m @ [36mprotobuf-java[0;1m ---[m
 [[1;34mINFO[m] Changes detected - recompiling the module!
-[[1;34mINFO[m] Compiling 176 source files to /usr/local/google/home/deannagarcia/protobuf/java/core/target/test-classes
+[[1;34mINFO[m] Compiling 182 source files to /usr/local/google/home/deannagarcia/protobuf/java/core/target/test-classes
 [[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/java/com/google/protobuf/TestUtil.java: Some input files use or override a deprecated API.
 [[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/java/com/google/protobuf/TestUtil.java: Recompile with -Xlint:deprecation for details.
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mkotlin-maven-plugin:1.4.31:test-compile[m [1m(test-compile)[m @ [36mprotobuf-java[0;1m ---[m
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (452, 52) Assignment operators ambiguity: 
-public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (453, 52) Assignment operators ambiguity: 
-public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (454, 53) Assignment operators ambiguity: 
-public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (455, 53) Assignment operators ambiguity: 
-public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (456, 53) Assignment operators ambiguity: 
-public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (457, 53) Assignment operators ambiguity: 
-public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (458, 54) Assignment operators ambiguity: 
-public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (459, 54) Assignment operators ambiguity: 
-public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (460, 55) Assignment operators ambiguity: 
-public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (461, 55) Assignment operators ambiguity: 
-public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (462, 52) Assignment operators ambiguity: 
-public operator fun <T> Collection<Float!>.plus(element: Float!): List<Float!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Float!, UnittestProto.TestAllExtensions>.plusAssign(value: Float!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (463, 53) Assignment operators ambiguity: 
-public operator fun <T> Collection<Double!>.plus(element: Double!): List<Double!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Double!, UnittestProto.TestAllExtensions>.plusAssign(value: Double!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (464, 51) Assignment operators ambiguity: 
-public operator fun <T> Collection<Boolean!>.plus(element: Boolean!): List<Boolean!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<Boolean!, UnittestProto.TestAllExtensions>.plusAssign(value: Boolean!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (465, 53) Assignment operators ambiguity: 
-public operator fun <T> Collection<String!>.plus(element: String!): List<String!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<String!, UnittestProto.TestAllExtensions>.plusAssign(value: String!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (466, 52) Assignment operators ambiguity: 
-public operator fun <T> Collection<Serializable!>.plus(elements: Iterable<Serializable!>): List<Serializable!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<ByteString!, UnittestProto.TestAllExtensions>.plusAssign(value: ByteString!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (467, 52) Assignment operators ambiguity: 
-public operator fun <T> Collection<UnittestProto.RepeatedGroup_extension!>.plus(element: UnittestProto.RepeatedGroup_extension!): List<UnittestProto.RepeatedGroup_extension!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<UnittestProto.RepeatedGroup_extension!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.RepeatedGroup_extension!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (468, 60) Assignment operators ambiguity: 
-public operator fun <T> Collection<UnittestProto.TestAllTypes.NestedMessage!>.plus(element: UnittestProto.TestAllTypes.NestedMessage!): List<UnittestProto.TestAllTypes.NestedMessage!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<UnittestProto.TestAllTypes.NestedMessage!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.TestAllTypes.NestedMessage!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (470, 61) Assignment operators ambiguity: 
-public operator fun <T> Collection<UnittestProto.ForeignMessage!>.plus(element: UnittestProto.ForeignMessage!): List<UnittestProto.ForeignMessage!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<UnittestProto.ForeignMessage!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.ForeignMessage!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (471, 60) Assignment operators ambiguity: 
-public operator fun <T> Collection<UnittestImport.ImportMessage!>.plus(element: UnittestImport.ImportMessage!): List<UnittestImport.ImportMessage!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<UnittestImport.ImportMessage!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestImport.ImportMessage!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (473, 58) Assignment operators ambiguity: 
-public operator fun <T> Collection<UnittestProto.TestAllTypes.NestedMessage!>.plus(element: UnittestProto.TestAllTypes.NestedMessage!): List<UnittestProto.TestAllTypes.NestedMessage!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<UnittestProto.TestAllTypes.NestedMessage!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.TestAllTypes.NestedMessage!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (475, 57) Assignment operators ambiguity: 
-public operator fun <T> Collection<UnittestProto.TestAllTypes.NestedEnum!>.plus(element: UnittestProto.TestAllTypes.NestedEnum!): List<UnittestProto.TestAllTypes.NestedEnum!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<UnittestProto.TestAllTypes.NestedEnum!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.TestAllTypes.NestedEnum!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (476, 58) Assignment operators ambiguity: 
-public operator fun <T> Collection<UnittestProto.ForeignEnum!>.plus(element: UnittestProto.ForeignEnum!): List<UnittestProto.ForeignEnum!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<UnittestProto.ForeignEnum!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.ForeignEnum!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (477, 57) Assignment operators ambiguity: 
-public operator fun <T> Collection<UnittestImport.ImportEnum!>.plus(element: UnittestImport.ImportEnum!): List<UnittestImport.ImportEnum!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<UnittestImport.ImportEnum!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestImport.ImportEnum!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (478, 58) Assignment operators ambiguity: 
-public operator fun <T> Collection<String!>.plus(element: String!): List<String!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<String!, UnittestProto.TestAllExtensions>.plusAssign(value: String!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt: (479, 51) Assignment operators ambiguity: 
-public operator fun <T> Collection<String!>.plus(element: String!): List<String!> defined in kotlin.collections
-public final inline operator fun <E> ExtensionList<String!, UnittestProto.TestAllExtensions>.plusAssign(value: String!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (15, 5) Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, B : com.google.protobuf.GeneratedMessage.ExtendableBuilder<TypeVariable(M), TypeVariable(B)>, T> TypeVariable(B).set(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>, value: TypeVariable(T)): Unit defined in com.google.protobuf.kotlin
+public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), TypeVariable(B)>, B : com.google.protobuf.GeneratedMessageLite.ExtendableBuilder<TypeVariable(M), TypeVariable(B)>, T> TypeVariable(B).set(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>, value: TypeVariable(T)): Unit defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (15, 12) No set method providing array access
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (23, 16) Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MOrBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>, T> TypeVariable(MOrBT).get(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>): TypeVariable(T) defined in com.google.protobuf.kotlin
+public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>, T> TypeVariable(MorBT).get(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>): TypeVariable(T) defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (23, 23) No get method providing array access
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (31, 16) Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MOrBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>, T> TypeVariable(MOrBT).get(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>): TypeVariable(T) defined in com.google.protobuf.kotlin
+public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>, T> TypeVariable(MorBT).get(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>): TypeVariable(T) defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (31, 23) No get method providing array access
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (39, 41) Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MorBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (46, 41) Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MorBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (52, 41) Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MorBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt: (58, 41) Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MorBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;31mBUILD FAILURE[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  01:20 min
-[[1;34mINFO[m] Finished at: 2021-03-11T22:25:24Z
+[[1;34mINFO[m] Total time:  01:24 min
+[[1;34mINFO[m] Finished at: 2021-03-18T23:34:30Z
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;31mERROR[m] Failed to execute goal [32morg.jetbrains.kotlin:kotlin-maven-plugin:1.4.31:test-compile[m [1m(test-compile)[m on project [36mprotobuf-java[m: [1;31mCompilation failure[m: Compilation failure: 
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[452,52] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[453,52] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[454,53] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[455,53] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[456,53] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[457,53] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[458,54] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[459,54] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[460,55] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Int!>.plus(element: Int!): List<Int!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Int!, UnittestProto.TestAllExtensions>.plusAssign(value: Int!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[461,55] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Long!>.plus(element: Long!): List<Long!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Long!, UnittestProto.TestAllExtensions>.plusAssign(value: Long!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[462,52] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Float!>.plus(element: Float!): List<Float!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Float!, UnittestProto.TestAllExtensions>.plusAssign(value: Float!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[463,53] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Double!>.plus(element: Double!): List<Double!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Double!, UnittestProto.TestAllExtensions>.plusAssign(value: Double!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[464,51] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Boolean!>.plus(element: Boolean!): List<Boolean!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<Boolean!, UnittestProto.TestAllExtensions>.plusAssign(value: Boolean!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[465,53] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<String!>.plus(element: String!): List<String!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<String!, UnittestProto.TestAllExtensions>.plusAssign(value: String!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[466,52] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<Serializable!>.plus(elements: Iterable<Serializable!>): List<Serializable!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<ByteString!, UnittestProto.TestAllExtensions>.plusAssign(value: ByteString!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[467,52] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<UnittestProto.RepeatedGroup_extension!>.plus(element: UnittestProto.RepeatedGroup_extension!): List<UnittestProto.RepeatedGroup_extension!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<UnittestProto.RepeatedGroup_extension!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.RepeatedGroup_extension!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[468,60] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<UnittestProto.TestAllTypes.NestedMessage!>.plus(element: UnittestProto.TestAllTypes.NestedMessage!): List<UnittestProto.TestAllTypes.NestedMessage!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<UnittestProto.TestAllTypes.NestedMessage!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.TestAllTypes.NestedMessage!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[470,61] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<UnittestProto.ForeignMessage!>.plus(element: UnittestProto.ForeignMessage!): List<UnittestProto.ForeignMessage!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<UnittestProto.ForeignMessage!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.ForeignMessage!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[471,60] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<UnittestImport.ImportMessage!>.plus(element: UnittestImport.ImportMessage!): List<UnittestImport.ImportMessage!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<UnittestImport.ImportMessage!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestImport.ImportMessage!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[473,58] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<UnittestProto.TestAllTypes.NestedMessage!>.plus(element: UnittestProto.TestAllTypes.NestedMessage!): List<UnittestProto.TestAllTypes.NestedMessage!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<UnittestProto.TestAllTypes.NestedMessage!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.TestAllTypes.NestedMessage!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[475,57] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<UnittestProto.TestAllTypes.NestedEnum!>.plus(element: UnittestProto.TestAllTypes.NestedEnum!): List<UnittestProto.TestAllTypes.NestedEnum!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<UnittestProto.TestAllTypes.NestedEnum!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.TestAllTypes.NestedEnum!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[476,58] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<UnittestProto.ForeignEnum!>.plus(element: UnittestProto.ForeignEnum!): List<UnittestProto.ForeignEnum!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<UnittestProto.ForeignEnum!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestProto.ForeignEnum!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[477,57] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<UnittestImport.ImportEnum!>.plus(element: UnittestImport.ImportEnum!): List<UnittestImport.ImportEnum!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<UnittestImport.ImportEnum!, UnittestProto.TestAllExtensions>.plusAssign(value: UnittestImport.ImportEnum!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[478,58] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<String!>.plus(element: String!): List<String!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<String!, UnittestProto.TestAllExtensions>.plusAssign(value: String!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
-[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt:[479,51] Assignment operators ambiguity: 
-[[1;31mERROR[m] public operator fun <T> Collection<String!>.plus(element: String!): List<String!> defined in kotlin.collections
-[[1;31mERROR[m] public final inline operator fun <E> ExtensionList<String!, UnittestProto.TestAllExtensions>.plusAssign(value: String!): Unit defined in protobuf_unittest.TestAllExtensionsKt.Dsl
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[15,5] Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, B : com.google.protobuf.GeneratedMessage.ExtendableBuilder<TypeVariable(M), TypeVariable(B)>, T> TypeVariable(B).set(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>, value: TypeVariable(T)): Unit defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), TypeVariable(B)>, B : com.google.protobuf.GeneratedMessageLite.ExtendableBuilder<TypeVariable(M), TypeVariable(B)>, T> TypeVariable(B).set(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>, value: TypeVariable(T)): Unit defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[15,12] No set method providing array access
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[23,16] Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MOrBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>, T> TypeVariable(MOrBT).get(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>): TypeVariable(T) defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>, T> TypeVariable(MorBT).get(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>): TypeVariable(T) defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[23,23] No get method providing array access
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[31,16] Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MOrBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>, T> TypeVariable(MOrBT).get(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>): TypeVariable(T) defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>, T> TypeVariable(MorBT).get(extension: ExtensionLite<TypeVariable(M), TypeVariable(T)>): TypeVariable(T) defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[31,23] No get method providing array access
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[39,41] Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MorBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[46,41] Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MorBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[52,41] Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MorBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt:[58,41] Unresolved reference. None of the following candidates is applicable because of receiver type mismatch: 
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessage.ExtendableMessage<TypeVariable(M)>, MorBT : com.google.protobuf.GeneratedMessage.ExtendableMessageOrBuilder<TypeVariable(M)>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
+[[1;31mERROR[m] public operator fun <M : com.google.protobuf.GeneratedMessageLite.ExtendableMessage<TypeVariable(M), *>, MorBT : com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder<TypeVariable(M), *>> TypeVariable(MorBT).contains(extension: ExtensionLite<TypeVariable(M), *>): Boolean defined in com.google.protobuf.kotlin
 [[1;31mERROR[m] -> [1m[Help 1][m
 [[1;31mERROR[m] 
 [[1;31mERROR[m] To see the full stack trace of the errors, re-run Maven with the [1m-e[m switch.

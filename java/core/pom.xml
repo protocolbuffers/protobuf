@@ -42,19 +42,25 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-stdlib-jdk7</artifactId>
-        <version>${kotlin.version}</version>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib-jdk7</artifactId>
+      <version>${kotlin.version}</version>
     </dependency>
     <dependency>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-reflect</artifactId>
-        <version>${kotlin.version}</version>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test</artifactId>
+      <version>${kotlin.version}</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

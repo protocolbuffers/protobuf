@@ -1,9 +1,8 @@
-// LINT: LEGACY_NAMES
 syntax = "proto3";
 
-package protobuf.kotlin.generator;
+package evil_names_proto3;
 
-option java_package = "com.google.protobuf.kotlin.generator";
+option java_package = "evil_names_proto3";
 
 message EvilNamesProto3 {
   bool initialized = 1;

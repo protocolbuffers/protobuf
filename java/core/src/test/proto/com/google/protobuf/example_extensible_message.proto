@@ -1,8 +1,8 @@
 syntax = "proto2";
 
-package protobuf.kotlin.test;
+package example_extensible_message;
 
-option java_package = "com.google.protobuf.kotlin.test";
+option java_package = "example_extensible_message";
 option java_multiple_files = true;
 
 message ExampleExtensibleMessage {

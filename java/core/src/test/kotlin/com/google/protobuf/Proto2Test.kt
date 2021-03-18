@@ -44,7 +44,6 @@ import org.junit.runners.JUnit4
 class Proto2Test {
   @Test
   fun testSetters() {
-    val myInt: Int = 301
     assertThat(
       testAllTypes {
         optionalInt32 = 101
@@ -103,7 +102,7 @@ class Proto2Test {
         repeatedImportEnum.add(ImportEnum.IMPORT_BAR)
         repeatedStringPiece.add("224")
         repeatedCord.add("225")
-        repeatedInt32 += myInt
+        repeatedInt32 += 301
         repeatedInt64 += 302
         repeatedUint32 += 303
         repeatedUint64 += 304
@@ -449,34 +448,34 @@ class Proto2Test {
         this[UnittestProto.repeatedImportEnumExtension].add(ImportEnum.IMPORT_BAR)
         this[UnittestProto.repeatedStringPieceExtension].add("224")
         this[UnittestProto.repeatedCordExtension].add("225")
-        this[UnittestProto.repeatedInt32Extension] += 301
-        this[UnittestProto.repeatedInt64Extension] += 302L
-        this[UnittestProto.repeatedUint32Extension] += 303
-        this[UnittestProto.repeatedUint64Extension] += 304L
-        this[UnittestProto.repeatedSint32Extension] += 305
-        this[UnittestProto.repeatedSint64Extension] += 306L
-        this[UnittestProto.repeatedFixed32Extension] += 307
-        this[UnittestProto.repeatedFixed64Extension] += 308L
-        this[UnittestProto.repeatedSfixed32Extension] += 309
-        this[UnittestProto.repeatedSfixed64Extension] += 310L
-        this[UnittestProto.repeatedFloatExtension] += 311F
-        this[UnittestProto.repeatedDoubleExtension] += 312.0
-        this[UnittestProto.repeatedBoolExtension] += false
-        this[UnittestProto.repeatedStringExtension] += "315"
-        this[UnittestProto.repeatedBytesExtension] += toBytes("316")
-        this[UnittestProto.repeatedGroupExtension] += repeatedGroupExtension { a = 317 }
-        this[UnittestProto.repeatedNestedMessageExtension] +=
-          TestAllTypesKt.nestedMessage { bb = 318 }
-        this[UnittestProto.repeatedForeignMessageExtension] += foreignMessage { c = 319 }
-        this[UnittestProto.repeatedImportMessageExtension] +=
-          ImportMessage.newBuilder().setD(320).build()
-        this[UnittestProto.repeatedLazyMessageExtension] +=
-          TestAllTypesKt.nestedMessage { bb = 327 }
-        this[UnittestProto.repeatedNestedEnumExtension] += NestedEnum.BAZ
-        this[UnittestProto.repeatedForeignEnumExtension] += ForeignEnum.FOREIGN_BAZ
-        this[UnittestProto.repeatedImportEnumExtension] += ImportEnum.IMPORT_BAZ
-        this[UnittestProto.repeatedStringPieceExtension] += "324"
-        this[UnittestProto.repeatedCordExtension] += "325"
+        this[UnittestProto.repeatedInt32Extension].add(301)
+        this[UnittestProto.repeatedInt64Extension].add(302L)
+        this[UnittestProto.repeatedUint32Extension].add(303)
+        this[UnittestProto.repeatedUint64Extension].add(304L)
+        this[UnittestProto.repeatedSint32Extension].add(305)
+        this[UnittestProto.repeatedSint64Extension].add(306L)
+        this[UnittestProto.repeatedFixed32Extension].add(307)
+        this[UnittestProto.repeatedFixed64Extension].add(308L)
+        this[UnittestProto.repeatedSfixed32Extension].add(309)
+        this[UnittestProto.repeatedSfixed64Extension].add(310L)
+        this[UnittestProto.repeatedFloatExtension].add(311F)
+        this[UnittestProto.repeatedDoubleExtension].add(312.0)
+        this[UnittestProto.repeatedBoolExtension].add(false)
+        this[UnittestProto.repeatedStringExtension].add("315")
+        this[UnittestProto.repeatedBytesExtension].add(toBytes("316"))
+        this[UnittestProto.repeatedGroupExtension].add(repeatedGroupExtension { a = 317 })
+        this[UnittestProto.repeatedNestedMessageExtension]
+          .add(TestAllTypesKt.nestedMessage { bb = 318 })
+        this[UnittestProto.repeatedForeignMessageExtension].add(foreignMessage { c = 319 })
+        this[UnittestProto.repeatedImportMessageExtension]
+          .add(ImportMessage.newBuilder().setD(320).build())
+        this[UnittestProto.repeatedLazyMessageExtension]
+          .add(TestAllTypesKt.nestedMessage { bb = 327 })
+        this[UnittestProto.repeatedNestedEnumExtension].add(NestedEnum.BAZ)
+        this[UnittestProto.repeatedForeignEnumExtension].add(ForeignEnum.FOREIGN_BAZ)
+        this[UnittestProto.repeatedImportEnumExtension].add(ImportEnum.IMPORT_BAZ)
+        this[UnittestProto.repeatedStringPieceExtension].add("324")
+        this[UnittestProto.repeatedCordExtension].add("325")
         this[UnittestProto.defaultInt32Extension] = 401
         this[UnittestProto.defaultInt64Extension] = 402L
         this[UnittestProto.defaultUint32Extension] = 403

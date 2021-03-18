@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package protobuf.kotlin.generator;
+package multiple_files_proto3;
 
-option java_package = "com.google.protobuf.kotlin.generator";
+option java_package = "multiple_files_proto3";
 option java_multiple_files = true;
 
 enum NestedEnum { FOO = 0; }
