@@ -298,6 +298,21 @@ std::vector<std::string> ParseUpperCamel(const std::string& input) {
   return words;
 }
 
+std::string ToSnakeCase(const std::string& input) {
+  std::vector<std::string> parsedSnakeCaseWords = ParseUpperCamel(input);
+  std::vector<std::string> parsedCamelCaseWords = ParseLowerUnderscore(input);
+  std::vector<std::string> words = parsedSnakeCaseWords.size() > parsedCamelCaseWords.size() ? parsedSnakeCaseWords : parsedCamelCaseWords;
+  std::string result;
+  for (int i = 0; i < words.size(); i++) {
+    std::string word = words[i];
+    result += word;
+    if (i != words.size() - 1) {
+      result += '_';
+    }
+  }
+  return result;
+}
+
 std::string ToLowerCamel(const std::vector<std::string>& words) {
   std::string result;
   for (int i = 0; i < words.size(); i++) {
@@ -464,15 +479,24 @@ bool IgnoreOneof(const OneofDescriptor* oneof) {
 
 std::string JSIdent(const GeneratorOptions& options,
                     const FieldDescriptor* field, bool is_upper_camel,
-                    bool is_map, bool drop_list) {
+                    bool is_map, bool drop_list, bool force_lower_snake_case) {
   std::string result;
-  if (field->type() == FieldDescriptor::TYPE_GROUP) {
-    result = is_upper_camel
-                 ? ToUpperCamel(ParseUpperCamel(field->message_type()->name()))
-                 : ToLowerCamel(ParseUpperCamel(field->message_type()->name()));
+  if (force_lower_snake_case) {
+    // the name can be either camel case or snake case
+    if (field->type() == FieldDescriptor::TYPE_GROUP) {
+      result = ToSnakeCase(field->message_type()->name());
+    } else {
+      result = ToSnakeCase(field->name());
+    }
   } else {
-    result = is_upper_camel ? ToUpperCamel(ParseLowerUnderscore(field->name()))
-                            : ToLowerCamel(ParseLowerUnderscore(field->name()));
+    if (field->type() == FieldDescriptor::TYPE_GROUP) {
+      result = is_upper_camel
+                   ? ToUpperCamel(ParseUpperCamel(field->message_type()->name()))
+                   : ToLowerCamel(ParseUpperCamel(field->message_type()->name()));
+    } else {
+      result = is_upper_camel ? ToUpperCamel(ParseLowerUnderscore(field->name()))
+                              : ToLowerCamel(ParseLowerUnderscore(field->name()));
+    }
   }
   if (is_map || field->is_map()) {
     // JSPB-style or proto3-style map.
@@ -489,7 +513,8 @@ std::string JSObjectFieldName(const GeneratorOptions& options,
   std::string name = JSIdent(options, field,
                              /* is_upper_camel = */ false,
                              /* is_map = */ false,
-                             /* drop_list = */ false);
+                             /* drop_list = */ false,
+                             /* force_lower_snake_case = */ true);
   if (IsReserved(name)) {
     name = "pb_" + name;
   }
@@ -518,7 +543,8 @@ std::string JSGetterName(const GeneratorOptions& options,
                          bool drop_list = false) {
   std::string name = JSIdent(options, field,
                              /* is_upper_camel = */ true,
-                             /* is_map = */ false, drop_list);
+                             /* is_map = */ false, drop_list,
+                             /* force_lower_snake_case = */ false);
   if (field->type() == FieldDescriptor::TYPE_BYTES) {
     std::string suffix = JSByteGetterSuffix(bytes_mode);
     if (!suffix.empty()) {
