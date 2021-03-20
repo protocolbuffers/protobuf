@@ -58,16 +58,6 @@
 //    LOG(ERROR) << result.status();
 //  }
 //
-// Example client usage for a StatusOr<std::unique_ptr<T>>:
-//
-//  StatusOr<std::unique_ptr<Foo>> result = FooFactory::MakeNewFoo(arg);
-//  if (result.ok()) {
-//    std::unique_ptr<Foo> foo = result.Consumevalue();
-//    foo->DoSomethingCool();
-//  } else {
-//    LOG(ERROR) << result.status();
-//  }
-//
 // Example factory implementation returning StatusOr<T*>:
 //
 //  StatusOr<Foo*> FooFactory::MakeNewFoo(int arg) {
