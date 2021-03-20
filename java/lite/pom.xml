@@ -104,7 +104,7 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <outputDirectory>${generated.sources.dir}/com/google/protobuf</outputDirectory>
+              <outputDirectory>${generated.sources.dir}/java/com/google/protobuf</outputDirectory>
               <resources>
                 <resource>
                   <directory>${basedir}/../core/src/main/java/com/google/protobuf</directory>
@@ -198,6 +198,18 @@
                     <include>Writer.java</include>
                   </includes>
                 </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-kotlin-source-files</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${generated.sources.dir}/kotlin/com/google/protobuf</outputDirectory>
+              <resources>
                 <resource>
                   <directory>${basedir}/../core/src/main/kotlin/com/google/protobuf</directory>
                   <includes>
@@ -374,7 +386,7 @@
             <configuration>
               <sourceDirs>
                 <sourceDir>${generated.sources.dir}/com/google/protobuf</sourceDir>
-                <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
+                <sourceDir>${generated.sources.dir}/kotlin/com/google/protobuf</sourceDir>
               </sourceDirs>
             </configuration>
           </execution>

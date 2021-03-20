@@ -89,6 +89,14 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/Utf8.java",
     "src/main/java/com/google/protobuf/WireFormat.java",
     "src/main/java/com/google/protobuf/Writer.java",
+    "src/main/kotlin/com/google/protobuf/DslList.kt",
+    "src/main/kotlin/com/google/protobuf/DslMap.kt",
+    "src/main/kotlin/com/google/protobuf/DslProxy.kt",
+    "src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt",
+    "src/main/kotlin/com/google/protobuf/ExtensionList.kt",
+    "src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt",
+    "src/main/kotlin/com/google/protobuf/ProtoDslMarker.kt",
+    "src/main/kotlin/com/google/protobuf/UnmodifiableCollections.kt",
 ]
 
 # Should be used as `//java/lite`.

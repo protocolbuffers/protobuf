@@ -1,0 +1,96 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m---------------< [0;36mcom.google.protobuf:protobuf-javalite[0;1m >----------------[m
+[[1;34mINFO[m] [1mBuilding Protocol Buffers [Lite] 3.14.0[m
+[[1;34mINFO[m] [1m-------------------------------[ bundle ]-------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-clean-plugin:2.5:clean[m [1m(default-clean)[m @ [36mprotobuf-javalite[0;1m ---[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.1.0:copy-resources[m [1m(copy-source-files)[m @ [36mprotobuf-javalite[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 86 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.1.0:copy-resources[m [1m(copy-kotlin-source-files)[m @ [36mprotobuf-javalite[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 8 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-antrun-plugin:1.8:run[m [1m(generate-sources)[m @ [36mprotobuf-javalite[0;1m ---[m
+[[1;34mINFO[m] Executing tasks
+
+main:
+     [echo] Running protoc ...
+[[1;34mINFO[m] Executed tasks
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mbuild-helper-maven-plugin:1.10:add-source[m [1m(add-generated-sources)[m @ [36mprotobuf-javalite[0;1m ---[m
+[[1;34mINFO[m] Source directory: /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources added.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-resources-plugin:3.1.0:resources[m [1m(default-resources)[m @ [36mprotobuf-javalite[0;1m ---[m
+[[1;34mINFO[m] Using 'UTF-8' encoding to copy filtered resources.
+[[1;34mINFO[m] Copying 10 resources
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-compiler-plugin:3.6.1:compile[m [1m(default-compile)[m @ [36mprotobuf-javalite[0;1m ---[m
+[[1;34mINFO[m] Changes detected - recompiling the module!
+[[1;34mINFO[m] Compiling 150 source files to /usr/local/google/home/deannagarcia/protobuf/java/lite/target/classes
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[44,32] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[289,18] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[290,13] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[294,53] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[296,32] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[297,33] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[297,54] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[481,13] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[483,28] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[612,31] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[752,37] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/UnsafeUtil.java:[877,37] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[102,32] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[405,19] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[1429,19] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[1995,19] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[2567,19] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[4669,19] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[4701,19] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[4881,19] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;33mWARNING[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/MessageSchema.java:[5189,19] sun.misc.Unsafe is internal proprietary API and may be removed in a future release
+[[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/AbstractMessageLite.java: Some input files use or override a deprecated API.
+[[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/AbstractMessageLite.java: Recompile with -Xlint:deprecation for details.
+[[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/AbstractMessageLite.java: Some input files use unchecked or unsafe operations.
+[[1;34mINFO[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/java/com/google/protobuf/AbstractMessageLite.java: Recompile with -Xlint:unchecked for details.
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mkotlin-maven-plugin:1.4.31:compile[m [1m(compile)[m @ [36mprotobuf-javalite[0;1m ---[m
+[[1;31mERROR[m] Supertypes of the following classes cannot be resolved. Please make sure you have the required dependencies in the classpath:
+    class com.google.protobuf.GeneratedMessageLite.ExtendableMessage, unresolved supertypes: com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder
+    class com.google.protobuf.GeneratedMessageLite.ExtendableBuilder, unresolved supertypes: com.google.protobuf.GeneratedMessageLite.Builder, com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder
+
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt: (8, 3) Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableMessage'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt: (15, 3) Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableMessage'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt: (16, 3) Cannot access 'com.google.protobuf.GeneratedMessageLite.Builder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableBuilder'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt: (16, 3) Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableBuilder'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt: (19, 3) Cannot access 'com.google.protobuf.GeneratedMessageLite.Builder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableBuilder'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt: (19, 3) Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableBuilder'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt: (24, 3) Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableMessage'. Check your module classpath for missing or conflicting dependencies
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;31mBUILD FAILURE[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  18.931 s
+[[1;34mINFO[m] Finished at: 2021-03-20T00:40:18Z
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;31mERROR[m] Failed to execute goal [32morg.jetbrains.kotlin:kotlin-maven-plugin:1.4.31:compile[m [1m(compile)[m on project [36mprotobuf-javalite[m: [1;31mCompilation failure[m: Compilation failure: 
+[[1;31mERROR[m] Supertypes of the following classes cannot be resolved. Please make sure you have the required dependencies in the classpath:
+[[1;31mERROR[m]     class com.google.protobuf.GeneratedMessageLite.ExtendableMessage, unresolved supertypes: com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder
+[[1;31mERROR[m]     class com.google.protobuf.GeneratedMessageLite.ExtendableBuilder, unresolved supertypes: com.google.protobuf.GeneratedMessageLite.Builder, com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder
+[[1;31mERROR[m] 
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt:[8,3] Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableMessage'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt:[15,3] Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableMessage'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt:[16,3] Cannot access 'com.google.protobuf.GeneratedMessageLite.Builder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableBuilder'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt:[16,3] Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableBuilder'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt:[19,3] Cannot access 'com.google.protobuf.GeneratedMessageLite.Builder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableBuilder'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt:[19,3] Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableBuilder'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] /usr/local/google/home/deannagarcia/protobuf/java/lite/target/generated-sources/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt:[24,3] Cannot access 'com.google.protobuf.GeneratedMessageLite.ExtendableMessageOrBuilder' which is a supertype of 'com.google.protobuf.GeneratedMessageLite.ExtendableMessage'. Check your module classpath for missing or conflicting dependencies
+[[1;31mERROR[m] -> [1m[Help 1][m
+[[1;31mERROR[m] 
+[[1;31mERROR[m] To see the full stack trace of the errors, re-run Maven with the [1m-e[m switch.
+[[1;31mERROR[m] Re-run Maven using the [1m-X[m switch to enable full debug logging.
+[[1;31mERROR[m] 
+[[1;31mERROR[m] For more information about the errors and possible solutions, please read the following articles:
+[[1;31mERROR[m] [1m[Help 1][m http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
