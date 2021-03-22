@@ -413,6 +413,17 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   }
 
  private:
+  // Out-of-line routine to save space in ParseContext::ParseMessage<T>
+  //   int old;
+  //   ptr = ReadSizeAndPushLimitAndDepth(ptr, &old)
+  // is equivalent to:
+  //   int size = ReadSize(&ptr);
+  //   if (!ptr) return nullptr;
+  //   int old = PushLimit(ptr, size);
+  //   if (--depth_ < 0) return nullptr;
+  PROTOBUF_MUST_USE_RESULT const char* ReadSizeAndPushLimitAndDepth(
+      const char* ptr, int* old_limit);
+
   // The context keeps an internal stack to keep track of the recursive
   // part of the parse state.
   // Current depth of the active parser, depth counts down.
@@ -640,12 +651,9 @@ inline int32 ReadVarintZigZag32(const char** p) {
 template <typename T>
 PROTOBUF_MUST_USE_RESULT const char* ParseContext::ParseMessage(
     T* msg, const char* ptr) {
-  int size = ReadSize(&ptr);
-  if (!ptr) return nullptr;
-  auto old = PushLimit(ptr, size);
-  if (--depth_ < 0) return nullptr;
-  ptr = msg->_InternalParse(ptr, this);
-  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+  int old;
+  ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
+  ptr = ptr ? msg->_InternalParse(ptr, this) : nullptr;
   depth_++;
   if (!PopLimit(old)) return nullptr;
   return ptr;

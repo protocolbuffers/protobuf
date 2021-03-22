@@ -328,6 +328,12 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   template <typename... Lazy>
   std::string* MutableSlow(::google::protobuf::Arena* arena, const Lazy&... lazy_default);
 
+  // Sets value to a newly allocated string and returns it
+  std::string* SetAndReturnNewString();
+
+  // Destroys the non-default string value out-of-line
+  void DestroyNoArenaSlowPath();
+
 };
 
 inline void ArenaStringPtr::UnsafeSetDefault(const std::string* value) {
@@ -379,9 +385,7 @@ inline std::string* ArenaStringPtr::MutableNoArenaNoDefault(
   // static global) and a branch to the slowpath (which calls operator new and
   // the ctor). DO NOT add any tagged-pointer operations here.
   if (IsDefault(default_value)) {
-    std::string* new_string = new std::string();
-    tagged_ptr_.Set(new_string);
-    return new_string;
+    return SetAndReturnNewString();
   } else {
     return UnsafeMutablePointer();
   }
@@ -389,7 +393,7 @@ inline std::string* ArenaStringPtr::MutableNoArenaNoDefault(
 
 inline void ArenaStringPtr::DestroyNoArena(const std::string* default_value) {
   if (!IsDefault(default_value)) {
-    delete UnsafeMutablePointer();
+    DestroyNoArenaSlowPath();
   }
 }
 

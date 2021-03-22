@@ -36,6 +36,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cstdint>
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -211,7 +213,7 @@ class CommandLineInterfaceTest : public testing::Test {
   // code generator that omits the given feature(s).
   void CreateGeneratorWithMissingFeatures(const std::string& name,
                                           const std::string& description,
-                                          uint64 features) {
+                                          uint64_t features) {
     MockCodeGenerator* generator = new MockCodeGenerator(name);
     generator->SuppressFeatures(features);
     mock_generators_to_delete_.push_back(generator);

@@ -2406,24 +2406,26 @@ public class LiteTest extends TestCase {
   }
 
   public void testAddAllIteratesOnce() {
-    TestAllTypesLite.newBuilder()
-        .addAllRepeatedBool(new OneTimeIterableList<>(false))
-        .addAllRepeatedInt32(new OneTimeIterableList<>(0))
-        .addAllRepeatedInt64(new OneTimeIterableList<>(0L))
-        .addAllRepeatedFloat(new OneTimeIterableList<>(0f))
-        .addAllRepeatedDouble(new OneTimeIterableList<>(0d))
-        .addAllRepeatedBytes(new OneTimeIterableList<>(ByteString.EMPTY))
-        .addAllRepeatedString(new OneTimeIterableList<>(""))
-        .addAllRepeatedNestedMessage(new OneTimeIterableList<>(NestedMessage.getDefaultInstance()))
-        .addAllRepeatedBool(new OneTimeIterable<>(false))
-        .addAllRepeatedInt32(new OneTimeIterable<>(0))
-        .addAllRepeatedInt64(new OneTimeIterable<>(0L))
-        .addAllRepeatedFloat(new OneTimeIterable<>(0f))
-        .addAllRepeatedDouble(new OneTimeIterable<>(0d))
-        .addAllRepeatedBytes(new OneTimeIterable<>(ByteString.EMPTY))
-        .addAllRepeatedString(new OneTimeIterable<>(""))
-        .addAllRepeatedNestedMessage(new OneTimeIterable<>(NestedMessage.getDefaultInstance()))
-        .build();
+    TestAllTypesLite unused =
+        TestAllTypesLite.newBuilder()
+            .addAllRepeatedBool(new OneTimeIterableList<>(false))
+            .addAllRepeatedInt32(new OneTimeIterableList<>(0))
+            .addAllRepeatedInt64(new OneTimeIterableList<>(0L))
+            .addAllRepeatedFloat(new OneTimeIterableList<>(0f))
+            .addAllRepeatedDouble(new OneTimeIterableList<>(0d))
+            .addAllRepeatedBytes(new OneTimeIterableList<>(ByteString.EMPTY))
+            .addAllRepeatedString(new OneTimeIterableList<>(""))
+            .addAllRepeatedNestedMessage(
+                new OneTimeIterableList<>(NestedMessage.getDefaultInstance()))
+            .addAllRepeatedBool(new OneTimeIterable<>(false))
+            .addAllRepeatedInt32(new OneTimeIterable<>(0))
+            .addAllRepeatedInt64(new OneTimeIterable<>(0L))
+            .addAllRepeatedFloat(new OneTimeIterable<>(0f))
+            .addAllRepeatedDouble(new OneTimeIterable<>(0d))
+            .addAllRepeatedBytes(new OneTimeIterable<>(ByteString.EMPTY))
+            .addAllRepeatedString(new OneTimeIterable<>(""))
+            .addAllRepeatedNestedMessage(new OneTimeIterable<>(NestedMessage.getDefaultInstance()))
+            .build();
   }
 
   public void testAddAllIteratesOnce_throwsOnNull() {

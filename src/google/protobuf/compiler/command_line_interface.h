@@ -38,6 +38,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_COMMAND_LINE_INTERFACE_H__
 #define GOOGLE_PROTOBUF_COMPILER_COMMAND_LINE_INTERFACE_H__
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <set>
@@ -229,7 +230,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // Fails if these files use proto3 optional and the code generator doesn't
   // support it. This is a permanent check.
   bool EnforceProto3OptionalSupport(
-      const std::string& codegen_name, uint64 supported_features,
+      const std::string& codegen_name, uint64_t supported_features,
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
 

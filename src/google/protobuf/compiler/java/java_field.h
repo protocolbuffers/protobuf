@@ -35,6 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_H__
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -104,7 +105,7 @@ class ImmutableFieldLiteGenerator {
   virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
   virtual void GenerateInitializationCode(io::Printer* printer) const = 0;
   virtual void GenerateFieldInfo(io::Printer* printer,
-                                 std::vector<uint16>* output) const = 0;
+                                 std::vector<uint16_t>* output) const = 0;
 
   virtual std::string GetBoxedType() const = 0;
 

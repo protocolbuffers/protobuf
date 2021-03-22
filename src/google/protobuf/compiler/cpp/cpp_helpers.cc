@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 
+#include <cstdint>
 #include <functional>
 #include <limits>
 #include <map>
@@ -642,7 +643,7 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type) {
 }
 
 std::string Int32ToString(int number) {
-  if (number == kint32min) {
+  if (number == std::numeric_limits<int32_t>::min()) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
     return StrCat(number + 1, " - 1");
@@ -651,8 +652,8 @@ std::string Int32ToString(int number) {
   }
 }
 
-std::string Int64ToString(const std::string& macro_prefix, int64 number) {
-  if (number == kint64min) {
+std::string Int64ToString(const std::string& macro_prefix, int64_t number) {
+  if (number == std::numeric_limits<int64_t>::min()) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
     return StrCat(macro_prefix, "_LONGLONG(", number + 1, ") - 1");
@@ -660,7 +661,7 @@ std::string Int64ToString(const std::string& macro_prefix, int64 number) {
   return StrCat(macro_prefix, "_LONGLONG(", number, ")");
 }
 
-std::string UInt64ToString(const std::string& macro_prefix, uint64 number) {
+std::string UInt64ToString(const std::string& macro_prefix, uint64_t number) {
   return StrCat(macro_prefix, "_ULONGLONG(", number, ")");
 }
 
@@ -748,7 +749,8 @@ std::string FilenameIdentifier(const std::string& filename) {
     } else {
       // Not alphanumeric.  To avoid any possibility of name conflicts we
       // use the hex code for the character.
-      StrAppend(&result, "_", strings::Hex(static_cast<uint8>(filename[i])));
+      StrAppend(&result, "_",
+                      strings::Hex(static_cast<uint8_t>(filename[i])));
     }
   }
   return result;
@@ -1612,7 +1614,7 @@ class ParseLoopGenerator {
   }
 
   // Convert a 1 or 2 byte varint into the equivalent value upon a direct load.
-  static uint32 SmallVarintValue(uint32 x) {
+  static uint32_t SmallVarintValue(uint32_t x) {
     GOOGLE_DCHECK(x < 128 * 128);
     if (x >= 128) x += (x & 0xFF80) + 128;
     return x;
@@ -1629,7 +1631,7 @@ class ParseLoopGenerator {
 
   void GenerateFieldBody(internal::WireFormatLite::WireType wiretype,
                          const FieldDescriptor* field) {
-    uint32 tag = WireFormatLite::MakeTag(field->number(), wiretype);
+    uint32_t tag = WireFormatLite::MakeTag(field->number(), wiretype);
     switch (wiretype) {
       case WireFormatLite::WIRETYPE_VARINT: {
         std::string type = PrimitiveTypeName(options_, field->cpp_type());
@@ -1724,16 +1726,16 @@ class ParseLoopGenerator {
 
   // Returns the tag for this field and in case of repeated packable fields,
   // sets a fallback tag in fallback_tag_ptr.
-  static uint32 ExpectedTag(const FieldDescriptor* field,
-                            uint32* fallback_tag_ptr) {
-    uint32 expected_tag;
+  static uint32_t ExpectedTag(const FieldDescriptor* field,
+                              uint32_t* fallback_tag_ptr) {
+    uint32_t expected_tag;
     if (field->is_packable()) {
       auto expected_wiretype = WireFormat::WireTypeForFieldType(field->type());
       expected_tag =
           WireFormatLite::MakeTag(field->number(), expected_wiretype);
       GOOGLE_CHECK(expected_wiretype != WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
       auto fallback_wiretype = WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
-      uint32 fallback_tag =
+      uint32_t fallback_tag =
           WireFormatLite::MakeTag(field->number(), fallback_wiretype);
 
       if (field->is_packed()) std::swap(expected_tag, fallback_tag);
@@ -1752,8 +1754,7 @@ class ParseLoopGenerator {
     format_(
         "while (!ctx->Done(&ptr)) {\n"
         "  $uint32$ tag;\n"
-        "  ptr = $pi_ns$::ReadTag(ptr, &tag);\n"
-        "  CHK_(ptr);\n");
+        "  ptr = $pi_ns$::ReadTag(ptr, &tag);\n");
     if (!ordered_fields.empty()) format_("  switch (tag >> 3) {\n");
 
     format_.Indent();
@@ -1763,14 +1764,14 @@ class ParseLoopGenerator {
       PrintFieldComment(format_, field);
       format_("case $1$:\n", field->number());
       format_.Indent();
-      uint32 fallback_tag = 0;
-      uint32 expected_tag = ExpectedTag(field, &fallback_tag);
+      uint32_t fallback_tag = 0;
+      uint32_t expected_tag = ExpectedTag(field, &fallback_tag);
       format_(
           "if (PROTOBUF_PREDICT_TRUE(static_cast<$uint8$>(tag) == $1$)) {\n",
           expected_tag & 0xFF);
       format_.Indent();
       auto wiretype = WireFormatLite::GetTagWireType(expected_tag);
-      uint32 tag = WireFormatLite::MakeTag(field->number(), wiretype);
+      uint32_t tag = WireFormatLite::MakeTag(field->number(), wiretype);
       int tag_size = io::CodedOutputStream::VarintSize32(tag);
       bool is_repeat = ShouldRepeat(field, wiretype);
       if (is_repeat) {
@@ -1807,7 +1808,8 @@ class ParseLoopGenerator {
     if (!ordered_fields.empty()) format_("default: {\n");
     if (!ordered_fields.empty()) format_("handle_unusual:\n");
     format_(
-        "  if ((tag & 7) == 4 || tag == 0) {\n"
+        "  if ((tag == 0) || ((tag & 7) == 4)) {\n"
+        "    CHK_(ptr);\n"
         "    ctx->SetLastTag(tag);\n"
         "    goto success;\n"
         "  }\n");
@@ -1821,9 +1823,9 @@ class ParseLoopGenerator {
               descriptor->extension_range(i);
           if (i > 0) format_(" ||\n    ");
 
-          uint32 start_tag = WireFormatLite::MakeTag(
+          uint32_t start_tag = WireFormatLite::MakeTag(
               range->start, static_cast<WireFormatLite::WireType>(0));
-          uint32 end_tag = WireFormatLite::MakeTag(
+          uint32_t end_tag = WireFormatLite::MakeTag(
               range->end, static_cast<WireFormatLite::WireType>(0));
 
           if (range->end > FieldDescriptor::kMaxNumber) {

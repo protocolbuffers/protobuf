@@ -496,6 +496,8 @@ message MessageOptions {
   // this is a formalization for deprecating messages.
   optional bool deprecated = 3 [default = false];
 
+  reserved 4, 5, 6;
+
   // Whether the message is an automatically generated map entry type for the
   // maps field.
   //
