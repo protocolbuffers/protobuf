@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/json_util.h>
 
+#include <cstdint>
 #include <list>
 #include <string>
 
@@ -524,7 +525,7 @@ class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
  private:
   std::list<Segment> segments_;
   Segment last_segment_;
-  int64 byte_count_;
+  int64_t byte_count_;
 };
 
 // This test splits the output buffer and also the input data into multiple

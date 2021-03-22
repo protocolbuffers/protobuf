@@ -32,10 +32,14 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/cpp/cpp_enum.h>
+
+#include <cstdint>
+#include <limits>
 #include <map>
 
-#include <google/protobuf/compiler/cpp/cpp_enum.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
+#include <google/protobuf/compiler/cpp/cpp_names.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -49,13 +53,13 @@ namespace {
 // is kint32max, GOOGLE_ARRAYSIZE will overflow. In such cases we should omit the
 // generation of the GOOGLE_ARRAYSIZE constant.
 bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
-  int32 max_value = descriptor->value(0)->number();
+  int32_t max_value = descriptor->value(0)->number();
   for (int i = 0; i < descriptor->value_count(); i++) {
     if (descriptor->value(i)->number() > max_value) {
       max_value = descriptor->value(i)->number();
     }
   }
-  return max_value != kint32max;
+  return max_value != std::numeric_limits<int32_t>::max();
 }
 
 // Returns the number of unique numeric enum values. This is less than

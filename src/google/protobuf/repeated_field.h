@@ -221,6 +221,10 @@ class RepeatedField final {
   void MergeFrom(const RepeatedField& other);
   void CopyFrom(const RepeatedField& other);
 
+  // Replaces the contents with RepeatedField(begin, end).
+  template <typename Iter>
+  void Assign(Iter begin, Iter end);
+
   // Reserve space to expand the field to at least the given size.  If the
   // array is grown, it will always be at least doubled in size.
   void Reserve(int new_size);
@@ -765,8 +769,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
                                                                   int));
 
   template <typename TypeHandler>
-  void MergeFromInnerLoop(void** our_elems, void** other_elems, int length,
-                          int already_allocated);
+  PROTOBUF_NOINLINE void MergeFromInnerLoop(void** our_elems,
+                                            void** other_elems, int length,
+                                            int already_allocated);
 
   // Internal helper: extend array space if necessary to contain |extend_amount|
   // more elements, and return a pointer to the element immediately following
@@ -953,6 +958,10 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   Element* Mutable(int index);
   Element* Add();
   void Add(Element&& value);
+  // Append elements in the range [begin, end) after reserving
+  // the appropriate number of elements.
+  template <typename Iter>
+  void Add(Iter begin, Iter end);
 
   const Element& operator[](int index) const { return Get(index); }
   Element& operator[](int index) { return *Mutable(index); }
@@ -972,6 +981,10 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   void Clear();
   void MergeFrom(const RepeatedPtrField& other);
   void CopyFrom(const RepeatedPtrField& other);
+
+  // Replaces the contents with RepeatedPtrField(begin, end).
+  template <typename Iter>
+  void Assign(Iter begin, Iter end);
 
   // Reserve space to expand the field to at least the given size.  This only
   // resizes the pointer array; it doesn't allocate any objects.  If the
@@ -1445,6 +1458,13 @@ inline void RepeatedField<Element>::CopyFrom(const RepeatedField& other) {
   if (&other == this) return;
   Clear();
   MergeFrom(other);
+}
+
+template <typename Element>
+template <typename Iter>
+inline void RepeatedField<Element>::Assign(Iter begin, Iter end) {
+  Clear();
+  Add(begin, end);
 }
 
 template <typename Element>
@@ -2122,13 +2142,7 @@ inline RepeatedPtrField<Element>::RepeatedPtrField(
 template <typename Element>
 template <typename Iter, typename>
 inline RepeatedPtrField<Element>::RepeatedPtrField(Iter begin, Iter end) {
-  int reserve = internal::CalculateReserve(begin, end);
-  if (reserve != -1) {
-    Reserve(reserve);
-  }
-  for (; begin != end; ++begin) {
-    *Add() = *begin;
-  }
+  Add(begin, end);
 }
 
 template <typename Element>
@@ -2211,6 +2225,18 @@ inline Element* RepeatedPtrField<Element>::Add() {
 template <typename Element>
 inline void RepeatedPtrField<Element>::Add(Element&& value) {
   RepeatedPtrFieldBase::Add<TypeHandler>(std::move(value));
+}
+
+template <typename Element>
+template <typename Iter>
+inline void RepeatedPtrField<Element>::Add(Iter begin, Iter end) {
+  int reserve = internal::CalculateReserve(begin, end);
+  if (reserve != -1) {
+    Reserve(size() + reserve);
+  }
+  for (; begin != end; ++begin) {
+    *Add() = *begin;
+  }
 }
 
 template <typename Element>
@@ -2317,6 +2343,13 @@ inline void RepeatedPtrField<Element>::MergeFrom(
 template <typename Element>
 inline void RepeatedPtrField<Element>::CopyFrom(const RepeatedPtrField& other) {
   RepeatedPtrFieldBase::CopyFrom<TypeHandler>(other);
+}
+
+template <typename Element>
+template <typename Iter>
+inline void RepeatedPtrField<Element>::Assign(Iter begin, Iter end) {
+  Clear();
+  Add(begin, end);
 }
 
 template <typename Element>

@@ -31,6 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_LITE_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_LITE_H__
 
+#include <cstdint>
+
 #include <google/protobuf/compiler/java/java_field.h>
 
 namespace google {
@@ -52,7 +54,7 @@ class ImmutableMapFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
   void GenerateFieldInfo(io::Printer* printer,
-                         std::vector<uint16>* output) const;
+                         std::vector<uint16_t>* output) const;
 
   std::string GetBoxedType() const;
 

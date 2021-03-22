@@ -268,7 +268,6 @@ const char* Api::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::intern
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // string name = 1;
       case 1:
@@ -341,7 +340,8 @@ const char* Api::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::intern
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -673,7 +673,6 @@ const char* Method::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::int
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // string name = 1;
       case 1:
@@ -738,7 +737,8 @@ const char* Method::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::int
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -1043,7 +1043,6 @@ const char* Mixin::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // string name = 1;
       case 1:
@@ -1065,7 +1064,8 @@ const char* Mixin::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::inte
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
