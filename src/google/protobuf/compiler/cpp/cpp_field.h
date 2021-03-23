@@ -35,6 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -180,7 +181,7 @@ class FieldGenerator {
   // are placed in the message's ByteSize() method.
   virtual void GenerateByteSize(io::Printer* printer) const = 0;
 
-  void SetHasBitIndex(int32 has_bit_index);
+  void SetHasBitIndex(int32_t has_bit_index);
 
  protected:
   const FieldDescriptor* descriptor_;

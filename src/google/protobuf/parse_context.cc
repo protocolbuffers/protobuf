@@ -326,6 +326,18 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   return buffer_;
 }
 
+const char* ParseContext::ReadSizeAndPushLimitAndDepth(const char* ptr,
+                                                       int* old_limit) {
+  int size = ReadSize(&ptr);
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) {
+    *old_limit = 0;  // Make sure this isn't uninitialized even on error return
+    return nullptr;
+  }
+  *old_limit = PushLimit(ptr, size);
+  if (--depth_ < 0) return nullptr;
+  return ptr;
+}
+
 const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
   return ParseMessage<MessageLite>(msg, ptr);
 }

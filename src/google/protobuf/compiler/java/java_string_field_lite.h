@@ -36,8 +36,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_LITE_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_LITE_H__
 
+#include <cstdint>
 #include <map>
 #include <string>
+
 #include <google/protobuf/compiler/java/java_field.h>
 
 namespace google {
@@ -71,7 +73,7 @@ class ImmutableStringFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
   void GenerateFieldInfo(io::Printer* printer,
-                         std::vector<uint16>* output) const;
+                         std::vector<uint16_t>* output) const;
 
   std::string GetBoxedType() const;
 
@@ -96,7 +98,7 @@ class ImmutableStringOneofFieldLiteGenerator
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateFieldInfo(io::Printer* printer,
-                         std::vector<uint16>* output) const;
+                         std::vector<uint16_t>* output) const;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableStringOneofFieldLiteGenerator);
 };
@@ -115,7 +117,7 @@ class RepeatedImmutableStringFieldLiteGenerator
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
   void GenerateFieldInfo(io::Printer* printer,
-                         std::vector<uint16>* output) const;
+                         std::vector<uint16_t>* output) const;
 
   std::string GetBoxedType() const;
 

@@ -708,7 +708,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   };
 
  private:
-  friend class DefaultFieldComparator;
+  friend class SimpleFieldComparator;
 
   // A MapKeyComparator to be used in TreatAsMapUsingKeyComparator.
   // Implementation of this class needs to do field value comparison which

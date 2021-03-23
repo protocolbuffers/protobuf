@@ -906,23 +906,25 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   PROTOBUF_ALWAYS_INLINE static uint8* UnsafeVarint(T value, uint8* ptr) {
     static_assert(std::is_unsigned<T>::value,
                   "Varint serialization must be unsigned");
+    ptr[0] = static_cast<uint8>(value);
     if (value < 0x80) {
-      ptr[0] = static_cast<uint8>(value);
       return ptr + 1;
     }
-    ptr[0] = static_cast<uint8>(value | 0x80);
+    // Turn on continuation bit in the byte we just wrote.
+    ptr[0] |= static_cast<uint8>(0x80);
     value >>= 7;
+    ptr[1] = static_cast<uint8>(value);
     if (value < 0x80) {
-      ptr[1] = static_cast<uint8>(value);
       return ptr + 2;
     }
-    ptr++;
+    ptr += 2;
     do {
-      *ptr = static_cast<uint8>(value | 0x80);
+      // Turn on continuation bit in the byte we just wrote.
+      ptr[-1] |= static_cast<uint8>(0x80);
       value >>= 7;
+      *ptr = static_cast<uint8>(value);
       ++ptr;
-    } while (PROTOBUF_PREDICT_FALSE(value >= 0x80));
-    *ptr++ = static_cast<uint8>(value);
+    } while (value >= 0x80);
     return ptr;
   }
 
@@ -1151,6 +1153,9 @@ class PROTOBUF_EXPORT CodedOutputStream {
   void WriteVarint32(uint32 value);
   // Like WriteVarint32()  but writing directly to the target array.
   static uint8* WriteVarint32ToArray(uint32 value, uint8* target);
+  // Like WriteVarint32()  but writing directly to the target array, and with the
+  // less common-case paths being out of line rather than inlined.
+  static uint8* WriteVarint32ToArrayOutOfLine(uint32 value, uint8* target);
   // Write an unsigned integer with Varint encoding.
   void WriteVarint64(uint64 value);
   // Like WriteVarint64()  but writing directly to the target array.
@@ -1265,6 +1270,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
   static void SetDefaultSerializationDeterministic() {
     default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
+  // REQUIRES: value >= 0x80, and that (value & 7f) has been written to *target.
+  static uint8* WriteVarint32ToArrayOutOfLineHelper(uint32 value, uint8* target);
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
 };
 
@@ -1593,6 +1600,16 @@ inline bool CodedInputStream::Skip(int count) {
 inline uint8* CodedOutputStream::WriteVarint32ToArray(uint32 value,
                                                       uint8* target) {
   return EpsCopyOutputStream::UnsafeVarint(value, target);
+}
+
+inline uint8* CodedOutputStream::WriteVarint32ToArrayOutOfLine(uint32 value,
+                                                               uint8* target) {
+  target[0] = static_cast<uint8>(value);
+  if (value < 0x80) {
+    return target + 1;
+  } else {
+    return WriteVarint32ToArrayOutOfLineHelper(value, target);
+  }
 }
 
 inline uint8* CodedOutputStream::WriteVarint64ToArray(uint64 value,

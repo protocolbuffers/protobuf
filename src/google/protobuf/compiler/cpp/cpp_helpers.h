@@ -36,11 +36,13 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
 #include <map>
 #include <string>
 
 #include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/compiler/cpp/cpp_names.h>
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -184,9 +186,6 @@ std::string ResolveKeyword(const std::string& name);
 // anyway, so normally this just returns field->name().
 std::string FieldName(const FieldDescriptor* field);
 
-// Get the sanitized name that should be used for the given enum in C++ code.
-std::string EnumValueName(const EnumValueDescriptor* enum_value);
-
 // Returns an estimate of the compiler's alignment for the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
 // different systems with different alignment rules.  The estimates below assume
@@ -222,7 +221,7 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 std::string Int32ToString(int number);
 
 // Return the code that evaluates to the number when compiled.
-std::string Int64ToString(const Options& options, int64 number);
+std::string Int64ToString(const Options& options, int64_t number);
 
 // Get code that evaluates to the field's default value.
 std::string DefaultValue(const Options& options, const FieldDescriptor* field);

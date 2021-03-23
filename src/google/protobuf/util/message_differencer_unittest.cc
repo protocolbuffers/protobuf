@@ -3375,7 +3375,11 @@ TEST_F(ComparisonTest, MapEntryPartialEmptyKeyTest) {
 
   util::MessageDifferencer differencer;
   differencer.set_scope(util::MessageDifferencer::PARTIAL);
-  EXPECT_TRUE(differencer.Compare(map1, map2));
+  // TODO(jieluo): Remove the round trip
+  std::string serialized_value;
+  map1.SerializeToString(&serialized_value);
+  map1.ParseFromString(serialized_value);
+  EXPECT_FALSE(differencer.Compare(map1, map2));
 }
 
 TEST_F(ComparisonTest, MapEntryMissingEmptyFieldIsOkTest) {

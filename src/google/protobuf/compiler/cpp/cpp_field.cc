@@ -33,6 +33,8 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_field.h>
+
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
@@ -89,7 +91,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["}"] = "";
 }
 
-void FieldGenerator::SetHasBitIndex(int32 has_bit_index) {
+void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
   if (!HasHasbit(descriptor_)) {
     GOOGLE_CHECK_EQ(has_bit_index, -1);
     return;
