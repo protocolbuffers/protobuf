@@ -516,6 +516,8 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/any_test.proto                      \
   java/core/src/test/proto/com/google/protobuf/cached_field_size_test.proto        \
   java/core/src/test/proto/com/google/protobuf/deprecated_file.proto               \
+  java/core/src/test/proto/com/google/protobuf/evil_names_proto2.proto             \
+  java/core/src/test/proto/com/google/protobuf/evil_names_proto3.proto             \
   java/core/src/test/proto/com/google/protobuf/field_presence_test.proto           \
   java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto              \
   java/core/src/test/proto/com/google/protobuf/lite_equals_and_hash.proto          \
@@ -525,6 +527,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/map_lite_test.proto                 \
   java/core/src/test/proto/com/google/protobuf/map_test.proto                      \
   java/core/src/test/proto/com/google/protobuf/message_lite_extension_util_test.proto\
+  java/core/src/test/proto/com/google/protobuf/multiple_files_proto3.proto         \
   java/core/src/test/proto/com/google/protobuf/multiple_files_test.proto           \
   java/core/src/test/proto/com/google/protobuf/nested_builders_test.proto          \
   java/core/src/test/proto/com/google/protobuf/nested_extension.proto              \
@@ -555,6 +558,8 @@ java_EXTRA_DIST=                                                                
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
+  java/lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.java \
+  java/lite/src/test/kotlin/com/google/protobuf/Proto2LiteTest.kt                  \
   java/pom.xml                                                                     \
   java/util/BUILD                                                                  \
   java/util/pom.xml                                                                \
