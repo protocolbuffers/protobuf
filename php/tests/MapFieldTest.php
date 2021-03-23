@@ -512,6 +512,24 @@ class MapFieldTest extends TestBase {
     }
 
     #########################################################
+    # Test clone
+    #########################################################
+
+    public function testClone()
+    {
+        $map = new MapField(GPBType::INT32,
+            GPBType::MESSAGE, Sub::class);
+
+        // Test append.
+        $sub_m = new Sub();
+        $sub_m->setA(1);
+        $map[0] = $sub_m;
+
+        $map2 = clone $map;
+        $this->assertSame($map[0], $map2[0]);
+    }
+
+    #########################################################
     # Test memory leak
     #########################################################
 

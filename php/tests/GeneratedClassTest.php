@@ -24,6 +24,13 @@ use Foo\testLowerCaseEnum;
 use PBEmpty\PBEcho\TestEmptyPackage;
 use Php\Test\TestNamespace;
 
+# This is not allowed, but we at least shouldn't crash.
+class C extends \Google\Protobuf\Internal\Message {
+    public function __construct($data = null) {
+        parent::__construct($data);
+    }
+}
+
 class GeneratedClassTest extends TestBase
 {
 
@@ -69,6 +76,33 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(MAX_INT32, $m->getOptionalInt32());
         $m->setOptionalInt32(MIN_INT32_STRING);
         $this->assertSame(MIN_INT32, $m->getOptionalInt32());
+    }
+
+    #########################################################
+    # Test deprecated int32 field.
+    #########################################################
+
+    public function testDeprecatedInt32Field()
+    {
+        $m = new TestMessage();
+
+        // temporarily change error handler to capture the deprecated errors
+        $deprecationCount = 0;
+        set_error_handler(function ($errno, $errstr) use (&$deprecationCount) {
+            if ($errstr === 'deprecated_optional_int32 is deprecated.') {
+                $deprecationCount++;
+            }
+        }, E_USER_DEPRECATED);
+
+        // default test set
+        $m->setDeprecatedOptionalInt32(MAX_INT32);
+        $this->assertSame(MAX_INT32, $m->getDeprecatedOptionalInt32());
+        $m->setDeprecatedOptionalInt32(MIN_INT32);
+        $this->assertSame(MIN_INT32, $m->getDeprecatedOptionalInt32());
+
+        restore_error_handler();
+
+        $this->assertSame(4, $deprecationCount);
     }
 
     #########################################################
@@ -1492,6 +1526,28 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test clone.
+    #########################################################
+
+    public function testClone()
+    {
+        $m = new TestMessage([
+            'optional_int32' => -42,
+            'optional_int64' => -43,
+            'optional_message' => new Sub([
+                'a' => 33
+            ]),
+            'map_int32_message' => [1 => new Sub(['a' => 36])],
+        ]);
+        $m2 = clone $m;
+        $this->assertEquals($m->getOptionalInt32(), $m2->getOptionalInt32());
+        $this->assertEquals($m->getOptionalInt64(), $m2->getOptionalInt64());
+        $this->assertSame($m->getOptionalMessage(), $m2->getOptionalMessage());
+        $this->assertSame($m->getMapInt32Message()[1], $m2->getMapInt32Message()[1]);
+        $this->assertEquals($m->serializeToJsonString(), $m2->serializeToJsonString());
+    }
+
+    #########################################################
     # Test message equals.
     #########################################################
 
@@ -1694,6 +1750,16 @@ class GeneratedClassTest extends TestBase
         $m->clear();
         $this->assertFalse($m->hasOneofInt32());
         $this->assertFalse($m->hasOneofString());
+    }
+
+    #########################################################
+    # Test that we don't crash if users create their own messages.
+    #########################################################
+
+    public function testUserDefinedClass() {
+      # This is not allowed, but at least we shouldn't crash.
+      $this->expectException(Exception::class);
+      $p = new C();
     }
 
     #########################################################

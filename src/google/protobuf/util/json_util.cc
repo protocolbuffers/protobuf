@@ -92,10 +92,12 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
   io::CodedInputStream in_stream(binary_input);
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
-  converter::ProtoStreamObjectSource proto_source(&in_stream, resolver, type);
-  proto_source.set_use_ints_for_enums(options.always_print_enums_as_ints);
-  proto_source.set_preserve_proto_field_names(
-      options.preserve_proto_field_names);
+  converter::ProtoStreamObjectSource::RenderOptions render_options;
+  render_options.use_ints_for_enums = options.always_print_enums_as_ints;
+  render_options.preserve_proto_field_names =
+      options.preserve_proto_field_names;
+  converter::ProtoStreamObjectSource proto_source(&in_stream, resolver, type,
+                                                  render_options);
   io::CodedOutputStream out_stream(json_output);
   converter::JsonObjectWriter json_writer(options.add_whitespace ? " " : "",
                                           &out_stream);
@@ -138,25 +140,23 @@ class StatusErrorListener : public converter::ErrorListener {
     if (!loc_string.empty()) {
       loc_string.append(" ");
     }
-    status_ =
-        util::Status(util::error::INVALID_ARGUMENT,
-                     StrCat(loc_string, unknown_name, ": ", message));
+    status_ = util::InvalidArgumentError(
+        StrCat(loc_string, unknown_name, ": ", message));
   }
 
   void InvalidValue(const converter::LocationTrackerInterface& loc,
                     StringPiece type_name,
                     StringPiece value) override {
-    status_ = util::Status(
-        util::error::INVALID_ARGUMENT,
+    status_ = util::InvalidArgumentError(
         StrCat(GetLocString(loc), ": invalid value ", std::string(value),
                      " for type ", std::string(type_name)));
   }
 
   void MissingField(const converter::LocationTrackerInterface& loc,
                     StringPiece missing_name) override {
-    status_ = util::Status(util::error::INVALID_ARGUMENT,
-                           StrCat(GetLocString(loc), ": missing field ",
-                                        std::string(missing_name)));
+    status_ = util::InvalidArgumentError(
+        StrCat(
+            GetLocString(loc), ": missing field ", std::string(missing_name)));
   }
 
  private:
@@ -269,8 +269,8 @@ util::Status JsonStringToMessage(StringPiece input, Message* message,
   util::Status result = JsonToBinaryString(resolver, GetTypeUrl(*message),
                                            input, &binary, options);
   if (result.ok() && !message->ParseFromString(binary)) {
-    result = util::Status(util::error::INVALID_ARGUMENT,
-                          "JSON transcoder produced invalid protobuf output.");
+    result = util::InvalidArgumentError(
+        "JSON transcoder produced invalid protobuf output.");
   }
   if (pool != DescriptorPool::generated_pool()) {
     delete resolver;

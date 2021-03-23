@@ -451,6 +451,27 @@ void TextFormatConformanceTestSuite::RunSuiteImpl() {
       }
       )",
                                     prototype);
+
+  prototype.Clear();
+  ConformanceRequestSetting setting_map(
+      REQUIRED, conformance::TEXT_FORMAT, conformance::PROTOBUF,
+      conformance::TEXT_FORMAT_TEST, prototype, "DuplicateMapKey", R"(
+      map_string_nested_message {
+        key: "duplicate"
+        value: { a: 123 }
+      }
+      map_string_nested_message {
+        key: "duplicate"
+        value: { corecursive: {} }
+      }
+      )");
+  // The last-specified value will be retained in a parsed map
+  RunValidInputTest(setting_map, R"(
+      map_string_nested_message {
+        key: "duplicate"
+        value: { corecursive: {} }
+      }
+      )");
 }
 
 }  // namespace protobuf

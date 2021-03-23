@@ -1294,8 +1294,8 @@ public class MapTest extends TestCase {
   }
 
   public void testReservedWordsFieldNames() {
-    ReservedAsMapField.newBuilder().build();
-    ReservedAsMapFieldWithEnumValue.newBuilder().build();
+    ReservedAsMapField unused1 = ReservedAsMapField.newBuilder().build();
+    ReservedAsMapFieldWithEnumValue unused2 = ReservedAsMapFieldWithEnumValue.newBuilder().build();
   }
 
   public void testDeterministicSerialziation() throws Exception {

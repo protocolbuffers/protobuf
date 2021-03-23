@@ -30,6 +30,8 @@
 
 #include <google/protobuf/compiler/java/java_map_field_lite.h>
 
+#include <cstdint>
+
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
@@ -108,9 +110,13 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   // We use `x.getClass()` as a null check because it generates less bytecode
   // than an `if (x == null) { throw ... }` statement.
   (*variables)["key_null_check"] =
-      IsReferenceType(keyJavaType) ? "key.getClass();" : "";
+      IsReferenceType(keyJavaType)
+          ? "java.lang.Class<?> keyClass = key.getClass();"
+          : "";
   (*variables)["value_null_check"] =
-      IsReferenceType(valueJavaType) ? "value.getClass();" : "";
+      IsReferenceType(valueJavaType)
+          ? "java.lang.Class<?> valueClass = value.getClass();"
+          : "";
 
   if (GetJavaType(value) == JAVATYPE_ENUM) {
     // We store enums as Integers internally.
@@ -519,7 +525,7 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
 }
 
 void ImmutableMapFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer, std::vector<uint16>* output) const {
+    io::Printer* printer, std::vector<uint16_t>* output) const {
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);

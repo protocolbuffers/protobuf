@@ -58,13 +58,13 @@ const zval *get_generated_pool();
 #if PHP_VERSION_ID < 80000
 #define PROTO_VAL zval
 #define PROTO_STR zval
-#define PROTO_MSG_P(obj) (Message*)Z_OBJ_P(obj)
+#define PROTO_VAL_P(obj) Z_OBJ_P(obj)
 #define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
 #define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
 #else
 #define PROTO_VAL zend_object
 #define PROTO_STR zend_string
-#define PROTO_MSG_P(obj) (Message*)(obj)
+#define PROTO_VAL_P(obj) (void*)(obj)
 #define PROTO_STRVAL_P(obj) ZSTR_VAL(obj)
 #define PROTO_STRLEN_P(obj) ZSTR_LEN(obj)
 #endif
@@ -76,7 +76,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.14.0"
+#define PHP_PROTOBUF_VERSION "3.15.6"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:

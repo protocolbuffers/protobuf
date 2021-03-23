@@ -37,14 +37,17 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PARSER_H__
 #define GOOGLE_PROTOBUF_COMPILER_PARSER_H__
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <utility>
+
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/repeated_field.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -172,7 +175,8 @@ class PROTOBUF_EXPORT Parser {
   bool ConsumeSignedInteger(int* output, const char* error);
   // Consume a 64-bit integer and store its value in "output".  If the value
   // is greater than max_value, an error will be reported.
-  bool ConsumeInteger64(uint64 max_value, uint64* output, const char* error);
+  bool ConsumeInteger64(uint64_t max_value, uint64_t* output,
+                        const char* error);
   // Consume a number and store its value in "output".  This will accept
   // tokens of either INTEGER or FLOAT type.
   bool ConsumeNumber(double* output, const char* error);
@@ -323,8 +327,8 @@ class PROTOBUF_EXPORT Parser {
                     const LocationRecorder& root_location,
                     const FileDescriptorProto* containing_file);
   bool ParseImport(RepeatedPtrField<std::string>* dependency,
-                   RepeatedField<int32>* public_dependency,
-                   RepeatedField<int32>* weak_dependency,
+                   RepeatedField<int32_t>* public_dependency,
+                   RepeatedField<int32_t>* weak_dependency,
                    const LocationRecorder& root_location,
                    const FileDescriptorProto* containing_file);
 

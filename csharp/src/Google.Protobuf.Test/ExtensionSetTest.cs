@@ -116,7 +116,22 @@ namespace Google.Protobuf
             var other = message.Clone();
 
             Assert.AreEqual(message, other);
-            Assert.AreEqual(message.CalculateSize(), message.CalculateSize());
+            Assert.AreEqual(message.CalculateSize(), other.CalculateSize());
+        }
+
+        [Test]
+        public void TestDefaultValueRoundTrip()
+        {
+            var message = new TestAllExtensions();
+            message.SetExtension(OptionalBoolExtension, false);
+            Assert.IsFalse(message.GetExtension(OptionalBoolExtension));
+            Assert.IsTrue(message.HasExtension(OptionalBoolExtension));
+
+            var bytes = message.ToByteArray();
+            var registry = new ExtensionRegistry { OptionalBoolExtension };
+            var parsed = TestAllExtensions.Parser.WithExtensionRegistry(registry).ParseFrom(bytes);
+            Assert.IsFalse(parsed.GetExtension(OptionalBoolExtension));
+            Assert.IsTrue(parsed.HasExtension(OptionalBoolExtension));
         }
     }
 }

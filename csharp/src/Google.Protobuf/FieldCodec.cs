@@ -876,6 +876,12 @@ namespace Google.Protobuf
         /// </summary>
         public int CalculateSizeWithTag(T value) => IsDefault(value) ? 0 : ValueSizeCalculator(value) + tagSize;
 
+        /// <summary>
+        /// Calculates the size required to write the given value, with a tag, even
+        /// if the value is the default.
+        /// </summary>
+        internal int CalculateUnconditionalSizeWithTag(T value) => ValueSizeCalculator(value) + tagSize;
+
         private bool IsDefault(T value) => EqualityComparer.Equals(value, DefaultValue);
     }
 }

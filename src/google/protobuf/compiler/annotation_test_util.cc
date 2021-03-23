@@ -30,6 +30,7 @@
 
 #include <google/protobuf/compiler/annotation_test_util.h>
 
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/testing/file.h>
@@ -141,8 +142,8 @@ bool AtLeastOneAnnotationMatchesSubstring(
            e = annotations.end();
        i != e; ++i) {
     const GeneratedCodeInfo::Annotation* annotation = *i;
-    uint32 begin = annotation->begin();
-    uint32 end = annotation->end();
+    uint32_t begin = annotation->begin();
+    uint32_t end = annotation->end();
     if (end < begin || end > file_content.size()) {
       return false;
     }

@@ -35,6 +35,7 @@
 #include <google/protobuf/compiler/cpp/cpp_message.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <functional>
 #include <map>
 #include <memory>
@@ -76,7 +77,7 @@ static constexpr int kNoHasbit = -1;
 // masks is allowed to be shorter than _has_bits_, but at least one element of
 // masks must be non-zero.
 std::string ConditionalToCheckBitmasks(
-    const std::vector<uint32>& masks, bool return_success = true,
+    const std::vector<uint32_t>& masks, bool return_success = true,
     StringPiece has_bits_var = "_has_bits_") {
   std::vector<std::string> parts;
   for (int i = 0; i < masks.size(); i++) {
@@ -405,23 +406,23 @@ std::vector<std::vector<const FieldDescriptor*>> CollectFields(
 // Returns a bit mask based on has_bit index of "fields" that are typically on
 // the same chunk. It is used in a group presence check where _has_bits_ is
 // masked to tell if any thing in "fields" is present.
-uint32 GenChunkMask(const std::vector<const FieldDescriptor*>& fields,
-                    const std::vector<int>& has_bit_indices) {
+uint32_t GenChunkMask(const std::vector<const FieldDescriptor*>& fields,
+                      const std::vector<int>& has_bit_indices) {
   GOOGLE_CHECK(!fields.empty());
   int first_index_offset = has_bit_indices[fields.front()->index()] / 32;
-  uint32 chunk_mask = 0;
+  uint32_t chunk_mask = 0;
   for (auto field : fields) {
     // "index" defines where in the _has_bits_ the field appears.
     int index = has_bit_indices[field->index()];
     GOOGLE_CHECK_EQ(first_index_offset, index / 32);
-    chunk_mask |= static_cast<uint32>(1) << (index % 32);
+    chunk_mask |= static_cast<uint32_t>(1) << (index % 32);
   }
   GOOGLE_CHECK_NE(0, chunk_mask);
   return chunk_mask;
 }
 
 // Return the number of bits set in n, a non-negative integer.
-static int popcnt(uint32 n) {
+static int popcnt(uint32_t n) {
   int result = 0;
   while (n != 0) {
     result += (n & 1);
@@ -507,7 +508,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
   format("if (PROTOBUF_PREDICT_FALSE(");
   int first_word = HasbitWord(chunk, 0);
   while (chunk < limit_chunk_) {
-    uint32 mask = 0;
+    uint32_t mask = 0;
     int this_word = HasbitWord(chunk, 0);
     // Generate mask for chunks on the same word.
     for (; chunk < limit_chunk_ && HasbitWord(chunk, 0) == this_word; chunk++) {
@@ -1076,19 +1077,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
           "  void MergeFrom(const ::$proto_ns$::Message& other) final;\n"
-          "  ::$proto_ns$::Metadata GetMetadata() const final;\n"
-          "  private:\n"
-          "  static ::$proto_ns$::Metadata GetMetadataStatic() {\n"
-          "    ::$proto_ns$::internal::AssignDescriptors(&::$desc_table$);\n"
-          "    return ::$desc_table$.file_level_metadata[$1$];\n"
-          "  }\n"
-          "\n"
-          "  public:\n"
-          "};\n",
-          index_in_file_messages_);
-    } else {
-      format("};\n");
+          "  ::$proto_ns$::Metadata GetMetadata() const final;\n");
     }
+    format("};\n");
     return;
   }
 
@@ -1102,7 +1093,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
 
   format(
       "inline $classname$() : $classname$(nullptr) {}\n"
-      "virtual ~$classname$();\n"
+      "~$classname$() override;\n"
       "explicit constexpr "
       "$classname$(::$proto_ns$::internal::ConstantInitialized);\n"
       "\n"
@@ -1168,10 +1159,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     // separately.
     format(
         "static const ::$proto_ns$::Descriptor* GetDescriptor() {\n"
-        "  return GetMetadataStatic().descriptor;\n"
+        "  return default_instance().GetMetadata().descriptor;\n"
         "}\n"
         "static const ::$proto_ns$::Reflection* GetReflection() {\n"
-        "  return GetMetadataStatic().reflection;\n"
+        "  return default_instance().GetMetadata().reflection;\n"
         "}\n");
   }
 
@@ -1380,12 +1371,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
         "::$proto_ns$::Metadata GetMetadata() const final;\n"
-        "private:\n"
-        "static ::$proto_ns$::Metadata GetMetadataStatic() {\n"
-        "  return ::$desc_table$_metadata_getter(kIndexInFileMessages);\n"
-        "}\n"
-        "\n"
-        "public:\n"
         "\n");
   } else {
     format(
@@ -1670,8 +1655,8 @@ namespace {
 
 // We need to calculate for each field what function the table driven code
 // should use to serialize it. This returns the index in a lookup table.
-uint32 CalcFieldNum(const FieldGenerator& generator,
-                    const FieldDescriptor* field, const Options& options) {
+uint32_t CalcFieldNum(const FieldGenerator& generator,
+                      const FieldDescriptor* field, const Options& options) {
   bool is_a_map = IsMapEntryMessage(field->containing_type());
   int type = field->type();
   if (type == FieldDescriptor::TYPE_STRING ||
@@ -1723,7 +1708,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
       const FieldDescriptor* field = sorted[i];
       const FieldGenerator& generator = field_generators_.get(field);
 
-      uint32 tag = internal::WireFormatLite::MakeTag(
+      uint32_t tag = internal::WireFormatLite::MakeTag(
           field->number(), WireFormat::WireTypeForFieldType(field->type()));
 
       std::map<std::string, std::string> vars;
@@ -1780,7 +1765,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     if (i == sorted.size()) break;
     const FieldDescriptor* field = sorted[i];
 
-    uint32 tag = internal::WireFormatLite::MakeTag(
+    uint32_t tag = internal::WireFormatLite::MakeTag(
         field->number(), WireFormat::WireTypeForFieldType(field->type()));
     if (field->is_packed()) {
       tag = internal::WireFormatLite::MakeTag(
@@ -1843,7 +1828,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
           tag);
     } else if (field->real_containing_oneof()) {
       format.Set("oneofoffset",
-                 sizeof(uint32) * field->containing_oneof()->index());
+                 sizeof(uint32_t) * field->containing_oneof()->index());
       format(
           "{PROTOBUF_FIELD_OFFSET($classtype$, $field_name$_), $1$,"
           " PROTOBUF_FIELD_OFFSET($classtype$, _oneof_case_) + "
@@ -1889,8 +1874,11 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
           "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "  return GetMetadataStatic();\n"
-          "}\n");
+          "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+          "      &$desc_table$_getter, &$desc_table$_once,\n"
+          "      $file_level_metadata$[$1$]);\n"
+          "}\n",
+          index_in_file_messages_);
       format(
           "void $classname$::MergeFrom(\n"
           "    const ::$proto_ns$::Message& other) {\n"
@@ -1946,7 +1934,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     }
   }
   if (num_required_fields_ > 0) {
-    const std::vector<uint32> masks_for_has_bits = RequiredFieldsBitMask();
+    const std::vector<uint32_t> masks_for_has_bits = RequiredFieldsBitMask();
     format(
         "static bool MissingRequiredFields(const HasBits& has_bits) "
         "{\n"
@@ -2029,9 +2017,11 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     format(
         "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-        "  return GetMetadataStatic();\n"
-        "}\n"
-        "\n");
+        "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+        "      &$desc_table$_getter, &$desc_table$_once,\n"
+        "      $file_level_metadata$[$1$]);\n"
+        "}\n",
+        index_in_file_messages_);
   } else {
     format(
         "std::string $classname$::GetTypeName() const {\n"
@@ -2762,7 +2752,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
 
     if (have_outer_if) {
       // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32 chunk_mask = GenChunkMask(chunk, has_bit_indices_);
+      uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
       std::string chunk_mask_str =
           StrCat(strings::Hex(chunk_mask, strings::ZERO_PAD_8));
 
@@ -3066,7 +3056,7 @@ void MessageGenerator::GenerateClassSpecificMergeFrom(io::Printer* printer) {
 
     if (have_outer_if) {
       // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32 chunk_mask = GenChunkMask(chunk, has_bit_indices_);
+      uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
       std::string chunk_mask_str =
           StrCat(strings::Hex(chunk_mask, strings::ZERO_PAD_8));
 
@@ -3456,6 +3446,12 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
       }
     }
 
+    void EmitIfNotNull(const FieldDescriptor* field) {
+      if (field != nullptr) {
+        Emit(field);
+      }
+    }
+
     void Flush() {
       if (!v_.empty()) {
         mg_->GenerateSerializeOneofFields(format_.printer(), v_);
@@ -3482,6 +3478,61 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
     int cached_has_bit_index_;
   };
 
+  class LazyExtensionRangeEmitter {
+   public:
+    LazyExtensionRangeEmitter(MessageGenerator* mg, io::Printer* printer)
+        : mg_(mg), format_(printer) {}
+
+    void AddToRange(const Descriptor::ExtensionRange* range) {
+      if (!has_current_range_) {
+        current_combined_range_ = *range;
+        has_current_range_ = true;
+      } else {
+        current_combined_range_.start =
+            std::min(current_combined_range_.start, range->start);
+        current_combined_range_.end =
+            std::max(current_combined_range_.end, range->end);
+      }
+    }
+
+    void Flush() {
+      if (has_current_range_) {
+        mg_->GenerateSerializeOneExtensionRange(format_.printer(),
+                                                &current_combined_range_);
+      }
+      has_current_range_ = false;
+    }
+
+   private:
+    MessageGenerator* mg_;
+    Formatter format_;
+    bool has_current_range_ = false;
+    Descriptor::ExtensionRange current_combined_range_;
+  };
+
+  // We need to track the largest weak field, because weak fields are serialized
+  // differently than normal fields.  The WeakFieldMap::FieldWriter will
+  // serialize all weak fields that are ordinally between the last serialized
+  // weak field and the current field.  In order to guarantee that all weak
+  // fields are serialized, we need to make sure to emit the code to serialize
+  // the largest weak field present at some point.
+  class LargestWeakFieldHolder {
+   public:
+    const FieldDescriptor* Release() {
+      const FieldDescriptor* result = field_;
+      field_ = nullptr;
+      return result;
+    }
+    void ReplaceIfLarger(const FieldDescriptor* field) {
+      if (field_ == nullptr || field_->number() < field->number()) {
+        field_ = field;
+      }
+    }
+
+   private:
+    const FieldDescriptor* field_ = nullptr;
+  };
+
   std::vector<const FieldDescriptor*> ordered_fields =
       SortFieldsByNumber(descriptor_);
 
@@ -3505,7 +3556,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
   // Merge the fields and the extension ranges, both sorted by field number.
   {
     LazySerializerEmitter e(this, printer);
-    const FieldDescriptor* last_weak_field = nullptr;
+    LazyExtensionRangeEmitter re(this, printer);
+    LargestWeakFieldHolder largest_weak_field;
     int i, j;
     for (i = 0, j = 0;
          i < ordered_fields.size() || j < sorted_extensions.size();) {
@@ -3516,31 +3568,22 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
         if (IsFieldStripped(field, options_)) {
           continue;
         }
+        re.Flush();
         if (field->options().weak()) {
-          if (last_weak_field == nullptr ||
-              last_weak_field->number() < field->number()) {
-            last_weak_field = field;
-          }
+          largest_weak_field.ReplaceIfLarger(field);
           PrintFieldComment(format, field);
         } else {
-          if (last_weak_field != nullptr) {
-            e.Emit(last_weak_field);
-            last_weak_field = nullptr;
-          }
+          e.EmitIfNotNull(largest_weak_field.Release());
           e.Emit(field);
         }
       } else {
-        if (last_weak_field != nullptr) {
-          e.Emit(last_weak_field);
-          last_weak_field = nullptr;
-        }
+        e.EmitIfNotNull(largest_weak_field.Release());
         e.Flush();
-        GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++]);
+        re.AddToRange(sorted_extensions[j++]);
       }
     }
-    if (last_weak_field != nullptr) {
-      e.Emit(last_weak_field);
-    }
+    re.Flush();
+    e.EmitIfNotNull(largest_weak_field.Release());
   }
 
   std::map<std::string, std::string> vars;
@@ -3655,9 +3698,9 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   format("}\n");
 }
 
-std::vector<uint32> MessageGenerator::RequiredFieldsBitMask() const {
+std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
   const int array_size = HasBitsSize();
-  std::vector<uint32> masks(array_size, 0);
+  std::vector<uint32_t> masks(array_size, 0);
 
   for (auto field : FieldRange(descriptor_)) {
     if (!field->is_required()) {
@@ -3665,7 +3708,8 @@ std::vector<uint32> MessageGenerator::RequiredFieldsBitMask() const {
     }
 
     const int has_bit_index = has_bit_indices_[field->index()];
-    masks[has_bit_index / 32] |= static_cast<uint32>(1) << (has_bit_index % 32);
+    masks[has_bit_index / 32] |= static_cast<uint32_t>(1)
+                                 << (has_bit_index % 32);
   }
   return masks;
 }
@@ -3746,7 +3790,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
   // present then the fast path executes; otherwise the slow path executes.
   if (num_required_fields_ > 1) {
     // The fast path works if all required fields are present.
-    const std::vector<uint32> masks_for_has_bits = RequiredFieldsBitMask();
+    const std::vector<uint32_t> masks_for_has_bits = RequiredFieldsBitMask();
     format("if ($1$) {  // All required fields are present.\n",
            ConditionalToCheckBitmasks(masks_for_has_bits));
     format.Indent();
@@ -3802,7 +3846,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
 
     if (have_outer_if) {
       // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32 chunk_mask = GenChunkMask(chunk, has_bit_indices_);
+      uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
       std::string chunk_mask_str =
           StrCat(strings::Hex(chunk_mask, strings::ZERO_PAD_8));
 

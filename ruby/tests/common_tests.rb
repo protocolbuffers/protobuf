@@ -436,6 +436,18 @@ module CommonTests
     end
   end
 
+  def test_b_8385
+    m1 = Google::Protobuf::Map.new(:string, :string)
+    m2 = Google::Protobuf::Map.new(:string, :string)
+
+    assert_equal m1, m2
+
+    m1["counter"] = "a"
+    m2["counter"] = "aa"
+
+    assert_not_equal m1, m2
+  end
+
   def test_map_ctor
     m = Google::Protobuf::Map.new(:string, :int32,
                                   {"a" => 1, "b" => 2, "c" => 3})
@@ -1700,6 +1712,12 @@ module CommonTests
 
     m = proto_module::TimeMessage.new(duration: 1.1)
     assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 100_000_000), m.duration
+
+    m = proto_module::TimeMessage.new(duration: 123.321)
+    assert_equal Google::Protobuf::Duration.new(seconds: 123, nanos: 321_000_000), m.duration
+
+    m = proto_module::TimeMessage.new(duration: -123.321)
+    assert_equal Google::Protobuf::Duration.new(seconds: -123, nanos: -321_000_000), m.duration
 
     assert_raise(Google::Protobuf::TypeError) { m.duration = '2' }
     assert_raise(Google::Protobuf::TypeError) { m.duration = proto_module::TimeMessage.new }

@@ -31,6 +31,7 @@
 #include <google/protobuf/util/internal/datapiece.h>
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 #include <google/protobuf/struct.pb.h>
@@ -47,13 +48,8 @@ namespace util {
 namespace converter {
 
 using util::Status;
-using util::error::Code;
 
 namespace {
-
-inline Status InvalidArgument(StringPiece value_str) {
-  return Status(util::error::INVALID_ARGUMENT, value_str);
-}
 
 template <typename To, typename From>
 util::StatusOr<To> ValidateNumberConversion(To after, From before) {
@@ -61,7 +57,7 @@ util::StatusOr<To> ValidateNumberConversion(To after, From before) {
       MathUtil::Sign<From>(before) == MathUtil::Sign<To>(after)) {
     return after;
   } else {
-    return InvalidArgument(std::is_integral<From>::value
+    return util::InvalidArgumentError(std::is_integral<From>::value
                                ? ValueAsString(before)
                                : std::is_same<From, double>::value
                                      ? DoubleAsString(before)
@@ -106,7 +102,7 @@ util::StatusOr<float> DoubleToFloat(double before) {
   } else if (before > std::numeric_limits<float>::max() ||
              before < -std::numeric_limits<float>::max()) {
     // Double value outside of the range of float.
-    return InvalidArgument(DoubleAsString(before));
+    return util::InvalidArgumentError(DoubleAsString(before));
   } else {
     return static_cast<float>(before);
   }
@@ -114,54 +110,56 @@ util::StatusOr<float> DoubleToFloat(double before) {
 
 }  // namespace
 
-util::StatusOr<int32> DataPiece::ToInt32() const {
-  if (type_ == TYPE_STRING) return StringToNumber<int32>(safe_strto32);
-
-  if (type_ == TYPE_DOUBLE)
-    return FloatingPointToIntConvertAndCheck<int32, double>(double_);
-
-  if (type_ == TYPE_FLOAT)
-    return FloatingPointToIntConvertAndCheck<int32, float>(float_);
-
-  return GenericConvert<int32>();
-}
-
-util::StatusOr<uint32> DataPiece::ToUint32() const {
+util::StatusOr<int32_t> DataPiece::ToInt32() const {
   if (type_ == TYPE_STRING)
-    return StringToNumber<uint32>(safe_strtou32);
+    return StringToNumber<int32_t>(safe_strto32);
 
   if (type_ == TYPE_DOUBLE)
-    return FloatingPointToIntConvertAndCheck<uint32, double>(double_);
+    return FloatingPointToIntConvertAndCheck<int32_t, double>(double_);
 
   if (type_ == TYPE_FLOAT)
-    return FloatingPointToIntConvertAndCheck<uint32, float>(float_);
+    return FloatingPointToIntConvertAndCheck<int32_t, float>(float_);
 
-  return GenericConvert<uint32>();
+  return GenericConvert<int32_t>();
 }
 
-util::StatusOr<int64> DataPiece::ToInt64() const {
-  if (type_ == TYPE_STRING) return StringToNumber<int64>(safe_strto64);
-
-  if (type_ == TYPE_DOUBLE)
-    return FloatingPointToIntConvertAndCheck<int64, double>(double_);
-
-  if (type_ == TYPE_FLOAT)
-    return FloatingPointToIntConvertAndCheck<int64, float>(float_);
-
-  return GenericConvert<int64>();
-}
-
-util::StatusOr<uint64> DataPiece::ToUint64() const {
+util::StatusOr<uint32_t> DataPiece::ToUint32() const {
   if (type_ == TYPE_STRING)
-    return StringToNumber<uint64>(safe_strtou64);
+    return StringToNumber<uint32_t>(safe_strtou32);
 
   if (type_ == TYPE_DOUBLE)
-    return FloatingPointToIntConvertAndCheck<uint64, double>(double_);
+    return FloatingPointToIntConvertAndCheck<uint32_t, double>(double_);
 
   if (type_ == TYPE_FLOAT)
-    return FloatingPointToIntConvertAndCheck<uint64, float>(float_);
+    return FloatingPointToIntConvertAndCheck<uint32_t, float>(float_);
 
-  return GenericConvert<uint64>();
+  return GenericConvert<uint32_t>();
+}
+
+util::StatusOr<int64_t> DataPiece::ToInt64() const {
+  if (type_ == TYPE_STRING)
+    return StringToNumber<int64_t>(safe_strto64);
+
+  if (type_ == TYPE_DOUBLE)
+    return FloatingPointToIntConvertAndCheck<int64_t, double>(double_);
+
+  if (type_ == TYPE_FLOAT)
+    return FloatingPointToIntConvertAndCheck<int64_t, float>(float_);
+
+  return GenericConvert<int64_t>();
+}
+
+util::StatusOr<uint64_t> DataPiece::ToUint64() const {
+  if (type_ == TYPE_STRING)
+    return StringToNumber<uint64_t>(safe_strtou64);
+
+  if (type_ == TYPE_DOUBLE)
+    return FloatingPointToIntConvertAndCheck<uint64_t, double>(double_);
+
+  if (type_ == TYPE_FLOAT)
+    return FloatingPointToIntConvertAndCheck<uint64_t, float>(float_);
+
+  return GenericConvert<uint64_t>();
 }
 
 util::StatusOr<double> DataPiece::ToDouble() const {
@@ -176,7 +174,7 @@ util::StatusOr<double> DataPiece::ToDouble() const {
     if (value.ok() && !std::isfinite(value.value())) {
       // safe_strtod converts out-of-range values to +inf/-inf, but we want
       // to report them as errors.
-      return InvalidArgument(StrCat("\"", str_, "\""));
+      return util::InvalidArgumentError(StrCat("\"", str_, "\""));
     } else {
       return value;
     }
@@ -206,7 +204,7 @@ util::StatusOr<bool> DataPiece::ToBool() const {
     case TYPE_STRING:
       return StringToNumber<bool>(safe_strtob);
     default:
-      return InvalidArgument(
+      return util::InvalidArgumentError(
           ValueAsStringOrDefault("Wrong type. Cannot convert to Bool."));
   }
 }
@@ -221,7 +219,7 @@ util::StatusOr<std::string> DataPiece::ToString() const {
       return base64;
     }
     default:
-      return InvalidArgument(
+      return util::InvalidArgumentError(
           ValueAsStringOrDefault("Cannot convert to string."));
   }
 }
@@ -262,11 +260,11 @@ util::StatusOr<std::string> DataPiece::ToBytes() const {
   if (type_ == TYPE_STRING) {
     std::string decoded;
     if (!DecodeBase64(str_, &decoded)) {
-      return InvalidArgument(ValueAsStringOrDefault("Invalid data in input."));
+      return util::InvalidArgumentError(ValueAsStringOrDefault("Invalid data in input."));
     }
     return decoded;
   } else {
-    return InvalidArgument(ValueAsStringOrDefault(
+    return util::InvalidArgumentError(ValueAsStringOrDefault(
         "Wrong type. Only String or Bytes can be converted to Bytes."));
   }
 }
@@ -286,7 +284,7 @@ util::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     if (value != nullptr) return value->number();
 
     // Check if int version of enum is sent as string.
-    util::StatusOr<int32> int_value = ToInt32();
+    util::StatusOr<int32_t> int_value = ToInt32();
     if (int_value.ok()) {
       if (const google::protobuf::EnumValue* enum_value =
               FindEnumValueByNumberOrNull(enum_type, int_value.value())) {
@@ -326,7 +324,7 @@ util::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     // enum because we preserve unknown enum values as well.
     return ToInt32();
   }
-  return InvalidArgument(
+  return util::InvalidArgumentError(
       ValueAsStringOrDefault("Cannot find enum with given value."));
 }
 
@@ -334,19 +332,19 @@ template <typename To>
 util::StatusOr<To> DataPiece::GenericConvert() const {
   switch (type_) {
     case TYPE_INT32:
-      return NumberConvertAndCheck<To, int32>(i32_);
+      return NumberConvertAndCheck<To, int32_t>(i32_);
     case TYPE_INT64:
-      return NumberConvertAndCheck<To, int64>(i64_);
+      return NumberConvertAndCheck<To, int64_t>(i64_);
     case TYPE_UINT32:
-      return NumberConvertAndCheck<To, uint32>(u32_);
+      return NumberConvertAndCheck<To, uint32_t>(u32_);
     case TYPE_UINT64:
-      return NumberConvertAndCheck<To, uint64>(u64_);
+      return NumberConvertAndCheck<To, uint64_t>(u64_);
     case TYPE_DOUBLE:
       return NumberConvertAndCheck<To, double>(double_);
     case TYPE_FLOAT:
       return NumberConvertAndCheck<To, float>(float_);
     default:  // TYPE_ENUM, TYPE_STRING, TYPE_CORD, TYPE_BOOL
-      return InvalidArgument(ValueAsStringOrDefault(
+      return util::InvalidArgumentError(ValueAsStringOrDefault(
           "Wrong type. Bool, Enum, String and Cord not supported in "
           "GenericConvert."));
   }
@@ -356,11 +354,11 @@ template <typename To>
 util::StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece,
                                                           To*)) const {
   if (str_.size() > 0 && (str_[0] == ' ' || str_[str_.size() - 1] == ' ')) {
-    return InvalidArgument(StrCat("\"", str_, "\""));
+    return util::InvalidArgumentError(StrCat("\"", str_, "\""));
   }
   To result;
   if (func(str_, &result)) return result;
-  return InvalidArgument(StrCat("\"", std::string(str_), "\""));
+  return util::InvalidArgumentError(StrCat("\"", std::string(str_), "\""));
 }
 
 bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {

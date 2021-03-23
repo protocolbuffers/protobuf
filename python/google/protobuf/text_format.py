@@ -567,8 +567,6 @@ class _Printer(object):
       self.out.write(', ')
     self.PrintFieldValue(field, value[-1])
     self.out.write(']')
-    if self.force_colon:
-      self.out.write(':')
     self.out.write(' ' if self.as_one_line else '\n')
 
   def _PrintMessageFieldValue(self, value):
@@ -1060,7 +1058,7 @@ class _Parser(object):
       value_cpptype = field.message_type.fields_by_name['value'].cpp_type
       if value_cpptype == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
         value = getattr(message, field.name)[sub_message.key]
-        value.MergeFrom(sub_message.value)
+        value.CopyFrom(sub_message.value)
       else:
         getattr(message, field.name)[sub_message.key] = sub_message.value
 
