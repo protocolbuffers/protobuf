@@ -385,8 +385,8 @@
             <goals> <goal>compile</goal> </goals>
             <configuration>
               <sourceDirs>
-                <sourceDir>${generated.sources.dir}/com/google/protobuf</sourceDir>
-                <sourceDir>${generated.sources.dir}/kotlin/com/google/protobuf</sourceDir>
+                <sourceDir>${generated.sources.dir}/java</sourceDir>
+                <sourceDir>${generated.sources.dir}/kotlin</sourceDir>
               </sourceDirs>
             </configuration>
           </execution>
@@ -403,7 +403,6 @@
           </execution>
         </executions>
       </plugin>
-
 
       <!-- OSGI bundle configuration -->
       <plugin>
@@ -422,5 +421,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

@@ -403,6 +403,15 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/Utf8.java                            \
   java/core/src/main/java/com/google/protobuf/WireFormat.java                      \
   java/core/src/main/java/com/google/protobuf/Writer.java                          \
+  java/core/src/main/kotlin/com/google/protobuf/DslList.kt                         \
+  java/core/src/main/kotlin/com/google/protobuf/DslMap.kt                          \
+  java/core/src/main/kotlin/com/google/protobuf/DslProxy.kt                        \
+  java/core/src/main/kotlin/com/google/protobuf/ExtendableMessageExtensions.kt     \
+  java/core/src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt \
+  java/core/src/main/kotlin/com/google/protobuf/ExtensionList.kt                   \
+  java/core/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt  \
+  java/core/src/main/kotlin/com/google/protobuf/ProtoDslMarker.kt                  \
+  java/core/src/main/kotlin/com/google/protobuf/UnmodifiableCollections.kt         \
   java/core/src/test/java/com/google/protobuf/AbstractMessageTest.java             \
   java/core/src/test/java/com/google/protobuf/AbstractProto2LiteSchemaTest.java    \
   java/core/src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java        \
@@ -498,6 +507,12 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/WireFormatTest.java                  \
   java/core/src/test/java/com/google/protobuf/WrappersLiteOfMethodTest.java        \
   java/core/src/test/java/com/google/protobuf/WrappersOfMethodTest.java            \
+  java/core/src/test/kotlin/com/google/protobuf/DslListTest.kt                     \
+  java/core/src/test/kotlin/com/google/protobuf/DslMapTest.kt                      \
+  java/core/src/test/kotlin/com/google/protobuf/ExtendableMessageExtensionsTest.kt \
+  java/core/src/test/kotlin/com/google/protobuf/ExtensionListTest.kt               \
+  java/core/src/test/kotlin/com/google/protobuf/Proto2Test.kt                      \
+  java/core/src/test/kotlin/com/google/protobuf/Proto3Test.kt                      \
   java/core/src/test/proto/com/google/protobuf/any_test.proto                      \
   java/core/src/test/proto/com/google/protobuf/cached_field_size_test.proto        \
   java/core/src/test/proto/com/google/protobuf/deprecated_file.proto               \
