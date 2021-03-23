@@ -518,6 +518,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/deprecated_file.proto               \
   java/core/src/test/proto/com/google/protobuf/evil_names_proto2.proto             \
   java/core/src/test/proto/com/google/protobuf/evil_names_proto3.proto             \
+  java/core/src/test/proto/com/google/protobuf/example_extensible_message.proto    \
   java/core/src/test/proto/com/google/protobuf/field_presence_test.proto           \
   java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto              \
   java/core/src/test/proto/com/google/protobuf/lite_equals_and_hash.proto          \
