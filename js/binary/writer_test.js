@@ -44,7 +44,8 @@ goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
 goog.require('jspb.utils');
-
+goog.require('goog.crypt.base64');
+goog.requireType('jspb.BinaryMessage');
 
 /**
  * @param {function()} func This function should throw an error when run.
@@ -61,7 +62,7 @@ describe('binaryWriterTest', function() {
   it('testWriteErrors', function() {
     // Submessages with invalid field indices should assert.
     var writer = new jspb.BinaryWriter();
-    var dummyMessage = /** @type {!jspb.BinaryMessage} */({});
+    var dummyMessage = /** @type {!jspb.BinaryMessage} */ ({});
 
     assertFails(function() {
       writer.writeMessage(-1, dummyMessage, goog.nullFunction);
@@ -69,40 +70,82 @@ describe('binaryWriterTest', function() {
 
     // Writing invalid field indices should assert.
     writer = new jspb.BinaryWriter();
-    assertFails(function() {writer.writeUint64(-1, 1);});
+    assertFails(function() {
+      writer.writeUint64(-1, 1);
+    });
 
     // Writing out-of-range field values should assert.
     writer = new jspb.BinaryWriter();
 
-    assertFails(function() {writer.writeInt32(1, -Infinity);});
-    assertFails(function() {writer.writeInt32(1, Infinity);});
+    assertFails(function() {
+      writer.writeInt32(1, -Infinity);
+    });
+    assertFails(function() {
+      writer.writeInt32(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeInt64(1, -Infinity);});
-    assertFails(function() {writer.writeInt64(1, Infinity);});
+    assertFails(function() {
+      writer.writeInt64(1, -Infinity);
+    });
+    assertFails(function() {
+      writer.writeInt64(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeUint32(1, -1);});
-    assertFails(function() {writer.writeUint32(1, Infinity);});
+    assertFails(function() {
+      writer.writeUint32(1, -1);
+    });
+    assertFails(function() {
+      writer.writeUint32(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeUint64(1, -1);});
-    assertFails(function() {writer.writeUint64(1, Infinity);});
+    assertFails(function() {
+      writer.writeUint64(1, -1);
+    });
+    assertFails(function() {
+      writer.writeUint64(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeSint32(1, -Infinity);});
-    assertFails(function() {writer.writeSint32(1, Infinity);});
+    assertFails(function() {
+      writer.writeSint32(1, -Infinity);
+    });
+    assertFails(function() {
+      writer.writeSint32(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeSint64(1, -Infinity);});
-    assertFails(function() {writer.writeSint64(1, Infinity);});
+    assertFails(function() {
+      writer.writeSint64(1, -Infinity);
+    });
+    assertFails(function() {
+      writer.writeSint64(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeFixed32(1, -1);});
-    assertFails(function() {writer.writeFixed32(1, Infinity);});
+    assertFails(function() {
+      writer.writeFixed32(1, -1);
+    });
+    assertFails(function() {
+      writer.writeFixed32(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeFixed64(1, -1);});
-    assertFails(function() {writer.writeFixed64(1, Infinity);});
+    assertFails(function() {
+      writer.writeFixed64(1, -1);
+    });
+    assertFails(function() {
+      writer.writeFixed64(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeSfixed32(1, -Infinity);});
-    assertFails(function() {writer.writeSfixed32(1, Infinity);});
+    assertFails(function() {
+      writer.writeSfixed32(1, -Infinity);
+    });
+    assertFails(function() {
+      writer.writeSfixed32(1, Infinity);
+    });
 
-    assertFails(function() {writer.writeSfixed64(1, -Infinity);});
-    assertFails(function() {writer.writeSfixed64(1, Infinity);});
+    assertFails(function() {
+      writer.writeSfixed64(1, -Infinity);
+    });
+    assertFails(function() {
+      writer.writeSfixed64(1, Infinity);
+    });
   });
 
 

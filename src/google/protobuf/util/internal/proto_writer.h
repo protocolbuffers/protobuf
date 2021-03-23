@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTO_WRITER_H__
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTO_WRITER_H__
 
+#include <cstdint>
 #include <deque>
 #include <string>
 #include <vector>
@@ -82,16 +83,16 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   ProtoWriter* RenderBool(StringPiece name, bool value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderInt32(StringPiece name, int32 value) override {
+  ProtoWriter* RenderInt32(StringPiece name, int32_t value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderUint32(StringPiece name, uint32 value) override {
+  ProtoWriter* RenderUint32(StringPiece name, uint32_t value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderInt64(StringPiece name, int64 value) override {
+  ProtoWriter* RenderInt64(StringPiece name, int64_t value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
-  ProtoWriter* RenderUint64(StringPiece name, uint64 value) override {
+  ProtoWriter* RenderUint64(StringPiece name, uint64_t value) override {
     return RenderDataPiece(name, DataPiece(value));
   }
   ProtoWriter* RenderDouble(StringPiece name, double value) override {
@@ -204,11 +205,11 @@ class PROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     }
 
     // Returns true if the index is already taken by a preceding oneof input.
-    bool IsOneofIndexTaken(int32 index);
+    bool IsOneofIndexTaken(int32_t index);
 
     // Marks the oneof 'index' as taken. Future inputs to this oneof will
     // generate an error.
-    void TakeOneofIndex(int32 index);
+    void TakeOneofIndex(int32_t index);
 
     bool proto3() { return proto3_; }
 

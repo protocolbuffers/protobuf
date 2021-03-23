@@ -6663,10 +6663,9 @@ void upb_array_set(upb_array *arr, size_t i, upb_msgval val) {
 }
 
 bool upb_array_append(upb_array *arr, upb_msgval val, upb_arena *arena) {
-  if (!_upb_array_realloc(arr, arr->len + 1, arena)) {
+  if (!upb_array_resize(arr, arr->len + 1, arena)) {
     return false;
   }
-  arr->len++;
   upb_array_set(arr, arr->len - 1, val);
   return true;
 }
@@ -7793,7 +7792,8 @@ static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
 
   {
     /* [+-]08:00 or Z */
-    int ofs = 0;
+    int ofs_hour = 0;
+    int ofs_min = 0;
     bool neg = false;
 
     if (ptr == end) goto malformed;
@@ -7804,9 +7804,10 @@ static void jsondec_timestamp(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
         /* fallthrough */
       case '+':
         if ((end - ptr) != 5) goto malformed;
-        ofs = jsondec_tsdigits(d, &ptr, 2, ":00");
-        ofs *= 60 * 60;
-        seconds.int64_val += (neg ? ofs : -ofs);
+        ofs_hour = jsondec_tsdigits(d, &ptr, 2, ":");
+        ofs_min = jsondec_tsdigits(d, &ptr, 2, NULL);
+        ofs_min = ((ofs_hour * 60) + ofs_min) * 60;
+        seconds.int64_val += (neg ? ofs_min : -ofs_min);
         break;
       case 'Z':
         if (ptr != end) goto malformed;

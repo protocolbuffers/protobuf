@@ -1133,12 +1133,6 @@ def _AddSerializePartialToStringMethod(message_descriptor, cls):
 def _AddMergeFromStringMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
   def MergeFromString(self, serialized):
-    if isinstance(serialized, memoryview) and six.PY2:
-      raise TypeError(
-          'memoryview not supported in Python 2 with the pure Python proto '
-          'implementation: this is to maintain compatibility with the C++ '
-          'implementation')
-
     serialized = memoryview(serialized)
     length = len(serialized)
     try:

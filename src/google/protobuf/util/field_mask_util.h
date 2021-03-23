@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_FIELD_MASK_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_FIELD_MASK_UTIL_H__
 
+#include <cstdint>
 #include <string>
 
 #include <google/protobuf/field_mask.pb.h>
@@ -58,7 +59,7 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   // Populates the FieldMask with the paths corresponding to the fields with the
   // given numbers, after checking that all field numbers are valid.
   template <typename T>
-  static void FromFieldNumbers(const std::vector<int64>& field_numbers,
+  static void FromFieldNumbers(const std::vector<int64_t>& field_numbers,
                                FieldMask* out) {
     for (const auto field_number : field_numbers) {
       const FieldDescriptor* field_desc =

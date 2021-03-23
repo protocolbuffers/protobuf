@@ -36,6 +36,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <cstdint>
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -157,6 +159,11 @@ class CommandLineInterfaceTest : public testing::Test {
   void ExpectCapturedStdoutSubstringWithZeroReturnCode(
       const std::string& expected_substring);
 
+  // Checks that Run() returned zero and the stderr contains the given
+  // substring.
+  void ExpectCapturedStderrSubstringWithZeroReturnCode(
+      const std::string& expected_substring);
+
 #if defined(_WIN32) && !defined(__CYGWIN__)
   // Returns true if ExpectErrorSubstring(expected_substring) would pass, but
   // does not fail otherwise.
@@ -211,7 +218,7 @@ class CommandLineInterfaceTest : public testing::Test {
   // code generator that omits the given feature(s).
   void CreateGeneratorWithMissingFeatures(const std::string& name,
                                           const std::string& description,
-                                          uint64 features) {
+                                          uint64_t features) {
     MockCodeGenerator* generator = new MockCodeGenerator(name);
     generator->SuppressFeatures(features);
     mock_generators_to_delete_.push_back(generator);
@@ -426,8 +433,8 @@ void CommandLineInterfaceTest::ExpectErrorSubstring(
 
 void CommandLineInterfaceTest::ExpectWarningSubstring(
     const std::string& expected_substring) {
-  EXPECT_EQ(0, return_code_);
   EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, error_text_);
+  EXPECT_EQ(0, return_code_);
 }
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
@@ -513,6 +520,13 @@ void CommandLineInterfaceTest::ExpectCapturedStdoutSubstringWithZeroReturnCode(
   EXPECT_EQ(0, return_code_);
   EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring,
                       captured_stdout_);
+}
+
+void CommandLineInterfaceTest::ExpectCapturedStderrSubstringWithZeroReturnCode(
+    const std::string& expected_substring) {
+  EXPECT_EQ(0, return_code_);
+  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring,
+                      error_text_);
 }
 
 void CommandLineInterfaceTest::ExpectFileContent(const std::string& filename,
@@ -2303,7 +2317,7 @@ TEST_F(CommandLineInterfaceTest, MsvsFormatErrors) {
 }
 
 TEST_F(CommandLineInterfaceTest, InvalidErrorFormat) {
-  // Test --error_format=msvs
+  // Test invalid --error_format
 
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
@@ -2313,6 +2327,26 @@ TEST_F(CommandLineInterfaceTest, InvalidErrorFormat) {
       "--proto_path=$tmpdir --error_format=invalid foo.proto");
 
   ExpectErrorText("Unknown error format: invalid\n");
+}
+
+TEST_F(CommandLineInterfaceTest, Warnings) {
+  // Test --fatal_warnings.
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "import \"bar.proto\";\n");
+  CreateTempFile("bar.proto",
+    "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+    "--proto_path=$tmpdir foo.proto");
+  ExpectCapturedStderrSubstringWithZeroReturnCode(
+    "foo.proto:2:1: warning: Import bar.proto is unused.");
+
+  Run("protocol_compiler --test_out=$tmpdir --fatal_warnings "
+    "--proto_path=$tmpdir foo.proto");
+  ExpectErrorSubstring(
+    "foo.proto:2:1: warning: Import bar.proto is unused.");
 }
 
 // -------------------------------------------------------------------
@@ -2376,49 +2410,6 @@ TEST_F(CommandLineInterfaceTest, MissingValueAtEndError) {
   Run("protocol_compiler --test_out");
 
   ExpectErrorText("Missing value for flag: --test_out\n");
-}
-
-TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowed) {
-  CreateTempFile("google/foo.proto",
-                 "syntax = \"proto3\";\n"
-                 "message Foo {\n"
-                 "  optional int32 i = 1;\n"
-                 "}\n");
-
-  Run("protocol_compiler --proto_path=$tmpdir google/foo.proto "
-      "-odescriptor.pb");
-
-  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
-}
-
-TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedDescriptor) {
-  CreateTempFile("google/foo.proto",
-                 "syntax = \"proto3\";\n"
-                 "message Foo {\n"
-                 "  optional int32 i = 1;\n"
-                 "}\n");
-
-  Run("protocol_compiler --experimental_allow_proto3_optional "
-      "--proto_path=$tmpdir google/foo.proto "
-      " -o$tmpdir/descriptor.pb");
-  ExpectNoErrors();
-
-  Run("protocol_compiler --descriptor_set_in=$tmpdir/descriptor.pb"
-      " google/foo.proto --test_out=$tmpdir");
-  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
-}
-
-TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedGenCode) {
-  CreateTempFile("google/foo.proto",
-                 "syntax = \"proto3\";\n"
-                 "message Foo {\n"
-                 "  optional int32 i = 1;\n"
-                 "}\n");
-
-  Run("protocol_compiler --proto_path=$tmpdir google/foo.proto "
-      "--test_out=$tmpdir");
-
-  ExpectErrorSubstring("--experimental_allow_proto3_optional was not set");
 }
 
 TEST_F(CommandLineInterfaceTest, Proto3OptionalDisallowedNoCodegenSupport) {

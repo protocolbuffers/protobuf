@@ -356,6 +356,10 @@ build_python38() {
   build_python_version py38-python
 }
 
+build_python39() {
+  build_python_version py39-python
+}
+
 build_python_cpp() {
   internal_build_cpp
   export LD_LIBRARY_PATH=../src/.libs # for Linux
@@ -406,6 +410,10 @@ build_python37_cpp() {
 
 build_python38_cpp() {
   build_python_cpp_version py38-cpp
+}
+
+build_python39_cpp() {
+  build_python_cpp_version py39-cpp
 }
 
 build_python_compatibility() {
@@ -474,6 +482,16 @@ use_php_zts() {
   VERSION=$1
   export PATH=/usr/local/php-${VERSION}-zts/bin:$PATH
   internal_build_cpp
+}
+
+build_php5.6() {
+  use_php 5.6
+  pushd php
+  rm -rf vendor
+  composer update
+  composer test
+  popd
+  (cd conformance && make test_php)
 }
 
 build_php7.0() {
@@ -675,6 +693,7 @@ build_php8.0_all() {
 }
 
 build_php_all_32() {
+  build_php5.6
   build_php7.0
   build_php7.1
   build_php7.4

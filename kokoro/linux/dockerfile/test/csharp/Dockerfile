@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:buster
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
@@ -22,14 +22,18 @@ RUN apt-get update && apt-get install -y \
   wget \
   && apt-get clean
 
+# Update ca-certificates to fix known buster + .NET 5 issue
+# https://github.com/NuGet/Announcements/issues/49
+RUN apt-get update && apt-get install -y ca-certificates && apt-get clean
+
 # dotnet SDK prerequisites
-RUN apt-get update && apt-get install -y libunwind8 libicu57 && apt-get clean
+RUN apt-get update && apt-get install -y libunwind8 libicu63 && apt-get clean
 
 # Install dotnet SDK via install script
 RUN wget -q https://dot.net/v1/dotnet-install.sh && \
     chmod u+x dotnet-install.sh && \
     ./dotnet-install.sh --version 2.1.802 && \
-    ./dotnet-install.sh --version 3.1.301 && \
+    ./dotnet-install.sh --version 5.0.102 && \
     ln -s /root/.dotnet/dotnet /usr/local/bin
 
 RUN wget -q www.nuget.org/NuGet.exe -O /usr/local/bin/nuget.exe

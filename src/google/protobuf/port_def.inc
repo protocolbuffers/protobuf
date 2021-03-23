@@ -198,21 +198,23 @@
 //   You can #define these annotations yourself if the default implementation
 //   is not right for you.
 
+#ifndef PROTOBUF_NO_INLINE
 #ifdef GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #define PROTOBUF_ALWAYS_INLINE GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 #define PROTOBUF_NDEBUG_INLINE GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-#else
-#if defined(__GNUC__) && \
+#elif defined(__GNUC__) && \
     (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 // For functions we want to force inline.
 // Introduced in gcc 3.1.
 #define PROTOBUF_ALWAYS_INLINE __attribute__((always_inline))
 #define PROTOBUF_NDEBUG_INLINE __attribute__((always_inline))
-#else
+#endif
+#endif
+
+#ifndef PROTOBUF_ALWAYS_INLINE
 // Other compilers will have to figure it out for themselves.
 #define PROTOBUF_ALWAYS_INLINE
 #define PROTOBUF_NDEBUG_INLINE
-#endif
 #endif
 
 #ifdef GOOGLE_ATTRIBUTE_NOINLINE
@@ -335,14 +337,14 @@
 
 // Shared google3/opensource definitions. //////////////////////////////////////
 
-#define PROTOBUF_VERSION 3014000
-#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3014000
-#define PROTOBUF_MIN_PROTOC_VERSION 3014000
+#define PROTOBUF_VERSION 3015006
+#define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3015000
+#define PROTOBUF_MIN_PROTOC_VERSION 3015000
 #define PROTOBUF_VERSION_SUFFIX ""
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3014000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3015000
 
 #if defined(GOOGLE_PROTOBUF_NO_RTTI) && GOOGLE_PROTOBUF_NO_RTTI
 #define PROTOBUF_RTTI 0
@@ -562,18 +564,9 @@
 // by this flag is supposed to be removed after this experiment.
 // #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
 
-#if defined(__cpp_constinit)
-#define PROTOBUF_CONSTINIT constinit
-#elif defined(__has_cpp_attribute)
-#if __has_cpp_attribute(clang::require_constant_initialization)
-#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#endif
-#endif
-#ifndef PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTINIT
-#endif
-
-#if defined(__cpp_constinit)
+// Our use of constinit does not yet work with GCC:
+// https://github.com/protocolbuffers/protobuf/issues/8310
+#if defined(__cpp_constinit) && !defined(__GNUC__)
 #define PROTOBUF_CONSTINIT constinit
 #elif defined(__has_cpp_attribute)
 #if __has_cpp_attribute(clang::require_constant_initialization)
@@ -615,7 +608,7 @@
 #define PROTOBUF_PRAGMA_INIT_SEG
 #endif
 
-#if defined(__has_attribute)
+#if defined(__has_attribute) && !defined(__MINGW32__)
 #if __has_attribute(weak)
 #define PROTOBUF_ATTRIBUTE_WEAK __attribute__((weak))
 #endif
