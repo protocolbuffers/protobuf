@@ -84,7 +84,7 @@ TEST(StatusOr, TestValueCtor) {
   const int kI = 4;
   StatusOr<int> thing(kI);
   EXPECT_TRUE(thing.ok());
-  EXPECT_EQ(kI, thing.ValueOrDie());
+  EXPECT_EQ(kI, thing.value());
 }
 
 TEST(StatusOr, TestCopyCtorStatusOk) {
@@ -92,7 +92,7 @@ TEST(StatusOr, TestCopyCtorStatusOk) {
   StatusOr<int> original(kI);
   StatusOr<int> copy(original);
   EXPECT_EQ(original.status(), copy.status());
-  EXPECT_EQ(original.ValueOrDie(), copy.ValueOrDie());
+  EXPECT_EQ(original.value(), copy.value());
 }
 
 TEST(StatusOr, TestCopyCtorStatusNotOk) {
@@ -106,7 +106,7 @@ TEST(StatusOr, TestCopyCtorStatusOKConverting) {
   StatusOr<int>    original(kI);
   StatusOr<double> copy(original);
   EXPECT_EQ(original.status(), copy.status());
-  EXPECT_EQ(original.ValueOrDie(), copy.ValueOrDie());
+  EXPECT_EQ(original.value(), copy.value());
 }
 
 TEST(StatusOr, TestCopyCtorStatusNotOkConverting) {
@@ -121,7 +121,7 @@ TEST(StatusOr, TestAssignmentStatusOk) {
   StatusOr<int> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
-  EXPECT_EQ(source.ValueOrDie(), target.ValueOrDie());
+  EXPECT_EQ(source.value(), target.value());
 }
 
 TEST(StatusOr, TestAssignmentStatusNotOk) {
@@ -137,7 +137,7 @@ TEST(StatusOr, TestAssignmentStatusOKConverting) {
   StatusOr<double> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
-  EXPECT_DOUBLE_EQ(source.ValueOrDie(), target.ValueOrDie());
+  EXPECT_DOUBLE_EQ(source.value(), target.value());
 }
 
 TEST(StatusOr, TestAssignmentStatusNotOkConverting) {
@@ -158,13 +158,13 @@ TEST(StatusOr, TestStatus) {
 TEST(StatusOr, TestValue) {
   const int kI = 4;
   StatusOr<int> thing(kI);
-  EXPECT_EQ(kI, thing.ValueOrDie());
+  EXPECT_EQ(kI, thing.value());
 }
 
 TEST(StatusOr, TestValueConst) {
   const int kI = 4;
   const StatusOr<int> thing(kI);
-  EXPECT_EQ(kI, thing.ValueOrDie());
+  EXPECT_EQ(kI, thing.value());
 }
 
 TEST(StatusOr, TestPointerDefaultCtor) {
@@ -183,7 +183,7 @@ TEST(StatusOr, TestPointerValueCtor) {
   const int kI = 4;
   StatusOr<const int*> thing(&kI);
   EXPECT_TRUE(thing.ok());
-  EXPECT_EQ(&kI, thing.ValueOrDie());
+  EXPECT_EQ(&kI, thing.value());
 }
 
 TEST(StatusOr, TestPointerCopyCtorStatusOk) {
@@ -191,7 +191,7 @@ TEST(StatusOr, TestPointerCopyCtorStatusOk) {
   StatusOr<const int*> original(&kI);
   StatusOr<const int*> copy(original);
   EXPECT_EQ(original.status(), copy.status());
-  EXPECT_EQ(original.ValueOrDie(), copy.ValueOrDie());
+  EXPECT_EQ(original.value(), copy.value());
 }
 
 TEST(StatusOr, TestPointerCopyCtorStatusNotOk) {
@@ -205,8 +205,7 @@ TEST(StatusOr, TestPointerCopyCtorStatusOKConverting) {
   StatusOr<Derived*> original(&derived);
   StatusOr<Base2*>   copy(original);
   EXPECT_EQ(original.status(), copy.status());
-  EXPECT_EQ(static_cast<const Base2*>(original.ValueOrDie()),
-            copy.ValueOrDie());
+  EXPECT_EQ(static_cast<const Base2*>(original.value()), copy.value());
 }
 
 TEST(StatusOr, TestPointerCopyCtorStatusNotOkConverting) {
@@ -221,7 +220,7 @@ TEST(StatusOr, TestPointerAssignmentStatusOk) {
   StatusOr<const int*> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
-  EXPECT_EQ(source.ValueOrDie(), target.ValueOrDie());
+  EXPECT_EQ(source.value(), target.value());
 }
 
 TEST(StatusOr, TestPointerAssignmentStatusNotOk) {
@@ -237,8 +236,7 @@ TEST(StatusOr, TestPointerAssignmentStatusOKConverting) {
   StatusOr<Base2*>   target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
-  EXPECT_EQ(static_cast<const Base2*>(source.ValueOrDie()),
-            target.ValueOrDie());
+  EXPECT_EQ(static_cast<const Base2*>(source.value()), target.value());
 }
 
 TEST(StatusOr, TestPointerAssignmentStatusNotOkConverting) {
@@ -259,13 +257,13 @@ TEST(StatusOr, TestPointerStatus) {
 TEST(StatusOr, TestPointerValue) {
   const int kI = 0;
   StatusOr<const int*> thing(&kI);
-  EXPECT_EQ(&kI, thing.ValueOrDie());
+  EXPECT_EQ(&kI, thing.value());
 }
 
 TEST(StatusOr, TestPointerValueConst) {
   const int kI = 0;
   const StatusOr<const int*> thing(&kI);
-  EXPECT_EQ(&kI, thing.ValueOrDie());
+  EXPECT_EQ(&kI, thing.value());
 }
 
 }  // namespace
