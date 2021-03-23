@@ -557,7 +557,7 @@ java_EXTRA_DIST=                                                                
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
-  java/lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.java \
+  java/lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.kt \
   java/lite/src/test/kotlin/com/google/protobuf/Proto2LiteTest.kt                  \
   java/pom.xml                                                                     \
   java/util/BUILD                                                                  \
