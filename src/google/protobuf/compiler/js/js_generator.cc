@@ -247,11 +247,9 @@ std::string SubmessageTypeRef(const GeneratorOptions& options,
 }
 
 // - Object field name: LOWER_UNDERSCORE -> LOWER_CAMEL, except for group fields
-// (UPPER_CAMEL -> LOWER_CAMEL), with "List" (or "Map") appended if appropriate,
-// and with reserved words triggering a "pb_" prefix.
+// (UPPER_CAMEL -> LOWER_CAMEL), and with reserved words triggering a "pb_" prefix.
 // - Getters/setters: LOWER_UNDERSCORE -> UPPER_CAMEL, except for group fields
-// (use the name directly), then append "List" if appropriate, then append "$"
-// if resulting name is equal to a reserved word.
+// (use the name directly), then append "$" if resulting name is equal to a reserved word.
 // - Enums: just uppercase.
 
 // Locale-independent version of ToLower that deals only with ASCII A-Z.
@@ -478,8 +476,7 @@ bool IgnoreOneof(const OneofDescriptor* oneof) {
 }
 
 std::string JSIdent(const GeneratorOptions& options,
-                    const FieldDescriptor* field, bool is_upper_camel,
-                    bool is_map, bool drop_list, bool force_lower_snake_case) {
+                    const FieldDescriptor* field, bool is_upper_camel, bool force_lower_snake_case) {
   std::string result;
   if (force_lower_snake_case) {
     // the name can be either camel case or snake case
@@ -498,13 +495,7 @@ std::string JSIdent(const GeneratorOptions& options,
                               : ToLowerCamel(ParseLowerUnderscore(field->name()));
     }
   }
-  if (is_map || field->is_map()) {
-    // JSPB-style or proto3-style map.
-    result += "Map";
-  } else if (!drop_list && field->is_repeated()) {
-    // Repeated field.
-    result += "List";
-  }
+
   return result;
 }
 
@@ -512,8 +503,6 @@ std::string JSObjectFieldName(const GeneratorOptions& options,
                               const FieldDescriptor* field) {
   std::string name = JSIdent(options, field,
                              /* is_upper_camel = */ false,
-                             /* is_map = */ false,
-                             /* drop_list = */ false,
                              /* force_lower_snake_case = */ true);
   if (IsReserved(name)) {
     name = "pb_" + name;
@@ -543,7 +532,6 @@ std::string JSGetterName(const GeneratorOptions& options,
                          bool drop_list = false) {
   std::string name = JSIdent(options, field,
                              /* is_upper_camel = */ true,
-                             /* is_map = */ false, drop_list,
                              /* force_lower_snake_case = */ false);
   if (field->type() == FieldDescriptor::TYPE_BYTES) {
     std::string suffix = JSByteGetterSuffix(bytes_mode);
