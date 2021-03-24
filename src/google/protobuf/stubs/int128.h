@@ -364,9 +364,9 @@ constexpr uint128 Uint128Max() {
 
 }  // namespace int128_internal
 
-using absl::uint128;
-using absl::Uint128Max;
-using absl::MakeUint128;
+using google::protobuf::int128_internal::uint128;
+using google::protobuf::int128_internal::Uint128Max;
+using google::protobuf::int128_internal::MakeUint128;
 
 }  // namespace protobuf
 }  // namespace google
