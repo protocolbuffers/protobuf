@@ -1,5 +1,5 @@
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_JAVA_KOTLIN_GENERATOR_H_
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_JAVA_KOTLIN_GENERATOR_H_
+#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_KOTLIN_GENERATOR_H_
+#define GOOGLE_PROTOBUF_COMPILER_JAVA_KOTLIN_GENERATOR_H_
 
 #include <string>
 #include <google/protobuf/compiler/code_generator.h>
@@ -37,4 +37,4 @@ class PROTOC_EXPORT KotlinGenerator : public CodeGenerator {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_JAVA_KOTLIN_GENERATOR_H_
+#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_KOTLIN_GENERATOR_H_
