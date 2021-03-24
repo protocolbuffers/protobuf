@@ -30,6 +30,8 @@
 
 #include <google/protobuf/compiler/java/java_map_field_lite.h>
 
+#include <cstdint>
+
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
@@ -505,7 +507,7 @@ void ImmutableMapFieldLiteGenerator::GenerateMembers(
 }
 
 void ImmutableMapFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer, std::vector<uint16>* output) const {
+    io::Printer* printer, std::vector<uint16_t>* output) const {
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);

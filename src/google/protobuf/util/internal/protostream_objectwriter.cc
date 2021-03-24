@@ -436,7 +436,7 @@ void ProtoStreamObjectWriter::AnyWriter::Event::DeepCopy() {
     StrAppend(&value_storage_, value_.str());
     value_ = DataPiece(value_storage_, value_.use_strict_base64_decoding());
   } else if (value_.type() == DataPiece::TYPE_BYTES) {
-    value_storage_ = value_.ToBytes().ValueOrDie();
+    value_storage_ = value_.ToBytes().value();
     value_ =
         DataPiece(value_storage_, true, value_.use_strict_base64_decoding());
   }

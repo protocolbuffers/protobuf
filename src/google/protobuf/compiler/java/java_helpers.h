@@ -35,7 +35,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__
 
+#include <cstdint>
 #include <string>
+
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
@@ -412,15 +414,16 @@ inline std::string GeneratedCodeVersionSuffix() {
   return "V3";
 }
 
-void WriteUInt32ToUtf16CharSequence(uint32 number, std::vector<uint16>* output);
+void WriteUInt32ToUtf16CharSequence(uint32_t number,
+                                    std::vector<uint16_t>* output);
 
 inline void WriteIntToUtf16CharSequence(int value,
-                                        std::vector<uint16>* output) {
-  WriteUInt32ToUtf16CharSequence(static_cast<uint32>(value), output);
+                                        std::vector<uint16_t>* output) {
+  WriteUInt32ToUtf16CharSequence(static_cast<uint32_t>(value), output);
 }
 
 // Escape a UTF-16 character so it can be embedded in a Java string literal.
-void EscapeUtf16ToString(uint16 code, std::string* output);
+void EscapeUtf16ToString(uint16_t code, std::string* output);
 
 // Only the lowest two bytes of the return value are used. The lowest byte
 // is the integer value of a j/c/g/protobuf/FieldType enum. For the other

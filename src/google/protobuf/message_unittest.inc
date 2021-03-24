@@ -661,5 +661,37 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
 }
 
 
+TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
+  UNITTEST::TestExtensionRangeSerialize in_message;
+
+  in_message.set_foo_one(1);
+  in_message.set_foo_two(2);
+  in_message.set_foo_three(3);
+  in_message.set_foo_four(4);
+
+  in_message.SetExtension(UNITTEST::TestExtensionRangeSerialize::bar_one, 1);
+  in_message.SetExtension(UNITTEST::TestExtensionRangeSerialize::bar_two, 2);
+  in_message.SetExtension(UNITTEST::TestExtensionRangeSerialize::bar_three, 3);
+  in_message.SetExtension(UNITTEST::TestExtensionRangeSerialize::bar_four, 4);
+  in_message.SetExtension(UNITTEST::TestExtensionRangeSerialize::bar_five, 5);
+
+  std::string buffer;
+  in_message.SerializeToString(&buffer);
+
+  UNITTEST::TestExtensionRangeSerialize out_message;
+  out_message.ParseFromString(buffer);
+
+  EXPECT_EQ(1, out_message.foo_one());
+  EXPECT_EQ(2, out_message.foo_two());
+  EXPECT_EQ(3, out_message.foo_three());
+  EXPECT_EQ(4, out_message.foo_four());
+
+  EXPECT_EQ(1, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_one));
+  EXPECT_EQ(2, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_two));
+  EXPECT_EQ(3, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_three));
+  EXPECT_EQ(4, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_four));
+  EXPECT_EQ(5, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_five));
+}
+
 }  // namespace protobuf
 }  // namespace google

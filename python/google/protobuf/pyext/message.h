@@ -36,6 +36,7 @@
 
 #include <Python.h>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -286,25 +287,25 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
   ((field_descriptor)->label() == FieldDescriptor::LABEL_REPEATED)
 
 #define GOOGLE_CHECK_GET_INT32(arg, value, err)  \
-  int32 value;                            \
+  int32_t value;                          \
   if (!CheckAndGetInteger(arg, &value)) { \
     return err;                           \
   }
 
 #define GOOGLE_CHECK_GET_INT64(arg, value, err)  \
-  int64 value;                            \
+  int64_t value;                          \
   if (!CheckAndGetInteger(arg, &value)) { \
     return err;                           \
   }
 
 #define GOOGLE_CHECK_GET_UINT32(arg, value, err) \
-  uint32 value;                           \
+  uint32_t value;                         \
   if (!CheckAndGetInteger(arg, &value)) { \
     return err;                           \
   }
 
 #define GOOGLE_CHECK_GET_UINT64(arg, value, err) \
-  uint64 value;                           \
+  uint64_t value;                         \
   if (!CheckAndGetInteger(arg, &value)) { \
     return err;                           \
   }

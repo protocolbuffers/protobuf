@@ -34,6 +34,8 @@
 
 #include <google/protobuf/compiler/command_line_interface.h>
 
+#include <cstdint>
+
 #include <google/protobuf/stubs/platform_macros.h>
 
 #include <stdio.h>
@@ -2105,7 +2107,7 @@ Parse PROTO_FILES and generate output based on the options given:
 }
 
 bool CommandLineInterface::EnforceProto3OptionalSupport(
-    const std::string& codegen_name, uint64 supported_features,
+    const std::string& codegen_name, uint64_t supported_features,
     const std::vector<const FileDescriptor*>& parsed_files) const {
   bool supports_proto3_optional =
       supported_features & CodeGenerator::FEATURE_PROTO3_OPTIONAL;
