@@ -260,6 +260,7 @@ VALUE secondary_map_mutex = Qnil;
 // Lambda that will GC entries from the secondary map that are no longer present
 // in the primary map.
 VALUE gc_secondary_map = Qnil;
+ID length;
 
 extern VALUE weak_obj_cache;
 
@@ -273,14 +274,30 @@ static void SecondaryMap_Init() {
       "  secondary.delete_if { |k, v| !weak.key?(v) }\n"
       "}\n");
   secondary_map_mutex = rb_mutex_new();
+  length = rb_intern("length");
 }
 
+// The secondary map is a regular Hash, and will never shrink on its own.
+// The main object cache is a WeakMap that will automatically remove entries
+// when the target object is no longer reachable, but unless we manually
+// remove the corresponding entries from the secondary map, it will grow
+// without bound.
+//
+// To avoid this unbounded growth we periodically remove entries from the
+// secondary map that are no longer present in the WeakMap. The logic of
+// how often to perform this GC is an artbirary tuning parameter that
+// represents a straightforward CPU/memory tradeoff.
 static void SecondaryMap_MaybeGC() {
-  size_t weak_len = NUM2ULL(rb_funcall(weak_obj_cache, rb_intern("length"), 0));
+  size_t weak_len = NUM2ULL(rb_funcall(weak_obj_cache, length, 0));
   size_t secondary_len = RHASH_SIZE(secondary_map);
   size_t waste = secondary_len - weak_len;
   PBRUBY_ASSERT(secondary_len >= weak_len);
-  if (waste > 1000 && waste > secondary_len * 0.2) {
+  // GC if we could remove at least 2000 entries or 20% of the table size
+  // (whichever is greater).  Since the cost of the GC pass is O(N), we
+  // want to make sure that we condition this on overall table size, to
+  // avoid O(N^2) CPU costs.
+  size_t threshold = PBRUBY_MAX(secondary_len * 0.2, 2000);
+  if (waste > threshold) {
     rb_funcall(gc_secondary_map, rb_intern("call"), 2, secondary_map, weak_obj_cache);
   }
 }
