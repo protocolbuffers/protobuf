@@ -251,14 +251,36 @@ void Arena_register(VALUE module) {
 // The object is used only for its identity; it does not contain any data.
 VALUE secondary_map = Qnil;
 
+// Lambda that will GC entries from the secondary map that are no longer present
+// in the primary map.
+VALUE gc_secondary_map = Qnil;
+
+extern VALUE weak_obj_cache;
+
 static void SecondaryMap_Init() {
   rb_gc_register_address(&secondary_map);
+  rb_gc_register_address(&gc_secondary_map);
   secondary_map = rb_hash_new();
+  gc_secondary_map = rb_eval_string(
+      "->(secondary, weak) {\n"
+      "  secondary.delete_if { |k, v| !weak.key?(v) }\n"
+      "}\n");
+}
+
+static void SecondaryMap_MaybeGC() {
+  size_t weak_len = NUM2ULL(rb_funcall(weak_obj_cache, rb_intern("length"), 0));
+  size_t secondary_len = RHASH_SIZE(secondary_map);
+  size_t waste = secondary_len - weak_len;
+  PBRUBY_ASSERT(secondary_len >= weak_len);
+  if (waste > 1000 && waste > secondary_len * 0.2) {
+    rb_funcall(gc_secondary_map, rb_intern("call"), 2, secondary_map, weak_obj_cache);
+  }
 }
 
 static VALUE SecondaryMap_Get(VALUE key) {
   VALUE ret = rb_hash_lookup(secondary_map, key);
   if (ret == Qnil) {
+    SecondaryMap_MaybeGC();
     ret = rb_eval_string("Object.new");
     rb_hash_aset(secondary_map, key, ret);
   }
