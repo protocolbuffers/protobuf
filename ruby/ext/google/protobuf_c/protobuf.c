@@ -251,6 +251,12 @@ void Arena_register(VALUE module) {
 // The object is used only for its identity; it does not contain any data.
 VALUE secondary_map = Qnil;
 
+// Mutations to the map are under a mutex, because SeconaryMap_MaybeGC()
+// iterates over the map which cannot happen in parallel with insertions, or
+// Ruby will throw:
+//   can't add a new key into hash during iteration (RuntimeError)
+VALUE secondary_map_mutex = Qnil;
+
 // Lambda that will GC entries from the secondary map that are no longer present
 // in the primary map.
 VALUE gc_secondary_map = Qnil;
@@ -260,11 +266,13 @@ extern VALUE weak_obj_cache;
 static void SecondaryMap_Init() {
   rb_gc_register_address(&secondary_map);
   rb_gc_register_address(&gc_secondary_map);
+  rb_gc_register_address(&secondary_map_mutex);
   secondary_map = rb_hash_new();
   gc_secondary_map = rb_eval_string(
       "->(secondary, weak) {\n"
       "  secondary.delete_if { |k, v| !weak.key?(v) }\n"
       "}\n");
+  secondary_map_mutex = rb_mutex_new();
 }
 
 static void SecondaryMap_MaybeGC() {
@@ -280,9 +288,11 @@ static void SecondaryMap_MaybeGC() {
 static VALUE SecondaryMap_Get(VALUE key) {
   VALUE ret = rb_hash_lookup(secondary_map, key);
   if (ret == Qnil) {
+    rb_mutex_lock(secondary_map_mutex);
     SecondaryMap_MaybeGC();
     ret = rb_eval_string("Object.new");
     rb_hash_aset(secondary_map, key, ret);
+    rb_mutex_unlock(secondary_map_mutex);
   }
   return ret;
 }
