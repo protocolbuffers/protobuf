@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <sstream>
 #include <utility>
+#include <type_traits>
 
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
