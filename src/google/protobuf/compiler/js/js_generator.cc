@@ -296,10 +296,18 @@ std::vector<std::string> ParseUpperCamel(const std::string& input) {
   return words;
 }
 
-std::string ToSnakeCase(const std::string& input) {
-  std::vector<std::string> parsedSnakeCaseWords = ParseUpperCamel(input);
-  std::vector<std::string> parsedCamelCaseWords = ParseLowerUnderscore(input);
+std::vector<std::string> ParseStringToWords(const std::string& input) {
+  // We try to parse the input using both ParseLowerUnderscore and ParseUpperCamel,
+  // and always return the result that parsed more words in it
+  std::vector<std::string> parsedSnakeCaseWords = ParseLowerUnderscore(input);
+  std::vector<std::string> parsedCamelCaseWords = ParseUpperCamel(input);
   std::vector<std::string> words = parsedSnakeCaseWords.size() > parsedCamelCaseWords.size() ? parsedSnakeCaseWords : parsedCamelCaseWords;
+
+  return words;
+}
+
+std::string ToSnakeCase(const std::string& input) {
+  std::vector<std::string> words = ParseStringToWords(input);
   std::string result;
   for (int i = 0; i < words.size(); i++) {
     std::string word = words[i];
@@ -311,7 +319,8 @@ std::string ToSnakeCase(const std::string& input) {
   return result;
 }
 
-std::string ToLowerCamel(const std::vector<std::string>& words) {
+std::string ToLowerCamel(const std::string& input) {
+  std::vector<std::string> words = ParseStringToWords(input);
   std::string result;
   for (int i = 0; i < words.size(); i++) {
     std::string word = words[i];
@@ -325,7 +334,8 @@ std::string ToLowerCamel(const std::vector<std::string>& words) {
   return result;
 }
 
-std::string ToUpperCamel(const std::vector<std::string>& words) {
+std::string ToUpperCamel(const std::string& input) {
+  std::vector<std::string> words = ParseStringToWords(input);
   std::string result;
   for (int i = 0; i < words.size(); i++) {
     std::string word = words[i];
@@ -488,11 +498,11 @@ std::string JSIdent(const GeneratorOptions& options,
   } else {
     if (field->type() == FieldDescriptor::TYPE_GROUP) {
       result = is_upper_camel
-                   ? ToUpperCamel(ParseUpperCamel(field->message_type()->name()))
-                   : ToLowerCamel(ParseUpperCamel(field->message_type()->name()));
+                   ? ToUpperCamel(field->message_type()->name())
+                   : ToLowerCamel(field->message_type()->name());
     } else {
-      result = is_upper_camel ? ToUpperCamel(ParseLowerUnderscore(field->name()))
-                              : ToLowerCamel(ParseLowerUnderscore(field->name()));
+      result = is_upper_camel ? ToUpperCamel(field->name())
+                              : ToLowerCamel(field->name());
     }
   }
 
@@ -547,7 +557,7 @@ std::string JSGetterName(const GeneratorOptions& options,
 }
 
 std::string JSOneofName(const OneofDescriptor* oneof) {
-  return ToUpperCamel(ParseLowerUnderscore(oneof->name()));
+  return ToUpperCamel(oneof->name());
 }
 
 // Returns the index corresponding to this field in the JSPB array (underlying
