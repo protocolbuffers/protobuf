@@ -66,12 +66,13 @@ namespace Google.Protobuf
         /// <summary>
         /// Buffer of data read from the stream or provided at construction time.
         /// </summary>
-        private readonly byte[] buffer;
+        private readonly ReadOnlyMemory<byte> buffer;
 
         /// <summary>
         /// The stream to read further input from, or null if the byte array buffer was provided
         /// directly on construction, with no further data available.
         /// </summary>
+        private readonly byte[] internalBuffer;
         private readonly Stream input;
 
         /// <summary>
@@ -139,7 +140,8 @@ namespace Google.Protobuf
         internal CodedInputStream(Stream input, byte[] buffer, int bufferPos, int bufferSize, bool leaveOpen)
         {
             this.input = input;
-            this.buffer = buffer;
+            this.internalBuffer = buffer;
+            this.buffer = buffer.AsMemory();
             this.state.bufferPos = bufferPos;
             this.state.bufferSize = bufferSize;
             this.state.sizeLimit = DefaultSizeLimit;
@@ -149,6 +151,26 @@ namespace Google.Protobuf
 
             this.state.currentLimit = int.MaxValue;
         }
+
+        /// <summary>
+        /// Creates a new CodedInputStream reading data from the given byte array.
+        /// </summary>
+        public CodedInputStream(ReadOnlyMemory<byte> buffer)
+        {
+            this.input = null;
+            this.internalBuffer = null;
+            this.buffer = buffer;
+            this.state.bufferPos = 0;
+            this.state.bufferSize = buffer.Length;
+            this.state.sizeLimit = DefaultSizeLimit;
+            this.state.recursionLimit = DefaultRecursionLimit;
+            SegmentedBufferHelper.Initialize(this, out this.state.segmentedBufferHelper);
+            this.leaveOpen = true;
+
+            this.state.currentLimit = int.MaxValue;
+        }
+
+
 
         /// <summary>
         /// Creates a new CodedInputStream reading data from the given
@@ -258,7 +280,9 @@ namespace Google.Protobuf
             set { state.ExtensionRegistry = value; }
         }
 
-        internal byte[] InternalBuffer => buffer;
+        internal ReadOnlyMemory<byte> InternalMemory => buffer;
+
+        internal byte[] InternalBuffer => internalBuffer;
 
         internal Stream InternalInputStream => input;
 
@@ -302,7 +326,7 @@ namespace Google.Protobuf
         /// </summary>
         public uint PeekTag()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.PeekTag(ref span, ref state);
         }
 
@@ -317,7 +341,7 @@ namespace Google.Protobuf
         /// <returns>The next field tag, or 0 for end of stream. (0 is never a valid tag.)</returns>
         public uint ReadTag()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ParseTag(ref span, ref state);
         }
 
@@ -336,7 +360,7 @@ namespace Google.Protobuf
         /// <exception cref="InvalidOperationException">The last read operation read to the end of the logical stream</exception>
         public void SkipLastField()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             ParsingPrimitivesMessages.SkipLastField(ref span, ref state);
         }
 
@@ -345,7 +369,7 @@ namespace Google.Protobuf
         /// </summary>
         internal void SkipGroup(uint startGroupTag)
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             ParsingPrimitivesMessages.SkipGroup(ref span, ref state, startGroupTag);
         }
 
@@ -354,7 +378,7 @@ namespace Google.Protobuf
         /// </summary>
         public double ReadDouble()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ParseDouble(ref span, ref state);
         }
 
@@ -363,7 +387,7 @@ namespace Google.Protobuf
         /// </summary>
         public float ReadFloat()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ParseFloat(ref span, ref state);
         }
 
@@ -420,7 +444,7 @@ namespace Google.Protobuf
         /// </summary>
         public string ReadString()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ReadString(ref span, ref state);
         }
 
@@ -435,7 +459,7 @@ namespace Google.Protobuf
             // we will need to switch back again to CodedInputStream-based parsing (which involves copying and storing the state) to be able to
             // invoke the legacy MergeFrom(CodedInputStream) method.
             // For now, this inefficiency is fine, considering this is only a backward-compatibility scenario (and regenerating the code fixes it).
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             ParseContext.Initialize(ref span, ref state, out ParseContext ctx);
             try
             {
@@ -468,7 +492,7 @@ namespace Google.Protobuf
         /// </summary>   
         public ByteString ReadBytes()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ReadBytes(ref span, ref state);
         }
 
@@ -530,7 +554,7 @@ namespace Google.Protobuf
         /// </remarks>
         public int ReadLength()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ParseLength(ref span, ref state);
         }
 
@@ -541,7 +565,7 @@ namespace Google.Protobuf
         /// </summary>
         public bool MaybeConsumeTag(uint tag)
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.MaybeConsumeTag(ref span, ref state, tag);
         }
 
@@ -557,7 +581,7 @@ namespace Google.Protobuf
         /// </summary>
         internal uint ReadRawVarint32()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ParseRawVarint32(ref span, ref state);
         }
 
@@ -580,7 +604,7 @@ namespace Google.Protobuf
         /// </summary>
         internal ulong ReadRawVarint64()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ParseRawVarint64(ref span, ref state);
         }
 
@@ -589,7 +613,7 @@ namespace Google.Protobuf
         /// </summary>
         internal uint ReadRawLittleEndian32()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ParseRawLittleEndian32(ref span, ref state);
         }
 
@@ -598,7 +622,7 @@ namespace Google.Protobuf
         /// </summary>
         internal ulong ReadRawLittleEndian64()
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ParseRawLittleEndian64(ref span, ref state);
         }
         #endregion
@@ -645,7 +669,7 @@ namespace Google.Protobuf
         {
             get
             {
-                var span = new ReadOnlySpan<byte>(buffer);
+                var span = buffer.Span;
                 return SegmentedBufferHelper.IsAtEnd(ref span, ref state);
             }
         }
@@ -661,7 +685,7 @@ namespace Google.Protobuf
         /// <returns></returns>
         private bool RefillBuffer(bool mustSucceed)
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return state.segmentedBufferHelper.RefillBuffer(ref span, ref state, mustSucceed);
         }
 
@@ -673,7 +697,7 @@ namespace Google.Protobuf
         /// </exception>
         internal byte[] ReadRawBytes(int size)
         {
-            var span = new ReadOnlySpan<byte>(buffer);
+            var span = buffer.Span;
             return ParsingPrimitives.ReadRawBytes(ref span, ref state, size);
         }
 

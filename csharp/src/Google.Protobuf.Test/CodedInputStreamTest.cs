@@ -895,6 +895,13 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Dispose_FromReadOnlyMemory()
+        {
+            var stream = new CodedInputStream(new byte[10].AsMemory());
+            stream.Dispose();
+        }
+
+        [Test]
         public void TestParseMessagesCloseTo2G()
         {
             byte[] serializedMessage = GenerateBigSerializedMessage();
