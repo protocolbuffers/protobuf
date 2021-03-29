@@ -57,7 +57,7 @@ namespace Google.Protobuf
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Initialize(CodedInputStream codedInputStream, out SegmentedBufferHelper instance)
         {
-            instance.totalLength = codedInputStream.InternalInputStream == null ? (int?)codedInputStream.InternalBuffer.Length : null;
+            instance.totalLength = codedInputStream.InternalInputStream == null ? (int?)codedInputStream.InternalMemory.Length : null;
             instance.readOnlySequenceEnumerator = default;
             instance.codedInputStream = codedInputStream;
         }
