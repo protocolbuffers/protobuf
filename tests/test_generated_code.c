@@ -8,7 +8,6 @@
 #include "tests/test.upb.h"
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
-#define UNUSED(x) (void)x
 
 const char test_str[] = "abcdefg";
 const char test_str2[] = "12345678910";
