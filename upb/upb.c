@@ -67,16 +67,16 @@ static void *upb_global_allocfunc(upb_alloc *alloc, void *ptr, size_t oldsize,
   }
 }
 
-static uint32_t* upb_cleanup_pointer(void* cleanup_metadata) {
-  return (uint32_t*)((uintptr_t)cleanup_metadata & ~0x1);
+static uint32_t *upb_cleanup_pointer(uintptr_t cleanup_metadata) {
+  return (uint32_t*)(cleanup_metadata & ~0x1);
 }
 
-static bool upb_cleanup_has_initial_arena(void* cleanup_metadata) {
-  return (uintptr_t)cleanup_metadata & 0x1;
+static bool upb_cleanup_has_initial_block(uintptr_t cleanup_metadata) {
+  return cleanup_metadata & 0x1;
 }
 
-static void* upb_cleanup_metadata(uint32_t* cleanup, bool has_initial_arena) {
-  return (void*)((uintptr_t)cleanup | has_initial_arena);
+static uintptr_t upb_cleanup_metadata(uint32_t* cleanup, bool has_initial_block) {
+  return (uintptr_t)cleanup | has_initial_block;
 }
 
 upb_alloc upb_alloc_global = {&upb_global_allocfunc};
@@ -125,7 +125,7 @@ static void upb_arena_addblock(upb_arena *a, upb_arena *root, void *ptr,
   a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
   a->head.end = UPB_PTR_AT(block, size, char);
   a->cleanup_metadata = upb_cleanup_metadata(
-      &block->cleanups, upb_cleanup_has_initial_arena(a->cleanup_metadata));
+      &block->cleanups, upb_cleanup_has_initial_block(a->cleanup_metadata));
 
   UPB_POISON_MEMORY_REGION(a->head.ptr, a->head.end - a->head.ptr);
 }
@@ -260,8 +260,8 @@ bool upb_arena_fuse(upb_arena *a1, upb_arena *a2) {
   upb_arena *r2 = arena_findroot(a2);
 
   if (r1 == r2) return true;  /* Already fused. */
-  if (upb_cleanup_has_initial_arena(r1->cleanup_metadata)) return false;
-  if (upb_cleanup_has_initial_arena(r2->cleanup_metadata)) return false;
+  if (upb_cleanup_has_initial_block(r1->cleanup_metadata)) return false;
+  if (upb_cleanup_has_initial_block(r2->cleanup_metadata)) return false;
 
   /* We want to join the smaller tree to the larger tree.
    * So swap first if they are backwards. */
