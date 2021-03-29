@@ -9,7 +9,10 @@ typedef struct mem_block mem_block;
 
 struct upb_arena {
   _upb_arena_head head;
-  uint32_t *cleanups;
+  /* Stores cleanup metadata for this arena.
+   * - a pointer to the current cleanup counter.
+   * - a boolean indicating if there is an unowned initial block.  */
+  uintptr_t cleanup_metadata;
 
   /* Allocator to allocate arena blocks.  We are responsible for freeing these
    * when we are destroyed. */

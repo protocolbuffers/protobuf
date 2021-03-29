@@ -699,7 +699,7 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
   state.end_group = DECODE_NOGROUP;
   state.arena.head = arena->head;
   state.arena.last_size = arena->last_size;
-  state.arena.cleanups = arena->cleanups;
+  state.arena.cleanup_metadata = arena->cleanup_metadata;
   state.arena.parent = arena;
 
   if (UPB_UNLIKELY(UPB_SETJMP(state.err))) {
@@ -710,7 +710,7 @@ bool _upb_decode(const char *buf, size_t size, void *msg,
 
   arena->head.ptr = state.arena.head.ptr;
   arena->head.end = state.arena.head.end;
-  arena->cleanups = state.arena.cleanups;
+  arena->cleanup_metadata = state.arena.cleanup_metadata;
   return ok;
 }
 
