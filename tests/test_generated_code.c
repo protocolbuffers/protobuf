@@ -8,6 +8,7 @@
 #include "tests/test.upb.h"
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
+#define UNUSED(x) (void)x
 
 const char test_str[] = "abcdefg";
 const char test_str2[] = "12345678910";
@@ -444,20 +445,32 @@ void test_arena_fuse(void) {
   ASSERT(i4 == 4);
 }
 
-void test_arena_fuse_with_initial_block(void) {
-  char buf1[4096];
-  char buf2[4096];
-  upb_arena *arena1 = upb_arena_init(buf1, 4096, &upb_alloc_global);
-  upb_arena *arena2 = upb_arena_init(buf2, 4096, &upb_alloc_global);
-  upb_arena *arena3 = upb_arena_init(NULL, 0, &upb_alloc_global);
-  ASSERT(upb_arena_fuse(arena1, arena1));
-  ASSERT(!upb_arena_fuse(arena1, arena2));
-  ASSERT(!upb_arena_fuse(arena1, arena3));
-  ASSERT(!upb_arena_fuse(arena3, arena2));
+/* Do nothing allocator for testing */
+static void *test_allocfunc(upb_alloc *alloc, void *ptr, size_t oldsize,
+                            size_t size) {
+  return upb_alloc_global.func(alloc, ptr, oldsize, size);
+}
+upb_alloc test_alloc = {&test_allocfunc};
 
-  upb_arena_free(arena1);
-  upb_arena_free(arena2);
-  upb_arena_free(arena3);
+void test_arena_fuse_with_initial_block(void) {
+  char buf1[1024];
+  char buf2[1024];
+  upb_arena *arenas[] = {upb_arena_init(buf1, 1024, &upb_alloc_global),
+                         upb_arena_init(buf2, 1024, &upb_alloc_global),
+                         upb_arena_init(NULL, 0, &test_alloc),
+                         upb_arena_init(NULL, 0, &upb_alloc_global)};
+  int size = sizeof(arenas)/sizeof(arenas[0]);
+  for (int i = 0; i < size; ++i) {
+    for (int j = 0; j < size; ++j) {
+      if (i == j) {
+        ASSERT(upb_arena_fuse(arenas[i], arenas[j]));
+      } else {
+        ASSERT(!upb_arena_fuse(arenas[i], arenas[j]));
+      }
+    }
+  }
+
+  for (int i = 0; i < size; ++i) upb_arena_free(arenas[i]);
 }
 
 void test_arena_decode(void) {

@@ -68,14 +68,15 @@ static void *upb_global_allocfunc(upb_alloc *alloc, void *ptr, size_t oldsize,
 }
 
 static uint32_t *upb_cleanup_pointer(uintptr_t cleanup_metadata) {
-  return (uint32_t*)(cleanup_metadata & ~0x1);
+  return (uint32_t *)(cleanup_metadata & ~0x1);
 }
 
 static bool upb_cleanup_has_initial_block(uintptr_t cleanup_metadata) {
   return cleanup_metadata & 0x1;
 }
 
-static uintptr_t upb_cleanup_metadata(uint32_t* cleanup, bool has_initial_block) {
+static uintptr_t upb_cleanup_metadata(uint32_t *cleanup,
+                                      bool has_initial_block) {
   return (uintptr_t)cleanup | has_initial_block;
 }
 
@@ -260,8 +261,13 @@ bool upb_arena_fuse(upb_arena *a1, upb_arena *a2) {
   upb_arena *r2 = arena_findroot(a2);
 
   if (r1 == r2) return true;  /* Already fused. */
+
+  /* Do not fuse initial blocks since we cannot lifetime extend them. */
   if (upb_cleanup_has_initial_block(r1->cleanup_metadata)) return false;
   if (upb_cleanup_has_initial_block(r2->cleanup_metadata)) return false;
+
+  /* Only allow fuse with a common allocator */
+  if (r1->block_alloc != r2->block_alloc) return false;
 
   /* We want to join the smaller tree to the larger tree.
    * So swap first if they are backwards. */
