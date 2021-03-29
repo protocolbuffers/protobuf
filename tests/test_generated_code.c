@@ -427,7 +427,7 @@ void test_arena_fuse(void) {
   upb_arena_addcleanup(arena1, &i1, decrement_int);
   upb_arena_addcleanup(arena2, &i2, decrement_int);
 
-  upb_arena_fuse(arena1, arena2);
+  ASSERT(upb_arena_fuse(arena1, arena2));
 
   upb_arena_addcleanup(arena1, &i3, decrement_int);
   upb_arena_addcleanup(arena2, &i4, decrement_int);
@@ -442,6 +442,22 @@ void test_arena_fuse(void) {
   ASSERT(i2 == 4);
   ASSERT(i3 == 4);
   ASSERT(i4 == 4);
+}
+
+void test_arena_fuse_with_initial_block(void) {
+  char buf1[4096];
+  char buf2[4096];
+  upb_arena *arena1 = upb_arena_init(buf1, 4096, &upb_alloc_global);
+  upb_arena *arena2 = upb_arena_init(buf2, 4096, &upb_alloc_global);
+  upb_arena *arena3 = upb_arena_init(NULL, 0, &upb_alloc_global);
+  ASSERT(upb_arena_fuse(arena1, arena1));
+  ASSERT(!upb_arena_fuse(arena1, arena2));
+  ASSERT(!upb_arena_fuse(arena1, arena3));
+  ASSERT(!upb_arena_fuse(arena3, arena2));
+
+  upb_arena_free(arena1);
+  upb_arena_free(arena2);
+  upb_arena_free(arena3);
 }
 
 void test_arena_decode(void) {
@@ -487,6 +503,7 @@ int run_tests(int argc, char *argv[]) {
   test_null_decode_buf();
   test_status_truncation();
   test_arena_fuse();
+  test_arena_fuse_with_initial_block();
   test_arena_decode();
   return 0;
 }

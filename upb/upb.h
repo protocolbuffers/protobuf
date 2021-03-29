@@ -159,7 +159,7 @@ typedef struct {
 upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc);
 void upb_arena_free(upb_arena *a);
 bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func);
-void upb_arena_fuse(upb_arena *a, upb_arena *b);
+bool upb_arena_fuse(upb_arena *a, upb_arena *b);
 void *_upb_arena_slowmalloc(upb_arena *a, size_t size);
 
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
