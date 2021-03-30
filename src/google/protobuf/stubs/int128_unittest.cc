@@ -367,11 +367,15 @@ TEST(Int128, ConstexprTest) {
   EXPECT_EQ(minus_two, MakeUint128(-1ULL, -2ULL));
 }
 
+#if !defined(__GNUC__) || __GNUC__ > 4
+// libstdc++ is missing the required type traits pre gcc-5.0.0
+// https://gcc.gnu.org/onlinedocs/gcc-4.9.4/libstdc++/manual/manual/status.html#:~:text=20.9.4.3
 TEST(Int128, Traits) {
   EXPECT_TRUE(std::is_trivially_copy_constructible<uint128>::value);
   EXPECT_TRUE(std::is_trivially_copy_assignable<uint128>::value);
   EXPECT_TRUE(std::is_trivially_destructible<uint128>::value);
 }
+#endif  // !defined(__GNUC__) || __GNUC__ > 4
 
 TEST(Int128, OStream) {
   struct {
