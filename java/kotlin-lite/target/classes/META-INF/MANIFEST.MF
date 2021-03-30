@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: com.google.protobuf
+Bnd-LastModified: 1617123864936
+Build-Jdk: 11.0.10
+Built-By: deannagarcia
+Bundle-Description: Lite version of Protocol Buffers library. This versi
+ on is optimized for code size, but does    not guarantee API/ABI stabil
+ ity.
+Bundle-DocURL: https://developers.google.com/protocol-buffers/
+Bundle-License: https://opensource.org/licenses/BSD-3-Clause
+Bundle-ManifestVersion: 2
+Bundle-Name: Protocol Buffers [Lite]
+Bundle-SymbolicName: com.google.protobuf
+Bundle-Version: 3.15.6
+Created-By: Apache Maven Bundle Plugin
+Export-Package: com.google.protobuf;version="3.15.6"
+Import-Package: sun.misc;resolution:=optional,com.google.protobuf;versio
+ n="[3.15,4)",kotlin,kotlin.annotation,kotlin.jvm.internal,kotlin.jvm.in
+ ternal.markers
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.7))"
+Tool: Bnd-3.0.0.201509101326

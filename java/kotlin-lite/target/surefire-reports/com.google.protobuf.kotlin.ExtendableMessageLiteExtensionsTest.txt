@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.google.protobuf.kotlin.ExtendableMessageLiteExtensionsTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.058 s - in com.google.protobuf.kotlin.ExtendableMessageLiteExtensionsTest

@@ -16,10 +16,6 @@
     not guarantee API/ABI stability.
   </description>
 
-  <properties>
-    <kotlin.version>1.4.31</kotlin.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -50,16 +46,6 @@
       <groupId>com.google.truth</groupId>
       <artifactId>truth</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-stdlib-jdk7</artifactId>
-      <version>${kotlin.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jetbrains.kotlin</groupId>
-      <artifactId>kotlin-test</artifactId>
-      <version>${kotlin.version}</version>
     </dependency>
   </dependencies>
 
@@ -202,31 +188,6 @@
             </configuration>
           </execution>
           <execution>
-            <id>copy-kotlin-source-files</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${generated.sources.dir}/kotlin/com/google/protobuf</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${basedir}/../core/src/main/kotlin/com/google/protobuf</directory>
-                  <includes>
-                    <include>DslList.kt</include>
-                    <include>DslMap.kt</include>
-                    <include>DslProxy.kt</include>
-                    <include>ExtendableMessageLiteExtensions.kt</include>
-                    <include>ExtensionList.kt</include>
-                    <include>OnlyForUseByGeneratedProtoCode.kt</include>
-                    <include>ProtoDslMarker.kt</include>
-                    <include>UnmodifiableCollections.kt</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-          <execution>
             <id>copy-test-source-files</id>
             <phase>generate-test-sources</phase>
             <goals>
@@ -280,13 +241,6 @@
                     <exclude>UnknownFieldSetTest.java</exclude>
                     <exclude>WellKnownTypesTest.java</exclude>
                     <exclude>WireFormatTest.java</exclude>
-                  </excludes>
-                </resource>
-                <resource>
-                  <directory>${basedir}/../core/src/test/kotlin/com/google/protobuf</directory>
-                  <excludes>
-                    <exclude>ExtendableMessageExtensionsTest.kt</exclude>
-                    <exclude>Proto2Test.kt</exclude>
                   </excludes>
                 </resource>
               </resources>
@@ -369,36 +323,6 @@
               <sources>
                 <source>${generated.testsources.dir}</source>
               </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-maven-plugin</artifactId>
-        <version>${kotlin.version}</version>
-        <extensions>true</extensions>
-        <executions>
-          <execution>
-            <id>compile</id>
-            <goals> <goal>compile</goal> </goals>
-            <configuration>
-              <sourceDirs>
-                <sourceDir>${generated.sources.dir}/java</sourceDir>
-                <sourceDir>${generated.sources.dir}/kotlin</sourceDir>
-              </sourceDirs>
-            </configuration>
-          </execution>
-          <execution>
-            <id>test-compile</id>
-            <goals> <goal>test-compile</goal> </goals>
-            <configuration>
-              <sourceDirs>
-                <sourceDir>${project.basedir}/src/test/java</sourceDir>
-                <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
-                <sourceDir>${generated.testsources.dir}</sourceDir>
-              </sourceDirs>
             </configuration>
           </execution>
         </executions>

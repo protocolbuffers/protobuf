@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.google.protobuf.kotlin.ExtensionListTest
+-------------------------------------------------------------------------------
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s - in com.google.protobuf.kotlin.ExtensionListTest
