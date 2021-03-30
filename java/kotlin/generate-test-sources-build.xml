@@ -17,7 +17,6 @@
         <arg value="${test.proto.dir}/com/google/protobuf/evil_names_proto3.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/example_extensible_message.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_proto3.proto"/>
-        <arg value="${test.proto.dir}/com/google/protobuf/multiple_files_test.proto"/>
     </exec>
     <exec executable="${protoc}">
       <arg value="--kotlin_out=${generated.testsources.dir}"/>
