@@ -1025,9 +1025,8 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
     return util::InvalidArgumentError(
-        StrCat(
-            "Invalid data type for timestamp, value is ",
-            data.ValueAsStringOrDefault("")));
+        StrCat("Invalid data type for timestamp, value is ",
+                     data.ValueAsStringOrDefault("")));
   }
 
   StringPiece value(data.str());
@@ -1057,9 +1056,8 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
     return util::InvalidArgumentError(
-        StrCat(
-            "Invalid data type for field mask, value is ",
-            data.ValueAsStringOrDefault("")));
+        StrCat("Invalid data type for field mask, value is ",
+                     data.ValueAsStringOrDefault("")));
   }
 
   // TODO(tsun): figure out how to do proto descriptor based snake case
@@ -1074,9 +1072,8 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
     return util::InvalidArgumentError(
-        StrCat(
-            "Invalid data type for duration, value is ",
-            data.ValueAsStringOrDefault("")));
+        StrCat("Invalid data type for duration, value is ",
+                     data.ValueAsStringOrDefault("")));
   }
 
   StringPiece value(data.str());

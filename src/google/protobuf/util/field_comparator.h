@@ -173,6 +173,10 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
                               const Message& message1, const Message& message2,
                               const util::FieldContext* field_context);
 
+  // Returns FieldComparator::SAME if boolean_result is true and
+  // FieldComparator::DIFFERENT otherwise.
+  ComparisonResult ResultFromBoolean(bool boolean_result) const;
+
  private:
   // Defines the tolerance for floating point comparison (fraction and margin).
   struct Tolerance {
@@ -238,10 +242,6 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
   // but it's likely to fail if passed non-numeric arguments.
   template <typename T>
   bool CompareDoubleOrFloat(const FieldDescriptor& field, T value_1, T value_2);
-
-  // Returns FieldComparator::SAME if boolean_result is true and
-  // FieldComparator::DIFFERENT otherwise.
-  ComparisonResult ResultFromBoolean(bool boolean_result) const;
 
   FloatComparison float_comparison_;
 

@@ -317,8 +317,8 @@ util::Status ProtoStreamObjectSource::RenderTimestamp(
   int64_t seconds = p.first;
   int32_t nanos = p.second;
   if (seconds > kTimestampMaxSeconds || seconds < kTimestampMinSeconds) {
-    return util::InternalError(
-        StrCat("Timestamp seconds exceeds limit for field: ", field_name));
+    return util::InternalError(StrCat(
+        "Timestamp seconds exceeds limit for field: ", field_name));
   }
 
   if (nanos < 0 || nanos >= kNanosPerSecond) {

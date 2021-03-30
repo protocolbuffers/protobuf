@@ -1,6 +1,7 @@
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
+  * The ::pb namespace is no longer exposed due to conflicts.
   * Allow MessageDifferencer::TreatAsSet() (and friends) to override previous
     calls instead of crashing.
   * Reduce the size of generated proto headers for protos with `string` or
