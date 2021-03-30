@@ -134,7 +134,7 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
                              &proto_binary, options);
       if (!status.ok()) {
         response->set_parse_error(string("Parse error: ") +
-                                  std::string(status.error_message()));
+                                  std::string(status.message()));
         return;
       }
 
@@ -189,7 +189,7 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       if (!status.ok()) {
         response->set_serialize_error(
             string("Failed to serialize JSON output: ") +
-            std::string(status.error_message()));
+            std::string(status.message()));
         return;
       }
       break;

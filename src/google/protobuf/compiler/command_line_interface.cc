@@ -290,7 +290,10 @@ class CommandLineInterface::ErrorPrinter
       public DescriptorPool::ErrorCollector {
  public:
   ErrorPrinter(ErrorFormat format, DiskSourceTree* tree = NULL)
-      : format_(format), tree_(tree), found_errors_(false) {}
+      : format_(format),
+        tree_(tree),
+        found_errors_(false),
+        found_warnings_(false) {}
   ~ErrorPrinter() {}
 
   // implements MultiFileErrorCollector ------------------------------
@@ -302,6 +305,7 @@ class CommandLineInterface::ErrorPrinter
 
   void AddWarning(const std::string& filename, int line, int column,
                   const std::string& message) {
+    found_warnings_ = true;
     AddErrorOrWarning(filename, line, column, message, "warning", std::clog);
   }
 
@@ -328,6 +332,8 @@ class CommandLineInterface::ErrorPrinter
   }
 
   bool FoundErrors() const { return found_errors_; }
+
+  bool FoundWarnings() const { return found_warnings_; }
 
  private:
   void AddErrorOrWarning(const std::string& filename, int line, int column,
@@ -367,6 +373,7 @@ class CommandLineInterface::ErrorPrinter
   const ErrorFormat format_;
   DiskSourceTree* tree_;
   bool found_errors_;
+  bool found_warnings_;
 };
 
 // -------------------------------------------------------------------
@@ -584,10 +591,12 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToZip(
 
   if (stream.GetErrno() != 0) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   if (!stream.Close()) {
     std::cerr << filename << ": " << strerror(stream.GetErrno()) << std::endl;
+    return false;
   }
 
   return true;
@@ -1119,7 +1128,8 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  if (error_collector->FoundErrors()) {
+  if (error_collector->FoundErrors() ||
+      (fatal_warnings_ && error_collector->FoundWarnings())) {
     return 1;
   }
 
@@ -1632,7 +1642,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--version" || *name == "--decode_raw" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
-      *name == "--deterministic_output") {
+      *name == "--deterministic_output" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.
@@ -1885,6 +1895,12 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
+  } else if (name == "--fatal_warnings") {
+    if (fatal_warnings_) {
+      std::cerr << name << " may only be passed once." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+    fatal_warnings_ = true;
   } else if (name == "--plugin") {
     if (plugin_prefix_.empty()) {
       std::cerr << "This compiler does not support plugins." << std::endl;
@@ -2044,6 +2060,10 @@ Parse PROTO_FILES and generate output based on the options given:
   --error_format=FORMAT       Set the format in which to print errors.
                               FORMAT may be 'gcc' (the default) or 'msvs'
                               (Microsoft Visual Studio format).
+  --fatal_warnings            Make warnings be fatal (similar to -Werr in
+                              gcc). This flag will make protoc return
+                              with a non-zero exit code if any warnings
+                              are generated.
   --print_free_field_numbers  Print the free field numbers of the messages
                               defined in the given proto files. Groups share
                               the same field number space with the parent

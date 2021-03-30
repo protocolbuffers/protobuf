@@ -15,7 +15,7 @@ function(protobuf_generate)
   if(COMMAND target_sources)
     list(APPEND _singleargs TARGET)
   endif()
-  set(_multiargs PROTOS IMPORT_DIRS GENERATE_EXTENSIONS)
+  set(_multiargs PROTOS IMPORT_DIRS GENERATE_EXTENSIONS PROTOC_OPTIONS)
 
   cmake_parse_arguments(protobuf_generate "${_options}" "${_singleargs}" "${_multiargs}" "${ARGN}")
 
@@ -130,9 +130,9 @@ function(protobuf_generate)
     add_custom_command(
       OUTPUT ${_generated_srcs}
       COMMAND  protobuf::protoc
-      ARGS --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
+      ARGS ${protobuf_generate_PROTOC_OPTIONS} --${protobuf_generate_LANGUAGE}_out ${_dll_export_decl}${protobuf_generate_PROTOC_OUT_DIR} ${_plugin} ${_protobuf_include_path} ${_abs_file}
       DEPENDS ${_abs_file} protobuf::protoc
-      COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}"
+      COMMENT "Running ${protobuf_generate_LANGUAGE} protocol buffer compiler on ${_proto}. Custom options: ${protobuf_generate_PROTOC_OPTIONS}"
       VERBATIM )
   endforeach()
 

@@ -64,9 +64,6 @@ using google::protobuf::Type;
 using google::protobuf::UInt32Value;
 using google::protobuf::UInt64Value;
 
-using util::error::INVALID_ARGUMENT;
-using util::error::NOT_FOUND;
-
 class DescriptorPoolTypeResolver : public TypeResolver {
  public:
   DescriptorPoolTypeResolver(const std::string& url_prefix,
@@ -83,8 +80,8 @@ class DescriptorPoolTypeResolver : public TypeResolver {
 
     const Descriptor* descriptor = pool_->FindMessageTypeByName(type_name);
     if (descriptor == NULL) {
-      return util::Status(util::error::NOT_FOUND,
-                          "Invalid type URL, unknown type: " + type_name);
+      return util::NotFoundError("Invalid type URL, unknown type: " +
+                                 type_name);
     }
     ConvertDescriptor(descriptor, type);
     return util::Status();
@@ -100,8 +97,8 @@ class DescriptorPoolTypeResolver : public TypeResolver {
 
     const EnumDescriptor* descriptor = pool_->FindEnumTypeByName(type_name);
     if (descriptor == NULL) {
-      return util::Status(util::error::NOT_FOUND,
-                          "Invalid type URL, unknown type: " + type_name);
+      return util::InvalidArgumentError("Invalid type URL, unknown type: " +
+                                        type_name);
     }
     ConvertEnumDescriptor(descriptor, enum_type);
     return util::Status();
@@ -309,8 +306,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
   util::Status ParseTypeUrl(const std::string& type_url,
                             std::string* type_name) {
     if (type_url.substr(0, url_prefix_.size() + 1) != url_prefix_ + "/") {
-      return util::Status(
-          util::error::INVALID_ARGUMENT,
+      return util::InvalidArgumentError(
           StrCat("Invalid type URL, type URLs must be of the form '",
                        url_prefix_, "/<typename>', got: ", type_url));
     }

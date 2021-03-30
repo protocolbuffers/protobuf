@@ -330,7 +330,7 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
 
 #define FULL_MODULE_NAME "google.protobuf.pyext._message"
 
-void FormatTypeError(PyObject* arg, char* expected_types);
+void FormatTypeError(PyObject* arg, const char* expected_types);
 template<class T>
 bool CheckAndGetInteger(PyObject* arg, T* value);
 bool CheckAndGetDouble(PyObject* arg, double* value);

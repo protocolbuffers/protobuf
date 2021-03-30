@@ -348,7 +348,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (ptr - buffer_end_ > limit_) return nullptr;
     while (limit_ > kSlopBytes) {
       size_t chunk_size = buffer_end_ + kSlopBytes - ptr;
-      GOOGLE_DCHECK_GE(chunk_size, static_cast<size_t>(0));
       append(ptr, chunk_size);
       ptr = Next();
       if (ptr == nullptr) return limit_end_;

@@ -244,7 +244,7 @@ class PROTOBUF_EXPORT JsonStreamParser {
                              ParseErrorType parse_code);
 
   // Helper function to check recursion depth and increment it. It will return
-  // Status::OK if the current depth is allowed. Otherwise an error is returned.
+  // OkStatus() if the current depth is allowed. Otherwise an error is returned.
   // key is used for error reporting.
   util::Status IncrementRecursionDepth(StringPiece key) const;
 

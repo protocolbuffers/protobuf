@@ -287,7 +287,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
       const google::protobuf::Type& type) const;
 
   // Helper function to check recursion depth and increment it. It will return
-  // Status::OK if the current depth is allowed. Otherwise an error is returned.
+  // OkStatus() if the current depth is allowed. Otherwise an error is returned.
   // type_name and field_name are used for error reporting.
   util::Status IncrementRecursionDepth(StringPiece type_name,
                                        StringPiece field_name) const;

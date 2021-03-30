@@ -17,7 +17,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.15.2],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.15.6],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -222,6 +222,19 @@ case "$target_os" in
     ;;
 esac
 AM_CONDITIONAL([OBJC_CONFORMANCE_TEST], [test $OBJC_CONFORMANCE_TEST = 1])
+
+AC_MSG_CHECKING(whether -llog is needed)
+ANDROID_TEST=no
+case "$target_os" in
+  *android*)
+    ANDROID_TEST=yes
+    ;;
+esac
+AC_MSG_RESULT($ANDROID_TEST)
+if test "x$ANDROID_TEST" = xyes; then
+  LIBLOG_LIBS="-llog"
+fi
+AC_SUBST([LIBLOG_LIBS])
 
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock
