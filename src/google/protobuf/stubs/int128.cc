@@ -30,6 +30,8 @@
 
 #include <google/protobuf/stubs/int128.h>
 
+#if !defined(PROTOBUF_USE_ABSEIL)
+
 #include <iomanip>
 #include <ostream>  // NOLINT(readability/streams)
 #include <sstream>
@@ -197,3 +199,5 @@ void VerifyValidShift(std::string op, int amount) {
 }  // namespace google
 
 #include <google/protobuf/port_undef.inc>  // NOLINT
+
+#endif  // !defined(PROTOBUF_USE_ABSEIL)

@@ -7,6 +7,16 @@ local_repository(
     path = "examples",
 )
 
+# 2021-03-25T15:05:20Z
+http_archive(
+    name = "com_google_absl",
+    urls = [
+         "https://github.com/abseil/abseil-cpp/archive/a09b5de0d57d7b2179210989ab63361c3c1894f5.zip",
+    ],
+    strip_prefix = "abseil-cpp-a09b5de0d57d7b2179210989ab63361c3c1894f5",
+    sha256 = "595a502009b3f97f9407ff0557abc0fc4a9d9a574662353ccb2971c539ddb2e3",
+)
+
 http_archive(
     name = "com_google_googletest",
     sha256 = "9dc9157a9a1551ec7a7e43daea9a694a0bb5fb8bec81235d8a1e6ef64c716dcb",

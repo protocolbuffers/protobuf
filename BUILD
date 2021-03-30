@@ -14,6 +14,19 @@ exports_files(["LICENSE"])
 # build configuration
 ################################################################################
 
+string_flag(
+    name = "with_abseil",
+    build_setting_default = "false",
+    values = ["true", "false"]
+)
+
+config_setting(
+    name = "use_abseil",
+    flag_values = {
+        "//:with_abseil": "true"
+    },
+)
+
 ################################################################################
 # ZLIB configuration
 ################################################################################
@@ -168,6 +181,18 @@ cc_library(
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
+    deps = select({
+        "//:use_abseil": [
+            "@com_google_absl//absl/numeric:int128",
+        ],
+        "//conditions:default": [],
+    }),
+    defines = select({
+        "//:use_abseil": [
+            "PROTOBUF_USE_ABSEIL=1",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 PROTOBUF_DEPS = select({

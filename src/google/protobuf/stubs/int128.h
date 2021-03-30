@@ -27,8 +27,25 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #ifndef GOOGLE_PROTOBUF_STUBS_INT128_H_
 #define GOOGLE_PROTOBUF_STUBS_INT128_H_
+
+#if defined(PROTOBUF_USE_ABSEIL)
+
+#include "absl/numeric/int128.h"
+
+namespace google {
+namespace protobuf {
+
+using absl::uint128;
+using absl::Uint128Max;
+using absl::MakeUint128;
+
+}  // namespace protobuf
+}  // namespace google
+
+#else  // !defined(PROTOBUF_USE_ABSEIL)
 
 #include <google/protobuf/stubs/common.h>
 
@@ -372,5 +389,7 @@ using google::protobuf::int128_internal::MakeUint128;
 }  // namespace google
 
 #include <google/protobuf/port_undef.inc>
+
+#endif  // !defined(PROTOBUF_USE_ABSEIL)
 
 #endif  // GOOGLE_PROTOBUF_STUBS_INT128_H_
