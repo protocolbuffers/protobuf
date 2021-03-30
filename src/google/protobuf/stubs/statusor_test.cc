@@ -110,7 +110,7 @@ TEST(StatusOr, TestCopyCtorStatusOKConverting) {
 }
 
 TEST(StatusOr, TestCopyCtorStatusNotOkConverting) {
-  StatusOr<int>    original(util::CancelledError(""));
+  StatusOr<int> original(util::CancelledError(""));
   StatusOr<double> copy(original);
   EXPECT_EQ(original.status(), copy.status());
 }
@@ -141,7 +141,7 @@ TEST(StatusOr, TestAssignmentStatusOKConverting) {
 }
 
 TEST(StatusOr, TestAssignmentStatusNotOkConverting) {
-  StatusOr<int>    source(util::CancelledError(""));
+  StatusOr<int> source(util::CancelledError(""));
   StatusOr<double> target;
   target = source;
   EXPECT_EQ(source.status(), target.status());
