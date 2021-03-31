@@ -20,7 +20,7 @@ the following files:
 ## Maven Location
 The published protoc artifacts are available on Maven here:
 
-    http://central.maven.org/maven2/com/google/protobuf/protoc/
+    https://repo.maven.apache.org/maven2/com/google/protobuf/protoc/
 
 ## Versioning
 The version of the ``protoc`` artifact must be the same as the version of the
