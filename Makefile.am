@@ -530,6 +530,9 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
   java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
+  java/kotlin/generate-sources-build.xml                                           \
+  java/kotlin/generate-test-sources-build.xml                                      \
+  java/kotlin/pom.xml                                                              \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslList.kt                       \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslMap.kt                        \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslProxy.kt                      \
@@ -549,6 +552,11 @@ java_EXTRA_DIST=                                                                
   java/kotlin/src/test/proto/com/google/protobuf/evil_names_proto3.proto           \
   java/kotlin/src/test/proto/com/google/protobuf/example_extensible_message.proto  \
   java/kotlin/src/test/proto/com/google/protobuf/multiple_files_proto3.proto       \
+  java/kotlin-lite/generate-sources-build.xml                                      \
+  java/kotlin-lite/generate-test-sources-build.xml                                 \
+  java/kotlin-lite/lite.awk                                                        \
+  java/kotlin-lite/pom.xml                                                         \
+  java/kotlin-lite/process-lite-sources-build.xml                                  \
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.kt\
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto2LiteTest.kt           \
   java/lite.md                                                                     \
