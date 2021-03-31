@@ -7,7 +7,7 @@
     <version>3.15.6</version>
   </parent>
 
-  <artifactId>protobuf-javalite</artifactId>
+  <artifactId>protobuf-kotlin-lite</artifactId>
   <packaging>bundle</packaging>
 
   <name>Protocol Buffers [Lite]</name>

@@ -7,7 +7,7 @@
     <version>3.15.6</version>
   </parent>
 
-  <artifactId>protobuf-java</artifactId>
+  <artifactId>protobuf-kotlin</artifactId>
   <packaging>bundle</packaging>
 
   <name>Protocol Buffers [Core]</name>
