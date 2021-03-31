@@ -33,6 +33,9 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/java/java_string_field.h>
+
+#include <cstdint>
 #include <map>
 #include <string>
 
@@ -42,7 +45,6 @@
 #include <google/protobuf/compiler/java/java_doc_comment.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
 #include <google/protobuf/compiler/java/java_name_resolver.h>
-#include <google/protobuf/compiler/java/java_string_field.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -71,7 +73,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       "= " + ImmutableDefaultValue(descriptor, name_resolver);
   (*variables)["capitalized_type"] = "String";
   (*variables)["tag"] =
-      StrCat(static_cast<int32>(WireFormat::MakeTag(descriptor)));
+      StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   (*variables)["null_check"] =
@@ -188,7 +190,7 @@ int ImmutableStringFieldGenerator::GetNumBitsForBuilder() const {
 // UnmodifiableLazyStringList.
 void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_)) {
+  if (HasHazzer(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
@@ -207,7 +209,7 @@ void ImmutableStringFieldGenerator::GenerateMembers(
   printer->Print(variables_, "private volatile java.lang.Object $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
 
-  if (SupportFieldPresence(descriptor_)) {
+  if (HasHazzer(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -266,7 +268,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
   printer->Print(variables_,
                  "private java.lang.Object $name$_ $default_init$;\n");
-  if (SupportFieldPresence(descriptor_)) {
+  if (HasHazzer(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(
         variables_,
@@ -384,7 +386,7 @@ void ImmutableStringFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutableStringFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_)) {
+  if (HasHazzer(descriptor_)) {
     // Allow a slight breach of abstraction here in order to avoid forcing
     // all string fields to Strings when copying fields from a Message.
     printer->Print(variables_,
@@ -404,7 +406,7 @@ void ImmutableStringFieldGenerator::GenerateMergingCode(
 
 void ImmutableStringFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_)) {
+  if (HasHazzer(descriptor_)) {
     printer->Print(variables_,
                    "if ($get_has_field_bit_from_local$) {\n"
                    "  $set_has_field_bit_to_local$;\n"
@@ -484,16 +486,13 @@ ImmutableStringOneofFieldGenerator::~ImmutableStringOneofFieldGenerator() {}
 void ImmutableStringOneofFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   PrintExtraFieldInfo(variables_, printer);
-
-  if (SupportFieldPresence(descriptor_)) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
-    printer->Print(
-        variables_,
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $has_oneof_case_message$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  GOOGLE_DCHECK(HasHazzer(descriptor_));
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+  printer->Print(variables_,
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $has_oneof_case_message$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(
@@ -551,16 +550,14 @@ void ImmutableStringOneofFieldGenerator::GenerateMembers(
 
 void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
     io::Printer* printer) const {
-  if (SupportFieldPresence(descriptor_)) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
-    printer->Print(
-        variables_,
-        "@java.lang.Override\n"
-        "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
-        "  return $has_oneof_case_message$;\n"
-        "}\n");
-    printer->Annotate("{", "}", descriptor_);
-  }
+  GOOGLE_DCHECK(HasHazzer(descriptor_));
+  WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+  printer->Print(variables_,
+                 "@java.lang.Override\n"
+                 "$deprecation$public boolean ${$has$capitalized_name$$}$() {\n"
+                 "  return $has_oneof_case_message$;\n"
+                 "}\n");
+  printer->Annotate("{", "}", descriptor_);
 
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(

@@ -207,11 +207,15 @@ static_assert(std::is_standard_layout<ParseTableField>::value, "");
 static_assert(std::is_trivial<ParseTableField>::value, "");
 static_assert(std::is_standard_layout<AuxiliaryParseTableField>::value, "");
 static_assert(std::is_trivial<AuxiliaryParseTableField>::value, "");
-static_assert(std::is_standard_layout<AuxiliaryParseTableField::enum_aux>::value, "");
+static_assert(
+    std::is_standard_layout<AuxiliaryParseTableField::enum_aux>::value, "");
 static_assert(std::is_trivial<AuxiliaryParseTableField::enum_aux>::value, "");
-static_assert(std::is_standard_layout<AuxiliaryParseTableField::message_aux>::value, "");
-static_assert(std::is_trivial<AuxiliaryParseTableField::message_aux>::value, "");
-static_assert(std::is_standard_layout<AuxiliaryParseTableField::string_aux>::value, "");
+static_assert(
+    std::is_standard_layout<AuxiliaryParseTableField::message_aux>::value, "");
+static_assert(std::is_trivial<AuxiliaryParseTableField::message_aux>::value,
+              "");
+static_assert(
+    std::is_standard_layout<AuxiliaryParseTableField::string_aux>::value, "");
 static_assert(std::is_trivial<AuxiliaryParseTableField::string_aux>::value, "");
 static_assert(std::is_standard_layout<ParseTable>::value, "");
 static_assert(std::is_trivial<ParseTable>::value, "");

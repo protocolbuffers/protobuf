@@ -348,15 +348,15 @@ static bool to_string(zval* from) {
   }
 }
 
-bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, upb_fieldtype_t type,
-                      const Descriptor *desc, upb_arena *arena) {
+bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, TypeInfo type,
+                      upb_arena *arena) {
   int64_t i64;
 
   if (Z_ISREF_P(php_val)) {
     ZVAL_DEREF(php_val);
   }
 
-  switch (type) {
+  switch (type.type) {
     case UPB_TYPE_INT64:
       return Convert_PhpToInt64(php_val, &upb_val->int64_val);
     case UPB_TYPE_INT32:
@@ -408,17 +408,17 @@ bool Convert_PhpToUpb(zval *php_val, upb_msgval *upb_val, upb_fieldtype_t type,
       return true;
     }
     case UPB_TYPE_MESSAGE:
-      PBPHP_ASSERT(desc);
-      return Message_GetUpbMessage(php_val, desc, arena,
+      PBPHP_ASSERT(type.desc);
+      return Message_GetUpbMessage(php_val, type.desc, arena,
                                    (upb_msg **)&upb_val->msg_val);
   }
 
   return false;
 }
 
-void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, upb_fieldtype_t type,
-                      const Descriptor *desc, zval *arena) {
-  switch (type) {
+void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, TypeInfo type,
+                      zval *arena) {
+  switch (type.type) {
     case UPB_TYPE_INT64:
 #if SIZEOF_ZEND_LONG == 8
       ZVAL_LONG(php_val, upb_val.int64_val);
@@ -467,25 +467,24 @@ void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, upb_fieldtype_t type,
       break;
     }
     case UPB_TYPE_MESSAGE:
-      PBPHP_ASSERT(desc);
-      Message_GetPhpWrapper(php_val, desc, (upb_msg*)upb_val.msg_val, arena);
+      PBPHP_ASSERT(type.desc);
+      Message_GetPhpWrapper(php_val, type.desc, (upb_msg *)upb_val.msg_val,
+                            arena);
       break;
   }
 }
 
-bool Convert_PhpToUpbAutoWrap(zval *val, upb_msgval *upb_val,
-                              upb_fieldtype_t type, const Descriptor *desc,
+bool Convert_PhpToUpbAutoWrap(zval *val, upb_msgval *upb_val, TypeInfo type,
                               upb_arena *arena) {
-  const upb_msgdef *subm = desc ? desc->msgdef : NULL;
+  const upb_msgdef *subm = type.desc ? type.desc->msgdef : NULL;
   if (subm && upb_msgdef_iswrapper(subm) && Z_TYPE_P(val) != IS_OBJECT) {
     // Assigning a scalar to a wrapper-typed value. We will automatically wrap
     // the value, so the user doesn't need to create a FooWrapper(['value': X])
     // message manually.
     upb_msg *wrapper = upb_msg_new(subm, arena);
     const upb_fielddef *val_f = upb_msgdef_itof(subm, 1);
-    upb_fieldtype_t type_f = upb_fielddef_type(val_f);
     upb_msgval msgval;
-    if (!Convert_PhpToUpb(val, &msgval, type_f, NULL, arena)) return false;
+    if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(val_f), arena)) return false;
     upb_msg_set(wrapper, val_f, msgval, arena);
     upb_val->msg_val = wrapper;
     return true;
@@ -495,7 +494,7 @@ bool Convert_PhpToUpbAutoWrap(zval *val, upb_msgval *upb_val,
     //   ['foo_submsg': new Foo(['a' => 1])]
     // not:
     //   ['foo_submsg': ['a' => 1]]
-    return Convert_PhpToUpb(val, upb_val, type, desc, arena);
+    return Convert_PhpToUpb(val, upb_val, type, arena);
   }
 }
 

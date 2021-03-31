@@ -51,6 +51,9 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
+template <typename T>
+class ExplicitlyConstructed;
+
 // Lazy string instance to support string fields with non-empty default.
 // These are initialized on the first call to .get().
 class PROTOBUF_EXPORT LazyString {
@@ -88,8 +91,8 @@ template <typename T>
 class TaggedPtr {
  public:
   TaggedPtr() = default;
-  explicit constexpr TaggedPtr(const std::string* ptr)
-      : ptr_(const_cast<std::string*>(ptr)) {}
+  explicit constexpr TaggedPtr(const ExplicitlyConstructed<std::string>* ptr)
+      : ptr_(const_cast<ExplicitlyConstructed<std::string>*>(ptr)) {}
 
   void SetTagged(T* p) {
     Set(p);
@@ -171,7 +174,8 @@ static_assert(std::is_trivial<TaggedPtr<std::string>>::value,
 // requires the String tag to be 0 so we can avoid the mask before comparing.)
 struct PROTOBUF_EXPORT ArenaStringPtr {
   ArenaStringPtr() = default;
-  explicit constexpr ArenaStringPtr(const std::string* default_value)
+  explicit constexpr ArenaStringPtr(
+      const ExplicitlyConstructed<std::string>* default_value)
       : tagged_ptr_(default_value) {}
 
   // Some methods below are overloaded on a `default_value` and on tags.
@@ -189,13 +193,41 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   void Set(EmptyDefault, std::string&& value, ::google::protobuf::Arena* arena);
   void Set(NonEmptyDefault, ConstStringParam value, ::google::protobuf::Arena* arena);
   void Set(NonEmptyDefault, std::string&& value, ::google::protobuf::Arena* arena);
+  template <typename FirstParam>
+  void Set(FirstParam p1, const char* str, ::google::protobuf::Arena* arena) {
+    Set(p1, ConstStringParam(str), arena);
+  }
+  template <typename FirstParam>
+  void Set(FirstParam p1, const char* str, size_t size,
+           ::google::protobuf::Arena* arena) {
+    ConstStringParam sp{str, size};  // for string_view and `const string &`
+    Set(p1, sp, arena);
+  }
+  template <typename FirstParam, typename RefWrappedType>
+  void Set(FirstParam p1,
+           std::reference_wrapper<RefWrappedType> const_string_ref,
+           ::google::protobuf::Arena* arena) {
+    Set(p1, const_string_ref.get(), arena);
+  }
+
+  template <typename FirstParam, typename SecondParam>
+  void SetBytes(FirstParam p1, SecondParam&& p2, ::google::protobuf::Arena* arena) {
+    Set(p1, static_cast<SecondParam&&>(p2), arena);
+  }
+  template <typename FirstParam>
+  void SetBytes(FirstParam p1, const void* str, size_t size,
+                ::google::protobuf::Arena* arena) {
+    // must work whether ConstStringParam is string_view or `const string &`
+    ConstStringParam sp{static_cast<const char*>(str), size};
+    Set(p1, sp, arena);
+  }
 
   // Basic accessors.
-  const std::string& Get() const PROTOBUF_ALWAYS_INLINE {
+  const std::string& Get() const PROTOBUF_NDEBUG_INLINE {
     // Unconditionally mask away the tag.
     return *tagged_ptr_.Get();
   }
-  const std::string* GetPointer() const PROTOBUF_ALWAYS_INLINE {
+  const std::string* GetPointer() const PROTOBUF_NDEBUG_INLINE {
     // Unconditionally mask away the tag.
     return tagged_ptr_.Get();
   }
@@ -224,7 +256,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // logic in Swap()/UnsafeArenaSwap() at the message level, so this method is
   // 'unsafe' if called directly.
   inline void Swap(ArenaStringPtr* other, const std::string* default_value,
-                   Arena* arena) PROTOBUF_ALWAYS_INLINE;
+                   Arena* arena) PROTOBUF_NDEBUG_INLINE;
 
   // Frees storage (if not on an arena).
   void Destroy(const std::string* default_value, ::google::protobuf::Arena* arena);
@@ -296,6 +328,12 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   template <typename... Lazy>
   std::string* MutableSlow(::google::protobuf::Arena* arena, const Lazy&... lazy_default);
 
+  // Sets value to a newly allocated string and returns it
+  std::string* SetAndReturnNewString();
+
+  // Destroys the non-default string value out-of-line
+  void DestroyNoArenaSlowPath();
+
 };
 
 inline void ArenaStringPtr::UnsafeSetDefault(const std::string* value) {
@@ -329,8 +367,8 @@ inline void ArenaStringPtr::Swap(ArenaStringPtr* other,
     this_ptr->swap(*other_ptr);
   }
 #else
-  (void) default_value;
-  (void) arena;
+  (void)default_value;
+  (void)arena;
   std::swap(tagged_ptr_, other->tagged_ptr_);
 #endif
 }
@@ -347,9 +385,7 @@ inline std::string* ArenaStringPtr::MutableNoArenaNoDefault(
   // static global) and a branch to the slowpath (which calls operator new and
   // the ctor). DO NOT add any tagged-pointer operations here.
   if (IsDefault(default_value)) {
-    std::string* new_string = new std::string();
-    tagged_ptr_.Set(new_string);
-    return new_string;
+    return SetAndReturnNewString();
   } else {
     return UnsafeMutablePointer();
   }
@@ -357,7 +393,7 @@ inline std::string* ArenaStringPtr::MutableNoArenaNoDefault(
 
 inline void ArenaStringPtr::DestroyNoArena(const std::string* default_value) {
   if (!IsDefault(default_value)) {
-    delete UnsafeMutablePointer();
+    DestroyNoArenaSlowPath();
   }
 }
 

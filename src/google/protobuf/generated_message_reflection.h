@@ -253,25 +253,24 @@ struct MigrationSchema {
   int object_size;
 };
 
-struct SCCInfoBase;
-
+// This struct tries to reduce unnecessary padding.
+// The num_xxx might not be close to their respective pointer, but this saves
+// padding.
 struct PROTOBUF_EXPORT DescriptorTable {
   mutable bool is_initialized;
   bool is_eager;
+  int size;  // of serialized descriptor
   const char* descriptor;
   const char* filename;
-  int size;  // of serialized descriptor
   once_flag* once;
-  SCCInfoBase* const* init_default_instances;
   const DescriptorTable* const* deps;
-  int num_sccs;
   int num_deps;
+  int num_messages;
   const MigrationSchema* schemas;
   const Message* const* default_instances;
   const uint32* offsets;
   // update the following descriptor arrays.
   Metadata* file_level_metadata;
-  int num_messages;
   const EnumDescriptor** file_level_enum_descriptors;
   const ServiceDescriptor** file_level_service_descriptors;
 };
@@ -290,6 +289,14 @@ enum {
 // the types defined in the file.  AssignDescriptors() is thread-safe.
 void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
                                        bool eager = false);
+
+// Overload used to implement GetMetadataStatic in the generated code.
+// See comments in compiler/cpp/internal/file.cc as to why.
+// It takes a `Metadata` and returns it to allow for tail calls and reduce
+// binary size.
+Metadata PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* (*table)(),
+                                           internal::once_flag* once,
+                                           const Metadata& metadata);
 
 // These cannot be in lite so we put them in the reflection.
 PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset,

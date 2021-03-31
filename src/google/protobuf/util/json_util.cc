@@ -43,10 +43,13 @@
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status_macros.h>
 
+// clang-format off
 #include <google/protobuf/port_def.inc>
+// clang-format on
 
 namespace google {
 namespace protobuf {
@@ -82,17 +85,19 @@ void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
 }  // namespace internal
 
 util::Status BinaryToJsonStream(TypeResolver* resolver,
-                                  const std::string& type_url,
-                                  io::ZeroCopyInputStream* binary_input,
-                                  io::ZeroCopyOutputStream* json_output,
-                                  const JsonPrintOptions& options) {
+                                const std::string& type_url,
+                                io::ZeroCopyInputStream* binary_input,
+                                io::ZeroCopyOutputStream* json_output,
+                                const JsonPrintOptions& options) {
   io::CodedInputStream in_stream(binary_input);
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
-  converter::ProtoStreamObjectSource proto_source(&in_stream, resolver, type);
-  proto_source.set_use_ints_for_enums(options.always_print_enums_as_ints);
-  proto_source.set_preserve_proto_field_names(
-      options.preserve_proto_field_names);
+  converter::ProtoStreamObjectSource::RenderOptions render_options;
+  render_options.use_ints_for_enums = options.always_print_enums_as_ints;
+  render_options.preserve_proto_field_names =
+      options.preserve_proto_field_names;
+  converter::ProtoStreamObjectSource proto_source(&in_stream, resolver, type,
+                                                  render_options);
   io::CodedOutputStream out_stream(json_output);
   converter::JsonObjectWriter json_writer(options.add_whitespace ? " " : "",
                                           &out_stream);
@@ -110,10 +115,10 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
 }
 
 util::Status BinaryToJsonString(TypeResolver* resolver,
-                                  const std::string& type_url,
-                                  const std::string& binary_input,
-                                  std::string* json_output,
-                                  const JsonPrintOptions& options) {
+                                const std::string& type_url,
+                                const std::string& binary_input,
+                                std::string* json_output,
+                                const JsonPrintOptions& options) {
   io::ArrayInputStream input_stream(binary_input.data(), binary_input.size());
   io::StringOutputStream output_stream(json_output);
   return BinaryToJsonStream(resolver, type_url, &input_stream, &output_stream,
@@ -135,25 +140,22 @@ class StatusErrorListener : public converter::ErrorListener {
     if (!loc_string.empty()) {
       loc_string.append(" ");
     }
-    status_ =
-        util::Status(util::error::INVALID_ARGUMENT,
-                       StrCat(loc_string, unknown_name, ": ", message));
+    status_ = util::InvalidArgumentError(
+        StrCat(loc_string, unknown_name, ": ", message));
   }
 
   void InvalidValue(const converter::LocationTrackerInterface& loc,
                     StringPiece type_name,
                     StringPiece value) override {
-    status_ = util::Status(
-        util::error::INVALID_ARGUMENT,
+    status_ = util::InvalidArgumentError(
         StrCat(GetLocString(loc), ": invalid value ", std::string(value),
                      " for type ", std::string(type_name)));
   }
 
   void MissingField(const converter::LocationTrackerInterface& loc,
                     StringPiece missing_name) override {
-    status_ = util::Status(util::error::INVALID_ARGUMENT,
-                             StrCat(GetLocString(loc), ": missing field ",
-                                          std::string(missing_name)));
+    status_ = util::InvalidArgumentError(StrCat(
+        GetLocString(loc), ": missing field ", std::string(missing_name)));
   }
 
  private:
@@ -173,10 +175,10 @@ class StatusErrorListener : public converter::ErrorListener {
 }  // namespace
 
 util::Status JsonToBinaryStream(TypeResolver* resolver,
-                                  const std::string& type_url,
-                                  io::ZeroCopyInputStream* json_input,
-                                  io::ZeroCopyOutputStream* binary_output,
-                                  const JsonParseOptions& options) {
+                                const std::string& type_url,
+                                io::ZeroCopyInputStream* json_input,
+                                io::ZeroCopyOutputStream* binary_output,
+                                const JsonParseOptions& options) {
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
   internal::ZeroCopyStreamByteSink sink(binary_output);
@@ -204,10 +206,10 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
 }
 
 util::Status JsonToBinaryString(TypeResolver* resolver,
-                                  const std::string& type_url,
-                                  StringPiece json_input,
-                                  std::string* binary_output,
-                                  const JsonParseOptions& options) {
+                                const std::string& type_url,
+                                StringPiece json_input,
+                                std::string* binary_output,
+                                const JsonParseOptions& options) {
   io::ArrayInputStream input_stream(json_input.data(), json_input.size());
   io::StringOutputStream output_stream(binary_output);
   return JsonToBinaryStream(resolver, type_url, &input_stream, &output_stream,
@@ -240,7 +242,7 @@ TypeResolver* GetGeneratedTypeResolver() {
 }  // namespace
 
 util::Status MessageToJsonString(const Message& message, std::string* output,
-                                   const JsonOptions& options) {
+                                 const JsonOptions& options) {
   const DescriptorPool* pool = message.GetDescriptor()->file()->pool();
   TypeResolver* resolver =
       pool == DescriptorPool::generated_pool()
@@ -256,7 +258,7 @@ util::Status MessageToJsonString(const Message& message, std::string* output,
 }
 
 util::Status JsonStringToMessage(StringPiece input, Message* message,
-                                   const JsonParseOptions& options) {
+                                 const JsonParseOptions& options) {
   const DescriptorPool* pool = message->GetDescriptor()->file()->pool();
   TypeResolver* resolver =
       pool == DescriptorPool::generated_pool()
@@ -264,11 +266,10 @@ util::Status JsonStringToMessage(StringPiece input, Message* message,
           : NewTypeResolverForDescriptorPool(kTypeUrlPrefix, pool);
   std::string binary;
   util::Status result = JsonToBinaryString(resolver, GetTypeUrl(*message),
-                                             input, &binary, options);
+                                           input, &binary, options);
   if (result.ok() && !message->ParseFromString(binary)) {
-    result =
-        util::Status(util::error::INVALID_ARGUMENT,
-                       "JSON transcoder produced invalid protobuf output.");
+    result = util::InvalidArgumentError(
+        "JSON transcoder produced invalid protobuf output.");
   }
   if (pool != DescriptorPool::generated_pool()) {
     delete resolver;

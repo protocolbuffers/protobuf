@@ -624,4 +624,16 @@ class ArrayTest extends TestBase
             new RepeatedField(GPBType::MESSAGE, TestMessage::class) ==
             new RepeatedField(GPBType::MESSAGE, Sub::class));
     }
+
+    #########################################################
+    # Test clone
+    #########################################################
+
+    public function testClone()
+    {
+        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
+        $arr[] = new TestMessage;
+        $arr2 = clone $arr;
+        $this->assertSame($arr[0], $arr2[0]);
+    }
 }

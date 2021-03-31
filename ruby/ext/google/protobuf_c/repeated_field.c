@@ -88,7 +88,7 @@ VALUE RepeatedField_GetRubyWrapper(upb_array* array, TypeInfo type_info,
   if (val == Qnil) {
     val = RepeatedField_alloc(cRepeatedField);
     RepeatedField* self;
-    ObjectCache_Add(array, val, Arena_get(arena));
+    ObjectCache_Add(array, val);
     TypedData_Get_Struct(val, RepeatedField, &RepeatedField_type, self);
     self->array = array;
     self->arena = arena;
@@ -500,9 +500,10 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
  */
 static VALUE RepeatedField_freeze(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-
-  ObjectCache_Pin(self->array, _self, Arena_get(self->arena));
-  RB_OBJ_FREEZE(_self);
+  if (!RB_OBJ_FROZEN(_self)) {
+    Arena_Pin(self->arena, _self);
+    RB_OBJ_FREEZE(_self);
+  }
   return _self;
 }
 
@@ -610,7 +611,7 @@ VALUE RepeatedField_init(int argc, VALUE* argv, VALUE _self) {
 
   self->type_info = TypeInfo_FromClass(argc, argv, 0, &self->type_class, &ary);
   self->array = upb_array_new(arena, self->type_info.type);
-  ObjectCache_Add(self->array, _self, arena);
+  ObjectCache_Add(self->array, _self);
 
   if (ary != Qnil) {
     if (!RB_TYPE_P(ary, T_ARRAY)) {

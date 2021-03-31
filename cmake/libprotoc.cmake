@@ -93,6 +93,7 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_message_layout_helper.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_names.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_options.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_padding_optimizer.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_primitive_field.h

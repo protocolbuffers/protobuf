@@ -139,12 +139,12 @@ public final class Proto3MessageLiteInfoFactory implements MessageInfoFactory {
     // the content of the generated buildMessageInfo() method here.
     java.lang.String info =
         "\u0000@\u0001\u0000\u0001D@\u0000\u001f\u0000\u0001\u0000\u0002\u0001\u0003\u0002"
-            + "\u0004\u0003\u0005\u0004\u0006\u0005\u0007\u0006\b\u0007\t\u0208\n\t\u000b\n\f\u000b"
-            + "\r\f\u000e\r\u000f\u000e\u0010\u000f\u0011\u0010\u0012\u0012\u0013\u0013\u0014\u0014"
-            + "\u0015\u0015\u0016\u0016\u0017\u0017\u0018\u0018\u0019\u0019\u001a\u021a\u001b\u001b"
-            + "\u001c\u001c\u001d\u001d\u001e\u001e\u001f\u001f  !!\"\"##$$%%&&\'\'(())**++,,--"
-            + "..//0053\u000064\u000075\u000086\u000097\u0000:8\u0000;9\u0000<:\u0000=\u023b\u0000"
-            + "><\u0000?=\u0000@>\u0000A@\u0000BA\u0000CB\u0000DC\u0000";
+        + "\u0004\u0003\u0005\u0004\u0006\u0005\u0007\u0006\b\u0007\t\u0208\n\t\u000b\n\f\u000b"
+        + "\r\f\u000e\r\u000f\u000e\u0010\u000f\u0011\u0010\u0012\u0012\u0013\u0013\u0014\u0014"
+        + "\u0015\u0015\u0016\u0016\u0017\u0017\u0018\u0018\u0019\u0019\u001a\u021a\u001b\u001b"
+        + "\u001c\u001c\u001d\u001d\u001e\u001e\u001f\u001f  !!\"\"##$$%%&&\'\'(())**++,,--"
+        + "..//0053\u000064\u000075\u000086\u000097\u0000:8\u0000;9\u0000<:\u0000=\u023b\u0000"
+        + "><\u0000?=\u0000@>\u0000A@\u0000BA\u0000CB\u0000DC\u0000";
     return new RawMessageInfo(Proto3MessageLite.getDefaultInstance(), info, objects);
   }
 

@@ -2184,7 +2184,7 @@ void SortMessages(FileDescriptorProto* file_descriptor_proto) {
 void StripFieldTypeName(DescriptorProto* proto) {
   for (int i = 0; i < proto->field_size(); ++i) {
     std::string type_name = proto->field(i).type_name();
-    std::string::size_type pos = type_name.find_last_of(".");
+    std::string::size_type pos = type_name.find_last_of('.');
     if (pos != std::string::npos) {
       proto->mutable_field(i)->mutable_type_name()->assign(
           type_name.begin() + pos + 1, type_name.end());

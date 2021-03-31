@@ -11,6 +11,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Action Script: https://code.google.com/p/protoc-gen-as3/
 * Action Script: https://github.com/matrix3d/JProtoc
 * Action Script: https://github.com/zhongfq/protobuf-as3/
+* Ada: https://github.com/reznikmm/protobuf
 * C: https://github.com/protobuf-c/protobuf-c
 * C: http://koti.kapsi.fi/jpa/nanopb/
 * C: https://github.com/cloudwu/pbc/
@@ -101,7 +102,6 @@ These are projects we know about implementing Protocol Buffers for other program
 * Solidity: https://github.com/celer-network/pb3-gen-sol
 * Swift: https://github.com/alexeyxo/protobuf-swift
 * Swift: https://github.com/apple/swift-protobuf/
-* Typescript: https://github.com/y3llowcake/protoc-gen-ts
 * Vala: https://launchpad.net/protobuf-vala
 * Visual Basic: http://code.google.com/p/protobuf-net/
 

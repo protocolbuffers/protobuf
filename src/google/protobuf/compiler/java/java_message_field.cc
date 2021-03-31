@@ -49,6 +49,7 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
+
 namespace {
 
 void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,

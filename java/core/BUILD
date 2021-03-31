@@ -85,6 +85,7 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/UnknownFieldSetLite.java",
     "src/main/java/com/google/protobuf/UnknownFieldSetLiteSchema.java",
     "src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java",
+    "src/main/java/com/google/protobuf/UnsafeByteOperations.java",
     "src/main/java/com/google/protobuf/UnsafeUtil.java",
     "src/main/java/com/google/protobuf/Utf8.java",
     "src/main/java/com/google/protobuf/WireFormat.java",

@@ -82,6 +82,32 @@ struct PyProto_API {
   // to create Python-compatible message.
   virtual const DescriptorPool* GetDefaultDescriptorPool() const = 0;
   virtual MessageFactory* GetDefaultMessageFactory() const = 0;
+
+  // Allocate a new protocol buffer as a python object for the provided
+  // descriptor. This function works even if no Python module has been imported
+  // for the corresponding protocol buffer class.
+  // The factory is usually null; when provided, it is the MessageFactory which
+  // owns the Python class, and will be used to find and create Extensions for
+  // this message.
+  // When null is returned, a python error has already been set.
+  virtual PyObject* NewMessage(const Descriptor* descriptor,
+                               PyObject* py_message_factory) const = 0;
+
+  // Allocate a new protocol buffer where the underlying object is owned by C++.
+  // The factory must currently be null.  This function works even if no Python
+  // module has been imported for the corresponding protocol buffer class.
+  // When null is returned, a python error has already been set.
+  //
+  // Since this call returns a python object owned by C++, some operations
+  // are risky, and it must be used carefully. In particular:
+  // * Avoid modifying the returned object from the C++ side while there are
+  // existing python references to it or it's subobjects.
+  // * Avoid using python references to this object or any subobjects after the
+  // C++ object has been freed.
+  // * Calling this with the same C++ pointer will result in multiple distinct
+  // python objects referencing the same C++ object.
+  virtual PyObject* NewMessageOwnedExternally(
+      Message* msg, PyObject* py_message_factory) const = 0;
 };
 
 inline const char* PyProtoAPICapsuleName() {

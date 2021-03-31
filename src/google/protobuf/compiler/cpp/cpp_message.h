@@ -35,9 +35,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <string>
+
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_message_layout_helper.h>
@@ -124,6 +126,10 @@ class MessageGenerator {
   // Generate the arena-specific destructor code.
   void GenerateArenaDestructorCode(io::Printer* printer);
 
+  // Generate the constexpr constructor for constant initialization of the
+  // default instance.
+  void GenerateConstexprConstructor(io::Printer* printer);
+
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
   void GenerateOneofClear(io::Printer* printer);
@@ -175,7 +181,7 @@ class MessageGenerator {
   int HasByteIndex(const FieldDescriptor* a) const;
   int HasWordIndex(const FieldDescriptor* a) const;
   bool SameHasByte(const FieldDescriptor* a, const FieldDescriptor* b) const;
-  std::vector<uint32> RequiredFieldsBitMask() const;
+  std::vector<uint32_t> RequiredFieldsBitMask() const;
 
   const Descriptor* descriptor_;
   int index_in_file_messages_;

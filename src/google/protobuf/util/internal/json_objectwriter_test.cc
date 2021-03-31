@@ -30,6 +30,8 @@
 
 #include <google/protobuf/util/internal/json_objectwriter.h>
 
+#include <cstdint>
+
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <gtest/gtest.h>
@@ -147,8 +149,8 @@ TEST_F(JsonObjectWriterTest, RenderPrimitives) {
       ->RenderBool("bool", true)
       ->RenderDouble("double", std::numeric_limits<double>::max())
       ->RenderFloat("float", std::numeric_limits<float>::max())
-      ->RenderInt32("int", std::numeric_limits<int32>::min())
-      ->RenderInt64("long", std::numeric_limits<int64>::min())
+      ->RenderInt32("int", std::numeric_limits<int32_t>::min())
+      ->RenderInt64("long", std::numeric_limits<int64_t>::min())
       ->RenderBytes("bytes", "abracadabra")
       ->RenderString("string", "string")
       ->RenderBytes("emptybytes", "")

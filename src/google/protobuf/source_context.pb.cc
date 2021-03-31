@@ -17,24 +17,19 @@
 
 PROTOBUF_PRAGMA_INIT_SEG
 PROTOBUF_NAMESPACE_OPEN
-class SourceContextDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<SourceContext> _instance;
-} _SourceContext_default_instance_;
+constexpr SourceContext::SourceContext(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : file_name_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
+struct SourceContextDefaultTypeInternal {
+  constexpr SourceContextDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~SourceContextDefaultTypeInternal() {}
+  union {
+    SourceContext _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsscc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_SourceContext_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::SourceContext();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto}, {}};
-
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
@@ -63,18 +58,16 @@ const char descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eprot
   "tobuf/types/known/sourcecontextpb\242\002\003GPB\252"
   "\002\036Google.Protobuf.WellKnownTypesb\006proto3"
   ;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_deps[1] = {
-};
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_sccs[1] = {
-  &scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base,
-};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto = {
-  false, false, descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto, "google/protobuf/source_context.proto", 240,
-  &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_once, descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_sccs, descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_deps, 1, 0,
+  false, false, 240, descriptor_table_protodef_google_2fprotobuf_2fsource_5fcontext_2eproto, "google/protobuf/source_context.proto", 
+  &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_once, nullptr, 0, 1,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto, file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto,
+  file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto, file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto, file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto,
 };
+PROTOBUF_ATTRIBUTE_WEAK const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_getter() {
+  return &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto;
+}
 
 // Force running AddDescriptors() at dynamic initialization time.
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2fsource_5fcontext_2eproto(&descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto);
@@ -104,8 +97,7 @@ SourceContext::SourceContext(const SourceContext& from)
 }
 
 void SourceContext::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base);
-  file_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+file_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 SourceContext::~SourceContext() {
@@ -128,11 +120,6 @@ void SourceContext::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void SourceContext::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const SourceContext& SourceContext::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_SourceContext_google_2fprotobuf_2fsource_5fcontext_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
@@ -149,7 +136,6 @@ const char* SourceContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // string file_name = 1;
       case 1:
@@ -162,7 +148,8 @@ const char* SourceContext::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -282,9 +269,10 @@ void SourceContext::InternalSwap(SourceContext* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceContext::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_getter, &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto[0]);
 }
-
 
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_CLOSE

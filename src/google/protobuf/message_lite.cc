@@ -529,6 +529,23 @@ void GenericTypeHandler<std::string>::Merge(const std::string& from,
   *to = from;
 }
 
+// Non-inline variants of std::string specializations for
+// various InternalMetadata routines.
+template <>
+void InternalMetadata::DoClear<std::string>() {
+  mutable_unknown_fields<std::string>()->clear();
+}
+
+template <>
+void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
+  mutable_unknown_fields<std::string>()->append(other);
+}
+
+template <>
+void InternalMetadata::DoSwap<std::string>(std::string* other) {
+  mutable_unknown_fields<std::string>()->swap(*other);
+}
+
 }  // namespace internal
 
 

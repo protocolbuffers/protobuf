@@ -31,8 +31,11 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_LOGGING_H_
 #define GOOGLE_PROTOBUF_STUBS_LOGGING_H_
 
+#include <google/protobuf/stubs/int128.h>
 #include <google/protobuf/stubs/macros.h>
 #include <google/protobuf/stubs/port.h>
+#include <google/protobuf/stubs/status.h>
+#include <google/protobuf/stubs/stringpiece.h>
 
 #include <google/protobuf/port_def.inc>
 
@@ -63,11 +66,6 @@ enum LogLevel {
 #endif
 };
 
-class StringPiece;
-namespace util {
-class Status;
-}
-class uint128;
 namespace internal {
 
 class LogFinisher;

@@ -14,6 +14,7 @@ use Foo\TestStringValue;
 use Foo\TestBytesValue;
 use Foo\TestAny;
 use Foo\TestEnum;
+use Foo\TestLargeFieldNumber;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
@@ -527,6 +528,15 @@ class EncodeDecodeTest extends TestBase
         $m = new TestRandomFieldOrder();
         $data = $m->serializeToString();
         $this->assertSame("", $data);
+    }
+
+    public function testLargeFieldNumber()
+    {
+        $m = new TestLargeFieldNumber(['large_field_number' => 5]);
+        $data = $m->serializeToString();
+        $m2 = new TestLargeFieldNumber();
+        $m2->mergeFromString($data);
+        $this->assertSame(5, $m2->getLargeFieldNumber());
     }
 
     public function testDecodeInvalidInt32()

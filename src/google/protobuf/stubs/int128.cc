@@ -33,6 +33,7 @@
 #include <iomanip>
 #include <ostream>  // NOLINT(readability/streams)
 #include <sstream>
+#include <string>
 
 #include <google/protobuf/stubs/logging.h>
 
@@ -40,11 +41,7 @@
 
 namespace google {
 namespace protobuf {
-
-const uint128_pod kuint128max = {
-    static_cast<uint64>(PROTOBUF_LONGLONG(0xFFFFFFFFFFFFFFFF)),
-    static_cast<uint64>(PROTOBUF_LONGLONG(0xFFFFFFFFFFFFFFFF))
-};
+namespace int128_internal {
 
 // Returns the 0-based position of the last set bit (i.e., most significant bit)
 // in the given uint64. The argument may not be 0.
@@ -188,6 +185,14 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
   return o << rep;
 }
 
+void VerifyValidShift(std::string op, int amount) {
+  // Shifting more than 127 is UB in Abseil, just crash for now to verify
+  // callers don't depend on it returning 0.
+  GOOGLE_CHECK_LT(amount, 128) << "Error executing operator " << op
+                               << ": shifts of more than 127 are undefined";
+}
+
+}  // namespace int128_internal
 }  // namespace protobuf
 }  // namespace google
 

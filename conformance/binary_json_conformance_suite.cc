@@ -300,7 +300,7 @@ const FieldDescriptor* GetFieldForOneofType(FieldDescriptor::Type type,
 }
 
 string UpperCase(string str) {
-  for (int i = 0; i < str.size(); i++) {
+  for (size_t i = 0; i < str.size(); i++) {
     str[i] = toupper(str[i]);
   }
   return str;

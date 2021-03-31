@@ -448,12 +448,10 @@ namespace Google.Protobuf.Collections
         [SecuritySafeCritical]
         public void AddEntriesFrom(ref ParseContext ctx, Codec codec)
         {
-            var adapter = new Codec.MessageAdapter(codec);
             do
             {
-                adapter.Reset();
-                ctx.ReadMessage(adapter);
-                this[adapter.Key] = adapter.Value;
+                KeyValuePair<TKey, TValue> entry = ParsingPrimitivesMessages.ReadMapEntry(ref ctx, codec);
+                this[entry.Key] = entry.Value;
             } while (ParsingPrimitives.MaybeConsumeTag(ref ctx.buffer, ref ctx.state, codec.MapTag));
         }
 
@@ -485,13 +483,13 @@ namespace Google.Protobuf.Collections
         [SecuritySafeCritical]
         public void WriteTo(ref WriteContext ctx, Codec codec)
         {
-            var message = new Codec.MessageAdapter(codec);
             foreach (var entry in list)
             {
-                message.Key = entry.Key;
-                message.Value = entry.Value;
                 ctx.WriteTag(codec.MapTag);
-                ctx.WriteMessage(message);
+
+                WritingPrimitives.WriteLength(ref ctx.buffer, ref ctx.state, CalculateEntrySize(codec, entry));
+                codec.KeyCodec.WriteTagAndValue(ref ctx, entry.Key);
+                codec.ValueCodec.WriteTagAndValue(ref ctx, entry.Value);
             }
         }
 
@@ -506,16 +504,20 @@ namespace Google.Protobuf.Collections
             {
                 return 0;
             }
-            var message = new Codec.MessageAdapter(codec);
             int size = 0;
             foreach (var entry in list)
             {
-                message.Key = entry.Key;
-                message.Value = entry.Value;
+                int entrySize = CalculateEntrySize(codec, entry);
+
                 size += CodedOutputStream.ComputeRawVarint32Size(codec.MapTag);
-                size += CodedOutputStream.ComputeMessageSize(message);
+                size += CodedOutputStream.ComputeLengthSize(entrySize) + entrySize;
             }
             return size;
+        }
+
+        private static int CalculateEntrySize(Codec codec, KeyValuePair<TKey, TValue> entry)
+        {
+            return codec.KeyCodec.CalculateSizeWithTag(entry.Key) + codec.ValueCodec.CalculateSizeWithTag(entry.Value);
         }
 
         /// <summary>
@@ -655,100 +657,19 @@ namespace Google.Protobuf.Collections
             }
 
             /// <summary>
-            /// The tag used in the enclosing message to indicate map entries.
+            /// The key codec.
             /// </summary>
-            internal uint MapTag { get { return mapTag; } }
+            internal FieldCodec<TKey> KeyCodec => keyCodec;
 
             /// <summary>
-            /// A mutable message class, used for parsing and serializing. This
-            /// delegates the work to a codec, but implements the <see cref="IMessage"/> interface
-            /// for interop with <see cref="CodedInputStream"/> and <see cref="CodedOutputStream"/>.
-            /// This is nested inside Codec as it's tightly coupled to the associated codec,
-            /// and it's simpler if it has direct access to all its fields.
+            /// The value codec.
             /// </summary>
-            internal class MessageAdapter : IMessage, IBufferMessage
-            {
-                private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
+            internal FieldCodec<TValue> ValueCodec => valueCodec;
 
-                private readonly Codec codec;
-                internal TKey Key { get; set; }
-                internal TValue Value { get; set; }
-
-                internal MessageAdapter(Codec codec)
-                {
-                    this.codec = codec;
-                }
-
-                internal void Reset()
-                {
-                    Key = codec.keyCodec.DefaultValue;
-                    Value = codec.valueCodec.DefaultValue;
-                }
-
-                public void MergeFrom(CodedInputStream input)
-                {
-                    // Message adapter is an internal class and we know that all the parsing will happen via InternalMergeFrom.
-                    throw new NotImplementedException();
-                }
-
-                [SecuritySafeCritical]
-                public void InternalMergeFrom(ref ParseContext ctx)
-                {
-                    uint tag;
-                    while ((tag = ctx.ReadTag()) != 0)
-                    {
-                        if (tag == codec.keyCodec.Tag)
-                        {
-                            Key = codec.keyCodec.Read(ref ctx);
-                        }
-                        else if (tag == codec.valueCodec.Tag)
-                        {
-                            Value = codec.valueCodec.Read(ref ctx);
-                        }
-                        else 
-                        {
-                            ParsingPrimitivesMessages.SkipLastField(ref ctx.buffer, ref ctx.state);
-                        }
-                    }
-
-                    // Corner case: a map entry with a key but no value, where the value type is a message.
-                    // Read it as if we'd seen input with no data (i.e. create a "default" message).
-                    if (Value == null)
-                    {
-                        if (ctx.state.CodedInputStream != null)
-                        {
-                            // the decoded message might not support parsing from ParseContext, so
-                            // we need to allow fallback to the legacy MergeFrom(CodedInputStream) parsing.
-                            Value = codec.valueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
-                        }
-                        else
-                        {
-                            ParseContext.Initialize(new ReadOnlySequence<byte>(ZeroLengthMessageStreamData), out ParseContext zeroLengthCtx);
-                            Value = codec.valueCodec.Read(ref zeroLengthCtx);
-                        }
-                    }
-                }
-
-                public void WriteTo(CodedOutputStream output)
-                {
-                    // Message adapter is an internal class and we know that all the writing will happen via InternalWriteTo.
-                    throw new NotImplementedException();
-                }
-
-                [SecuritySafeCritical]
-                public void InternalWriteTo(ref WriteContext ctx)
-                {
-                    codec.keyCodec.WriteTagAndValue(ref ctx, Key);
-                    codec.valueCodec.WriteTagAndValue(ref ctx, Value);
-                }
-
-                public int CalculateSize()
-                {
-                    return codec.keyCodec.CalculateSizeWithTag(Key) + codec.valueCodec.CalculateSizeWithTag(Value);
-                }
-
-                MessageDescriptor IMessage.Descriptor { get { return null; } }
-            }
+            /// <summary>
+            /// The tag used in the enclosing message to indicate map entries.
+            /// </summary>
+            internal uint MapTag => mapTag;
         }
 
         private class MapView<T> : ICollection<T>, ICollection
