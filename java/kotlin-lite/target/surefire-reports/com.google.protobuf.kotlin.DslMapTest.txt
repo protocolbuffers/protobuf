@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.google.protobuf.kotlin.DslMapTest
--------------------------------------------------------------------------------
-Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s - in com.google.protobuf.kotlin.DslMapTest

@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.google.protobuf.kotlin.Proto2LiteTest
--------------------------------------------------------------------------------
-Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.113 s - in com.google.protobuf.kotlin.Proto2LiteTest
