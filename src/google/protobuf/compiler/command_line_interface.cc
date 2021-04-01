@@ -290,7 +290,10 @@ class CommandLineInterface::ErrorPrinter
       public DescriptorPool::ErrorCollector {
  public:
   ErrorPrinter(ErrorFormat format, DiskSourceTree* tree = NULL)
-      : format_(format), tree_(tree), found_errors_(false), found_warnings_(false) {}
+      : format_(format),
+        tree_(tree),
+        found_errors_(false),
+        found_warnings_(false) {}
   ~ErrorPrinter() {}
 
   // implements MultiFileErrorCollector ------------------------------
@@ -1639,8 +1642,7 @@ bool CommandLineInterface::ParseArgument(const char* arg, std::string* name,
       *name == "--version" || *name == "--decode_raw" ||
       *name == "--print_free_field_numbers" ||
       *name == "--experimental_allow_proto3_optional" ||
-      *name == "--deterministic_output" ||
-      *name == "--fatal_warnings") {
+      *name == "--deterministic_output" || *name == "--fatal_warnings") {
     // HACK:  These are the only flags that don't take a value.
     //   They probably should not be hard-coded like this but for now it's
     //   not worth doing better.

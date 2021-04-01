@@ -178,7 +178,8 @@ static PyObject* New(PyTypeObject* type,
                      PyObject* args, PyObject* kwargs) {
   static const char* kwlist[] = {"descriptor_db", 0};
   PyObject* py_database = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", const_cast<char**>(kwlist), &py_database)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O",
+                                   const_cast<char**>(kwlist), &py_database)) {
     return NULL;
   }
   DescriptorDatabase* database = NULL;

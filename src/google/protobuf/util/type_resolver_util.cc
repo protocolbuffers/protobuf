@@ -80,8 +80,8 @@ class DescriptorPoolTypeResolver : public TypeResolver {
 
     const Descriptor* descriptor = pool_->FindMessageTypeByName(type_name);
     if (descriptor == NULL) {
-      return util::NotFoundError(
-          "Invalid type URL, unknown type: " + type_name);
+      return util::NotFoundError("Invalid type URL, unknown type: " +
+                                 type_name);
     }
     ConvertDescriptor(descriptor, type);
     return util::Status();
@@ -97,8 +97,8 @@ class DescriptorPoolTypeResolver : public TypeResolver {
 
     const EnumDescriptor* descriptor = pool_->FindEnumTypeByName(type_name);
     if (descriptor == NULL) {
-      return util::InvalidArgumentError(
-          "Invalid type URL, unknown type: " + type_name);
+      return util::InvalidArgumentError("Invalid type URL, unknown type: " +
+                                        type_name);
     }
     ConvertEnumDescriptor(descriptor, enum_type);
     return util::Status();

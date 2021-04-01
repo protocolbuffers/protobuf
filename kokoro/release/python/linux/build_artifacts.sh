@@ -49,9 +49,31 @@ build_artifact_version() {
   sudo rm -rf $REPO_DIR
 }
 
+build_crosscompiled_aarch64_artifact_version() {
+  # crosscompilation is only supported with the dockcross manylinux2014 image
+  DOCKER_IMAGE=dockcross/manylinux2014-aarch64
+  PLAT=aarch64
+
+  # TODO(jtatermusch): currently when crosscompiling, "auditwheel repair" will be disabled
+  # since auditwheel doesn't work for crosscomiled wheels.
+  build_artifact_version $@
+}
+
 build_artifact_version 2.7
 build_artifact_version 3.5
 build_artifact_version 3.6
 build_artifact_version 3.7
 build_artifact_version 3.8
 build_artifact_version 3.9
+
+build_crosscompiled_aarch64_artifact_version 3.7
+build_crosscompiled_aarch64_artifact_version 3.8
+build_crosscompiled_aarch64_artifact_version 3.9
+
+# Put the aarch64 manylinux wheels under the "unofficial" subdirectory.
+# Only wheels directly under the artifacts/ directory will be published
+# to PyPI as part of the protobuf release process.
+# TODO(jtattermusch): include aarch64 wheels in the release
+# once they are sufficiently tested.
+mkdir -p $ARTIFACT_DIR/unofficial
+mv $ARTIFACT_DIR/protobuf-*-manylinux*_aarch64.whl $ARTIFACT_DIR/unofficial

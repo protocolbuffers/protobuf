@@ -18,7 +18,6 @@ fi
 
 # download datasets for benchmark
 cd benchmarks
-./download_data.sh
 datasets=$(for file in $(find . -type f -name "dataset.*.pb" -not -path "./tmp/*"); do echo "$(pwd)/$file"; done | xargs)
 echo $datasets
 cd $oldpwd

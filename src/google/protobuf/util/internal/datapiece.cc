@@ -57,11 +57,10 @@ util::StatusOr<To> ValidateNumberConversion(To after, From before) {
       MathUtil::Sign<From>(before) == MathUtil::Sign<To>(after)) {
     return after;
   } else {
-    return util::InvalidArgumentError(std::is_integral<From>::value
-                               ? ValueAsString(before)
-                               : std::is_same<From, double>::value
-                                     ? DoubleAsString(before)
-                                     : FloatAsString(before));
+    return util::InvalidArgumentError(
+        std::is_integral<From>::value       ? ValueAsString(before)
+        : std::is_same<From, double>::value ? DoubleAsString(before)
+                                            : FloatAsString(before));
   }
 }
 
@@ -260,7 +259,8 @@ util::StatusOr<std::string> DataPiece::ToBytes() const {
   if (type_ == TYPE_STRING) {
     std::string decoded;
     if (!DecodeBase64(str_, &decoded)) {
-      return util::InvalidArgumentError(ValueAsStringOrDefault("Invalid data in input."));
+      return util::InvalidArgumentError(
+          ValueAsStringOrDefault("Invalid data in input."));
     }
     return decoded;
   } else {
@@ -358,7 +358,8 @@ util::StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece,
   }
   To result;
   if (func(str_, &result)) return result;
-  return util::InvalidArgumentError(StrCat("\"", std::string(str_), "\""));
+  return util::InvalidArgumentError(
+      StrCat("\"", std::string(str_), "\""));
 }
 
 bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {

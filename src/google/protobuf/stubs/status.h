@@ -78,12 +78,8 @@ class PROTOBUF_EXPORT Status {
   ~Status() {}
 
   // Accessor
-  bool ok() const {
-    return error_code_ == StatusCode::kOk;
-  }
-  StatusCode code() const {
-    return error_code_;
-  }
+  bool ok() const { return error_code_ == StatusCode::kOk; }
+  StatusCode code() const { return error_code_; }
   StringPiece message() const {
     return error_message_;
   }
@@ -173,7 +169,6 @@ using ::google::protobuf::util::status_internal::IsUnavailable;
 using ::google::protobuf::util::status_internal::IsUnimplemented;
 using ::google::protobuf::util::status_internal::IsUnknown;
 
-using ::google::protobuf::util::status_internal::OkStatus;
 using ::google::protobuf::util::status_internal::AbortedError;
 using ::google::protobuf::util::status_internal::AlreadyExistsError;
 using ::google::protobuf::util::status_internal::CancelledError;
@@ -183,6 +178,7 @@ using ::google::protobuf::util::status_internal::FailedPreconditionError;
 using ::google::protobuf::util::status_internal::InternalError;
 using ::google::protobuf::util::status_internal::InvalidArgumentError;
 using ::google::protobuf::util::status_internal::NotFoundError;
+using ::google::protobuf::util::status_internal::OkStatus;
 using ::google::protobuf::util::status_internal::OutOfRangeError;
 using ::google::protobuf::util::status_internal::PermissionDeniedError;
 using ::google::protobuf::util::status_internal::ResourceExhaustedError;
