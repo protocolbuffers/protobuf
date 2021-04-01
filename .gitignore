@@ -83,6 +83,7 @@ src/**/*.trs
 
 # JavaBuild output.
 java/core/target
+java/lite/target
 java/util/target
 javanano/target
 java/.idea
