@@ -22,8 +22,10 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     on an error path.
   * Avoid expensive inlined code space for encoding message length for messages
     >= 128 bytes and instead do a procedure call to a shared out-of-line routine.
+  * util::DefaultFieldComparator will be final in a future version of protobuf. Subclasses should inherit from SimpleFieldComparator instead.
 
   Java:
+  * Detect invalid overflow of byteLimit and return InvalidProtocolBufferException as documented.
   * Exceptions thrown while reading from an InputStream in parseFrom are now
     included as causes.
   * Support potentially more efficient proto parsing from RopeByteStrings.
