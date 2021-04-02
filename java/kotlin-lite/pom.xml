@@ -22,6 +22,11 @@
 
   <dependencies>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>protobuf-javalite</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -97,110 +102,6 @@
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.1.0</version>
         <executions>
-          <execution>
-            <id>copy-source-files</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${generated.sources.dir}/com/google/protobuf</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${basedir}/../core/src/main/java/com/google/protobuf</directory>
-                  <includes>
-                    <!-- Keep in sync with //java/core:BUILD  -->
-                    <include>AbstractMessageLite.java</include>
-                    <include>AbstractParser.java</include>
-                    <include>AbstractProtobufList.java</include>
-                    <include>AllocatedBuffer.java</include>
-                    <include>Android.java</include>
-                    <include>ArrayDecoders.java</include>
-                    <include>BinaryReader.java</include>
-                    <include>BinaryWriter.java</include>
-                    <include>BooleanArrayList.java</include>
-                    <include>BufferAllocator.java</include>
-                    <include>ByteBufferWriter.java</include>
-                    <include>ByteOutput.java</include>
-                    <include>ByteString.java</include>
-                    <include>CodedInputStream.java</include>
-                    <include>CodedInputStreamReader.java</include>
-                    <include>CodedOutputStream.java</include>
-                    <include>CodedOutputStreamWriter.java</include>
-                    <include>DoubleArrayList.java</include>
-                    <include>ExperimentalApi.java</include>
-                    <include>ExtensionLite.java</include>
-                    <include>ExtensionRegistryFactory.java</include>
-                    <include>ExtensionRegistryLite.java</include>
-                    <include>ExtensionSchema.java</include>
-                    <include>ExtensionSchemaLite.java</include>
-                    <include>ExtensionSchemas.java</include>
-                    <include>FieldInfo.java</include>
-                    <include>FieldSet.java</include>
-                    <include>FieldType.java</include>
-                    <include>FloatArrayList.java</include>
-                    <include>GeneratedMessageInfoFactory.java</include>
-                    <include>GeneratedMessageLite.java</include>
-                    <include>IntArrayList.java</include>
-                    <include>Internal.java</include>
-                    <include>InvalidProtocolBufferException.java</include>
-                    <include>IterableByteBufferInputStream.java</include>
-                    <include>JavaType.java</include>
-                    <include>LazyField.java</include>
-                    <include>LazyFieldLite.java</include>
-                    <include>LazyStringArrayList.java</include>
-                    <include>LazyStringList.java</include>
-                    <include>ListFieldSchema.java</include>
-                    <include>LongArrayList.java</include>
-                    <include>ManifestSchemaFactory.java</include>
-                    <include>MapEntryLite.java</include>
-                    <include>MapFieldLite.java</include>
-                    <include>MapFieldSchema.java</include>
-                    <include>MapFieldSchemaLite.java</include>
-                    <include>MapFieldSchemas.java</include>
-                    <include>MessageInfo.java</include>
-                    <include>MessageInfoFactory.java</include>
-                    <include>MessageLite.java</include>
-                    <include>MessageLiteOrBuilder.java</include>
-                    <include>MessageLiteToString.java</include>
-                    <include>MessageSchema.java</include>
-                    <include>MessageSetSchema.java</include>
-                    <include>MutabilityOracle.java</include>
-                    <include>NewInstanceSchema.java</include>
-                    <include>NewInstanceSchemaLite.java</include>
-                    <include>NewInstanceSchemas.java</include>
-                    <include>NioByteString.java</include>
-                    <include>OneofInfo.java</include>
-                    <include>Parser.java</include>
-                    <include>PrimitiveNonBoxingCollection.java</include>
-                    <include>ProtoSyntax.java</include>
-                    <include>Protobuf.java</include>
-                    <include>ProtobufArrayList.java</include>
-                    <include>ProtobufLists.java</include>
-                    <include>ProtocolStringList.java</include>
-                    <include>RawMessageInfo.java</include>
-                    <include>Reader.java</include>
-                    <include>RopeByteString.java</include>
-                    <include>Schema.java</include>
-                    <include>SchemaFactory.java</include>
-                    <include>SchemaUtil.java</include>
-                    <include>SmallSortedMap.java</include>
-                    <include>StructuralMessageInfo.java</include>
-                    <include>TextFormatEscaper.java</include>
-                    <include>UninitializedMessageException.java</include>
-                    <include>UnknownFieldSchema.java</include>
-                    <include>UnknownFieldSetLite.java</include>
-                    <include>UnknownFieldSetLiteSchema.java</include>
-                    <include>UnmodifiableLazyStringList.java</include>
-                    <include>UnsafeUtil.java</include>
-                    <include>Utf8.java</include>
-                    <include>WireFormat.java</include>
-                    <include>Writer.java</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
           <execution>
             <id>copy-kotlin-source-files</id>
             <phase>generate-sources</phase>

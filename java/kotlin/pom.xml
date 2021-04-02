@@ -22,6 +22,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>protobuf-java</artifactId>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
@@ -100,21 +104,6 @@
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.1.0</version>
         <executions>
-          <execution>
-            <id>copy-source-files</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${generated.sources.dir}/com/google/protobuf</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>${basedir}/../core/src/main/java/com/google/protobuf</directory>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
           <execution>
             <id>copy-test-source-files</id>
             <phase>generate-test-sources</phase>
