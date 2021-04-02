@@ -25,4 +25,4 @@ ${PYTHON} -m auditwheel show dist/protobuf-*-manylinux2014_aarch64.whl
 # step 3: smoketest that the wheel can be installed and run a smokecheck
 ${PYTHON} -m pip install dist/protobuf-*-manylinux2014_aarch64.whl
 # when python cpp extension is on, simply importing a message type will trigger loading the cpp extension
-PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp ${PYTHON} -c 'import google.protobuf.timestamp_pb2; print("Successfuly loaded the python cpp extension!")'
+PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp ${PYTHON} -c 'import google.protobuf.timestamp_pb2; print("Successfully loaded the python cpp extension!")'

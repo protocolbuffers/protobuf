@@ -19,7 +19,7 @@ sed -i 's/\r//g' dockcross-manylinux2014-aarch64.sh
 # The dockcross wrapper script runs arbitrary commands under the selected dockcross
 # image with the following properties which make its use very convenient:
 # * the current working directory is mounted under /work so the container can easily
-#   access the curent workspace
+#   access the current workspace
 # * the processes in the container run under the same UID and GID as the host process so unlike
 #   vanilla "docker run" invocations, the workspace doesn't get polluted with files
 #   owned by root.
