@@ -231,10 +231,8 @@ const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2fwrappers_2eproto::offsets,
   file_level_metadata_google_2fprotobuf_2fwrappers_2eproto, file_level_enum_descriptors_google_2fprotobuf_2fwrappers_2eproto, file_level_service_descriptors_google_2fprotobuf_2fwrappers_2eproto,
 };
-PROTOBUF_ATTRIBUTE_WEAK ::PROTOBUF_NAMESPACE_ID::Metadata
-descriptor_table_google_2fprotobuf_2fwrappers_2eproto_metadata_getter(int index) {
-  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fwrappers_2eproto);
-  return descriptor_table_google_2fprotobuf_2fwrappers_2eproto.file_level_metadata[index];
+PROTOBUF_ATTRIBUTE_WEAK const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter() {
+  return &descriptor_table_google_2fprotobuf_2fwrappers_2eproto;
 }
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -299,7 +297,6 @@ const char* DoubleValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // double value = 1;
       case 1:
@@ -310,7 +307,8 @@ const char* DoubleValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -424,9 +422,10 @@ void DoubleValue::InternalSwap(DoubleValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DoubleValue::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[0]);
 }
-
 
 // ===================================================================
 
@@ -486,7 +485,6 @@ const char* FloatValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // float value = 1;
       case 1:
@@ -497,7 +495,8 @@ const char* FloatValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -611,9 +610,10 @@ void FloatValue::InternalSwap(FloatValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FloatValue::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[1]);
 }
-
 
 // ===================================================================
 
@@ -673,7 +673,6 @@ const char* Int64Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // int64 value = 1;
       case 1:
@@ -684,7 +683,8 @@ const char* Int64Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -800,9 +800,10 @@ void Int64Value::InternalSwap(Int64Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Int64Value::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[2]);
 }
-
 
 // ===================================================================
 
@@ -862,7 +863,6 @@ const char* UInt64Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // uint64 value = 1;
       case 1:
@@ -873,7 +873,8 @@ const char* UInt64Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -989,9 +990,10 @@ void UInt64Value::InternalSwap(UInt64Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UInt64Value::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[3]);
 }
-
 
 // ===================================================================
 
@@ -1051,7 +1053,6 @@ const char* Int32Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // int32 value = 1;
       case 1:
@@ -1062,7 +1063,8 @@ const char* Int32Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -1178,9 +1180,10 @@ void Int32Value::InternalSwap(Int32Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Int32Value::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[4]);
 }
-
 
 // ===================================================================
 
@@ -1240,7 +1243,6 @@ const char* UInt32Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // uint32 value = 1;
       case 1:
@@ -1251,7 +1253,8 @@ const char* UInt32Value::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -1367,9 +1370,10 @@ void UInt32Value::InternalSwap(UInt32Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UInt32Value::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[5]);
 }
-
 
 // ===================================================================
 
@@ -1429,7 +1433,6 @@ const char* BoolValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // bool value = 1;
       case 1:
@@ -1440,7 +1443,8 @@ const char* BoolValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -1554,9 +1558,10 @@ void BoolValue::InternalSwap(BoolValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BoolValue::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[6]);
 }
-
 
 // ===================================================================
 
@@ -1621,7 +1626,6 @@ const char* StringValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // string value = 1;
       case 1:
@@ -1634,7 +1638,8 @@ const char* StringValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -1754,9 +1759,10 @@ void StringValue::InternalSwap(StringValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata StringValue::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[7]);
 }
-
 
 // ===================================================================
 
@@ -1821,7 +1827,6 @@ const char* BytesValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // bytes value = 1;
       case 1:
@@ -1833,7 +1838,8 @@ const char* BytesValue::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID:
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
@@ -1949,9 +1955,10 @@ void BytesValue::InternalSwap(BytesValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BytesValue::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[8]);
 }
-
 
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_CLOSE

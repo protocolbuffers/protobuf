@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 
+#include <cstdint>
 #include <memory>
 #include <sstream>
 
@@ -120,9 +121,8 @@ class ProtostreamObjectSourceTest
     render_options.use_lower_camel_for_enums = use_lower_camel_for_enums_;
     render_options.use_ints_for_enums = use_ints_for_enums_;
     render_options.preserve_proto_field_names = use_preserve_proto_field_names_;
-    std::unique_ptr<ProtoStreamObjectSource> os(
-        helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor),
-                               render_options));
+    std::unique_ptr<ProtoStreamObjectSource> os(helper_.NewProtoSource(
+        &in_stream, GetTypeUrl(descriptor), render_options));
     os->set_max_recursion_depth(64);
     return os->WriteTo(&mock_);
   }
@@ -130,13 +130,13 @@ class ProtostreamObjectSourceTest
   void PrepareExpectingObjectWriterForRepeatedPrimitive() {
     ow_.StartObject("")
         ->StartList("repFix32")
-        ->RenderUint32("", bit_cast<uint32>(3201))
-        ->RenderUint32("", bit_cast<uint32>(0))
-        ->RenderUint32("", bit_cast<uint32>(3202))
+        ->RenderUint32("", bit_cast<uint32_t>(3201))
+        ->RenderUint32("", bit_cast<uint32_t>(0))
+        ->RenderUint32("", bit_cast<uint32_t>(3202))
         ->EndList()
         ->StartList("repU32")
-        ->RenderUint32("", bit_cast<uint32>(3203))
-        ->RenderUint32("", bit_cast<uint32>(0))
+        ->RenderUint32("", bit_cast<uint32_t>(3203))
+        ->RenderUint32("", bit_cast<uint32_t>(0))
         ->EndList()
         ->StartList("repI32")
         ->RenderInt32("", 0)
@@ -153,13 +153,13 @@ class ProtostreamObjectSourceTest
         ->RenderInt32("", 3208)
         ->EndList()
         ->StartList("repFix64")
-        ->RenderUint64("", bit_cast<uint64>(int64{6401}))
-        ->RenderUint64("", bit_cast<uint64>(int64{0}))
+        ->RenderUint64("", bit_cast<uint64_t>(int64_t{6401}))
+        ->RenderUint64("", bit_cast<uint64_t>(int64_t{0}))
         ->EndList()
         ->StartList("repU64")
-        ->RenderUint64("", bit_cast<uint64>(int64{0}))
-        ->RenderUint64("", bit_cast<uint64>(int64{6402}))
-        ->RenderUint64("", bit_cast<uint64>(int64{6403}))
+        ->RenderUint64("", bit_cast<uint64_t>(int64_t{0}))
+        ->RenderUint64("", bit_cast<uint64_t>(int64_t{6402}))
+        ->RenderUint64("", bit_cast<uint64_t>(int64_t{6403}))
         ->EndList()
         ->StartList("repI64")
         ->RenderInt64("", 6404L)
@@ -321,13 +321,13 @@ TEST_P(ProtostreamObjectSourceTest, Primitives) {
   primitive.set_bool_(true);
 
   ow_.StartObject("")
-      ->RenderUint32("fix32", bit_cast<uint32>(3201))
-      ->RenderUint32("u32", bit_cast<uint32>(3202))
+      ->RenderUint32("fix32", bit_cast<uint32_t>(3201))
+      ->RenderUint32("u32", bit_cast<uint32_t>(3202))
       ->RenderInt32("i32", 3203)
       ->RenderInt32("sf32", 3204)
       ->RenderInt32("s32", 3205)
-      ->RenderUint64("fix64", bit_cast<uint64>(int64{6401}))
-      ->RenderUint64("u64", bit_cast<uint64>(int64{6402}))
+      ->RenderUint64("fix64", bit_cast<uint64_t>(int64_t{6401}))
+      ->RenderUint64("u64", bit_cast<uint64_t>(int64_t{6402}))
       ->RenderInt64("i64", 6403L)
       ->RenderInt64("sf64", 6404L)
       ->RenderInt64("s64", 6405L)
@@ -425,10 +425,10 @@ TEST_P(ProtostreamObjectSourceTest, BadAuthor) {
       ->RenderBool("", false)
       ->EndList()
       ->StartList("name")
-      ->RenderUint64("", static_cast<uint64>('j'))
-      ->RenderUint64("", static_cast<uint64>('o'))
-      ->RenderUint64("", static_cast<uint64>('h'))
-      ->RenderUint64("", static_cast<uint64>('n'))
+      ->RenderUint64("", static_cast<uint64_t>('j'))
+      ->RenderUint64("", static_cast<uint64_t>('o'))
+      ->RenderUint64("", static_cast<uint64_t>('h'))
+      ->RenderUint64("", static_cast<uint64_t>('n'))
       ->EndList()
       ->RenderString("pseudonym", "phil")
       ->RenderString("pseudonym", "bob")
@@ -597,7 +597,7 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
   }
 
   util::Status status = ExecuteTest(cyclic, Cyclic::descriptor());
-  EXPECT_EQ(util::error::INVALID_ARGUMENT, status.code());
+  EXPECT_TRUE(util::IsInvalidArgument(status));
 }
 
 class ProtostreamObjectSourceMapsTest : public ProtostreamObjectSourceTest {
@@ -943,7 +943,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, MissingTypeUrlError) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
@@ -959,7 +959,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
@@ -975,7 +975,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 class ProtostreamObjectSourceStructTest : public ProtostreamObjectSourceTest {
@@ -1108,7 +1108,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
@@ -1119,7 +1119,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
@@ -1130,7 +1130,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
@@ -1141,7 +1141,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
   ow_.StartObject("");
 
   util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_EQ(util::error::INTERNAL, status.code());
+  EXPECT_TRUE(util::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, TimestampDurationDefaultValue) {

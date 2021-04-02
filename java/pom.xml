@@ -75,7 +75,7 @@
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.13.1</version>
+        <version>4.13.2</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -93,18 +93,18 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>30.0-android</version>
+        <version>30.1-android</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava-testlib</artifactId>
-        <version>30.0-android</version>
+        <version>30.1-android</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>com.google.truth</groupId>
         <artifactId>truth</artifactId>
-        <version>1.0.1</version>
+        <version>1.1.2</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

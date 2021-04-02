@@ -57,7 +57,6 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fstruct_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fstruct_2eproto;
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_google_2fprotobuf_2fstruct_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 class ListValue;
 struct ListValueDefaultTypeInternal;
@@ -127,13 +126,6 @@ public:
   static bool ValidateValue(void*) { return true; }
   void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_google_2fprotobuf_2fstruct_2eproto);
-    return ::descriptor_table_google_2fprotobuf_2fstruct_2eproto.file_level_metadata[0];
-  }
-
-  public:
 };
 
 // -------------------------------------------------------------------
@@ -142,7 +134,7 @@ class PROTOBUF_EXPORT Struct PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Struct) */ {
  public:
   inline Struct() : Struct(nullptr) {}
-  virtual ~Struct();
+  ~Struct() override;
   explicit constexpr Struct(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Struct(const Struct& from);
@@ -168,10 +160,10 @@ class PROTOBUF_EXPORT Struct PROTOBUF_FINAL :
     return GetDescriptor();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
+    return default_instance().GetMetadata().descriptor;
   }
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
+    return default_instance().GetMetadata().reflection;
   }
   static const Struct& default_instance() {
     return *internal_default_instance();
@@ -239,12 +231,6 @@ class PROTOBUF_EXPORT Struct PROTOBUF_FINAL :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    return ::descriptor_table_google_2fprotobuf_2fstruct_2eproto_metadata_getter(kIndexInFileMessages);
-  }
-
-  public:
 
   // nested types ----------------------------------------------------
 
@@ -292,7 +278,7 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
  public:
   inline Value() : Value(nullptr) {}
-  virtual ~Value();
+  ~Value() override;
   explicit constexpr Value(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Value(const Value& from);
@@ -318,10 +304,10 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
     return GetDescriptor();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
+    return default_instance().GetMetadata().descriptor;
   }
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
+    return default_instance().GetMetadata().reflection;
   }
   static const Value& default_instance() {
     return *internal_default_instance();
@@ -399,12 +385,6 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    return ::descriptor_table_google_2fprotobuf_2fstruct_2eproto_metadata_getter(kIndexInFileMessages);
-  }
-
-  public:
 
   // nested types ----------------------------------------------------
 
@@ -451,10 +431,8 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
   public:
   void clear_string_value();
   const std::string& string_value() const;
-  void set_string_value(const std::string& value);
-  void set_string_value(std::string&& value);
-  void set_string_value(const char* value);
-  void set_string_value(const char* value, size_t size);
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_string_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_string_value();
   std::string* release_string_value();
   void set_allocated_string_value(std::string* string_value);
@@ -552,7 +530,7 @@ class PROTOBUF_EXPORT ListValue PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
  public:
   inline ListValue() : ListValue(nullptr) {}
-  virtual ~ListValue();
+  ~ListValue() override;
   explicit constexpr ListValue(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   ListValue(const ListValue& from);
@@ -578,10 +556,10 @@ class PROTOBUF_EXPORT ListValue PROTOBUF_FINAL :
     return GetDescriptor();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
+    return default_instance().GetMetadata().descriptor;
   }
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
+    return default_instance().GetMetadata().reflection;
   }
   static const ListValue& default_instance() {
     return *internal_default_instance();
@@ -649,12 +627,6 @@ class PROTOBUF_EXPORT ListValue PROTOBUF_FINAL :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    return ::descriptor_table_google_2fprotobuf_2fstruct_2eproto_metadata_getter(kIndexInFileMessages);
-  }
-
-  public:
 
   // nested types ----------------------------------------------------
 
@@ -834,8 +806,14 @@ inline const std::string& Value::string_value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Value.string_value)
   return _internal_string_value();
 }
-inline void Value::set_string_value(const std::string& value) {
-  _internal_set_string_value(value);
+template <typename ArgT0, typename... ArgT>
+inline void Value::set_string_value(ArgT0&& arg0, ArgT... args) {
+  if (!_internal_has_string_value()) {
+    clear_kind();
+    set_has_string_value();
+    kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  }
+  kind_.string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, static_cast<ArgT0 &&>(arg0), args..., GetArena());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
 inline std::string* Value::mutable_string_value() {
@@ -855,41 +833,6 @@ inline void Value::_internal_set_string_value(const std::string& value) {
     kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   }
   kind_.string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, value, GetArena());
-}
-inline void Value::set_string_value(std::string&& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
-  if (!_internal_has_string_value()) {
-    clear_kind();
-    set_has_string_value();
-    kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  }
-  kind_.string_value_.Set(
-    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::move(value), GetArena());
-  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Value.string_value)
-}
-inline void Value::set_string_value(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  if (!_internal_has_string_value()) {
-    clear_kind();
-    set_has_string_value();
-    kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  }
-  kind_.string_value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{},
-      ::std::string(value), GetArena());
-  // @@protoc_insertion_point(field_set_char:google.protobuf.Value.string_value)
-}
-inline void Value::set_string_value(const char* value,
-                             size_t size) {
-  if (!_internal_has_string_value()) {
-    clear_kind();
-    set_has_string_value();
-    kind_.string_value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  }
-  kind_.string_value_.Set(
-      ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, ::std::string(
-      reinterpret_cast<const char*>(value), size),
-      GetArena());
-  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Value.string_value)
 }
 inline std::string* Value::_internal_mutable_string_value() {
   if (!_internal_has_string_value()) {

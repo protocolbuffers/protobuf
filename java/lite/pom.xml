@@ -173,6 +173,7 @@
                     <include>UnknownFieldSetLite.java</include>
                     <include>UnknownFieldSetLiteSchema.java</include>
                     <include>UnmodifiableLazyStringList.java</include>
+                    <include>UnsafeByteOperations.java</include>
                     <include>UnsafeUtil.java</include>
                     <include>Utf8.java</include>
                     <include>WireFormat.java</include>

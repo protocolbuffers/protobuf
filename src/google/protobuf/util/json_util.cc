@@ -140,25 +140,22 @@ class StatusErrorListener : public converter::ErrorListener {
     if (!loc_string.empty()) {
       loc_string.append(" ");
     }
-    status_ =
-        util::Status(util::error::INVALID_ARGUMENT,
-                     StrCat(loc_string, unknown_name, ": ", message));
+    status_ = util::InvalidArgumentError(
+        StrCat(loc_string, unknown_name, ": ", message));
   }
 
   void InvalidValue(const converter::LocationTrackerInterface& loc,
                     StringPiece type_name,
                     StringPiece value) override {
-    status_ = util::Status(
-        util::error::INVALID_ARGUMENT,
+    status_ = util::InvalidArgumentError(
         StrCat(GetLocString(loc), ": invalid value ", std::string(value),
                      " for type ", std::string(type_name)));
   }
 
   void MissingField(const converter::LocationTrackerInterface& loc,
                     StringPiece missing_name) override {
-    status_ = util::Status(util::error::INVALID_ARGUMENT,
-                           StrCat(GetLocString(loc), ": missing field ",
-                                        std::string(missing_name)));
+    status_ = util::InvalidArgumentError(StrCat(
+        GetLocString(loc), ": missing field ", std::string(missing_name)));
   }
 
  private:
@@ -271,8 +268,8 @@ util::Status JsonStringToMessage(StringPiece input, Message* message,
   util::Status result = JsonToBinaryString(resolver, GetTypeUrl(*message),
                                            input, &binary, options);
   if (result.ok() && !message->ParseFromString(binary)) {
-    result = util::Status(util::error::INVALID_ARGUMENT,
-                          "JSON transcoder produced invalid protobuf output.");
+    result = util::InvalidArgumentError(
+        "JSON transcoder produced invalid protobuf output.");
   }
   if (pool != DescriptorPool::generated_pool()) {
     delete resolver;

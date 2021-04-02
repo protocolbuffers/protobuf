@@ -1,3 +1,45 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * The ::pb namespace is no longer exposed due to conflicts.
+  * Allow MessageDifferencer::TreatAsSet() (and friends) to override previous
+    calls instead of crashing.
+  * Reduce the size of generated proto headers for protos with `string` or
+    `bytes` fields.
+  * Move arena() operation on uncommon path to out-of-line routine
+  * For iterator-pair function parameter types, take both iterators by value.
+  * Code-space savings and perhaps some modest performance improvements in
+    RepeatedPtrField.
+  * Eliminate nullptr check from every tag parse.
+  * Remove unused _$name$_cached_byte_size_ fields.
+  * Serialize extension ranges together when not broken by a proto field in the
+    middle.
+  * Do out-of-line allocation and deallocation of string object in ArenaString.
+  * Streamline ParseContext::ParseMessage<T> to avoid code bloat and improve
+    performance.
+  * New member functions RepeatedField::Assign, RepeatedPtrField::{Add, Assign}.
+  * Fix undefined behavior warning due to innocuous uninitialization of value
+    on an error path.
+  * Avoid expensive inlined code space for encoding message length for messages
+    >= 128 bytes and instead do a procedure call to a shared out-of-line routine.
+  * util::DefaultFieldComparator will be final in a future version of protobuf.
+    Subclasses should inherit from SimpleFieldComparator instead.
+
+  Java:
+  * Detect invalid overflow of byteLimit and return InvalidProtocolBufferException as documented.
+  * Exceptions thrown while reading from an InputStream in parseFrom are now
+    included as causes.
+  * Support potentially more efficient proto parsing from RopeByteStrings.
+  * Clarify runtime of ByteString.Output.toStringBuffer().
+
+  Python
+  * Fixed a bug in text format where a trailing colon was printed for repeated field.
+  * When TextFormat encounters a duplicate message map key, replace the current
+    one instead of merging.
+
+  JavaScript
+  * Make Any.pack() chainable.
+
 2021-04-02 version 3.15.7 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++

@@ -35,6 +35,7 @@
 
 #include <structmember.h>  // A Python header file.
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -196,15 +197,14 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
 }
 
 static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
-  static char *kwlist[] = {"name", "bases", "dict", 0};
+  static const char* kwlist[] = {"name", "bases", "dict", 0};
   PyObject *bases, *dict;
   const char* name;
 
   // Check arguments: (name, bases, dict)
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO!O!:type", kwlist,
-                                   &name,
-                                   &PyTuple_Type, &bases,
-                                   &PyDict_Type, &dict)) {
+  if (!PyArg_ParseTupleAndKeywords(
+          args, kwargs, "sO!O!:type", const_cast<char**>(kwlist), &name,
+          &PyTuple_Type, &bases, &PyDict_Type, &dict)) {
     return NULL;
   }
 
@@ -546,7 +546,7 @@ PyObject* PickleError_class;
 
 // Format an error message for unexpected types.
 // Always return with an exception set.
-void FormatTypeError(PyObject* arg, char* expected_types) {
+void FormatTypeError(PyObject* arg, const char* expected_types) {
   // This function is often called with an exception set.
   // Clear it to call PyObject_Repr() in good conditions.
   PyErr_Clear();
@@ -1679,10 +1679,10 @@ static PyObject* InternalSerializeToString(
     CMessage* self, PyObject* args, PyObject* kwargs,
     bool require_initialized) {
   // Parse the "deterministic" kwarg; defaults to False.
-  static char* kwlist[] = { "deterministic", 0 };
+  static const char* kwlist[] = {"deterministic", 0};
   PyObject* deterministic_obj = Py_None;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O", kwlist,
-                                   &deterministic_obj)) {
+  if (!PyArg_ParseTupleAndKeywords(
+          args, kwargs, "|O", const_cast<char**>(kwlist), &deterministic_obj)) {
     return NULL;
   }
   // Preemptively convert to a bool first, so we don't need to back out of
@@ -1927,9 +1927,8 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
 }
 
 static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
-  const void* data;
-  Py_ssize_t data_length;
-  if (PyObject_AsReadBuffer(arg, &data, &data_length) < 0) {
+  Py_buffer data;
+  if (PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE) < 0) {
     return NULL;
   }
 
@@ -1942,7 +1941,8 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   const char* ptr;
   internal::ParseContext ctx(
       depth, false, &ptr,
-      StringPiece(static_cast<const char*>(data), data_length));
+      StringPiece(static_cast<const char*>(data.buf), data.len));
+  PyBuffer_Release(&data);
   ctx.data().pool = factory->pool->pool;
   ctx.data().factory = factory->message_factory;
 
@@ -1968,9 +1968,9 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
     // TODO(jieluo): Raise error and return NULL instead.
     // b/27494216
     PyErr_Warn(nullptr, "Unexpected end-group tag: Not all data was converted");
-    return PyInt_FromLong(data_length - ctx.BytesUntilLimit(ptr));
+    return PyInt_FromLong(data.len - ctx.BytesUntilLimit(ptr));
   }
-  return PyInt_FromLong(data_length);
+  return PyInt_FromLong(data.len);
 }
 
 static PyObject* ParseFromString(CMessage* self, PyObject* arg) {
@@ -2191,22 +2191,22 @@ PyObject* InternalGetScalar(const Message* message,
   PyObject* result = NULL;
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      int32 value = reflection->GetInt32(*message, field_descriptor);
+      int32_t value = reflection->GetInt32(*message, field_descriptor);
       result = PyInt_FromLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      int64 value = reflection->GetInt64(*message, field_descriptor);
+      int64_t value = reflection->GetInt64(*message, field_descriptor);
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      uint32 value = reflection->GetUInt32(*message, field_descriptor);
+      uint32_t value = reflection->GetUInt32(*message, field_descriptor);
       result = PyInt_FromSize_t(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      uint64 value = reflection->GetUInt64(*message, field_descriptor);
+      uint64_t value = reflection->GetUInt64(*message, field_descriptor);
       result = PyLong_FromUnsignedLongLong(value);
       break;
     }

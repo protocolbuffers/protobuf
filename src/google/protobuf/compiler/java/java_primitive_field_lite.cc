@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/java/java_primitive_field_lite.h>
 
+#include <cstdint>
 #include <map>
 #include <string>
 
@@ -78,7 +79,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["capitalized_type"] =
       GetCapitalizedType(descriptor, /* immutable = */ true);
   (*variables)["tag"] =
-      StrCat(static_cast<int32>(WireFormat::MakeTag(descriptor)));
+      StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
@@ -127,7 +128,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   if (IsReferenceType(javaType)) {
     // We use `x.getClass()` as a null check because it generates less bytecode
     // than an `if (x == null) { throw ... }` statement.
-    (*variables)["null_check"] = "  value.getClass();\n";
+    (*variables)["null_check"] =
+        "  java.lang.Class<?> valueClass = value.getClass();\n";
   } else {
     (*variables)["null_check"] = "";
   }
@@ -303,7 +305,7 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
 
 
 void ImmutablePrimitiveFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer, std::vector<uint16>* output) const {
+    io::Printer* printer, std::vector<uint16_t>* output) const {
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
@@ -384,7 +386,7 @@ void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateMembers(
 }
 
 void ImmutablePrimitiveOneofFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer, std::vector<uint16>* output) const {
+    io::Printer* printer, std::vector<uint16_t>* output) const {
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);
@@ -614,7 +616,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateBuilderMembers(
 }
 
 void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateFieldInfo(
-    io::Printer* printer, std::vector<uint16>* output) const {
+    io::Printer* printer, std::vector<uint16_t>* output) const {
   WriteIntToUtf16CharSequence(descriptor_->number(), output);
   WriteIntToUtf16CharSequence(GetExperimentalJavaFieldType(descriptor_),
                               output);

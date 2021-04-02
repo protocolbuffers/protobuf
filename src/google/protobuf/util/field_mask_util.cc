@@ -30,10 +30,13 @@
 
 #include <google/protobuf/util/field_mask_util.h>
 
+#include <cstdint>
+
 #include <google/protobuf/message.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -552,7 +555,7 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
 
 void FieldMaskTree::AddRequiredFieldPath(Node* node,
                                          const Descriptor* descriptor) {
-  const int32 field_count = descriptor->field_count();
+  const int32_t field_count = descriptor->field_count();
   for (int index = 0; index < field_count; ++index) {
     const FieldDescriptor* field = descriptor->field(index);
     if (field->is_required()) {
@@ -589,7 +592,7 @@ bool FieldMaskTree::TrimMessage(const Node* node, Message* message) {
   GOOGLE_DCHECK(!node->children.empty());
   const Reflection* reflection = message->GetReflection();
   const Descriptor* descriptor = message->GetDescriptor();
-  const int32 field_count = descriptor->field_count();
+  const int32_t field_count = descriptor->field_count();
   bool modified = false;
   for (int index = 0; index < field_count; ++index) {
     const FieldDescriptor* field = descriptor->field(index);

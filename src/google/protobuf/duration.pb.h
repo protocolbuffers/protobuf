@@ -53,7 +53,6 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fduration_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
 extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fduration_2eproto;
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::Metadata descriptor_table_google_2fprotobuf_2fduration_2eproto_metadata_getter(int index);
 PROTOBUF_NAMESPACE_OPEN
 class Duration;
 struct DurationDefaultTypeInternal;
@@ -70,7 +69,7 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
  public:
   inline Duration() : Duration(nullptr) {}
-  virtual ~Duration();
+  ~Duration() override;
   explicit constexpr Duration(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
   Duration(const Duration& from);
@@ -96,10 +95,10 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
     return GetDescriptor();
   }
   static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
+    return default_instance().GetMetadata().descriptor;
   }
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
+    return default_instance().GetMetadata().reflection;
   }
   static const Duration& default_instance() {
     return *internal_default_instance();
@@ -167,12 +166,6 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
   public:
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    return ::descriptor_table_google_2fprotobuf_2fduration_2eproto_metadata_getter(kIndexInFileMessages);
-  }
-
-  public:
 
   // nested types ----------------------------------------------------
 
