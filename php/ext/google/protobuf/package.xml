@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- No new changes in 3.15.6
+ No new changes in 3.15.7
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
