@@ -33,32 +33,37 @@
 #include <google/protobuf/stubs/common.h>
 
 #include <iosfwd>
-#include <limits>
-#include <string>
 
 #include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
-namespace int128_internal {
+
+struct uint128_pod;
+
+// TODO(xiaofeng): Define GOOGLE_PROTOBUF_HAS_CONSTEXPR when constexpr is
+// available.
+#ifdef GOOGLE_PROTOBUF_HAS_CONSTEXPR
+# define UINT128_CONSTEXPR constexpr
+#else
+# define UINT128_CONSTEXPR
+#endif
 
 // An unsigned 128-bit integer type. Thread-compatible.
 class PROTOBUF_EXPORT uint128 {
  public:
-  uint128() = default;
-
- private:
-  // Use `MakeUint128` instead.
-  constexpr uint128(uint64 top, uint64 bottom);
-
- public:
+  UINT128_CONSTEXPR uint128();  // Sets to 0, but don't trust on this behavior.
+  UINT128_CONSTEXPR uint128(uint64 top, uint64 bottom);
 #ifndef SWIG
-  constexpr uint128(int bottom);
-  constexpr uint128(uint32 bottom);   // Top 96 bits = 0
+  UINT128_CONSTEXPR uint128(int bottom);
+  UINT128_CONSTEXPR uint128(uint32 bottom);   // Top 96 bits = 0
 #endif
-  constexpr uint128(uint64 bottom);   // hi_ = 0
+  UINT128_CONSTEXPR uint128(uint64 bottom);   // hi_ = 0
+  UINT128_CONSTEXPR uint128(const uint128_pod &val);
 
   // Trivial copy constructor, assignment operator and destructor.
+
+  void Initialize(uint64 top, uint64 bottom);
 
   // Arithmetic operators.
   uint128& operator+=(const uint128& b);
@@ -77,10 +82,8 @@ class PROTOBUF_EXPORT uint128 {
   uint128& operator++();
   uint128& operator--();
 
-  friend constexpr uint64 Uint128Low64(const uint128& v);
-  friend constexpr uint64 Uint128High64(const uint128& v);
-
-  friend constexpr uint128 MakeUint128(uint64_t high, uint64_t low);
+  friend uint64 Uint128Low64(const uint128& v);
+  friend uint64 Uint128High64(const uint128& v);
 
   // We add "std::" to avoid including all of port.h.
   PROTOBUF_EXPORT friend std::ostream& operator<<(std::ostream& o,
@@ -97,11 +100,25 @@ class PROTOBUF_EXPORT uint128 {
   uint64        hi_;
 
   // Not implemented, just declared for catching automatic type conversions.
-  uint128(uint8) = delete;
-  uint128(uint16) = delete;
-  uint128(float v) = delete;
-  uint128(double v) = delete;
+  uint128(uint8);
+  uint128(uint16);
+  uint128(float v);
+  uint128(double v);
 };
+
+// This is a POD form of uint128 which can be used for static variables which
+// need to be operated on as uint128.
+struct uint128_pod {
+  // Note: The ordering of fields is different than 'class uint128' but the
+  // same as its 2-arg constructor.  This enables more obvious initialization
+  // of static instances, which is the primary reason for this struct in the
+  // first place.  This does not seem to defeat any optimizations wrt
+  // operations involving this struct.
+  uint64 hi;
+  uint64 lo;
+};
+
+PROTOBUF_EXPORT extern const uint128_pod kuint128max;
 
 // allow uint128 to be logged
 PROTOBUF_EXPORT extern std::ostream& operator<<(std::ostream& o,
@@ -110,12 +127,8 @@ PROTOBUF_EXPORT extern std::ostream& operator<<(std::ostream& o,
 // Methods to access low and high pieces of 128-bit value.
 // Defined externally from uint128 to facilitate conversion
 // to native 128-bit types when compilers support them.
-inline constexpr uint64 Uint128Low64(const uint128& v) { return v.lo_; }
-inline constexpr uint64 Uint128High64(const uint128& v) { return v.hi_; }
-
-constexpr uint128 MakeUint128(uint64_t high, uint64_t low) {
-  return uint128(high, low);
-}
+inline uint64 Uint128Low64(const uint128& v) { return v.lo_; }
+inline uint64 Uint128High64(const uint128& v) { return v.hi_; }
 
 // TODO: perhaps it would be nice to have int128, a signed 128-bit type?
 
@@ -130,16 +143,26 @@ inline bool operator!=(const uint128& lhs, const uint128& rhs) {
   return !(lhs == rhs);
 }
 
-inline constexpr uint128::uint128(uint64 top, uint64 bottom)
+inline UINT128_CONSTEXPR uint128::uint128() : lo_(0), hi_(0) {}
+inline UINT128_CONSTEXPR uint128::uint128(uint64 top, uint64 bottom)
     : lo_(bottom), hi_(top) {}
-inline constexpr uint128::uint128(uint64 bottom)
+inline UINT128_CONSTEXPR uint128::uint128(const uint128_pod& v)
+    : lo_(v.lo), hi_(v.hi) {}
+inline UINT128_CONSTEXPR uint128::uint128(uint64 bottom)
     : lo_(bottom), hi_(0) {}
 #ifndef SWIG
-inline constexpr uint128::uint128(uint32 bottom)
+inline UINT128_CONSTEXPR uint128::uint128(uint32 bottom)
     : lo_(bottom), hi_(0) {}
-inline constexpr uint128::uint128(int bottom)
+inline UINT128_CONSTEXPR uint128::uint128(int bottom)
     : lo_(bottom), hi_(static_cast<int64>((bottom < 0) ? -1 : 0)) {}
 #endif
+
+#undef UINT128_CONSTEXPR
+
+inline void uint128::Initialize(uint64 top, uint64 bottom) {
+  hi_ = top;
+  lo_ = bottom;
+}
 
 // Comparison operators.
 
@@ -164,9 +187,9 @@ inline uint128 operator-(const uint128& val) {
   const uint64 lo_flip = ~Uint128Low64(val);
   const uint64 lo_add = lo_flip + 1;
   if (lo_add < lo_flip) {
-    return MakeUint128(hi_flip + 1, lo_add);
+    return uint128(hi_flip + 1, lo_add);
   }
-  return MakeUint128(hi_flip, lo_add);
+  return uint128(hi_flip, lo_add);
 }
 
 inline bool operator!(const uint128& val) {
@@ -176,13 +199,13 @@ inline bool operator!(const uint128& val) {
 // Logical operators.
 
 inline uint128 operator~(const uint128& val) {
-  return MakeUint128(~Uint128High64(val), ~Uint128Low64(val));
+  return uint128(~Uint128High64(val), ~Uint128Low64(val));
 }
 
 #define LOGIC128(op)                                                 \
 inline uint128 operator op(const uint128& lhs, const uint128& rhs) { \
-  return MakeUint128(Uint128High64(lhs) op Uint128High64(rhs),       \
-                     Uint128Low64(lhs) op Uint128Low64(rhs));        \
+  return uint128(Uint128High64(lhs) op Uint128High64(rhs),           \
+                 Uint128Low64(lhs) op Uint128Low64(rhs));            \
 }
 
 LOGIC128(|)
@@ -206,11 +229,7 @@ LOGICASSIGN128(^=)
 
 // Shift operators.
 
-void VerifyValidShift(std::string op, int amount);
-
 inline uint128 operator<<(const uint128& val, int amount) {
-  VerifyValidShift("<<", amount);
-
   // uint64 shifts of >= 64 are undefined, so we will need some special-casing.
   if (amount < 64) {
     if (amount == 0) {
@@ -219,14 +238,15 @@ inline uint128 operator<<(const uint128& val, int amount) {
     uint64 new_hi = (Uint128High64(val) << amount) |
                     (Uint128Low64(val) >> (64 - amount));
     uint64 new_lo = Uint128Low64(val) << amount;
-    return MakeUint128(new_hi, new_lo);
+    return uint128(new_hi, new_lo);
+  } else if (amount < 128) {
+    return uint128(Uint128Low64(val) << (amount - 64), 0);
+  } else {
+    return uint128(0, 0);
   }
-  return MakeUint128(Uint128Low64(val) << (amount - 64), 0);
 }
 
 inline uint128 operator>>(const uint128& val, int amount) {
-  VerifyValidShift(">>", amount);
-
   // uint64 shifts of >= 64 are undefined, so we will need some special-casing.
   if (amount < 64) {
     if (amount == 0) {
@@ -235,10 +255,12 @@ inline uint128 operator>>(const uint128& val, int amount) {
     uint64 new_hi = Uint128High64(val) >> amount;
     uint64 new_lo = (Uint128Low64(val) >> amount) |
                     (Uint128High64(val) << (64 - amount));
-    return MakeUint128(new_hi, new_lo);
+    return uint128(new_hi, new_lo);
+  } else if (amount < 128) {
+    return uint128(0, Uint128High64(val) >> (amount - 64));
+  } else {
+    return uint128(0, 0);
   }
-
-  return MakeUint128(0, Uint128High64(val) >> (amount - 64));
 }
 
 inline uint128& uint128::operator<<=(int amount) {
@@ -356,17 +378,6 @@ inline uint128& uint128::operator--() {
   *this -= 1;
   return *this;
 }
-
-constexpr uint128 Uint128Max() {
-  return MakeUint128((std::numeric_limits<uint64>::max)(),
-                     (std::numeric_limits<uint64>::max)());
-}
-
-}  // namespace int128_internal
-
-using google::protobuf::int128_internal::uint128;
-using google::protobuf::int128_internal::Uint128Max;
-using google::protobuf::int128_internal::MakeUint128;
 
 }  // namespace protobuf
 }  // namespace google
