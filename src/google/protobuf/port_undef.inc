@@ -79,6 +79,10 @@
 #undef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
 #undef PROTOBUF_PRAGMA_INIT_SEG
 
+#ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
+#undef PROTOBUF_FUTURE_BREAKING_CHANGES
+#endif
+
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _MSC_VER
 #pragma pop_macro("CREATE_NEW")
