@@ -24,7 +24,6 @@ cc_library(
         "testmain.cc",
     ],
     hdrs = [
-        "test_util.h",
         "upb_test.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
@@ -94,10 +93,10 @@ cc_test(
     deps = [
         ":test_cpp_upb_proto",
         ":upb_test",
+        "//:json",
         "//:port",
         "//:reflection",
         "//:upb",
-        "//:json",
     ],
 )
 
