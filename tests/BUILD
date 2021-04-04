@@ -86,12 +86,18 @@ upb_proto_reflection_library(
     deps = ["test_cpp_proto"],
 )
 
+upb_proto_reflection_library(
+    name = "test_cpp_upb_proto_reflection",
+    deps = ["test_cpp_proto"],
+)
+
 cc_test(
     name = "test_cpp",
     srcs = ["test_cpp.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         ":test_cpp_upb_proto",
+        ":test_cpp_upb_proto_reflection",
         ":upb_test",
         "//:json",
         "//:port",
