@@ -83,3 +83,7 @@ message TestUnknown {
   map<string, TestUnknown> map_unknown = 67;
   int32 unknown_field = 89;
 }
+
+message TestJsonName {
+  int32 value = 1 [json_name = "CustomJsonName"];
+}
