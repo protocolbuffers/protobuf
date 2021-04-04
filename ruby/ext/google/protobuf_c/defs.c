@@ -879,9 +879,7 @@ static VALUE FieldDescriptor_json_name(VALUE _self) {
   FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
   const upb_fielddef *f = self->fielddef;
   const char *json_name = upb_fielddef_jsonname(f);
-  if (json_name != NULL)
-    return rb_str_new2(json_name);
-  return Qnil;
+  return rb_str_new2(json_name);
 }
 
 /*
@@ -1772,9 +1770,6 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
                    ID2SYM(rb_intern("json_name"))) == Qtrue) {
       VALUE json_name =
           rb_hash_lookup(options, ID2SYM(rb_intern("json_name")));
-
-      /* Call #to_s since json_name is always a string in the descriptor. */
-      json_name = rb_funcall(json_name, rb_intern("to_s"), 0);
 
       google_protobuf_FieldDescriptorProto_set_json_name(
           field_proto,
