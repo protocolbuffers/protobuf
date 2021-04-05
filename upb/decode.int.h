@@ -8,7 +8,7 @@
 
 #include <setjmp.h>
 
-#include "upb/msg.h"
+#include "upb/msg.int.h"
 #include "upb/upb.int.h"
 
 /* Must be last. */

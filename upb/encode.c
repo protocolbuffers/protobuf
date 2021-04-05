@@ -5,7 +5,7 @@
 #include <setjmp.h>
 #include <string.h>
 
-#include "upb/msg.h"
+#include "upb/msg.int.h"
 #include "upb/upb.h"
 
 /* Must be last. */
