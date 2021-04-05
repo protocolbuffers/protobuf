@@ -511,7 +511,7 @@ void WriteHeader(const protobuf::FileDescriptor* file, Output& output) {
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/msg.int.h\"\n"
+      "#include \"upb/msg_internal.h\"\n"
       "#include \"upb/decode.h\"\n"
       "#include \"upb/decode_fast.h\"\n"
       "#include \"upb/encode.h\"\n\n",
@@ -849,7 +849,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
 
   output(
       "#include <stddef.h>\n"
-      "#include \"upb/msg.int.h\"\n"
+      "#include \"upb/msg_internal.h\"\n"
       "#include \"$0\"\n",
       HeaderFilename(file->name()));
 

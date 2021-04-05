@@ -35,8 +35,8 @@
 
 #include <setjmp.h>
 
-#include "upb/msg.int.h"
-#include "upb/upb.int.h"
+#include "upb/msg_internal.h"
+#include "upb/upb_internal.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"
