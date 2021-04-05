@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include "upb/msg.h"
-#include "upb/table.int.h"
+#include "upb/table_internal.h"
 #include "upb/upb.h"
 
 /* Must be last. */

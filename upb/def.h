@@ -42,7 +42,7 @@
 #define UPB_DEF_H_
 
 #include "upb/upb.h"
-#include "upb/table.int.h"
+#include "upb/table_internal.h"
 #include "google/protobuf/descriptor.upb.h"
 
 /* Must be last. */

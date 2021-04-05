@@ -27,9 +27,9 @@
 
 #include "upb/msg.h"
 
-#include "upb/msg.int.h"
+#include "upb/msg_internal.h"
 #include "upb/port_def.inc"
-#include "upb/table.int.h"
+#include "upb/table_internal.h"
 
 /** upb_msg *******************************************************************/
 

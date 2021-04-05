@@ -64,14 +64,14 @@ enable_testing()
 add_library(port INTERFACE)
 add_library(upb
   ../upb/decode.c
-  ../upb/decode.int.h
+  ../upb/decode_internal.h
   ../upb/encode.c
   ../upb/msg.c
-  ../upb/msg.int.h
+  ../upb/msg_internal.h
   ../upb/table.c
-  ../upb/table.int.h
+  ../upb/table_internal.h
   ../upb/upb.c
-  ../upb/upb.int.h
+  ../upb/upb_internal.h
   ../upb/decode.h
   ../upb/encode.h
   ../upb/msg.h
@@ -82,12 +82,12 @@ target_link_libraries(upb
   port
   /third_party/wyhash)
 add_library(fastdecode
-  ../upb/decode.int.h
+  ../upb/decode_internal.h
   ../upb/decode_fast.c
   ../upb/decode_fast.h
   ../upb/msg.h
-  ../upb/msg.int.h
-  ../upb/upb.int.h)
+  ../upb/msg_internal.h
+  ../upb/upb_internal.h)
 target_link_libraries(fastdecode
   port
   table)

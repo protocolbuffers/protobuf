@@ -39,7 +39,7 @@
 
 #include "tests/upb_test.h"
 #include "upb/upb.hpp"
-#include "upb/table.int.h"
+#include "upb/table_internal.h"
 
 #include "upb/port_def.inc"
 

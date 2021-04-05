@@ -81,14 +81,14 @@ cc_library(
     name = "upb",
     srcs = [
         "upb/decode.c",
-        "upb/decode.int.h",
+        "upb/decode_internal.h",
         "upb/encode.c",
         "upb/msg.c",
-        "upb/msg.int.h",
+        "upb/msg_internal.h",
         "upb/table.c",
-        "upb/table.int.h",
+        "upb/table_internal.h",
         "upb/upb.c",
-        "upb/upb.int.h",
+        "upb/upb_internal.h",
     ],
     hdrs = [
         "upb/decode.h",
@@ -109,12 +109,12 @@ cc_library(
 cc_library(
     name = "fastdecode",
     srcs = [
-        "upb/decode.int.h",
+        "upb/decode_internal.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",
         "upb/msg.h",
-        "upb/msg.int.h",
-        "upb/upb.int.h",
+        "upb/msg_internal.h",
+        "upb/upb_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
@@ -220,7 +220,7 @@ cc_library(
 cc_library(
     name = "table",
     hdrs = [
-        "upb/table.int.h",
+        "upb/table_internal.h",
         "upb/upb.h",
     ],
     visibility = ["//tests:__pkg__"],

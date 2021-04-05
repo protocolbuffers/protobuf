@@ -34,7 +34,7 @@
 #include <string.h>
 
 #include "third_party/wyhash/wyhash.h"
-#include "upb/table.int.h"
+#include "upb/table_internal.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"

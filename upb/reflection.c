@@ -28,7 +28,7 @@
 #include "upb/reflection.h"
 
 #include <string.h>
-#include "upb/table.int.h"
+#include "upb/table_internal.h"
 #include "upb/msg.h"
 
 #include "upb/port_def.inc"

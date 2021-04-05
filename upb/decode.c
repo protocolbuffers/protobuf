@@ -30,9 +30,9 @@
 #include <setjmp.h>
 #include <string.h>
 
-#include "upb/decode.int.h"
+#include "upb/decode_internal.h"
 #include "upb/upb.h"
-#include "upb/upb.int.h"
+#include "upb/upb_internal.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"

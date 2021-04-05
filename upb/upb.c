@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/upb.int.h"
+#include "upb/upb_internal.h"
 
 #include <errno.h>
 #include <stdarg.h>
