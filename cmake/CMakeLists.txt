@@ -67,13 +67,14 @@ add_library(upb
   ../upb/decode.int.h
   ../upb/encode.c
   ../upb/msg.c
-  ../upb/msg.h
+  ../upb/msg.int.h
   ../upb/table.c
   ../upb/table.int.h
   ../upb/upb.c
   ../upb/upb.int.h
   ../upb/decode.h
   ../upb/encode.h
+  ../upb/msg.h
   ../upb/upb.h
   ../upb/upb.hpp)
 target_link_libraries(upb
@@ -85,6 +86,7 @@ add_library(fastdecode
   ../upb/decode_fast.c
   ../upb/decode_fast.h
   ../upb/msg.h
+  ../upb/msg.int.h
   ../upb/upb.int.h)
 target_link_libraries(fastdecode
   port

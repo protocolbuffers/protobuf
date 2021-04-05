@@ -9,7 +9,7 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 #define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 
-#include "upb/msg.h"
+#include "upb/msg.int.h"
 #include "upb/decode.h"
 #include "upb/decode_fast.h"
 #include "upb/encode.h"

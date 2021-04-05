@@ -110,16 +110,8 @@ bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
                   const upb_symtab *ext_pool, const upb_fielddef **f,
                   upb_msgval *val, size_t *iter);
 
-/* Adds unknown data (serialized protobuf data) to the given message.  The data
- * is copied into the message instance. */
-void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
-                        upb_arena *arena);
-
 /* Clears all unknown field data from this message and all submessages. */
 bool upb_msg_discardunknown(upb_msg *msg, const upb_msgdef *m, int maxdepth);
-
-/* Returns a reference to the message's unknown data. */
-const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
 
 /** upb_array *****************************************************************/
 

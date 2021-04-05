@@ -7,7 +7,7 @@
  * regenerated. */
 
 #include <stddef.h>
-#include "upb/msg.h"
+#include "upb/msg.int.h"
 #include "google/protobuf/descriptor.upb.h"
 
 #include "upb/port_def.inc"
