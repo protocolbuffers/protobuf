@@ -106,7 +106,7 @@ proto_library(
     ],
 )
 
-upb_proto_reflection_library(
+upb_proto_library(
     name = "test_cpp_upb_proto",
     deps = ["test_cpp_proto"],
 )
