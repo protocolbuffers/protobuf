@@ -1284,4 +1284,33 @@ public class CodedInputStreamTest extends TestCase {
     maliciousCapture.get(1)[0] = 0x9;
     assertEquals(0x9, byteArray[0]); // MODIFICATION! Should we fix?
   }
+
+  public void testInvalidInputYieldsInvalidProtocolBufferException_readTag() throws Exception {
+    byte[] input = new byte[] {0x0a, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, 0x77};
+    CodedInputStream inputStream = CodedInputStream.newInstance(input);
+    try {
+      inputStream.readTag();
+      int size = inputStream.readRawVarint32();
+      inputStream.pushLimit(size);
+      inputStream.readTag();
+      fail();
+    } catch (InvalidProtocolBufferException ex) {
+      // Expected.
+    }
+  }
+
+  public void testInvalidInputYieldsInvalidProtocolBufferException_readBytes() throws Exception {
+    byte[] input =
+        new byte[] {0x0a, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, 0x67, 0x1a, 0x1a};
+    CodedInputStream inputStream = CodedInputStream.newInstance(input);
+    try {
+      inputStream.readTag();
+      int size = inputStream.readRawVarint32();
+      inputStream.pushLimit(size);
+      inputStream.readBytes();
+      fail();
+    } catch (InvalidProtocolBufferException ex) {
+      // Expected.
+    }
+  }
 }
