@@ -75,7 +75,7 @@
 
   Other
   * Some doc on AOT compilation and protobuf (#8294)
-  * [CMake] Abilty to pass options to protoc executable from cmake (#8374)
+  * [CMake] Ability to pass options to protoc executable from cmake (#8374)
   * Add --fatal_warnings flag to treat warnings as errors (#8131)
   * [bazel] Remove deprecated way to depend on googletest (#8396)
   * add error returns missing from protoc to prevent it from exiting with… (#8409)
