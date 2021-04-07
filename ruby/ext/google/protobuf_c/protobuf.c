@@ -180,6 +180,7 @@ static void Arena_mark(void *data) {
 static void Arena_free(void *data) {
   Arena *arena = data;
   upb_arena_free(arena->arena);
+  xfree(arena);
 }
 
 static VALUE cArena;
