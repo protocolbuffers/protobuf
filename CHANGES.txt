@@ -40,6 +40,11 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   JavaScript
   * Make Any.pack() chainable.
 
+2021-04-07 version 3.15.8 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Fixed memory leak of Ruby arena objects (#8461)
+
 2021-04-02 version 3.15.7 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
