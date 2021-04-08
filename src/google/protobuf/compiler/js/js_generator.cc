@@ -2380,6 +2380,16 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
     // For bytes fields we want to always return the B64 data.
     printer->Print("msg.get$getter$()", "getter",
                    JSGetterName(options, field, BYTES_B64));
+  } else if (field->type() == FieldDescriptor::TYPE_ENUM) {
+    // For enums, emit the key name (not the ordinal/index).
+    printer->Print(
+      "(f = msg.get$getter$()) && (() => {"
+      "  const withValue = Object.entries($type$).find(([_, v]) => v === f);",
+      "  return withValue && withValue[1];"
+      "})()"
+      "getter", JSGetterName(options, field),
+      "type", SubmessageTypeRef(options, field)
+    );
   } else {
     bool use_default = field->has_default_value();
 
@@ -2517,6 +2527,13 @@ void Generator::GenerateClassFieldFromObject(
           "name", JSObjectFieldName(options, field), "index",
           JSFieldIndex(field), "fieldclass", SubmessageTypeRef(options, field));
     }
+  } else if (field->type() == FieldDescriptor::TYPE_ENUM) {
+    // Simple (primitive) field.
+    printer->Print(
+        "  obj.$name$ != null && jspb.Message.setField(msg, $index$, "
+        "typeof obj.$name$ === \"string\" ? $fieldclass$[obj.$name$] : obj.$name$);\n",
+        "name", JSObjectFieldName(options, field), "index",
+        JSFieldIndex(field));
   } else {
     // Simple (primitive) field.
     printer->Print(
