@@ -58,7 +58,7 @@ const zval *get_generated_pool();
 #if PHP_VERSION_ID < 80000
 #define PROTO_VAL zval
 #define PROTO_STR zval
-#define PROTO_VAL_P(obj) Z_OBJ_P(obj)
+#define PROTO_VAL_P(obj) (void*)Z_OBJ_P(obj)
 #define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
 #define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
 #else
