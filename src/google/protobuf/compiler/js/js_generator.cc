@@ -2403,7 +2403,21 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
     if (!use_default) {
       printer->Print("(f = ");
     }
+    if (field->type() == FieldDescriptor::TYPE_ENUM) {
+      // For enums, emit the key name (not the ordinal/index).
+      printer->Print(
+        "Object.keys($enumprefix$$enumname$).find((key, index) => index === ",
+        "getter", JSGetterName(options, field),
+        "enumprefix", GetEnumPathPrefix(options, field->enum_type()),
+        "enumname", field->enum_type()->name());
+    }
+
     GenerateFieldValueExpression(printer, "msg", field, use_default);
+
+    if (field->type() == FieldDescriptor::TYPE_ENUM) {
+      printer->Print(")");
+    }
+
     if (!use_default) {
       printer->Print(") == null ? undefined : f");
     }
@@ -2517,6 +2531,14 @@ void Generator::GenerateClassFieldFromObject(
           "name", JSObjectFieldName(options, field), "index",
           JSFieldIndex(field), "fieldclass", SubmessageTypeRef(options, field));
     }
+  } else if (field->type() == FieldDescriptor::TYPE_ENUM) {
+    printer->Print(
+        "  obj.$name$ != null && jspb.Message.setField(msg, $index$, "
+        "typeof obj.$name$ === \"string\" ? $enumprefix$$enumname$[obj.$name$] : obj.$name$);\n",
+        "name", JSObjectFieldName(options, field),
+        "index", JSFieldIndex(field),
+        "enumprefix", GetEnumPathPrefix(options, field->enum_type()),
+        "enumname", field->enum_type()->name());
   } else {
     // Simple (primitive) field.
     printer->Print(
