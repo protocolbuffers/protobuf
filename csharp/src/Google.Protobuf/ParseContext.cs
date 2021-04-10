@@ -104,6 +104,29 @@ namespace Google.Protobuf
             ctx.state.ExtensionRegistry = null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ReadOnlySpan<byte> input, out ParseContext ctx)
+        {
+            Initialize(input, DefaultRecursionLimit, out ctx);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ReadOnlySpan<byte> input, int recursionLimit, out ParseContext ctx)
+        {
+            ctx.buffer = input;
+            ctx.state = default;
+            ctx.state.lastTag = 0;
+            ctx.state.recursionDepth = 0;
+            ctx.state.sizeLimit = DefaultSizeLimit;
+            ctx.state.recursionLimit = recursionLimit;
+            ctx.state.currentLimit = int.MaxValue;
+            ctx.state.bufferPos = 0;
+            ctx.state.bufferSize = input.Length;
+
+            ctx.state.DiscardUnknownFields = false;
+            ctx.state.ExtensionRegistry = null;
+        }
+
         /// <summary>
         /// Returns the last tag read, or 0 if no tags have been read or we've read beyond
         /// the end of the input.
