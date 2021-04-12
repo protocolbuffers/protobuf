@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2021-03-10</date>
- <time>10:11:34</time>
+ <date>2021-04-02</date>
+ <time>10:01:42</time>
  <version>
-  <release>3.15.6</release>
-  <api>3.15.6</api>
+  <release>3.15.7</release>
+  <api>3.15.7</api>
  </version>
  <stability>
   <release>stable</release>
@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- No new changes in 3.15.6
+ No new changes in 3.15.7
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -883,6 +883,21 @@ G  A release.
    </stability>
    <date>2021-03-10</date>
    <time>10:11:34</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.15.7</release>
+    <api>3.15.7</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2021-04-02</date>
+   <time>10:01:42</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>

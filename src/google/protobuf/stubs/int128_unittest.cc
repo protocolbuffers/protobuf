@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <sstream>
 #include <utility>
-#include <type_traits>
 
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -45,18 +44,16 @@ namespace protobuf {
 
 TEST(Int128, AllTests) {
   uint128 zero(0);
-  EXPECT_EQ(zero, uint128());
-
   uint128 one(1);
-  uint128 one_2arg = MakeUint128(0, 1);
-  uint128 two = MakeUint128(0, 2);
-  uint128 three = MakeUint128(0, 3);
-  uint128 big = MakeUint128(2000, 2);
-  uint128 big_minus_one = MakeUint128(2000, 1);
-  uint128 bigger = MakeUint128(2001, 1);
-  uint128 biggest(Uint128Max());
-  uint128 high_low = MakeUint128(1, 0);
-  uint128 low_high = MakeUint128(0, kuint64max);
+  uint128 one_2arg(0, 1);
+  uint128 two(0, 2);
+  uint128 three(0, 3);
+  uint128 big(2000, 2);
+  uint128 big_minus_one(2000, 1);
+  uint128 bigger(2001, 1);
+  uint128 biggest(kuint128max);
+  uint128 high_low(1, 0);
+  uint128 low_high(0, kuint64max);
   EXPECT_LT(one, two);
   EXPECT_GT(two, one);
   EXPECT_LT(one, big);
@@ -95,6 +92,8 @@ TEST(Int128, AllTests) {
   EXPECT_EQ(big, (big >> 1) << 1);
   EXPECT_EQ(one, (one << 80) >> 80);
   EXPECT_EQ(zero, (one >> 80) << 80);
+  EXPECT_EQ(zero, big >> 128);
+  EXPECT_EQ(zero, big << 128);
 
   // Shift assignments.
   uint128 big_copy = big;
@@ -118,9 +117,9 @@ TEST(Int128, AllTests) {
   big_copy = big;
   EXPECT_EQ(big >> 73, big_copy >>= 73);
   big_copy = big;
-  EXPECT_EQ(big << 127, big_copy <<= 127);
+  EXPECT_EQ(big << 128, big_copy <<= 128);
   big_copy = big;
-  EXPECT_EQ(big >> 127, big_copy >>= 127);
+  EXPECT_EQ(big >> 128, big_copy >>= 128);
 
   EXPECT_EQ(Uint128High64(biggest), kuint64max);
   EXPECT_EQ(Uint128Low64(biggest), kuint64max);
@@ -171,11 +170,90 @@ TEST(Int128, AllTests) {
 
   EXPECT_EQ(big, -(-big));
   EXPECT_EQ(two, -((-one) - 1));
-  EXPECT_EQ(Uint128Max(), -one);
+  EXPECT_EQ(kuint128max, -one);
   EXPECT_EQ(zero, -zero);
 
   GOOGLE_LOG(INFO) << one;
   GOOGLE_LOG(INFO) << big_minus_one;
+}
+
+TEST(Int128, PodTests) {
+  uint128_pod pod = { 12345, 67890 };
+  uint128 from_pod(pod);
+  EXPECT_EQ(12345, Uint128High64(from_pod));
+  EXPECT_EQ(67890, Uint128Low64(from_pod));
+
+  uint128 zero(0);
+  uint128_pod zero_pod = {0, 0};
+  uint128 one(1);
+  uint128_pod one_pod = {0, 1};
+  uint128 two(2);
+  uint128_pod two_pod = {0, 2};
+  uint128 three(3);
+  uint128_pod three_pod = {0, 3};
+  uint128 big(1, 0);
+  uint128_pod big_pod = {1, 0};
+
+  EXPECT_EQ(zero, zero_pod);
+  EXPECT_EQ(zero_pod, zero);
+  EXPECT_EQ(zero_pod, zero_pod);
+  EXPECT_EQ(one, one_pod);
+  EXPECT_EQ(one_pod, one);
+  EXPECT_EQ(one_pod, one_pod);
+  EXPECT_EQ(two, two_pod);
+  EXPECT_EQ(two_pod, two);
+  EXPECT_EQ(two_pod, two_pod);
+
+  EXPECT_NE(one, two_pod);
+  EXPECT_NE(one_pod, two);
+  EXPECT_NE(one_pod, two_pod);
+
+  EXPECT_LT(one, two_pod);
+  EXPECT_LT(one_pod, two);
+  EXPECT_LT(one_pod, two_pod);
+  EXPECT_LE(one, one_pod);
+  EXPECT_LE(one_pod, one);
+  EXPECT_LE(one_pod, one_pod);
+  EXPECT_LE(one, two_pod);
+  EXPECT_LE(one_pod, two);
+  EXPECT_LE(one_pod, two_pod);
+
+  EXPECT_GT(two, one_pod);
+  EXPECT_GT(two_pod, one);
+  EXPECT_GT(two_pod, one_pod);
+  EXPECT_GE(two, two_pod);
+  EXPECT_GE(two_pod, two);
+  EXPECT_GE(two_pod, two_pod);
+  EXPECT_GE(two, one_pod);
+  EXPECT_GE(two_pod, one);
+  EXPECT_GE(two_pod, one_pod);
+
+  EXPECT_EQ(three, one | two_pod);
+  EXPECT_EQ(three, one_pod | two);
+  EXPECT_EQ(three, one_pod | two_pod);
+  EXPECT_EQ(one, three & one_pod);
+  EXPECT_EQ(one, three_pod & one);
+  EXPECT_EQ(one, three_pod & one_pod);
+  EXPECT_EQ(two, three ^ one_pod);
+  EXPECT_EQ(two, three_pod ^ one);
+  EXPECT_EQ(two, three_pod ^ one_pod);
+  EXPECT_EQ(two, three & (~one));
+  EXPECT_EQ(three, ~~three);
+
+  EXPECT_EQ(two, two_pod << 0);
+  EXPECT_EQ(two, one_pod << 1);
+  EXPECT_EQ(big, one_pod << 64);
+  EXPECT_EQ(zero, one_pod << 128);
+  EXPECT_EQ(two, two_pod >> 0);
+  EXPECT_EQ(one, two_pod >> 1);
+  EXPECT_EQ(one, big_pod >> 64);
+
+  EXPECT_EQ(one, zero + one_pod);
+  EXPECT_EQ(one, zero_pod + one);
+  EXPECT_EQ(one, zero_pod + one_pod);
+  EXPECT_EQ(one, two - one_pod);
+  EXPECT_EQ(one, two_pod - one);
+  EXPECT_EQ(one, two_pod - one_pod);
 }
 
 TEST(Int128, OperatorAssignReturnRef) {
@@ -215,38 +293,38 @@ TEST(Int128, Multiply) {
   }
 
   // Verified with dc.
-  a = MakeUint128(PROTOBUF_ULONGLONG(0xffffeeeeddddcccc),
-                  PROTOBUF_ULONGLONG(0xbbbbaaaa99998888));
-  b = MakeUint128(PROTOBUF_ULONGLONG(0x7777666655554444),
-                  PROTOBUF_ULONGLONG(0x3333222211110000));
+  a = uint128(PROTOBUF_ULONGLONG(0xffffeeeeddddcccc),
+              PROTOBUF_ULONGLONG(0xbbbbaaaa99998888));
+  b = uint128(PROTOBUF_ULONGLONG(0x7777666655554444),
+              PROTOBUF_ULONGLONG(0x3333222211110000));
   c = a * b;
-  EXPECT_EQ(MakeUint128(PROTOBUF_ULONGLONG(0x530EDA741C71D4C3),
-                        PROTOBUF_ULONGLONG(0xBF25975319080000)),
+  EXPECT_EQ(uint128(PROTOBUF_ULONGLONG(0x530EDA741C71D4C3),
+                    PROTOBUF_ULONGLONG(0xBF25975319080000)),
             c);
   EXPECT_EQ(0, c - b * a);
   EXPECT_EQ(a * a - b * b, (a + b) * (a - b));
 
   // Verified with dc.
-  a = MakeUint128(PROTOBUF_ULONGLONG(0x0123456789abcdef),
-                  PROTOBUF_ULONGLONG(0xfedcba9876543210));
-  b = MakeUint128(PROTOBUF_ULONGLONG(0x02468ace13579bdf),
-                  PROTOBUF_ULONGLONG(0xfdb97531eca86420));
+  a = uint128(PROTOBUF_ULONGLONG(0x0123456789abcdef),
+              PROTOBUF_ULONGLONG(0xfedcba9876543210));
+  b = uint128(PROTOBUF_ULONGLONG(0x02468ace13579bdf),
+              PROTOBUF_ULONGLONG(0xfdb97531eca86420));
   c = a * b;
-  EXPECT_EQ(MakeUint128(PROTOBUF_ULONGLONG(0x97a87f4f261ba3f2),
-                        PROTOBUF_ULONGLONG(0x342d0bbf48948200)),
+  EXPECT_EQ(uint128(PROTOBUF_ULONGLONG(0x97a87f4f261ba3f2),
+                    PROTOBUF_ULONGLONG(0x342d0bbf48948200)),
             c);
   EXPECT_EQ(0, c - b * a);
   EXPECT_EQ(a*a - b*b, (a+b) * (a-b));
 }
 
 TEST(Int128, AliasTests) {
-  uint128 x1 = MakeUint128(1, 2);
-  uint128 x2 = MakeUint128(2, 4);
+  uint128 x1(1, 2);
+  uint128 x2(2, 4);
   x1 += x1;
   EXPECT_EQ(x2, x1);
 
-  uint128 x3 = MakeUint128(1, static_cast<uint64>(1) << 63);
-  uint128 x4 = MakeUint128(3, 0);
+  uint128 x3(1, static_cast<uint64>(1) << 63);
+  uint128 x4(3, 0);
   x3 += x3;
   EXPECT_EQ(x4, x3);
 }
@@ -267,12 +345,6 @@ TEST(Int128, ModByZeroCheckFails) {
   a = 123;
   EXPECT_DEATH(a % b, "Division or mod by zero:");
 }
-
-TEST(Int128, ShiftGreater128) {
-  uint128 a;
-  EXPECT_DEATH(a << 128, "Left-shift greater or equal 128");
-  EXPECT_DEATH(a >> 128, "Right-shift greater or equal 128");
-}
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 TEST(Int128, DivideAndMod) {
@@ -287,10 +359,10 @@ TEST(Int128, DivideAndMod) {
   EXPECT_EQ(0, q);
   EXPECT_EQ(0, r);
 
-  a = MakeUint128(PROTOBUF_ULONGLONG(0x530eda741c71d4c3),
-                  PROTOBUF_ULONGLONG(0xbf25975319080000));
-  q = MakeUint128(PROTOBUF_ULONGLONG(0x4de2cab081),
-                  PROTOBUF_ULONGLONG(0x14c34ab4676e4bab));
+  a = uint128(PROTOBUF_ULONGLONG(0x530eda741c71d4c3),
+              PROTOBUF_ULONGLONG(0xbf25975319080000));
+  q = uint128(PROTOBUF_ULONGLONG(0x4de2cab081),
+              PROTOBUF_ULONGLONG(0x14c34ab4676e4bab));
   b = uint128(0x1110001);
   r = uint128(0x3eb455);
   ASSERT_EQ(a, q * b + r);  // Sanity-check.
@@ -328,8 +400,8 @@ TEST(Int128, DivideAndMod) {
 
   // Try a large remainder.
   b = a / 2 + 1;
-  uint128 expected_r = MakeUint128(PROTOBUF_ULONGLONG(0x29876d3a0e38ea61),
-                                   PROTOBUF_ULONGLONG(0xdf92cba98c83ffff));
+  uint128 expected_r(PROTOBUF_ULONGLONG(0x29876d3a0e38ea61),
+                     PROTOBUF_ULONGLONG(0xdf92cba98c83ffff));
   // Sanity checks.
   ASSERT_EQ(a / 2 - 1, expected_r);
   ASSERT_EQ(a, b + expected_r);
@@ -349,8 +421,8 @@ static uint64 RandomUint64() {
 TEST(Int128, DivideAndModRandomInputs) {
   const int kNumIters = 1 << 18;
   for (int i = 0; i < kNumIters; ++i) {
-    const uint128 a = MakeUint128(RandomUint64(), RandomUint64());
-    const uint128 b = MakeUint128(RandomUint64(), RandomUint64());
+    const uint128 a(RandomUint64(), RandomUint64());
+    const uint128 b(RandomUint64(), RandomUint64());
     if (b == 0) {
       continue;  // Avoid a div-by-zero.
     }
@@ -360,22 +432,24 @@ TEST(Int128, DivideAndModRandomInputs) {
   }
 }
 
+#ifdef GOOGLE_PROTOBUF_HAS_CONSTEXPR
 TEST(Int128, ConstexprTest) {
+  constexpr uint128 zero;
   constexpr uint128 one = 1;
+  constexpr uint128_pod pod = {2, 3};
+  constexpr uint128 from_pod = pod;
   constexpr uint128 minus_two = -2;
   EXPECT_EQ(one, uint128(1));
-  EXPECT_EQ(minus_two, MakeUint128(-1ULL, -2ULL));
+  EXPECT_EQ(from_pod, uint128(2, 3));
+  EXPECT_EQ(minus_two, uint128(-1ULL, -2ULL));
 }
 
-#if !defined(__GNUC__) || __GNUC__ > 4
-// libstdc++ is missing the required type traits pre gcc-5.0.0
-// https://gcc.gnu.org/onlinedocs/gcc-4.9.4/libstdc++/manual/manual/status.html#:~:text=20.9.4.3
 TEST(Int128, Traits) {
   EXPECT_TRUE(std::is_trivially_copy_constructible<uint128>::value);
   EXPECT_TRUE(std::is_trivially_copy_assignable<uint128>::value);
   EXPECT_TRUE(std::is_trivially_destructible<uint128>::value);
 }
-#endif  // !defined(__GNUC__) || __GNUC__ > 4
+#endif  // GOOGLE_PROTOBUF_HAS_CONSTEXPR
 
 TEST(Int128, OStream) {
   struct {
@@ -390,28 +464,28 @@ TEST(Int128, OStream) {
       {uint128(0), std::ios::oct, 0, '_', "0"},
       {uint128(0), std::ios::hex, 0, '_', "0"},
       // crossover between lo_ and hi_
-      {MakeUint128(0, -1), std::ios::dec, 0, '_', "18446744073709551615"},
-      {MakeUint128(0, -1), std::ios::oct, 0, '_', "1777777777777777777777"},
-      {MakeUint128(0, -1), std::ios::hex, 0, '_', "ffffffffffffffff"},
-      {MakeUint128(1, 0), std::ios::dec, 0, '_', "18446744073709551616"},
-      {MakeUint128(1, 0), std::ios::oct, 0, '_', "2000000000000000000000"},
-      {MakeUint128(1, 0), std::ios::hex, 0, '_', "10000000000000000"},
+      {uint128(0, -1), std::ios::dec, 0, '_', "18446744073709551615"},
+      {uint128(0, -1), std::ios::oct, 0, '_', "1777777777777777777777"},
+      {uint128(0, -1), std::ios::hex, 0, '_', "ffffffffffffffff"},
+      {uint128(1, 0), std::ios::dec, 0, '_', "18446744073709551616"},
+      {uint128(1, 0), std::ios::oct, 0, '_', "2000000000000000000000"},
+      {uint128(1, 0), std::ios::hex, 0, '_', "10000000000000000"},
       // just the top bit
-      {MakeUint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::dec, 0,
+      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::dec, 0,
        '_', "170141183460469231731687303715884105728"},
-      {MakeUint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::oct, 0,
+      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::oct, 0,
        '_', "2000000000000000000000000000000000000000000"},
-      {MakeUint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::hex, 0,
+      {uint128(PROTOBUF_ULONGLONG(0x8000000000000000), 0), std::ios::hex, 0,
        '_', "80000000000000000000000000000000"},
       // maximum uint128 value
-      {MakeUint128(-1, -1), std::ios::dec, 0, '_',
+      {uint128(-1, -1), std::ios::dec, 0, '_',
        "340282366920938463463374607431768211455"},
-      {MakeUint128(-1, -1), std::ios::oct, 0, '_',
+      {uint128(-1, -1), std::ios::oct, 0, '_',
        "3777777777777777777777777777777777777777777"},
-      {MakeUint128(-1, -1), std::ios::hex, 0, '_',
+      {uint128(-1, -1), std::ios::hex, 0, '_',
        "ffffffffffffffffffffffffffffffff"},
       // uppercase
-      {MakeUint128(-1, -1), std::ios::hex | std::ios::uppercase, 0, '_',
+      {uint128(-1, -1), std::ios::hex | std::ios::uppercase, 0, '_',
        "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"},
       // showbase
       {uint128(1), std::ios::dec | std::ios::showbase, 0, '_', "1"},

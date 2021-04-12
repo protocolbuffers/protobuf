@@ -699,12 +699,13 @@ module CommonTests
     assert m.repeated_msg[0].object_id != m2.repeated_msg[0].object_id
   end
 
-  def test_eq
+  def test_message_eq
     m = proto_module::TestMessage.new(:optional_int32 => 42,
                                       :repeated_int32 => [1, 2, 3])
     m2 = proto_module::TestMessage.new(:optional_int32 => 43,
                                        :repeated_int32 => [1, 2, 3])
     assert m != m2
+    assert_not_equal proto_module::TestMessage.new, proto_module::TestMessage2.new
   end
 
   def test_enum_lookup

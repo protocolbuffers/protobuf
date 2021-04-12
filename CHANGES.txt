@@ -22,8 +22,11 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
     on an error path.
   * Avoid expensive inlined code space for encoding message length for messages
     >= 128 bytes and instead do a procedure call to a shared out-of-line routine.
+  * util::DefaultFieldComparator will be final in a future version of protobuf.
+    Subclasses should inherit from SimpleFieldComparator instead.
 
   Java:
+  * Detect invalid overflow of byteLimit and return InvalidProtocolBufferException as documented.
   * Exceptions thrown while reading from an InputStream in parseFrom are now
     included as causes.
   * Support potentially more efficient proto parsing from RopeByteStrings.
@@ -36,6 +39,15 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   JavaScript
   * Make Any.pack() chainable.
+
+2021-04-02 version 3.15.7 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Remove the ::pb namespace (alias) (#8423)
+
+  Ruby
+  * Fix unbounded memory growth for Ruby <2.7 (#8429)
+  * Fixed message equality in cases where the message type is different (#8434)
 
 2021-03-10 version 3.15.6 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 

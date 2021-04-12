@@ -146,15 +146,6 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
   void SetDefaultFractionAndMargin(double fraction, double margin);
 
  protected:
-  // NOTE: this will go away.
-  ComparisonResult Compare(const Message& message_1, const Message& message_2,
-                           const FieldDescriptor* field, int index_1,
-                           int index_2,
-                           const util::FieldContext* field_context) override {
-    return SimpleCompare(message_1, message_2, field, index_1, index_2,
-                         field_context);
-  }
-
   // Returns the comparison result for the given field in two messages.
   //
   // This function is called directly by DefaultFieldComparator::Compare.
@@ -268,7 +259,13 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
 };
 
 // Default field comparison: use the basic implementation of FieldComparator.
-class PROTOBUF_EXPORT DefaultFieldComparator : public SimpleFieldComparator {
+#ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
+class PROTOBUF_EXPORT DefaultFieldComparator final
+    : public SimpleFieldComparator
+#else   // PROTOBUF_FUTURE_BREAKING_CHANGES
+class PROTOBUF_EXPORT DefaultFieldComparator : public SimpleFieldComparator
+#endif  // PROTOBUF_FUTURE_BREAKING_CHANGES
+{
  public:
   ComparisonResult Compare(const Message& message_1, const Message& message_2,
                            const FieldDescriptor* field, int index_1,
