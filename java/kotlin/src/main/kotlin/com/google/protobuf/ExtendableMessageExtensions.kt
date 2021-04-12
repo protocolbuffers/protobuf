@@ -7,7 +7,7 @@ import com.google.protobuf.GeneratedMessageV3
 operator fun <
   M : GeneratedMessageV3.ExtendableMessage<M>,
   B : GeneratedMessageV3.ExtendableBuilder<M, B>,
-  T
+  T : Any
   > B.set(extension: ExtensionLite<M, T>, value: T) {
   setExtension(extension, value)
 }
@@ -16,7 +16,7 @@ operator fun <
 operator fun <
   M : GeneratedMessageV3.ExtendableMessage<M>,
   MorBT : GeneratedMessageV3.ExtendableMessageOrBuilder<M>,
-  T
+  T : Any
   > MorBT.get(extension: ExtensionLite<M, T>): T = getExtension(extension)
 
 /** Returns true if the specified extension is set on this builder. */

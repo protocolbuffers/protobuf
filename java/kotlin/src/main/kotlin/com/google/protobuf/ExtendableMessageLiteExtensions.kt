@@ -7,14 +7,14 @@ import com.google.protobuf.GeneratedMessageLite
 operator fun <
   M : GeneratedMessageLite.ExtendableMessage<M, *>,
   MOrBT : GeneratedMessageLite.ExtendableMessageOrBuilder<M, *>,
-  T
+  T : Any
   > MOrBT.get(extension: ExtensionLite<M, T>): T = getExtension(extension)
 
 /** Sets the current value of the proto extension in this builder. */
 operator fun <
   M : GeneratedMessageLite.ExtendableMessage<M, B>,
   B : GeneratedMessageLite.ExtendableBuilder<M, B>,
-  T
+  T : Any
   > B.set(extension: ExtensionLite<M, T>, value: T) {
   setExtension(extension, value)
 }
