@@ -8,14 +8,20 @@ set -ex
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
 ./autogen.sh
-CXXFLAGS="-fPIC -g -O2" ./configure
+CXXFLAGS="-fPIC -g -O2" ./configure --host=aarch64
 make -j8
+
+# create a simple shell wrapper that runs crosscompiled protoc under qemu
+echo '#!/bin/bash' >protoc_qemu_wrapper.sh
+echo 'exec qemu-aarch64 "../src/protoc" "$@"' >>protoc_qemu_wrapper.sh
+chmod ugo+x protoc_qemu_wrapper.sh
+
+# PROTOC variable is by build_py step that runs under ./python directory
+export PROTOC=../protoc_qemu_wrapper.sh
 
 pushd python
 
-# TODO: currently this step relies on qemu being registered with binfmt_misc so that
-# aarch64 binaries are automatically run with an emulator. This works well once
-# "sudo apt install qemu-user-static binfmt-support" is installed on the host machine.
+# NOTE: this step will use protoc_qemu_wrapper.sh to generate protobuf files.
 ${PYTHON} setup.py build_py
 
 # when crosscompiling for aarch64, --plat-name needs to be set explicitly
