@@ -1,7 +1,8 @@
 #!/bin/bash
 #
-# Builds protobuf C++ with aarch64 crosscompiler and runs a basic set of tests under an emulator.
-# NOTE: This script is expected to run under the dockcross/linux-arm64 docker image.
+# Builds protobuf python including the C++ extension with aarch64 crosscompiler.
+# The outputs of this script are laid out so that we can later test them under an aarch64 emulator.
+# NOTE: This script is expected to run under the dockcross/manylinux2014-aarch64 docker image.
 
 set -ex
 
