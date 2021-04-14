@@ -1026,13 +1026,13 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
                                const Options& options) {
   if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
       FieldEnforceUtf8(field, options)) {
-    return STRICT;
+    return Utf8CheckMode::Strict;
   } else if (GetOptimizeFor(field->file(), options) !=
                  FileOptions::LITE_RUNTIME &&
              FileUtf8Verification(field->file(), options)) {
-    return VERIFY;
+    return Utf8CheckMode::Verify;
   } else {
-    return NONE;
+    return Utf8CheckMode::None;
   }
 }
 
@@ -1043,7 +1043,7 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
                                   const char* verify_function,
                                   const Formatter& format) {
   switch (GetUtf8CheckMode(field, options)) {
-    case STRICT: {
+    case Utf8CheckMode::Strict: {
       if (for_parse) {
         format("DO_(");
       }
@@ -1063,7 +1063,7 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
       format.Outdent();
       break;
     }
-    case VERIFY: {
+    case Utf8CheckMode::Verify: {
       format("::$proto_ns$::internal::WireFormat::$1$(\n", verify_function);
       format.Indent();
       format(parameters);
@@ -1076,7 +1076,7 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
       format.Outdent();
       break;
     }
-    case NONE:
+    case Utf8CheckMode::None:
       break;
   }
 }
@@ -1478,12 +1478,12 @@ class ParseLoopGenerator {
     if (!check_utf8) return;  // return if this is a bytes field
     auto level = GetUtf8CheckMode(field, options_);
     switch (level) {
-      case NONE:
+      case Utf8CheckMode::None:
         return;
-      case VERIFY:
+      case Utf8CheckMode::Verify:
         format_("#ifndef NDEBUG\n");
         break;
-      case STRICT:
+      case Utf8CheckMode::Strict:
         format_("CHK_(");
         break;
     }
@@ -1494,14 +1494,14 @@ class ParseLoopGenerator {
     }
     format_("$pi_ns$::VerifyUTF8(str, $1$)", field_name);
     switch (level) {
-      case NONE:
+      case Utf8CheckMode::None:
         return;
-      case VERIFY:
+      case Utf8CheckMode::Verify:
         format_(
             ";\n"
             "#endif  // !NDEBUG\n");
         break;
-      case STRICT:
+      case Utf8CheckMode::Strict:
         format_(");\n");
         break;
     }
