@@ -150,6 +150,9 @@ proto_library(
 
 java_proto_library(
     name = "generic_test_protos_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
     deps = ["//:generic_test_protos"],
 )
 

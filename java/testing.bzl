@@ -10,16 +10,14 @@ import org.junit.runner.RunWith;
 public class %s {}
 """
 
-_pkg = "com.google.protobuf"
-
-def _as_classname(fname):
+def _as_classname(fname, pkg):
     path_name = [x.path for x in fname.files.to_list()][0]
     file_name = path_name.split("/")[-1]
-    return ".".join([_pkg, file_name.split(".")[0]]) + ".class"
+    return ".".join([pkg, file_name.split(".")[0]]) + ".class"
 
 def _gen_suite_impl(ctx):
     classes = ",".join(
-        [_as_classname(x) for x in ctx.attr.srcs],
+        [_as_classname(x, ctx.attr.package_name) for x in ctx.attr.srcs],
     )
     ctx.actions.write(output = ctx.outputs.out, content = _template % (
         classes,
@@ -29,13 +27,14 @@ def _gen_suite_impl(ctx):
 _gen_suite = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
+        "package_name": attr.string(),
         "outname": attr.string(),
     },
     outputs = {"out": "%{name}.java"},
     implementation = _gen_suite_impl,
 )
 
-def junit_tests(name, srcs, data = [], deps = [], test_prefix = None, **kwargs):
+def junit_tests(name, srcs, data = [], deps = [], package_name = "com.google.protobuf", test_prefix = None, **kwargs):
     testlib_name = "%s_lib" % name
     native.java_library(
       name = testlib_name,
@@ -58,6 +57,7 @@ def junit_tests(name, srcs, data = [], deps = [], test_prefix = None, **kwargs):
       _gen_suite(
           name = suite_name,
           srcs = [src],
+          package_name = package_name,
           outname = suite_name,
       )
       native.java_test(
