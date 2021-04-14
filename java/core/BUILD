@@ -1,5 +1,6 @@
-load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
+load("@rules_java//java:defs.bzl", "java_library", "java_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("//java:testing.bzl", "junit_tests")
 
 LITE_SRCS = [
     # Keep in sync with `//java/lite:pom.xml`.
@@ -125,4 +126,59 @@ proto_lang_toolchain(
     command_line = "--java_out=$(OUT)",
     runtime = ":core",
     visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "java_test_protos",
+    srcs = glob(["src/test/proto/**/*.proto"]),
+    strip_import_prefix = "src/test/proto",
+    deps = [
+        "//:any_proto",
+        "//:descriptor_proto",
+        "//:generic_test_protos",
+        "//:wrappers_proto",
+    ],
+)
+
+java_proto_library(
+    name = "generic_test_protos_java_proto",
+    deps = ["//:generic_test_protos"],
+)
+
+java_proto_library(
+    name = "java_test_protos_java_proto",
+    deps = [":java_test_protos"],
+)
+
+java_library(
+    name = "test_util",
+    srcs = glob(["src/test/java/**/Abstract*.java"])
+    + glob(["src/test/java/**/*.java"],
+        exclude = ["src/test/java/**/*Test.java"]
+    ),
+    deps = [
+        ":core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        "//external:guava",
+        "//external:junit",
+    ]
+)
+
+junit_tests(
+    name = "tests",
+    srcs = glob(["src/test/java/**/*Test.java"],
+    exclude = ["src/test/java/**/Abstract*"]),
+    data = ["//:testdata"],
+    size = "large",
+    deps = [
+        ":core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        ":test_util",
+        "//external:easymock",
+        "//external:easymock_classextension",
+        "//external:junit",
+        "//external:truth",
+    ]
 )
