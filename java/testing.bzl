@@ -45,9 +45,11 @@ def junit_tests(name, srcs, data, deps, **kwargs):
       data = data,
     )
 
+    test_names = []
     prefix = name.replace("-", "_") + "TestSuite"
     for src in srcs:
       test_name = src.rsplit("/", 1)[1].split(".")[0]
+      test_names = test_names + [test_name]
       suite_name = prefix + '_' + test_name
       _gen_suite(
           name = suite_name,
@@ -61,3 +63,8 @@ def junit_tests(name, srcs, data, deps, **kwargs):
           deps = deps + [":%s" % testlib_name],
           **kwargs
       )
+
+    native.test_suite(
+        name = name,
+        tests = test_names,
+    )
