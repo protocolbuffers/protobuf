@@ -1990,6 +1990,8 @@ void Generator::GenerateClass(const GeneratorOptions& options,
     GenerateClassFieldInfo(options, printer, desc);
 
     GenerateClassToObject(options, printer, desc);
+    GenerateClassFromObject(options, printer, desc);
+    printer->Print("\ngoog.isDef = goog.isDef || function(a) { if (a === undefined || a === null) { return false; }; return true; }; goog.array = { map: function(arr, func) { return arr.map(func); }; }\n");
     // These must come *before* the extension-field info generation in
     // GenerateClassRegistration so that references to the binary
     // serialization/deserialization functions may be placed in the extension
