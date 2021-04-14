@@ -35,7 +35,7 @@ _gen_suite = rule(
     implementation = _gen_suite_impl,
 )
 
-def junit_tests(name, srcs, data, deps, **kwargs):
+def junit_tests(name, srcs, data = [], deps = [], test_prefix = None, **kwargs):
     testlib_name = "%s_lib" % name
     native.java_library(
       name = testlib_name,
@@ -49,6 +49,10 @@ def junit_tests(name, srcs, data, deps, **kwargs):
     prefix = name.replace("-", "_") + "TestSuite"
     for src in srcs:
       test_name = src.rsplit("/", 1)[1].split(".")[0]
+      if not test_name.endswith("Test") or test_name.startswith("Abstract"):
+        continue
+      if test_prefix:
+        test_name = "%s%s" % (test_prefix, test_name)  
       test_names = test_names + [test_name]
       suite_name = prefix + '_' + test_name
       _gen_suite(

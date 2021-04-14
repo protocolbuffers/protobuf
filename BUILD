@@ -742,6 +742,15 @@ internal_gen_well_known_protos_java(
     ],
 )
 
+internal_gen_well_known_protos_java(
+    name = "gen_well_known_protos_javalite",
+    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    javalite = True,
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
 alias(
     name = "protobuf_java",
     actual = "//java/core",
