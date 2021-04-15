@@ -178,3 +178,8 @@ The complete documentation for Protocol Buffers is available via the
 web at:
 
   https://developers.google.com/protocol-buffers/
+
+## Kotlin Protocol Buffers
+
+Code to support more idiomatic Kotlin protocol buffers has been added to the
+repository, and Kotlin support will be launched in the next numbered release.
