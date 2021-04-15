@@ -4,6 +4,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_java//java:defs.bzl", "java_binary", "java_proto_library", "java_lite_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 
 licenses(["notice"])
@@ -1177,3 +1178,59 @@ sh_test(
         "update_file_lists.sh",
     ],
 )
+
+java_proto_library(
+    name = "test_messages_proto2_java_proto",
+    deps = [":test_messages_proto2_proto"],
+)
+
+java_proto_library(
+    name = "test_messages_proto3_java_proto",
+    deps = [":test_messages_proto3_proto"],
+)
+
+java_proto_library(
+  name = "conformance_java_proto",
+  deps = [":conformance_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto2_java_proto_lite",
+    deps = [":test_messages_proto2_proto"],
+)
+
+java_lite_proto_library(
+  name = "conformance_java_proto_lite",
+  deps = [":conformance_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto3_java_proto_lite",
+    deps = [":test_messages_proto3_proto"],
+)
+
+java_binary(
+  name = "conformance_java",
+  srcs = ["conformance/ConformanceJava.java"],
+  visibility = [
+      "//java:__subpackages__",
+  ],
+  main_class = "ConformanceJava",
+  deps = [
+    ":conformance_java_proto",
+    ":test_messages_proto2_java_proto",
+    ":test_messages_proto3_java_proto",
+    "//:protobuf_java",
+    "//:protobuf_java_util",
+  ],
+)
+
+filegroup(
+    name = "conformance_failure_lists",
+    srcs = glob(["conformance/*.txt"]),
+    visibility = ["//visibility:public"],
+)
+
+exports_files([
+    "conformance/conformance_test_runner.sh",
+])

@@ -1,5 +1,6 @@
-load("//java:testing.bzl", "junit_tests")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
+load("//java:testing.bzl", "junit_tests")
 
 exports_files(["lite.awk"], visibility = ["//java/core:__pkg__"])
 
@@ -19,8 +20,16 @@ proto_lang_toolchain(
 test_suite(
     name = "tests",
     tests = [
+        "lite_build_test",
         "lite_tests",
         "//java/core:lite_tests",
+    ],
+)
+
+build_test(
+    name = "lite_build_test",
+    targets = [
+        ":lite",
     ],
 )
 

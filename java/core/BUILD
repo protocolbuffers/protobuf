@@ -1,5 +1,7 @@
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:defs.bzl", "java_library", "java_proto_library", "java_lite_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("//:protobuf.bzl", "conformance_test")
 load("//java:testing.bzl", "junit_tests")
 
 LITE_SRCS = [
@@ -176,8 +178,30 @@ java_library(
     ],
 )
 
-junit_tests(
+test_suite(
     name = "tests",
+    tests = [
+        "core_build_test",
+        "conformance_test",
+        "core_tests",
+    ],
+)
+
+build_test(
+    name = "core_build_test",
+    targets = [
+        ":core",
+    ],
+)
+
+conformance_test(
+    name = "conformance_test",
+    testee = "//:conformance_java",
+    language = "java",
+)
+
+junit_tests(
+    name = "core_tests",
     srcs = glob(["src/test/java/**/*.java"], exclude = [
         "src/test/java/com/google/protobuf/TestUtil.java",
         "src/test/java/com/google/protobuf/TestUtilLite.java",
