@@ -279,7 +279,7 @@ class PROTOBUF_EXPORT Api PROTOBUF_FINAL :
   public:
   void clear_source_context();
   const PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
-  PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
   void set_allocated_source_context(PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   private:

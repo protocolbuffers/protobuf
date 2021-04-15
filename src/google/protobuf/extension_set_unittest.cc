@@ -198,7 +198,8 @@ TEST(ExtensionSetTest, ReleaseExtension) {
   // ReleaseExtension will return the underlying object even after
   // ClearExtension is called.
   message.SetAllocatedExtension(
-      unittest::TestMessageSetExtension1::message_set_extension, extension);
+      unittest::TestMessageSetExtension1::message_set_extension,
+      released_extension);
   message.ClearExtension(
       unittest::TestMessageSetExtension1::message_set_extension);
   released_extension = message.ReleaseExtension(
@@ -1335,5 +1336,3 @@ TEST(ExtensionSetTest, ConstInit) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
-
-#include <google/protobuf/port_undef.inc>

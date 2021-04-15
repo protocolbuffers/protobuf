@@ -374,6 +374,17 @@ TEST(MESSAGE_TEST_NAME, FindInitializationErrors) {
   EXPECT_EQ("c", errors[2]);
 }
 
+TEST(MESSAGE_TEST_NAME, ReleaseMustUseResult) {
+  UNITTEST::TestAllTypes message;
+  auto* f = new UNITTEST::ForeignMessage();
+  f->set_c(1000);
+  message.set_allocated_optional_foreign_message(f);
+  auto* mf = message.mutable_optional_foreign_message();
+  EXPECT_EQ(mf, f);
+  EXPECT_NE(message.release_optional_foreign_message(), nullptr);
+  delete f;
+}
+
 TEST(MESSAGE_TEST_NAME, ParseFailsOnInvalidMessageEnd) {
   UNITTEST::TestAllTypes message;
 

@@ -371,7 +371,7 @@ class PROTOBUF_EXPORT MapFieldBase {
   virtual void MapBegin(MapIterator* map_iter) const = 0;
   virtual void MapEnd(MapIterator* map_iter) const = 0;
   virtual void MergeFrom(const MapFieldBase& other) = 0;
-  virtual void Swap(MapFieldBase* other) = 0;
+  virtual void Swap(MapFieldBase* other);
   // Sync Map with repeated field and returns the size of map.
   virtual int size() const = 0;
   virtual void Clear() = 0;
@@ -406,6 +406,8 @@ class PROTOBUF_EXPORT MapFieldBase {
 
   // Provides derived class the access to repeated field.
   void* MutableRepeatedPtrField() const;
+
+  void InternalSwap(MapFieldBase* other);
 
   // Support thread sanitizer (tsan) by making const / mutable races
   // more apparent.  If one thread calls MutableAccess() while another
@@ -571,6 +573,7 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   void Clear() override;
   void MergeFrom(const MapFieldBase& other) override;
   void Swap(MapFieldBase* other) override;
+  void InternalSwap(MapField* other);
 
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is NULL.

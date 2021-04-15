@@ -285,7 +285,7 @@ bool Duration::IsInitialized() const {
 
 void Duration::InternalSwap(Duration* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Duration, nanos_)
       + sizeof(Duration::nanos_)

@@ -462,7 +462,7 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
   public:
   void clear_struct_value();
   const PROTOBUF_NAMESPACE_ID::Struct& struct_value() const;
-  PROTOBUF_NAMESPACE_ID::Struct* release_struct_value();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::Struct* release_struct_value();
   PROTOBUF_NAMESPACE_ID::Struct* mutable_struct_value();
   void set_allocated_struct_value(PROTOBUF_NAMESPACE_ID::Struct* struct_value);
   private:
@@ -480,7 +480,7 @@ class PROTOBUF_EXPORT Value PROTOBUF_FINAL :
   public:
   void clear_list_value();
   const PROTOBUF_NAMESPACE_ID::ListValue& list_value() const;
-  PROTOBUF_NAMESPACE_ID::ListValue* release_list_value();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ListValue* release_list_value();
   PROTOBUF_NAMESPACE_ID::ListValue* mutable_list_value();
   void set_allocated_list_value(PROTOBUF_NAMESPACE_ID::ListValue* list_value);
   private:

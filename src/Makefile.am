@@ -345,6 +345,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/cpp/cpp_options.h                   \
   google/protobuf/compiler/cpp/cpp_padding_optimizer.cc        \
   google/protobuf/compiler/cpp/cpp_padding_optimizer.h         \
+  google/protobuf/compiler/cpp/cpp_parse_function_generator.cc \
+  google/protobuf/compiler/cpp/cpp_parse_function_generator.h  \
   google/protobuf/compiler/cpp/cpp_primitive_field.cc          \
   google/protobuf/compiler/cpp/cpp_primitive_field.h           \
   google/protobuf/compiler/cpp/cpp_service.cc                  \

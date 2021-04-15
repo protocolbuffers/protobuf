@@ -490,7 +490,7 @@ class PROTOC_EXPORT CodeGeneratorRequest PROTOBUF_FINAL :
   public:
   void clear_compiler_version();
   const PROTOBUF_NAMESPACE_ID::compiler::Version& compiler_version() const;
-  PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
   PROTOBUF_NAMESPACE_ID::compiler::Version* mutable_compiler_version();
   void set_allocated_compiler_version(PROTOBUF_NAMESPACE_ID::compiler::Version* compiler_version);
   private:
@@ -698,7 +698,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File PROTOBUF_FINAL :
   public:
   void clear_generated_code_info();
   const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& generated_code_info() const;
-  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* release_generated_code_info();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* release_generated_code_info();
   PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* mutable_generated_code_info();
   void set_allocated_generated_code_info(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info);
   private:

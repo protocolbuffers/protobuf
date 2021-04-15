@@ -618,7 +618,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
           new (arena->AllocateInternal(sizeof(T), alignof(T), destructor,
                                        RTTI_TYPE_ID(T)))
           T(std::forward<Args>(args)...);
-      result->SetOwningArena(arena);
       return result;
     }
   }
@@ -646,7 +645,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::true_type) {
     if (object != NULL) {
       impl_.AddCleanup(object, &internal::arena_delete_object<MessageLite>);
-      object->SetOwningArena(this);
     }
   }
   template <typename T>

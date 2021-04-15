@@ -42,6 +42,9 @@
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 using proto3_arena_unittest::ForeignMessage;
 using proto3_arena_unittest::TestAllTypes;
 
@@ -166,8 +169,6 @@ TEST(Proto3ArenaTest, GetArena) {
   auto* arena_repeated_submessage1 =
       arena_message1->add_repeated_foreign_message();
   EXPECT_EQ(&arena, arena_message1->GetArena());
-  EXPECT_EQ(&arena,
-            internal::Proto3ArenaTestHelper::GetOwningArena(*arena_message1));
   EXPECT_EQ(&arena, arena_submessage1->GetArena());
   EXPECT_EQ(&arena, arena_repeated_submessage1->GetArena());
 
@@ -180,17 +181,11 @@ TEST(Proto3ArenaTest, GetArena) {
   const auto& repeated_submessage2 =
       arena_message2->repeated_foreign_message(0);
   EXPECT_EQ(nullptr, submessage2.GetArena());
-  EXPECT_EQ(&arena,
-            internal::Proto3ArenaTestHelper::GetOwningArena(submessage2));
   EXPECT_EQ(nullptr, repeated_submessage2.GetArena());
-  EXPECT_EQ(&arena, internal::Proto3ArenaTestHelper::GetOwningArena(
-                        repeated_submessage2));
 
   // Tests message created by Arena::Create.
   auto* arena_message3 = Arena::Create<TestAllTypes>(&arena);
   EXPECT_EQ(nullptr, arena_message3->GetArena());
-  EXPECT_EQ(&arena,
-            internal::Proto3ArenaTestHelper::GetOwningArena(*arena_message3));
 }
 
 TEST(Proto3ArenaTest, GetArenaWithUnknown) {
@@ -206,8 +201,6 @@ TEST(Proto3ArenaTest, GetArenaWithUnknown) {
   arena_repeated_submessage1->GetReflection()->MutableUnknownFields(
       arena_repeated_submessage1);
   EXPECT_EQ(&arena, arena_message1->GetArena());
-  EXPECT_EQ(&arena,
-            internal::Proto3ArenaTestHelper::GetOwningArena(*arena_message1));
   EXPECT_EQ(&arena, arena_submessage1->GetArena());
   EXPECT_EQ(&arena, arena_repeated_submessage1->GetArena());
 
@@ -223,11 +216,7 @@ TEST(Proto3ArenaTest, GetArenaWithUnknown) {
   repeated_submessage2->GetReflection()->MutableUnknownFields(
       repeated_submessage2);
   EXPECT_EQ(nullptr, submessage2->GetArena());
-  EXPECT_EQ(&arena,
-            internal::Proto3ArenaTestHelper::GetOwningArena(*submessage2));
   EXPECT_EQ(nullptr, repeated_submessage2->GetArena());
-  EXPECT_EQ(&arena, internal::Proto3ArenaTestHelper::GetOwningArena(
-                        *repeated_submessage2));
 }
 
 TEST(Proto3ArenaTest, Swap) {

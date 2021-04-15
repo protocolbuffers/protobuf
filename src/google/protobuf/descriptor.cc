@@ -2591,7 +2591,7 @@ void Descriptor::DebugString(int depth, std::string* contents,
     enum_type(i)->DebugString(depth, contents, debug_string_options);
   }
   for (int i = 0; i < field_count(); i++) {
-    if (field(i)->containing_oneof() == nullptr) {
+    if (field(i)->real_containing_oneof() == nullptr) {
       field(i)->DebugString(depth, contents, debug_string_options);
     } else if (field(i)->containing_oneof()->field(0) == field(i)) {
       // This is the first field in this oneof, so print the whole oneof.
@@ -2701,7 +2701,7 @@ void FieldDescriptor::DebugString(
   std::string label = StrCat(kLabelToName[this->label()], " ");
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
-  if (is_map() || containing_oneof() ||
+  if (is_map() || real_containing_oneof() ||
       (is_optional() && !has_optional_keyword())) {
     label.clear();
   }

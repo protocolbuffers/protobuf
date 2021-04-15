@@ -369,6 +369,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void Clear();
   void MergeFrom(const ExtensionSet& other);
   void Swap(ExtensionSet* other);
+  void InternalSwap(ExtensionSet* other);
   void SwapExtension(ExtensionSet* other, int number);
   bool IsInitialized() const;
 
