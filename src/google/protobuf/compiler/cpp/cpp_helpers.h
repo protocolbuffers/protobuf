@@ -775,9 +775,9 @@ class PROTOC_EXPORT NamespaceOpener {
 };
 
 enum class Utf8CheckMode {
-  Strict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
-  Verify = 1,  // Only log an error but parsing will succeed.
-  None = 2,    // No UTF-8 check.
+  kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
+  kVerify = 1,  // Only log an error but parsing will succeed.
+  kNone = 2,    // No UTF-8 check.
 };
 
 Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
