@@ -939,15 +939,15 @@ static void jsondec_field(jsondec *d, upb_msg *msg, const upb_msgdef *m) {
     return;
   }
 
-  if (upb_fielddef_realcontainingoneof(f) &&
-      upb_msg_whichoneof(msg, upb_fielddef_containingoneof(f))) {
-    jsondec_err(d, "More than one field for this oneof.");
-  }
-
   if (jsondec_peek(d) == JD_NULL && !jsondec_isvalue(f)) {
     /* JSON "null" indicates a default value, so no need to set anything. */
     jsondec_null(d);
     return;
+  }
+
+  if (upb_fielddef_realcontainingoneof(f) &&
+      upb_msg_whichoneof(msg, upb_fielddef_containingoneof(f))) {
+    jsondec_err(d, "More than one field for this oneof.");
   }
 
   preserved = d->debug_field;
