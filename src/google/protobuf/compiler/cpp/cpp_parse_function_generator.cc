@@ -187,12 +187,12 @@ class ParseFunctionGenerator {
     if (!check_utf8) return;  // return if this is a bytes field
     auto level = GetUtf8CheckMode(field, options_);
     switch (level) {
-      case NONE:
+      case Utf8CheckMode::kNone:
         return;
-      case VERIFY:
+      case Utf8CheckMode::kVerify:
         format_("#ifndef NDEBUG\n");
         break;
-      case STRICT:
+      case Utf8CheckMode::kStrict:
         format_("CHK_(");
         break;
     }
@@ -203,14 +203,14 @@ class ParseFunctionGenerator {
     }
     format_("$pi_ns$::VerifyUTF8(str, $1$)", field_name);
     switch (level) {
-      case NONE:
+      case Utf8CheckMode::kNone:
         return;
-      case VERIFY:
+      case Utf8CheckMode::kVerify:
         format_(
             ";\n"
             "#endif  // !NDEBUG\n");
         break;
-      case STRICT:
+      case Utf8CheckMode::kStrict:
         format_(");\n");
         break;
     }
