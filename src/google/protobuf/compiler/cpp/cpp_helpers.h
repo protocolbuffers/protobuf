@@ -774,10 +774,10 @@ class PROTOC_EXPORT NamespaceOpener {
   std::vector<std::string> name_stack_;
 };
 
-enum Utf8CheckMode {
-  STRICT = 0,  // Parsing will fail if non UTF-8 data is in string fields.
-  VERIFY = 1,  // Only log an error but parsing will succeed.
-  NONE = 2,    // No UTF-8 check.
+enum class Utf8CheckMode {
+  kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
+  kVerify = 1,  // Only log an error but parsing will succeed.
+  kNone = 2,    // No UTF-8 check.
 };
 
 Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,

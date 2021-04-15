@@ -1017,8 +1017,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "$classname$*>(&_$classname$_default_instance_); }\n");
     auto utf8_check = GetUtf8CheckMode(descriptor_->field(0), options_);
     if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
-        utf8_check != NONE) {
-      if (utf8_check == STRICT) {
+        utf8_check != Utf8CheckMode::kNone) {
+      if (utf8_check == Utf8CheckMode::kStrict) {
         format(
             "  static bool ValidateKey(std::string* s) {\n"
             "    return ::$proto_ns$::internal::WireFormatLite::"
@@ -1027,7 +1027,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             " }\n",
             descriptor_->field(0)->full_name());
       } else {
-        GOOGLE_CHECK_EQ(utf8_check, VERIFY);
+        GOOGLE_CHECK_EQ(utf8_check, Utf8CheckMode::kVerify);
         format(
             "  static bool ValidateKey(std::string* s) {\n"
             "#ifndef NDEBUG\n"
@@ -1046,8 +1046,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       format("  static bool ValidateKey(void*) { return true; }\n");
     }
     if (descriptor_->field(1)->type() == FieldDescriptor::TYPE_STRING &&
-        utf8_check != NONE) {
-      if (utf8_check == STRICT) {
+        utf8_check != Utf8CheckMode::kNone) {
+      if (utf8_check == Utf8CheckMode::kStrict) {
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "    return ::$proto_ns$::internal::WireFormatLite::"
@@ -1056,7 +1056,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             " }\n",
             descriptor_->field(1)->full_name());
       } else {
-        GOOGLE_CHECK_EQ(utf8_check, VERIFY);
+        GOOGLE_CHECK_EQ(utf8_check, Utf8CheckMode::kVerify);
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "#ifndef NDEBUG\n"
