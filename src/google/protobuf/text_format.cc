@@ -65,6 +65,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+#define DEBUG_STRING_SILENT_MARKER "\t "
 
 namespace google {
 namespace protobuf {
@@ -1247,6 +1248,18 @@ class TextFormat::Printer::TextGenerator
         buffer_size_(0),
         at_start_of_line_(true),
         failed_(false),
+        insert_silent_marker_(false),
+        indent_level_(initial_indent_level),
+        initial_indent_level_(initial_indent_level) {}
+
+  explicit TextGenerator(io::ZeroCopyOutputStream* output,
+                         bool insert_silent_marker, int initial_indent_level)
+      : output_(output),
+        buffer_(nullptr),
+        buffer_size_(0),
+        at_start_of_line_(true),
+        failed_(false),
+        insert_silent_marker_(insert_silent_marker),
         indent_level_(initial_indent_level),
         initial_indent_level_(initial_indent_level) {}
 
@@ -1309,6 +1322,22 @@ class TextFormat::Printer::TextGenerator
   // error.)
   bool failed() const { return failed_; }
 
+  void PrintMaybeWithMarker(StringPiece text) {
+    Print(text.data(), text.size());
+    if (ConsumeInsertSilentMarker()) {
+      PrintLiteral(DEBUG_STRING_SILENT_MARKER);
+    }
+  }
+
+  void PrintMaybeWithMarker(StringPiece text_head,
+                            StringPiece text_tail) {
+    Print(text_head.data(), text_head.size());
+    if (ConsumeInsertSilentMarker()) {
+      PrintLiteral(DEBUG_STRING_SILENT_MARKER);
+    }
+    Print(text_tail.data(), text_tail.size());
+  }
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextGenerator);
 
@@ -1369,14 +1398,65 @@ class TextFormat::Printer::TextGenerator
     buffer_size_ -= size;
   }
 
+  // Return the current value of insert_silent_marker_. If it is true, set it
+  // to false as we assume that a silent marker is inserted after a call to this
+  // function.
+  bool ConsumeInsertSilentMarker() {
+    if (insert_silent_marker_) {
+      insert_silent_marker_ = false;
+      return true;
+    }
+    return false;
+  }
+
   io::ZeroCopyOutputStream* const output_;
   char* buffer_;
   int buffer_size_;
   bool at_start_of_line_;
   bool failed_;
+  // This flag is false when inserting silent marker is disabled or a silent
+  // marker has been inserted.
+  bool insert_silent_marker_;
 
   int indent_level_;
   int initial_indent_level_;
+};
+
+// ===========================================================================
+//  An internal field value printer that may insert a silent marker in
+//  DebugStrings.
+class TextFormat::Printer::DebugStringFieldValuePrinter
+    : public TextFormat::FastFieldValuePrinter {
+ public:
+  void PrintMessageStart(const Message& message, int field_index,
+                         int field_count, bool single_line_mode,
+                         BaseTextGenerator* generator) const override {
+    // This is safe as only TextGenerator is used with
+    // DebugStringFieldValuePrinter.
+    TextGenerator* text_generator = static_cast<TextGenerator*>(generator);
+    if (single_line_mode) {
+      text_generator->PrintMaybeWithMarker(" ", "{ ");
+    } else {
+      text_generator->PrintMaybeWithMarker(" ", "{\n");
+    }
+  }
+};
+
+// ===========================================================================
+//  An internal field value printer that escape UTF8 strings.
+class TextFormat::Printer::FastFieldValuePrinterUtf8Escaping
+    : public TextFormat::Printer::DebugStringFieldValuePrinter {
+ public:
+  void PrintString(const std::string& val,
+                   TextFormat::BaseTextGenerator* generator) const override {
+    generator->PrintLiteral("\"");
+    generator->PrintString(strings::Utf8SafeCEscape(val));
+    generator->PrintLiteral("\"");
+  }
+  void PrintBytes(const std::string& val,
+                  TextFormat::BaseTextGenerator* generator) const override {
+    return FastFieldValuePrinter::PrintString(val, generator);
+  }
 };
 
 // ===========================================================================
@@ -1808,22 +1888,6 @@ class FieldValuePrinterWrapper : public TextFormat::FastFieldValuePrinter {
   std::unique_ptr<const TextFormat::FieldValuePrinter> delegate_;
 };
 
-// Our own specialization: for UTF8 escaped strings.
-class FastFieldValuePrinterUtf8Escaping
-    : public TextFormat::FastFieldValuePrinter {
- public:
-  void PrintString(const std::string& val,
-                   TextFormat::BaseTextGenerator* generator) const override {
-    generator->PrintLiteral("\"");
-    generator->PrintString(strings::Utf8SafeCEscape(val));
-    generator->PrintLiteral("\"");
-  }
-  void PrintBytes(const std::string& val,
-                  TextFormat::BaseTextGenerator* generator) const override {
-    return FastFieldValuePrinter::PrintString(val, generator);
-  }
-};
-
 }  // namespace
 
 const char* const TextFormat::Printer::kDoNotParse =
@@ -1834,6 +1898,7 @@ TextFormat::Printer::Printer()
       single_line_mode_(false),
       use_field_number_(false),
       use_short_repeated_primitives_(false),
+      insert_silent_marker_(false),
       hide_unknown_fields_(false),
       print_message_fields_in_index_order_(false),
       expand_any_(false),
@@ -1844,7 +1909,7 @@ TextFormat::Printer::Printer()
 
 void TextFormat::Printer::SetUseUtf8StringEscaping(bool as_utf8) {
   SetDefaultFieldValuePrinter(as_utf8 ? new FastFieldValuePrinterUtf8Escaping()
-                                      : new FastFieldValuePrinter());
+                                      : new DebugStringFieldValuePrinter());
 }
 
 void TextFormat::Printer::SetDefaultFieldValuePrinter(
@@ -1924,7 +1989,7 @@ bool TextFormat::Printer::PrintUnknownFieldsToString(
 
 bool TextFormat::Printer::Print(const Message& message,
                                 io::ZeroCopyOutputStream* output) const {
-  TextGenerator generator(output, initial_indent_level_);
+  TextGenerator generator(output, insert_silent_marker_, initial_indent_level_);
 
   Print(message, &generator);
 
@@ -2302,7 +2367,7 @@ void TextFormat::Printer::PrintField(const Message& message,
       printer->PrintMessageEnd(sub_message, field_index, count,
                                single_line_mode_, generator);
     } else {
-      generator->PrintLiteral(": ");
+      generator->PrintMaybeWithMarker(": ");
       // Write the field value.
       PrintFieldValue(message, reflection, field, field_index, generator);
       if (single_line_mode_) {
@@ -2327,7 +2392,7 @@ void TextFormat::Printer::PrintShortRepeatedField(
   int size = reflection->FieldSize(message, field);
   PrintFieldName(message, /*field_index=*/-1, /*field_count=*/size, reflection,
                  field, generator);
-  generator->PrintLiteral(": [");
+  generator->PrintMaybeWithMarker(": ", "[");
   for (int i = 0; i < size; i++) {
     if (i > 0) generator->PrintLiteral(", ");
     PrintFieldValue(message, reflection, field, i, generator);
@@ -2481,7 +2546,7 @@ void TextFormat::Printer::PrintUnknownFields(
     switch (field.type()) {
       case UnknownField::TYPE_VARINT:
         generator->PrintString(field_number);
-        generator->PrintLiteral(": ");
+        generator->PrintMaybeWithMarker(": ");
         generator->PrintString(StrCat(field.varint()));
         if (single_line_mode_) {
           generator->PrintLiteral(" ");
@@ -2491,7 +2556,7 @@ void TextFormat::Printer::PrintUnknownFields(
         break;
       case UnknownField::TYPE_FIXED32: {
         generator->PrintString(field_number);
-        generator->PrintLiteral(": 0x");
+        generator->PrintMaybeWithMarker(": ", "0x");
         generator->PrintString(
             StrCat(strings::Hex(field.fixed32(), strings::ZERO_PAD_8)));
         if (single_line_mode_) {
@@ -2503,7 +2568,7 @@ void TextFormat::Printer::PrintUnknownFields(
       }
       case UnknownField::TYPE_FIXED64: {
         generator->PrintString(field_number);
-        generator->PrintLiteral(": 0x");
+        generator->PrintMaybeWithMarker(": ", "0x");
         generator->PrintString(
             StrCat(strings::Hex(field.fixed64(), strings::ZERO_PAD_16)));
         if (single_line_mode_) {
@@ -2528,9 +2593,9 @@ void TextFormat::Printer::PrintUnknownFields(
           // This field is parseable as a Message.
           // So it is probably an embedded message.
           if (single_line_mode_) {
-            generator->PrintLiteral(" { ");
+            generator->PrintMaybeWithMarker(" ", "{ ");
           } else {
-            generator->PrintLiteral(" {\n");
+            generator->PrintMaybeWithMarker(" ", "{\n");
             generator->Indent();
           }
           PrintUnknownFields(embedded_unknown_fields, generator,
@@ -2544,7 +2609,7 @@ void TextFormat::Printer::PrintUnknownFields(
         } else {
           // This field is not parseable as a Message (or we ran out of
           // recursion budget). So it is probably just a plain string.
-          generator->PrintLiteral(": \"");
+          generator->PrintMaybeWithMarker(": ", "\"");
           generator->PrintString(CEscape(value));
           if (single_line_mode_) {
             generator->PrintLiteral("\" ");
@@ -2557,9 +2622,9 @@ void TextFormat::Printer::PrintUnknownFields(
       case UnknownField::TYPE_GROUP:
         generator->PrintString(field_number);
         if (single_line_mode_) {
-          generator->PrintLiteral(" { ");
+          generator->PrintMaybeWithMarker(" ", "{ ");
         } else {
-          generator->PrintLiteral(" {\n");
+          generator->PrintMaybeWithMarker(" ", "{\n");
           generator->Indent();
         }
         // For groups, we recurse without checking the budget. This is OK,

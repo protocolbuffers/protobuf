@@ -373,7 +373,7 @@ class PROTOBUF_EXPORT Type PROTOBUF_FINAL :
   public:
   void clear_source_context();
   const PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
-  PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
   void set_allocated_source_context(PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   private:
@@ -938,7 +938,7 @@ class PROTOBUF_EXPORT Enum PROTOBUF_FINAL :
   public:
   void clear_source_context();
   const PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
-  PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
   void set_allocated_source_context(PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   private:
@@ -1273,7 +1273,7 @@ class PROTOBUF_EXPORT Option PROTOBUF_FINAL :
   public:
   void clear_value();
   const PROTOBUF_NAMESPACE_ID::Any& value() const;
-  PROTOBUF_NAMESPACE_ID::Any* release_value();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::Any* release_value();
   PROTOBUF_NAMESPACE_ID::Any* mutable_value();
   void set_allocated_value(PROTOBUF_NAMESPACE_ID::Any* value);
   private:

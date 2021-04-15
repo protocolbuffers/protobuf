@@ -48,10 +48,10 @@
 // detect/prohibit anytime it is #included twice without a corresponding
 // #undef.
 
-// These macros are private and should always be
-// ::util::RetrieveErrorSpace(*this) headers. If any of these errors fire, you
-// should either properly #include port_undef.h at the end of your header that
-// #includes port.h, or don't #include port.h twice in a .cc file.
+// These macros are private and should always be #undef'd from headers.
+// If any of these errors fire, you should either properly #include
+// port_undef.h at the end of your header that #includes port.h, or
+// don't #include port.h twice in a .cc file.
 #ifdef PROTOBUF_NAMESPACE
 #error PROTOBUF_NAMESPACE was previously defined
 #endif
@@ -160,6 +160,15 @@
 #ifdef PROTOBUF_ATTRIBUTE_WEAK
 #error PROTOBUF_ATTRIBUTE_WEAK was previously defined
 #endif
+#ifdef PROTOBUF_ASAN
+#error PROTOBUF_ASAN was previously defined
+#endif
+#ifdef PROTOBUF_MSAN
+#error PROTOBUF_MSAN was previously defined
+#endif
+#ifdef PROTOBUF_TSAN
+#error PROTOBUF_TSAN was previously defined
+#endif
 
 
 #define PROTOBUF_NAMESPACE "google::protobuf"
@@ -191,6 +200,7 @@
 
 #define PROTOBUF_SECTION_VARIABLE(x)
 #define PROTOBUF_MUST_USE_RESULT
+#define PROTOBUF_FUTURE_MUST_USE_RESULT
 
 // ----------------------------------------------------------------------------
 // Annotations:  Some parts of the code have been annotated in ways that might
@@ -335,8 +345,6 @@
 #endif
 
 
-// Shared google3/opensource definitions. //////////////////////////////////////
-
 #define PROTOBUF_VERSION 3015006
 #define PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC 3015000
 #define PROTOBUF_MIN_PROTOC_VERSION 3015000
@@ -372,7 +380,7 @@
 #if defined(__clang__)
 // For Clang we use __builtin_offsetof() and suppress the warning,
 // to avoid Control Flow Integrity and UBSan vptr sanitizers from
-// crashing while trying to validate the invalid reinterpet_casts.
+// crashing while trying to validate the invalid reinterpret_casts.
 #define PROTOBUF_FIELD_OFFSET(TYPE, FIELD)                   \
   _Pragma("clang diagnostic push")                           \
   _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
@@ -442,6 +450,8 @@
 #undef ERROR
 #pragma push_macro("ERROR_BUSY")
 #undef ERROR_BUSY
+#pragma push_macro("ERROR_INSTALL_FAILED")
+#undef ERROR_INSTALL_FAILED
 #pragma push_macro("ERROR_NOT_FOUND")
 #undef ERROR_NOT_FOUND
 #pragma push_macro("GetMessage")
@@ -615,6 +625,22 @@
 #endif
 #if !defined(PROTOBUF_ATTRIBUTE_WEAK)
 #define PROTOBUF_ATTRIBUTE_WEAK
+#endif
+
+// Macros to detect sanitizers.
+#if defined(__clang__)
+#  if __has_feature(address_sanitizer)
+#    define PROTOBUF_ASAN 1
+#  endif
+#  if __has_feature(thread_sanitizer)
+#    define PROTOBUF_TSAN 1
+#  endif
+#  if __has_feature(memory_sanitizer)
+#    define PROTOBUF_MSAN 1
+#  endif
+#elif defined(__GNUC__)
+#  define PROTOBUF_ASAN __SANITIZE_ADDRESS__
+#  define PROTOBUF_TSAN __SANITIZE_THREAD__
 #endif
 
 // Silence some MSVC warnings in all our code.

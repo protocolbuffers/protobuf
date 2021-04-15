@@ -83,7 +83,6 @@ struct ConstantInitialized {
 // See parse_context.h for explanation
 class ParseContext;
 
-class Proto3ArenaTestHelper;
 class RepeatedPtrFieldBase;
 class WireFormatLite;
 class WeakFieldMap;
@@ -210,11 +209,11 @@ class PROTOBUF_EXPORT MessageLite {
   // if arena is a NULL. Default implementation for backwards compatibility.
   virtual MessageLite* New(Arena* arena) const;
 
-  // Get the arena for allocating submessages, if any, associated with this
-  // message. Virtual method required for generic operations but most
-  // arena-related operations should use the GetArena() generated-code method.
-  // Default implementation to reduce code size by avoiding the need for
-  // per-type implementations when types do not implement arena support.
+  // Get the arena, if any, associated with this message. Virtual method
+  // required for generic operations but most arena-related operations should
+  // use the GetArena() generated-code method. Default implementation
+  // to reduce code size by avoiding the need for per-type implementations
+  // when types do not implement arena support.
   Arena* GetArena() const { return _internal_metadata_.arena(); }
 
   // Get a pointer that may be equal to this message's arena, or may not be.
@@ -503,18 +502,8 @@ class PROTOBUF_EXPORT MessageLite {
   // TODO(gerbens) make this a pure abstract function
   virtual const void* InternalGetTable() const { return NULL; }
 
-  // Get the arena that owns this message.
-  Arena* GetOwningArena() const { return _internal_metadata_.GetOwningArena(); }
-
-  // Set the owning arena to the given one.
-  void SetOwningArena(Arena* arena) {
-    _internal_metadata_.SetOwningArena(arena);
-  }
-
-  friend class Arena;
   friend class internal::WireFormatLite;
   friend class Message;
-  friend class internal::Proto3ArenaTestHelper;
   friend class internal::WeakFieldMap;
 
   void LogInitializationErrorMessage() const;

@@ -476,7 +476,8 @@ class PROTOBUF_EXPORT Reflection final {
   void RemoveLast(Message* message, const FieldDescriptor* field) const;
   // Removes the last element of a repeated message field, and returns the
   // pointer to the caller.  Caller takes ownership of the returned pointer.
-  Message* ReleaseLast(Message* message, const FieldDescriptor* field) const;
+  PROTOBUF_FUTURE_MUST_USE_RESULT Message* ReleaseLast(
+      Message* message, const FieldDescriptor* field) const;
 
   // Swap the complete contents of two messages.
   void Swap(Message* message1, Message* message2) const;
@@ -604,8 +605,9 @@ class PROTOBUF_EXPORT Reflection final {
   // If the field existed (HasField() is true), then the returned pointer will
   // be the same as the pointer returned by MutableMessage().
   // This function has the same effect as ClearField().
-  Message* ReleaseMessage(Message* message, const FieldDescriptor* field,
-                          MessageFactory* factory = nullptr) const;
+  PROTOBUF_FUTURE_MUST_USE_RESULT Message* ReleaseMessage(
+      Message* message, const FieldDescriptor* field,
+      MessageFactory* factory = nullptr) const;
 
 
   // Repeated field getters ------------------------------------------

@@ -81,6 +81,7 @@ class MapFieldLite {
     }
   }
   void Swap(MapFieldLite* other) { map_.swap(other->map_); }
+  void InternalSwap(MapFieldLite* other) { map_.InternalSwap(other->map_); }
 
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is NULL.
