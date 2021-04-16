@@ -78,7 +78,7 @@
 #include <intrin.h>
 #elif defined(__APPLE__)
 #include <libkern/OSByteOrder.h>
-#elif defined(__GLIBC__) || defined(__BIONIC__) || defined(__CYGWIN__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__CYGWIN__)
 #include <byteswap.h>  // IWYU pragma: export
 #endif
 
@@ -242,7 +242,7 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #define bswap_32(x) OSSwapInt32(x)
 #define bswap_64(x) OSSwapInt64(x)
 
-#elif !defined(__GLIBC__) && !defined(__BIONIC__) && !defined(__CYGWIN__)
+#elif !defined(__linux__) && !defined(__ANDROID__) && !defined(__CYGWIN__)
 
 #ifndef bswap_16
 static inline uint16 bswap_16(uint16 x) {
