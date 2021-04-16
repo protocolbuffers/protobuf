@@ -109,7 +109,6 @@ java_library(
 java_library(
     name = "lite_runtime_only",
     srcs = LITE_SRCS,
-
 )
 
 java_library(
