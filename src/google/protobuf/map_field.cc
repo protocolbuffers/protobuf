@@ -56,6 +56,20 @@ RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
   return reinterpret_cast<RepeatedPtrFieldBase*>(repeated_field_);
 }
 
+void MapFieldBase::Swap(MapFieldBase* other) {
+  // TODO(teboring): This is incorrect when on different arenas.
+  InternalSwap(other);
+}
+
+void MapFieldBase::InternalSwap(MapFieldBase* other) {
+  std::swap(repeated_field_, other->repeated_field_);
+  // a relaxed swap of the atomic
+  auto other_state = other->state_.load(std::memory_order_relaxed);
+  auto this_state = state_.load(std::memory_order_relaxed);
+  other->state_.store(this_state, std::memory_order_relaxed);
+  state_.store(other_state, std::memory_order_relaxed);
+}
+
 size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   ConstAccess();
   mutex_.Lock();

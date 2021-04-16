@@ -804,7 +804,7 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::FileOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::FileOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::FileOptions* release_options();
   PROTOBUF_NAMESPACE_ID::FileOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::FileOptions* options);
   private:
@@ -822,7 +822,7 @@ class PROTOBUF_EXPORT FileDescriptorProto PROTOBUF_FINAL :
   public:
   void clear_source_code_info();
   const PROTOBUF_NAMESPACE_ID::SourceCodeInfo& source_code_info() const;
-  PROTOBUF_NAMESPACE_ID::SourceCodeInfo* release_source_code_info();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::SourceCodeInfo* release_source_code_info();
   PROTOBUF_NAMESPACE_ID::SourceCodeInfo* mutable_source_code_info();
   void set_allocated_source_code_info(PROTOBUF_NAMESPACE_ID::SourceCodeInfo* source_code_info);
   private:
@@ -983,7 +983,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* release_options();
   PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* options);
   private:
@@ -1497,7 +1497,7 @@ class PROTOBUF_EXPORT DescriptorProto PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::MessageOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::MessageOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::MessageOptions* release_options();
   PROTOBUF_NAMESPACE_ID::MessageOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::MessageOptions* options);
   private:
@@ -1998,7 +1998,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::FieldOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::FieldOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::FieldOptions* release_options();
   PROTOBUF_NAMESPACE_ID::FieldOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::FieldOptions* options);
   private:
@@ -2240,7 +2240,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::OneofOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::OneofOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::OneofOptions* release_options();
   PROTOBUF_NAMESPACE_ID::OneofOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::OneofOptions* options);
   private:
@@ -2631,7 +2631,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::EnumOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::EnumOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::EnumOptions* release_options();
   PROTOBUF_NAMESPACE_ID::EnumOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::EnumOptions* options);
   private:
@@ -2803,7 +2803,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::EnumValueOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::EnumValueOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::EnumValueOptions* release_options();
   PROTOBUF_NAMESPACE_ID::EnumValueOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::EnumValueOptions* options);
   private:
@@ -3004,7 +3004,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::ServiceOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::ServiceOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ServiceOptions* release_options();
   PROTOBUF_NAMESPACE_ID::ServiceOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::ServiceOptions* options);
   private:
@@ -3213,7 +3213,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto PROTOBUF_FINAL :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::MethodOptions& options() const;
-  PROTOBUF_NAMESPACE_ID::MethodOptions* release_options();
+  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::MethodOptions* release_options();
   PROTOBUF_NAMESPACE_ID::MethodOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::MethodOptions* options);
   private:

@@ -266,7 +266,6 @@ bool MessageDifferencer::ApproximatelyEquivalent(const Message& message1,
 
 MessageDifferencer::MessageDifferencer()
     : reporter_(NULL),
-      field_comparator_(NULL),
       message_field_comparison_(EQUAL),
       scope_(FULL),
       repeated_field_comparison_(AS_LIST),
@@ -289,8 +288,18 @@ MessageDifferencer::~MessageDifferencer() {
 
 void MessageDifferencer::set_field_comparator(FieldComparator* comparator) {
   GOOGLE_CHECK(comparator) << "Field comparator can't be NULL.";
-  field_comparator_ = comparator;
+  field_comparator_kind_ = kFCBase;
+  field_comparator_.base = comparator;
 }
+
+#ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
+void MessageDifferencer::set_field_comparator(
+    DefaultFieldComparator* comparator) {
+  GOOGLE_CHECK(comparator) << "Field comparator can't be NULL.";
+  field_comparator_kind_ = kFCDefault;
+  field_comparator_.default_impl = comparator;
+}
+#endif  // PROTOBUF_FUTURE_BREAKING_CHANGES
 
 void MessageDifferencer::set_message_field_comparison(
     MessageFieldComparison comparison) {
@@ -1008,44 +1017,29 @@ bool MessageDifferencer::CompareMapField(
   const Reflection* reflection2 = message2.GetReflection();
 
   // When both map fields are on map, do not sync to repeated field.
-  // TODO(jieluo): Add support for reporter
-  if (reporter_ == nullptr &&
+  if (reflection1->GetMapData(message1, repeated_field)->IsMapValid() &&
+      reflection2->GetMapData(message2, repeated_field)->IsMapValid() &&
+      // TODO(jieluo): Add support for reporter
+      reporter_ == nullptr &&
       // Users didn't set custom map field key comparator
       map_field_key_comparator_.find(repeated_field) ==
           map_field_key_comparator_.end() &&
       // Users didn't set repeated field comparison
-      repeated_field_comparison_ == AS_LIST) {
-    DefaultFieldComparator* map_field_comparator =
-        field_comparator_ ? nullptr : &default_field_comparator_;
-#if PROTOBUF_RTTI
-    // Inherit class from DefaultFieldComparator can not get the benefit
-    // because DefaultFieldComparator::Compare() method might be overwrote.
-    if (field_comparator_ &&
-        typeid(*field_comparator_) == typeid(default_field_comparator_)) {
-      map_field_comparator =
-          static_cast<DefaultFieldComparator*>(field_comparator_);
-    }
-#endif
-    if (map_field_comparator) {
-      const FieldDescriptor* key_des =
-          repeated_field->message_type()->map_key();
-      const FieldDescriptor* val_des =
-          repeated_field->message_type()->map_value();
-      const internal::MapFieldBase* map_field1 =
-          reflection1->GetMapData(message1, repeated_field);
-      const internal::MapFieldBase* map_field2 =
-          reflection2->GetMapData(message2, repeated_field);
-      std::vector<SpecificField> current_parent_fields(*parent_fields);
-      SpecificField specific_field;
-      specific_field.field = repeated_field;
-      current_parent_fields.push_back(specific_field);
-      if (map_field1->IsMapValid() && map_field2->IsMapValid() &&
-          !IsIgnored(message1, message2, key_des, current_parent_fields) &&
-          !IsIgnored(message1, message2, val_des, current_parent_fields)) {
-        return CompareMapFieldByMapReflection(
-            message1, message2, repeated_field, &current_parent_fields,
-            map_field_comparator);
-      }
+      repeated_field_comparison_ == AS_LIST &&
+      // Users didn't set their own FieldComparator implementation
+      field_comparator_kind_ == kFCDefault) {
+    const FieldDescriptor* key_des = repeated_field->message_type()->map_key();
+    const FieldDescriptor* val_des =
+        repeated_field->message_type()->map_value();
+    std::vector<SpecificField> current_parent_fields(*parent_fields);
+    SpecificField specific_field;
+    specific_field.field = repeated_field;
+    current_parent_fields.push_back(specific_field);
+    if (!IsIgnored(message1, message2, key_des, current_parent_fields) &&
+        !IsIgnored(message1, message2, val_des, current_parent_fields)) {
+      return CompareMapFieldByMapReflection(message1, message2, repeated_field,
+                                            &current_parent_fields,
+                                            field_comparator_.default_impl);
     }
   }
 
@@ -1869,9 +1863,9 @@ FieldComparator::ComparisonResult MessageDifferencer::GetFieldComparisonResult(
     const Message& message1, const Message& message2,
     const FieldDescriptor* field, int index1, int index2,
     const FieldContext* field_context) {
-  FieldComparator* comparator = field_comparator_ != NULL
-                                    ? field_comparator_
-                                    : &default_field_comparator_;
+  FieldComparator* comparator = field_comparator_kind_ == kFCBase
+                                    ? field_comparator_.base
+                                    : field_comparator_.default_impl;
   return comparator->Compare(message1, message2, field, index1, index2,
                              field_context);
 }

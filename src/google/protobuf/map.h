@@ -1321,7 +1321,7 @@ class Map {
 
   void swap(Map& other) {
     if (arena() == other.arena()) {
-      elements_.Swap(&other.elements_);
+      InternalSwap(other);
     } else {
       // TODO(zuguang): optimize this. The temporary copy can be allocated
       // in the same arena as the other message, and the "other = copy" can
@@ -1331,6 +1331,8 @@ class Map {
       other = copy;
     }
   }
+
+  void InternalSwap(Map& other) { elements_.Swap(&other.elements_); }
 
   // Access to hasher.  Currently this returns a copy, but it may
   // be modified to return a const reference in the future.

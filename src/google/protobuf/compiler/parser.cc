@@ -2215,7 +2215,6 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
   return true;
 }
 
-
 bool Parser::ParseMethodOptions(const LocationRecorder& parent_location,
                                 const FileDescriptorProto* containing_file,
                                 const int optionsFieldNumber,

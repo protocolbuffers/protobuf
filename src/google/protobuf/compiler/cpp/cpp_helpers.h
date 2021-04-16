@@ -418,8 +418,8 @@ bool IsStringOrMessage(const FieldDescriptor* field);
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter);
 
-inline bool HasFieldPresence(const FileDescriptor* file) {
-  return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
+inline bool IsProto3(const FileDescriptor* file) {
+  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 inline bool HasHasbit(const FieldDescriptor* field) {
@@ -864,10 +864,6 @@ struct OneOfRangeImpl {
 };
 
 inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
-
-void GenerateParserLoop(const Descriptor* descriptor, int num_hasbits,
-                        const Options& options,
-                        MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
 
 PROTOC_EXPORT std::string StripProto(const std::string& filename);
 

@@ -157,7 +157,7 @@ void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void MapFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Swap(&other->$name$_);\n");
+  format("$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void MapFieldGenerator::GenerateCopyConstructorCode(
