@@ -1,3 +1,6 @@
+# temporary fix for https://github.com/bazelbuild/bazel/issues/12905 on macOS
+build --features=-debug_prefix_map_pwd_is_dot
+
 # Use our custom-configured c++ toolchain.
 
 build:m32 --copt=-m32 --linkopt=-m32
