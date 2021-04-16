@@ -230,9 +230,9 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     format(
         "struct Utf8Check {\n"
         "  static void Check(ConstPtr p) {\n"
-		// p may be unused when GetUtf8CheckMode evaluates to kNone,
-		// thus disabling the validation.
-		"    (void)p;\n");
+        // p may be unused when GetUtf8CheckMode evaluates to kNone,
+        // thus disabling the validation.
+        "    (void)p;\n");
     format.Indent();
     format.Indent();
     if (string_key) {
