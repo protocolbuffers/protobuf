@@ -1,4 +1,15 @@
+
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  C++
+  * Fix bug where `Descriptor::DebugString()` printed proto3 synthetic oneofs.
+  * Provide stable versions of `SortAndUnique()`.
+  * Make sure to cache proto3 optional message fields when they are cleared.
+
+  Kotlin
+  * Restrict extension setter and getter operators to non-nullable T.
+
+3.16.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
   * The ::pb namespace is no longer exposed due to conflicts.
