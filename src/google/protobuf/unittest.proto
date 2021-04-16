@@ -364,6 +364,12 @@ message TestNestedExtension {
   }
 }
 
+message TestChildExtension {
+  optional string a = 1;
+  optional string b = 2;
+  optional TestAllExtensions optional_extension = 3;
+}
+
 // We have separate messages for testing required fields because it's
 // annoying to have to fill in required fields in TestProto in order to
 // do anything with it.  Note that we don't need to test every type of

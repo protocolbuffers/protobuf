@@ -592,12 +592,20 @@ class PROTOBUF_EXPORT Reflection final {
   // the compiled-in class for this type, NOT DynamicMessage.
   Message* MutableMessage(Message* message, const FieldDescriptor* field,
                           MessageFactory* factory = nullptr) const;
+
   // Replaces the message specified by 'field' with the already-allocated object
   // sub_message, passing ownership to the message.  If the field contained a
   // message, that message is deleted.  If sub_message is nullptr, the field is
   // cleared.
   void SetAllocatedMessage(Message* message, Message* sub_message,
                            const FieldDescriptor* field) const;
+
+  // Similar to `SetAllocatedMessage`, but omits all internal safety and
+  // ownership checks.  This method should only be used when the objects are on
+  // the same arena or paired with a call to `UnsafeArenaReleaseMessage`.
+  void UnsafeArenaSetAllocatedMessage(Message* message, Message* sub_message,
+                                      const FieldDescriptor* field) const;
+
   // Releases the message specified by 'field' and returns the pointer,
   // ReleaseMessage() will return the message the message object if it exists.
   // Otherwise, it may or may not return nullptr.  In any case, if the return
@@ -608,6 +616,13 @@ class PROTOBUF_EXPORT Reflection final {
   PROTOBUF_FUTURE_MUST_USE_RESULT Message* ReleaseMessage(
       Message* message, const FieldDescriptor* field,
       MessageFactory* factory = nullptr) const;
+
+  // Similar to `ReleaseMessage`, but omits all internal safety and ownership
+  // checks.  This method should only be used when the objects are on the same
+  // arena or paired with a call to `UnsafeArenaSetAllocatedMessage`.
+  Message* UnsafeArenaReleaseMessage(Message* message,
+                                     const FieldDescriptor* field,
+                                     MessageFactory* factory = nullptr) const;
 
 
   // Repeated field getters ------------------------------------------
@@ -1122,13 +1137,6 @@ class PROTOBUF_EXPORT Reflection final {
                                     int value) const;
   void AddEnumValueInternal(Message* message, const FieldDescriptor* field,
                             int value) const;
-
-  Message* UnsafeArenaReleaseMessage(Message* message,
-                                     const FieldDescriptor* field,
-                                     MessageFactory* factory = nullptr) const;
-
-  void UnsafeArenaSetAllocatedMessage(Message* message, Message* sub_message,
-                                      const FieldDescriptor* field) const;
 
   friend inline  // inline so nobody can call this function.
       void
