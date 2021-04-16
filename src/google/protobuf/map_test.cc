@@ -2415,6 +2415,21 @@ TEST(GeneratedMapFieldTest, SerializationToStream) {
   MapTestUtil::ExpectMapFieldsSet(message2);
 }
 
+TEST(GeneratedMapFieldTest, ParseFailsIfMalformed) {
+  unittest::TestMapSubmessage o, p;
+  auto m = o.mutable_test_map()->mutable_map_int32_foreign_message();
+  (*m)[0].set_c(-1);
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Should parse correctly.
+  EXPECT_TRUE(p.ParseFromString(serialized));
+
+  // Overwriting the last byte to 0xFF results in malformed wire.
+  serialized[serialized.size() - 1] = 0xFF;
+  EXPECT_FALSE(p.ParseFromString(serialized));
+}
+
 
 TEST(GeneratedMapFieldTest, SameTypeMaps) {
   const Descriptor* map1 = unittest::TestSameTypeMap::descriptor()
