@@ -1225,6 +1225,22 @@ java_binary(
   ],
 )
 
+java_binary(
+  name = "conformance_java_lite",
+  srcs = ["conformance/ConformanceJavaLite.java"],
+  visibility = [
+      "//java:__subpackages__",
+  ],
+  main_class = "ConformanceJavaLite",
+  deps = [
+    ":conformance_java_proto_lite",
+    ":test_messages_proto2_java_proto_lite",
+    ":test_messages_proto3_java_proto_lite",
+    "//:protobuf_javalite",
+    "//:protobuf_java_util",
+  ],
+)
+
 filegroup(
     name = "conformance_failure_lists",
     srcs = glob(["conformance/*.txt"]),
