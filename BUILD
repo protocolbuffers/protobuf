@@ -1228,7 +1228,7 @@ java_binary(
 filegroup(
     name = "conformance_failure_lists",
     srcs = glob(["conformance/*.txt"]),
-    visibility = ["//visibility:public"],
+    visibility = ["//:__subpackages__"],
 )
 
 exports_files([

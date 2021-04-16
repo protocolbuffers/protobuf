@@ -517,24 +517,24 @@ def check_protobuf_required_bazel_version():
 
 
 def conformance_test(name, testee, language):
-  native.sh_test(
+    native.sh_test(
     name = name,
-    srcs = ["//:conformance/conformance_test_runner.sh"],
-    data = [testee] + [
-      "//:conformance_test_runner", 
-      "//:conformance_failure_lists"
-    ],
-    env = { 
-      "LANG": language,
-      "TESTEE": _format_testee(testee)
-    },
-    deps = [
-      "@bazel_tools//tools/bash/runfiles",
-    ],
-  )
+        srcs = ["//:conformance/conformance_test_runner.sh"],
+        data = [testee] + [
+            "//:conformance_test_runner", 
+            "//:conformance_failure_lists"
+        ],
+        env = { 
+            "LANG": language,
+            "TESTEE": _format_testee(testee)
+        },
+        deps = [
+            "@bazel_tools//tools/bash/runfiles",
+        ],
+    )
 
 
 def _format_testee(testee):
-  if testee.startswith("//"):
-    testee = testee.replace("//", "")
-  return testee.replace(":", "/")
+    if testee.startswith("//"):
+        testee = testee.replace("//", "")
+    return testee.replace(":", "/")
