@@ -36,8 +36,8 @@ def upb_deps():
     maybe(
         http_archive,
         name = "bazel_skylib",
-        strip_prefix = "bazel-skylib-master",
-        urls = ["https://github.com/bazelbuild/bazel-skylib/archive/master.tar.gz"],
+        strip_prefix = "bazel-skylib-main",
+        urls = ["https://github.com/bazelbuild/bazel-skylib/archive/main.tar.gz"],
     )
 
     maybe(
