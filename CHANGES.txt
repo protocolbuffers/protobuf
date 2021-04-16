@@ -9,6 +9,14 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Kotlin
   * Restrict extension setter and getter operators to non-nullable T.
 
+  Python
+  * Make JSON parsing match C++ and Java when multiple fields from the same
+    oneof are present and all but one is null.
+
+  Conformance Tests
+  * Added a conformance test for the case of multiple fields from the same
+    oneof.
+
 3.16.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   C++
