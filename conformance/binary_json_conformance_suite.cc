@@ -2329,6 +2329,12 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
   ExpectParseFailureForJson(
       "OneofFieldDuplicate", REQUIRED,
       R"({"oneofUint32": 1, "oneofString": "test"})");
+  RunValidJsonTest("OneofFieldNullFirst", REQUIRED,
+                   R"({"oneofUint32": null, "oneofString": "test"})",
+                   "oneof_string: \"test\"");
+  RunValidJsonTest("OneofFieldNullSecond", REQUIRED,
+                   R"({"oneofString": "test", "oneofUint32": null})",
+                   "oneof_string: \"test\"");
   // Ensure zero values for oneof make it out/backs.
   TestAllTypesProto3 messageProto3;
   TestAllTypesProto2 messageProto2;
