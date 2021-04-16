@@ -134,7 +134,7 @@ cc_library(
     hdrs = [
         "upb/decode_fast.h",
         "upb/msg.h",
-        "upb/msg.int.h",
+        "upb/msg_internal.h",
         "upb/port_def.inc",
         "upb/port_undef.inc",
     ],
