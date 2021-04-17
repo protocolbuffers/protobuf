@@ -167,10 +167,28 @@
 
 /* Configure whether fasttable is switched on or not. *************************/
 
-#if (defined(__x86_64__) || defined(__aarch64__)) && defined(__clang__) && \
-    __has_attribute(musttail)
-#define UPB_FASTTABLE_SUPPORTED 1
+#if defined(__clang__) && __has_attribute(musttail)
 #define UPB_MUSTTAIL __attribute__((musttail))
+#else
+#define UPB_MUSTTAIL
+#endif
+
+/* This check is not fully robust: it does not require that we have "musttail"
+ * support available. We need tail calls to avoid consuming arbitrary amounts
+ * of stack space.
+ *
+ * GCC/Clang can mostly be trusted to generate tail calls as long as
+ * optimization is enabled, but, debug builds will not generate tail calls
+ * unless "musttail" is available.
+ *
+ * We should probably either:
+ *   1. require that the compiler supports musttail.
+ *   2. add some fallback code for when musttail isn't available (ie. return
+ *      instead of tail calling). This is safe and portable, but this comes at
+ *      a CPU cost.
+ */
+#if (defined(__x86_64__) || defined(__aarch64__)) && defined(__GNUC__)
+#define UPB_FASTTABLE_SUPPORTED 1
 #else
 #define UPB_FASTTABLE_SUPPORTED 0
 #endif
@@ -180,7 +198,7 @@
  * for example for testing or benchmarking. */
 #if defined(UPB_ENABLE_FASTTABLE)
 #if !UPB_FASTTABLE_SUPPORTED
-#error fasttable is x86-64/ARM64 only and requires a recent Clang that supports __attribute__((musttail))
+#error fasttable is x86-64/ARM64 only and requires GCC or Clang.
 #endif
 #define UPB_FASTTABLE 1
 /* Define UPB_TRY_ENABLE_FASTTABLE to use fasttable if possible.
