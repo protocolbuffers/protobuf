@@ -776,13 +776,6 @@ static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
 
   VALUE hash = rb_hash_new();
   int n = upb_msgdef_fieldcount(m);
-  bool is_proto2;
-
-  // We currently have a few behaviors that are specific to proto2.
-  // This is unfortunate, we should key behaviors off field attributes (like
-  // whether a field has presence), not proto2 vs. proto3. We should see if we
-  // can change this without breaking users.
-  is_proto2 = upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2;
 
   for (int i = 0; i < n; i++) {
     const upb_fielddef* field = upb_msgdef_field(m, i);
@@ -792,15 +785,12 @@ static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
     VALUE msg_key;
 
     // Do not include fields that are not present (oneof or optional fields).
-    if (is_proto2 && upb_fielddef_haspresence(field) &&
-        !upb_msg_has(msg, field)) {
+    if (upb_fielddef_haspresence(field) && !upb_msg_has(msg, field)) {
       continue;
     }
 
     msg_key = ID2SYM(rb_intern(upb_fielddef_name(field)));
     msgval = upb_msg_get(msg, field);
-
-    // Proto2 omits empty map/repeated filds also.
 
     if (upb_fielddef_ismap(field)) {
       const upb_msgdef *entry_m = upb_fielddef_msgsubdef(field);
@@ -809,10 +799,6 @@ static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
       upb_fieldtype_t key_type = upb_fielddef_type(key_f);
       msg_value = Map_CreateHash(msgval.map_val, key_type, TypeInfo_get(val_f));
     } else if (upb_fielddef_isseq(field)) {
-      if (is_proto2 &&
-          (!msgval.array_val || upb_array_size(msgval.array_val) == 0)) {
-        continue;
-      }
       msg_value = RepeatedField_CreateArray(msgval.array_val, type_info);
     } else {
       msg_value = Scalar_CreateHash(msgval, type_info);
