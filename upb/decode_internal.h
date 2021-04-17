@@ -142,7 +142,7 @@ bool decode_isdone(upb_decstate *d, const char **ptr) {
   }
 }
 
-#include <stdio.h>
+#if UPB_FASTTABLE
 UPB_INLINE
 const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
                                     upb_msg *msg, intptr_t table,
@@ -154,10 +154,10 @@ const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
   UPB_ASSUME((idx & 7) == 0);
   idx >>= 3;
   data = table_p->fasttable[idx].field_data ^ tag;
-  //fprintf(stderr, "Dispatch at: %p\n", ptr);
   UPB_MUSTTAIL return table_p->fasttable[idx].field_parser(d, ptr, msg, table,
                                                            hasbits, data);
 }
+#endif
 
 UPB_INLINE uint32_t fastdecode_loadtag(const char* ptr) {
   uint16_t tag;

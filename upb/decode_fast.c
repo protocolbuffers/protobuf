@@ -52,10 +52,9 @@
 
 #define UPB_PARSE_ARGS d, ptr, msg, table, hasbits, data
 
-#include <stdio.h>
-#define RETURN_GENERIC(m)  \
-   /*fprintf(stderr, m); */  \
-  /*__builtin_trap(); */ \
+#define RETURN_GENERIC(m)   \
+  /* fprintf(stderr, m); */ \
+  /*__builtin_trap(); */    \
   return fastdecode_generic(d, ptr, msg, table, hasbits, 0);
 
 typedef enum {
@@ -78,8 +77,7 @@ static const char *fastdecode_isdonefallback(upb_decstate *d, const char *ptr,
   UPB_MUSTTAIL return fastdecode_tagdispatch(UPB_PARSE_ARGS);
 }
 
-//UPB_FORCEINLINE
-UPB_NOINLINE
+UPB_FORCEINLINE
 static const char *fastdecode_dispatch(UPB_PARSE_PARAMS) {
   if (UPB_UNLIKELY(ptr >= d->limit_ptr)) {
     int overrun = ptr - d->end;
@@ -622,6 +620,7 @@ TAGBYTES(p)
   memcpy(dst, ptr, size);                                                   \
   arr->len = elems;                                                         \
                                                                             \
+  ptr += size;                                                              \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 
 #define FASTDECODE_FIXED(d, ptr, msg, table, hasbits, data, tagbytes,     \
@@ -967,7 +966,6 @@ static const char *fastdecode_tosubmsg(upb_decstate *d, const char *ptr,
   return ptr;
 }
 
-#include <stdio.h>
 #define FASTDECODE_SUBMSG(d, ptr, msg, table, hasbits, data, tagbytes,    \
                           msg_ceil_bytes, card)                           \
                                                                           \
