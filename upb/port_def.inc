@@ -167,8 +167,10 @@
 
 /* Configure whether fasttable is switched on or not. *************************/
 
-#if (defined(__x86_64__) || defined(__aarch64__)) && defined(__GNUC__)
+#if (defined(__x86_64__) || defined(__aarch64__)) && defined(__clang__) && \
+    __has_attribute(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
+#define UPB_MUSTTAIL __attribute__((musttail))
 #else
 #define UPB_FASTTABLE_SUPPORTED 0
 #endif
@@ -178,7 +180,7 @@
  * for example for testing or benchmarking. */
 #if defined(UPB_ENABLE_FASTTABLE)
 #if !UPB_FASTTABLE_SUPPORTED
-#error fasttable is x86-64 + Clang/GCC only
+#error fasttable is x86-64/ARM64 only and requires a recent Clang that supports __attribute__((musttail))
 #endif
 #define UPB_FASTTABLE 1
 /* Define UPB_TRY_ENABLE_FASTTABLE to use fasttable if possible.
