@@ -53,8 +53,8 @@ class Amalgamator:
       self.include_paths.append(path)
 
   def finish(self):
-    self.output_c.write(open("upb/port_undef.inc").read())
-    self.output_h.write(open("upb/port_undef.inc").read())
+    self._add_header("upb/port_undef.inc")
+    self.add_src("upb/port_undef.inc")
 
   def _process_file(self, infile_name, outfile):
     file = None
