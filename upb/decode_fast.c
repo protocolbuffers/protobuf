@@ -99,15 +99,9 @@ static const char *fastdecode_dispatch(UPB_PARSE_PARAMS) {
 UPB_FORCEINLINE
 static bool fastdecode_checktag(uint16_t data, int tagbytes) {
   if (tagbytes == 1) {
-    if (data & 0xff) {
-      //fprintf(stderr, "YO0: %x\n", (int)data);
-    }
     return (data & 0xff) == 0;
   } else {
-    if (data & 0xffff) {
-      //fprintf(stderr, "YO1: %x\n", (int)data);
-    }
-    return (data & 0xffff) == 0;
+    return data == 0;
   }
 }
 
