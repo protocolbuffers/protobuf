@@ -66,7 +66,6 @@ These are projects we know about implementing Protocol Buffers for other program
 * Javascript: https://github.com/seishun/node-protoc-plugin (Node.js port of plugin.h)
 * Javascript: https://github.com/seishun/node-protoc-gen-javascript (Node.js port of the Google-official implementation)
 * Javascript: https://github.com/ButterCam/sisyphus-js
-* Typescript: https://github.com/thesayyn/protoc-gen-ts
 * Julia: https://github.com/tanmaykm/ProtoBuf.jl
 * Kotlin: https://github.com/marcoferrer/kroto-plus
 * Kotlin: https://github.com/Kotlin/kotlinx.serialization
@@ -105,6 +104,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Solidity: https://github.com/celer-network/pb3-gen-sol
 * Swift: https://github.com/alexeyxo/protobuf-swift
 * Swift: https://github.com/apple/swift-protobuf/
+* Typescript: https://github.com/thesayyn/protoc-gen-ts
 * Vala: https://launchpad.net/protobuf-vala
 * Visual Basic: http://code.google.com/p/protobuf-net/
 
