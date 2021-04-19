@@ -105,7 +105,8 @@ def MessageToJson(
     sort_keys=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None):
+    float_precision=None,
+    use_integers_for_number_values=False):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -124,6 +125,7 @@ def MessageToJson(
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
         default.
     float_precision: If set, use this to specify float field valid digits.
+    use_integers_for_number_values: If true, try to print integers instead of floats.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
@@ -133,7 +135,8 @@ def MessageToJson(
       preserving_proto_field_name,
       use_integers_for_enums,
       descriptor_pool,
-      float_precision=float_precision)
+      float_precision,
+      use_integers_for_number_values)
   return printer.ToJsonString(message, indent, sort_keys)
 
 
@@ -143,7 +146,8 @@ def MessageToDict(
     preserving_proto_field_name=False,
     use_integers_for_enums=False,
     descriptor_pool=None,
-    float_precision=None):
+    float_precision=None,
+    use_integers_for_number_values=False):
   """Converts protobuf message to a dictionary.
 
   When the dictionary is encoded to JSON, it conforms to proto3 JSON spec.
@@ -161,6 +165,7 @@ def MessageToDict(
     descriptor_pool: A Descriptor Pool for resolving types. If None use the
         default.
     float_precision: If set, use this to specify float field valid digits.
+    use_integers_for_number_values: If true, try to print integers instead of floats.
 
   Returns:
     A dict representation of the protocol buffer message.
@@ -170,7 +175,8 @@ def MessageToDict(
       preserving_proto_field_name,
       use_integers_for_enums,
       descriptor_pool,
-      float_precision=float_precision)
+      float_precision,
+      use_integers_for_number_values)
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
 
@@ -190,10 +196,12 @@ class _Printer(object):
       preserving_proto_field_name=False,
       use_integers_for_enums=False,
       descriptor_pool=None,
-      float_precision=None):
+      float_precision=None,
+      use_integers_for_number_values=False):
     self.including_default_value_fields = including_default_value_fields
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
+    self.use_integers_for_number_values = use_integers_for_number_values
     self.descriptor_pool = descriptor_pool
     if float_precision:
       self.float_format = '.{}g'.format(float_precision)
@@ -307,6 +315,8 @@ class _Printer(object):
     elif field.cpp_type in _INT64_TYPES:
       return str(value)
     elif field.cpp_type in _FLOAT_TYPES:
+      if self.use_integers_for_number_values and value.is_integer():
+        return int(value)
       if math.isinf(value):
         if value < 0.0:
           return _NEG_INFINITY
