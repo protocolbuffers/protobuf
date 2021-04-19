@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -x
+echo $@
+
 set -euo pipefail
 # --- begin runfiles.bash initialization ---
 if [[ ! -d "${RUNFILES_DIR:-/dev/null}" && ! -f "${RUNFILES_MANIFEST_FILE:-/dev/null}" ]]; then
@@ -23,16 +25,31 @@ else
 fi
 # --- end runfiles.bash initialization ---
 
+TESTEE=unset
+FAILURE_LIST=unset
+TEXT_FORMAT_FAILURE_LIST=unset
+
+while [[ -n "$@" ]]; do
+  arg="$1"; shift
+  val="$1"; shift
+  case "$arg" in
+    "--testee") TESTEE="$val" ;;
+    "--failure_list") FAILURE_LIST="$val" ;;
+    "--text_format_failure_list") TEXT_FORMAT_FAILURE_LIST="$val" ;;
+    *) echo "Flag $arg is not recognized." && exit 1 ;;
+  esac
+done
+
 conformance_test_runner=$(rlocation com_google_protobuf/conformance_test_runner)
-conformance_testee=$(rlocation com_google_protobuf$TESTEE)
+conformance_testee=$(rlocation $TESTEE)
 args=(--enforce_recommended)
 
-failure_list=$(rlocation com_google_protobuf/conformance/failure_list_$LANG.txt)
+failure_list=$(rlocation $FAILURE_LIST)
 if [ "$failure_list" != "1" ] ; then
   args+=(--failure_list $failure_list)
 fi
 
-text_format_failure_list=$(rlocation com_google_protobuf/conformance/text_format_failure_list_$LANG.txt)
+text_format_failure_list=$(rlocation $TEXT_FORMAT_FAILURE_LIST)
 if [ "$text_format_failure_list" != "1" ]; then
   args+=(--text_format_failure_list $text_format_failure_list)
 fi

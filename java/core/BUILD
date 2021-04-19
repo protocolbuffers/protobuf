@@ -196,7 +196,8 @@ build_test(
 conformance_test(
     name = "conformance_test",
     testee = "//:conformance_java",
-    language = "java",
+    failure_list = "//:conformance/failure_list_java.txt",
+    text_format_failure_list = "//:conformance/text_format_failure_list_java.txt",
 )
 
 junit_tests(

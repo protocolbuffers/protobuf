@@ -1241,12 +1241,11 @@ java_binary(
   ],
 )
 
-filegroup(
-    name = "conformance_failure_lists",
-    srcs = glob(["conformance/*.txt"]),
-    visibility = ["//:__subpackages__"],
-)
 
 exports_files([
     "conformance/conformance_test_runner.sh",
+    "conformance/failure_list_java.txt",
+    "conformance/failure_list_java_lite.txt",
+    "conformance/text_format_failure_list_java.txt",
+    "conformance/text_format_failure_list_java_lite.txt",
 ])
