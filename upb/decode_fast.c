@@ -566,41 +566,41 @@ TAGBYTES(p)
                                                                                \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 
-#define FASTDECODE_PACKEDFIXED(d, ptr, msg, table, hasbits, data, tagbytes,    \
-                               valbytes, unpacked)                             \
-  FASTDECODE_CHECKPACKED(tagbytes, CARD_r, unpacked)                           \
-                                                                               \
-  ptr += tagbytes;                                                             \
-  int size = (uint8_t)ptr[0];                                                  \
-  ptr++;                                                                       \
-  if (size & 0x80) {                                                           \
-    ptr = fastdecode_longsize(ptr, &size);                                     \
-  }                                                                            \
-                                                                               \
-  if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, size, d->limit_ptr)) ||         \
-      (size % valbytes) != 0) {                                                \
-    return fastdecode_err(d);                                                  \
-  }                                                                            \
-                                                                               \
-  upb_array **arr_p = fastdecode_fieldmem(msg, data);                          \
-  upb_array *arr = *arr_p;                                                     \
-  uint8_t elem_size_lg2 = __builtin_ctz(valbytes);                             \
-  int elems = size / valbytes;                                                 \
-                                                                               \
-  if (UPB_LIKELY(!arr)) {                                                      \
-    *arr_p = arr = _upb_array_new(&d->arena, elems, elem_size_lg2);            \
-    if (!arr) {                                                                \
-      return fastdecode_err(d);                                                \
-    }                                                                          \
-  } else {                                                                     \
-    _upb_array_resize(arr, elems, &d->arena);                                  \
-  }                                                                            \
-                                                                               \
-  char *dst = _upb_array_ptr(arr);                                             \
-  memcpy(dst, ptr, size);                                                      \
-  arr->len = elems;                                                            \
-                                                                               \
-  ptr += size;                                                                 \
+#define FASTDECODE_PACKEDFIXED(d, ptr, msg, table, hasbits, data, tagbytes, \
+                               valbytes, unpacked)                          \
+  FASTDECODE_CHECKPACKED(tagbytes, CARD_r, unpacked)                        \
+                                                                            \
+  ptr += tagbytes;                                                          \
+  int size = (uint8_t)ptr[0];                                               \
+  ptr++;                                                                    \
+  if (size & 0x80) {                                                        \
+    ptr = fastdecode_longsize(ptr, &size);                                  \
+  }                                                                         \
+                                                                            \
+  if (UPB_UNLIKELY(fastdecode_boundscheck(ptr, size, d->limit_ptr) ||       \
+                   (size % valbytes) != 0)) {                               \
+    return fastdecode_err(d);                                               \
+  }                                                                         \
+                                                                            \
+  upb_array **arr_p = fastdecode_fieldmem(msg, data);                       \
+  upb_array *arr = *arr_p;                                                  \
+  uint8_t elem_size_lg2 = __builtin_ctz(valbytes);                          \
+  int elems = size / valbytes;                                              \
+                                                                            \
+  if (UPB_LIKELY(!arr)) {                                                   \
+    *arr_p = arr = _upb_array_new(&d->arena, elems, elem_size_lg2);         \
+    if (!arr) {                                                             \
+      return fastdecode_err(d);                                             \
+    }                                                                       \
+  } else {                                                                  \
+    _upb_array_resize(arr, elems, &d->arena);                               \
+  }                                                                         \
+                                                                            \
+  char *dst = _upb_array_ptr(arr);                                          \
+  memcpy(dst, ptr, size);                                                   \
+  arr->len = elems;                                                         \
+                                                                            \
+  ptr += size;                                                              \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);
 
 #define FASTDECODE_FIXED(d, ptr, msg, table, hasbits, data, tagbytes,     \
