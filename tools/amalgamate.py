@@ -47,15 +47,14 @@ class Amalgamator:
     self.output_c.write(open("upb/port_def.inc").read())
 
     self.output_h.write("/* Amalgamated source file */\n")
-    self.output_h.write('#include <stdint.h>')
     self.output_h.write(open("upb/port_def.inc").read())
 
   def add_include_path(self, path):
       self.include_paths.append(path)
 
   def finish(self):
-    self.output_c.write(open("upb/port_undef.inc").read())
-    self.output_h.write(open("upb/port_undef.inc").read())
+    self._add_header("upb/port_undef.inc")
+    self.add_src("upb/port_undef.inc")
 
   def _process_file(self, infile_name, outfile):
     file = None
@@ -69,7 +68,17 @@ class Amalgamator:
     if not file:
         raise RuntimeError("Couldn't open file " + infile_name)
 
-    for line in file:
+    lines = file.readlines()
+
+    has_copyright = lines[1].startswith(" * Copyright")
+    if has_copyright:
+      while not lines[0].startswith(" */"):
+        lines.pop(0)
+      lines.pop(0)
+
+    lines.insert(0, "\n/** " + infile_name + " " + ("*" * 60) +"/");
+
+    for line in lines:
       if not self._process_include(line, outfile):
         outfile.write(line)
 

@@ -142,10 +142,11 @@ bool decode_isdone(upb_decstate *d, const char **ptr) {
   }
 }
 
+#if UPB_FASTTABLE
 UPB_INLINE
 const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
                                     upb_msg *msg, intptr_t table,
-                                    uint64_t hasbits, uint32_t tag) {
+                                    uint64_t hasbits, uint64_t tag) {
   const upb_msglayout *table_p = decode_totablep(table);
   uint8_t mask = table;
   uint64_t data;
@@ -153,8 +154,10 @@ const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
   UPB_ASSUME((idx & 7) == 0);
   idx >>= 3;
   data = table_p->fasttable[idx].field_data ^ tag;
-  return table_p->fasttable[idx].field_parser(d, ptr, msg, table, hasbits, data);
+  UPB_MUSTTAIL return table_p->fasttable[idx].field_parser(d, ptr, msg, table,
+                                                           hasbits, data);
 }
+#endif
 
 UPB_INLINE uint32_t fastdecode_loadtag(const char* ptr) {
   uint16_t tag;
