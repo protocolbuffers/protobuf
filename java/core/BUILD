@@ -1,5 +1,8 @@
-load("@rules_java//java:defs.bzl", "java_library")
-load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
+load("@bazel_skylib//rules:build_test.bzl", "build_test")
+load("@rules_java//java:defs.bzl", "java_library", "java_proto_library", "java_lite_proto_library")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("//:internal.bzl", "conformance_test")
+load("//java/internal:testing.bzl", "junit_tests")
 
 LITE_SRCS = [
     # Keep in sync with `//java/lite:pom.xml`.
@@ -95,10 +98,17 @@ LITE_SRCS = [
 # Should be used as `//java/lite`.
 java_library(
     name = "lite",
-    srcs = LITE_SRCS,
+    srcs = LITE_SRCS + [
+        "//:gen_well_known_protos_javalite"
+    ],
     visibility = [
         "//java/lite:__pkg__",
     ],
+)
+
+java_library(
+    name = "lite_runtime_only",
+    srcs = LITE_SRCS,
 )
 
 java_library(
@@ -113,10 +123,10 @@ java_library(
     ],
     visibility = ["//visibility:public"],
     exports = [
-        "//java/lite",
+        ":lite_runtime_only",
     ],
     deps = [
-        "//java/lite",
+        ":lite_runtime_only",
     ],
 )
 
@@ -125,4 +135,192 @@ proto_lang_toolchain(
     command_line = "--java_out=$(OUT)",
     runtime = ":core",
     visibility = ["//visibility:public"],
+)
+
+proto_library(
+    name = "java_test_protos",
+    srcs = glob(["src/test/proto/**/*.proto"]),
+    strip_import_prefix = "src/test/proto",
+    deps = [
+        "//:any_proto",
+        "//:descriptor_proto",
+        "//:generic_test_protos",
+        "//:wrappers_proto",
+    ],
+)
+
+java_proto_library(
+    name = "generic_test_protos_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = ["//:generic_test_protos"],
+)
+
+java_proto_library(
+    name = "java_test_protos_java_proto",
+    deps = [":java_test_protos"],
+)
+
+java_library(
+    name = "test_util",
+    srcs = [
+        "src/test/java/com/google/protobuf/TestUtil.java",
+        "src/test/java/com/google/protobuf/TestUtilLite.java"
+    ],
+    deps = [
+        ":core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        "//external:guava",
+        "//external:junit",
+    ],
+)
+
+test_suite(
+    name = "tests",
+    tests = [
+        "core_build_test",
+        "conformance_test",
+        "core_tests",
+    ],
+)
+
+build_test(
+    name = "core_build_test",
+    targets = [
+        ":core",
+    ],
+)
+
+conformance_test(
+    name = "conformance_test",
+    testee = "//:conformance_java",
+    failure_list = "//:conformance/failure_list_java.txt",
+    text_format_failure_list = "//:conformance/text_format_failure_list_java.txt",
+)
+
+junit_tests(
+    name = "core_tests",
+    srcs = glob(["src/test/java/**/*.java"], exclude = [
+        "src/test/java/com/google/protobuf/TestUtil.java",
+        "src/test/java/com/google/protobuf/TestUtilLite.java",
+    ]),
+    data = ["//:testdata"],
+    size = "large",
+    deps = [
+        ":core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
+        ":test_util",
+        "//external:easymock",
+        "//external:easymock_classextension",
+        "//external:junit",
+        "//external:truth",
+    ]
+)
+
+java_lite_proto_library(
+    name = "generic_test_protos_java_proto_lite",
+    visibility = [
+        "//java/lite:__pkg__",
+    ],
+    deps = ["//:generic_test_protos"],
+)
+
+java_lite_proto_library(
+    name = "java_test_protos_java_proto_lite",
+    visibility = [
+        "//java/lite:__pkg__",
+    ],
+    deps = [":java_test_protos"],
+)
+
+genrule(
+    name = "rewrite_javalite_test_util",
+    srcs = [
+        "//java/lite:lite.awk",
+        "src/test/java/com/google/protobuf/TestUtil.java"
+    ],
+    outs = ["TestUtil.java"],
+    cmd = "awk -f $(location //java/lite:lite.awk) $(location src/test/java/com/google/protobuf/TestUtil.java) > $@"
+)
+
+java_library(
+    name = "test_util_lite",
+    srcs = [
+        ":rewrite_javalite_test_util",
+        "src/test/java/com/google/protobuf/TestUtilLite.java"
+    ],
+    visibility = [
+        "//java/lite:__pkg__",
+    ],
+    deps = [
+        ":generic_test_protos_java_proto_lite",
+        ":java_test_protos_java_proto_lite",
+        ":lite_runtime_only",
+        "//external:guava",
+        "//external:junit",
+    ],
+)
+
+LITE_TEST_EXCLUSIONS = [
+    # Keep in sync with //java/lite:pom.xml id=copy-test-source-files execution.
+    "src/test/java/com/google/protobuf/AbstractMessageTest.java",
+    "src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java",
+    "src/test/java/com/google/protobuf/AnyTest.java",
+    "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
+    "src/test/java/com/google/protobuf/DeprecatedFieldTest.java",
+    "src/test/java/com/google/protobuf/DescriptorsTest.java",
+    "src/test/java/com/google/protobuf/DiscardUnknownFieldsTest.java",
+    "src/test/java/com/google/protobuf/DynamicMessageTest.java",
+    "src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java",
+    "src/test/java/com/google/protobuf/FieldPresenceTest.java",
+    "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
+    "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
+    "src/test/java/com/google/protobuf/LazyFieldTest.java",
+    "src/test/java/com/google/protobuf/LazyStringEndToEndTest.java",
+    "src/test/java/com/google/protobuf/MapForProto2Test.java",
+    "src/test/java/com/google/protobuf/MapTest.java",
+    "src/test/java/com/google/protobuf/MessageTest.java",
+    "src/test/java/com/google/protobuf/NestedBuildersTest.java",
+    "src/test/java/com/google/protobuf/PackedFieldTest.java",
+    "src/test/java/com/google/protobuf/ParserTest.java",
+    "src/test/java/com/google/protobuf/ParseExceptionsTest.java",
+    "src/test/java/com/google/protobuf/Proto2ExtensionLookupSchemaTest.java",
+    "src/test/java/com/google/protobuf/Proto2SchemaTest.java",
+    "src/test/java/com/google/protobuf/Proto2UnknownEnumValueTest.java",
+    "src/test/java/com/google/protobuf/RepeatedFieldBuilderV3Test.java",
+    "src/test/java/com/google/protobuf/ServiceTest.java",
+    "src/test/java/com/google/protobuf/SingleFieldBuilderV3Test.java",
+    "src/test/java/com/google/protobuf/TestBadIdentifiers.java",
+    "src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java",
+    "src/test/java/com/google/protobuf/TextFormatParseLocationTest.java",
+    "src/test/java/com/google/protobuf/TextFormatTest.java",
+    "src/test/java/com/google/protobuf/TestUtil.java",
+    "src/test/java/com/google/protobuf/TestUtilLite.java",
+    "src/test/java/com/google/protobuf/TypeRegistryTest.java",
+    "src/test/java/com/google/protobuf/UnknownEnumValueTest.java",
+    "src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java",
+    "src/test/java/com/google/protobuf/UnknownFieldSetTest.java",
+    "src/test/java/com/google/protobuf/WellKnownTypesTest.java",
+    "src/test/java/com/google/protobuf/WireFormatTest.java",
+]
+
+junit_tests(
+    name = "lite_tests",
+    srcs = glob(["src/test/java/**/*.java"], exclude = LITE_TEST_EXCLUSIONS),
+    data = ["//:testdata"],
+    test_prefix = "Lite",
+    size = "large",
+    deps = [
+        ":lite",
+        ":generic_test_protos_java_proto_lite",
+        ":java_test_protos_java_proto_lite",
+        ":test_util_lite",
+        "//external:easymock",
+        "//external:easymock_classextension",
+        "//external:junit",
+        "//external:truth",
+    ]
 )
