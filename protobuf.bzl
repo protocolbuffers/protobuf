@@ -527,7 +527,7 @@ def conformance_test(name, testee, failure_list = None, text_format_failure_list
         failure_lists = failure_lists + [text_format_failure_list]
 
     native.sh_test(
-    name = name,
+        name = name,
         srcs = ["//:conformance/conformance_test_runner.sh"],
         data = [testee] + failure_lists + [
             "//:conformance_test_runner", 
