@@ -1181,31 +1181,49 @@ sh_test(
 
 java_proto_library(
     name = "test_messages_proto2_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
     deps = [":test_messages_proto2_proto"],
 )
 
 java_proto_library(
     name = "test_messages_proto3_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ], 
     deps = [":test_messages_proto3_proto"],
 )
 
 java_proto_library(
-  name = "conformance_java_proto",
-  deps = [":conformance_proto"],
+    name = "conformance_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":conformance_proto"],
 )
 
 java_lite_proto_library(
     name = "test_messages_proto2_java_proto_lite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
     deps = [":test_messages_proto2_proto"],
 )
 
 java_lite_proto_library(
   name = "conformance_java_proto_lite",
+  visibility = [
+        "//java:__subpackages__",
+  ],
   deps = [":conformance_proto"],
 )
 
 java_lite_proto_library(
     name = "test_messages_proto3_java_proto_lite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
     deps = [":test_messages_proto3_proto"],
 )
 
@@ -1213,15 +1231,15 @@ java_binary(
   name = "conformance_java",
   srcs = ["conformance/ConformanceJava.java"],
   visibility = [
-      "//java:__subpackages__",
+        "//java:__subpackages__",
   ],
   main_class = "ConformanceJava",
   deps = [
-    ":conformance_java_proto",
-    ":test_messages_proto2_java_proto",
-    ":test_messages_proto3_java_proto",
-    "//:protobuf_java",
-    "//:protobuf_java_util",
+        ":conformance_java_proto",
+        ":test_messages_proto2_java_proto",
+        ":test_messages_proto3_java_proto",
+        "//:protobuf_java",
+        "//:protobuf_java_util",
   ],
 )
 
@@ -1229,18 +1247,17 @@ java_binary(
   name = "conformance_java_lite",
   srcs = ["conformance/ConformanceJavaLite.java"],
   visibility = [
-      "//java:__subpackages__",
+        "//java:__subpackages__",
   ],
   main_class = "ConformanceJavaLite",
   deps = [
-    ":conformance_java_proto_lite",
-    ":test_messages_proto2_java_proto_lite",
-    ":test_messages_proto3_java_proto_lite",
-    "//:protobuf_javalite",
-    "//:protobuf_java_util",
+        ":conformance_java_proto_lite",
+        ":test_messages_proto2_java_proto_lite",
+        ":test_messages_proto3_java_proto_lite",
+        "//:protobuf_javalite",
+        "//:protobuf_java_util",
   ],
 )
-
 
 exports_files([
     "conformance/conformance_test_runner.sh",
