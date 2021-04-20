@@ -1,7 +1,7 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:defs.bzl", "java_library", "java_proto_library", "java_lite_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
-load("//:protobuf.bzl", "conformance_test")
+load("//:internal.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")
 
 LITE_SRCS = [
