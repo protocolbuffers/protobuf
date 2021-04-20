@@ -1228,35 +1228,35 @@ java_lite_proto_library(
 )
 
 java_binary(
-  name = "conformance_java",
-  srcs = ["conformance/ConformanceJava.java"],
-  visibility = [
+    name = "conformance_java",
+    srcs = ["conformance/ConformanceJava.java"],
+    visibility = [
         "//java:__subpackages__",
-  ],
-  main_class = "ConformanceJava",
-  deps = [
+    ],
+    main_class = "ConformanceJava",
+    deps = [
         ":conformance_java_proto",
         ":test_messages_proto2_java_proto",
         ":test_messages_proto3_java_proto",
         "//:protobuf_java",
         "//:protobuf_java_util",
-  ],
+    ],
 )
 
 java_binary(
-  name = "conformance_java_lite",
-  srcs = ["conformance/ConformanceJavaLite.java"],
-  visibility = [
+    name = "conformance_java_lite",
+    srcs = ["conformance/ConformanceJavaLite.java"],
+    visibility = [
         "//java:__subpackages__",
-  ],
-  main_class = "ConformanceJavaLite",
-  deps = [
+    ],
+    main_class = "ConformanceJavaLite",
+    deps = [
         ":conformance_java_proto_lite",
         ":test_messages_proto2_java_proto_lite",
         ":test_messages_proto3_java_proto_lite",
         "//:protobuf_javalite",
         "//:protobuf_java_util",
-  ],
+    ],
 )
 
 exports_files([
