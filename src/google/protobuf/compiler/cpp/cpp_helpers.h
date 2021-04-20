@@ -59,7 +59,7 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-inline std::string ProtobufNamespace(const Options& options) {
+inline std::string ProtobufNamespace(const Options& /* options */) {
   return "PROTOBUF_NAMESPACE_ID";
 }
 
@@ -67,12 +67,12 @@ inline std::string MacroPrefix(const Options& options) {
   return options.opensource_runtime ? "GOOGLE_PROTOBUF" : "GOOGLE_PROTOBUF";
 }
 
-inline std::string DeprecatedAttribute(const Options& options,
+inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const FieldDescriptor* d) {
   return d->options().deprecated() ? "PROTOBUF_DEPRECATED " : "";
 }
 
-inline std::string DeprecatedAttribute(const Options& options,
+inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const EnumValueDescriptor* d) {
   return d->options().deprecated() ? "PROTOBUF_DEPRECATED_ENUM " : "";
 }
@@ -345,7 +345,7 @@ inline bool IsLazy(const FieldDescriptor* field, const Options& options) {
          !options.opensource_runtime;
 }
 
-inline bool IsFieldUsed(const FieldDescriptor* field, const Options& options) {
+inline bool IsFieldUsed(const FieldDescriptor* /* field */, const Options& /* options */) {
   return true;
 }
 
