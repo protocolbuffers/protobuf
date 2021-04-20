@@ -1,7 +1,7 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain")
 load("//:protobuf.bzl", "conformance_test")
-load("//java:testing.bzl", "junit_tests")
+load("//java/internal:testing.bzl", "junit_tests")
 
 exports_files(["lite.awk"], visibility = ["//java/core:__pkg__"])
 

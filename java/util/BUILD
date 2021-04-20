@@ -1,6 +1,6 @@
 load("@rules_java//java:defs.bzl", "java_library", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//java:testing.bzl", "junit_tests")
+load("//java/internal:testing.bzl", "junit_tests")
 
 java_library(
     name = "util",
