@@ -752,11 +752,11 @@ class PROTOC_EXPORT NamespaceOpener {
       if (name_stack_[common_idx] != new_stack_[common_idx]) break;
       common_idx++;
     }
-    for (auto oldNameIt = name_stack_.crbegin(); oldNameIt != name_stack_.crend() - common_idx; ++oldNameIt) {
-      if (*oldNameIt == "PROTOBUF_NAMESPACE_ID") {
+    for (auto it = name_stack_.crbegin(); it != name_stack_.crend() - common_idx; ++it) {
+      if (*it == "PROTOBUF_NAMESPACE_ID") {
         printer_->Print("PROTOBUF_NAMESPACE_CLOSE\n");
       } else {
-        printer_->Print("}  // namespace $ns$\n", "ns", *oldNameIt);
+        printer_->Print("}  // namespace $ns$\n", "ns", *it);
       }
     }
     name_stack_.swap(new_stack_);
