@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package example_extensible_message;
+
+option java_package = "example_extensible_message";
+option java_multiple_files = true;
+
+message ExampleExtensibleMessage {
+  extensions 10 to 20;
+}
+
+extend ExampleExtensibleMessage {
+  repeated int32 repeated_extension = 10;
+  repeated int32 different_extension = 11;
+  optional int32 int32_extension = 12;
+}

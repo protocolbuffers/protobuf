@@ -84,6 +84,7 @@ class ImmutableFieldGenerator {
   virtual void GenerateSerializedSizeCode(io::Printer* printer) const = 0;
   virtual void GenerateFieldBuilderInitializationCode(
       io::Printer* printer) const = 0;
+  virtual void GenerateKotlinDslMembers(io::Printer* printer) const = 0;
 
   virtual void GenerateEqualsCode(io::Printer* printer) const = 0;
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
@@ -106,6 +107,7 @@ class ImmutableFieldLiteGenerator {
   virtual void GenerateInitializationCode(io::Printer* printer) const = 0;
   virtual void GenerateFieldInfo(io::Printer* printer,
                                  std::vector<uint16_t>* output) const = 0;
+  virtual void GenerateKotlinDslMembers(io::Printer* printer) const = 0;
 
   virtual std::string GetBoxedType() const = 0;
 
