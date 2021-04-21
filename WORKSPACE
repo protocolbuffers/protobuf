@@ -50,7 +50,13 @@ maven_install(
         "https://jcenter.bintray.com/",
         "https://repo1.maven.org/maven2",
     ],
+    # For updating instructions, see: 
+    # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
+    maven_install_json = "//:maven_install.json",
 )
+
+load("@maven//:defs.bzl", "pinned_maven_install")
+pinned_maven_install()
 
 bind(
     name = "guava",
