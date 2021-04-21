@@ -713,8 +713,8 @@ class PROTOC_EXPORT Formatter {
     std::vector<int> path;
     descriptor->GetLocationPath(&path);
     GeneratedCodeInfo::Annotation annotation;
-    for (int i = 0; i < path.size(); ++i) {
-      annotation.add_path(path[i]);
+    for (int index: path) {
+      annotation.add_path(index);
     }
     annotation.set_source_file(descriptor->file()->name());
     return annotation.SerializeAsString();
@@ -746,21 +746,21 @@ class PROTOC_EXPORT NamespaceOpener {
   void ChangeTo(const std::string& name) {
     std::vector<std::string> new_stack_ =
         Split(name, "::", true);
-    int len = std::min(name_stack_.size(), new_stack_.size());
-    int common_idx = 0;
+    size_t len = std::min(name_stack_.size(), new_stack_.size());
+    size_t common_idx = 0;
     while (common_idx < len) {
       if (name_stack_[common_idx] != new_stack_[common_idx]) break;
       common_idx++;
     }
-    for (int i = name_stack_.size() - 1; i >= common_idx; i--) {
-      if (name_stack_[i] == "PROTOBUF_NAMESPACE_ID") {
+    for (auto it = name_stack_.crbegin(); it != name_stack_.crend() - common_idx; ++it) {
+      if (*it == "PROTOBUF_NAMESPACE_ID") {
         printer_->Print("PROTOBUF_NAMESPACE_CLOSE\n");
       } else {
-        printer_->Print("}  // namespace $ns$\n", "ns", name_stack_[i]);
+        printer_->Print("}  // namespace $ns$\n", "ns", *it);
       }
     }
     name_stack_.swap(new_stack_);
-    for (int i = common_idx; i < name_stack_.size(); i++) {
+    for (size_t i = common_idx; i < name_stack_.size(); ++i) {
       if (name_stack_[i] == "PROTOBUF_NAMESPACE_ID") {
         printer_->Print("PROTOBUF_NAMESPACE_OPEN\n");
       } else {
