@@ -2013,6 +2013,7 @@ void Generator::GenerateClass(const GeneratorOptions& options,
     printer->Print("\n");
     GenerateClassFieldInfo(options, printer, desc);
 
+    GenerateClassFromObject(options, printer, desc);
     GenerateClassToObject(options, printer, desc);
     // These must come *before* the extension-field info generation in
     // GenerateClassRegistration so that references to the binary
