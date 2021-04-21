@@ -530,6 +530,8 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
   java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
+  java/internal/BUILD                                                              \
+  java/internal/testing.bzl                                                        \
   java/kotlin/generate-sources-build.xml                                           \
   java/kotlin/generate-test-sources-build.xml                                      \
   java/kotlin/pom.xml                                                              \
@@ -568,6 +570,7 @@ java_EXTRA_DIST=                                                                
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
+  java/BUILD                                                                       \
   java/pom.xml                                                                     \
   java/util/BUILD                                                                  \
   java/util/pom.xml                                                                \
