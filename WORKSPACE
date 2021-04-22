@@ -48,8 +48,7 @@ maven_install(
     ],
     repositories = [
         "https://repo1.maven.org/maven2",
-        "http://mirrors.ibiblio.org/pub/mirrors/maven2",
-        "http://www.ibiblio.net/pub/packages/maven2",
+        "https://repo.maven.apache.org/maven2",
     ],
     # For updating instructions, see: 
     # https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson
