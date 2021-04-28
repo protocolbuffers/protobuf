@@ -52,6 +52,9 @@ static zend_object *CreateHandler_ReturnNull(zend_class_entry *class_type) {
   return NULL;  // Nobody should call this.
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_getByIndex, 0, 0, 1)
+  ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
 
 // -----------------------------------------------------------------------------
 // EnumValueDescriptor
@@ -226,7 +229,7 @@ PHP_METHOD(EnumDescriptor, getPublicDescriptor) {
 static zend_function_entry EnumDescriptor_methods[] = {
   PHP_ME(EnumDescriptor, getPublicDescriptor, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(EnumDescriptor, getValueCount, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(EnumDescriptor, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(EnumDescriptor, getValue, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -317,7 +320,7 @@ PHP_METHOD(OneofDescriptor, getFieldCount) {
 
 static zend_function_entry OneofDescriptor_methods[] = {
   PHP_ME(OneofDescriptor, getName,  arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(OneofDescriptor, getField, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(OneofDescriptor, getField, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   PHP_ME(OneofDescriptor, getFieldCount, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
@@ -702,9 +705,9 @@ PHP_METHOD(Descriptor, getClass) {
 static zend_function_entry Descriptor_methods[] = {
   PHP_ME(Descriptor, getClass, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getFullName, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getField, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getField, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getFieldCount, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getOneofDecl, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getOneofDecl, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getOneofDeclCount, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getPublicDescriptor, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
@@ -1003,6 +1006,10 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
   upb_arena_free(arena);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_lookupByName, 0, 0, 1)
+  ZEND_ARG_INFO(0, name)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_addgeneratedfile, 0, 0, 2)
   ZEND_ARG_INFO(0, data)
   ZEND_ARG_INFO(0, data_len)
@@ -1011,9 +1018,9 @@ ZEND_END_ARG_INFO()
 static zend_function_entry DescriptorPool_methods[] = {
   PHP_ME(DescriptorPool, getGeneratedPool, arginfo_void,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(DescriptorPool, getDescriptorByClassName, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(DescriptorPool, getDescriptorByProtoName, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(DescriptorPool, getEnumDescriptorByClassName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, getDescriptorByClassName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, getDescriptorByProtoName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, getEnumDescriptorByClassName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
   PHP_ME(DescriptorPool, internalAddGeneratedFile, arginfo_addgeneratedfile, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };

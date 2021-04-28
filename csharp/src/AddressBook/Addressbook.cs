@@ -32,9 +32,9 @@ namespace Google.Protobuf.Examples.AddressBook {
             "Eg4KBm51bWJlchgBIAEoCRIoCgR0eXBlGAIgASgOMhoudHV0b3JpYWwuUGVy",
             "c29uLlBob25lVHlwZSIrCglQaG9uZVR5cGUSCgoGTU9CSUxFEAASCAoESE9N",
             "RRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZwZW9wbGUYASADKAsy",
-            "EC50dXRvcmlhbC5QZXJzb25CWQobY29tLmV4YW1wbGUudHV0b3JpYWwucHJv",
-            "dG9zQhFBZGRyZXNzQm9va1Byb3Rvc1ABqgIkR29vZ2xlLlByb3RvYnVmLkV4",
-            "YW1wbGVzLkFkZHJlc3NCb29rYgZwcm90bzM="));
+            "EC50dXRvcmlhbC5QZXJzb25CZgobY29tLmV4YW1wbGUudHV0b3JpYWwucHJv",
+            "dG9zQhFBZGRyZXNzQm9va1Byb3Rvc1ABWgsuLi90dXRvcmlhbKoCJEdvb2ds",
+            "ZS5Qcm90b2J1Zi5FeGFtcGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
