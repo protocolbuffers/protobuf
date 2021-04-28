@@ -73,7 +73,7 @@ public final class WireFormat {
   }
 
   /** Makes a tag value given a field number and wire type. */
-  static int makeTag(final int fieldNumber, final int wireType) {
+  public static int makeTag(final int fieldNumber, final int wireType) {
     return (fieldNumber << TAG_TYPE_BITS) | wireType;
   }
 

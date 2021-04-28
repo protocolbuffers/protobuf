@@ -511,6 +511,16 @@ public abstract class CodedInputStream {
   public abstract byte[] readRawBytes(final int size) throws IOException;
 
   /**
+   * Read a fixed size of bytes from the input into the provided byte buffer starting at the
+   * provided offset.
+   *
+   * @throws InvalidProtocolBufferException The end of the stream or the current limit was reached.
+   * @throws IndexOutOfBoundsException if copying would cause access of data outside array bounds.
+   */
+  public abstract void readRawBytes(final byte[] dst, final int offset, final int size)
+      throws IOException;
+
+  /**
    * Reads and discards {@code size} bytes.
    *
    * @throws InvalidProtocolBufferException The end of the stream or the current limit was reached.
@@ -1246,18 +1256,26 @@ public abstract class CodedInputStream {
 
     @Override
     public byte[] readRawBytes(final int length) throws IOException {
+      byte[] bytes = EMPTY_BYTE_ARRAY;
       if (length > 0 && length <= (limit - pos)) {
+        bytes = new byte[length];
+      }
+      readRawBytes(bytes, 0, length);
+      return bytes;
+    }
+
+    @Override
+    public void readRawBytes(final byte[] dst, final int offset, final int length)
+        throws IOException {
+      if (length >= 0 && length <= (limit - pos)) {
         final int tempPos = pos;
         pos += length;
-        return Arrays.copyOfRange(buffer, tempPos, pos);
+        System.arraycopy(buffer, tempPos, dst, offset, length);
+        return;
       }
 
-      if (length <= 0) {
-        if (length == 0) {
-          return Internal.EMPTY_BYTE_ARRAY;
-        } else {
-          throw InvalidProtocolBufferException.negativeSize();
-        }
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
       }
       throw InvalidProtocolBufferException.truncatedMessage();
     }
@@ -1957,21 +1975,26 @@ public abstract class CodedInputStream {
 
     @Override
     public byte[] readRawBytes(final int length) throws IOException {
+      byte[] bytes = EMPTY_BYTE_ARRAY;
+      if (length > 0 && length <= remaining()) {
+        bytes = new byte[length];
+      }
+      readRawBytes(bytes, 0, length);
+      return bytes;
+    }
+
+    @Override
+    public void readRawBytes(final byte[] dst, final int offset, final int length)
+        throws IOException {
       if (length >= 0 && length <= remaining()) {
-        byte[] bytes = new byte[length];
-        slice(pos, pos + length).get(bytes);
+        slice(pos, pos + length).get(dst, offset, length);
         pos += length;
-        return bytes;
+        return;
       }
 
-      if (length <= 0) {
-        if (length == 0) {
-          return EMPTY_BYTE_ARRAY;
-        } else {
-          throw InvalidProtocolBufferException.negativeSize();
-        }
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
       }
-
       throw InvalidProtocolBufferException.truncatedMessage();
     }
 
@@ -2792,7 +2815,7 @@ public abstract class CodedInputStream {
     private boolean tryRefillBuffer(int n) throws IOException {
       if (pos + n <= bufferSize) {
         throw new IllegalStateException(
-            "refillBuffer() called when " + n + " bytes were already available in buffer");
+            "tryRefillBuffer() called when " + n + " bytes were already available in buffer");
       }
 
       // Check whether the size of total message needs to read is bigger than the size limit.
@@ -2822,18 +2845,51 @@ public abstract class CodedInputStream {
         pos = 0;
       }
 
+      return tryFillBuffer(buffer, bufferSize, n - bufferSize);
+    }
+
+    /**
+     * Tries to read more bytes from the input, writing {@code size} bytes into the
+     * buffer. Caller must ensure that dest is big enough to fit requested space. If we are
+     * refilling the decoder's buffer byte array, we may read more than the requested size.
+     *
+     * @return {@code true} If the bytes could be made available; {@code false} 1. Current at the
+     *     end of the stream 2. The current limit was reached 3. The total size limit was reached.
+     */
+    private boolean tryFillBuffer(byte[] dest, int offset, int size) throws IOException {
+      // Check whether the size of the total message that needs to read is bigger than the size limit.
+      // We shouldn't throw an exception here as isAtEnd() function needs to get this function's
+      // return as the result.
+      if (size > sizeLimit - totalBytesRetired - pos) {
+        return false;
+      }
+
+      // Shouldn't throw the exception here either.
+      if (size > currentLimit - totalBytesRetired - pos) {
+        // Oops, we hit a limit.
+        return false;
+      }
+
+      // Since we aren't reading past the current limit and we need to read bytes, then this better be zero.
+      if (bufferSizeAfterLimit != 0) {
+        throw new IllegalStateException(
+            "tryRefillBuffer() called when " + bufferSizeAfterLimit + " bytes already read past limit");
+      }
+
+      final boolean isDecoderBuffer = dest == buffer;
+
       // Here we should refill the buffer as many bytes as possible.
       int bytesRead =
           read(
               input,
-              buffer,
-              bufferSize,
+              dest,
+              offset,
               Math.min(
-                  //  the size of allocated but unused bytes in the buffer
-                  buffer.length - bufferSize,
+                  //  the size to write into the buffer
+                  isDecoderBuffer ? dest.length - offset : size,
                   //  do not exceed the total bytes limit
                   sizeLimit - totalBytesRetired - bufferSize));
-      if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
+      if (bytesRead == 0 || bytesRead < -1 || bytesRead > dest.length - offset) {
         throw new IllegalStateException(
             input.getClass()
                 + "#read(byte[]) returned invalid result: "
@@ -2841,9 +2897,13 @@ public abstract class CodedInputStream {
                 + "\nThe InputStream implementation is buggy.");
       }
       if (bytesRead > 0) {
-        bufferSize += bytesRead;
-        recomputeBufferSizeAfterLimit();
-        return (bufferSize >= n) ? true : tryRefillBuffer(n);
+        if (isDecoderBuffer) {
+          bufferSize += bytesRead;
+          recomputeBufferSizeAfterLimit();
+        } else {
+          totalBytesRetired += bytesRead;
+        }
+        return bytesRead >= size || tryFillBuffer(dest, offset + bytesRead, size - bytesRead);
       }
 
       return false;
@@ -2864,8 +2924,42 @@ public abstract class CodedInputStream {
         pos = tempPos + size;
         return Arrays.copyOfRange(buffer, tempPos, tempPos + size);
       } else {
-        // TODO(dweis): Do we want to protect from malicious input streams here?
-        return readRawBytesSlowPath(size, /* ensureNoLeakedReferences= */ false);
+        byte[] buffer = new byte[size];
+        readRawBytes(buffer, 0, size);
+        return buffer;
+      }
+    }
+
+    @Override
+    public void readRawBytes(byte[] dest, final int offset, final int size) throws IOException {
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+
+      // Integer-overflow-conscious check that the message size so far has not exceeded sizeLimit.
+      long currentMessageSize = totalBytesRetired + pos + size;
+      if (currentMessageSize - sizeLimit > 0) {
+        throw InvalidProtocolBufferException.sizeLimitExceeded();
+      }
+
+      // Verify that the message size so far has not exceeded currentLimit.
+      if (currentMessageSize > currentLimit) {
+        // Read to the end of the stream anyway.
+        skipRawBytes(currentLimit - totalBytesRetired - pos);
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+
+      final int sizeBuffered = Math.min(size, bufferSize - pos);
+      if (sizeBuffered > 0) {
+        System.arraycopy(buffer, pos, dest, offset, sizeBuffered);
+        pos += sizeBuffered;
+      }
+      if (size != sizeBuffered) {
+        final int sizeLeft = size - sizeBuffered;
+        final int newOffset = offset + sizeBuffered;
+        if (!tryFillBuffer(dest, newOffset, sizeLeft)) {
+          throw InvalidProtocolBufferException.sizeLimitExceeded();
+        }
       }
     }
 
@@ -3399,9 +3493,8 @@ public abstract class CodedInputStream {
       } else if (size > 0 && size <= remaining()) {
         // TODO(yilunchong): To use an underlying bytes[] instead of allocating a new bytes[]
         byte[] bytes = new byte[size];
-        readRawBytesTo(bytes, 0, size);
-        String result = new String(bytes, UTF_8);
-        return result;
+        readRawBytes(bytes, 0, size);
+        return new String(bytes, UTF_8);
       }
 
       if (size == 0) {
@@ -3424,7 +3517,7 @@ public abstract class CodedInputStream {
       }
       if (size >= 0 && size <= remaining()) {
         byte[] bytes = new byte[size];
-        readRawBytesTo(bytes, 0, size);
+        readRawBytes(bytes, 0, size);
         return Utf8.decodeUtf8(bytes, 0, size);
       }
 
@@ -3542,7 +3635,7 @@ public abstract class CodedInputStream {
           return ByteString.copyFrom(byteStrings);
         } else {
           byte[] temp = new byte[size];
-          readRawBytesTo(temp, 0, size);
+          readRawBytes(temp, 0, size);
           return ByteString.wrap(temp);
         }
       }
@@ -3578,7 +3671,7 @@ public abstract class CodedInputStream {
         }
       } else if (size > 0 && size <= remaining()) {
         byte[] temp = new byte[size];
-        readRawBytesTo(temp, 0, size);
+        readRawBytes(temp, 0, size);
         return ByteBuffer.wrap(temp);
       }
 
@@ -3851,40 +3944,16 @@ public abstract class CodedInputStream {
 
     @Override
     public byte[] readRawBytes(final int length) throws IOException {
-      if (length >= 0 && length <= currentRemaining()) {
-        byte[] bytes = new byte[length];
-        UnsafeUtil.copyMemory(currentByteBufferPos, bytes, 0, length);
-        currentByteBufferPos += length;
-        return bytes;
+      byte[] bytes = EMPTY_BYTE_ARRAY;
+      if (length > 0 && length <= remaining()) {
+        bytes = new byte[length];
       }
-      if (length >= 0 && length <= remaining()) {
-        byte[] bytes = new byte[length];
-        readRawBytesTo(bytes, 0, length);
-        return bytes;
-      }
-
-      if (length <= 0) {
-        if (length == 0) {
-          return EMPTY_BYTE_ARRAY;
-        } else {
-          throw InvalidProtocolBufferException.negativeSize();
-        }
-      }
-
-      throw InvalidProtocolBufferException.truncatedMessage();
+      readRawBytes(bytes, 0, length);
+      return bytes;
     }
 
-    /**
-     * Try to get raw bytes from {@code input} with the size of {@code length} and copy to {@code
-     * bytes} array. If the size is bigger than the number of remaining bytes in the input, then
-     * throw {@code truncatedMessage} exception.
-     *
-     * @param bytes
-     * @param offset
-     * @param length
-     * @throws IOException
-     */
-    private void readRawBytesTo(byte[] bytes, int offset, final int length) throws IOException {
+    @Override
+    public void readRawBytes(byte[] bytes, int offset, final int length) throws IOException {
       if (length >= 0 && length <= remaining()) {
         int l = length;
         while (l > 0) {
