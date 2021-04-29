@@ -70,7 +70,7 @@ static PHP_METHOD(google_protobuf_Any, getTypeUrl) {
                                            "type_url");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Any, setTypeUrl) {
@@ -92,7 +92,7 @@ static PHP_METHOD(google_protobuf_Any, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Any, setValue) {
@@ -215,7 +215,7 @@ static PHP_METHOD(google_protobuf_Api, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setName) {
@@ -237,7 +237,7 @@ static PHP_METHOD(google_protobuf_Api, getMethods) {
                                            "methods");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setMethods) {
@@ -259,7 +259,7 @@ static PHP_METHOD(google_protobuf_Api, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setOptions) {
@@ -281,7 +281,7 @@ static PHP_METHOD(google_protobuf_Api, getVersion) {
                                            "version");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setVersion) {
@@ -303,7 +303,7 @@ static PHP_METHOD(google_protobuf_Api, getSourceContext) {
                                            "source_context");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setSourceContext) {
@@ -325,7 +325,7 @@ static PHP_METHOD(google_protobuf_Api, getMixins) {
                                            "mixins");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setMixins) {
@@ -347,7 +347,7 @@ static PHP_METHOD(google_protobuf_Api, getSyntax) {
                                            "syntax");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Api, setSyntax) {
@@ -409,7 +409,7 @@ static PHP_METHOD(google_protobuf_Method, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setName) {
@@ -431,7 +431,7 @@ static PHP_METHOD(google_protobuf_Method, getRequestTypeUrl) {
                                            "request_type_url");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setRequestTypeUrl) {
@@ -453,7 +453,7 @@ static PHP_METHOD(google_protobuf_Method, getRequestStreaming) {
                                            "request_streaming");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setRequestStreaming) {
@@ -475,7 +475,7 @@ static PHP_METHOD(google_protobuf_Method, getResponseTypeUrl) {
                                            "response_type_url");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setResponseTypeUrl) {
@@ -497,7 +497,7 @@ static PHP_METHOD(google_protobuf_Method, getResponseStreaming) {
                                            "response_streaming");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setResponseStreaming) {
@@ -519,7 +519,7 @@ static PHP_METHOD(google_protobuf_Method, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setOptions) {
@@ -541,7 +541,7 @@ static PHP_METHOD(google_protobuf_Method, getSyntax) {
                                            "syntax");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Method, setSyntax) {
@@ -603,7 +603,7 @@ static PHP_METHOD(google_protobuf_Mixin, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Mixin, setName) {
@@ -625,7 +625,7 @@ static PHP_METHOD(google_protobuf_Mixin, getRoot) {
                                            "root");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Mixin, setRoot) {
@@ -718,7 +718,7 @@ static PHP_METHOD(google_protobuf_Duration, getSeconds) {
                                            "seconds");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Duration, setSeconds) {
@@ -740,7 +740,7 @@ static PHP_METHOD(google_protobuf_Duration, getNanos) {
                                            "nanos");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Duration, setNanos) {
@@ -897,7 +897,7 @@ static PHP_METHOD(google_protobuf_FieldMask, getPaths) {
                                            "paths");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_FieldMask, setPaths) {
@@ -988,7 +988,7 @@ static PHP_METHOD(google_protobuf_SourceContext, getFileName) {
                                            "file_name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_SourceContext, setFileName) {
@@ -1095,7 +1095,7 @@ static PHP_METHOD(google_protobuf_Struct, getFields) {
                                            "fields");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Struct, setFields) {
@@ -1145,7 +1145,7 @@ static PHP_METHOD(google_protobuf_Struct_FieldsEntry, getKey) {
                                            "key");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Struct_FieldsEntry, setKey) {
@@ -1167,7 +1167,7 @@ static PHP_METHOD(google_protobuf_Struct_FieldsEntry, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Struct_FieldsEntry, setValue) {
@@ -1219,7 +1219,7 @@ static PHP_METHOD(google_protobuf_Value, getNullValue) {
                                            "null_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setNullValue) {
@@ -1241,7 +1241,7 @@ static PHP_METHOD(google_protobuf_Value, getNumberValue) {
                                            "number_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setNumberValue) {
@@ -1263,7 +1263,7 @@ static PHP_METHOD(google_protobuf_Value, getStringValue) {
                                            "string_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setStringValue) {
@@ -1285,7 +1285,7 @@ static PHP_METHOD(google_protobuf_Value, getBoolValue) {
                                            "bool_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setBoolValue) {
@@ -1307,7 +1307,7 @@ static PHP_METHOD(google_protobuf_Value, getStructValue) {
                                            "struct_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setStructValue) {
@@ -1329,7 +1329,7 @@ static PHP_METHOD(google_protobuf_Value, getListValue) {
                                            "list_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Value, setListValue) {
@@ -1397,7 +1397,7 @@ static PHP_METHOD(google_protobuf_ListValue, getValues) {
                                            "values");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_ListValue, setValues) {
@@ -1607,7 +1607,7 @@ static PHP_METHOD(google_protobuf_Type, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setName) {
@@ -1629,7 +1629,7 @@ static PHP_METHOD(google_protobuf_Type, getFields) {
                                            "fields");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setFields) {
@@ -1651,7 +1651,7 @@ static PHP_METHOD(google_protobuf_Type, getOneofs) {
                                            "oneofs");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setOneofs) {
@@ -1673,7 +1673,7 @@ static PHP_METHOD(google_protobuf_Type, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setOptions) {
@@ -1695,7 +1695,7 @@ static PHP_METHOD(google_protobuf_Type, getSourceContext) {
                                            "source_context");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setSourceContext) {
@@ -1717,7 +1717,7 @@ static PHP_METHOD(google_protobuf_Type, getSyntax) {
                                            "syntax");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Type, setSyntax) {
@@ -1777,7 +1777,7 @@ static PHP_METHOD(google_protobuf_Field, getKind) {
                                            "kind");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setKind) {
@@ -1799,7 +1799,7 @@ static PHP_METHOD(google_protobuf_Field, getCardinality) {
                                            "cardinality");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setCardinality) {
@@ -1821,7 +1821,7 @@ static PHP_METHOD(google_protobuf_Field, getNumber) {
                                            "number");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setNumber) {
@@ -1843,7 +1843,7 @@ static PHP_METHOD(google_protobuf_Field, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setName) {
@@ -1865,7 +1865,7 @@ static PHP_METHOD(google_protobuf_Field, getTypeUrl) {
                                            "type_url");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setTypeUrl) {
@@ -1887,7 +1887,7 @@ static PHP_METHOD(google_protobuf_Field, getOneofIndex) {
                                            "oneof_index");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setOneofIndex) {
@@ -1909,7 +1909,7 @@ static PHP_METHOD(google_protobuf_Field, getPacked) {
                                            "packed");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setPacked) {
@@ -1931,7 +1931,7 @@ static PHP_METHOD(google_protobuf_Field, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setOptions) {
@@ -1953,7 +1953,7 @@ static PHP_METHOD(google_protobuf_Field, getJsonName) {
                                            "json_name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setJsonName) {
@@ -1975,7 +1975,7 @@ static PHP_METHOD(google_protobuf_Field, getDefaultValue) {
                                            "default_value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Field, setDefaultValue) {
@@ -2211,7 +2211,7 @@ static PHP_METHOD(google_protobuf_Enum, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setName) {
@@ -2233,7 +2233,7 @@ static PHP_METHOD(google_protobuf_Enum, getEnumvalue) {
                                            "enumvalue");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setEnumvalue) {
@@ -2255,7 +2255,7 @@ static PHP_METHOD(google_protobuf_Enum, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setOptions) {
@@ -2277,7 +2277,7 @@ static PHP_METHOD(google_protobuf_Enum, getSourceContext) {
                                            "source_context");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setSourceContext) {
@@ -2299,7 +2299,7 @@ static PHP_METHOD(google_protobuf_Enum, getSyntax) {
                                            "syntax");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Enum, setSyntax) {
@@ -2357,7 +2357,7 @@ static PHP_METHOD(google_protobuf_EnumValue, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_EnumValue, setName) {
@@ -2379,7 +2379,7 @@ static PHP_METHOD(google_protobuf_EnumValue, getNumber) {
                                            "number");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_EnumValue, setNumber) {
@@ -2401,7 +2401,7 @@ static PHP_METHOD(google_protobuf_EnumValue, getOptions) {
                                            "options");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_EnumValue, setOptions) {
@@ -2455,7 +2455,7 @@ static PHP_METHOD(google_protobuf_Option, getName) {
                                            "name");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Option, setName) {
@@ -2477,7 +2477,7 @@ static PHP_METHOD(google_protobuf_Option, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Option, setValue) {
@@ -2635,7 +2635,7 @@ static PHP_METHOD(google_protobuf_Timestamp, getSeconds) {
                                            "seconds");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Timestamp, setSeconds) {
@@ -2657,7 +2657,7 @@ static PHP_METHOD(google_protobuf_Timestamp, getNanos) {
                                            "nanos");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Timestamp, setNanos) {
@@ -2765,7 +2765,7 @@ static PHP_METHOD(google_protobuf_DoubleValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_DoubleValue, setValue) {
@@ -2815,7 +2815,7 @@ static PHP_METHOD(google_protobuf_FloatValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_FloatValue, setValue) {
@@ -2865,7 +2865,7 @@ static PHP_METHOD(google_protobuf_Int64Value, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Int64Value, setValue) {
@@ -2915,7 +2915,7 @@ static PHP_METHOD(google_protobuf_UInt64Value, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_UInt64Value, setValue) {
@@ -2965,7 +2965,7 @@ static PHP_METHOD(google_protobuf_Int32Value, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_Int32Value, setValue) {
@@ -3015,7 +3015,7 @@ static PHP_METHOD(google_protobuf_UInt32Value, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_UInt32Value, setValue) {
@@ -3065,7 +3065,7 @@ static PHP_METHOD(google_protobuf_BoolValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_BoolValue, setValue) {
@@ -3115,7 +3115,7 @@ static PHP_METHOD(google_protobuf_StringValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_StringValue, setValue) {
@@ -3165,7 +3165,7 @@ static PHP_METHOD(google_protobuf_BytesValue, getValue) {
                                            "value");
   zval ret;
   Message_get(intern, f, &ret);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 static PHP_METHOD(google_protobuf_BytesValue, setValue) {

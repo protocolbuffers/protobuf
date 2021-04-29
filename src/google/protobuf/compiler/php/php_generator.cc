@@ -1953,7 +1953,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "                                           \"$name$\");\n"
       "  zval ret;\n"
       "  Message_get(intern, f, &ret);\n"
-      "  RETURN_ZVAL(&ret, 1, 0);\n"
+      "  RETURN_COPY_VALUE(&ret);\n"
       "}\n"
       "\n"
       "static PHP_METHOD($c_name$, set$camel_name$) {\n"

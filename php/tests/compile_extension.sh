@@ -14,7 +14,7 @@ if [ "$1" = "--release" ]; then
 else
   # To get debugging symbols in PHP itself, build PHP with:
   #   $ ./configure --enable-debug CFLAGS='-g -O0'
-  ./configure --with-php-config=$(which php-config) CFLAGS="-g -O0 -Wall"
+  ./configure --with-php-config=$(which php-config) CFLAGS="-g -O0 -Wall -DPBPHP_ENABLE_ASSERTS"
 fi
 make
 popd

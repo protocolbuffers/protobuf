@@ -105,6 +105,8 @@ void NameMap_AddEnum(const upb_enumdef *m);
 const upb_msgdef *NameMap_GetMessage(zend_class_entry *ce);
 const upb_enumdef *NameMap_GetEnum(zend_class_entry *ce);
 
+void Descriptors_Add(zval *desc);
+
 // We need our own assert() because PHP takes control of NDEBUG in its headers.
 #ifdef PBPHP_ENABLE_ASSERTS
 #define PBPHP_ASSERT(x)                                                    \

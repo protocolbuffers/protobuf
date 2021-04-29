@@ -433,7 +433,9 @@ void Message_GetPhpWrapper(zval *val, const Descriptor *desc, upb_msg *msg,
     return;
   }
 
-  if (!ObjCache_Get(msg, val)) {
+  if (ObjCache_Get(msg, val)) {
+    GC_ADDREF(Z_OBJ_P(val));
+  } else {
     Message *intern = emalloc(sizeof(Message));
     Message_SuppressDefaultProperties(desc->class_entry);
     zend_object_std_init(&intern->std, desc->class_entry);
@@ -1247,6 +1249,7 @@ PHP_METHOD(google_protobuf_Timestamp, fromDateTime) {
   const char *classname = "\\DatetimeInterface";
   zend_string *classname_str = zend_string_init(classname, strlen(classname), 0);
   zend_class_entry *date_interface_ce = zend_lookup_class(classname_str);
+  zend_string_release(classname_str);
 
   if (date_interface_ce == NULL) {
     zend_error(E_ERROR, "Make sure date extension is enabled.");

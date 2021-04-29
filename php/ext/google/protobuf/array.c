@@ -156,7 +156,9 @@ void RepeatedField_GetPhpWrapper(zval *val, upb_array *arr, TypeInfo type,
     return;
   }
 
-  if (!ObjCache_Get(arr, val)) {
+  if (ObjCache_Get(arr, val)) {
+    GC_ADDREF(Z_OBJ_P(val));
+  } else {
     RepeatedField *intern = emalloc(sizeof(RepeatedField));
     zend_object_std_init(&intern->std, RepeatedField_class_entry);
     intern->std.handlers = &RepeatedField_object_handlers;
