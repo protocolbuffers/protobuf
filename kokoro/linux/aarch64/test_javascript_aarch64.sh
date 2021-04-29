@@ -23,4 +23,7 @@ kokoro/linux/aarch64/dockcross_helpers/run_dockcross_manylinux2014_aarch64.sh ko
 #   running under current user's UID and GID. To be able to do that, we need to provide a home directory for the user
 #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
 #   we just run map the user's home to a throwaway temporary directory
-docker run $DOCKER_TTY_ARGS --rm --user "$(id -u):$(id -g)" -e "HOME=/home/fake-user" -v "$(mktemp -d):/home/fake-user" -v "$(pwd)":/work -w /work arm64v8/node:16-buster kokoro/linux/aarch64/javascript_build_and_run_tests_with_qemu_aarch64.sh
+# Note that the docker image used for running the tests is arm64v8/openjdk, not arm64v8/node
+# This is because some of the node tests require java to be available and adding node
+# binary distribution into a java image is easier than vice versa.
+docker run $DOCKER_TTY_ARGS --rm --user "$(id -u):$(id -g)" -e "HOME=/home/fake-user" -v "$(mktemp -d):/home/fake-user" -v "$(pwd)":/work -w /work arm64v8/openjdk:11-jdk-buster kokoro/linux/aarch64/javascript_build_and_run_tests_with_qemu_aarch64.sh
