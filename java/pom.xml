@@ -231,6 +231,35 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>docFX</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.2.0</version>
+            <configuration>
+              <doclet>com.microsoft.doclet.DocFxDoclet</doclet>
+              <useStandardDocletOptions>false</useStandardDocletOptions>
+              <docletPath>${env.KOKORO_GFILE_DIR}/docfx-doclet-1.0-SNAPSHOT-jar-with-dependencies-172556.jar</docletPath>
+              <additionalOptions>-outputpath ${project.build.directory}/docfx-yml</additionalOptions>
+            </configuration>
+            <executions>
+              <execution>
+                <id>aggregate</id>
+                <goals>
+                  <goal>aggregate</goal>
+                </goals>
+                <configuration>
+                  <failOnError>false</failOnError>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
   <modules>
