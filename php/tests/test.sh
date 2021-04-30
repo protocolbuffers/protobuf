@@ -4,12 +4,13 @@ set -ex
 
 cd $(dirname $0)
 
-./generate_protos.sh
+#./generate_protos.sh
 ./compile_extension.sh
 
 PHP_VERSION=$(php -r "echo PHP_VERSION;")
 
 # Each version of PHPUnit supports a fairly narrow range of PHP versions.
+# See: https://phpunit.de/supported-versions.html
 case "$PHP_VERSION" in
   7.0.*)
     PHPUNIT=phpunit-6.phar
