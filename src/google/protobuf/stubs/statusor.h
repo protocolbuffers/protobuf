@@ -42,7 +42,7 @@
 //
 //  StatusOr<float> result = DoBigCalculationThatCouldFail();
 //  if (result.ok()) {
-//    float answer = result.ValueOrDie();
+//    float answer = result.value();
 //    printf("Big calculation yielded: %f", answer);
 //  } else {
 //    LOG(ERROR) << result.status();
@@ -52,17 +52,7 @@
 //
 //  StatusOr<Foo*> result = FooFactory::MakeNewFoo(arg);
 //  if (result.ok()) {
-//    std::unique_ptr<Foo> foo(result.ValueOrDie());
-//    foo->DoSomethingCool();
-//  } else {
-//    LOG(ERROR) << result.status();
-//  }
-//
-// Example client usage for a StatusOr<std::unique_ptr<T>>:
-//
-//  StatusOr<std::unique_ptr<Foo>> result = FooFactory::MakeNewFoo(arg);
-//  if (result.ok()) {
-//    std::unique_ptr<Foo> foo = result.ConsumeValueOrDie();
+//    std::unique_ptr<Foo> foo(result.value());
 //    foo->DoSomethingCool();
 //  } else {
 //    LOG(ERROR) << result.status();
@@ -93,17 +83,21 @@
 namespace google {
 namespace protobuf {
 namespace util {
+namespace statusor_internal {
 
 template<typename T>
 class StatusOr {
   template<typename U> friend class StatusOr;
 
  public:
+  using value_type = T;
+
+  // Construct a new StatusOr with Status::UNKNOWN status.
   // Construct a new StatusOr with UnknownError() status.
-  StatusOr();
+  explicit StatusOr();
 
   // Construct a new StatusOr with the given non-ok status. After calling
-  // this constructor, calls to ValueOrDie() will CHECK-fail.
+  // this constructor, calls to value() will CHECK-fail.
   //
   // NOTE: Not explicit - we want to use StatusOr<T> as a return
   // value, so it is convenient and sensible to be able to do 'return
@@ -116,7 +110,7 @@ class StatusOr {
 
   // Construct a new StatusOr with the given value. If T is a plain pointer,
   // value must not be nullptr. After calling this constructor, calls to
-  // ValueOrDie() will succeed, and calls to status() will return OK.
+  // value() will succeed, and calls to status() will return OK.
   //
   // NOTE: Not explicit - we want to use StatusOr<T> as a return type
   // so it is convenient and sensible to be able to do 'return T()'
@@ -149,9 +143,6 @@ class StatusOr {
   bool ok() const;
 
   // Returns a reference to our current value, or CHECK-fails if !this->ok().
-  // If you need to initialize a T object from the stored value,
-  // ConsumeValueOrDie() may be more efficient.
-  const T& ValueOrDie() const;
   const T& value () const;
 
  private:
@@ -161,8 +152,6 @@ class StatusOr {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation details for StatusOr<T>
-
-namespace internal {
 
 class PROTOBUF_EXPORT StatusOrHelper {
  public:
@@ -185,8 +174,6 @@ struct StatusOrHelper::Specialize<T*> {
   static inline bool IsValueNull(const T* t) { return t == nullptr; }
 };
 
-}  // namespace internal
-
 template <typename T>
 inline StatusOr<T>::StatusOr() : status_(util::UnknownError("")) {}
 
@@ -201,7 +188,7 @@ inline StatusOr<T>::StatusOr(const Status& status) {
 
 template<typename T>
 inline StatusOr<T>::StatusOr(const T& value) {
-  if (internal::StatusOrHelper::Specialize<T>::IsValueNull(value)) {
+  if (StatusOrHelper::Specialize<T>::IsValueNull(value)) {
     status_ = util::InternalError("nullptr is not a valid argument.");
   } else {
     status_ = util::OkStatus();
@@ -246,20 +233,17 @@ inline bool StatusOr<T>::ok() const {
 }
 
 template<typename T>
-inline const T& StatusOr<T>::ValueOrDie() const {
+inline const T& StatusOr<T>::value() const {
   if (!status_.ok()) {
-    internal::StatusOrHelper::Crash(status_);
+    StatusOrHelper::Crash(status_);
   }
   return value_;
 }
 
-template<typename T>
-inline const T& StatusOr<T>::value() const {
-  if (!status_.ok()) {
-    internal::StatusOrHelper::Crash(status_);
-  }
-  return value_;
-}
+}  // namespace statusor_internal
+
+using ::google::protobuf::util::statusor_internal::StatusOr;
+
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google

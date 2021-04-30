@@ -211,9 +211,14 @@ void ImmutableMessageGenerator::GenerateFieldAccessorTable(
       "  com.google.protobuf.GeneratedMessage$ver$.FieldAccessorTable\n"
       "    internal_$identifier$_fieldAccessorTable;\n");
 
+  // The following bytecode_estimate calculation logic must stay in sync with
+  // the similar logic in the GenerateFieldAccessorTableInitializer method below
+  // to make sure that the generated static final fields are initialized  in the
+  // static initialization block directly.
+  //
   // 6 bytes per field and oneof
   *bytecode_estimate +=
-      10 + 6 * descriptor_->field_count() + 6 * oneofs_.size();
+      10 + 6 * descriptor_->field_count() + 6 * descriptor_->oneof_decl_count();
 }
 
 int ImmutableMessageGenerator::GenerateFieldAccessorTableInitializer(
@@ -226,6 +231,10 @@ int ImmutableMessageGenerator::GenerateFieldAccessorTableInitializer(
       "    new java.lang.String[] { ",
       "identifier", UniqueFileScopeIdentifier(descriptor_), "ver",
       GeneratedCodeVersionSuffix());
+  // All the bytecode_estimate calculation logic in this method must stay in
+  // sync with the similar logic in the GenerateFieldAccessorTable method
+  // above. See the corresponding comment in GenerateFieldAccessorTable for
+  // details.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);

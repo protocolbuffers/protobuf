@@ -436,7 +436,7 @@ void ProtoStreamObjectWriter::AnyWriter::Event::DeepCopy() {
     StrAppend(&value_storage_, value_.str());
     value_ = DataPiece(value_storage_, value_.use_strict_base64_decoding());
   } else if (value_.type() == DataPiece::TYPE_BYTES) {
-    value_storage_ = value_.ToBytes().ValueOrDie();
+    value_storage_ = value_.ToBytes().value();
     value_ =
         DataPiece(value_storage_, true, value_.use_strict_base64_decoding());
   }
@@ -1236,6 +1236,19 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
   if (data.type() == DataPiece::TYPE_NULL &&
       field->type_url() != kStructNullValueTypeUrl) {
     return this;
+  }
+
+  if (IsRepeated(*field) && !current_->is_list()) {
+    if (options_.disable_implicit_scalar_list) {
+      if (!options_.suppress_implicit_scalar_list_error) {
+        InvalidValue(
+            field->name(),
+            "Starting an primitive in a repeated field but the parent field "
+            "is not a list");
+      }
+
+      return this;
+    }
   }
 
   ProtoWriter::RenderDataPiece(name, data);

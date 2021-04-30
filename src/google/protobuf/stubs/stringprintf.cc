@@ -162,7 +162,7 @@ std::string StringPrintfVector(const char* format,
   // that accepts an array of arguments.  The best I can do is stick
   // this COMPILE_ASSERT right next to the actual statement.
 
-  GOOGLE_COMPILE_ASSERT(kStringPrintfVectorMaxArgs == 32, arg_count_mismatch);
+  static_assert(kStringPrintfVectorMaxArgs == 32, "arg_count_mismatch");
   return StringPrintf(format,
                       cstr[0], cstr[1], cstr[2], cstr[3], cstr[4],
                       cstr[5], cstr[6], cstr[7], cstr[8], cstr[9],

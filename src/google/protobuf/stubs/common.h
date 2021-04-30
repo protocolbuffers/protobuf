@@ -82,7 +82,7 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3015006
+#define GOOGLE_PROTOBUF_VERSION 3015008
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
@@ -123,7 +123,6 @@ std::string PROTOBUF_EXPORT VersionString(int version);
 // ===================================================================
 // from google3/util/utf8/public/unilib.h
 
-class StringPiece;
 namespace internal {
 
 // Checks if the buffer contains structurally-valid UTF-8.  Implemented in

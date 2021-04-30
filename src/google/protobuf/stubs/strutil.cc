@@ -545,7 +545,7 @@ static inline size_t CEscapedLength(StringPiece src) {
   };
 
   size_t escaped_len = 0;
-  for (int i = 0; i < src.size(); ++i) {
+  for (StringPiece::size_type i = 0; i < src.size(); ++i) {
     unsigned char c = static_cast<unsigned char>(src[i]);
     escaped_len += c_escaped_len[c];
   }
@@ -569,7 +569,7 @@ void CEscapeAndAppend(StringPiece src, std::string *dest) {
   dest->resize(cur_dest_len + escaped_len);
   char* append_ptr = &(*dest)[cur_dest_len];
 
-  for (int i = 0; i < src.size(); ++i) {
+  for (StringPiece::size_type i = 0; i < src.size(); ++i) {
     unsigned char c = static_cast<unsigned char>(src[i]);
     switch (c) {
       case '\n': *append_ptr++ = '\\'; *append_ptr++ = 'n'; break;
@@ -1244,7 +1244,7 @@ char* DoubleToBuffer(double value, char* buffer) {
   // platforms these days.  Just in case some system exists where DBL_DIG
   // is significantly larger -- and risks overflowing our buffer -- we have
   // this assert.
-  GOOGLE_COMPILE_ASSERT(DBL_DIG < 20, DBL_DIG_is_too_big);
+  static_assert(DBL_DIG < 20, "DBL_DIG_is_too_big");
 
   if (value == std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "inf");
@@ -1362,7 +1362,7 @@ char* FloatToBuffer(float value, char* buffer) {
   // platforms these days.  Just in case some system exists where FLT_DIG
   // is significantly larger -- and risks overflowing our buffer -- we have
   // this assert.
-  GOOGLE_COMPILE_ASSERT(FLT_DIG < 10, FLT_DIG_is_too_big);
+  static_assert(FLT_DIG < 10, "FLT_DIG_is_too_big");
 
   if (value == std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "inf");
@@ -1619,9 +1619,11 @@ int GlobalReplaceSubstring(const std::string &substring,
   std::string tmp;
   int num_replacements = 0;
   int pos = 0;
-  for (int match_pos = s->find(substring.data(), pos, substring.length());
+  for (StringPiece::size_type match_pos =
+           s->find(substring.data(), pos, substring.length());
        match_pos != std::string::npos; pos = match_pos + substring.length(),
-           match_pos = s->find(substring.data(), pos, substring.length())) {
+                              match_pos = s->find(substring.data(), pos,
+                                                  substring.length())) {
     ++num_replacements;
     // Append the original content before the match.
     tmp.append(*s, pos, match_pos - pos);

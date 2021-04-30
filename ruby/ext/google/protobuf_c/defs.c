@@ -868,6 +868,20 @@ static VALUE FieldDescriptor_default(VALUE _self) {
   return Convert_UpbToRuby(default_val, TypeInfo_get(self->fielddef), Qnil);
 }
 
+
+/*
+ * call-seq:
+ *     FieldDescriptor.json_name => json_name
+ *
+ * Returns this field's json_name, as a Ruby string, or nil if not yet set.
+ */
+static VALUE FieldDescriptor_json_name(VALUE _self) {
+  FieldDescriptor* self = ruby_to_FieldDescriptor(_self);
+  const upb_fielddef *f = self->fielddef;
+  const char *json_name = upb_fielddef_jsonname(f);
+  return rb_str_new2(json_name);
+}
+
 /*
  * call-seq:
  *     FieldDescriptor.label => label
@@ -1043,6 +1057,7 @@ static void FieldDescriptor_register(VALUE module) {
   rb_define_method(klass, "name", FieldDescriptor_name, 0);
   rb_define_method(klass, "type", FieldDescriptor__type, 0);
   rb_define_method(klass, "default", FieldDescriptor_default, 0);
+  rb_define_method(klass, "json_name", FieldDescriptor_json_name, 0);
   rb_define_method(klass, "label", FieldDescriptor_label, 0);
   rb_define_method(klass, "number", FieldDescriptor_number, 0);
   rb_define_method(klass, "submsg_name", FieldDescriptor_submsg_name, 0);
@@ -1750,6 +1765,16 @@ static void msgdef_add_field(VALUE msgbuilder_rb, upb_label_t label, VALUE name,
           field_proto,
           FileBuilderContext_strdup(self->file_builder, default_value));
     }
+
+    if (rb_funcall(options, rb_intern("key?"), 1,
+                   ID2SYM(rb_intern("json_name"))) == Qtrue) {
+      VALUE json_name =
+          rb_hash_lookup(options, ID2SYM(rb_intern("json_name")));
+
+      google_protobuf_FieldDescriptorProto_set_json_name(
+          field_proto,
+          FileBuilderContext_strdup(self->file_builder, json_name));
+    }
   }
 
   if (oneof_index >= 0) {
@@ -1899,18 +1924,20 @@ static VALUE MessageBuilderContext_required(int argc, VALUE* argv,
  */
 static VALUE MessageBuilderContext_repeated(int argc, VALUE* argv,
                                             VALUE _self) {
-  VALUE name, type, number, type_class;
+  VALUE name, type, number;
+  VALUE type_class, options = Qnil;
 
-  if (argc < 3) {
-    rb_raise(rb_eArgError, "Expected at least 3 arguments.");
+  rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
+
+  // Allow passing (name, type, number, options) or
+  // (name, type, number, type_class, options)
+  if (argc == 4 && RB_TYPE_P(type_class, T_HASH)) {
+    options = type_class;
+    type_class = Qnil;
   }
-  name = argv[0];
-  type = argv[1];
-  number = argv[2];
-  type_class = (argc > 3) ? argv[3] : Qnil;
 
   msgdef_add_field(_self, UPB_LABEL_REPEATED, name, type, number, type_class,
-                   Qnil, -1, false);
+                   options, -1, false);
 
   return Qnil;
 }

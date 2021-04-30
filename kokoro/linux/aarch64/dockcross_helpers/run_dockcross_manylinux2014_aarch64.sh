@@ -5,11 +5,18 @@ set -e
 # go to the repo root
 cd $(dirname $0)/../../../..
 
+if [[ -t 0 ]]; then
+  DOCKER_TTY_ARGS="-it"
+else
+  # The input device on kokoro is not a TTY, so -it does not work.
+  DOCKER_TTY_ARGS=
+fi
+
 # running dockcross image without any arguments generates a wrapper
 # scripts that can be used to run commands under the dockcross image
 # easily.
 # See https://github.com/dockcross/dockcross#usage for details
-docker run --rm -it dockcross/manylinux2014-aarch64 >dockcross-manylinux2014-aarch64.sh
+docker run $DOCKER_TTY_ARGS --rm dockcross/manylinux2014-aarch64 >dockcross-manylinux2014-aarch64.sh
 chmod +x dockcross-manylinux2014-aarch64.sh
 
 # the wrapper script has CRLF line endings and bash doesn't like that

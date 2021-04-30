@@ -173,12 +173,8 @@ size_t LimitByteSource::Available() const {
 }
 
 StringPiece LimitByteSource::Peek() {
-  StringPiece piece(source_->Peek());
-  if (piece.size() > limit_) {
-    piece.set(piece.data(), limit_);
-  }
-
-  return piece;
+  StringPiece piece = source_->Peek();
+  return StringPiece(piece.data(), std::min(piece.size(), limit_));
 }
 
 void LimitByteSource::Skip(size_t n) {

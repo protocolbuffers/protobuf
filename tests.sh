@@ -62,7 +62,7 @@ build_cpp_distcheck() {
 
   # List all files that should be included in the distribution package.
   git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
-    grep -v ".gitignore" | grep -v "java/compatibility_tests" | grep -v "java/lite/proguard.pgcfg" |\
+    grep -v ".gitignore" | grep -v "java/lite/proguard.pgcfg" |\
     grep -v "python/compatibility_tests" | grep -v "python/docs" | grep -v "python/.repo-metadata.json" |\
     grep -v "python/protobuf_distutils" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
@@ -233,17 +233,6 @@ build_java_jdk7() {
 build_java_oracle7() {
   use_java oracle7
   build_java oracle7
-}
-build_java_compatibility() {
-  use_java jdk7
-  internal_build_cpp
-  # Use the unit-tests extracted from 2.5.0 to test the compatibility between
-  # 3.0.0-beta-4 and the current version.
-  cd java/compatibility_tests/v2.5.0
-  ./test.sh 3.0.0-beta-4
-
-  # Test the last released and current version.
-  ./test.sh $LAST_RELEASED
 }
 build_java_linkage_monitor() {
   # Linkage Monitor checks compatibility with other Google libraries
@@ -728,7 +717,6 @@ Usage: $0 { cpp |
             csharp |
             java_jdk7 |
             java_oracle7 |
-            java_compatibility |
             java_linkage_monitor |
             objectivec_ios |
             objectivec_ios_debug |
