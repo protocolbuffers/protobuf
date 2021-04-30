@@ -418,19 +418,24 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
   }
 }
 
-void GenericSwap(Message* m1, Message* m2) {
-  Arena* m2_arena = m2->GetArena();
-  GOOGLE_DCHECK(m1->GetArena() != m2_arena);
+void GenericSwap(Message* lhs, Message* rhs) {
+  GOOGLE_DCHECK(Arena::InternalHelper<Message>::GetOwningArena(lhs) !=
+         Arena::InternalHelper<Message>::GetOwningArena(rhs));
+  // At least one of these must have an arena, so make `rhs` point to it.
+  Arena* arena = Arena::InternalHelper<Message>::GetOwningArena(rhs);
+  if (arena == nullptr) {
+    std::swap(lhs, rhs);
+    arena = Arena::InternalHelper<Message>::GetOwningArena(rhs);
+  }
 
-  // Copy semantics in this case. We try to improve efficiency by placing the
-  // temporary on |m2|'s arena so that messages are copied twice rather than
-  // three times.
-  Message* tmp = m2->New(m2_arena);
-  std::unique_ptr<Message> tmp_deleter(m2_arena == nullptr ? tmp : nullptr);
-  tmp->CheckTypeAndMergeFrom(*m1);
-  m1->Clear();
-  m1->CheckTypeAndMergeFrom(*m2);
-  m2->GetReflection()->Swap(tmp, m2);
+  // Improve efficiency by placing the temporary on an arena so that messages
+  // are copied twice rather than three times.
+  GOOGLE_DCHECK(arena != nullptr);
+  Message* tmp = rhs->New(arena);
+  tmp->CheckTypeAndMergeFrom(*lhs);
+  lhs->Clear();
+  lhs->CheckTypeAndMergeFrom(*rhs);
+  rhs->GetReflection()->Swap(tmp, rhs);
 }
 
 }  // namespace internal

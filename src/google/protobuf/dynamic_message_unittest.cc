@@ -286,6 +286,7 @@ TEST_F(DynamicMessageTest, Arena) {
   // Return without freeing: should not leak.
 }
 
+
 TEST_F(DynamicMessageTest, Proto3) {
   Message* message = proto3_prototype_->New();
   const Reflection* refl = message->GetReflection();

@@ -100,6 +100,11 @@ class MapFieldBaseStub : public MapFieldBase {
   void CopyIterator(MapIterator* this_iterator,
                     const MapIterator& other_iterator) const override {}
   void IncreaseIterator(MapIterator* map_iter) const override {}
+
+  Arena* GetArenaForInternalRepeatedField() {
+    auto* repeated_field = MutableRepeatedField();
+    return repeated_field->GetArena();
+  }
 };
 
 class MapFieldBasePrimitiveTest : public testing::TestWithParam<bool> {
@@ -205,7 +210,15 @@ TEST_P(MapFieldBasePrimitiveTest, Arena) {
 
     // Trigger conversion to repeated field.
     EXPECT_TRUE(map_field->MutableRepeatedField() != NULL);
+
+    EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), &arena);
   }
+}
+
+TEST_P(MapFieldBasePrimitiveTest, EnforceNoArena) {
+  std::unique_ptr<MapFieldBaseStub> map_field(
+      Arena::CreateMessage<MapFieldBaseStub>(nullptr));
+  EXPECT_EQ(map_field->GetArenaForInternalRepeatedField(), nullptr);
 }
 
 namespace {
