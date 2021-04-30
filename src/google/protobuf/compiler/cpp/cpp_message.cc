@@ -1341,8 +1341,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format(
       "int GetCachedSize() const final { return _cached_size_.Get(); }"
       "\n\nprivate:\n"
-      "inline void SharedCtor();\n"
-      "inline void SharedDtor();\n"
+      "void SharedCtor();\n"
+      "void SharedDtor();\n"
       "void SetCachedSize(int size) const$ full_final$;\n"
       "void InternalSwap($classname$* other);\n");
 
