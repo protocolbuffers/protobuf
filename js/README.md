@@ -95,7 +95,7 @@ statements like:
 
     var message = proto.my.package.MyMessage();
 
-If unfamiliar with Closure or it's compiler, consider reviewing Closure documentation
+If unfamiliar with Closure or its compiler, consider reviewing Closure documentation
 https://developers.google.com/closure/library/docs/tutorial
 https://developers.google.com/closure/library/docs/closurebuilder
 https://developers.google.com/closure/library/docs/depswriter
