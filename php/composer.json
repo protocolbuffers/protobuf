@@ -19,11 +19,11 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "": "tests/generated"
+      "": "tmp"
     }
   },
   "scripts": {
-    "test": "tests/generate_protos.sh && vendor/bin/phpunit",
-    "aggregate_metadata_test": "tests/generate_protos.sh --aggregate_metadata && vendor/bin/phpunit"
+    "test": "./generate_test_protos.sh && vendor/bin/phpunit tests",
+    "aggregate_metadata_test": "./generate_test_protos.sh --aggregate_metadata && vendor/bin/phpunit"
   }
 }
