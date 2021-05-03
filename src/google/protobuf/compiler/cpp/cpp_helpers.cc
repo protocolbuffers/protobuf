@@ -662,14 +662,7 @@ std::string UInt64ToString(const std::string& macro_prefix, uint64_t number) {
 }
 
 std::string DefaultValue(const FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT64:
-      return Int64ToString("GG", field->default_value_int64());
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return UInt64ToString("GG", field->default_value_uint64());
-    default:
-      return DefaultValue(Options(), field);
-  }
+  return DefaultValue(Options(), field);
 }
 
 std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
