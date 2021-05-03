@@ -41,32 +41,40 @@ namespace Google.Protobuf
     {
         public static void AssertReadingMessage<T>(MessageParser<T> parser, byte[] bytes, Action<T> assert) where T : IMessage<T>
         {
-            var parsedStream = parser.ParseFrom(bytes);
+            var parsedBuffer = parser.ParseFrom(bytes);
+            assert(parsedBuffer);
 
             // Load content as single segment
-            var parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
+            parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
             assert(parsedBuffer);
 
             // Load content as multiple segments
             parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
             assert(parsedBuffer);
 
-            assert(parsedStream);
+            // Load content as ReadOnlySpan
+            ReadOnlySpan<byte> bytesSpan = bytes.AsSpan();
+            parsedBuffer = parser.ParseFrom(ref bytesSpan);
+            assert(parsedBuffer);
         }
 
         public static void AssertReadingMessage(MessageParser parser, byte[] bytes, Action<IMessage> assert)
         {
-            var parsedStream = parser.ParseFrom(bytes);
+            var parsedBuffer = parser.ParseFrom(bytes);
+            assert(parsedBuffer);
 
             // Load content as single segment
-            var parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
+            parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
             assert(parsedBuffer);
 
             // Load content as multiple segments
             parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
             assert(parsedBuffer);
 
-            assert(parsedStream);
+            // Load content as ReadOnlySpan
+            ReadOnlySpan<byte> bytesSpan = bytes.AsSpan();
+            parsedBuffer = parser.ParseFrom(ref bytesSpan);
+            assert(parsedBuffer);
         }
 
         public static void AssertReadingMessageThrows<TMessage, TException>(MessageParser<TMessage> parser, byte[] bytes)
@@ -76,6 +84,12 @@ namespace Google.Protobuf
             Assert.Throws<TException>(() => parser.ParseFrom(bytes));
 
             Assert.Throws<TException>(() => parser.ParseFrom(new ReadOnlySequence<byte>(bytes)));
+
+            Assert.Throws<TException>(() => 
+              {
+                ReadOnlySpan<byte> bytesSpan = bytes.AsSpan();
+                parser.ParseFrom(ref bytesSpan);
+              });
         }
 
         public static void AssertRoundtrip<T>(MessageParser<T> parser, T message, Action<T> additionalAssert = null) where T : IMessage<T>
@@ -87,8 +101,12 @@ namespace Google.Protobuf
             message.WriteTo(bufferWriter);
             Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray(), "Both serialization approaches need to result in the same data.");
 
+            var parsedBuffer = parser.ParseFrom(bytes);
+            Assert.AreEqual(message, parsedBuffer);
+            additionalAssert?.Invoke(parsedBuffer);
+
             // Load content as single segment
-            var parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
+            parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
             Assert.AreEqual(message, parsedBuffer);
             additionalAssert?.Invoke(parsedBuffer);
 
@@ -97,10 +115,11 @@ namespace Google.Protobuf
             Assert.AreEqual(message, parsedBuffer);
             additionalAssert?.Invoke(parsedBuffer);
 
-            var parsedStream = parser.ParseFrom(bytes);
-
-            Assert.AreEqual(message, parsedStream);
-            additionalAssert?.Invoke(parsedStream);
+            // Load content as ReadOnlySpan
+            ReadOnlySpan<byte> bytesSpan = bytes.AsSpan();
+            parsedBuffer = parser.ParseFrom(ref bytesSpan);
+            Assert.AreEqual(message, parsedBuffer);
+            additionalAssert?.Invoke(parsedBuffer);
         }
 
         public static void AssertWritingMessage(IMessage message)

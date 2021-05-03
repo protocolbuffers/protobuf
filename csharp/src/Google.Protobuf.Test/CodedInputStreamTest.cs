@@ -926,39 +926,6 @@ namespace Google.Protobuf
             }
         }
 
-        [Test]
-        public void TestParseFromSpan()
-        {
-            var testMessage = new TestAllTypes
-            {
-                RepeatedBool = { true, false },
-                SingleDouble = 42.0d,
-                SingleString = "testing"
-            };
-
-            ReadOnlySpan<byte> messagesBytes = testMessage.ToByteArray().AsSpan();
-            TestAllTypes parsedMessage = TestAllTypes.Parser.ParseFrom(messagesBytes);
-
-            Assert.AreEqual(testMessage, parsedMessage);
-        }
-
-        [Test]
-        public void TestMergeFromSpan()
-        {
-            var testMessage = new TestAllTypes
-            {
-                RepeatedBool = { true, false },
-                SingleDouble = 42.0d,
-                SingleString = "testing"
-            };
-
-            ReadOnlySpan<byte> messagesBytes = testMessage.ToByteArray().AsSpan();
-            var mergedMessage = new TestAllTypes();
-            mergedMessage.MergeFrom(messagesBytes);
-
-            Assert.AreEqual(testMessage, mergedMessage);
-        }
-
         /// <returns>A serialized big message</returns>
         private static byte[] GenerateBigSerializedMessage()
         {

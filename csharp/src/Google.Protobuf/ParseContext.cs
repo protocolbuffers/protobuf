@@ -65,6 +65,29 @@ namespace Google.Protobuf
             ctx.state = state;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ref ReadOnlySpan<byte> input, out ParseContext ctx)
+        {
+            Initialize(ref input, DefaultRecursionLimit, out ctx);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void Initialize(ref ReadOnlySpan<byte> input, int recursionLimit, out ParseContext ctx)
+        {
+            ctx.buffer = input;
+            ctx.state = default;
+            ctx.state.lastTag = 0;
+            ctx.state.recursionDepth = 0;
+            ctx.state.sizeLimit = DefaultSizeLimit;
+            ctx.state.recursionLimit = recursionLimit;
+            ctx.state.currentLimit = int.MaxValue;
+            ctx.state.bufferPos = 0;
+            ctx.state.bufferSize = input.Length;
+
+            ctx.state.DiscardUnknownFields = false;
+            ctx.state.ExtensionRegistry = null;
+        }
+
         /// <summary>
         /// Creates a ParseContext instance from CodedInputStream.
         /// WARNING: internally this copies the CodedInputStream's state, so after done with the ParseContext,
@@ -99,29 +122,6 @@ namespace Google.Protobuf
             SegmentedBufferHelper.Initialize(input, out ctx.state.segmentedBufferHelper, out ctx.buffer);
             ctx.state.bufferPos = 0;
             ctx.state.bufferSize = ctx.buffer.Length;
-
-            ctx.state.DiscardUnknownFields = false;
-            ctx.state.ExtensionRegistry = null;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(ReadOnlySpan<byte> input, out ParseContext ctx)
-        {
-            Initialize(input, DefaultRecursionLimit, out ctx);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Initialize(ReadOnlySpan<byte> input, int recursionLimit, out ParseContext ctx)
-        {
-            ctx.buffer = input;
-            ctx.state = default;
-            ctx.state.lastTag = 0;
-            ctx.state.recursionDepth = 0;
-            ctx.state.sizeLimit = DefaultSizeLimit;
-            ctx.state.recursionLimit = recursionLimit;
-            ctx.state.currentLimit = int.MaxValue;
-            ctx.state.bufferPos = 0;
-            ctx.state.bufferSize = input.Length;
 
             ctx.state.DiscardUnknownFields = false;
             ctx.state.ExtensionRegistry = null;
