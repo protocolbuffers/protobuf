@@ -535,6 +535,11 @@ build_php_multirequest() {
   php/tests/multirequest.sh
 }
 
+build_php8.0_all() {
+  build_php 8.0
+  build_php_c 8.0
+}
+
 build_php_all() {
   build_php 7.0
   build_php 7.1
