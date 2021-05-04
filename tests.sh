@@ -487,18 +487,6 @@ build_php_c() {
   (cd conformance && make test_php_c)
 }
 
-build_php7.0() {
-  build_php 7.0
-}
-
-build_php7.0_c() {
-  build_php_c 7.0
-}
-
-build_php7.0_zts_c() {
-  build_php_c 7.0-zts
-}
-
 build_php7.0_mac() {
   internal_build_cpp
   # Install PHP
@@ -547,48 +535,7 @@ build_php_multirequest() {
   php/tests/multirequest.sh
 }
 
-build_php7.1() {
-  build_php 7.1
-}
-
-build_php7.1_c() {
-  build_php_c 7.1
-}
-
-build_php7.1_zts_c() {
-  build_php_c 7.1-zts
-}
-
-build_php7.4() {
-  build_php 7.4
-}
-
-build_php7.4_c() {
-  build_php_c 7.4
-}
-
-build_php7.4_zts_c() {
-  build_php_c 7.4-zts
-}
-
-build_php8.0() {
-  build_php 8.0
-}
-
-build_php8.0_c() {
-  build_php_c 8.0
-}
-
-build_php8.0_c_64() {
-  build_php_c 8.0
-}
-
-build_php8.0_all() {
-  build_php8.0
-  build_php8.0_c_64
-}
-
-build_php_all_32() {
+build_php_all() {
   build_php 7.0
   build_php 7.1
   build_php 7.4
@@ -598,10 +545,6 @@ build_php_all_32() {
   build_php_c 7.1-zts
   build_php_c 7.2-zts
   build_php_c 7.5-zts
-}
-
-build_php_all() {
-  build_php_all_32 true
   build_php_multirequest
   build_php_compatibility
 }
@@ -640,13 +583,9 @@ Usage: $0 { cpp |
             ruby30 |
             jruby |
             ruby_all |
-            php7.0   |
-            php7.0_c |
-            php_compatibility |
-            php7.1   |
-            php7.1_c |
             php_all |
-            php8.0_all |
+            php7.0_mac |
+            php7.3_mac |
             dist_install |
             benchmark)
 "
