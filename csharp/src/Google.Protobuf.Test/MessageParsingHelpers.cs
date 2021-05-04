@@ -53,8 +53,7 @@ namespace Google.Protobuf
             assert(parsedBuffer);
 
             // Load content as ReadOnlySpan
-            ReadOnlySpan<byte> bytesSpan = bytes.AsSpan();
-            parsedBuffer = parser.ParseFrom(ref bytesSpan);
+            parsedBuffer = parser.ParseFrom(new ReadOnlySpan<byte>(bytes));
             assert(parsedBuffer);
         }
 
@@ -72,8 +71,7 @@ namespace Google.Protobuf
             assert(parsedBuffer);
 
             // Load content as ReadOnlySpan
-            ReadOnlySpan<byte> bytesSpan = bytes.AsSpan();
-            parsedBuffer = parser.ParseFrom(ref bytesSpan);
+            parsedBuffer = parser.ParseFrom(new ReadOnlySpan<byte>(bytes));
             assert(parsedBuffer);
         }
 
@@ -85,11 +83,7 @@ namespace Google.Protobuf
 
             Assert.Throws<TException>(() => parser.ParseFrom(new ReadOnlySequence<byte>(bytes)));
 
-            Assert.Throws<TException>(() => 
-              {
-                ReadOnlySpan<byte> bytesSpan = bytes.AsSpan();
-                parser.ParseFrom(ref bytesSpan);
-              });
+            Assert.Throws<TException>(() => parser.ParseFrom(new ReadOnlySpan<byte>(bytes)));
         }
 
         public static void AssertRoundtrip<T>(MessageParser<T> parser, T message, Action<T> additionalAssert = null) where T : IMessage<T>
@@ -116,8 +110,7 @@ namespace Google.Protobuf
             additionalAssert?.Invoke(parsedBuffer);
 
             // Load content as ReadOnlySpan
-            ReadOnlySpan<byte> bytesSpan = bytes.AsSpan();
-            parsedBuffer = parser.ParseFrom(ref bytesSpan);
+            parsedBuffer = parser.ParseFrom(new ReadOnlySpan<byte>(bytes));
             Assert.AreEqual(message, parsedBuffer);
             additionalAssert?.Invoke(parsedBuffer);
         }

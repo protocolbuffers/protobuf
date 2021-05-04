@@ -85,7 +85,7 @@ namespace Google.Protobuf
         /// <param name="message">The message to merge the data into.</param>
         /// <param name="span">Span containing the data to merge, which must be protobuf-encoded binary data.</param>
         [SecuritySafeCritical]
-        public static void MergeFrom(this IMessage message, ref ReadOnlySpan<byte> span) =>
+        public static void MergeFrom(this IMessage message, ReadOnlySpan<byte> span) =>
             MergeFrom(message, ref span, false, null);
 
         /// <summary>
