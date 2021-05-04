@@ -477,14 +477,18 @@ build_php() {
   (cd conformance && make test_php)
 }
 
-build_php_c() {
-  use_php $1
+test_php_c() {
   pushd php
   rm -rf vendor
   composer update
   composer test_c
   popd
   (cd conformance && make test_php_c)
+}
+
+build_php_c() {
+  use_php $1
+  test_php_c
 }
 
 build_php7.0_mac() {
@@ -495,14 +499,17 @@ build_php7.0_mac() {
   test ! -z "$PHP_FOLDER"
   export PATH="$PHP_FOLDER/bin:$PATH"
 
+  # Install Composer
+  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/bin/composer
+  chmod a+x /usr/bin/composer
+
   # Install valgrind
   echo "#! /bin/bash" > valgrind
   chmod ug+x valgrind
   sudo mv valgrind /usr/local/bin/valgrind
 
   # Test
-  php/tests/test.sh
-  (cd conformance && make test_php_c)
+  test_php_c
 }
 
 build_php7.3_mac() {
@@ -515,14 +522,17 @@ build_php7.3_mac() {
   test ! -z "$PHP_FOLDER"
   export PATH="$PHP_FOLDER/bin:$PATH"
 
+  # Install Composer
+  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/bin/composer
+  chmod a+x /usr/bin/composer
+
   # Install valgrind
   echo "#! /bin/bash" > valgrind
   chmod ug+x valgrind
   sudo mv valgrind /usr/local/bin/valgrind
 
   # Test
-  php/tests/test.sh
-  (cd conformance && make test_php_c)
+  test_php_c
 }
 
 build_php_compatibility() {
