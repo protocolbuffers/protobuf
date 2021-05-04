@@ -467,14 +467,8 @@ use_php() {
   internal_build_cpp
 }
 
-use_php_zts() {
-  VERSION=$1
-  export PATH=/usr/local/php-${VERSION}-zts/bin:$PATH
-  internal_build_cpp
-}
-
-build_php5.6() {
-  use_php 5.6
+build_php() {
+  use_php $1
   pushd php
   rm -rf vendor
   composer update
@@ -483,18 +477,8 @@ build_php5.6() {
   (cd conformance && make test_php)
 }
 
-build_php7.0() {
-  use_php 7.0
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
-}
-
-build_php7.0_c() {
-  use_php 7.0
+build_php_c() {
+  use_php $1
   pushd php
   rm -rf vendor
   composer update
@@ -503,23 +487,16 @@ build_php7.0_c() {
   (cd conformance && make test_php_c)
 }
 
-build_php7.0_mixed() {
-  use_php 7.0
-  pushd php
-  rm -rf vendor
-  composer update
-  tests/compile_extension.sh
-  tests/generate_protos.sh
-  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
-  popd
+build_php7.0() {
+  build_php 7.0
+}
+
+build_php7.0_c() {
+  build_php_c 7.0
 }
 
 build_php7.0_zts_c() {
-  use_php_zts 7.0
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
-  popd
+  build_php_c 7.0-zts
 }
 
 build_php7.0_mac() {
@@ -571,132 +548,56 @@ build_php_multirequest() {
 }
 
 build_php7.1() {
-  use_php 7.1
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
+  build_php 7.1
 }
 
 build_php7.1_c() {
-  use_php 7.1
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
-  popd
-}
-
-build_php7.1_mixed() {
-  use_php 7.1
-  pushd php
-  rm -rf vendor
-  composer update
-  tests/compile_extension.sh
-  tests/generate_protos.sh
-  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
-  popd
+  build_php_c 7.1
 }
 
 build_php7.1_zts_c() {
-  use_php_zts 7.1
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
-  popd
+  build_php_c 7.1-zts
 }
 
 build_php7.4() {
-  use_php 7.4
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
+  build_php 7.4
 }
 
 build_php7.4_c() {
-  use_php 7.4
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
-  popd
-}
-
-build_php7.4_mixed() {
-  use_php 7.4
-  pushd php
-  rm -rf vendor
-  composer update
-  tests/compile_extension.sh
-  tests/generate_protos.sh
-  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
-  popd
+  build_php_c 7.4
 }
 
 build_php7.4_zts_c() {
-  use_php_zts 7.4
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
-  popd
+  build_php_c 7.4-zts
 }
 
 build_php8.0() {
-  use_php 8.0
-  pushd php
-  rm -rf vendor
-  composer update
-  composer test
-  popd
-  (cd conformance && make test_php)
+  build_php 8.0
 }
 
 build_php8.0_c() {
-  use_php 8.0
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
-  popd
+  build_php_c 8.0
 }
 
 build_php8.0_c_64() {
-  build_php8.0_c true
-}
-
-build_php8.0_mixed() {
-  use_php 8.0
-  pushd php
-  rm -rf vendor
-  composer update
-  tests/compile_extension.sh
-  tests/generate_protos.sh
-  php -dextension=./ext/google/protobuf/modules/protobuf.so ./vendor/bin/phpunit
-  popd
+  build_php_c 8.0
 }
 
 build_php8.0_all() {
   build_php8.0
   build_php8.0_c_64
-  build_php8.0_mixed
 }
 
 build_php_all_32() {
-  build_php5.6
-  build_php7.0
-  build_php7.1
-  build_php7.4
-  build_php7.0_c $1
-  build_php7.1_c $1
-  build_php7.4_c $1
-  build_php7.0_mixed
-  build_php7.1_mixed
-  build_php7.4_mixed
-  build_php7.0_zts_c $1
-  build_php7.1_zts_c $1
-  build_php7.4_zts_c $1
+  build_php 7.0
+  build_php 7.1
+  build_php 7.4
+  build_php_c 7.0
+  build_php_c 7.1
+  build_php_c 7.4
+  build_php_c 7.1-zts
+  build_php_c 7.2-zts
+  build_php_c 7.5-zts
 }
 
 build_php_all() {
