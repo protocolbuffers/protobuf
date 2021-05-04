@@ -495,10 +495,12 @@ build_php7.0() {
 
 build_php7.0_c() {
   use_php 7.0
-  php/tests/test.sh
-  pushd conformance
-  make test_php_c
+  pushd php
+  rm -rf vendor
+  composer update
+  composer test_c
   popd
+  (cd conformance && make test_php_c)
 }
 
 build_php7.0_mixed() {
