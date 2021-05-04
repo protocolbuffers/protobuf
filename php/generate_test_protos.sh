@@ -4,7 +4,7 @@ set -e
 
 cd `dirname $0`
 
-if [[ -z $(find tests/proto ../src/protoc -newer tmp) ]]; then
+if [[ -d tmp && -z $(find tests/proto ../src/protoc -newer tmp) ]]; then
   # Generated protos are already present and up to date, so we can skip protoc.
   #
   # Protoc is very fast, but sometimes it is not available (like if we haven't
