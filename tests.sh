@@ -540,7 +540,7 @@ build_php8.0_all() {
   build_php_c 8.0
 }
 
-build_php_all() {
+build_php_all_32() {
   build_php 7.0
   build_php 7.1
   build_php 7.4
@@ -550,6 +550,10 @@ build_php_all() {
   build_php_c 7.1-zts
   build_php_c 7.2-zts
   build_php_c 7.5-zts
+}
+
+build_php_all() {
+  build_php_all_32
   build_php_multirequest
   build_php_compatibility
 }
@@ -589,6 +593,7 @@ Usage: $0 { cpp |
             jruby |
             ruby_all |
             php_all |
+            php_all_32 |
             php7.0_mac |
             php7.3_mac |
             dist_install |
