@@ -1,7 +1,5 @@
 <?php
 
-require_once('generated/NoNamespaceEnum.php');
-require_once('generated/NoNamespaceMessage.php');
 require_once('test_base.php');
 require_once('test_util.php');
 
