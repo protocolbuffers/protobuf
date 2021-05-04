@@ -500,8 +500,8 @@ build_php7.0_mac() {
   export PATH="$PHP_FOLDER/bin:$PATH"
 
   # Install Composer
-  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/bin/composer
-  chmod a+x /usr/bin/composer
+  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/local/bin/composer
+  chmod a+x /usr/local/bin/composer
 
   # Install valgrind
   echo "#! /bin/bash" > valgrind
@@ -523,8 +523,8 @@ build_php7.3_mac() {
   export PATH="$PHP_FOLDER/bin:$PATH"
 
   # Install Composer
-  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/bin/composer
-  chmod a+x /usr/bin/composer
+  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/local/bin/composer
+  chmod a+x /usr/local/bin/composer
 
   # Install valgrind
   echo "#! /bin/bash" > valgrind
