@@ -4,6 +4,15 @@ set -e
 
 cd `dirname $0`
 
+if [[ -z $(find tests/proto ../src/protoc -newer tmp) ]]; then
+  # Generated protos are already present and up to date, so we can skip protoc.
+  #
+  # Protoc is very fast, but sometimes it is not available (like if we haven't
+  # built it in Docker). Skipping it helps us proceed in this case.
+  echo "Test protos are up-to-date, skipping protoc."
+  exit 0
+fi
+
 rm -rf tmp
 mkdir -p tmp
 

@@ -23,7 +23,8 @@
     }
   },
   "scripts": {
+    "test_c": "./generate_test_protos.sh && ./tests/compile_extension.sh && php -dextension=ext/google/protobuf/modules/protobuf.so vendor/bin/phpunit tests",
     "test": "./generate_test_protos.sh && vendor/bin/phpunit tests",
-    "aggregate_metadata_test": "./generate_test_protos.sh --aggregate_metadata && vendor/bin/phpunit"
+    "aggregate_metadata_test": "./generate_test_protos.sh --aggregate_metadata && vendor/bin/phpunit tests"
   }
 }
