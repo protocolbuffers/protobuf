@@ -734,7 +734,12 @@ uint64_t Message_Hash(const upb_msg* msg, const upb_msgdef* m, uint64_t seed) {
  */
 static VALUE Message_hash(VALUE _self) {
   Message* self = ruby_to_Message(_self);
-  return INT2FIX(Message_Hash(self->msg, self->msgdef, 0));
+  uint64_t hash_value = Message_Hash(self->msg, self->msgdef, 0);
+  long long_value = (long)hash_value;
+  if (!RB_FIXABLE(long_value)) {
+    long_value = long_value >> 1;
+  }
+  return INT2FIX(long_value);
 }
 
 /*
