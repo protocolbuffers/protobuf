@@ -648,28 +648,21 @@ std::string Int32ToString(int number) {
   }
 }
 
-std::string Int64ToString(const std::string& macro_prefix, int64_t number) {
+static std::string Int64ToString(int64_t number) {
   if (number == std::numeric_limits<int64_t>::min()) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
-    return StrCat(macro_prefix, "_LONGLONG(", number + 1, ") - 1");
+    return StrCat("int64_t{", number + 1, "} - 1");
   }
-  return StrCat(macro_prefix, "_LONGLONG(", number, ")");
+  return StrCat("int64_t{", number, "}");
 }
 
-std::string UInt64ToString(const std::string& macro_prefix, uint64_t number) {
-  return StrCat(macro_prefix, "_ULONGLONG(", number, ")");
+static std::string UInt64ToString(uint64_t number) {
+  return StrCat("uint64_t{", number, "u}");
 }
 
 std::string DefaultValue(const FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT64:
-      return Int64ToString("GG", field->default_value_int64());
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return UInt64ToString("GG", field->default_value_uint64());
-    default:
-      return DefaultValue(Options(), field);
-  }
+  return DefaultValue(Options(), field);
 }
 
 std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
@@ -679,9 +672,9 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_UINT32:
       return StrCat(field->default_value_uint32()) + "u";
     case FieldDescriptor::CPPTYPE_INT64:
-      return Int64ToString("PROTOBUF", field->default_value_int64());
+      return Int64ToString(field->default_value_int64());
     case FieldDescriptor::CPPTYPE_UINT64:
-      return UInt64ToString("PROTOBUF", field->default_value_uint64());
+      return UInt64ToString(field->default_value_uint64());
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
       if (value == std::numeric_limits<double>::infinity()) {

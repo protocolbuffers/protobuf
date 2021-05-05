@@ -303,6 +303,19 @@ void MapFieldGenerator::GenerateConstinitInitializer(
   }
 }
 
+bool MapFieldGenerator::GenerateArenaDestructorCode(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    // _this is the object being destructed (we are inside a static method
+    // here).
+    format("_this->$name$_. ~MapField();\n");
+    return true;
+  } else {
+    return false;
+  }
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

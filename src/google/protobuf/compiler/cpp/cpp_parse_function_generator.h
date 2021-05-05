@@ -31,20 +31,69 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_PARSE_FUNCTION_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_PARSE_FUNCTION_GENERATOR_H__
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/wire_format_lite.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-void GenerateParseFunction(const Descriptor* descriptor, int num_hasbits,
-                           const Options& options,
-                           MessageSCCAnalyzer* scc_analyzer,
-                           io::Printer* printer);
+// ParseFunctionGenerator generates the _InternalParse function for a message
+// (and any associated supporting members).
+class ParseFunctionGenerator {
+ public:
+  ParseFunctionGenerator(const Descriptor* descriptor, int num_hasbits,
+                         const Options& options,
+                         MessageSCCAnalyzer* scc_analyzer);
+
+  // Emits class-level method declarations to `printer`:
+  void GenerateMethodDecls(io::Printer* printer);
+
+  // Emits out-of-class method implementation definitions to `printer`:
+  void GenerateMethodImpls(io::Printer* printer);
+
+ private:
+  // Returns the proto runtime internal namespace.
+  std::string pi_ns();
+
+  // Generates a looping `_InternalParse` function.
+  void GenerateLoopingParseFunction(Formatter& format);
+
+  // Generates parsing code for an `ArenaString` field.
+  void GenerateArenaString(Formatter& format, const FieldDescriptor* field);
+
+  // Generates parsing code for a string-typed field.
+  void GenerateStrings(Formatter& format, const FieldDescriptor* field,
+                       bool check_utf8);
+
+  // Generates parsing code for a length-delimited field (strings, messages,
+  // etc.).
+  void GenerateLengthDelim(Formatter& format, const FieldDescriptor* field);
+
+  // Generates the parsing code for a known field.
+  void GenerateFieldBody(Formatter& format,
+                         google::protobuf::internal::WireFormatLite::WireType wiretype,
+                         const FieldDescriptor* field);
+
+  // Generates code to parse the next field from the input stream.
+  void GenerateParseIterationBody(
+      Formatter& format, const Descriptor* descriptor,
+      const std::vector<const FieldDescriptor*>& ordered_fields);
+
+  const Descriptor* descriptor_;
+  MessageSCCAnalyzer* scc_analyzer_;
+  const Options& options_;
+  std::map<std::string, std::string> variables_;
+  int num_hasbits_;
+};
 
 }  // namespace cpp
 }  // namespace compiler

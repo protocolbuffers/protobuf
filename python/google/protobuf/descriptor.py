@@ -912,7 +912,7 @@ class MethodDescriptor(DescriptorBase):
     self.containing_service = containing_service
     self.input_type = input_type
     self.output_type = output_type
-  
+
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.MethodDescriptorProto.
 

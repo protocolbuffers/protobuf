@@ -1,7 +1,5 @@
 <?php
 
-require_once('generated/Descriptors/TestDescriptorsEnum.php');
-require_once('generated/Descriptors/TestDescriptorsMessage.php');
 require_once('test_base.php');
 require_once('test_util.php');
 

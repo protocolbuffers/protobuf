@@ -804,4 +804,8 @@ public class DescriptorsTest extends TestCase {
             .build();
     assertEquals(8, msg.getExtension(NestedExtension.MyNestedExtension.default_).intValue());
   }
+
+  public void testDefaultDescriptorExtensionRange() throws Exception {
+    assertTrue(new Descriptor("default").isExtensionNumber(1));
+  }
 }

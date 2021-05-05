@@ -1238,6 +1238,19 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     return this;
   }
 
+  if (IsRepeated(*field) && !current_->is_list()) {
+    if (options_.disable_implicit_scalar_list) {
+      if (!options_.suppress_implicit_scalar_list_error) {
+        InvalidValue(
+            field->name(),
+            "Starting an primitive in a repeated field but the parent field "
+            "is not a list");
+      }
+
+      return this;
+    }
+  }
+
   ProtoWriter::RenderDataPiece(name, data);
   return this;
 }

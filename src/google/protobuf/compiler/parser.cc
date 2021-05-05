@@ -1782,12 +1782,12 @@ bool Parser::ParseReserved(EnumDescriptorProto* message,
   DO(Consume("reserved"));
   if (LookingAtType(io::Tokenizer::TYPE_STRING)) {
     LocationRecorder location(message_location,
-                              DescriptorProto::kReservedNameFieldNumber);
+                              EnumDescriptorProto::kReservedNameFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNames(message, location);
   } else {
     LocationRecorder location(message_location,
-                              DescriptorProto::kReservedRangeFieldNumber);
+                              EnumDescriptorProto::kReservedRangeFieldNumber);
     location.StartAt(start_token);
     return ParseReservedNumbers(message, location);
   }

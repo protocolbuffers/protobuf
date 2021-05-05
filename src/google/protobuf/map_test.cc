@@ -3754,6 +3754,22 @@ TEST(ArenaTest, DynamicMapFieldOnArena) {
   MapTestUtil::ExpectMapFieldsSet(message2);
 }
 
+TEST(ArenaTest, DynamicMapFieldOnArenaMemoryLeak) {
+  auto* desc = unittest::TestMap::descriptor();
+  auto* field = desc->FindFieldByName("map_int32_int32");
+
+  Arena arena;
+  DynamicMessageFactory factory;
+  auto* message = factory.GetPrototype(desc)->New(&arena);
+  auto* reflection = message->GetReflection();
+  reflection->AddMessage(message, field);
+
+  // Force internal syncing, which initializes the mutex.
+  MapReflectionTester reflection_tester(unittest::TestMap::descriptor());
+  int size = reflection_tester.MapSize(*message, "map_int32_int32");
+  EXPECT_EQ(size, 1);
+}
+
 TEST(MoveTest, MoveConstructorWorks) {
   Map<int32, TestAllTypes> original_map;
   original_map[42].mutable_optional_nested_message()->set_bb(42);

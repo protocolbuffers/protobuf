@@ -65,7 +65,7 @@ PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
+class PROTOBUF_EXPORT Duration final :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
  public:
   inline Duration() : Duration(nullptr) {}
@@ -83,8 +83,9 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
     return *this;
   }
   inline Duration& operator=(Duration&& from) noexcept {
-    if (GetArena() == from.GetArena()) {
-      if (this != &from) InternalSwap(&from);
+    if (this == &from) return *this;
+    if (GetOwningArena() == from.GetOwningArena()) {
+      InternalSwap(&from);
     } else {
       CopyFrom(from);
     }
@@ -115,7 +116,7 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
   }
   inline void Swap(Duration* other) {
     if (other == this) return;
-    if (GetArena() == other->GetArena()) {
+    if (GetOwningArena() == other->GetOwningArena()) {
       InternalSwap(other);
     } else {
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
@@ -123,14 +124,14 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
   }
   void UnsafeArenaSwap(Duration* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetArena() == other->GetArena());
+    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
 
   inline Duration* New() const final {
-    return CreateMaybeMessage<Duration>(nullptr);
+    return new Duration();
   }
 
   Duration* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
@@ -218,7 +219,7 @@ class PROTOBUF_EXPORT Duration PROTOBUF_FINAL :
 
 // int64 seconds = 1;
 inline void Duration::clear_seconds() {
-  seconds_ = PROTOBUF_LONGLONG(0);
+  seconds_ = int64_t{0};
 }
 inline ::PROTOBUF_NAMESPACE_ID::int64 Duration::_internal_seconds() const {
   return seconds_;

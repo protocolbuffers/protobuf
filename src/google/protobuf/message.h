@@ -951,6 +951,24 @@ class PROTOBUF_EXPORT Reflection final {
       const Message& message, bool should_fail,
       std::vector<const FieldDescriptor*>* output) const;
 
+  // Returns true if the message field is backed by a LazyField.
+  //
+  // A message field may be backed by a LazyField without the user annotation
+  // ([lazy = true]). While the user-annotated LazyField is lazily verified on
+  // first touch (i.e. failure on access rather than parsing if the LazyField is
+  // not initialized), the inferred LazyField is eagerly verified to avoid lazy
+  // parsing error at the cost of lower efficiency. When reflecting a message
+  // field, use this API instead of checking field->options().lazy().
+  bool IsLazyField(const FieldDescriptor* field) const {
+    return IsLazilyVerifiedLazyField(field) ||
+           IsEagerlyVerifiedLazyField(field);
+  }
+
+  bool IsLazilyVerifiedLazyField(const FieldDescriptor* field) const;
+  bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const;
+
+  friend class FastReflectionMessageMutator;
+
   const Descriptor* const descriptor_;
   const internal::ReflectionSchema schema_;
   const DescriptorPool* const descriptor_pool_;
@@ -1067,7 +1085,6 @@ class PROTOBUF_EXPORT Reflection final {
   }
   const internal::ExtensionSet& GetExtensionSet(const Message& message) const;
   internal::ExtensionSet* MutableExtensionSet(Message* message) const;
-  inline Arena* GetArena(Message* message) const;
 
   inline const internal::InternalMetadata& GetInternalMetadata(
       const Message& message) const;
