@@ -238,8 +238,16 @@ void Arena_register(VALUE module) {
 // We use WeakMap for the cache. For Ruby <2.7 we also need a secondary Hash
 // to store WeakMap keys because Ruby <2.7 WeakMap doesn't allow non-finalizable
 // keys.
+//
+// We also need the secondary Hash if sizeof(long) < sizeof(VALUE), because this
+// means it may not be possible to fit a pointer into a Fixnum. Keys are
+// pointers, and if they fit into a Fixnum, Ruby doesn't collect them, but if
+// they overflow and require allocating a Bignum, they could get collected
+// prematurely, thus removing the cache entry. This happens on 64-bit Windows,
+// on which pointers are 64 bits but longs are 32 bits. In this case, we enable
+// the secondary Hash to hold the keys and prevent them from being collected.
 
-#if RUBY_API_VERSION_CODE >= 20700
+#if RUBY_API_VERSION_CODE >= 20700 && SIZEOF_LONG >= SIZEOF_VALUE
 #define USE_SECONDARY_MAP 0
 #else
 #define USE_SECONDARY_MAP 1
