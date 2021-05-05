@@ -1,14 +1,26 @@
 
 Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
+  Protocol Compiler
+  * Fix the generated source information for reserved values in Enums.
+
   C++
   * Fix bug where `Descriptor::DebugString()` printed proto3 synthetic oneofs.
   * Provide stable versions of `SortAndUnique()`.
   * Make sure to cache proto3 optional message fields when they are cleared.
   * Expose UnsafeArena methods to Reflection.
+  * Use std::string::empty() rather than std::string::size() > 0.
 
   Kotlin
   * Restrict extension setter and getter operators to non-nullable T.
+
+  Java
+  * Reduce the time spent evaluating isExtensionNumber by storing the extension
+    ranges in a TreeMap for faster queries. This is particularly relevant for
+    protos which define a large number of extension ranges, for example when
+    each tag is defined as an extension.
+  * Fix java bytecode estimation logic for optional fields.
+  * Optimize Descriptor.isExtensionNumber.
 
   Python
   * Make JSON parsing match C++ and Java when multiple fields from the same

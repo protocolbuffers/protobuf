@@ -811,8 +811,8 @@ TEST(WireFormatTest, UnknownFieldRecursionLimit) {
 
 TEST(WireFormatTest, ZigZag) {
 // avoid line-wrapping
-#define LL(x) PROTOBUF_LONGLONG(x)
-#define ULL(x) PROTOBUF_ULONGLONG(x)
+#define LL(x) static_cast<int64_t>(ULL(x))
+#define ULL(x) uint64_t{x##u}
 #define ZigZagEncode32(x) WireFormatLite::ZigZagEncode32(x)
 #define ZigZagDecode32(x) WireFormatLite::ZigZagDecode32(x)
 #define ZigZagEncode64(x) WireFormatLite::ZigZagEncode64(x)

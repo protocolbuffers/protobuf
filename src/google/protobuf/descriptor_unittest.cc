@@ -2071,6 +2071,84 @@ TEST_F(ExtensionDescriptorTest, DuplicateFieldNumber) {
 
 // ===================================================================
 
+// Ensure that overlapping extension ranges are not allowed.
+TEST(OverlappingExtensionRangeTest, ExtensionRangeInternal) {
+  // Build descriptors for the following definitions:
+  //
+  //   message Foo {
+  //     extensions 10 to 19;
+  //     extensions 15;
+  //   }
+  FileDescriptorProto foo_file;
+  foo_file.set_name("foo.proto");
+
+  DescriptorProto* foo = AddMessage(&foo_file, "Foo");
+  AddExtensionRange(foo, 10, 20);
+  AddExtensionRange(foo, 15, 16);
+
+  DescriptorPool pool;
+  MockErrorCollector error_collector;
+  // The extensions ranges are invalid, so the proto shouldn't build.
+  ASSERT_TRUE(pool.BuildFileCollectingErrors(foo_file, &error_collector) ==
+              nullptr);
+  ASSERT_EQ(
+      "foo.proto: Foo: NUMBER: Extension range 15 to 15 overlaps with "
+      "already-defined range 10 to 19.\n",
+      error_collector.text_);
+}
+
+TEST(OverlappingExtensionRangeTest, ExtensionRangeAfter) {
+  // Build descriptors for the following definitions:
+  //
+  //   message Foo {
+  //     extensions 10 to 19;
+  //     extensions 15 to 24;
+  //   }
+  FileDescriptorProto foo_file;
+  foo_file.set_name("foo.proto");
+
+  DescriptorProto* foo = AddMessage(&foo_file, "Foo");
+  AddExtensionRange(foo, 10, 20);
+  AddExtensionRange(foo, 15, 25);
+
+  DescriptorPool pool;
+  MockErrorCollector error_collector;
+  // The extensions ranges are invalid, so the proto shouldn't build.
+  ASSERT_TRUE(pool.BuildFileCollectingErrors(foo_file, &error_collector) ==
+              nullptr);
+  ASSERT_EQ(
+      "foo.proto: Foo: NUMBER: Extension range 15 to 24 overlaps with "
+      "already-defined range 10 to 19.\n",
+      error_collector.text_);
+}
+
+TEST(OverlappingExtensionRangeTest, ExtensionRangeBefore) {
+  // Build descriptors for the following definitions:
+  //
+  //   message Foo {
+  //     extensions 10 to 19;
+  //     extensions 5 to 14;
+  //   }
+  FileDescriptorProto foo_file;
+  foo_file.set_name("foo.proto");
+
+  DescriptorProto* foo = AddMessage(&foo_file, "Foo");
+  AddExtensionRange(foo, 10, 20);
+  AddExtensionRange(foo, 5, 15);
+
+  DescriptorPool pool;
+  MockErrorCollector error_collector;
+  // The extensions ranges are invalid, so the proto shouldn't build.
+  ASSERT_TRUE(pool.BuildFileCollectingErrors(foo_file, &error_collector) ==
+              nullptr);
+  ASSERT_EQ(
+      "foo.proto: Foo: NUMBER: Extension range 5 to 14 overlaps with "
+      "already-defined range 10 to 19.\n",
+      error_collector.text_);
+}
+
+// ===================================================================
+
 // Test reserved fields.
 class ReservedDescriptorTest : public testing::Test {
  protected:

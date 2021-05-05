@@ -3139,6 +3139,43 @@ TEST_F(SourceInfoTest, EnumValues) {
   EXPECT_TRUE(HasSpan(file_.enum_type(0), "name"));
 }
 
+TEST_F(SourceInfoTest, EnumReservedRange) {
+  EXPECT_TRUE(
+      Parse("enum TestEnum {\n"
+            "  $a$reserved $b$1$c$ to $d$10$e$;$f$\n"
+            "}"));
+
+  const EnumDescriptorProto::EnumReservedRange& bar =
+      file_.enum_type(0).reserved_range(0);
+
+  EXPECT_TRUE(HasSpan('a', 'f', file_.enum_type(0), "reserved_range"));
+  EXPECT_TRUE(HasSpan('b', 'e', bar));
+  EXPECT_TRUE(HasSpan('b', 'c', bar, "start"));
+  EXPECT_TRUE(HasSpan('d', 'e', bar, "end"));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0), "name"));
+}
+
+TEST_F(SourceInfoTest, EnumReservedName) {
+  EXPECT_TRUE(
+      Parse("enum TestEnum {\n"
+            "  $a$reserved $b$'foo'$c$;$d$\n"
+            "}"));
+
+  const EnumDescriptorProto& bar = file_.enum_type(0);
+
+  EXPECT_TRUE(HasSpan('a', 'd', bar, "reserved_name"));
+  EXPECT_TRUE(HasSpan('b', 'c', bar, "reserved_name", 0));
+
+  // Ignore these.
+  EXPECT_TRUE(HasSpan(file_));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0)));
+  EXPECT_TRUE(HasSpan(file_.enum_type(0), "name"));
+}
+
 TEST_F(SourceInfoTest, NestedEnums) {
   EXPECT_TRUE(
       Parse("message Foo {\n"
