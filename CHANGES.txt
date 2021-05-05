@@ -72,6 +72,8 @@
 
   Ruby
   * Fixed quadratic memory usage when appending to arrays. (#8364)
+  * Fixed memory leak of Ruby arena objects. (#8461)
+  * Add support for proto3 json_name in compiler and field definitions. (#8356)
 
   Other
   * Some doc on AOT compilation and protobuf (#8294)
