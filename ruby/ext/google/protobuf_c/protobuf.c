@@ -344,11 +344,9 @@ static VALUE SecondaryMap_Get(VALUE key, bool create) {
 
 // Requires: secondary_map_mutex is held by this thread iff create == true.
 static VALUE ObjectCache_GetKey(const void* key, bool create) {
-  char buf[sizeof(key)];
-  memcpy(&buf, &key, sizeof(key));
-  intptr_t key_int = (intptr_t)key;
-  PBRUBY_ASSERT((key_int & 3) == 0);
-  VALUE ret = LL2NUM(key_int >> 2);
+  VALUE key_val = (VALUE)key;
+  PBRUBY_ASSERT((key_val & 3) == 0);
+  VALUE ret = LL2NUM(key_val >> 2);
 #if USE_SECONDARY_MAP
   ret = SecondaryMap_Get(ret, create);
 #endif
