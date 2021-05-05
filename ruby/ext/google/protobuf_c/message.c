@@ -735,9 +735,13 @@ uint64_t Message_Hash(const upb_msg* msg, const upb_msgdef* m, uint64_t seed) {
 static VALUE Message_hash(VALUE _self) {
   Message* self = ruby_to_Message(_self);
   uint64_t hash_value = Message_Hash(self->msg, self->msgdef, 0);
+  // Fixnum is restricted to signed long, so downcast if necessary.
   long long_value = (long)hash_value;
-  if (!RB_FIXABLE(long_value)) {
-    long_value = long_value >> 1;
+  // Ensure we stay within the range allowed by Fixnum.
+  if (long_value < RUBY_FIXNUM_MIN) {
+    long_value = long_value + RUBY_FIXNUM_MAX + 1;
+  } else if (long_value > RUBY_FIXNUM_MAX) {
+    long_value = long_value - RUBY_FIXNUM_MAX - 1;
   }
   return INT2FIX(long_value);
 }
