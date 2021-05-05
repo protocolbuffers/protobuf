@@ -405,19 +405,6 @@ build_python39_cpp() {
   build_python_cpp_version py39-cpp
 }
 
-build_python_compatibility() {
-  internal_build_cpp
-  # Use the unit-tests extracted from 2.5.0 to test the compatibility.
-  cd python/compatibility_tests/v2.5.0
-  # Test between 2.5.0 and the current version.
-  ./test.sh 2.5.0
-  # Test between 3.0.0-beta-1 and the current version.
-  ./test.sh 3.0.0-beta-1
-
-  # Test between last released and current version.
-  ./test.sh $LAST_RELEASED
-}
-
 build_ruby23() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.3.8 && cd ..
