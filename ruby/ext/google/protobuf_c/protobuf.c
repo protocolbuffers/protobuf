@@ -334,7 +334,7 @@ static VALUE SecondaryMap_Get(VALUE key, bool create) {
   VALUE ret = rb_hash_lookup(secondary_map, key);
   if (ret == Qnil && create) {
     SecondaryMap_MaybeGC();
-    ret = rb_eval_string("Object.new");
+    ret = rb_class_new_instance(0, NULL, rb_cObject);
     rb_hash_aset(secondary_map, key, ret);
   }
   return ret;
