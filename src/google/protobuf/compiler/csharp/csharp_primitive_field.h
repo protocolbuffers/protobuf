@@ -68,6 +68,7 @@ class PrimitiveFieldGenerator : public FieldGeneratorBase {
 
  protected:
   bool is_value_type;
+  bool is_string_type;
 };
 
 class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
