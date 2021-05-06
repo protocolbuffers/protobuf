@@ -22,7 +22,9 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- No new changes in 3.15.7
+ * read_property() handler is not supposed to return NULL (#8362)
+ * Changed parameter type from long to integer (#7613)
+ * fix: README supported PHP version for C extension (#8236)
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
