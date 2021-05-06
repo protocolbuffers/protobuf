@@ -161,11 +161,20 @@ namespace Google.Protobuf
 
         private static void AssertReadFromParseContext(ReadOnlySequence<byte> input, ParseContextAssertAction assertAction, bool assertIsAtEnd)
         {
+            // Check as ReadOnlySequence<byte>
             ParseContext.Initialize(input, out ParseContext parseCtx);
             assertAction(ref parseCtx);
             if (assertIsAtEnd)
             {
                 Assert.IsTrue(SegmentedBufferHelper.IsAtEnd(ref parseCtx.buffer, ref parseCtx.state));
+            }
+
+            // Check as ReadOnlySpan<byte>
+            ParseContext.Initialize(input.ToArray().AsSpan(), out ParseContext spanParseContext);
+            assertAction(ref spanParseContext);
+            if (assertIsAtEnd)
+            {
+                Assert.IsTrue(SegmentedBufferHelper.IsAtEnd(ref spanParseContext.buffer, ref spanParseContext.state));
             }
         }
 

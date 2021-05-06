@@ -137,7 +137,7 @@ namespace Google.Protobuf
         public IMessage ParseFrom(ReadOnlySpan<byte> data)
         {
             IMessage message = factory();
-            message.MergeFrom(ref data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, DiscardUnknownFields, Extensions);
             return message;
         }
 
@@ -337,7 +337,7 @@ namespace Google.Protobuf
         public new T ParseFrom(ReadOnlySpan<byte> data)
         {
             T message = factory();
-            message.MergeFrom(ref data, DiscardUnknownFields, Extensions);
+            message.MergeFrom(data, DiscardUnknownFields, Extensions);
             return message;
         }
 
