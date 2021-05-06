@@ -135,7 +135,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   } else if (is_string_type) {
     printer->Print(
           variables_,
-          "    $name$_ = value == null ? "" : value;\n");
+          "    $name$_ = value == null ? \"\" : value;\n");
   } else {
     printer->Print(
       variables_,

@@ -1,15 +1,19 @@
 FROM alpine:3.12
 
+RUN apk add autoconf automake libtool curl make g++ unzip bash
 
 WORKDIR /src
-COPY . .
 
-RUN apk add autoconf automake libtool curl make g++ unzip bash
+COPY . .
 RUN ./autogen.sh
 RUN ./configure
-RUN make
+RUN make -j 4
+
+#check on alpine will no pass
 #RUN make check
-#RUN sudo make install
+RUN make install
 
 # refresh shared library cache.
-#RUN sudo ldconfig 
+#RUN ldconfig 
+
+ENTRYPOINT ["/usr/local/bin/protoc"]
