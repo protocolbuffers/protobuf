@@ -736,7 +736,7 @@ static VALUE Message_hash(VALUE _self) {
   Message* self = ruby_to_Message(_self);
   uint64_t hash_value = Message_Hash(self->msg, self->msgdef, 0);
   // RUBY_FIXNUM_MAX should be one less than a power of 2.
-  assert(RUBY_FIXNUM_MAX & (RUBY_FIXNUM_MAX + 1) == 0);
+  assert((RUBY_FIXNUM_MAX & (RUBY_FIXNUM_MAX + 1)) == 0);
   return INT2FIX(hash_value & RUBY_FIXNUM_MAX);
 }
 
