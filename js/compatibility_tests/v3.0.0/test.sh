@@ -53,8 +53,20 @@ for file in *_test.js binary/*_test.js; do
 done
 cp commonjs/{jasmine.json,import_test.js} commonjs_out/
 mkdir -p commonjs_out/test_node_modules
-../../node_modules/google-closure-library/closure/bin/calcdeps.py -i commonjs/export_asserts.js -p . -p ../../node_modules/google-closure-library/closure -o compiled --compiler_jar ../../node_modules/google-closure-compiler/compiler.jar > commonjs_out/test_node_modules/closure_asserts_commonjs.js
-../../node_modules/google-closure-library/closure/bin/calcdeps.py -i commonjs/export_testdeps.js -p ../.. -p ../../node_modules/google-closure-library/closure -o compiled --compiler_jar ../../node_modules/google-closure-compiler/compiler.jar > commonjs_out/test_node_modules/testdeps_commonjs.js
+../../node_modules/.bin/google-closure-compiler \
+  --entry_point=commonjs/export_asserts.js \
+  --js=commonjs/export_asserts.js \
+  --js=../../node_modules/google-closure-library/closure/goog/**.js \
+  --js=../../node_modules/google-closure-library/third_party/closure/goog/**.js \
+  > commonjs_out/test_node_modules/closure_asserts_commonjs.js
+../../node_modules/.bin/google-closure-compiler \
+  --entry_point=commonjs/export_testdeps.js \
+  --js=commonjs/export_testdeps.js \
+  --js=../../binary/*.js \
+  --js=!../../binary/*_test.js \
+  --js=../../node_modules/google-closure-library/closure/goog/**.js \
+  --js=../../node_modules/google-closure-library/third_party/closure/goog/**.js \
+  > commonjs_out/test_node_modules/testdeps_commonjs.js
 cp ../../google-protobuf.js commonjs_out/test_node_modules
 cp -r ../../commonjs_out/node_modules commonjs_out
 
