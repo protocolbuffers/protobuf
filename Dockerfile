@@ -7,7 +7,7 @@ WORKDIR /src
 COPY . .
 RUN ./autogen.sh
 RUN ./configure
-RUN make -j 4
+RUN make
 
 #check on alpine will no pass
 #RUN make check
