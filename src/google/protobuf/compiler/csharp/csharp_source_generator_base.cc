@@ -56,6 +56,9 @@ SourceGeneratorBase::~SourceGeneratorBase() {
 
 void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
   printer->Print("[global::System.Diagnostics.DebuggerNonUserCodeAttribute]\n");
+  // We don't provide protoc info in the [GeneratedCode] attribute the because the
+  // pre-generated code in this repository would then have junk info in it.
+  printer->Print("[global::System.CodeDom.Compiler.GeneratedCode(\"protoc\", null)]\n");
 }
 
 std::string SourceGeneratorBase::class_access_level() {
