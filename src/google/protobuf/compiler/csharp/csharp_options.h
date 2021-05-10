@@ -71,6 +71,11 @@ struct Options {
   // Whether the generated classes should have a global::System.Serializable attribute added
   // Defaults to false
   bool serializable;
+
+  // Whether the generated a setters for string in form of "value == null ? "" : value;"
+  // or keep the default behaviour of  "pb::ProtoPreconditions.CheckNotNull(value, "value");"
+  // Defaults to false
+  bool allow_null_strings;
 };
 
 }  // namespace csharp

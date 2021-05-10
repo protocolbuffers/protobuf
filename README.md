@@ -1,3 +1,11 @@
+FORK of https://github.com/protocolbuffers/protobuf
+===================================================
+
+This fork suppose to help overcome this issue https://github.com/protocolbuffers/protobuf
+
+
+
+
 Protocol Buffers - Google's data interchange format
 ===================================================
 
