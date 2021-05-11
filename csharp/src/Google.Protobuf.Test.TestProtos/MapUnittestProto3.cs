@@ -184,19 +184,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestMap> _parser = new pb::MessageParser<TestMap>(() => new TestMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestMap> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3Reflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMap() {
       OnConstruction();
     }
@@ -204,6 +208,7 @@ namespace Google.Protobuf.TestProtos {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMap(TestMap other) : this() {
       mapInt32Int32_ = other.mapInt32Int32_.Clone();
       mapInt64Int64_ = other.mapInt64Int64_.Clone();
@@ -226,6 +231,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMap Clone() {
       return new TestMap(this);
     }
@@ -236,6 +242,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 10);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapInt32Int32 {
       get { return mapInt32Int32_; }
     }
@@ -246,6 +253,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForInt64(8, 0L), pb::FieldCodec.ForInt64(16, 0L), 18);
     private readonly pbc::MapField<long, long> mapInt64Int64_ = new pbc::MapField<long, long>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<long, long> MapInt64Int64 {
       get { return mapInt64Int64_; }
     }
@@ -256,6 +264,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForUInt32(8, 0), pb::FieldCodec.ForUInt32(16, 0), 26);
     private readonly pbc::MapField<uint, uint> mapUint32Uint32_ = new pbc::MapField<uint, uint>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<uint, uint> MapUint32Uint32 {
       get { return mapUint32Uint32_; }
     }
@@ -266,6 +275,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForUInt64(8, 0UL), pb::FieldCodec.ForUInt64(16, 0UL), 34);
     private readonly pbc::MapField<ulong, ulong> mapUint64Uint64_ = new pbc::MapField<ulong, ulong>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<ulong, ulong> MapUint64Uint64 {
       get { return mapUint64Uint64_; }
     }
@@ -276,6 +286,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSInt32(8, 0), pb::FieldCodec.ForSInt32(16, 0), 42);
     private readonly pbc::MapField<int, int> mapSint32Sint32_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapSint32Sint32 {
       get { return mapSint32Sint32_; }
     }
@@ -286,6 +297,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSInt64(8, 0L), pb::FieldCodec.ForSInt64(16, 0L), 50);
     private readonly pbc::MapField<long, long> mapSint64Sint64_ = new pbc::MapField<long, long>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<long, long> MapSint64Sint64 {
       get { return mapSint64Sint64_; }
     }
@@ -296,6 +308,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForFixed32(13, 0), pb::FieldCodec.ForFixed32(21, 0), 58);
     private readonly pbc::MapField<uint, uint> mapFixed32Fixed32_ = new pbc::MapField<uint, uint>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<uint, uint> MapFixed32Fixed32 {
       get { return mapFixed32Fixed32_; }
     }
@@ -306,6 +319,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForFixed64(9, 0UL), pb::FieldCodec.ForFixed64(17, 0UL), 66);
     private readonly pbc::MapField<ulong, ulong> mapFixed64Fixed64_ = new pbc::MapField<ulong, ulong>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<ulong, ulong> MapFixed64Fixed64 {
       get { return mapFixed64Fixed64_; }
     }
@@ -316,6 +330,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13, 0), pb::FieldCodec.ForSFixed32(21, 0), 74);
     private readonly pbc::MapField<int, int> mapSfixed32Sfixed32_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapSfixed32Sfixed32 {
       get { return mapSfixed32Sfixed32_; }
     }
@@ -326,6 +341,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSFixed64(9, 0L), pb::FieldCodec.ForSFixed64(17, 0L), 82);
     private readonly pbc::MapField<long, long> mapSfixed64Sfixed64_ = new pbc::MapField<long, long>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<long, long> MapSfixed64Sfixed64 {
       get { return mapSfixed64Sfixed64_; }
     }
@@ -336,6 +352,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, float>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForFloat(21, 0F), 90);
     private readonly pbc::MapField<int, float> mapInt32Float_ = new pbc::MapField<int, float>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, float> MapInt32Float {
       get { return mapInt32Float_; }
     }
@@ -346,6 +363,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, double>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForDouble(17, 0D), 98);
     private readonly pbc::MapField<int, double> mapInt32Double_ = new pbc::MapField<int, double>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, double> MapInt32Double {
       get { return mapInt32Double_; }
     }
@@ -356,6 +374,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<bool, bool>.Codec(pb::FieldCodec.ForBool(8, false), pb::FieldCodec.ForBool(16, false), 106);
     private readonly pbc::MapField<bool, bool> mapBoolBool_ = new pbc::MapField<bool, bool>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<bool, bool> MapBoolBool {
       get { return mapBoolBool_; }
     }
@@ -366,6 +385,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForString(18, ""), 114);
     private readonly pbc::MapField<string, string> mapStringString_ = new pbc::MapField<string, string>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<string, string> MapStringString {
       get { return mapStringString_; }
     }
@@ -376,6 +396,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForBytes(18, pb::ByteString.Empty), 122);
     private readonly pbc::MapField<int, pb::ByteString> mapInt32Bytes_ = new pbc::MapField<int, pb::ByteString>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, pb::ByteString> MapInt32Bytes {
       get { return mapInt32Bytes_; }
     }
@@ -386,6 +407,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Google.Protobuf.TestProtos.MapEnum) x, global::Google.Protobuf.TestProtos.MapEnum.Foo), 130);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum> mapInt32Enum_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum> MapInt32Enum {
       get { return mapInt32Enum_; }
     }
@@ -396,16 +418,19 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.ForeignMessage.Parser), 138);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage> mapInt32ForeignMessage_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage> MapInt32ForeignMessage {
       get { return mapInt32ForeignMessage_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestMap);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestMap other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -434,6 +459,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= MapInt32Int32.GetHashCode();
@@ -460,11 +486,13 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -494,6 +522,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       mapInt32Int32_.WriteTo(ref output, _map_mapInt32Int32_codec);
       mapInt64Int64_.WriteTo(ref output, _map_mapInt64Int64_codec);
@@ -519,6 +548,7 @@ namespace Google.Protobuf.TestProtos {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       size += mapInt32Int32_.CalculateSize(_map_mapInt32Int32_codec);
@@ -545,6 +575,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(TestMap other) {
       if (other == null) {
         return;
@@ -570,6 +601,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -655,6 +687,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -745,19 +778,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestMapSubmessage> _parser = new pb::MessageParser<TestMapSubmessage>(() => new TestMapSubmessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestMapSubmessage> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3Reflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMapSubmessage() {
       OnConstruction();
     }
@@ -765,12 +802,14 @@ namespace Google.Protobuf.TestProtos {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMapSubmessage(TestMapSubmessage other) : this() {
       testMap_ = other.testMap_ != null ? other.testMap_.Clone() : null;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMapSubmessage Clone() {
       return new TestMapSubmessage(this);
     }
@@ -779,6 +818,7 @@ namespace Google.Protobuf.TestProtos {
     public const int TestMapFieldNumber = 1;
     private global::Google.Protobuf.TestProtos.TestMap testMap_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.TestProtos.TestMap TestMap {
       get { return testMap_; }
       set {
@@ -787,11 +827,13 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestMapSubmessage);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestMapSubmessage other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -804,6 +846,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       if (testMap_ != null) hash ^= TestMap.GetHashCode();
@@ -814,11 +857,13 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -835,6 +880,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (testMap_ != null) {
         output.WriteRawTag(10);
@@ -847,6 +893,7 @@ namespace Google.Protobuf.TestProtos {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       if (testMap_ != null) {
@@ -859,6 +906,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(TestMapSubmessage other) {
       if (other == null) {
         return;
@@ -873,6 +921,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -897,6 +946,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -926,19 +976,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestMessageMap> _parser = new pb::MessageParser<TestMessageMap>(() => new TestMessageMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestMessageMap> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3Reflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMessageMap() {
       OnConstruction();
     }
@@ -946,12 +1000,14 @@ namespace Google.Protobuf.TestProtos {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMessageMap(TestMessageMap other) : this() {
       mapInt32Message_ = other.mapInt32Message_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestMessageMap Clone() {
       return new TestMessageMap(this);
     }
@@ -962,16 +1018,19 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.TestAllTypes.Parser), 10);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes> mapInt32Message_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.TestAllTypes> MapInt32Message {
       get { return mapInt32Message_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestMessageMap);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestMessageMap other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -984,6 +1043,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= MapInt32Message.GetHashCode();
@@ -994,11 +1054,13 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -1012,6 +1074,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       mapInt32Message_.WriteTo(ref output, _map_mapInt32Message_codec);
       if (_unknownFields != null) {
@@ -1021,6 +1084,7 @@ namespace Google.Protobuf.TestProtos {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       size += mapInt32Message_.CalculateSize(_map_mapInt32Message_codec);
@@ -1031,6 +1095,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(TestMessageMap other) {
       if (other == null) {
         return;
@@ -1040,6 +1105,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -1061,6 +1127,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -1090,19 +1157,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestSameTypeMap> _parser = new pb::MessageParser<TestSameTypeMap>(() => new TestSameTypeMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestSameTypeMap> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3Reflection.Descriptor.MessageTypes[3]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestSameTypeMap() {
       OnConstruction();
     }
@@ -1110,6 +1181,7 @@ namespace Google.Protobuf.TestProtos {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestSameTypeMap(TestSameTypeMap other) : this() {
       map1_ = other.map1_.Clone();
       map2_ = other.map2_.Clone();
@@ -1117,6 +1189,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestSameTypeMap Clone() {
       return new TestSameTypeMap(this);
     }
@@ -1127,6 +1200,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 10);
     private readonly pbc::MapField<int, int> map1_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> Map1 {
       get { return map1_; }
     }
@@ -1137,16 +1211,19 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 18);
     private readonly pbc::MapField<int, int> map2_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> Map2 {
       get { return map2_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestSameTypeMap);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestSameTypeMap other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1160,6 +1237,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= Map1.GetHashCode();
@@ -1171,11 +1249,13 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -1190,6 +1270,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       map1_.WriteTo(ref output, _map_map1_codec);
       map2_.WriteTo(ref output, _map_map2_codec);
@@ -1200,6 +1281,7 @@ namespace Google.Protobuf.TestProtos {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       size += map1_.CalculateSize(_map_map1_codec);
@@ -1211,6 +1293,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(TestSameTypeMap other) {
       if (other == null) {
         return;
@@ -1221,6 +1304,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -1246,6 +1330,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -1276,19 +1361,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<TestArenaMap> _parser = new pb::MessageParser<TestArenaMap>(() => new TestArenaMap());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<TestArenaMap> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3Reflection.Descriptor.MessageTypes[4]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestArenaMap() {
       OnConstruction();
     }
@@ -1296,6 +1385,7 @@ namespace Google.Protobuf.TestProtos {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestArenaMap(TestArenaMap other) : this() {
       mapInt32Int32_ = other.mapInt32Int32_.Clone();
       mapInt64Int64_ = other.mapInt64Int64_.Clone();
@@ -1316,6 +1406,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public TestArenaMap Clone() {
       return new TestArenaMap(this);
     }
@@ -1326,6 +1417,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 10);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapInt32Int32 {
       get { return mapInt32Int32_; }
     }
@@ -1336,6 +1428,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForInt64(8, 0L), pb::FieldCodec.ForInt64(16, 0L), 18);
     private readonly pbc::MapField<long, long> mapInt64Int64_ = new pbc::MapField<long, long>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<long, long> MapInt64Int64 {
       get { return mapInt64Int64_; }
     }
@@ -1346,6 +1439,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForUInt32(8, 0), pb::FieldCodec.ForUInt32(16, 0), 26);
     private readonly pbc::MapField<uint, uint> mapUint32Uint32_ = new pbc::MapField<uint, uint>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<uint, uint> MapUint32Uint32 {
       get { return mapUint32Uint32_; }
     }
@@ -1356,6 +1450,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForUInt64(8, 0UL), pb::FieldCodec.ForUInt64(16, 0UL), 34);
     private readonly pbc::MapField<ulong, ulong> mapUint64Uint64_ = new pbc::MapField<ulong, ulong>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<ulong, ulong> MapUint64Uint64 {
       get { return mapUint64Uint64_; }
     }
@@ -1366,6 +1461,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSInt32(8, 0), pb::FieldCodec.ForSInt32(16, 0), 42);
     private readonly pbc::MapField<int, int> mapSint32Sint32_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapSint32Sint32 {
       get { return mapSint32Sint32_; }
     }
@@ -1376,6 +1472,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSInt64(8, 0L), pb::FieldCodec.ForSInt64(16, 0L), 50);
     private readonly pbc::MapField<long, long> mapSint64Sint64_ = new pbc::MapField<long, long>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<long, long> MapSint64Sint64 {
       get { return mapSint64Sint64_; }
     }
@@ -1386,6 +1483,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForFixed32(13, 0), pb::FieldCodec.ForFixed32(21, 0), 58);
     private readonly pbc::MapField<uint, uint> mapFixed32Fixed32_ = new pbc::MapField<uint, uint>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<uint, uint> MapFixed32Fixed32 {
       get { return mapFixed32Fixed32_; }
     }
@@ -1396,6 +1494,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForFixed64(9, 0UL), pb::FieldCodec.ForFixed64(17, 0UL), 66);
     private readonly pbc::MapField<ulong, ulong> mapFixed64Fixed64_ = new pbc::MapField<ulong, ulong>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<ulong, ulong> MapFixed64Fixed64 {
       get { return mapFixed64Fixed64_; }
     }
@@ -1406,6 +1505,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13, 0), pb::FieldCodec.ForSFixed32(21, 0), 74);
     private readonly pbc::MapField<int, int> mapSfixed32Sfixed32_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapSfixed32Sfixed32 {
       get { return mapSfixed32Sfixed32_; }
     }
@@ -1416,6 +1516,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSFixed64(9, 0L), pb::FieldCodec.ForSFixed64(17, 0L), 82);
     private readonly pbc::MapField<long, long> mapSfixed64Sfixed64_ = new pbc::MapField<long, long>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<long, long> MapSfixed64Sfixed64 {
       get { return mapSfixed64Sfixed64_; }
     }
@@ -1426,6 +1527,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, float>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForFloat(21, 0F), 90);
     private readonly pbc::MapField<int, float> mapInt32Float_ = new pbc::MapField<int, float>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, float> MapInt32Float {
       get { return mapInt32Float_; }
     }
@@ -1436,6 +1538,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, double>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForDouble(17, 0D), 98);
     private readonly pbc::MapField<int, double> mapInt32Double_ = new pbc::MapField<int, double>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, double> MapInt32Double {
       get { return mapInt32Double_; }
     }
@@ -1446,6 +1549,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<bool, bool>.Codec(pb::FieldCodec.ForBool(8, false), pb::FieldCodec.ForBool(16, false), 106);
     private readonly pbc::MapField<bool, bool> mapBoolBool_ = new pbc::MapField<bool, bool>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<bool, bool> MapBoolBool {
       get { return mapBoolBool_; }
     }
@@ -1456,6 +1560,7 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Google.Protobuf.TestProtos.MapEnum) x, global::Google.Protobuf.TestProtos.MapEnum.Foo), 114);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum> mapInt32Enum_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.MapEnum> MapInt32Enum {
       get { return mapInt32Enum_; }
     }
@@ -1466,16 +1571,19 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.ForeignMessage.Parser), 122);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage> mapInt32ForeignMessage_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.ForeignMessage> MapInt32ForeignMessage {
       get { return mapInt32ForeignMessage_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as TestArenaMap);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(TestArenaMap other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1502,6 +1610,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= MapInt32Int32.GetHashCode();
@@ -1526,11 +1635,13 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -1558,6 +1669,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       mapInt32Int32_.WriteTo(ref output, _map_mapInt32Int32_codec);
       mapInt64Int64_.WriteTo(ref output, _map_mapInt64Int64_codec);
@@ -1581,6 +1693,7 @@ namespace Google.Protobuf.TestProtos {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       size += mapInt32Int32_.CalculateSize(_map_mapInt32Int32_codec);
@@ -1605,6 +1718,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(TestArenaMap other) {
       if (other == null) {
         return;
@@ -1628,6 +1742,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -1705,6 +1820,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -1791,19 +1907,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<MessageContainingEnumCalledType> _parser = new pb::MessageParser<MessageContainingEnumCalledType>(() => new MessageContainingEnumCalledType());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<MessageContainingEnumCalledType> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3Reflection.Descriptor.MessageTypes[5]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MessageContainingEnumCalledType() {
       OnConstruction();
     }
@@ -1811,12 +1931,14 @@ namespace Google.Protobuf.TestProtos {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MessageContainingEnumCalledType(MessageContainingEnumCalledType other) : this() {
       type_ = other.type_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MessageContainingEnumCalledType Clone() {
       return new MessageContainingEnumCalledType(this);
     }
@@ -1827,16 +1949,19 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType.Parser), 10);
     private readonly pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType> type_ = new pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, global::Google.Protobuf.TestProtos.MessageContainingEnumCalledType> Type {
       get { return type_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as MessageContainingEnumCalledType);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(MessageContainingEnumCalledType other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1849,6 +1974,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= Type.GetHashCode();
@@ -1859,11 +1985,13 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -1877,6 +2005,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       type_.WriteTo(ref output, _map_type_codec);
       if (_unknownFields != null) {
@@ -1886,6 +2015,7 @@ namespace Google.Protobuf.TestProtos {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       size += type_.CalculateSize(_map_type_codec);
@@ -1896,6 +2026,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(MessageContainingEnumCalledType other) {
       if (other == null) {
         return;
@@ -1905,6 +2036,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -1926,6 +2058,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -1945,6 +2078,7 @@ namespace Google.Protobuf.TestProtos {
     #region Nested types
     /// <summary>Container for nested types declared in the MessageContainingEnumCalledType message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
       public enum Type {
         [pbr::OriginalName("TYPE_FOO")] Foo = 0,
@@ -1966,19 +2100,23 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::MessageParser<MessageContainingMapCalledEntry> _parser = new pb::MessageParser<MessageContainingMapCalledEntry>(() => new MessageContainingMapCalledEntry());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<MessageContainingMapCalledEntry> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.MapUnittestProto3Reflection.Descriptor.MessageTypes[6]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MessageContainingMapCalledEntry() {
       OnConstruction();
     }
@@ -1986,12 +2124,14 @@ namespace Google.Protobuf.TestProtos {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MessageContainingMapCalledEntry(MessageContainingMapCalledEntry other) : this() {
       entry_ = other.entry_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public MessageContainingMapCalledEntry Clone() {
       return new MessageContainingMapCalledEntry(this);
     }
@@ -2002,16 +2142,19 @@ namespace Google.Protobuf.TestProtos {
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 10);
     private readonly pbc::MapField<int, int> entry_ = new pbc::MapField<int, int>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> Entry {
       get { return entry_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as MessageContainingMapCalledEntry);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(MessageContainingMapCalledEntry other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -2024,6 +2167,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= Entry.GetHashCode();
@@ -2034,11 +2178,13 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -2052,6 +2198,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       entry_.WriteTo(ref output, _map_entry_codec);
       if (_unknownFields != null) {
@@ -2061,6 +2208,7 @@ namespace Google.Protobuf.TestProtos {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       size += entry_.CalculateSize(_map_entry_codec);
@@ -2071,6 +2219,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(MessageContainingMapCalledEntry other) {
       if (other == null) {
         return;
@@ -2080,6 +2229,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -2101,6 +2251,7 @@ namespace Google.Protobuf.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
