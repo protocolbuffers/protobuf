@@ -238,8 +238,16 @@ void Arena_register(VALUE module) {
 // We use WeakMap for the cache. For Ruby <2.7 we also need a secondary Hash
 // to store WeakMap keys because Ruby <2.7 WeakMap doesn't allow non-finalizable
 // keys.
+//
+// We also need the secondary Hash if sizeof(long) < sizeof(VALUE), because this
+// means it may not be possible to fit a pointer into a Fixnum. Keys are
+// pointers, and if they fit into a Fixnum, Ruby doesn't collect them, but if
+// they overflow and require allocating a Bignum, they could get collected
+// prematurely, thus removing the cache entry. This happens on 64-bit Windows,
+// on which pointers are 64 bits but longs are 32 bits. In this case, we enable
+// the secondary Hash to hold the keys and prevent them from being collected.
 
-#if RUBY_API_VERSION_CODE >= 20700
+#if RUBY_API_VERSION_CODE >= 20700 && SIZEOF_LONG >= SIZEOF_VALUE
 #define USE_SECONDARY_MAP 0
 #else
 #define USE_SECONDARY_MAP 1
@@ -326,7 +334,7 @@ static VALUE SecondaryMap_Get(VALUE key, bool create) {
   VALUE ret = rb_hash_lookup(secondary_map, key);
   if (ret == Qnil && create) {
     SecondaryMap_MaybeGC();
-    ret = rb_eval_string("Object.new");
+    ret = rb_class_new_instance(0, NULL, rb_cObject);
     rb_hash_aset(secondary_map, key, ret);
   }
   return ret;
@@ -336,11 +344,9 @@ static VALUE SecondaryMap_Get(VALUE key, bool create) {
 
 // Requires: secondary_map_mutex is held by this thread iff create == true.
 static VALUE ObjectCache_GetKey(const void* key, bool create) {
-  char buf[sizeof(key)];
-  memcpy(&buf, &key, sizeof(key));
-  intptr_t key_int = (intptr_t)key;
-  PBRUBY_ASSERT((key_int & 3) == 0);
-  VALUE ret = LL2NUM(key_int >> 2);
+  VALUE key_val = (VALUE)key;
+  PBRUBY_ASSERT((key_val & 3) == 0);
+  VALUE ret = LL2NUM(key_val >> 2);
 #if USE_SECONDARY_MAP
   ret = SecondaryMap_Get(ret, create);
 #endif

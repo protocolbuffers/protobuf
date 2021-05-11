@@ -14,10 +14,10 @@ sudo apt-get -y install software-properties-common
 sudo add-apt-repository universe
 sudo apt-get update
 sudo apt-get -y install unzip
-wget https://github.com/protocolbuffers/protobuf/releases/download/v3.11.2/protoc-3.11.2-linux-x86_64.zip
-unzip protoc-3.11.2-linux-x86_64.zip bin/protoc
+wget https://github.com/protocolbuffers/protobuf/releases/download/v3.15.8/protoc-3.15.8-linux-x86_64.zip
+unzip protoc-3.15.8-linux-x86_64.zip bin/protoc
 mv bin/protoc ../src/protoc
-python3.6 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 python setup.py install
 
@@ -30,13 +30,13 @@ make html
 cd ..
 deactivate
 
-python3.6 -m pip install protobuf==3.11.1 gcp-docuploader
+python3 -m pip install protobuf==3.15.8 gcp-docuploader
 
 # install a json parser
 sudo apt-get -y install jq
 
 # create metadata
-python3.6 -m docuploader create-metadata \
+python3 -m docuploader create-metadata \
   --name=$(jq --raw-output '.name // empty' .repo-metadata.json) \
   --version=$(python3 setup.py --version) \
   --language=$(jq --raw-output '.language // empty' .repo-metadata.json) \
@@ -48,4 +48,4 @@ python3.6 -m docuploader create-metadata \
 cat docs.metadata
 
 # upload docs
-python3.6 -m docuploader upload docs/_build/html --metadata-file docs.metadata --staging-bucket docs-staging
+python3 -m docuploader upload docs/_build/html --metadata-file docs.metadata --staging-bucket docs-staging
