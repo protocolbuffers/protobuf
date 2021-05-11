@@ -155,6 +155,7 @@ std::string GetOneofStoredType(const FieldDescriptor* field);
 // Whether we should generate multiple java files for messages.
 inline bool MultipleJavaFiles(const FileDescriptor* descriptor,
                               bool immutable) {
+  (void) immutable;
   return descriptor->options().java_multiple_files();
 }
 
@@ -244,15 +245,15 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
 bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field);
 
 // Does this message class have descriptor and reflection methods?
-inline bool HasDescriptorMethods(const Descriptor* descriptor,
+inline bool HasDescriptorMethods(const Descriptor* /* descriptor */,
                                  bool enforce_lite) {
   return !enforce_lite;
 }
-inline bool HasDescriptorMethods(const EnumDescriptor* descriptor,
+inline bool HasDescriptorMethods(const EnumDescriptor* /* descriptor */,
                                  bool enforce_lite) {
   return !enforce_lite;
 }
-inline bool HasDescriptorMethods(const FileDescriptor* descriptor,
+inline bool HasDescriptorMethods(const FileDescriptor* /* descriptor */,
                                  bool enforce_lite) {
   return !enforce_lite;
 }
