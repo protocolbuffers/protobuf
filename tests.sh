@@ -208,7 +208,13 @@ build_java() {
   # Java build needs `protoc`.
   internal_build_cpp
   cp -r java $dir
-  cd $dir && $MVN clean && $MVN test
+  cd $dir && $MVN clean
+  # Skip the Kotlin tests on Oracle 7
+  if [ "$version" == "oracle7" ]; then
+    $MVN test -pl bom,lite,core,util
+  else
+    $MVN test
+  fi
   cd ../..
 }
 
