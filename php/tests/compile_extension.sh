@@ -13,13 +13,16 @@ if [ "$1" != "--release" ]; then
   CONFIGURE_OPTIONS+=("CFLAGS=-g -O0 -Wall")
 fi
 
+FINGERPRINT="$(sha256sum $(which php)) ${CONFIGURE_OPTIONS[@]}"
+
 # If the PHP interpreter we are building against or the arguments
 # have changed, we must regenerated the Makefile.
-if [[ ! -f Makefile ]] || [[ "$(grep '  \$ ./configure' config.log)" != "  $ ${CONFIGURE_OPTIONS[@]}" ]]; then
+if [[ ! -f BUILD_STAMP ]] || [[ "$(cat BUILD_STAMP)" != "$FINGERPRINT" ]]; then
   phpize --clean
   rm -f configure.in configure.ac
   phpize
   "${CONFIGURE_OPTIONS[@]}"
+  echo "$FINGERPRINT" > BUILD_STAMP
 fi
 
 make
