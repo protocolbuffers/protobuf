@@ -104,7 +104,7 @@ build_dist_install() {
 
   # Try to install Java
   pushd java
-  use_java jdk7
+  use_java jdk8
   $MVN install
   popd
 
