@@ -530,6 +530,95 @@ class Proto2Test {
   }
 
   @Test
+  fun testRepeatedExtensionGettersAndSetters() {
+    testAllExtensions {
+      this[UnittestProto.repeatedInt32Extension].addAll(listOf(1, 2))
+      assertThat(this[UnittestProto.repeatedInt32Extension]).isEqualTo(listOf(1, 2))
+      this[UnittestProto.repeatedInt32Extension] += listOf(3, 4)
+      assertThat(this[UnittestProto.repeatedInt32Extension]).isEqualTo(listOf(1, 2, 3, 4))
+      this[UnittestProto.repeatedInt32Extension][0] = 5
+      assertThat(this[UnittestProto.repeatedInt32Extension]).isEqualTo(listOf(5, 2, 3, 4))
+
+      this[UnittestProto.repeatedStringExtension].addAll(listOf("1", "2"))
+      assertThat(this[UnittestProto.repeatedStringExtension]).isEqualTo(listOf("1", "2"))
+      this[UnittestProto.repeatedStringExtension] += listOf("3", "4")
+      assertThat(this[UnittestProto.repeatedStringExtension]).isEqualTo(listOf("1", "2", "3", "4"))
+      this[UnittestProto.repeatedStringExtension][0] = "5"
+      assertThat(this[UnittestProto.repeatedStringExtension]).isEqualTo(listOf("5", "2", "3", "4"))
+
+      this[UnittestProto.repeatedGroupExtension].addAll(
+        listOf(
+          repeatedGroupExtension { a = 1 },
+          repeatedGroupExtension { a = 2 }
+        )
+      )
+      assertThat(this[UnittestProto.repeatedGroupExtension]).isEqualTo(
+        listOf(
+          repeatedGroupExtension { a = 1 },
+          repeatedGroupExtension { a = 2 }
+        )
+      )
+      this[UnittestProto.repeatedGroupExtension] +=
+        listOf(
+          repeatedGroupExtension { a = 3 },
+          repeatedGroupExtension { a = 4 }
+        )
+      assertThat(this[UnittestProto.repeatedGroupExtension]).isEqualTo(
+        listOf(
+          repeatedGroupExtension { a = 1 },
+          repeatedGroupExtension { a = 2 },
+          repeatedGroupExtension { a = 3 },
+          repeatedGroupExtension { a = 4 }
+        )
+      )
+      this[UnittestProto.repeatedGroupExtension][0] = repeatedGroupExtension { a = 5 }
+      assertThat(this[UnittestProto.repeatedGroupExtension]).isEqualTo(
+        listOf(
+          repeatedGroupExtension { a = 5 },
+          repeatedGroupExtension { a = 2 },
+          repeatedGroupExtension { a = 3 },
+          repeatedGroupExtension { a = 4 }
+        )
+      )
+
+      this[UnittestProto.repeatedNestedMessageExtension].addAll(
+        listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 })
+      )
+      assertThat(this[UnittestProto.repeatedNestedMessageExtension]).isEqualTo(
+        listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 })
+      )
+      this[UnittestProto.repeatedNestedMessageExtension] +=
+        listOf(nestedMessage { bb = 3 }, nestedMessage { bb = 4 })
+      assertThat(this[UnittestProto.repeatedNestedMessageExtension]).isEqualTo(
+        listOf(
+          nestedMessage { bb = 1 },
+          nestedMessage { bb = 2 },
+          nestedMessage { bb = 3 },
+          nestedMessage { bb = 4 }
+        )
+      )
+      this[UnittestProto.repeatedNestedMessageExtension][0] = nestedMessage { bb = 5 }
+      assertThat(this[UnittestProto.repeatedNestedMessageExtension]).isEqualTo(
+        listOf(
+          nestedMessage { bb = 5 },
+          nestedMessage { bb = 2 },
+          nestedMessage { bb = 3 },
+          nestedMessage { bb = 4 }
+        )
+      )
+
+      this[UnittestProto.repeatedNestedEnumExtension]
+        .addAll(listOf(NestedEnum.FOO, NestedEnum.BAR))
+      assertThat(this[UnittestProto.repeatedNestedEnumExtension])
+        .isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR))
+      this[UnittestProto.repeatedNestedEnumExtension] += listOf(NestedEnum.BAZ, NestedEnum.FOO)
+      assertThat(this[UnittestProto.repeatedNestedEnumExtension]).isEqualTo(
+        listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
+      )
+    }
+  }
+
+  @Test
   fun testExtensionContains() {
     testAllExtensions {
       this[UnittestProto.optionalInt32Extension] = 101

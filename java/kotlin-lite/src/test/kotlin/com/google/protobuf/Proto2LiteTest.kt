@@ -539,14 +539,14 @@ class Proto2LiteTest {
     testAllExtensionsLite {
       this[UnittestLite.repeatedInt32ExtensionLite].addAll(listOf(1, 2))
       assertThat(this[UnittestLite.repeatedInt32ExtensionLite]).isEqualTo(listOf(1, 2))
-      this[UnittestLite.repeatedInt32ExtensionLite].addAll(listOf(3, 4))
+      this[UnittestLite.repeatedInt32ExtensionLite] += listOf(3, 4)
       assertThat(this[UnittestLite.repeatedInt32ExtensionLite]).isEqualTo(listOf(1, 2, 3, 4))
       this[UnittestLite.repeatedInt32ExtensionLite][0] = 5
       assertThat(this[UnittestLite.repeatedInt32ExtensionLite]).isEqualTo(listOf(5, 2, 3, 4))
 
       this[UnittestLite.repeatedStringExtensionLite].addAll(listOf("1", "2"))
       assertThat(this[UnittestLite.repeatedStringExtensionLite]).isEqualTo(listOf("1", "2"))
-      this[UnittestLite.repeatedStringExtensionLite].addAll(listOf("3", "4"))
+      this[UnittestLite.repeatedStringExtensionLite] += listOf("3", "4")
       assertThat(this[UnittestLite.repeatedStringExtensionLite])
         .isEqualTo(listOf("1", "2", "3", "4"))
       this[UnittestLite.repeatedStringExtensionLite][0] = "5"
@@ -565,12 +565,11 @@ class Proto2LiteTest {
           repeatedGroupExtensionLite { a = 2 }
         )
       )
-      this[UnittestLite.repeatedGroupExtensionLite].addAll(
+      this[UnittestLite.repeatedGroupExtensionLite] +=
         listOf(
           repeatedGroupExtensionLite { a = 3 },
           repeatedGroupExtensionLite { a = 4 }
         )
-      )
       assertThat(this[UnittestLite.repeatedGroupExtensionLite]).isEqualTo(
         listOf(
           repeatedGroupExtensionLite { a = 1 },
@@ -595,9 +594,8 @@ class Proto2LiteTest {
       assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite]).isEqualTo(
         listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 })
       )
-      this[UnittestLite.repeatedNestedMessageExtensionLite].addAll(
+      this[UnittestLite.repeatedNestedMessageExtensionLite] +=
         listOf(nestedMessage { bb = 3 }, nestedMessage { bb = 4 })
-      )
       assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite]).isEqualTo(
         listOf(
           nestedMessage { bb = 1 },
@@ -620,7 +618,7 @@ class Proto2LiteTest {
         .addAll(listOf(NestedEnum.FOO, NestedEnum.BAR))
       assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite])
         .isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR))
-      this[UnittestLite.repeatedNestedEnumExtensionLite].addAll(listOf(NestedEnum.BAZ, NestedEnum.FOO))
+      this[UnittestLite.repeatedNestedEnumExtensionLite] += listOf(NestedEnum.BAZ, NestedEnum.FOO)
       assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite]).isEqualTo(
         listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
       )
