@@ -26,7 +26,7 @@
   * Optimize Descriptor.isExtensionNumber.
 
   Python
-  * [python-runtime] Add MethodDescriptor.CopyToProto() (#8327)
+  * Add MethodDescriptor.CopyToProto() (#8327)
   * Remove unused python_protobuf.{cc,h} (#8513)
   * Start publishing python aarch64 manylinux wheels normally (#8530)
   * Fix constness issue detected by MSVC standard conforming mode (#8568)
@@ -34,11 +34,11 @@
     oneof are present and all but one is null.
 
   Ruby
-  * Ruby: Add support for proto3 json_name in compiler and field definitions (#8356)
+  * Add support for proto3 json_name in compiler and field definitions (#8356)
   * Fixed memory leak of Ruby arena objects. (#8461)
   * Fix source gem compilation (#8471)
-  * fix(ruby): Fix various exceptions in Ruby on 64-bit Windows (#8563)
-  * fix(ruby): Fix crash when calculating Message hash values on 64-bit Windows (#8565)
+  * Fix various exceptions in Ruby on 64-bit Windows (#8563)
+  * Fix crash when calculating Message hash values on 64-bit Windows (#8565)
 
   Conformance Tests
   * Added a conformance test for the case of multiple fields from the same
