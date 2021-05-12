@@ -616,7 +616,7 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
-  Arena* message_arena = message->GetArena();
+  Arena* message_arena = message->GetOwningArena();
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
@@ -1055,10 +1055,7 @@ void ExtensionSet::InternalExtensionMergeFrom(
 
 void ExtensionSet::Swap(ExtensionSet* x) {
   if (GetArena() == x->GetArena()) {
-    using std::swap;
-    swap(flat_capacity_, x->flat_capacity_);
-    swap(flat_size_, x->flat_size_);
-    swap(map_, x->map_);
+    InternalSwap(x);
   } else {
     // TODO(cfallin, rohananil): We maybe able to optimize a case where we are
     // swapping from heap to arena-allocated extension set, by just Own()'ing
@@ -1070,6 +1067,14 @@ void ExtensionSet::Swap(ExtensionSet* x) {
     Clear();
     MergeFrom(extension_set);
   }
+}
+
+void ExtensionSet::InternalSwap(ExtensionSet* other) {
+  using std::swap;
+  swap(arena_, other->arena_);
+  swap(flat_capacity_, other->flat_capacity_);
+  swap(flat_size_, other->flat_size_);
+  swap(map_, other->map_);
 }
 
 void ExtensionSet::SwapExtension(ExtensionSet* other, int number) {

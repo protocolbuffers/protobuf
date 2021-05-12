@@ -48,6 +48,7 @@
 #include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_padding_optimizer.h>
+#include <google/protobuf/compiler/cpp/cpp_parse_function_generator.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
@@ -214,7 +215,7 @@ bool EmitFieldNonDefaultCondition(io::Printer* printer,
   // if non-zero (numeric) or non-empty (string).
   if (!field->is_repeated() && !field->containing_oneof()) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      format("if ($prefix$$name$().size() > 0) {\n");
+      format("if (!$prefix$$name$().empty()) {\n");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Message fields still have has_$name$() methods.
       format("if ($prefix$has_$name$()) {\n");
@@ -237,7 +238,7 @@ bool EmitFieldNonDefaultCondition(io::Printer* printer,
 
 // Does the given field have a has_$name$() method?
 bool HasHasMethod(const FieldDescriptor* field) {
-  if (HasFieldPresence(field->file())) {
+  if (!IsProto3(field->file())) {
     // In proto1/proto2, every field has a has_$name$() method.
     return true;
   }
@@ -276,7 +277,7 @@ void CollectMapInfo(const Options& options, const Descriptor* descriptor,
 bool HasPrivateHasMethod(const FieldDescriptor* field) {
   // Only for oneofs in message types with no field presence. has_$name$(),
   // based on the oneof case, is still useful internally for generated code.
-  return (!HasFieldPresence(field->file()) && field->real_containing_oneof());
+  return IsProto3(field->file()) && field->real_containing_oneof();
 }
 
 // TODO(ckennelly):  Cull these exclusions if/when these protos do not have
@@ -570,6 +571,7 @@ MessageGenerator::MessageGenerator(
   variables_["classtype"] = QualifiedClassName(descriptor_, options);
   variables_["full_name"] = descriptor_->full_name();
   variables_["superclass"] = SuperClassName(descriptor_, options_);
+  SetUnknkownFieldsVariable(descriptor_, options_, &variables_);
 
   // Compute optimized field order to be used for layout and initialization
   // purposes.
@@ -609,6 +611,8 @@ MessageGenerator::MessageGenerator(
   }
 
   table_driven_ = TableDrivenParsingEnabled(descriptor_, options_);
+  parse_function_generator_.reset(new ParseFunctionGenerator(
+      descriptor_, max_has_bit_index_, options_, scc_analyzer_));
 }
 
 MessageGenerator::~MessageGenerator() = default;
@@ -985,9 +989,8 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   Formatter format(printer, variables_);
-  format.Set("class_final", ShouldMarkClassAsFinal(descriptor_, options_)
-                                ? "PROTOBUF_FINAL"
-                                : "");
+  format.Set("class_final",
+             ShouldMarkClassAsFinal(descriptor_, options_) ? "final" : "");
 
   if (IsMapEntryMessage(descriptor_)) {
     std::map<std::string, std::string> vars;
@@ -1017,8 +1020,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "$classname$*>(&_$classname$_default_instance_); }\n");
     auto utf8_check = GetUtf8CheckMode(descriptor_->field(0), options_);
     if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
-        utf8_check != NONE) {
-      if (utf8_check == STRICT) {
+        utf8_check != Utf8CheckMode::kNone) {
+      if (utf8_check == Utf8CheckMode::kStrict) {
         format(
             "  static bool ValidateKey(std::string* s) {\n"
             "    return ::$proto_ns$::internal::WireFormatLite::"
@@ -1027,7 +1030,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             " }\n",
             descriptor_->field(0)->full_name());
       } else {
-        GOOGLE_CHECK_EQ(utf8_check, VERIFY);
+        GOOGLE_CHECK(utf8_check == Utf8CheckMode::kVerify);
         format(
             "  static bool ValidateKey(std::string* s) {\n"
             "#ifndef NDEBUG\n"
@@ -1046,8 +1049,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       format("  static bool ValidateKey(void*) { return true; }\n");
     }
     if (descriptor_->field(1)->type() == FieldDescriptor::TYPE_STRING &&
-        utf8_check != NONE) {
-      if (utf8_check == STRICT) {
+        utf8_check != Utf8CheckMode::kNone) {
+      if (utf8_check == Utf8CheckMode::kStrict) {
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "    return ::$proto_ns$::internal::WireFormatLite::"
@@ -1056,7 +1059,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
             " }\n",
             descriptor_->field(1)->full_name());
       } else {
-        GOOGLE_CHECK_EQ(utf8_check, VERIFY);
+        GOOGLE_CHECK(utf8_check == Utf8CheckMode::kVerify);
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "#ifndef NDEBUG\n"
@@ -1108,8 +1111,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "  return *this;\n"
       "}\n"
       "inline $classname$& operator=($classname$&& from) noexcept {\n"
-      "  if (GetArena() == from.GetArena()) {\n"
-      "    if (this != &from) InternalSwap(&from);\n"
+      "  if (this == &from) return *this;\n"
+      "  if (GetOwningArena() == from.GetOwningArena()) {\n"
+      "    InternalSwap(&from);\n"
       "  } else {\n"
       "    CopyFrom(from);\n"
       "  }\n"
@@ -1125,9 +1129,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "\n");
   }
 
-  std::map<std::string, std::string> vars;
-  SetUnknkownFieldsVariable(descriptor_, options_, &vars);
-  format.AddMap(vars);
   if (PublicUnknownFieldsAccessors(descriptor_)) {
     format(
         "inline const $unknown_fields_type$& unknown_fields() const {\n"
@@ -1273,7 +1274,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "}\n"
       "inline void Swap($classname$* other) {\n"
       "  if (other == this) return;\n"
-      "  if (GetArena() == other->GetArena()) {\n"
+      "  if (GetOwningArena() == other->GetOwningArena()) {\n"
       "    InternalSwap(other);\n"
       "  } else {\n"
       "    ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);\n"
@@ -1281,7 +1282,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "}\n"
       "void UnsafeArenaSwap($classname$* other) {\n"
       "  if (other == this) return;\n"
-      "  $DCHK$(GetArena() == other->GetArena());\n"
+      "  $DCHK$(GetOwningArena() == other->GetOwningArena());\n"
       "  InternalSwap(other);\n"
       "}\n");
 
@@ -1290,7 +1291,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       "// implements Message ----------------------------------------------\n"
       "\n"
       "inline $classname$* New() const final {\n"
-      "  return CreateMaybeMessage<$classname$>(nullptr);\n"
+      "  return new $classname$();\n"
       "}\n"
       "\n"
       "$classname$* New(::$proto_ns$::Arena* arena) const final {\n"
@@ -1323,9 +1324,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear()$ clear_final$;\n"
         "bool IsInitialized() const final;\n"
         "\n"
-        "size_t ByteSizeLong() const final;\n"
-        "const char* _InternalParse(const char* ptr, "
-        "::$proto_ns$::internal::ParseContext* ctx) final;\n"
+        "size_t ByteSizeLong() const final;\n");
+
+    parse_function_generator_->GenerateMethodDecls(printer);
+
+    format(
         "$uint8$* _InternalSerialize(\n"
         "    $uint8$* target, ::$proto_ns$::io::EpsCopyOutputStream* stream) "
         "const final;\n");
@@ -1340,8 +1343,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   format(
       "int GetCachedSize() const final { return _cached_size_.Get(); }"
       "\n\nprivate:\n"
-      "inline void SharedCtor();\n"
-      "inline void SharedDtor();\n"
+      "void SharedCtor();\n"
+      "void SharedDtor();\n"
       "void SetCachedSize(int size) const$ full_final$;\n"
       "void InternalSwap($classname$* other);\n");
 
@@ -1981,7 +1984,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     GenerateClear(printer);
     format("\n");
 
-    GenerateMergeFromCodedStream(printer);
+    parse_function_generator_->GenerateMethodImpls(printer);
     format("\n");
 
     GenerateSerializeWithCachedSizesToArray(printer);
@@ -2316,7 +2319,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* printer) {
 
   format("void $classname$::SharedDtor() {\n");
   format.Indent();
-  format("$DCHK$(GetArena() == nullptr);\n");
+  format("$DCHK$(GetArenaForAllocation() == nullptr);\n");
   // Write the destructors for each field except oneof members.
   // optimized_order_ does not contain oneof fields.
   for (auto field : optimized_order_) {
@@ -2896,15 +2899,13 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (descriptor_->extension_range_count() > 0) {
-      format("_extensions_.Swap(&other->_extensions_);\n");
+      format("_extensions_.InternalSwap(&other->_extensions_);\n");
     }
 
     std::map<std::string, std::string> vars;
     SetUnknkownFieldsVariable(descriptor_, options_, &vars);
     format.AddMap(vars);
-    format(
-        "_internal_metadata_.Swap<$unknown_fields_type$>(&other->_internal_"
-        "metadata_);\n");
+    format("_internal_metadata_.InternalSwap(&other->_internal_metadata_);\n");
 
     if (!has_bit_indices_.empty()) {
       for (int i = 0; i < HasBitsSize(); ++i) {
@@ -3241,24 +3242,6 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* printer) {
   format("}\n");
 }
 
-void MessageGenerator::GenerateMergeFromCodedStream(io::Printer* printer) {
-  std::map<std::string, std::string> vars = variables_;
-  SetUnknkownFieldsVariable(descriptor_, options_, &vars);
-  Formatter format(printer, vars);
-  if (descriptor_->options().message_set_wire_format()) {
-    // Special-case MessageSet.
-    format(
-        "const char* $classname$::_InternalParse(const char* ptr,\n"
-        "                  ::$proto_ns$::internal::ParseContext* ctx) {\n"
-        "  return _extensions_.ParseMessageSet(ptr, \n"
-        "      internal_default_instance(), &_internal_metadata_, ctx);\n"
-        "}\n");
-    return;
-  }
-  GenerateParserLoop(descriptor_, max_has_bit_index_, options_, scc_analyzer_,
-                     printer);
-}
-
 void MessageGenerator::GenerateSerializeOneofFields(
     io::Printer* printer, const std::vector<const FieldDescriptor*>& fields) {
   Formatter format(printer, variables_);
@@ -3410,7 +3393,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(
     LazySerializerEmitter(MessageGenerator* mg, io::Printer* printer)
         : mg_(mg),
           format_(printer),
-          eager_(!HasFieldPresence(mg->descriptor_->file())),
+          eager_(IsProto3(mg->descriptor_->file())),
           cached_has_bit_index_(kNoHasbit) {}
 
     ~LazySerializerEmitter() { Flush(); }

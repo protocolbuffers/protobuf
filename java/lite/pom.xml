@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.15.7</version>
+    <version>3.17.0-rc-1</version>
   </parent>
 
   <artifactId>protobuf-javalite</artifactId>
@@ -199,6 +199,7 @@
                   and exclude only the full runtime exclusive tests so we don't accidentally miss
                   any test. -->
                   <excludes>
+                    <!-- Keep in sync with //java/core:lite_tests BUILD rule. -->
                     <exclude>AbstractMessageTest.java</exclude>
                     <exclude>AbstractProto2SchemaTest.java</exclude>
                     <exclude>AnyTest.java</exclude>

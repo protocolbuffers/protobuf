@@ -157,7 +157,7 @@ void MapFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 
 void MapFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("$name$_.Swap(&other->$name$_);\n");
+  format("$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void MapFieldGenerator::GenerateCopyConstructorCode(
@@ -229,7 +229,10 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizesToArray(
   if (utf8_check) {
     format(
         "struct Utf8Check {\n"
-        "  static void Check(ConstPtr p) {\n");
+        "  static void Check(ConstPtr p) {\n"
+        // p may be unused when GetUtf8CheckMode evaluates to kNone,
+        // thus disabling the validation.
+        "    (void)p;\n");
     format.Indent();
     format.Indent();
     if (string_key) {
@@ -297,6 +300,19 @@ void MapFieldGenerator::GenerateConstinitInitializer(
     format("$name$_(::$proto_ns$::internal::ConstantInitialized{})");
   } else {
     format("$name$_()");
+  }
+}
+
+bool MapFieldGenerator::GenerateArenaDestructorCode(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    // _this is the object being destructed (we are inside a static method
+    // here).
+    format("_this->$name$_. ~MapField();\n");
+    return true;
+  } else {
+    return false;
   }
 }
 

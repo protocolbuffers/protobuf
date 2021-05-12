@@ -45,6 +45,20 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(1, $m->getOptionalInt32());
     }
 
+    public function testDecodeJsonUnknown()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":1}");
+    }
+
+    public function testDecodeJsonIgnoreUnknown()
+    {
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":1}", true);
+    }
+
     public function testDecodeTopLevelBoolValue()
     {
         $m = new BoolValue();

@@ -641,7 +641,7 @@ void SerializeReverseOrder(const unittest::TestMessageSetExtension1& message,
                            io::CodedOutputStream* coded_output) {
   WireFormatLite::WriteTag(15,  // i
                            WireFormatLite::WIRETYPE_VARINT, coded_output);
-  coded_output->WriteVarint32(message.i());
+  coded_output->WriteVarint64(message.i());
   WireFormatLite::WriteTag(16,  // recursive
                            WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
                            coded_output);
@@ -688,6 +688,66 @@ TEST(WireFormatTest, ParseMessageSetWithDeepRecReverseOrder) {
     io::CodedOutputStream coded_output(&output_stream);
     SerializeReverseOrder(message_set, &coded_output);
   }
+  proto2_wireformat_unittest::TestMessageSet message_set;
+  EXPECT_FALSE(message_set.ParseFromString(data));
+}
+
+TEST(WireFormatTest, ParseFailMalformedMessageSet) {
+  constexpr int kDepth = 5;
+  std::string data;
+  {
+    proto2_wireformat_unittest::TestMessageSet message_set;
+    proto2_wireformat_unittest::TestMessageSet* mset = &message_set;
+    for (int i = 0; i < kDepth; i++) {
+      auto m = mset->MutableExtension(
+          unittest::TestMessageSetExtension1::message_set_extension);
+      m->set_i(i);
+      mset = m->mutable_recursive();
+    }
+    auto m = mset->MutableExtension(
+        unittest::TestMessageSetExtension1::message_set_extension);
+    // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
+    m->set_i(-1);
+
+    EXPECT_TRUE(message_set.SerializeToString(&data));
+    // Make the proto mal-formed.
+    data[data.size() - 2 - kDepth] = 0xFF;
+  }
+
+  proto2_wireformat_unittest::TestMessageSet message_set;
+  EXPECT_FALSE(message_set.ParseFromString(data));
+}
+
+TEST(WireFormatTest, ParseFailMalformedMessageSetReverseOrder) {
+  constexpr int kDepth = 5;
+  std::string data;
+  {
+    proto2_wireformat_unittest::TestMessageSet message_set;
+    proto2_wireformat_unittest::TestMessageSet* mset = &message_set;
+    for (int i = 0; i < kDepth; i++) {
+      auto m = mset->MutableExtension(
+          unittest::TestMessageSetExtension1::message_set_extension);
+      m->set_i(i);
+      mset = m->mutable_recursive();
+    }
+    auto m = mset->MutableExtension(
+        unittest::TestMessageSetExtension1::message_set_extension);
+    // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
+    m->set_i(-1);
+    // SerializeReverseOrder() assumes "recursive" is always present.
+    m->mutable_recursive();
+
+    message_set.ByteSizeLong();
+
+    // Serialize with reverse payload tag order
+    io::StringOutputStream output_stream(&data);
+    io::CodedOutputStream coded_output(&output_stream);
+    SerializeReverseOrder(message_set, &coded_output);
+  }
+
+  // Make varint for -1 malformed.
+  data[data.size() - 5 * (kDepth + 1) - 4] = 0xFF;
+
   proto2_wireformat_unittest::TestMessageSet message_set;
   EXPECT_FALSE(message_set.ParseFromString(data));
 }
@@ -751,8 +811,8 @@ TEST(WireFormatTest, UnknownFieldRecursionLimit) {
 
 TEST(WireFormatTest, ZigZag) {
 // avoid line-wrapping
-#define LL(x) PROTOBUF_LONGLONG(x)
-#define ULL(x) PROTOBUF_ULONGLONG(x)
+#define LL(x) static_cast<int64_t>(ULL(x))
+#define ULL(x) uint64_t{x##u}
 #define ZigZagEncode32(x) WireFormatLite::ZigZagEncode32(x)
 #define ZigZagDecode32(x) WireFormatLite::ZigZagDecode32(x)
 #define ZigZagEncode64(x) WireFormatLite::ZigZagEncode64(x)

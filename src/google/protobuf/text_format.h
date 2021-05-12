@@ -62,9 +62,9 @@ namespace io {
 class ErrorCollector;  // tokenizer.h
 }
 
-// This class implements protocol buffer text format.  Printing and parsing
-// protocol messages in text format is useful for debugging and human editing
-// of messages.
+// This class implements protocol buffer text format, colloquially known as text
+// proto.  Printing and parsing protocol messages in text format is useful for
+// debugging and human editing of messages.
 //
 // This class is really a namespace that contains only static methods.
 class PROTOBUF_EXPORT TextFormat {
@@ -369,6 +369,14 @@ class PROTOBUF_EXPORT TextFormat {
     // output to the OutputStream (see text_format.cc for implementation).
     class TextGenerator;
 
+    // Forward declaration of an internal class used to print field values for
+    // DebugString APIs (see text_format.cc for implementation).
+    class DebugStringFieldValuePrinter;
+
+    // Forward declaration of an internal class used to print UTF-8 escaped
+    // strings (see text_format.cc for implementation).
+    class FastFieldValuePrinterUtf8Escaping;
+
     static const char* const kDoNotParse;
 
     // Internal Print method, used for writing to the OutputStream via
@@ -419,6 +427,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool single_line_mode_;
     bool use_field_number_;
     bool use_short_repeated_primitives_;
+    bool insert_silent_marker_;
     bool hide_unknown_fields_;
     bool print_message_fields_in_index_order_;
     bool expand_any_;

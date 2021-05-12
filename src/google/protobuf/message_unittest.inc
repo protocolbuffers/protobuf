@@ -56,9 +56,11 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/io/io_win32.h>
 
 
@@ -206,6 +208,171 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfNotInitialized) {
       "Can't parse message of type \"" + std::string(UNITTEST_PACKAGE_NAME) +
           ".TestRequired\" because it is missing required fields: a, b, c",
       errors[0]);
+}
+
+TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageNotInitialized) {
+  UNITTEST::TestRequiredForeign source, message;
+  source.mutable_optional_message()->set_dummy2(100);
+  std::string serialized = source.SerializePartialAsString();
+
+  EXPECT_TRUE(message.ParsePartialFromString(serialized));
+  EXPECT_FALSE(message.IsInitialized());
+
+  std::vector<std::string> errors;
+  {
+    ScopedMemoryLog log;
+    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
+    errors = log.GetMessages(ERROR);
+  }
+
+  EXPECT_THAT(
+      errors,
+      testing::ElementsAre(
+          "Can't parse message of type \"" +
+          std::string(UNITTEST_PACKAGE_NAME) +
+          ".TestRequiredForeign\" because it is missing required fields: "
+          "optional_message.a, optional_message.b, optional_message.c"));
+}
+
+TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
+  UNITTEST::TestChildExtension source, message;
+  auto* r = source.mutable_optional_extension()->MutableExtension(
+      UNITTEST::TestRequired::single);
+  r->set_dummy2(100);
+  std::string serialized = source.SerializePartialAsString();
+
+  EXPECT_TRUE(message.ParsePartialFromString(serialized));
+  EXPECT_FALSE(message.IsInitialized());
+
+  std::vector<std::string> errors;
+  {
+    ScopedMemoryLog log;
+    EXPECT_FALSE(message.ParseFromString(source.SerializePartialAsString()));
+    errors = log.GetMessages(ERROR);
+  }
+
+  EXPECT_THAT(errors,
+              testing::ElementsAre(strings::Substitute(
+                  "Can't parse message of type \"$0.TestChildExtension\" "
+                  "because it is missing required fields: "
+                  "optional_extension.($0.TestRequired.single).a, "
+                  "optional_extension.($0.TestRequired.single).b, "
+                  "optional_extension.($0.TestRequired.single).c",
+                  UNITTEST_PACKAGE_NAME)));
+}
+
+TEST(MESSAGE_TEST_NAME, ParseFailsIfSubmessageTruncated) {
+  UNITTEST::NestedTestAllTypes o, p;
+  constexpr int kDepth = 5;
+  auto* child = o.mutable_child();
+  for (int i = 0; i < kDepth; i++) {
+    child = child->mutable_child();
+  }
+  TestUtil::SetAllFields(child->mutable_payload());
+
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Should parse correctly.
+  EXPECT_TRUE(p.ParseFromString(serialized));
+
+  constexpr int kMaxTruncate = 50;
+  ASSERT_GT(serialized.size(), kMaxTruncate);
+
+  for (int i = 1; i < kMaxTruncate; i += 3) {
+    EXPECT_FALSE(
+        p.ParseFromString(serialized.substr(0, serialized.size() - i)));
+  }
+}
+
+TEST(MESSAGE_TEST_NAME, ParseFailsIfWireMalformed) {
+  UNITTEST::NestedTestAllTypes o, p;
+  constexpr int kDepth = 5;
+  auto* child = o.mutable_child();
+  for (int i = 0; i < kDepth; i++) {
+    child = child->mutable_child();
+  }
+  // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
+  child->mutable_payload()->set_optional_int32(-1);
+
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Should parse correctly.
+  EXPECT_TRUE(p.ParseFromString(serialized));
+
+  // Overwriting the last byte to 0xFF results in malformed wire.
+  serialized[serialized.size() - 1] = 0xFF;
+  EXPECT_FALSE(p.ParseFromString(serialized));
+}
+
+TEST(MESSAGE_TEST_NAME, ParseFailsIfOneofWireMalformed) {
+  UNITTEST::NestedTestAllTypes o, p;
+  constexpr int kDepth = 5;
+  auto* child = o.mutable_child();
+  for (int i = 0; i < kDepth; i++) {
+    child = child->mutable_child();
+  }
+  // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
+  child->mutable_payload()->mutable_oneof_nested_message()->set_bb(-1);
+
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Should parse correctly.
+  EXPECT_TRUE(p.ParseFromString(serialized));
+
+  // Overwriting the last byte to 0xFF results in malformed wire.
+  serialized[serialized.size() - 1] = 0xFF;
+  EXPECT_FALSE(p.ParseFromString(serialized));
+}
+
+TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionWireMalformed) {
+  UNITTEST::TestChildExtension o, p;
+  auto* m = o.mutable_optional_extension()->MutableExtension(
+      UNITTEST::optional_nested_message_extension);
+
+  // -1 becomes \xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x1
+  m->set_bb(-1);
+
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  // Should parse correctly.
+  EXPECT_TRUE(p.ParseFromString(serialized));
+
+  // Overwriting the last byte to 0xFF results in malformed wire.
+  serialized[serialized.size() - 1] = 0xFF;
+  EXPECT_FALSE(p.ParseFromString(serialized));
+}
+
+TEST(MESSAGE_TEST_NAME, Swap) {
+  UNITTEST::NestedTestAllTypes o;
+  constexpr int kDepth = 5;
+  auto* child = o.mutable_child();
+  for (int i = 0; i < kDepth; i++) {
+    child = child->mutable_child();
+  }
+  TestUtil::SetAllFields(child->mutable_payload());
+
+  std::string serialized;
+  EXPECT_TRUE(o.SerializeToString(&serialized));
+
+  {
+    Arena arena;
+    UNITTEST::NestedTestAllTypes* p1 =
+        Arena::CreateMessage<UNITTEST::NestedTestAllTypes>(&arena);
+
+    // Should parse correctly.
+    EXPECT_TRUE(p1->ParseFromString(serialized));
+
+    UNITTEST::NestedTestAllTypes* p2 =
+        Arena::CreateMessage<UNITTEST::NestedTestAllTypes>(&arena);
+
+    p1->Swap(p2);
+
+    EXPECT_EQ(o.SerializeAsString(), p2->SerializeAsString());
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, BypassInitializationCheckOnParse) {
@@ -372,6 +539,18 @@ TEST(MESSAGE_TEST_NAME, FindInitializationErrors) {
   EXPECT_EQ("a", errors[0]);
   EXPECT_EQ("b", errors[1]);
   EXPECT_EQ("c", errors[2]);
+}
+
+TEST(MESSAGE_TEST_NAME, ReleaseMustUseResult) {
+  UNITTEST::TestAllTypes message;
+  auto* f = new UNITTEST::ForeignMessage();
+  f->set_c(1000);
+  message.set_allocated_optional_foreign_message(f);
+  auto* mf = message.mutable_optional_foreign_message();
+  EXPECT_EQ(mf, f);
+  std::unique_ptr<UNITTEST::ForeignMessage> rf(
+      message.release_optional_foreign_message());
+  EXPECT_NE(rf.get(), nullptr);
 }
 
 TEST(MESSAGE_TEST_NAME, ParseFailsOnInvalidMessageEnd) {

@@ -110,12 +110,12 @@ Any::Any(const Any& from)
   type_url_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_type_url().empty()) {
     type_url_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_type_url(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_value().empty()) {
     value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_value(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
@@ -132,7 +132,7 @@ Any::~Any() {
 }
 
 void Any::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   type_url_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   value_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
@@ -211,7 +211,7 @@ failure:
   (void) cached_has_bits;
 
   // string type_url = 1;
-  if (this->type_url().size() > 0) {
+  if (!this->type_url().empty()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_type_url().data(), static_cast<int>(this->_internal_type_url().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
@@ -221,7 +221,7 @@ failure:
   }
 
   // bytes value = 2;
-  if (this->value().size() > 0) {
+  if (!this->value().empty()) {
     target = stream->WriteBytesMaybeAliased(
         2, this->_internal_value(), target);
   }
@@ -243,14 +243,14 @@ size_t Any::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // string type_url = 1;
-  if (this->type_url().size() > 0) {
+  if (!this->type_url().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_type_url());
   }
 
   // bytes value = 2;
-  if (this->value().size() > 0) {
+  if (!this->value().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_value());
@@ -287,10 +287,10 @@ void Any::MergeFrom(const Any& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.type_url().size() > 0) {
+  if (!from.type_url().empty()) {
     _internal_set_type_url(from._internal_type_url());
   }
-  if (from.value().size() > 0) {
+  if (!from.value().empty()) {
     _internal_set_value(from._internal_value());
   }
 }
@@ -315,9 +315,17 @@ bool Any::IsInitialized() const {
 
 void Any::InternalSwap(Any* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  type_url_.Swap(&other->type_url_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  value_.Swap(&other->value_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &type_url_, GetArenaForAllocation(),
+      &other->type_url_, other->GetArenaForAllocation()
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &value_, GetArenaForAllocation(),
+      &other->value_, other->GetArenaForAllocation()
+  );
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Any::GetMetadata() const {

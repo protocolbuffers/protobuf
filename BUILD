@@ -4,6 +4,7 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test", "objc_library", native_cc_proto_library = "cc_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_java//java:defs.bzl", "java_binary", "java_proto_library", "java_lite_proto_library")
 load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
 
 licenses(["notice"])
@@ -369,6 +370,7 @@ cc_library(
         "src/google/protobuf/compiler/cpp/cpp_message.cc",
         "src/google/protobuf/compiler/cpp/cpp_message_field.cc",
         "src/google/protobuf/compiler/cpp/cpp_padding_optimizer.cc",
+        "src/google/protobuf/compiler/cpp/cpp_parse_function_generator.cc",
         "src/google/protobuf/compiler/cpp/cpp_primitive_field.cc",
         "src/google/protobuf/compiler/cpp/cpp_service.cc",
         "src/google/protobuf/compiler/cpp/cpp_string_field.cc",
@@ -458,6 +460,12 @@ cc_binary(
 # Tests
 ################################################################################
 
+filegroup(
+    name = "testdata",
+    visibility = ["//:__subpackages__"],
+    srcs = glob(["src/google/protobuf/testdata/**/*"]),
+)
+
 RELATIVE_LITE_TEST_PROTOS = [
     # AUTOGEN(lite_test_protos)
     "google/protobuf/map_lite_unittest.proto",
@@ -518,6 +526,57 @@ RELATIVE_TEST_PROTOS = [
 ]
 
 TEST_PROTOS = ["src/" + s for s in RELATIVE_TEST_PROTOS]
+
+GENERIC_RELATIVE_TEST_PROTOS = [
+    "google/protobuf/unittest.proto",
+    "google/protobuf/unittest_arena.proto",
+    "google/protobuf/unittest_custom_options.proto",
+    "google/protobuf/unittest_drop_unknown_fields.proto",
+    "google/protobuf/unittest_embed_optimize_for.proto",
+    "google/protobuf/unittest_empty.proto",
+    "google/protobuf/unittest_enormous_descriptor.proto",
+    "google/protobuf/unittest_import.proto",
+    "google/protobuf/unittest_import_public.proto",
+    "google/protobuf/unittest_lazy_dependencies.proto",
+    "google/protobuf/unittest_lazy_dependencies_custom_option.proto",
+    "google/protobuf/unittest_lazy_dependencies_enum.proto",
+    "google/protobuf/unittest_lite_imports_nonlite.proto",
+    "google/protobuf/unittest_mset.proto",
+    "google/protobuf/unittest_mset_wire_format.proto",
+    "google/protobuf/unittest_no_field_presence.proto",
+    "google/protobuf/unittest_no_generic_services.proto",
+    "google/protobuf/unittest_optimize_for.proto",
+    "google/protobuf/unittest_preserve_unknown_enum.proto",
+    "google/protobuf/unittest_preserve_unknown_enum2.proto",
+    "google/protobuf/unittest_proto3.proto",
+    "google/protobuf/unittest_proto3_arena.proto",
+    "google/protobuf/unittest_proto3_arena_lite.proto",
+    "google/protobuf/unittest_proto3_lite.proto",
+    "google/protobuf/unittest_proto3_optional.proto",
+    "google/protobuf/unittest_well_known_types.proto",
+]
+
+GENERIC_TEST_PROTOS = ["src/" + s for s in GENERIC_RELATIVE_TEST_PROTOS]
+
+proto_library(
+    name = "generic_test_protos",
+    visibility = ["//:__subpackages__"], 
+    strip_import_prefix = "src",
+    srcs = LITE_TEST_PROTOS + GENERIC_TEST_PROTOS,
+    deps = [
+        "//:any_proto",
+        "//:api_proto",
+        "//:descriptor_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:field_mask_proto",
+        "//:source_context_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:type_proto",
+        "//:wrappers_proto",
+    ],
+)
 
 cc_proto_library(
     name = "cc_test_protos",
@@ -680,6 +739,15 @@ cc_test(
 internal_gen_well_known_protos_java(
     name = "gen_well_known_protos_java",
     deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+)
+
+internal_gen_well_known_protos_java(
+    name = "gen_well_known_protos_javalite",
+    deps = [proto + "_proto" for proto in WELL_KNOWN_PROTO_MAP.keys()],
+    javalite = True,
     visibility = [
         "//java:__subpackages__",
     ],
@@ -1111,3 +1179,91 @@ sh_test(
         "update_file_lists.sh",
     ],
 )
+
+java_proto_library(
+    name = "test_messages_proto2_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":test_messages_proto2_proto"],
+)
+
+java_proto_library(
+    name = "test_messages_proto3_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ], 
+    deps = [":test_messages_proto3_proto"],
+)
+
+java_proto_library(
+    name = "conformance_java_proto",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":conformance_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto2_java_proto_lite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":test_messages_proto2_proto"],
+)
+
+java_lite_proto_library(
+  name = "conformance_java_proto_lite",
+  visibility = [
+        "//java:__subpackages__",
+  ],
+  deps = [":conformance_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_proto3_java_proto_lite",
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    deps = [":test_messages_proto3_proto"],
+)
+
+java_binary(
+    name = "conformance_java",
+    srcs = ["conformance/ConformanceJava.java"],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    main_class = "ConformanceJava",
+    deps = [
+        ":conformance_java_proto",
+        ":test_messages_proto2_java_proto",
+        ":test_messages_proto3_java_proto",
+        "//:protobuf_java",
+        "//:protobuf_java_util",
+    ],
+)
+
+java_binary(
+    name = "conformance_java_lite",
+    srcs = ["conformance/ConformanceJavaLite.java"],
+    visibility = [
+        "//java:__subpackages__",
+    ],
+    main_class = "ConformanceJavaLite",
+    deps = [
+        ":conformance_java_proto_lite",
+        ":test_messages_proto2_java_proto_lite",
+        ":test_messages_proto3_java_proto_lite",
+        "//:protobuf_javalite",
+        "//:protobuf_java_util",
+    ],
+)
+
+exports_files([
+    "conformance/conformance_test_runner.sh",
+    "conformance/failure_list_java.txt",
+    "conformance/failure_list_java_lite.txt",
+    "conformance/text_format_failure_list_java.txt",
+    "conformance/text_format_failure_list_java_lite.txt",
+])

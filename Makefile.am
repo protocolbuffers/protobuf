@@ -530,6 +530,8 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
   java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
+  java/internal/BUILD                                                              \
+  java/internal/testing.bzl                                                        \
   java/kotlin/generate-sources-build.xml                                           \
   java/kotlin/generate-test-sources-build.xml                                      \
   java/kotlin/pom.xml                                                              \
@@ -568,6 +570,7 @@ java_EXTRA_DIST=                                                                
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
+  java/BUILD                                                                       \
   java/pom.xml                                                                     \
   java/util/BUILD                                                                  \
   java/util/pom.xml                                                                \
@@ -821,7 +824,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/protobuf.h                                  \
   php/ext/google/protobuf/wkt.inc                                     \
   php/generate_descriptor_protos.sh                                   \
-  php/phpunit.xml                                                     \
+  php/generate_test_protos.sh                                         \
   php/prepare_c_extension.sh                                          \
   php/release.sh                                                      \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
@@ -950,14 +953,12 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Value.php                                   \
   php/src/phpdoc.dist.xml                                             \
   php/tests/ArrayTest.php                                             \
-  php/tests/autoload.php                                              \
-  php/tests/bootstrap_phpunit.php                                     \
   php/tests/compatibility_test.sh                                     \
   php/tests/compile_extension.sh                                      \
   php/tests/DescriptorsTest.php                                       \
   php/tests/EncodeDecodeTest.php                                      \
+  php/tests/force_c_ext.php                                           \
   php/tests/gdb_test.sh                                               \
-  php/tests/generate_protos.sh                                        \
   php/tests/GeneratedClassTest.php                                    \
   php/tests/GeneratedPhpdocTest.php                                   \
   php/tests/GeneratedServiceTest.php                                  \
@@ -984,10 +985,8 @@ php_EXTRA_DIST=                                                       \
   php/tests/proto/test_service.proto                                  \
   php/tests/proto/test_service_namespace.proto                        \
   php/tests/proto/test_wrapper_type_setters.proto                     \
-  php/tests/test.sh                                                   \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
-  php/tests/undefined_test.php                                        \
   php/tests/valgrind.supp                                             \
   php/tests/WellKnownTest.php                                         \
   php/tests/WrapperTypeSettersTest.php
@@ -1037,7 +1036,6 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/packed_field_test.proto                    \
   python/google/protobuf/internal/proto_builder_test.py                      \
   python/google/protobuf/internal/python_message.py                          \
-  python/google/protobuf/internal/python_protobuf.cc                         \
   python/google/protobuf/internal/reflection_test.py                         \
   python/google/protobuf/internal/service_reflection_test.py                 \
   python/google/protobuf/internal/symbol_database_test.py                    \
@@ -1058,7 +1056,6 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/json_format.py                                      \
   python/google/protobuf/message.py                                          \
   python/google/protobuf/message_factory.py                                  \
-  python/google/protobuf/python_protobuf.h                                   \
   python/google/protobuf/proto_api.h                                         \
   python/google/protobuf/proto_builder.py                                    \
   python/google/protobuf/pyext/README                                        \

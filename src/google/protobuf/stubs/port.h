@@ -78,7 +78,7 @@
 #include <intrin.h>
 #elif defined(__APPLE__)
 #include <libkern/OSByteOrder.h>
-#elif defined(__GLIBC__) || defined(__BIONIC__) || defined(__CYGWIN__)
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__CYGWIN__)
 #include <byteswap.h>  // IWYU pragma: export
 #endif
 
@@ -136,10 +136,10 @@ typedef uint64_t uint64;
 
 static const int32 kint32max = 0x7FFFFFFF;
 static const int32 kint32min = -kint32max - 1;
-static const int64 kint64max = PROTOBUF_LONGLONG(0x7FFFFFFFFFFFFFFF);
+static const int64 kint64max = int64_t{0x7FFFFFFFFFFFFFFF};
 static const int64 kint64min = -kint64max - 1;
 static const uint32 kuint32max = 0xFFFFFFFFu;
-static const uint64 kuint64max = PROTOBUF_ULONGLONG(0xFFFFFFFFFFFFFFFF);
+static const uint64 kuint64max = uint64_t{0xFFFFFFFFFFFFFFFFu};
 
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||\
     defined(MEMORY_SANITIZER)
@@ -242,7 +242,7 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #define bswap_32(x) OSSwapInt32(x)
 #define bswap_64(x) OSSwapInt64(x)
 
-#elif !defined(__GLIBC__) && !defined(__BIONIC__) && !defined(__CYGWIN__)
+#elif !defined(__linux__) && !defined(__ANDROID__) && !defined(__CYGWIN__)
 
 #ifndef bswap_16
 static inline uint16 bswap_16(uint16 x) {
@@ -263,14 +263,14 @@ static inline uint32 bswap_32(uint32 x) {
 
 #ifndef bswap_64
 static inline uint64 bswap_64(uint64 x) {
-  return (((x & PROTOBUF_ULONGLONG(0xFF)) << 56) |
-          ((x & PROTOBUF_ULONGLONG(0xFF00)) << 40) |
-          ((x & PROTOBUF_ULONGLONG(0xFF0000)) << 24) |
-          ((x & PROTOBUF_ULONGLONG(0xFF000000)) << 8) |
-          ((x & PROTOBUF_ULONGLONG(0xFF00000000)) >> 8) |
-          ((x & PROTOBUF_ULONGLONG(0xFF0000000000)) >> 24) |
-          ((x & PROTOBUF_ULONGLONG(0xFF000000000000)) >> 40) |
-          ((x & PROTOBUF_ULONGLONG(0xFF00000000000000)) >> 56));
+  return (((x & uint64_t{0xFFu)) << 56) |
+          ((x & uint64_t{0xFF00u)) << 40) |
+          ((x & uint64_t{0xFF0000u)) << 24) |
+          ((x & uint64_t{0xFF000000u)) << 8) |
+          ((x & uint64_t{0xFF00000000u)) >> 8) |
+          ((x & uint64_t{0xFF0000000000u)) >> 24) |
+          ((x & uint64_t{0xFF000000000000u)) >> 40) |
+          ((x & uint64_t{0xFF00000000000000u)) >> 56));
 }
 #define bswap_64(x) bswap_64(x)
 #endif

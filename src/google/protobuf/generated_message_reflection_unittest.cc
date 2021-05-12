@@ -55,6 +55,9 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+// Must be included last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 
@@ -263,6 +266,39 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsAll) {
   TestUtil::ExpectClear(message2);
 }
 
+TEST(GeneratedMessageReflectionTest, SwapFieldsAllOnDifferentArena) {
+  Arena arena1, arena2;
+  auto* message1 = Arena::CreateMessage<unittest::TestAllTypes>(&arena1);
+  auto* message2 = Arena::CreateMessage<unittest::TestAllTypes>(&arena2);
+
+  TestUtil::SetAllFields(message2);
+
+  std::vector<const FieldDescriptor*> fields;
+  const Reflection* reflection = message1->GetReflection();
+  reflection->ListFields(*message2, &fields);
+  reflection->SwapFields(message1, message2, fields);
+
+  TestUtil::ExpectAllFieldsSet(*message1);
+  TestUtil::ExpectClear(*message2);
+}
+
+TEST(GeneratedMessageReflectionTest, SwapFieldsAllOnArenaHeap) {
+  Arena arena;
+  auto* message1 = Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  std::unique_ptr<unittest::TestAllTypes> message2(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
+
+  TestUtil::SetAllFields(message2.get());
+
+  std::vector<const FieldDescriptor*> fields;
+  const Reflection* reflection = message1->GetReflection();
+  reflection->ListFields(*message2, &fields);
+  reflection->SwapFields(message1, message2.get(), fields);
+
+  TestUtil::ExpectAllFieldsSet(*message1);
+  TestUtil::ExpectClear(*message2);
+}
+
 TEST(GeneratedMessageReflectionTest, SwapFieldsAllExtension) {
   unittest::TestAllExtensions message1;
   unittest::TestAllExtensions message2;
@@ -358,6 +394,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   ASSERT_EQ(2, message.repeated_foreign_message_size());
   const protobuf_unittest::ForeignMessage* expected =
       message.mutable_repeated_foreign_message(1);
+  (void)expected;  // unused in somce configurations
   std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->FindFieldByName("repeated_foreign_message")));
   EXPECT_EQ(expected, released.get());
@@ -781,6 +818,7 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
                                                               &to_message);
   const Message& sub_message = reflection->GetMessage(
       to_message, descriptor->FindFieldByName("foo_lazy_message"));
+  (void)sub_message;  // unused in somce configurations
   released = reflection->ReleaseMessage(
       &to_message, descriptor->FindFieldByName("foo_lazy_message"));
   EXPECT_TRUE(released != NULL);
@@ -798,6 +836,7 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
 
   const Message& sub_message2 = reflection->GetMessage(
       to_message, descriptor->FindFieldByName("foo_message"));
+  (void)sub_message2;  // unused in somce configurations
   released = reflection->ReleaseMessage(
       &to_message, descriptor->FindFieldByName("foo_message"));
   EXPECT_TRUE(released != NULL);
@@ -917,6 +956,7 @@ TEST(GeneratedMessageReflectionTest, ReleaseOneofMessageTest) {
   const Reflection* reflection = message.GetReflection();
   const Message& sub_message = reflection->GetMessage(
       message, descriptor->FindFieldByName("foo_lazy_message"));
+  (void)sub_message;  // unused in somce configurations
   Message* released = reflection->ReleaseMessage(
       &message, descriptor->FindFieldByName("foo_lazy_message"));
 

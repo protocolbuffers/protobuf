@@ -213,14 +213,18 @@ Struct::~Struct() {
 }
 
 void Struct::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Struct::ArenaDtor(void* object) {
   Struct* _this = reinterpret_cast< Struct* >(object);
   (void)_this;
+  _this->fields_. ~MapField();
 }
-void Struct::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+inline void Struct::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena) {
+  if (arena != nullptr) {
+    arena->OwnCustomDestructor(this, &Struct::ArenaDtor);
+  }
 }
 void Struct::SetCachedSize(int size) const {
   _cached_size_.Set(size);
@@ -291,6 +295,7 @@ failure:
     typedef ::PROTOBUF_NAMESPACE_ID::internal::CompareByDerefFirst<SortItem> Less;
     struct Utf8Check {
       static void Check(ConstPtr p) {
+        (void)p;
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
           p->first.data(), static_cast<int>(p->first.length()),
           ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
@@ -403,8 +408,8 @@ bool Struct::IsInitialized() const {
 
 void Struct::InternalSwap(Struct* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  fields_.Swap(&other->fields_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  fields_.InternalSwap(&other->fields_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Struct::GetMetadata() const {
@@ -430,11 +435,11 @@ Value::_Internal::list_value(const Value* msg) {
   return *msg->kind_.list_value_;
 }
 void Value::set_allocated_struct_value(PROTOBUF_NAMESPACE_ID::Struct* struct_value) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
   clear_kind();
   if (struct_value) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(struct_value);
+      ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<PROTOBUF_NAMESPACE_ID::Struct>::GetOwningArena(struct_value);
     if (message_arena != submessage_arena) {
       struct_value = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, struct_value, submessage_arena);
@@ -445,11 +450,11 @@ void Value::set_allocated_struct_value(PROTOBUF_NAMESPACE_ID::Struct* struct_val
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.struct_value)
 }
 void Value::set_allocated_list_value(PROTOBUF_NAMESPACE_ID::ListValue* list_value) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
   clear_kind();
   if (list_value) {
     ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(list_value);
+      ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper<PROTOBUF_NAMESPACE_ID::ListValue>::GetOwningArena(list_value);
     if (message_arena != submessage_arena) {
       list_value = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, list_value, submessage_arena);
@@ -512,7 +517,7 @@ Value::~Value() {
 }
 
 void Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   if (has_kind()) {
     clear_kind();
   }
@@ -540,7 +545,7 @@ void Value::clear_kind() {
       break;
     }
     case kStringValue: {
-      kind_.string_value_.Destroy(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArena());
+      kind_.string_value_.Destroy(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, GetArenaForAllocation());
       break;
     }
     case kBoolValue: {
@@ -548,13 +553,13 @@ void Value::clear_kind() {
       break;
     }
     case kStructValue: {
-      if (GetArena() == nullptr) {
+      if (GetArenaForAllocation() == nullptr) {
         delete kind_.struct_value_;
       }
       break;
     }
     case kListValue: {
-      if (GetArena() == nullptr) {
+      if (GetArenaForAllocation() == nullptr) {
         delete kind_.list_value_;
       }
       break;
@@ -842,7 +847,7 @@ bool Value::IsInitialized() const {
 
 void Value::InternalSwap(Value* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(kind_, other->kind_);
   swap(_oneof_case_[0], other->_oneof_case_[0]);
 }
@@ -883,7 +888,7 @@ ListValue::~ListValue() {
 }
 
 void ListValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void ListValue::ArenaDtor(void* object) {
@@ -1038,7 +1043,7 @@ bool ListValue::IsInitialized() const {
 
 void ListValue::InternalSwap(ListValue* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   values_.InternalSwap(&other->values_);
 }
 

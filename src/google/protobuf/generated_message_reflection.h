@@ -198,6 +198,13 @@ struct ReflectionSchema {
            OffsetValue(offsets_[field->index()], field->type());
   }
 
+  // Returns true if the field is implicitly backed by LazyField.
+  bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const {
+    GOOGLE_DCHECK_EQ(field->type(), FieldDescriptor::TYPE_MESSAGE);
+    (void)field;
+    return false;
+  }
+
   // Returns true if the field's accessor is called by any external code (aka,
   // non proto library code).
   bool IsFieldUsed(const FieldDescriptor* field) const {
@@ -235,8 +242,11 @@ struct ReflectionSchema {
   int weak_field_map_offset_;
 
   // We tag offset values to provide additional data about fields (such as
-  // "unused").
-  static uint32 OffsetValue(uint32 v, FieldDescriptor::Type /* type */) {
+  // "unused" or "lazy").
+  static uint32 OffsetValue(uint32 v, FieldDescriptor::Type type) {
+    if (type == FieldDescriptor::TYPE_MESSAGE) {
+      return v & 0x7FFFFFFEu;
+    }
     return v & 0x7FFFFFFFu;
   }
 };

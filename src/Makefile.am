@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 26:7:0
+PROTOBUF_VERSION = 28:0:0
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
@@ -346,6 +346,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/cpp/cpp_options.h                   \
   google/protobuf/compiler/cpp/cpp_padding_optimizer.cc        \
   google/protobuf/compiler/cpp/cpp_padding_optimizer.h         \
+  google/protobuf/compiler/cpp/cpp_parse_function_generator.cc \
+  google/protobuf/compiler/cpp/cpp_parse_function_generator.h  \
   google/protobuf/compiler/cpp/cpp_primitive_field.cc          \
   google/protobuf/compiler/cpp/cpp_primitive_field.h           \
   google/protobuf/compiler/cpp/cpp_service.cc                  \

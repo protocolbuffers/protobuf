@@ -93,8 +93,8 @@ class EpsCopyInputStream;  // defined in parse_context.h
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
-PROTOBUF_ALWAYS_INLINE
-inline void* AlignTo(void* ptr, size_t align) {
+inline PROTOBUF_ALWAYS_INLINE
+void* AlignTo(void* ptr, size_t align) {
   return reinterpret_cast<void*>(
       (reinterpret_cast<uintptr_t>(ptr) + align - 1) & (~align + 1));
 }
@@ -399,6 +399,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   template <typename T>
   class InternalHelper {
+   public:
+    // Provides access to protected GetOwningArena to generated messages.
+    static Arena* GetOwningArena(const T* p) { return p->GetOwningArena(); }
+
+    // Provides access to protected GetArenaForAllocation to generated messages.
+    static Arena* GetArenaForAllocation(const T* p) {
+      return p->GetArenaForAllocation();
+    }
+
+   private:
     template <typename U>
     static char DestructorSkippable(const typename U::DestructorSkippable_*);
     template <typename U>
@@ -437,6 +447,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     template <typename... Args>
     static T* Construct(void* ptr, Args&&... args) {
       return new (ptr) T(std::forward<Args>(args)...);
+    }
+
+    static T* New() {
+      return new T(nullptr);
     }
 
     static Arena* GetArena(const T* p) { return p->GetArena(); }
@@ -490,7 +504,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         InternalHelper<T>::is_arena_constructable::value,
         "CreateMessage can only construct types that are ArenaConstructable");
     if (arena == NULL) {
-      return new T();
+      // Generated arena constructor T(Arena*) is protected. Call via
+      // InternalHelper.
+      return InternalHelper<T>::New();
     } else {
       return arena->DoCreateMessage<T>();
     }
@@ -618,7 +634,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
           new (arena->AllocateInternal(sizeof(T), alignof(T), destructor,
                                        RTTI_TYPE_ID(T)))
           T(std::forward<Args>(args)...);
-      result->SetOwningArena(arena);
       return result;
     }
   }
@@ -646,7 +661,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::true_type) {
     if (object != NULL) {
       impl_.AddCleanup(object, &internal::arena_delete_object<MessageLite>);
-      object->SetOwningArena(this);
     }
   }
   template <typename T>
@@ -677,6 +691,25 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                     int>::type = 0>
   PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
     (void)value;
+    return nullptr;
+  }
+
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE static Arena* GetOwningArena(const T* value) {
+    return GetOwningArenaInternal(
+        value, std::is_convertible<T*, MessageLite*>());
+  }
+
+  // Implementation for GetOwningArena(). All and only message objects have
+  // GetOwningArena() method.
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE static Arena* GetOwningArenaInternal(
+      const T* value, std::true_type) {
+    return InternalHelper<T>::GetOwningArena(value);
+  }
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE static Arena* GetOwningArenaInternal(
+      const T* value, std::false_type) {
     return nullptr;
   }
 

@@ -1622,7 +1622,8 @@ int GlobalReplaceSubstring(const std::string &substring,
   for (StringPiece::size_type match_pos =
            s->find(substring.data(), pos, substring.length());
        match_pos != std::string::npos; pos = match_pos + substring.length(),
-           match_pos = s->find(substring.data(), pos, substring.length())) {
+                              match_pos = s->find(substring.data(), pos,
+                                                  substring.length())) {
     ++num_replacements;
     // Append the original content before the match.
     tmp.append(*s, pos, match_pos - pos);

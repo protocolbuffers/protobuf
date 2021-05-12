@@ -67,7 +67,7 @@ constexpr CodeGeneratorResponse::CodeGeneratorResponse(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : file_()
   , error_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
-  , supported_features_(PROTOBUF_ULONGLONG(0)){}
+  , supported_features_(uint64_t{0u}){}
 struct CodeGeneratorResponseDefaultTypeInternal {
   constexpr CodeGeneratorResponseDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -243,7 +243,7 @@ Version::Version(const Version& from)
   suffix_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_suffix()) {
     suffix_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_suffix(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   ::memcpy(&major_, &from.major_,
     static_cast<size_t>(reinterpret_cast<char*>(&patch_) -
@@ -266,7 +266,7 @@ Version::~Version() {
 }
 
 void Version::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   suffix_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -516,9 +516,13 @@ bool Version::IsInitialized() const {
 
 void Version::InternalSwap(Version* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
-  suffix_.Swap(&other->suffix_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &suffix_, GetArenaForAllocation(),
+      &other->suffix_, other->GetArenaForAllocation()
+  );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(Version, patch_)
       + sizeof(Version::patch_)
@@ -571,7 +575,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
   parameter_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_parameter()) {
     parameter_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_parameter(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   if (from._internal_has_compiler_version()) {
     compiler_version_ = new PROTOBUF_NAMESPACE_ID::compiler::Version(*from.compiler_version_);
@@ -593,7 +597,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 }
 
 void CodeGeneratorRequest::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   parameter_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete compiler_version_;
 }
@@ -863,11 +867,15 @@ bool CodeGeneratorRequest::IsInitialized() const {
 
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   file_to_generate_.InternalSwap(&other->file_to_generate_);
   proto_file_.InternalSwap(&other->proto_file_);
-  parameter_.Swap(&other->parameter_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &parameter_, GetArenaForAllocation(),
+      &other->parameter_, other->GetArenaForAllocation()
+  );
   swap(compiler_version_, other->compiler_version_);
 }
 
@@ -918,17 +926,17 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
   name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_name()) {
     name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_name(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   insertion_point_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_insertion_point()) {
     insertion_point_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_insertion_point(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   content_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_content()) {
     content_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_content(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   if (from._internal_has_generated_code_info()) {
     generated_code_info_ = new PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo(*from.generated_code_info_);
@@ -952,7 +960,7 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
 }
 
 void CodeGeneratorResponse_File::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   insertion_point_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   content_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
@@ -1226,11 +1234,23 @@ bool CodeGeneratorResponse_File::IsInitialized() const {
 
 void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
-  name_.Swap(&other->name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  insertion_point_.Swap(&other->insertion_point_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
-  content_.Swap(&other->content_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &name_, GetArenaForAllocation(),
+      &other->name_, other->GetArenaForAllocation()
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &insertion_point_, GetArenaForAllocation(),
+      &other->insertion_point_, other->GetArenaForAllocation()
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &content_, GetArenaForAllocation(),
+      &other->content_, other->GetArenaForAllocation()
+  );
   swap(generated_code_info_, other->generated_code_info_);
 }
 
@@ -1268,7 +1288,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from)
   error_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (from._internal_has_error()) {
     error_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_error(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   supported_features_ = from.supported_features_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
@@ -1276,7 +1296,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from)
 
 void CodeGeneratorResponse::SharedCtor() {
 error_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-supported_features_ = PROTOBUF_ULONGLONG(0);
+supported_features_ = uint64_t{0u};
 }
 
 CodeGeneratorResponse::~CodeGeneratorResponse() {
@@ -1286,7 +1306,7 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
 }
 
 void CodeGeneratorResponse::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   error_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -1311,7 +1331,7 @@ void CodeGeneratorResponse::Clear() {
   if (cached_has_bits & 0x00000001u) {
     error_.ClearNonDefaultToEmpty();
   }
-  supported_features_ = PROTOBUF_ULONGLONG(0);
+  supported_features_ = uint64_t{0u};
   _has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
@@ -1513,10 +1533,14 @@ bool CodeGeneratorResponse::IsInitialized() const {
 
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_has_bits_[0], other->_has_bits_[0]);
   file_.InternalSwap(&other->file_);
-  error_.Swap(&other->error_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &error_, GetArenaForAllocation(),
+      &other->error_, other->GetArenaForAllocation()
+  );
   swap(supported_features_, other->supported_features_);
 }
 
