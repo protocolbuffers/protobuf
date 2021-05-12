@@ -26,5 +26,17 @@ RUN zip -r dist.zip **
 
 
 
+# install required grpc plugins
+RUN apk add go grpc
+
+ENV GO111MODULE=on
+ENV GOPATH=/tmp/go
+ENV GOBIN=/tmp/go/bin
+ENV GOCACHE=/tmp/go/cache
+ENV PATH=/tmp/go/bin/:$PATH
+
+RUN go get github.com/golang/protobuf/protoc-gen-go
+RUN go get github.com/golang/protobuf/proto
+RUN go get google.golang.org/grpc
 
 ENTRYPOINT ["/usr/local/bin/protoc"]

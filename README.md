@@ -3,7 +3,11 @@ FORK of https://github.com/protocolbuffers/protobuf
 
 This fork suppose to help overcome this issue https://github.com/protocolbuffers/protobuf
 
-
+Docker usage
+===================================================
+ ``` powershell
+ docker run -it --rm -v ${PWD}:/userdir ott-protoc --proto_path=/userdir --include_imports --plugin=protoc-gen-grpc=/usr/bin/grpc_csharp_plugin --csharp_out=/userdir --grpc_out=/userdir --csharp_opt=allow_null_strings ssoadapter.proto
+ ```
 
 
 Protocol Buffers - Google's data interchange format
