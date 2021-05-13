@@ -709,7 +709,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   }
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static Arena* GetOwningArenaInternal(
-      const T* value, std::false_type) {
+      const T* /* value */, std::false_type) {
     return nullptr;
   }
 

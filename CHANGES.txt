@@ -1,9 +1,12 @@
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2021-05-07 version 3.17.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler
   * Fix the generated source information for reserved values in Enums.
 
   C++
+  * Fix -Wunused-parameter in map<string, int> fields (fixes #8494) (#8500)
+  * Use byteswap.h when building against musl libc (#8503)
+  * Fix -Wundefined-inline error when using SharedCtor() or SharedDtor() (#8532)
   * Fix bug where `Descriptor::DebugString()` printed proto3 synthetic oneofs.
   * Provide stable versions of `SortAndUnique()`.
   * Make sure to cache proto3 optional message fields when they are cleared.
@@ -14,6 +17,7 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Restrict extension setter and getter operators to non-nullable T.
 
   Java
+  * updating GSON and Guava to more recent versions (#8524)
   * Reduce the time spent evaluating isExtensionNumber by storing the extension
     ranges in a TreeMap for faster queries. This is particularly relevant for
     protos which define a large number of extension ranges, for example when
@@ -22,14 +26,28 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Optimize Descriptor.isExtensionNumber.
 
   Python
+  * Add MethodDescriptor.CopyToProto() (#8327)
+  * Remove unused python_protobuf.{cc,h} (#8513)
+  * Start publishing python aarch64 manylinux wheels normally (#8530)
+  * Fix constness issue detected by MSVC standard conforming mode (#8568)
   * Make JSON parsing match C++ and Java when multiple fields from the same
     oneof are present and all but one is null.
+
+  Ruby
+  * Add support for proto3 json_name in compiler and field definitions (#8356)
+  * Fixed memory leak of Ruby arena objects. (#8461)
+  * Fix source gem compilation (#8471)
+  * Fix various exceptions in Ruby on 64-bit Windows (#8563)
+  * Fix crash when calculating Message hash values on 64-bit Windows (#8565)
 
   Conformance Tests
   * Added a conformance test for the case of multiple fields from the same
     oneof.
 
 2021-04-06 version 3.16.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Other
+  * Opensourcing kotlin protos (#8272)
+  * Use a newer version of rules_proto, with the new rule `proto_descriptor_set` (#8469)
 
   C++
   * Fix compiler warnings issue found in conformance_test_runner #8189 (#8190)
