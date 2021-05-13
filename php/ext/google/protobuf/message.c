@@ -598,7 +598,6 @@ PHP_METHOD(Message, __construct) {
     return;
   }
 
-
   Message_Initialize(intern, desc);
 
   if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &init_arr) == FAILURE) {
@@ -1176,13 +1175,14 @@ PHP_METHOD(google_protobuf_Any, unpack) {
   if (!upb_decode(value.data, value.size, msg->msg,
                   upb_msgdef_layout(desc->msgdef), Arena_Get(&msg->arena))) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing");
+    zval_dtor(&ret);
     return;
   }
 
   // Fuse since the parsed message could alias "value".
   upb_arena_fuse(Arena_Get(&intern->arena), Arena_Get(&msg->arena));
 
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 PHP_METHOD(google_protobuf_Any, pack) {
