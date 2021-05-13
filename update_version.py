@@ -228,6 +228,16 @@ def UpdateJava():
       Find(Find(document.documentElement, 'parent'), 'version'),
       GetFullVersion()))
 
+  RewriteXml('java/kotlin/pom.xml',
+    lambda document : ReplaceText(
+      Find(Find(document.documentElement, 'parent'), 'version'),
+      GetFullVersion()))
+
+  RewriteXml('java/kotlin-lite/pom.xml',
+    lambda document : ReplaceText(
+      Find(Find(document.documentElement, 'parent'), 'version'),
+      GetFullVersion()))
+
   RewriteXml('protoc-artifacts/pom.xml',
     lambda document : ReplaceText(
       Find(document.documentElement, 'version'), GetFullVersion()))

@@ -10,21 +10,19 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2021-05-06</date>
- <time>11:08:58</time>
+ <date>2021-05-11</date>
+ <time>13:29:14</time>
  <version>
-  <release>3.17.0RC1</release>
+  <release>3.17.0</release>
   <api>3.17.0</api>
  </version>
  <stability>
-  <release>beta</release>
-  <api>beta</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- * read_property() handler is not supposed to return NULL (#8362)
- * Changed parameter type from long to integer (#7613)
- * fix: README supported PHP version for C extension (#8236)
+ No new changes in 3.17.0
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -960,6 +958,36 @@ G  A release.
    </stability>
    <date>2021-05-06</date>
    <time>11:08:58</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.17.0RC2</release>
+    <api>3.17.0</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2021-05-07</date>
+   <time>15:58:19</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.17.0</release>
+    <api>3.17.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2021-05-11</date>
+   <time>13:29:14</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>

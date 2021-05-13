@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.17.0-rc-1</version>
+  <version>3.17.0</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -238,6 +238,8 @@
     <module>lite</module>
     <module>core</module>
     <module>util</module>
+    <module>kotlin</module>
+    <module>kotlin-lite</module>
   </modules>
 
 </project>
