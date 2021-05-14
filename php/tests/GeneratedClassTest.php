@@ -476,10 +476,12 @@ class GeneratedClassTest extends TestBase
         $sub_m->setA(1);
         $m->setOptionalMessage($sub_m);
         $this->assertSame(1, $m->getOptionalMessage()->getA());
+        $this->assertTrue($m->hasOptionalMessage());
 
         $null = null;
         $m->setOptionalMessage($null);
         $this->assertNull($m->getOptionalMessage());
+        $this->assertFalse($m->hasOptionalMessage());
     }
 
     public function testLegacyMessageField()
@@ -1748,6 +1750,13 @@ class GeneratedClassTest extends TestBase
         $m->clear();
         $this->assertFalse($m->hasOneofInt32());
         $this->assertFalse($m->hasOneofString());
+
+        $sub_m = new Sub();
+        $sub_m->setA(1);
+        $m->setOneofMessage($sub_m);
+        $this->assertTrue($m->hasOneofMessage());
+        $m->setOneofMessage(null);
+        $this->assertFalse($m->hasOneofMessage());
     }
 
     #########################################################
