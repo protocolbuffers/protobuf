@@ -1,3 +1,16 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Protocol Compiler
+  * Stop emitting boilerplate {Copy/Merge}From in each ProtoBuf class
+  * split the accessor annotations according to their operation
+  * introduce proto message injector
+  * let proto message injector decide whether to calculate address info based on field descriptor and access type.
+  * Disable LITE_RUNTIME injector annotations
+  * move callback and @protoc_insertion_point after internal set of enum fields
+  * Improve ExtractFieldInfo codegen for string fields with oneof or default value
+  * Rename MessageInjector to FieldAccessListener
+  * Change the API of FieldAccessListener to support callbacks for info extraction
+  * make field_access_injector private
+
 2021-05-07 version 3.17.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler
