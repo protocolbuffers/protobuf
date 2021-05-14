@@ -376,6 +376,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   struct Data {
     const DescriptorPool* pool = nullptr;
     MessageFactory* factory = nullptr;
+    Arena* arena = nullptr;
   };
 
   template <typename... T>
@@ -655,6 +656,56 @@ PROTOBUF_MUST_USE_RESULT const char* ParseContext::ParseMessage(
   ptr = ptr ? msg->_InternalParse(ptr, this) : nullptr;
   depth_++;
   if (!PopLimit(old)) return nullptr;
+  return ptr;
+}
+
+template <typename Tag, typename T>
+const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
+                                                  Tag expected_tag,
+                                                  RepeatedField<T>* out) {
+  do {
+    out->Add(UnalignedLoad<T>(ptr));
+    ptr += sizeof(T);
+    if (PROTOBUF_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
+  } while (UnalignedLoad<Tag>(ptr) == expected_tag && (ptr += sizeof(Tag)));
+  return ptr;
+}
+
+template <typename T>
+const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
+                                                RepeatedField<T>* out) {
+  int nbytes = buffer_end_ + kSlopBytes - ptr;
+  while (size > nbytes) {
+    int num = nbytes / sizeof(T);
+    int old_entries = out->size();
+    out->Reserve(old_entries + num);
+    int block_size = num * sizeof(T);
+    auto dst = out->AddNAlreadyReserved(num);
+#ifdef PROTOBUF_LITTLE_ENDIAN
+    std::memcpy(dst, ptr, block_size);
+#else
+    for (int i = 0; i < num; i++)
+      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+#endif
+    size -= block_size;
+    if (limit_ <= kSlopBytes) return nullptr;
+    ptr = Next();
+    if (ptr == nullptr) return nullptr;
+    ptr += kSlopBytes - (nbytes - block_size);
+    nbytes = buffer_end_ + kSlopBytes - ptr;
+  }
+  int num = size / sizeof(T);
+  int old_entries = out->size();
+  out->Reserve(old_entries + num);
+  int block_size = num * sizeof(T);
+  auto dst = out->AddNAlreadyReserved(num);
+#ifdef PROTOBUF_LITTLE_ENDIAN
+  std::memcpy(dst, ptr, block_size);
+#else
+  for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+#endif
+  ptr += block_size;
+  if (size != block_size) return nullptr;
   return ptr;
 }
 

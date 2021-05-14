@@ -889,6 +889,10 @@ TEST(RepeatedPtrField, UnambiguousConstructor) {
 
   // Construction from string iterators for the unique string overload "g"
   // works.
+<<<<<<< HEAD
+=======
+  // std::string b[2] = {"abc", "xyz"};
+>>>>>>> refs/tags/sync-piper
   // Disabling this for now, this is actually ambiguous with libstdc++.
   // std::string b[2] = {"abc", "xyz"};
   // EXPECT_TRUE(X::g({b, b + 2}));
@@ -2107,39 +2111,35 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
   std::vector<Nested*> data;
-  TestAllTypes goldenproto;
+  Arena arena;
+  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
-    Nested* new_data = new Nested;
+    auto* new_data = goldenproto->add_repeated_nested_message();
     new_data->set_bb(i);
     data.push_back(new_data);
-
-    new_data = goldenproto.add_repeated_nested_message();
-    new_data->set_bb(i);
   }
-  TestAllTypes testproto;
+  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_nested_message()));
-  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+                testproto->mutable_repeated_nested_message()));
+  EXPECT_EQ(testproto->DebugString(), goldenproto->DebugString());
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithString) {
   std::vector<std::string*> data;
-  TestAllTypes goldenproto;
+  Arena arena;
+  auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
-    std::string* new_data = new std::string;
+    auto* new_data = goldenproto->add_repeated_string();
     *new_data = "name-" + StrCat(i);
     data.push_back(new_data);
-
-    new_data = goldenproto.add_repeated_string();
-    *new_data = "name-" + StrCat(i);
   }
-  TestAllTypes testproto;
+  auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);
   std::copy(data.begin(), data.end(),
             UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
-                testproto.mutable_repeated_string()));
-  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+                testproto->mutable_repeated_string()));
+  EXPECT_EQ(testproto->DebugString(), goldenproto->DebugString());
 }
 
 TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {

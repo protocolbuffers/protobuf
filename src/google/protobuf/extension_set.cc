@@ -616,6 +616,10 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
+#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
+  GOOGLE_DCHECK(message->GetOwningArena() == nullptr ||
+         message->GetOwningArena() == arena_);
+#endif  // PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   Arena* message_arena = message->GetOwningArena();
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
@@ -1054,7 +1058,11 @@ void ExtensionSet::InternalExtensionMergeFrom(
 }
 
 void ExtensionSet::Swap(ExtensionSet* x) {
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
+  if (GetArena() != nullptr && GetArena() == x->GetArena()) {
+#else   // PROTOBUF_FORCE_COPY_IN_SWAP
   if (GetArena() == x->GetArena()) {
+#endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
     InternalSwap(x);
   } else {
     // TODO(cfallin, rohananil): We maybe able to optimize a case where we are
@@ -1079,52 +1087,59 @@ void ExtensionSet::InternalSwap(ExtensionSet* other) {
 
 void ExtensionSet::SwapExtension(ExtensionSet* other, int number) {
   if (this == other) return;
+
+  if (GetArena() == other->GetArena()) {
+    UnsafeShallowSwapExtension(other, number);
+    return;
+  }
+
   Extension* this_ext = FindOrNull(number);
   Extension* other_ext = other->FindOrNull(number);
 
-  if (this_ext == NULL && other_ext == NULL) {
-    return;
-  }
+  if (this_ext == other_ext) return;
 
-  if (this_ext != NULL && other_ext != NULL) {
-    if (GetArena() == other->GetArena()) {
-      using std::swap;
-      swap(*this_ext, *other_ext);
-    } else {
-      // TODO(cfallin, rohananil): We could further optimize these cases,
-      // especially avoid creation of ExtensionSet, and move MergeFrom logic
-      // into Extensions itself (which takes arena as an argument).
-      // We do it this way to reuse the copy-across-arenas logic already
-      // implemented in ExtensionSet's MergeFrom.
-      ExtensionSet temp;
-      temp.InternalExtensionMergeFrom(number, *other_ext);
-      Extension* temp_ext = temp.FindOrNull(number);
-      other_ext->Clear();
-      other->InternalExtensionMergeFrom(number, *this_ext);
-      this_ext->Clear();
-      InternalExtensionMergeFrom(number, *temp_ext);
-    }
-    return;
-  }
-
-  if (this_ext == NULL) {
-    if (GetArena() == other->GetArena()) {
-      *Insert(number).first = *other_ext;
-    } else {
-      InternalExtensionMergeFrom(number, *other_ext);
-    }
+  if (this_ext != nullptr && other_ext != nullptr) {
+    // TODO(cfallin, rohananil): We could further optimize these cases,
+    // especially avoid creation of ExtensionSet, and move MergeFrom logic
+    // into Extensions itself (which takes arena as an argument).
+    // We do it this way to reuse the copy-across-arenas logic already
+    // implemented in ExtensionSet's MergeFrom.
+    ExtensionSet temp;
+    temp.InternalExtensionMergeFrom(number, *other_ext);
+    Extension* temp_ext = temp.FindOrNull(number);
+    other_ext->Clear();
+    other->InternalExtensionMergeFrom(number, *this_ext);
+    this_ext->Clear();
+    InternalExtensionMergeFrom(number, *temp_ext);
+  } else if (this_ext == nullptr) {
+    InternalExtensionMergeFrom(number, *other_ext);
+    if (other->GetArena() == nullptr) other_ext->Free();
     other->Erase(number);
-    return;
-  }
-
-  if (other_ext == NULL) {
-    if (GetArena() == other->GetArena()) {
-      *other->Insert(number).first = *this_ext;
-    } else {
-      other->InternalExtensionMergeFrom(number, *this_ext);
-    }
+  } else {
+    other->InternalExtensionMergeFrom(number, *this_ext);
+    if (GetArena() == nullptr) this_ext->Free();
     Erase(number);
-    return;
+  }
+}
+
+void ExtensionSet::UnsafeShallowSwapExtension(ExtensionSet* other, int number) {
+  if (this == other) return;
+
+  Extension* this_ext = FindOrNull(number);
+  Extension* other_ext = other->FindOrNull(number);
+
+  if (this_ext == other_ext) return;
+
+  GOOGLE_DCHECK_EQ(GetArena(), other->GetArena());
+
+  if (this_ext != nullptr && other_ext != nullptr) {
+    std::swap(*this_ext, *other_ext);
+  } else if (this_ext == nullptr) {
+    *Insert(number).first = *other_ext;
+    other->Erase(number);
+  } else {
+    *other->Insert(number).first = *this_ext;
+    Erase(number);
   }
 }
 
@@ -1725,7 +1740,7 @@ int ExtensionSet::Extension::GetSize() const {
 }
 
 // This function deletes all allocated objects. This function should be only
-// called if the Extension was created with an arena.
+// called if the Extension was created without an arena.
 void ExtensionSet::Extension::Free() {
   if (is_repeated) {
     switch (cpp_type(type)) {

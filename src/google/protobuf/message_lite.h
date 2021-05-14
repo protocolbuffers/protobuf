@@ -78,6 +78,8 @@ class ZeroCopyOutputStream;
 }  // namespace io
 namespace internal {
 
+class SwapFieldHelper;
+
 // Tag type used to invoke the constinit constructor overload of some classes.
 // Such constructors are internal implementation details of the library.
 struct ConstantInitialized {
@@ -90,6 +92,7 @@ class ParseContext;
 class ExtensionSet;
 class LazyField;
 class RepeatedPtrFieldBase;
+class TcParserBase;
 class WireFormatLite;
 class WeakFieldMap;
 
@@ -472,14 +475,15 @@ class PROTOBUF_EXPORT MessageLite {
     return Arena::CreateMaybeMessage<T>(arena);
   }
 
-  inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
+  inline explicit MessageLite(Arena* arena, bool is_message_owned = false)
+      : _internal_metadata_(arena, is_message_owned) {}
 
   // Returns the arena, if any, that directly owns this message and its internal
   // memory (Arena::Own is different in that the arena doesn't directly own the
   // internal memory). This method is used in proto's implementation for
   // swapping, moving and setting allocated, for deciding whether the ownership
   // of this message or its internal memory could be changed.
-  Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
+  Arena* GetOwningArena() const { return _internal_metadata_.owning_arena(); }
 
   // Returns the arena, used for allocating internal objects(e.g., child
   // messages, etc), or owning incoming objects (e.g., set allocated).
@@ -524,6 +528,8 @@ class PROTOBUF_EXPORT MessageLite {
   friend class Reflection;
   friend class internal::ExtensionSet;
   friend class internal::LazyField;
+  friend class internal::SwapFieldHelper;
+  friend class internal::TcParserBase;
   friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
 

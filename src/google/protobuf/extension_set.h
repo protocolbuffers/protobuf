@@ -282,12 +282,12 @@ class PROTOBUF_EXPORT ExtensionSet {
   void UnsafeArenaSetAllocatedMessage(int number, FieldType type,
                                       const FieldDescriptor* descriptor,
                                       MessageLite* message);
-  PROTOBUF_FUTURE_MUST_USE_RESULT MessageLite* ReleaseMessage(
+  PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
       int number, const MessageLite& prototype);
   MessageLite* UnsafeArenaReleaseMessage(int number,
                                          const MessageLite& prototype);
 
-  PROTOBUF_FUTURE_MUST_USE_RESULT MessageLite* ReleaseMessage(
+  PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
       const FieldDescriptor* descriptor, MessageFactory* factory);
   MessageLite* UnsafeArenaReleaseMessage(const FieldDescriptor* descriptor,
                                          MessageFactory* factory);
@@ -355,7 +355,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #undef desc
 
   void RemoveLast(int number);
-  PROTOBUF_FUTURE_MUST_USE_RESULT MessageLite* ReleaseLast(int number);
+  PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseLast(int number);
   void SwapElements(int number, int index1, int index2);
 
   // -----------------------------------------------------------------
@@ -372,6 +372,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void Swap(ExtensionSet* other);
   void InternalSwap(ExtensionSet* other);
   void SwapExtension(ExtensionSet* other, int number);
+  void UnsafeShallowSwapExtension(ExtensionSet* other, int number);
   bool IsInitialized() const;
 
   // Parses a single extension from the input. The input should start out
@@ -535,7 +536,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual MessageLite* MutableMessage(const MessageLite& prototype) = 0;
     virtual void SetAllocatedMessage(MessageLite* message) = 0;
     virtual void UnsafeArenaSetAllocatedMessage(MessageLite* message) = 0;
-    virtual PROTOBUF_FUTURE_MUST_USE_RESULT MessageLite* ReleaseMessage(
+    virtual PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseMessage(
         const MessageLite& prototype) = 0;
     virtual MessageLite* UnsafeArenaReleaseMessage(
         const MessageLite& prototype) = 0;
@@ -1262,7 +1263,7 @@ class MessageTypeTraits {
                                              ExtensionSet* set) {
     set->UnsafeArenaSetAllocatedMessage(number, field_type, NULL, message);
   }
-  static inline PROTOBUF_FUTURE_MUST_USE_RESULT MutableType
+  static inline PROTOBUF_MUST_USE_RESULT MutableType
   Release(int number, FieldType /* field_type */, ExtensionSet* set) {
     return static_cast<Type*>(
         set->ReleaseMessage(number, Type::default_instance()));
@@ -1478,7 +1479,7 @@ class ExtensionIdentifier {
   template <typename _proto_TypeTraits,                                       \
             ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,         \
             bool _is_packed>                                                  \
-  inline PROTOBUF_FUTURE_MUST_USE_RESULT                                      \
+  inline PROTOBUF_MUST_USE_RESULT                                             \
       typename _proto_TypeTraits::Singular::MutableType                       \
       ReleaseExtension(                                                       \
           const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<       \

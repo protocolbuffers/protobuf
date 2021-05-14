@@ -85,9 +85,9 @@ extern const char kThinSeparator[];
 void SetCommonVars(const Options& options,
                    std::map<std::string, std::string>* variables);
 
-void SetUnknkownFieldsVariable(const Descriptor* descriptor,
-                               const Options& options,
-                               std::map<std::string, std::string>* variables);
+void SetUnknownFieldsVariable(const Descriptor* descriptor,
+                              const Options& options,
+                              std::map<std::string, std::string>* variables);
 
 bool GetBootstrapBasename(const Options& options, const std::string& basename,
                           std::string* bootstrap_basename);
@@ -342,7 +342,8 @@ inline bool IsLazy(const FieldDescriptor* field, const Options& options) {
          !options.opensource_runtime;
 }
 
-inline bool IsFieldUsed(const FieldDescriptor* /* field */, const Options& /* options */) {
+inline bool IsFieldUsed(const FieldDescriptor* /* field */,
+                        const Options& options) {
   return true;
 }
 
@@ -710,7 +711,7 @@ class PROTOC_EXPORT Formatter {
     std::vector<int> path;
     descriptor->GetLocationPath(&path);
     GeneratedCodeInfo::Annotation annotation;
-    for (int index: path) {
+    for (int index : path) {
       annotation.add_path(index);
     }
     annotation.set_source_file(descriptor->file()->name());
@@ -749,7 +750,8 @@ class PROTOC_EXPORT NamespaceOpener {
       if (name_stack_[common_idx] != new_stack_[common_idx]) break;
       common_idx++;
     }
-    for (auto it = name_stack_.crbegin(); it != name_stack_.crend() - common_idx; ++it) {
+    for (auto it = name_stack_.crbegin();
+         it != name_stack_.crend() - common_idx; ++it) {
       if (*it == "PROTOBUF_NAMESPACE_ID") {
         printer_->Print("PROTOBUF_NAMESPACE_CLOSE\n");
       } else {
@@ -863,6 +865,8 @@ struct OneOfRangeImpl {
 inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 
 PROTOC_EXPORT std::string StripProto(const std::string& filename);
+
+inline bool EnableMessageOwnedArena(const Descriptor* desc) { return false; }
 
 }  // namespace cpp
 }  // namespace compiler

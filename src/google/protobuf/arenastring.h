@@ -54,6 +54,8 @@ namespace internal {
 template <typename T>
 class ExplicitlyConstructed;
 
+class SwapFieldHelper;
+
 // Lazy string instance to support string fields with non-empty default.
 // These are initialized on the first call to .get().
 class PROTOBUF_EXPORT LazyString {
@@ -241,9 +243,9 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Own()'d by any arena. If the field is not set, this returns NULL. The
   // caller retains ownership. Clears this field back to NULL state. Used to
   // implement release_<field>() methods on generated classes.
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* Release(
+  PROTOBUF_MUST_USE_RESULT std::string* Release(
       const std::string* default_value, ::google::protobuf::Arena* arena);
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* ReleaseNonDefault(
+  PROTOBUF_MUST_USE_RESULT std::string* ReleaseNonDefault(
       const std::string* default_value, ::google::protobuf::Arena* arena);
 
   // Takes a std::string that is heap-allocated, and takes ownership. The
@@ -322,6 +324,15 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   bool IsDonatedString() const { return false; }
 
+  // Swaps tagged pointer without debug hardening. This is to allow python
+  // protobuf to maintain pointer stability even in DEBUG builds.
+  inline PROTOBUF_NDEBUG_INLINE static void UnsafeShallowSwap(
+      ArenaStringPtr* rhs, ArenaStringPtr* lhs) {
+    std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
+  }
+
+  friend class ::google::protobuf::internal::SwapFieldHelper;
+
   // Slow paths.
 
   // MutableSlow requires that !IsString() || IsDefault
@@ -348,8 +359,7 @@ inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(  //
   (void)default_value;
   std::swap(lhs_arena, rhs_arena);
   std::swap(lhs->tagged_ptr_, rhs->tagged_ptr_);
-#if 0  // TODO(b/186650244): renable this
-#ifndef NDEBUG
+#ifdef PROTOBUF_FORCE_COPY_IN_SWAP
   auto force_realloc = [default_value](ArenaStringPtr* p, Arena* arena) {
     if (p->IsDefault(default_value)) return;
     std::string* old_value = p->tagged_ptr_.Get();
@@ -362,8 +372,7 @@ inline PROTOBUF_NDEBUG_INLINE void ArenaStringPtr::InternalSwap(  //
   };
   force_realloc(lhs, lhs_arena);
   force_realloc(rhs, rhs_arena);
-#endif
-#endif
+#endif  // PROTOBUF_FORCE_COPY_IN_SWAP
 }
 
 inline void ArenaStringPtr::ClearNonDefaultToEmpty() {

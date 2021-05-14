@@ -403,6 +403,11 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* printer) {
     IncludeFile("net/proto2/public/wire_format.h", printer);
   }
 
+  if (HasGeneratedMethods(file_, options_) &&
+      options_.tctable_mode != Options::kTCTableNever) {
+    IncludeFile("net/proto2/public/generated_message_tctable_impl.h", printer);
+  }
+
   if (options_.proto_h) {
     // Use the smaller .proto.h files.
     for (int i = 0; i < file_->dependency_count(); i++) {
@@ -1166,6 +1171,10 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
   IncludeFile("net/proto2/public/arena.h", printer);
   IncludeFile("net/proto2/public/arenastring.h", printer);
   IncludeFile("net/proto2/public/generated_message_table_driven.h", printer);
+  if (HasGeneratedMethods(file_, options_) &&
+      options_.tctable_mode != Options::kTCTableNever) {
+    IncludeFile("net/proto2/public/generated_message_tctable_decl.h", printer);
+  }
   IncludeFile("net/proto2/public/generated_message_util.h", printer);
   IncludeFile("net/proto2/public/metadata_lite.h", printer);
 

@@ -137,10 +137,13 @@ class PROTOBUF_EXPORT FieldMask final :
   FieldMask* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<FieldMask>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const FieldMask& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const FieldMask& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -160,11 +163,15 @@ class PROTOBUF_EXPORT FieldMask final :
     return "google.protobuf.FieldMask";
   }
   protected:
-  explicit FieldMask(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit FieldMask(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -232,8 +239,9 @@ inline void FieldMask::clear_paths() {
   paths_.Clear();
 }
 inline std::string* FieldMask::add_paths() {
+  std::string* _s = _internal_add_paths();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
-  return _internal_add_paths();
+  return _s;
 }
 inline const std::string& FieldMask::_internal_paths(int index) const {
   return paths_.Get(index);
@@ -247,12 +255,12 @@ inline std::string* FieldMask::mutable_paths(int index) {
   return paths_.Mutable(index);
 }
 inline void FieldMask::set_paths(int index, const std::string& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
   paths_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::set_paths(int index, std::string&& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
   paths_.Mutable(index)->assign(std::move(value));
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
 }
 inline void FieldMask::set_paths(int index, const char* value) {
   GOOGLE_DCHECK(value != nullptr);

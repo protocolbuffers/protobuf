@@ -28,58 +28,32 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: rennie@google.com (Jeffrey Rennie)
+// Author: qrczak@google.com (Marcin Kowalczyk)
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
-#define GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
-
-#include <string>
+#include <google/protobuf/python/python_protobuf.h>
 
 namespace google {
 namespace protobuf {
-namespace compiler {
-class AccessInfoMap;
+namespace python {
 
-namespace cpp {
+static const Message* GetCProtoInsidePyProtoStub(PyObject* msg) { return NULL; }
+static Message* MutableCProtoInsidePyProtoStub(PyObject* msg) { return NULL; }
 
-enum class EnforceOptimizeMode {
-  kNoEnforcement,  // Use the runtime specified by the file specific options.
-  kSpeed,          // Full runtime with a generated code implementation.
-  kCodeSize,       // Full runtime with a reflective implementation.
-  kLiteRuntime,
-};
+// This is initialized with a default, stub implementation.
+// If python-google.protobuf.cc is loaded, the function pointer is overridden
+// with a full implementation.
+const Message* (*GetCProtoInsidePyProtoPtr)(PyObject* msg) =
+    GetCProtoInsidePyProtoStub;
+Message* (*MutableCProtoInsidePyProtoPtr)(PyObject* msg) =
+    MutableCProtoInsidePyProtoStub;
 
-// Generator options (see generator.cc for a description of each):
-struct Options {
-  std::string dllexport_decl;
-  bool safe_boundary_check = false;
-  bool proto_h = false;
-  bool transitive_pb_h = true;
-  bool annotate_headers = false;
-  EnforceOptimizeMode enforce_mode = EnforceOptimizeMode::kNoEnforcement;
-  bool table_driven_parsing = false;
-  bool table_driven_serialization = false;
-  bool lite_implicit_weak_fields = false;
-  bool bootstrap = false;
-  bool opensource_runtime = false;
-  bool annotate_accessor = false;
-  bool unused_field_stripping = false;
-  std::string runtime_include_base;
-  int num_cc_files = 0;
-  std::string annotation_pragma_name;
-  std::string annotation_guard_name;
-  const AccessInfoMap* access_info_map = nullptr;
-  enum {
-    kTCTableNever,
-    kTCTableGuarded,
-    kTCTableAlways
-  } tctable_mode = kTCTableNever;
-  bool inject_field_listener_events = false;
-};
+const Message* GetCProtoInsidePyProto(PyObject* msg) {
+  return GetCProtoInsidePyProtoPtr(msg);
+}
+Message* MutableCProtoInsidePyProto(PyObject* msg) {
+  return MutableCProtoInsidePyProtoPtr(msg);
+}
 
-}  // namespace cpp
-}  // namespace compiler
+}  // namespace python
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
