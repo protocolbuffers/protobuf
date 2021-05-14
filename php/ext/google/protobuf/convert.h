@@ -60,9 +60,10 @@ bool Convert_PhpToUpbAutoWrap(zval *val, upb_msgval *upb_val, TypeInfo type,
                               upb_arena *arena);
 
 // Converts |upb_val| to a PHP zval according to |type|. This may involve
-// creating a PHP wrapper object. If type == UPB_TYPE_MESSAGE, then |desc| must
-// be the Descriptor for this message type. Any newly created wrapper object
+// creating a PHP wrapper object. Any newly created wrapper object
 // will reference |arena|.
+//
+// The caller owns a reference to the returned value.
 void Convert_UpbToPhp(upb_msgval upb_val, zval *php_val, TypeInfo type,
                       zval *arena);
 

@@ -577,6 +577,14 @@ class ArrayTest extends TestBase
 
     public function testCycleLeak()
     {
+        if (getenv("USE_ZEND_ALLOC") === "0") {
+            // If we are disabling Zend's internal allocator (as we do for
+            // Valgrind tests, for example) then memory_get_usage() will not
+            // return a useful value.
+            $this->markTestSkipped();
+            return;
+        }
+
         gc_collect_cycles();
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
         $arr[] = new TestMessage;
