@@ -45,6 +45,11 @@ sudo rm -rf \
 git -C /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core fetch --unshallow
 git -C /usr/local/Homebrew/Library/Taps/homebrew/homebrew-cask fetch --unshallow
 
+# This is needed to fix a conflict between the ilmbase and imath packages,
+# which seem to conflict with each other by both trying to install
+# libImath.dylib.
+brew unlink ilmbase
+
 brew update
 brew upgrade
 

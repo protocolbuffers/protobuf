@@ -103,7 +103,7 @@ FieldMask::~FieldMask() {
 }
 
 void FieldMask::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void FieldMask::ArenaDtor(void* object) {
@@ -263,7 +263,7 @@ bool FieldMask::IsInitialized() const {
 
 void FieldMask::InternalSwap(FieldMask* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   paths_.InternalSwap(&other->paths_);
 }
 

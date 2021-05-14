@@ -64,6 +64,10 @@ namespace protobuf {
 template <typename T>
 class RepeatedPtrField;
 
+class FastReflectionMessageMutator;
+class FastReflectionStringSetter;
+class Reflection;
+
 namespace io {
 
 class CodedInputStream;
@@ -83,10 +87,14 @@ struct ConstantInitialized {
 // See parse_context.h for explanation
 class ParseContext;
 
-class Proto3ArenaTestHelper;
+class ExtensionSet;
+class LazyField;
 class RepeatedPtrFieldBase;
 class WireFormatLite;
 class WeakFieldMap;
+
+template <typename Type>
+class GenericTypeHandler;  // defined in repeated_field.h
 
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization
@@ -210,12 +218,8 @@ class PROTOBUF_EXPORT MessageLite {
   // if arena is a NULL. Default implementation for backwards compatibility.
   virtual MessageLite* New(Arena* arena) const;
 
-  // Get the arena for allocating submessages, if any, associated with this
-  // message. Virtual method required for generic operations but most
-  // arena-related operations should use the GetArena() generated-code method.
-  // Default implementation to reduce code size by avoiding the need for
-  // per-type implementations when types do not implement arena support.
-  Arena* GetArena() const { return _internal_metadata_.arena(); }
+  // Same as GetOwningArena.
+  Arena* GetArena() const { return GetOwningArena(); }
 
   // Get a pointer that may be equal to this message's arena, or may not be.
   // If the value returned by this method is equal to some arena pointer, then
@@ -470,6 +474,17 @@ class PROTOBUF_EXPORT MessageLite {
 
   inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
+  // Returns the arena, if any, that directly owns this message and its internal
+  // memory (Arena::Own is different in that the arena doesn't directly own the
+  // internal memory). This method is used in proto's implementation for
+  // swapping, moving and setting allocated, for deciding whether the ownership
+  // of this message or its internal memory could be changed.
+  Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
+
+  // Returns the arena, used for allocating internal objects(e.g., child
+  // messages, etc), or owning incoming objects (e.g., set allocated).
+  Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
+
   internal::InternalMetadata _internal_metadata_;
 
  public:
@@ -503,19 +518,19 @@ class PROTOBUF_EXPORT MessageLite {
   // TODO(gerbens) make this a pure abstract function
   virtual const void* InternalGetTable() const { return NULL; }
 
-  // Get the arena that owns this message.
-  Arena* GetOwningArena() const { return _internal_metadata_.GetOwningArena(); }
-
-  // Set the owning arena to the given one.
-  void SetOwningArena(Arena* arena) {
-    _internal_metadata_.SetOwningArena(arena);
-  }
-
-  friend class Arena;
-  friend class internal::WireFormatLite;
+  friend class FastReflectionMessageMutator;
+  friend class FastReflectionStringSetter;
   friend class Message;
-  friend class internal::Proto3ArenaTestHelper;
+  friend class Reflection;
+  friend class internal::ExtensionSet;
+  friend class internal::LazyField;
   friend class internal::WeakFieldMap;
+  friend class internal::WireFormatLite;
+
+  template <typename Type>
+  friend class Arena::InternalHelper;
+  template <typename Type>
+  friend class internal::GenericTypeHandler;
 
   void LogInitializationErrorMessage() const;
 

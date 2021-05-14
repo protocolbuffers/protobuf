@@ -476,7 +476,8 @@ class PROTOBUF_EXPORT Reflection final {
   void RemoveLast(Message* message, const FieldDescriptor* field) const;
   // Removes the last element of a repeated message field, and returns the
   // pointer to the caller.  Caller takes ownership of the returned pointer.
-  Message* ReleaseLast(Message* message, const FieldDescriptor* field) const;
+  PROTOBUF_FUTURE_MUST_USE_RESULT Message* ReleaseLast(
+      Message* message, const FieldDescriptor* field) const;
 
   // Swap the complete contents of two messages.
   void Swap(Message* message1, Message* message2) const;
@@ -591,12 +592,20 @@ class PROTOBUF_EXPORT Reflection final {
   // the compiled-in class for this type, NOT DynamicMessage.
   Message* MutableMessage(Message* message, const FieldDescriptor* field,
                           MessageFactory* factory = nullptr) const;
+
   // Replaces the message specified by 'field' with the already-allocated object
   // sub_message, passing ownership to the message.  If the field contained a
   // message, that message is deleted.  If sub_message is nullptr, the field is
   // cleared.
   void SetAllocatedMessage(Message* message, Message* sub_message,
                            const FieldDescriptor* field) const;
+
+  // Similar to `SetAllocatedMessage`, but omits all internal safety and
+  // ownership checks.  This method should only be used when the objects are on
+  // the same arena or paired with a call to `UnsafeArenaReleaseMessage`.
+  void UnsafeArenaSetAllocatedMessage(Message* message, Message* sub_message,
+                                      const FieldDescriptor* field) const;
+
   // Releases the message specified by 'field' and returns the pointer,
   // ReleaseMessage() will return the message the message object if it exists.
   // Otherwise, it may or may not return nullptr.  In any case, if the return
@@ -604,8 +613,16 @@ class PROTOBUF_EXPORT Reflection final {
   // If the field existed (HasField() is true), then the returned pointer will
   // be the same as the pointer returned by MutableMessage().
   // This function has the same effect as ClearField().
-  Message* ReleaseMessage(Message* message, const FieldDescriptor* field,
-                          MessageFactory* factory = nullptr) const;
+  PROTOBUF_FUTURE_MUST_USE_RESULT Message* ReleaseMessage(
+      Message* message, const FieldDescriptor* field,
+      MessageFactory* factory = nullptr) const;
+
+  // Similar to `ReleaseMessage`, but omits all internal safety and ownership
+  // checks.  This method should only be used when the objects are on the same
+  // arena or paired with a call to `UnsafeArenaSetAllocatedMessage`.
+  Message* UnsafeArenaReleaseMessage(Message* message,
+                                     const FieldDescriptor* field,
+                                     MessageFactory* factory = nullptr) const;
 
 
   // Repeated field getters ------------------------------------------
@@ -934,6 +951,24 @@ class PROTOBUF_EXPORT Reflection final {
       const Message& message, bool should_fail,
       std::vector<const FieldDescriptor*>* output) const;
 
+  // Returns true if the message field is backed by a LazyField.
+  //
+  // A message field may be backed by a LazyField without the user annotation
+  // ([lazy = true]). While the user-annotated LazyField is lazily verified on
+  // first touch (i.e. failure on access rather than parsing if the LazyField is
+  // not initialized), the inferred LazyField is eagerly verified to avoid lazy
+  // parsing error at the cost of lower efficiency. When reflecting a message
+  // field, use this API instead of checking field->options().lazy().
+  bool IsLazyField(const FieldDescriptor* field) const {
+    return IsLazilyVerifiedLazyField(field) ||
+           IsEagerlyVerifiedLazyField(field);
+  }
+
+  bool IsLazilyVerifiedLazyField(const FieldDescriptor* field) const;
+  bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const;
+
+  friend class FastReflectionMessageMutator;
+
   const Descriptor* const descriptor_;
   const internal::ReflectionSchema schema_;
   const DescriptorPool* const descriptor_pool_;
@@ -1050,7 +1085,6 @@ class PROTOBUF_EXPORT Reflection final {
   }
   const internal::ExtensionSet& GetExtensionSet(const Message& message) const;
   internal::ExtensionSet* MutableExtensionSet(Message* message) const;
-  inline Arena* GetArena(Message* message) const;
 
   inline const internal::InternalMetadata& GetInternalMetadata(
       const Message& message) const;
@@ -1120,13 +1154,6 @@ class PROTOBUF_EXPORT Reflection final {
                                     int value) const;
   void AddEnumValueInternal(Message* message, const FieldDescriptor* field,
                             int value) const;
-
-  Message* UnsafeArenaReleaseMessage(Message* message,
-                                     const FieldDescriptor* field,
-                                     MessageFactory* factory = nullptr) const;
-
-  void UnsafeArenaSetAllocatedMessage(Message* message, Message* sub_message,
-                                      const FieldDescriptor* field) const;
 
   friend inline  // inline so nobody can call this function.
       void

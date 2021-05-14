@@ -91,7 +91,7 @@ SourceContext::SourceContext(const SourceContext& from)
   file_name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_file_name().empty()) {
     file_name_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_file_name(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
@@ -107,7 +107,7 @@ SourceContext::~SourceContext() {
 }
 
 void SourceContext::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   file_name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -176,7 +176,7 @@ failure:
   (void) cached_has_bits;
 
   // string file_name = 1;
-  if (this->file_name().size() > 0) {
+  if (!this->file_name().empty()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_file_name().data(), static_cast<int>(this->_internal_file_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
@@ -202,7 +202,7 @@ size_t SourceContext::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // string file_name = 1;
-  if (this->file_name().size() > 0) {
+  if (!this->file_name().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_file_name());
@@ -239,7 +239,7 @@ void SourceContext::MergeFrom(const SourceContext& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.file_name().size() > 0) {
+  if (!from.file_name().empty()) {
     _internal_set_file_name(from._internal_file_name());
   }
 }
@@ -264,8 +264,12 @@ bool SourceContext::IsInitialized() const {
 
 void SourceContext::InternalSwap(SourceContext* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  file_name_.Swap(&other->file_name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &file_name_, GetArenaForAllocation(),
+      &other->file_name_, other->GetArenaForAllocation()
+  );
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceContext::GetMetadata() const {

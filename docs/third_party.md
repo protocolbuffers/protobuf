@@ -65,9 +65,11 @@ These are projects we know about implementing Protocol Buffers for other program
 * Javascript: http://code.google.com/p/protostuff/
 * Javascript: https://github.com/seishun/node-protoc-plugin (Node.js port of plugin.h)
 * Javascript: https://github.com/seishun/node-protoc-gen-javascript (Node.js port of the Google-official implementation)
+* Javascript: https://github.com/ButterCam/sisyphus-js
 * Julia: https://github.com/tanmaykm/ProtoBuf.jl
 * Kotlin: https://github.com/marcoferrer/kroto-plus
 * Kotlin: https://github.com/Kotlin/kotlinx.serialization
+* Kotlin: https://github.com/ButterCam/sisyphus
 * Lua: http://code.google.com/p/protoc-gen-lua/
 * Lua: http://github.com/indygreg/lua-protobuf
 * Lua: https://github.com/Neopallium/lua-pb
@@ -102,6 +104,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Solidity: https://github.com/celer-network/pb3-gen-sol
 * Swift: https://github.com/alexeyxo/protobuf-swift
 * Swift: https://github.com/apple/swift-protobuf/
+* Typescript: https://github.com/thesayyn/protoc-gen-ts
 * Vala: https://launchpad.net/protobuf-vala
 * Visual Basic: http://code.google.com/p/protobuf-net/
 
@@ -158,6 +161,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Another JSON encoder/decoder for Java](https://github.com/sijuv/protobuf-codec)
 * [Editor for serialized protobufs](http://code.google.com/p/protobufeditor/)
 * [IntelliJ IDEA plugin](http://github.com/jvolkman/intellij-protobuf-editor)
+* [IntelliJ Protobuf Plugin](https://github.com/devkanro/intellij-protobuf-plugin)
 * [TextMate syntax highlighting](http://github.com/michaeledgar/protobuf-tmbundle)
 * [Oracle PL SQL plugin](http://code.google.com/p/protocol-buffer-plsql/)
 * [Eclipse editor for protobuf (from Google)](http://code.google.com/p/protobuf-dt/)

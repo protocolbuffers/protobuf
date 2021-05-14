@@ -907,10 +907,6 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         descriptor_pb2.ServiceDescriptorProto,
         TEST_SERVICE_ASCII)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python',
-      'It is not implemented in python.')
-  # TODO(jieluo): Add support for pure python or remove in c extension.
   def testCopyToProto_MethodDescriptor(self):
     expected_ascii = """
       name: 'Foo'

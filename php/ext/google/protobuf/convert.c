@@ -76,7 +76,7 @@ PHP_METHOD(Util, checkMapField) {
                             &val_type, &klass) == FAILURE) {
     return;
   }
-  RETURN_ZVAL(val, 1, 0);
+  RETURN_COPY(val);
 }
 
 // The result of checkRepeatedField() is assigned, so we need to return the
@@ -89,11 +89,16 @@ PHP_METHOD(Util, checkRepeatedField) {
       FAILURE) {
     return;
   }
-  RETURN_ZVAL(val, 1, 0);
+  RETURN_COPY(val);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_checkPrimitive, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_checkString, 0, 0, 1)
+  ZEND_ARG_INFO(0, value)
+  ZEND_ARG_INFO(0, check_utf8)
 ZEND_END_ARG_INFO()
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_checkMessage, 0, 0, 2)
@@ -123,7 +128,7 @@ static zend_function_entry util_methods[] = {
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkUint64, arginfo_checkPrimitive,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkEnum,   arginfo_checkPrimitive,
+  PHP_ME(Util, checkEnum,   arginfo_checkMessage,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkFloat,  arginfo_checkPrimitive,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
@@ -131,7 +136,7 @@ static zend_function_entry util_methods[] = {
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkBool,   arginfo_checkPrimitive,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(Util, checkString, arginfo_checkPrimitive,
+  PHP_ME(Util, checkString, arginfo_checkString,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkBytes,  arginfo_checkPrimitive,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)

@@ -333,7 +333,7 @@ TEST(RepeatedField, ReserveHuge) {
   EXPECT_GE(huge_field.Capacity(), min_clamping_size);
   ASSERT_LT(huge_field.Capacity(), std::numeric_limits<int>::max() - 1);
 
-#ifndef ADDRESS_SANITIZER
+#ifndef PROTOBUF_ASAN
   // The array containing all the fields is, in theory, up to MAXINT-1 in size.
   // However, some compilers can't handle a struct whose size is larger
   // than 2GB, and the protocol buffer format doesn't handle more than 2GB of
@@ -344,7 +344,7 @@ TEST(RepeatedField, ReserveHuge) {
   // size must still be clamped to a valid range.
   huge_field.Reserve(huge_field.Capacity() + 1);
   EXPECT_EQ(huge_field.Capacity(), std::numeric_limits<int>::max());
-#endif
+#endif  // PROTOBUF_ASAN
 #endif  // PROTOBUF_TEST_ALLOW_LARGE_ALLOC
 }
 
@@ -889,8 +889,8 @@ TEST(RepeatedPtrField, UnambiguousConstructor) {
 
   // Construction from string iterators for the unique string overload "g"
   // works.
-  std::string b[2] = {"abc", "xyz"};
   // Disabling this for now, this is actually ambiguous with libstdc++.
+  // std::string b[2] = {"abc", "xyz"};
   // EXPECT_TRUE(X::g({b, b + 2}));
 
   // Construction from string iterators for "f" is ambiguous, since both

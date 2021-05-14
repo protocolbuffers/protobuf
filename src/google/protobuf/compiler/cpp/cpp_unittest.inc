@@ -205,9 +205,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, Trigraph) {
 TEST(GENERATED_MESSAGE_TEST_NAME, ExtremeSmallIntegerDefault) {
   const UNITTEST::TestExtremeDefaultValues& extreme_default =
       UNITTEST::TestExtremeDefaultValues::default_instance();
-  EXPECT_EQ(~0x7fffffff, std::numeric_limits<int32_t>::min());
-  EXPECT_EQ(PROTOBUF_LONGLONG(~0x7fffffffffffffff),
-            std::numeric_limits<int64_t>::min());
   EXPECT_EQ(std::numeric_limits<int32_t>::min(),
             extreme_default.really_small_int32());
   EXPECT_EQ(std::numeric_limits<int64_t>::min(),

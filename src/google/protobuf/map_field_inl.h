@@ -277,14 +277,18 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kValueFieldType>
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::Swap(
     MapFieldBase* other) {
+  MapFieldBase::Swap(other);
   MapField* other_field = down_cast<MapField*>(other);
-  std::swap(this->MapFieldBase::repeated_field_, other_field->repeated_field_);
   impl_.Swap(&other_field->impl_);
-  // a relaxed swap of the atomic
-  auto other_state = other_field->state_.load(std::memory_order_relaxed);
-  auto this_state = this->MapFieldBase::state_.load(std::memory_order_relaxed);
-  other_field->state_.store(this_state, std::memory_order_relaxed);
-  this->MapFieldBase::state_.store(other_state, std::memory_order_relaxed);
+}
+
+template <typename Derived, typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
+void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::InternalSwap(
+    MapField* other) {
+  MapFieldBase::InternalSwap(other);
+  impl_.InternalSwap(&other->impl_);
 }
 
 template <typename Derived, typename Key, typename T,
@@ -293,13 +297,9 @@ template <typename Derived, typename Key, typename T,
 void MapField<Derived, Key, T, kKeyFieldType,
               kValueFieldType>::SyncRepeatedFieldWithMapNoLock() const {
   if (this->MapFieldBase::repeated_field_ == NULL) {
-    if (this->MapFieldBase::arena_ == NULL) {
-      this->MapFieldBase::repeated_field_ = new RepeatedPtrField<Message>();
-    } else {
-      this->MapFieldBase::repeated_field_ =
-          Arena::CreateMessage<RepeatedPtrField<Message> >(
-              this->MapFieldBase::arena_);
-    }
+    this->MapFieldBase::repeated_field_ =
+        Arena::CreateMessage<RepeatedPtrField<Message> >(
+            this->MapFieldBase::arena_);
   }
   const Map<Key, T>& map = impl_.GetMap();
   RepeatedPtrField<EntryType>* repeated_field =

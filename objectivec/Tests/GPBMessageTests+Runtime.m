@@ -2446,7 +2446,7 @@
         msg.oneofBytes = oneofBytesDefault;
         break;
       case Message2_O_OneOfCase_OneofEnum:
-        msg.oneofEnum = Message3_Enum_Baz;
+        msg.oneofEnum = Message2_Enum_Baz;
         break;
       default:
         XCTFail(@"shouldn't happen, loop: %zd, value: %d", i, values[i]);

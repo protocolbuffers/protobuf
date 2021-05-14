@@ -220,6 +220,11 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer) {
                      DefaultValueForField(field));
     }
 
+    if (field->has_json_name()) {
+      printer->Print(", json_name: \"$json_name$\"", "json_name",
+                    field->json_name());
+    }
+
     printer->Print("\n");
   }
 }

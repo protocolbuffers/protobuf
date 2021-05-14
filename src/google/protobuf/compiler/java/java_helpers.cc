@@ -91,6 +91,17 @@ const std::unordered_set<std::string>* kReservedNames =
         "transient",  "try",          "void",      "volatile",   "while",
     });
 
+// Names that should be avoided as field names in Kotlin.
+// All Kotlin hard keywords are in this list.
+const std::unordered_set<std::string>* kKotlinForbiddenNames =
+    new std::unordered_set<std::string>({
+        "as",    "as?",   "break", "class",  "continue",  "do",     "else",
+        "false", "for",   "fun",   "if",     "in",        "!in",    "interface",
+        "is",    "!is",   "null",  "object", "package",   "return", "super",
+        "this",  "throw", "true",  "try",    "typealias", "typeof", "val",
+        "var",   "when",  "while",
+    });
+
 bool IsForbidden(const std::string& field_name) {
   for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
     if (field_name == kForbiddenWordList[i]) {
@@ -156,6 +167,38 @@ void PrintEnumVerifierLogic(io::Printer* printer,
       StrCat(enum_verifier_string, terminating_string).c_str());
 }
 
+std::string ToCamelCase(const std::string& input, bool lower_first) {
+  bool capitalize_next = !lower_first;
+  std::string result;
+  result.reserve(input.size());
+
+  for (char i : input) {
+    if (i == '_') {
+      capitalize_next = true;
+    } else if (capitalize_next) {
+      result.push_back(ToUpperCh(i));
+      capitalize_next = false;
+    } else {
+      result.push_back(i);
+    }
+  }
+
+  // Lower-case the first letter.
+  if (lower_first && !result.empty()) {
+    result[0] = ToLowerCh(result[0]);
+  }
+
+  return result;
+}
+
+char ToUpperCh(char ch) {
+  return (ch >= 'a' && ch <= 'z') ? (ch - 'a' + 'A') : ch;
+}
+
+char ToLowerCh(char ch) {
+  return (ch >= 'A' && ch <= 'Z') ? (ch - 'A' + 'a') : ch;
+}
+
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter) {
   GOOGLE_CHECK(!input.empty());
@@ -217,6 +260,10 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   return name;
 }
 
+bool IsForbiddenKotlin(const std::string& field_name) {
+  return kKotlinForbiddenNames->find(field_name) !=
+         kKotlinForbiddenNames->end();
+}
 
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
   return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
@@ -421,6 +468,35 @@ const char* BoxedPrimitiveTypeName(JavaType type) {
 
 const char* BoxedPrimitiveTypeName(const FieldDescriptor* descriptor) {
   return BoxedPrimitiveTypeName(GetJavaType(descriptor));
+}
+
+const char* KotlinTypeName(JavaType type) {
+  switch (type) {
+    case JAVATYPE_INT:
+      return "kotlin.Int";
+    case JAVATYPE_LONG:
+      return "kotlin.Long";
+    case JAVATYPE_FLOAT:
+      return "kotlin.Float";
+    case JAVATYPE_DOUBLE:
+      return "kotlin.Double";
+    case JAVATYPE_BOOLEAN:
+      return "kotlin.Boolean";
+    case JAVATYPE_STRING:
+      return "kotlin.String";
+    case JAVATYPE_BYTES:
+      return "com.google.protobuf.ByteString";
+    case JAVATYPE_ENUM:
+      return NULL;
+    case JAVATYPE_MESSAGE:
+      return NULL;
+
+      // No default because we want the compiler to complain if any new
+      // JavaTypes are added.
+  }
+
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return NULL;
 }
 
 

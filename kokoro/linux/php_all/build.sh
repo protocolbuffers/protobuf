@@ -1,18 +1,20 @@
 #!/bin/bash
 #
-# This is the top-level script we give to Kokoro as the entry point for
-# running the "pull request" project:
-#
-# This script selects a specific Dockerfile (for building a Docker image) and
-# a script to run inside that image.  Then we delegate to the general
-# build_and_run_docker.sh script.
+# This is the entry point for kicking off a Kokoro job. This path is referenced
+# from the .cfg files in this directory.
 
-# Change to repo root
+set -ex
+
+# Change to repo base.
 cd $(dirname $0)/../../..
 
-export DOCKERHUB_ORGANIZATION=protobuftesting
-export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/php
-export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker.sh
-export OUTPUT_DIR=testoutput
-export TEST_SET="php_all"
-./kokoro/linux/build_and_run_docker.sh
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:8.0.5-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test_valgrind"
+
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.0.33-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.3.28-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.4.18-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:8.0.5-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
+
+# Most of our tests use a debug build of PHP, but we do one build against an opt
+# php just in case that surfaces anything unexpected.
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:8.0.5-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"

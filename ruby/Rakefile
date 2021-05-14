@@ -24,6 +24,12 @@ proto2_protos = %w[
   google/protobuf/compiler/plugin.proto
 ]
 
+if system('../src/protoc --version')
+  protoc_command = '../src/protoc' 
+else
+  protoc_command = 'protoc' 
+end
+
 genproto_output = []
 
 # We won't have access to .. from within docker, but the proto files
@@ -34,7 +40,7 @@ unless ENV['IN_DOCKER'] == 'true'
     output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
     genproto_output << output_file
     file output_file => input_file do |file_task|
-      sh "../src/protoc -I../src --ruby_out=lib #{input_file}"
+      sh "#{protoc_command} -I../src --ruby_out=lib #{input_file}"
     end
   end
 end
@@ -108,43 +114,43 @@ genproto_output << "tests/multi_level_nesting_test.rb"
 genproto_output << "tests/wrappers.rb"
 
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/generated_code.proto"
+  sh "#{protoc_command} --ruby_out=. tests/generated_code.proto"
 end
 
 file "tests/generated_code_proto2.rb" => "tests/generated_code_proto2.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/generated_code_proto2.proto"
+  sh "#{protoc_command} --ruby_out=. tests/generated_code_proto2.proto"
 end
 
 file "tests/test_import.rb" => "tests/test_import.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_import.proto"
+  sh "#{protoc_command} --ruby_out=. tests/test_import.proto"
 end
 
 file "tests/test_import_proto2.rb" => "tests/test_import_proto2.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_import_proto2.proto"
+  sh "#{protoc_command} --ruby_out=. tests/test_import_proto2.proto"
 end
 
 file "tests/test_ruby_package.rb" => "tests/test_ruby_package.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_ruby_package.proto"
+  sh "#{protoc_command} --ruby_out=. tests/test_ruby_package.proto"
 end
 
 file "tests/test_ruby_package_proto2.rb" => "tests/test_ruby_package_proto2.proto" do |file_task|
-  sh "../src/protoc --ruby_out=. tests/test_ruby_package_proto2.proto"
+  sh "#{protoc_command} --ruby_out=. tests/test_ruby_package_proto2.proto"
 end
 
 file "tests/basic_test.rb" => "tests/basic_test.proto" do |file_task|
-  sh "../src/protoc --experimental_allow_proto3_optional -I../src -I. --ruby_out=. tests/basic_test.proto"
+  sh "#{protoc_command} --experimental_allow_proto3_optional -I../src -I. --ruby_out=. tests/basic_test.proto"
 end
 
 file "tests/basic_test_proto2.rb" => "tests/basic_test_proto2.proto" do |file_task|
-  sh "../src/protoc -I../src -I. --ruby_out=. tests/basic_test_proto2.proto"
+  sh "#{protoc_command} -I../src -I. --ruby_out=. tests/basic_test_proto2.proto"
 end
 
 file "tests/multi_level_nesting_test.rb" => "tests/multi_level_nesting_test.proto" do |file_task|
-  sh "../src/protoc -I../src -I. --ruby_out=. tests/multi_level_nesting_test.proto"
+  sh "#{protoc_command} -I../src -I. --ruby_out=. tests/multi_level_nesting_test.proto"
 end
 
 file "tests/wrappers.rb" => "../src/google/protobuf/wrappers.proto" do |file_task|
-  sh "../src/protoc -I../src -I. --ruby_out=tests ../src/google/protobuf/wrappers.proto"
+  sh "#{protoc_command} -I../src -I. --ruby_out=tests ../src/google/protobuf/wrappers.proto"
 end
 
 task :genproto => genproto_output

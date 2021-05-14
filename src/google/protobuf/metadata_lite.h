@@ -73,17 +73,15 @@ class InternalMetadata {
   }
 
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
-    if (PROTOBUF_PREDICT_TRUE(!has_tag())) {
-      return PtrValue<Arena>();
-    } else if (is_heap_allocating()) {
-      return nullptr;
-    } else {
+    if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<ContainerBase>()->arena;
+    } else {
+      return PtrValue<Arena>();
     }
   }
 
   PROTOBUF_NDEBUG_INLINE bool have_unknown_fields() const {
-    return UnknownTag() == kUnknownTagMask;
+    return PtrTag() == kTagContainer;
   }
 
   PROTOBUF_NDEBUG_INLINE void* raw_arena_ptr() const { return ptr_; }
@@ -120,6 +118,10 @@ class InternalMetadata {
     }
   }
 
+  PROTOBUF_NDEBUG_INLINE void InternalSwap(InternalMetadata* other) {
+    std::swap(ptr_, other->ptr_);
+  }
+
   template <typename T>
   PROTOBUF_NDEBUG_INLINE void MergeFrom(const InternalMetadata& other) {
     if (other.have_unknown_fields()) {
@@ -134,55 +136,22 @@ class InternalMetadata {
     }
   }
 
-  PROTOBUF_ALWAYS_INLINE Arena* GetOwningArena() const {
-    if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
-      return PtrValue<ContainerBase>()->arena;
-    } else {
-      return PtrValue<Arena>();
-    }
-  }
-
-  PROTOBUF_ALWAYS_INLINE void SetOwningArena(Arena* arena) {
-    Arena* owning_arena = GetOwningArena();
-    GOOGLE_DCHECK(arena != nullptr);         // Heap can't own.
-    GOOGLE_DCHECK(owning_arena == nullptr);  // Only heap can be owned.
-
-    if (have_unknown_fields()) {
-      ContainerBase* container = PtrValue<ContainerBase>();
-      container->arena = arena;
-      ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(ptr_) |
-                                     kHeapAllocatingTagMask);
-    } else {
-      ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(arena) |
-                                     kHeapAllocatingTagMask);
-    }
-  }
-
  private:
   void* ptr_;
 
   // Tagged pointer implementation.
-  static constexpr intptr_t kUnknownTagMask = 1;
-  static constexpr intptr_t kHeapAllocatingTagMask = 2;
-  static constexpr intptr_t kPtrTagMask =
-      kUnknownTagMask | kHeapAllocatingTagMask;
+  enum {
+    // ptr_ is an Arena*.
+    kTagArena = 0,
+    // ptr_ is a Container*.
+    kTagContainer = 1,
+  };
+  static constexpr intptr_t kPtrTagMask = 1;
   static constexpr intptr_t kPtrValueMask = ~kPtrTagMask;
 
   // Accessors for pointer tag and pointer value.
   PROTOBUF_NDEBUG_INLINE int PtrTag() const {
     return reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask;
-  }
-  PROTOBUF_ALWAYS_INLINE int UnknownTag() const {
-    return reinterpret_cast<intptr_t>(ptr_) & kUnknownTagMask;
-  }
-  PROTOBUF_ALWAYS_INLINE int HeapAllocatingTag() const {
-    return reinterpret_cast<intptr_t>(ptr_) & kHeapAllocatingTagMask;
-  }
-  PROTOBUF_ALWAYS_INLINE bool has_tag() const {
-    return (reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask) != 0;
-  }
-  PROTOBUF_ALWAYS_INLINE bool is_heap_allocating() const {
-    return HeapAllocatingTag() == kHeapAllocatingTagMask;
   }
 
   template <typename U>
@@ -191,8 +160,7 @@ class InternalMetadata {
                                 kPtrValueMask);
   }
 
-  // If ptr_'s tag is kUnknownTagMask, it points to an instance of this
-  // struct.
+  // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
   struct ContainerBase {
     Arena* arena;
   };
@@ -212,16 +180,13 @@ class InternalMetadata {
   template <typename T>
   PROTOBUF_NOINLINE T* mutable_unknown_fields_slow() {
     Arena* my_arena = arena();
-    Arena* owning_arena = GetOwningArena();
     Container<T>* container = Arena::Create<Container<T>>(my_arena);
     // Two-step assignment works around a bug in clang's static analyzer:
     // https://bugs.llvm.org/show_bug.cgi?id=34198.
-    intptr_t allocating_tag =
-        reinterpret_cast<intptr_t>(ptr_) & kHeapAllocatingTagMask;
     ptr_ = container;
     ptr_ = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(ptr_) |
-                                   kUnknownTagMask | allocating_tag);
-    container->arena = owning_arena;
+                                   kTagContainer);
+    container->arena = my_arena;
     return &(container->unknown_fields);
   }
 

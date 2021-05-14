@@ -43,7 +43,7 @@ struct FloatValueDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FloatValueDefaultTypeInternal _FloatValue_default_instance_;
 constexpr Int64Value::Int64Value(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
-  : value_(PROTOBUF_LONGLONG(0)){}
+  : value_(int64_t{0}){}
 struct Int64ValueDefaultTypeInternal {
   constexpr Int64ValueDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -55,7 +55,7 @@ struct Int64ValueDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
 constexpr UInt64Value::UInt64Value(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
-  : value_(PROTOBUF_ULONGLONG(0)){}
+  : value_(uint64_t{0u}){}
 struct UInt64ValueDefaultTypeInternal {
   constexpr UInt64ValueDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -269,7 +269,7 @@ DoubleValue::~DoubleValue() {
 }
 
 void DoubleValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void DoubleValue::ArenaDtor(void* object) {
@@ -417,7 +417,7 @@ bool DoubleValue::IsInitialized() const {
 
 void DoubleValue::InternalSwap(DoubleValue* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(value_, other->value_);
 }
 
@@ -457,7 +457,7 @@ FloatValue::~FloatValue() {
 }
 
 void FloatValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void FloatValue::ArenaDtor(void* object) {
@@ -605,7 +605,7 @@ bool FloatValue::IsInitialized() const {
 
 void FloatValue::InternalSwap(FloatValue* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(value_, other->value_);
 }
 
@@ -635,7 +635,7 @@ Int64Value::Int64Value(const Int64Value& from)
 }
 
 void Int64Value::SharedCtor() {
-value_ = PROTOBUF_LONGLONG(0);
+value_ = int64_t{0};
 }
 
 Int64Value::~Int64Value() {
@@ -645,7 +645,7 @@ Int64Value::~Int64Value() {
 }
 
 void Int64Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Int64Value::ArenaDtor(void* object) {
@@ -664,7 +664,7 @@ void Int64Value::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = PROTOBUF_LONGLONG(0);
+  value_ = int64_t{0};
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -795,7 +795,7 @@ bool Int64Value::IsInitialized() const {
 
 void Int64Value::InternalSwap(Int64Value* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(value_, other->value_);
 }
 
@@ -825,7 +825,7 @@ UInt64Value::UInt64Value(const UInt64Value& from)
 }
 
 void UInt64Value::SharedCtor() {
-value_ = PROTOBUF_ULONGLONG(0);
+value_ = uint64_t{0u};
 }
 
 UInt64Value::~UInt64Value() {
@@ -835,7 +835,7 @@ UInt64Value::~UInt64Value() {
 }
 
 void UInt64Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void UInt64Value::ArenaDtor(void* object) {
@@ -854,7 +854,7 @@ void UInt64Value::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  value_ = PROTOBUF_ULONGLONG(0);
+  value_ = uint64_t{0u};
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -985,7 +985,7 @@ bool UInt64Value::IsInitialized() const {
 
 void UInt64Value::InternalSwap(UInt64Value* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(value_, other->value_);
 }
 
@@ -1025,7 +1025,7 @@ Int32Value::~Int32Value() {
 }
 
 void Int32Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Int32Value::ArenaDtor(void* object) {
@@ -1175,7 +1175,7 @@ bool Int32Value::IsInitialized() const {
 
 void Int32Value::InternalSwap(Int32Value* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(value_, other->value_);
 }
 
@@ -1215,7 +1215,7 @@ UInt32Value::~UInt32Value() {
 }
 
 void UInt32Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void UInt32Value::ArenaDtor(void* object) {
@@ -1365,7 +1365,7 @@ bool UInt32Value::IsInitialized() const {
 
 void UInt32Value::InternalSwap(UInt32Value* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(value_, other->value_);
 }
 
@@ -1405,7 +1405,7 @@ BoolValue::~BoolValue() {
 }
 
 void BoolValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void BoolValue::ArenaDtor(void* object) {
@@ -1553,7 +1553,7 @@ bool BoolValue::IsInitialized() const {
 
 void BoolValue::InternalSwap(BoolValue* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(value_, other->value_);
 }
 
@@ -1581,7 +1581,7 @@ StringValue::StringValue(const StringValue& from)
   value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_value().empty()) {
     value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_value(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.StringValue)
 }
@@ -1597,7 +1597,7 @@ StringValue::~StringValue() {
 }
 
 void StringValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   value_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -1666,7 +1666,7 @@ failure:
   (void) cached_has_bits;
 
   // string value = 1;
-  if (this->value().size() > 0) {
+  if (!this->value().empty()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_value().data(), static_cast<int>(this->_internal_value().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
@@ -1692,7 +1692,7 @@ size_t StringValue::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // string value = 1;
-  if (this->value().size() > 0) {
+  if (!this->value().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_value());
@@ -1729,7 +1729,7 @@ void StringValue::MergeFrom(const StringValue& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.value().size() > 0) {
+  if (!from.value().empty()) {
     _internal_set_value(from._internal_value());
   }
 }
@@ -1754,8 +1754,12 @@ bool StringValue::IsInitialized() const {
 
 void StringValue::InternalSwap(StringValue* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  value_.Swap(&other->value_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &value_, GetArenaForAllocation(),
+      &other->value_, other->GetArenaForAllocation()
+  );
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata StringValue::GetMetadata() const {
@@ -1782,7 +1786,7 @@ BytesValue::BytesValue(const BytesValue& from)
   value_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (!from._internal_value().empty()) {
     value_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_value(), 
-      GetArena());
+      GetArenaForAllocation());
   }
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BytesValue)
 }
@@ -1798,7 +1802,7 @@ BytesValue::~BytesValue() {
 }
 
 void BytesValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
   value_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
@@ -1866,7 +1870,7 @@ failure:
   (void) cached_has_bits;
 
   // bytes value = 1;
-  if (this->value().size() > 0) {
+  if (!this->value().empty()) {
     target = stream->WriteBytesMaybeAliased(
         1, this->_internal_value(), target);
   }
@@ -1888,7 +1892,7 @@ size_t BytesValue::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // bytes value = 1;
-  if (this->value().size() > 0) {
+  if (!this->value().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_value());
@@ -1925,7 +1929,7 @@ void BytesValue::MergeFrom(const BytesValue& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.value().size() > 0) {
+  if (!from.value().empty()) {
     _internal_set_value(from._internal_value());
   }
 }
@@ -1950,8 +1954,12 @@ bool BytesValue::IsInitialized() const {
 
 void BytesValue::InternalSwap(BytesValue* other) {
   using std::swap;
-  _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
-  value_.Swap(&other->value_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &value_, GetArenaForAllocation(),
+      &other->value_, other->GetArenaForAllocation()
+  );
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BytesValue::GetMetadata() const {
