@@ -559,7 +559,7 @@
 //%TEST_ROUNDTRIP_ONEOF_ADV(Message##SYNTAX, String, @"foo", Objects)
 //%TEST_ROUNDTRIP_ONEOF_ADV(Message##SYNTAX, Bytes, [@"bar" dataUsingEncoding:NSUTF8StringEncoding], Objects)
 //%GROUP_TEST##SYNTAX()TEST_ROUNDTRIP_ONEOF_ADV(Message##SYNTAX, Message, subMessage, Objects)
-//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Enum, Message2_Enum_Bar)
+//%TEST_ROUNDTRIP_ONEOF(Message##SYNTAX, Enum, Message##SYNTAX##_Enum_Bar)
 //%GROUP_CLEANUP##SYNTAX()  [subMessage release];
 //%}
 //%
@@ -1022,13 +1022,13 @@
 
   {  // oneofEnum
     Message3 *orig = [[Message3 alloc] init];
-    orig.oneofEnum = Message2_Enum_Bar;
+    orig.oneofEnum = Message3_Enum_Bar;
     XCTAssertEqual(orig.oOneOfCase, Message3_O_OneOfCase_OneofEnum);
     NSData *data = [orig data];
     XCTAssertNotNil(data);
     Message3 *msg = [Message3 parseFromData:data error:NULL];
     XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_OneofEnum);
-    XCTAssertEqual(msg.oneofEnum, Message2_Enum_Bar);
+    XCTAssertEqual(msg.oneofEnum, Message3_Enum_Bar);
     [orig release];
   }
 

@@ -10,7 +10,7 @@ pushd  ../ext/google/protobuf > /dev/null
 CONFIGURE_OPTIONS=("./configure" "--with-php-config=$(which php-config)")
 
 if [ "$1" != "--release" ]; then
-  CONFIGURE_OPTIONS+=("CFLAGS=-g -O0 -Wall")
+  CONFIGURE_OPTIONS+=("CFLAGS=-g -O0 -Wall -DPBPHP_ENABLE_ASSERTS")
 fi
 
 FINGERPRINT="$(sha256sum $(which php)) ${CONFIGURE_OPTIONS[@]}"

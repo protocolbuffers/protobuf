@@ -57,6 +57,7 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $m->mergeFromJsonString("{\"unknown\":1}", true);
+        $this->assertEquals("{}", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelBoolValue()
