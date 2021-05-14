@@ -511,26 +511,64 @@ static void Descriptor_destructor(zend_object* obj) {
   // collected before the end of the request.
 }
 
-static void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
-  if (ce == NULL) {
+static zend_class_entry *Descriptor_GetGeneratedClass(const upb_msgdef *m) {
+  char *classname =
+      GetPhpClassname(upb_msgdef_file(m), upb_msgdef_fullname(m));
+  zend_string *str = zend_string_init(classname, strlen(classname), 0);
+  zend_class_entry *ce = zend_lookup_class(str);  // May autoload the class.
+
+  zend_string_release (str);
+
+  if (!ce) {
+    zend_error(E_ERROR, "Couldn't load generated class %s", classname);
+  }
+
+  free(classname);
+  return ce;
+}
+
+void Descriptor_FromMessageDef(zval *val, const upb_msgdef *m) {
+  if (m == NULL) {
     ZVAL_NULL(val);
     return;
   }
 
-  if (!ObjCache_Get(ce, val)) {
-    const upb_msgdef *msgdef = NameMap_GetMessage(ce);
-    if (!msgdef) {
-      ZVAL_NULL(val);
-      return;
+  if (!ObjCache_Get(m, val)) {
+    zend_class_entry *ce = NULL;
+    if (!upb_msgdef_mapentry(m)) {  // Map entries don't have a class.
+      ce = Descriptor_GetGeneratedClass(m);
+      if (!ce) {
+        ZVAL_NULL(val);
+        return;
+      }
     }
     Descriptor* ret = emalloc(sizeof(Descriptor));
     zend_object_std_init(&ret->std, Descriptor_class_entry);
     ret->std.handlers = &Descriptor_object_handlers;
     ret->class_entry = ce;
-    ret->msgdef = msgdef;
-    ObjCache_Add(ce, &ret->std);
+    ret->msgdef = m;
+    ObjCache_Add(m, &ret->std);
     ZVAL_OBJ(val, &ret->std);
     Descriptors_Add(val);
+  }
+}
+
+static void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
+  if (ce) {
+    Descriptor_FromMessageDef(val, NameMap_GetMessage(ce));
+  } else {
+    ZVAL_NULL(val);
+  }
+}
+
+static Descriptor* Descriptor_GetFromZval(zval *val) {
+  if (Z_TYPE_P(val) == IS_NULL) {
+    return NULL;
+  } else {
+    zend_object* ret = Z_OBJ_P(val);
+    // Caller does not own a ref on the returned value.
+    GC_DELREF(ret);
+    return (Descriptor*)ret;
   }
 }
 
@@ -541,53 +579,13 @@ static void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
 Descriptor* Descriptor_GetFromClassEntry(zend_class_entry *ce) {
   zval desc;
   Descriptor_FromClassEntry(&desc, ce);
-  if (Z_TYPE_P(&desc) == IS_NULL) {
-    return NULL;
-  } else {
-    zend_object* ret = Z_OBJ_P(&desc);
-    // Caller does not own a ref on the returned value.
-    GC_DELREF(ret);
-    return (Descriptor*)ret;
-  }
+  return Descriptor_GetFromZval(&desc);
 }
 
-// Caller owns a ref on the returned val.
 Descriptor* Descriptor_GetFromMessageDef(const upb_msgdef *m) {
-  if (m) {
-    if (upb_msgdef_mapentry(m)) {
-      // Map entries don't have classes, which means there is no class entry to
-      // key off of.  It also means there are no message instances that will
-      // contain a reference to this descriptor, so unlike other descriptors we
-      // don't need to keep it alive for the duration of the request. So we
-      // don't bother putting it in the object cache or adding it to the list
-      // of descriptors, we just create a new one each time.
-      Descriptor* ret = emalloc(sizeof(Descriptor));
-      zend_object_std_init(&ret->std, Descriptor_class_entry);
-      ret->std.handlers = &Descriptor_object_handlers;
-      ret->class_entry = NULL;
-      ret->msgdef = m;
-      zval tmp;
-      ZVAL_OBJ(&tmp, &ret->std);
-      GC_DELREF(&ret->std);
-      return ret;
-    }
-
-    char *classname =
-        GetPhpClassname(upb_msgdef_file(m), upb_msgdef_fullname(m));
-    zend_string *str = zend_string_init(classname, strlen(classname), 0);
-    zend_class_entry *ce = zend_lookup_class(str);  // May autoload the class.
-
-    zend_string_release (str);
-
-    if (!ce) {
-      zend_error(E_ERROR, "Couldn't load generated class %s", classname);
-    }
-
-    free(classname);
-    return Descriptor_GetFromClassEntry(ce);
-  } else {
-    return NULL;
-  }
+  zval desc;
+  Descriptor_FromMessageDef(&desc, m);
+  return Descriptor_GetFromZval(&desc);
 }
 
 Descriptor* Descriptor_GetFromFieldDef(const upb_fielddef *f) {

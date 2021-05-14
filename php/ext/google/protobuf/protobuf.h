@@ -90,7 +90,7 @@ ZEND_END_ARG_INFO()
 //  * upb_map*, -> MapField
 //  * upb_msgdef* -> Descriptor
 //  * upb_enumdef* -> EnumDescriptor
-//  * zend_class_entry* -> Descriptor
+//  * upb_msgdef* -> Descriptor
 //
 // Each wrapped object should add itself to the map when it is constructed, and
 // remove itself from the map when it is destroyed. This is how we ensure that
