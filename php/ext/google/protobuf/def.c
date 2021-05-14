@@ -207,7 +207,7 @@ PHP_METHOD(EnumDescriptor, getValue) {
 
   EnumValueDescriptor_Make(&ret, upb_enum_iter_name(&iter),
                            upb_enum_iter_number(&iter));
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -228,7 +228,7 @@ PHP_METHOD(EnumDescriptor, getValueCount) {
  * the public and private descriptor.
  */
 PHP_METHOD(EnumDescriptor, getPublicDescriptor) {
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry EnumDescriptor_methods[] = {
@@ -600,7 +600,7 @@ Descriptor* Descriptor_GetFromFieldDef(const upb_fielddef *f) {
  * the public and private descriptor.
  */
 PHP_METHOD(Descriptor, getPublicDescriptor) {
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 /*
@@ -786,7 +786,7 @@ upb_symtab *DescriptorPool_GetSymbolTable() {
 PHP_METHOD(DescriptorPool, getGeneratedPool) {
   zval ret;
   ZVAL_COPY(&ret, get_generated_pool());
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*

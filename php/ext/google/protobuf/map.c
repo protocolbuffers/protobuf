@@ -357,7 +357,7 @@ PHP_METHOD(MapField, offsetGet) {
   }
 
   Convert_UpbToPhp(upb_val, &ret, intern->type.val_type, &intern->arena);
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /**
@@ -444,7 +444,7 @@ PHP_METHOD(MapField, count) {
 PHP_METHOD(MapField, getIterator) {
   zval ret;
   MapFieldIter_make(&ret, getThis());
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_construct, 0, 0, 2)
@@ -569,7 +569,7 @@ PHP_METHOD(MapFieldIter, current) {
   upb_msgval upb_val = upb_mapiter_value(field->map, intern->position);
   zval ret;
   Convert_UpbToPhp(upb_val, &ret, field->type.val_type, &field->arena);
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /**
@@ -583,7 +583,7 @@ PHP_METHOD(MapFieldIter, key) {
   upb_msgval upb_key = upb_mapiter_key(field->map, intern->position);
   zval ret;
   Convert_UpbToPhp(upb_key, &ret, KeyType(field->type), NULL);
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /**

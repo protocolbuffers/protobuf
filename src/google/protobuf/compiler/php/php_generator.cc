@@ -1966,7 +1966,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "    return;\n"
       "  }\n"
       "  Message_set(intern, f, val);\n"
-      "  RETURN_ZVAL(getThis(), 1, 0);\n"
+      "  RETURN_COPY(getThis());\n"
       "}\n"
       "\n",
       "c_name", c_name,

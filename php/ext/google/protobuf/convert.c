@@ -76,7 +76,7 @@ PHP_METHOD(Util, checkMapField) {
                             &val_type, &klass) == FAILURE) {
     return;
   }
-  RETURN_ZVAL(val, 1, 0);
+  RETURN_COPY(val);
 }
 
 // The result of checkRepeatedField() is assigned, so we need to return the
@@ -89,7 +89,7 @@ PHP_METHOD(Util, checkRepeatedField) {
       FAILURE) {
     return;
   }
-  RETURN_ZVAL(val, 1, 0);
+  RETURN_COPY(val);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_checkPrimitive, 0, 0, 1)

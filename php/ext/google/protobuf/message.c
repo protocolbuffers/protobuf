@@ -846,7 +846,7 @@ PHP_METHOD(Message, readWrapperValue) {
     upb_msgval msgval = upb_msg_get(wrapper, val_f);
     zval ret;
     Convert_UpbToPhp(msgval, &ret, TypeInfo_Get(val_f), &intern->arena);
-    RETURN_ZVAL(&ret, 0, 0);
+    RETURN_COPY_VALUE(&ret);
   } else {
     RETURN_NULL();
   }
