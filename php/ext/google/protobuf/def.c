@@ -140,9 +140,7 @@ static void EnumDescriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
     return;
   }
 
-  if (ObjCache_Get(key, val)) {
-    GC_ADDREF(Z_OBJ_P(val));
-  } else {
+  if (!ObjCache_Get(key, val)) {
     const upb_enumdef *e = NameMap_GetEnum(ce);
     if (!e) {
       ZVAL_NULL(val);
@@ -263,9 +261,7 @@ static void OneofDescriptor_FromOneofDef(zval *val, const upb_oneofdef *o) {
     return;
   }
 
-  if (ObjCache_Get(o, val)) {
-    GC_ADDREF(Z_OBJ_P(val));
-  } else {
+  if (!ObjCache_Get(o, val)) {
     OneofDescriptor* ret = emalloc(sizeof(OneofDescriptor));
     zend_object_std_init(&ret->std, OneofDescriptor_class_entry);
     ret->std.handlers = &OneofDescriptor_object_handlers;
@@ -359,9 +355,7 @@ static void FieldDescriptor_FromFieldDef(zval *val, const upb_fielddef *f) {
     return;
   }
 
-  if (ObjCache_Get(f, val)) {
-    GC_ADDREF(Z_OBJ_P(val));
-  } else {
+  if (!ObjCache_Get(f, val)) {
     FieldDescriptor* ret = emalloc(sizeof(FieldDescriptor));
     zend_object_std_init(&ret->std, FieldDescriptor_class_entry);
     ret->std.handlers = &FieldDescriptor_object_handlers;
@@ -523,9 +517,7 @@ static void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
     return;
   }
 
-  if (ObjCache_Get(ce, val)) {
-    GC_ADDREF(Z_OBJ_P(val));
-  } else {
+  if (!ObjCache_Get(ce, val)) {
     const upb_msgdef *msgdef = NameMap_GetMessage(ce);
     if (!msgdef) {
       ZVAL_NULL(val);

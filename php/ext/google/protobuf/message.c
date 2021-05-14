@@ -433,9 +433,7 @@ void Message_GetPhpWrapper(zval *val, const Descriptor *desc, upb_msg *msg,
     return;
   }
 
-  if (ObjCache_Get(msg, val)) {
-    GC_ADDREF(Z_OBJ_P(val));
-  } else {
+  if (!ObjCache_Get(msg, val)) {
     Message *intern = emalloc(sizeof(Message));
     Message_SuppressDefaultProperties(desc->class_entry);
     zend_object_std_init(&intern->std, desc->class_entry);

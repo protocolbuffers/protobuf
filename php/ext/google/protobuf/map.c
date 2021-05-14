@@ -171,9 +171,7 @@ void MapField_GetPhpWrapper(zval *val, upb_map *map, MapField_Type type,
     return;
   }
 
-  if (ObjCache_Get(map, val)) {
-    GC_ADDREF(Z_OBJ_P(val));
-  } else {
+  if (!ObjCache_Get(map, val)) {
     MapField *intern = emalloc(sizeof(MapField));
     zend_object_std_init(&intern->std, MapField_class_entry);
     intern->std.handlers = &MapField_object_handlers;
