@@ -115,6 +115,14 @@ class ClassNameResolver {
   //   com.package.OuterClass$OuterMessage$InnerMessage
   std::string GetJavaImmutableClassName(const Descriptor* descriptor);
   std::string GetJavaImmutableClassName(const EnumDescriptor* descriptor);
+  std::string GetKotlinFactoryName(const Descriptor* descriptor);
+  std::string GetKotlinExtensionsClassName(const Descriptor* descriptor);
+  std::string GetJavaMutableClassName(const Descriptor* descriptor);
+  std::string GetJavaMutableClassName(const EnumDescriptor* descriptor);
+  // Gets the outer class and the actual class for downgraded mutable messages.
+  std::string GetDowngradedFileClassName(const FileDescriptor* file);
+  std::string GetDowngradedClassName(const Descriptor* descriptor);
+
  private:
   // Get the full name of a Java class by prepending the Java package name
   // or outer class name.

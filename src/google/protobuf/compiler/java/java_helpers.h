@@ -53,6 +53,7 @@ namespace java {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
+bool IsForbiddenKotlin(const std::string& field_name);
 
 // If annotation_file is non-empty, prints a javax.annotation.Generated
 // annotation to the given Printer. annotation_file will be referenced in the
@@ -72,6 +73,13 @@ void PrintEnumVerifierLogic(io::Printer* printer,
                             const std::map<std::string, std::string>& variables,
                             const char* var_name,
                             const char* terminating_string, bool enforce_lite);
+
+// Converts a name to camel-case. If cap_first_letter is true, capitalize the
+// first letter.
+std::string ToCamelCase(const std::string& input, bool lower_first);
+
+char ToUpperCh(char ch);
+char ToLowerCh(char ch);
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
@@ -216,6 +224,9 @@ const char* PrimitiveTypeName(JavaType type);
 // types.
 const char* BoxedPrimitiveTypeName(JavaType type);
 
+// Kotlin source does not distinguish between primitives and non-primitives,
+// but does use Kotlin-specific qualified types for them.
+const char* KotlinTypeName(JavaType type);
 
 // Get the name of the java enum constant representing this type. E.g.,
 // "INT32" for FieldDescriptor::TYPE_INT32. The enum constant's full

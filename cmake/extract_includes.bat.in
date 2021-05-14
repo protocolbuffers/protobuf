@@ -26,6 +26,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\cshar
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\csharp\csharp_names.h" include\google\protobuf\compiler\csharp\csharp_names.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\importer.h" include\google\protobuf\compiler\importer.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_generator.h" include\google\protobuf\compiler\java\java_generator.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_kotlin_generator.h" include\google\protobuf\compiler\java\java_kotlin_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_names.h" include\google\protobuf\compiler\java\java_names.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\js_generator.h" include\google\protobuf\compiler\js\js_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\well_known_types_embed.h" include\google\protobuf\compiler\js\well_known_types_embed.h

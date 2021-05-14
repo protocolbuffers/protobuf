@@ -245,9 +245,9 @@ void SetCommonVars(const Options& options,
   (*variables)["string"] = "std::string";
 }
 
-void SetUnknkownFieldsVariable(const Descriptor* descriptor,
-                               const Options& options,
-                               std::map<std::string, std::string>* variables) {
+void SetUnknownFieldsVariable(const Descriptor* descriptor,
+                              const Options& options,
+                              std::map<std::string, std::string>* variables) {
   std::string proto_ns = ProtobufNamespace(options);
   std::string unknown_fields_type;
   if (UseUnknownFieldSet(descriptor->file(), options)) {
@@ -662,14 +662,7 @@ static std::string UInt64ToString(uint64_t number) {
 }
 
 std::string DefaultValue(const FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT64:
-      return Int64ToString(field->default_value_int64());
-    case FieldDescriptor::CPPTYPE_UINT64:
-      return UInt64ToString(field->default_value_uint64());
-    default:
-      return DefaultValue(Options(), field);
-  }
+  return DefaultValue(Options(), field);
 }
 
 std::string DefaultValue(const Options& options, const FieldDescriptor* field) {

@@ -84,6 +84,10 @@ void EnableArenaMetrics(ArenaOptions* options);
 
 }  // namespace arena_metrics
 
+namespace TestUtil {
+class ReflectionTester;  // defined in test_util.h
+}  // namespace TestUtil
+
 namespace internal {
 
 struct ArenaStringPtr;  // defined in arenastring.h
@@ -405,10 +409,43 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     // Provides access to protected GetArenaForAllocation to generated messages.
     static Arena* GetArenaForAllocation(const T* p) {
-      return p->GetArenaForAllocation();
+      return GetArenaForAllocationInternal(
+          p, std::is_convertible<T*, MessageLite*>());
     }
 
    private:
+    static Arena* GetArenaForAllocationInternal(
+        const T* p, std::true_type /*is_derived_from<MessageLite>*/) {
+      return p->GetArenaForAllocation();
+    }
+
+    static Arena* GetArenaForAllocationInternal(
+        const T* p, std::false_type /*is_derived_from<MessageLite>*/) {
+      return GetArenaForAllocationForNonMessage(
+          p, typename is_arena_constructable::type());
+    }
+
+    static Arena* GetArenaForAllocationForNonMessage(
+        const T* p, std::true_type /*is_arena_constructible*/) {
+      return p->GetArena();
+    }
+
+    static Arena* GetArenaForAllocationForNonMessage(
+        const T* p, std::false_type /*is_arena_constructible*/) {
+      return GetArenaForAllocationForNonMessageNonArenaConstructible(
+          p, typename has_get_arena::type());
+    }
+
+    static Arena* GetArenaForAllocationForNonMessageNonArenaConstructible(
+        const T* p, std::true_type /*has_get_arena*/) {
+      return p->GetArena();
+    }
+
+    static Arena* GetArenaForAllocationForNonMessageNonArenaConstructible(
+        const T* p, std::false_type /*has_get_arena*/) {
+      return nullptr;
+    }
+
     template <typename U>
     static char DestructorSkippable(const typename U::DestructorSkippable_*);
     template <typename U>
@@ -456,6 +493,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     static Arena* GetArena(const T* p) { return p->GetArena(); }
 
     friend class Arena;
+    friend class TestUtil::ReflectionTester;
   };
 
   // Helper typetraits that indicates support for arenas in a type T at compile

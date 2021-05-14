@@ -144,6 +144,7 @@ class MessageFactory;
 // Defined in other files.
 class AssignDescriptorsHelper;
 class DynamicMessageFactory;
+class GeneratedMessageReflectionTestHelper;
 class MapKey;
 class MapValueConstRef;
 class MapValueRef;
@@ -153,6 +154,7 @@ class MapReflectionTester;
 namespace internal {
 struct DescriptorTable;
 class MapFieldBase;
+class SwapFieldHelper;
 }
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -163,6 +165,7 @@ class CodedOutputStream;     // coded_stream.h
 }  // namespace io
 namespace python {
 class MapReflectionFriend;  // scalar_map_container.h
+class MessageReflectionFriend;
 }
 namespace expr {
 class CelMapReflectionFriend;  // field_backed_map_impl.cc
@@ -363,7 +366,28 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // to implement GetDescriptor() and GetReflection() above.
   virtual Metadata GetMetadata() const = 0;
 
-  inline explicit Message(Arena* arena) : MessageLite(arena) {}
+  struct ClassData {
+    // Note: The order of arguments (to, then from) is chosen so that the ABI
+    // of this function is the same as the CopyFrom method.  That is, the
+    // hidden "this" parameter comes first.
+    void (*copy_to_from)(Message* to, const Message& from_msg);
+    void (*merge_to_from)(Message* to, const Message& from_msg);
+  };
+  // GetClassData() returns a pointer to a ClassData struct which
+  // exists in global memory and is unique to each subclass.  This uniqueness
+  // property is used in order to quickly determine whether two messages are
+  // of the same type.
+  // TODO(jorg): change to pure virtual
+  virtual const ClassData* GetClassData() const { return nullptr; }
+
+  // CopyWithSizeCheck calls Clear() and then MergeFrom(), and in debug
+  // builds, checks that calling Clear() on the destination message doesn't
+  // alter the size of the source.  It assumes the messages are known to be
+  // of the same type, and thus uses GetClassData().
+  static void CopyWithSizeCheck(Message* to, const Message& from);
+
+  inline explicit Message(Arena* arena, bool is_message_owned = false)
+      : MessageLite(arena, is_message_owned) {}
 
 
  protected:
@@ -476,7 +500,7 @@ class PROTOBUF_EXPORT Reflection final {
   void RemoveLast(Message* message, const FieldDescriptor* field) const;
   // Removes the last element of a repeated message field, and returns the
   // pointer to the caller.  Caller takes ownership of the returned pointer.
-  PROTOBUF_FUTURE_MUST_USE_RESULT Message* ReleaseLast(
+  PROTOBUF_MUST_USE_RESULT Message* ReleaseLast(
       Message* message, const FieldDescriptor* field) const;
 
   // Swap the complete contents of two messages.
@@ -613,7 +637,7 @@ class PROTOBUF_EXPORT Reflection final {
   // If the field existed (HasField() is true), then the returned pointer will
   // be the same as the pointer returned by MutableMessage().
   // This function has the same effect as ClearField().
-  PROTOBUF_FUTURE_MUST_USE_RESULT Message* ReleaseMessage(
+  PROTOBUF_MUST_USE_RESULT Message* ReleaseMessage(
       Message* message, const FieldDescriptor* field,
       MessageFactory* factory = nullptr) const;
 
@@ -986,7 +1010,9 @@ class PROTOBUF_EXPORT Reflection final {
   friend class ::PROTOBUF_NAMESPACE_ID::MessageLayoutInspector;
   friend class ::PROTOBUF_NAMESPACE_ID::AssignDescriptorsHelper;
   friend class DynamicMessageFactory;
+  friend class GeneratedMessageReflectionTestHelper;
   friend class python::MapReflectionFriend;
+  friend class python::MessageReflectionFriend;
   friend class util::MessageDifferencer;
 #define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
   friend class expr::CelMapReflectionFriend;
@@ -994,6 +1020,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class internal::MapKeySorter;
   friend class internal::WireFormat;
   friend class internal::ReflectionOps;
+  friend class internal::SwapFieldHelper;
   // Needed for implementing text format for map.
   friend class internal::MapFieldPrinterHelper;
 
@@ -1098,13 +1125,32 @@ class PROTOBUF_EXPORT Reflection final {
   inline void SwapBit(Message* message1, Message* message2,
                       const FieldDescriptor* field) const;
 
+  // Shallow-swap fields listed in fields vector of two messages. It is the
+  // caller's responsibility to make sure shallow swap is safe.
+  void UnsafeShallowSwapFields(
+      Message* message1, Message* message2,
+      const std::vector<const FieldDescriptor*>& fields) const;
+
   // This function only swaps the field. Should swap corresponding has_bit
   // before or after using this function.
   void SwapField(Message* message1, Message* message2,
                  const FieldDescriptor* field) const;
 
+  // Unsafe but shallow version of SwapField.
+  void UnsafeShallowSwapField(Message* message1, Message* message2,
+                              const FieldDescriptor* field) const;
+
+  template <bool unsafe_shallow_swap>
+  void SwapFieldsImpl(Message* message1, Message* message2,
+                      const std::vector<const FieldDescriptor*>& fields) const;
+
   void SwapOneofField(Message* message1, Message* message2,
                       const OneofDescriptor* oneof_descriptor) const;
+
+  // Unsafe but shallow version of SwapOneofField.
+  void UnsafeShallowSwapOneofField(
+      Message* message1, Message* message2,
+      const OneofDescriptor* oneof_descriptor) const;
 
   inline bool HasOneofField(const Message& message,
                             const FieldDescriptor* field) const;

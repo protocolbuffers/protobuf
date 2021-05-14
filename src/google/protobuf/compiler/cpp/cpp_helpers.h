@@ -59,7 +59,7 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-inline std::string ProtobufNamespace(const Options& options) {
+inline std::string ProtobufNamespace(const Options& /* options */) {
   return "PROTOBUF_NAMESPACE_ID";
 }
 
@@ -67,12 +67,12 @@ inline std::string MacroPrefix(const Options& options) {
   return options.opensource_runtime ? "GOOGLE_PROTOBUF" : "GOOGLE_PROTOBUF";
 }
 
-inline std::string DeprecatedAttribute(const Options& options,
+inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const FieldDescriptor* d) {
   return d->options().deprecated() ? "PROTOBUF_DEPRECATED " : "";
 }
 
-inline std::string DeprecatedAttribute(const Options& options,
+inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const EnumValueDescriptor* d) {
   return d->options().deprecated() ? "PROTOBUF_DEPRECATED_ENUM " : "";
 }
@@ -85,9 +85,9 @@ extern const char kThinSeparator[];
 void SetCommonVars(const Options& options,
                    std::map<std::string, std::string>* variables);
 
-void SetUnknkownFieldsVariable(const Descriptor* descriptor,
-                               const Options& options,
-                               std::map<std::string, std::string>* variables);
+void SetUnknownFieldsVariable(const Descriptor* descriptor,
+                              const Options& options,
+                              std::map<std::string, std::string>* variables);
 
 bool GetBootstrapBasename(const Options& options, const std::string& basename,
                           std::string* bootstrap_basename);
@@ -342,7 +342,8 @@ inline bool IsLazy(const FieldDescriptor* field, const Options& options) {
          !options.opensource_runtime;
 }
 
-inline bool IsFieldUsed(const FieldDescriptor* field, const Options& options) {
+inline bool IsFieldUsed(const FieldDescriptor* /* field */,
+                        const Options& options) {
   return true;
 }
 
@@ -710,8 +711,8 @@ class PROTOC_EXPORT Formatter {
     std::vector<int> path;
     descriptor->GetLocationPath(&path);
     GeneratedCodeInfo::Annotation annotation;
-    for (int i = 0; i < path.size(); ++i) {
-      annotation.add_path(path[i]);
+    for (int index : path) {
+      annotation.add_path(index);
     }
     annotation.set_source_file(descriptor->file()->name());
     return annotation.SerializeAsString();
@@ -743,21 +744,22 @@ class PROTOC_EXPORT NamespaceOpener {
   void ChangeTo(const std::string& name) {
     std::vector<std::string> new_stack_ =
         Split(name, "::", true);
-    int len = std::min(name_stack_.size(), new_stack_.size());
-    int common_idx = 0;
+    size_t len = std::min(name_stack_.size(), new_stack_.size());
+    size_t common_idx = 0;
     while (common_idx < len) {
       if (name_stack_[common_idx] != new_stack_[common_idx]) break;
       common_idx++;
     }
-    for (int i = name_stack_.size() - 1; i >= common_idx; i--) {
-      if (name_stack_[i] == "PROTOBUF_NAMESPACE_ID") {
+    for (auto it = name_stack_.crbegin();
+         it != name_stack_.crend() - common_idx; ++it) {
+      if (*it == "PROTOBUF_NAMESPACE_ID") {
         printer_->Print("PROTOBUF_NAMESPACE_CLOSE\n");
       } else {
-        printer_->Print("}  // namespace $ns$\n", "ns", name_stack_[i]);
+        printer_->Print("}  // namespace $ns$\n", "ns", *it);
       }
     }
     name_stack_.swap(new_stack_);
-    for (int i = common_idx; i < name_stack_.size(); i++) {
+    for (size_t i = common_idx; i < name_stack_.size(); ++i) {
       if (name_stack_[i] == "PROTOBUF_NAMESPACE_ID") {
         printer_->Print("PROTOBUF_NAMESPACE_OPEN\n");
       } else {
@@ -863,6 +865,10 @@ struct OneOfRangeImpl {
 inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 
 PROTOC_EXPORT std::string StripProto(const std::string& filename);
+
+inline bool EnableMessageOwnedArena(const Descriptor* desc) {
+  return false;
+}
 
 }  // namespace cpp
 }  // namespace compiler

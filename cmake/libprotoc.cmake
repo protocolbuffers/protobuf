@@ -45,6 +45,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator_factory.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_helpers.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_kotlin_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_map_field_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_message.cc

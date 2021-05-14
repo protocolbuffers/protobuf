@@ -79,15 +79,15 @@ using internal::WireFormat;
 using internal::WireFormatLite;
 
 void Message::MergeFrom(const Message& from) {
-  const Descriptor* descriptor = GetDescriptor();
-  GOOGLE_CHECK_EQ(from.GetDescriptor(), descriptor)
-      << ": Tried to merge from a message with a different type.  "
-         "to: "
-      << descriptor->full_name()
-      << ", "
-         "from: "
-      << from.GetDescriptor()->full_name();
-  ReflectionOps::Merge(from, this);
+  auto* class_to = GetClassData();
+  auto* class_from = from.GetClassData();
+  auto* merge_to_from = class_to ? class_to->merge_to_from : nullptr;
+  if (class_to == nullptr || class_to != class_from) {
+    merge_to_from = [](Message* to, const Message& from) {
+      ReflectionOps::Merge(from, to);
+    };
+  }
+  merge_to_from(this, from);
 }
 
 void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
@@ -95,15 +95,40 @@ void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
 }
 
 void Message::CopyFrom(const Message& from) {
-  const Descriptor* descriptor = GetDescriptor();
-  GOOGLE_CHECK_EQ(from.GetDescriptor(), descriptor)
-      << ": Tried to copy from a message with a different type. "
-         "to: "
-      << descriptor->full_name()
-      << ", "
-         "from: "
-      << from.GetDescriptor()->full_name();
-  ReflectionOps::Copy(from, this);
+  if (&from == this) return;
+
+  auto* class_to = GetClassData();
+  auto* class_from = from.GetClassData();
+  auto* copy_to_from = class_to ? class_to->copy_to_from : nullptr;
+
+  if (class_to == nullptr || class_to != class_from) {
+    const Descriptor* descriptor = GetDescriptor();
+    GOOGLE_CHECK_EQ(from.GetDescriptor(), descriptor)
+        << ": Tried to copy from a message with a different type. "
+           "to: "
+        << descriptor->full_name()
+        << ", "
+           "from: "
+        << from.GetDescriptor()->full_name();
+    copy_to_from = [](Message* to, const Message& from) {
+      ReflectionOps::Copy(from, to);
+    };
+  }
+  copy_to_from(this, from);
+}
+
+void Message::CopyWithSizeCheck(Message* to, const Message& from) {
+#ifndef NDEBUG
+  size_t from_size = from.ByteSizeLong();
+#endif
+  to->Clear();
+#ifndef NDEBUG
+  GOOGLE_CHECK_EQ(from_size, from.ByteSizeLong())
+      << "Source of CopyFrom changed when clearing target.  Either "
+         "source is a nested message in target (not allowed), or "
+         "another thread is modifying the source.";
+#endif
+  to->GetClassData()->merge_to_from(to, from);
 }
 
 std::string Message::GetTypeName() const {
