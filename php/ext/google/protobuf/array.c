@@ -337,7 +337,7 @@ PHP_METHOD(RepeatedField, offsetGet) {
 
   msgval = upb_array_get(intern->array, index);
   Convert_UpbToPhp(msgval, &ret, intern->type, &intern->arena);
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /**
@@ -447,7 +447,7 @@ PHP_METHOD(RepeatedField, count) {
 PHP_METHOD(RepeatedField, getIterator) {
   zval ret;
   RepeatedFieldIter_make(&ret, getThis());
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_construct, 0, 0, 1)
@@ -579,7 +579,7 @@ PHP_METHOD(RepeatedFieldIter, current) {
   msgval = upb_array_get(array, index);
 
   Convert_UpbToPhp(msgval, &ret, field->type, &field->arena);
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /**

@@ -5,13 +5,16 @@
 
 set -ex
 
-cd $(dirname $0)
+# Change to repo base.
+cd $(dirname $0)/../../..
+
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:8.0.5-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test_valgrind"
+
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.0.33-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.3.28-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.4.18-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:8.0.5-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
 
 # Most of our tests use a debug build of PHP, but we do one build against an opt
 # php just in case that surfaces anything unexpected.
-../test_php.sh gcr.io/protobuf-build/php/linux:8.0.5-14a06550010c0649bf69b6c9b803c1ca609bbb6d
-
-../test_php.sh gcr.io/protobuf-build/php/linux:7.0.33-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d
-../test_php.sh gcr.io/protobuf-build/php/linux:7.3.28-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d
-../test_php.sh gcr.io/protobuf-build/php/linux:7.4.18-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d
-../test_php.sh gcr.io/protobuf-build/php/linux:8.0.5-dbg-14a06550010c0649bf69b6c9b803c1ca609bbb6d
+docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:8.0.5-14a06550010c0649bf69b6c9b803c1ca609bbb6d "composer test && composer test_c"
