@@ -548,8 +548,8 @@ void Descriptor_FromMessageDef(zval *val, const upb_msgdef *m) {
     ret->class_entry = ce;
     ret->msgdef = m;
     ObjCache_Add(m, &ret->std);
+    Descriptors_Add(&ret->std);
     ZVAL_OBJ(val, &ret->std);
-    Descriptors_Add(val);
   }
 }
 
@@ -566,8 +566,7 @@ static Descriptor* Descriptor_GetFromZval(zval *val) {
     return NULL;
   } else {
     zend_object* ret = Z_OBJ_P(val);
-    // Caller does not own a ref on the returned value.
-    GC_DELREF(ret);
+    zval_ptr_dtor(val);
     return (Descriptor*)ret;
   }
 }

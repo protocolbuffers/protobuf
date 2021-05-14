@@ -110,7 +110,10 @@ void NameMap_AddEnum(const upb_enumdef *m);
 const upb_msgdef *NameMap_GetMessage(zend_class_entry *ce);
 const upb_enumdef *NameMap_GetEnum(zend_class_entry *ce);
 
-void Descriptors_Add(zval *desc);
+// Add this descriptor object to the global list of descriptors that will be
+// kept alive for the duration of the request but destroyed when the request
+// is ending.
+void Descriptors_Add(zend_object *desc);
 
 // We need our own assert() because PHP takes control of NDEBUG in its headers.
 #ifdef PBPHP_ENABLE_ASSERTS

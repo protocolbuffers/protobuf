@@ -200,9 +200,13 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 // Object Cache.
 // -----------------------------------------------------------------------------
 
-void Descriptors_Add(zval *desc) {
-  GC_ADDREF(Z_OBJ_P(desc));
-  zend_hash_next_index_insert(&PROTOBUF_G(descriptors), desc);
+void Descriptors_Add(zend_object *desc) {
+  // The hash table will own a ref (it will destroy it when the table is
+  // destroyed), but for some reason the insert operation does not add a ref, so
+  // we do that here with ZVAL_OBJ_COPY().
+  zval zv;
+  ZVAL_OBJ_COPY(&zv, desc);
+  zend_hash_next_index_insert(&PROTOBUF_G(descriptors), &zv);
 }
 
 void ObjCache_Add(const void *upb_obj, zend_object *php_obj) {
@@ -223,8 +227,7 @@ bool ObjCache_Get(const void *upb_obj, zval *val) {
   zend_object *obj = zend_hash_index_find_ptr(&PROTOBUF_G(object_cache), k);
 
   if (obj) {
-    GC_ADDREF(obj);
-    ZVAL_OBJ(val, obj);
+    ZVAL_OBJ_COPY(val, obj);
     return true;
   } else {
     ZVAL_NULL(val);
