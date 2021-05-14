@@ -201,6 +201,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 // -----------------------------------------------------------------------------
 
 void Descriptors_Add(zval *desc) {
+  GC_ADDREF(Z_OBJ_P(desc));
   zend_hash_next_index_insert(&PROTOBUF_G(descriptors), desc);
 }
 

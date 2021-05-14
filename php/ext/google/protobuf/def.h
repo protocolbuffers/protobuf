@@ -61,12 +61,6 @@ typedef struct Descriptor {
   zend_class_entry *class_entry;
 } Descriptor;
 
-// Gets or creates a PHP Descriptor object for a |ce| and stores it in |val|.
-// If this is not a protobuf generated class, |val| will be set to null.
-// Caller does *not* own a ref on the returned zval, but it is guaranteed to
-// live for the whole request.
-//void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce);
-
 // Gets or creates a Descriptor* for the given class entry, upb_msgdef, or
 // upb_fielddef. The returned Descriptor* will live for the entire request,
 // so no ref is necessary to keep it alive. The caller does *not* own a ref

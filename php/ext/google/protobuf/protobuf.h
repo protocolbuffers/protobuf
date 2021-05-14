@@ -61,6 +61,9 @@ const zval *get_generated_pool();
 #define PROTO_VAL_P(obj) (void*)Z_OBJ_P(obj)
 #define PROTO_STRVAL_P(obj) Z_STRVAL_P(obj)
 #define PROTO_STRLEN_P(obj) Z_STRLEN_P(obj)
+#define ZVAL_OBJ_COPY(z, o) do { ZVAL_OBJ(z, o); GC_ADDREF(o); } while (0)
+#define RETVAL_OBJ_COPY(r) ZVAL_OBJ_COPY(return_value, r)
+#define RETURN_OBJ_COPY(r) do { RETVAL_OBJ_COPY(r); return; } while (0)
 #define RETURN_COPY(zv) do { ZVAL_COPY(return_value, zv); return; } while (0)
 #define RETURN_COPY_VALUE(zv) do { ZVAL_COPY_VALUE(return_value, zv); return; } while (0)
 #else

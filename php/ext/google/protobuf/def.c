@@ -483,7 +483,6 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
 PHP_METHOD(FieldDescriptor, getMessageType) {
   FieldDescriptor *intern = (FieldDescriptor*)Z_OBJ_P(getThis());
   Descriptor* desc = Descriptor_GetFromFieldDef(intern->fielddef);
-  zval ret;
 
   if (!desc) {
     zend_throw_exception_ex(
@@ -492,8 +491,7 @@ PHP_METHOD(FieldDescriptor, getMessageType) {
     return;
   }
 
-  ZVAL_OBJ(&ret, &desc->std);
-  RETURN_COPY(&ret);
+  RETURN_OBJ_COPY(&desc->std);
 }
 
 static zend_function_entry FieldDescriptor_methods[] = {
@@ -519,14 +517,15 @@ static void Descriptor_destructor(zend_object* obj) {
   // collected before the end of the request.
 }
 
-// Caller owns a ref on the returned zval.
 static void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
   if (ce == NULL) {
     ZVAL_NULL(val);
     return;
   }
 
-  if (!ObjCache_Get(ce, val)) {
+  if (ObjCache_Get(ce, val)) {
+    GC_ADDREF(Z_OBJ_P(val));
+  } else {
     const upb_msgdef *msgdef = NameMap_GetMessage(ce);
     if (!msgdef) {
       ZVAL_NULL(val);
@@ -553,7 +552,10 @@ Descriptor* Descriptor_GetFromClassEntry(zend_class_entry *ce) {
   if (Z_TYPE_P(&desc) == IS_NULL) {
     return NULL;
   } else {
-    return (Descriptor*)Z_OBJ_P(&desc);
+    zend_object* ret = Z_OBJ_P(&desc);
+    // Caller does not own a ref on the returned value.
+    GC_DELREF(ret);
+    return (Descriptor*)ret;
   }
 }
 
@@ -561,7 +563,12 @@ Descriptor* Descriptor_GetFromClassEntry(zend_class_entry *ce) {
 Descriptor* Descriptor_GetFromMessageDef(const upb_msgdef *m) {
   if (m) {
     if (upb_msgdef_mapentry(m)) {
-      // A bit of a hack, since map entries don't have classes.
+      // Map entries don't have classes, which means there is no class entry to
+      // key off of.  It also means there are no message instances that will
+      // contain a reference to this descriptor, so unlike other descriptors we
+      // don't need to keep it alive for the duration of the request. So we
+      // don't bother putting it in the object cache or adding it to the list
+      // of descriptors, we just create a new one each time.
       Descriptor* ret = emalloc(sizeof(Descriptor));
       zend_object_std_init(&ret->std, Descriptor_class_entry);
       ret->std.handlers = &Descriptor_object_handlers;
@@ -569,7 +576,7 @@ Descriptor* Descriptor_GetFromMessageDef(const upb_msgdef *m) {
       ret->msgdef = m;
       zval tmp;
       ZVAL_OBJ(&tmp, &ret->std);
-      Descriptors_Add(&tmp);
+      GC_DELREF(&ret->std);
       return ret;
     }
 
@@ -638,14 +645,7 @@ PHP_METHOD(Descriptor, getField) {
     return;
   }
 
-  upb_msg_field_iter iter;
-  int i;
-  for(upb_msg_field_begin(&iter, intern->msgdef), i = 0;
-      !upb_msg_field_done(&iter) && i < index;
-      upb_msg_field_next(&iter), i++);
-  const upb_fielddef *field = upb_msg_iter_field(&iter);
-
-  FieldDescriptor_FromFieldDef(&ret, field);
+  FieldDescriptor_FromFieldDef(&ret, upb_msgdef_field(intern->msgdef, index));
   RETURN_COPY_VALUE(&ret);
 }
 
@@ -825,7 +825,7 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
   }
 
   Descriptor_FromClassEntry(&ret, ce);
-  RETURN_COPY(&ret);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -878,9 +878,7 @@ PHP_METHOD(DescriptorPool, getDescriptorByProtoName) {
   m = upb_symtab_lookupmsg(intern->symtab, protoname);
 
   if (m) {
-    zval ret;
-    ZVAL_OBJ(&ret, &Descriptor_GetFromMessageDef(m)->std);
-    RETURN_COPY(&ret);
+    RETURN_OBJ_COPY(&Descriptor_GetFromMessageDef(m)->std);
   } else {
     RETURN_NULL();
   }
@@ -1055,9 +1053,7 @@ zend_class_entry *InternalDescriptorPool_class_entry;
  * instance.
  */
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
-  zval ret;
-  ZVAL_COPY(&ret, get_generated_pool());
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY(get_generated_pool());
 }
 
 static zend_function_entry InternalDescriptorPool_methods[] = {
