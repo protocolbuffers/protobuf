@@ -81,7 +81,7 @@ message EvilNamesProto3 {
   }
 }
 
-message HardKeywordsAllTypes {
+message HardKeywordsAllTypesProto3 {
   message NestedMessage {
     optional int32 while = 1;
   }

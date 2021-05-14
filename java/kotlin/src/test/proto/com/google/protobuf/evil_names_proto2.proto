@@ -68,7 +68,7 @@ message EvilNamesProto2 {
   optional string by = 25;
 }
 
-message HardKeywordsAllTypes {
+message HardKeywordsAllTypesProto2 {
   message NestedMessage {
     optional int32 while = 1;
   }

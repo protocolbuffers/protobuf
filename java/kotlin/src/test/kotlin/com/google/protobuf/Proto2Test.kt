@@ -34,11 +34,11 @@ import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.TestUtil
 import com.google.protobuf.TestUtil.toBytes
 import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.EvilNamesProto2
-import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.HardKeywordsAllTypes
+import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.HardKeywordsAllTypesProto2
 import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.Interface
-import com.google.protobuf.kotlin.generator.HardKeywordsAllTypesKt
+import com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2Kt
 import com.google.protobuf.kotlin.generator.evilNamesProto2
-import com.google.protobuf.kotlin.generator.hardKeywordsAllTypes
+import com.google.protobuf.kotlin.generator.hardKeywordsAllTypesProto2
 import com.google.protobuf.kotlin.generator.interface_
 import com.google.protobuf.test.UnittestImport.ImportEnum
 import com.google.protobuf.test.UnittestImport.ImportMessage
@@ -940,18 +940,18 @@ class Proto2Test {
 
   @Test
   fun testHardKeywordGettersAndSetters() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto2 {
       as_ = 1
       assertThat(as_).isEqualTo(1)
 
       in_ = "foo"
       assertThat(in_).isEqualTo("foo")
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
-      assertThat(break_).isEqualTo(HardKeywordsAllTypes.NestedEnum.FOO)
+      break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
+      assertThat(break_).isEqualTo(HardKeywordsAllTypesProto2.NestedEnum.FOO)
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
-      assertThat(do_).isEqualTo(HardKeywordsAllTypesKt.nestedMessage { while_ = 1 })
+      do_ = HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }
+      assertThat(do_).isEqualTo(HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 })
 
       continue_[1] = 1
       assertThat(continue_[1]).isEqualTo(1)
@@ -962,34 +962,34 @@ class Proto2Test {
       for_ += "foo"
       assertThat(for_).isEqualTo(listOf("foo"))
 
-      fun_ += HardKeywordsAllTypes.NestedEnum.FOO
-      assertThat(fun_).isEqualTo(listOf(HardKeywordsAllTypes.NestedEnum.FOO))
+      fun_ += HardKeywordsAllTypesProto2.NestedEnum.FOO
+      assertThat(fun_).isEqualTo(listOf(HardKeywordsAllTypesProto2.NestedEnum.FOO))
 
-      if_ += HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
-      assertThat(if_).isEqualTo(listOf(HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }))
+      if_ += HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }
+      assertThat(if_).isEqualTo(listOf(HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }))
     }
   }
 
   @Test
   fun testHardKeywordHazzers() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto2 {
       as_ = 1
       assertThat(hasAs_()).isTrue()
 
       in_ = "foo"
       assertThat(hasIn_()).isTrue()
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
+      break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
       assertThat(hasBreak_()).isTrue()
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
+      do_ = HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }
       assertThat(hasDo_()).isTrue()
     }
   }
 
   @Test
   fun testHardKeywordClears() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto2 {
       as_ = 1
       clearAs_()
       assertThat(hasAs_()).isFalse()
@@ -998,11 +998,11 @@ class Proto2Test {
       clearIn_()
       assertThat(hasIn_()).isFalse()
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
+      break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
       clearBreak_()
       assertThat(hasBreak_()).isFalse()
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
+      do_ = HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }
       clearDo_()
       assertThat(hasDo_()).isFalse()
     }
