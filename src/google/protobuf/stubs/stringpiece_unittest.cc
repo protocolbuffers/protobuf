@@ -590,13 +590,13 @@ TEST(StringPiece, Custom) {
   }
 
   {
-  StringPiece str("foobar");
-  EXPECT_TRUE(str.ConsumeFromEnd("bar"));
-  EXPECT_EQ(str, "foo");
-  EXPECT_FALSE(str.ConsumeFromEnd("bar"));
-  EXPECT_FALSE(str.ConsumeFromEnd("foofoo"));
-  EXPECT_FALSE(str.ConsumeFromEnd("fo"));
-  EXPECT_EQ(str, "foo");
+    StringPiece str("foobar");
+    EXPECT_TRUE(str.ConsumeFromEnd("bar"));
+    EXPECT_EQ(str, "foo");
+    EXPECT_FALSE(str.ConsumeFromEnd("bar"));
+    EXPECT_FALSE(str.ConsumeFromEnd("foofoo"));
+    EXPECT_FALSE(str.ConsumeFromEnd("fo"));
+    EXPECT_EQ(str, "foo");
   }
 }
 
@@ -685,7 +685,7 @@ TEST(FindOneCharTest, EdgeCases) {
 #ifdef PROTOBUF_HAS_DEATH_TEST
 #ifndef NDEBUG
 TEST(NonNegativeLenTest, NonNegativeLen) {
-  EXPECT_DEATH(StringPiece("xyz", -1), "len >= 0");
+  EXPECT_DEATH(StringPiece("xyz", -1), "string length exceeds max size");
 }
 #endif  // ndef DEBUG
 #endif  // PROTOBUF_HAS_DEATH_TEST

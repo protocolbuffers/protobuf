@@ -42,6 +42,7 @@ except ImportError:
   import unittest
 
 from google.protobuf import descriptor_pb2
+from google.protobuf import descriptor
 from google.protobuf import descriptor_pool
 from google.protobuf import proto_builder
 from google.protobuf import text_format
@@ -90,6 +91,23 @@ class ProtoBuilderTest(unittest.TestCase):
         full_name='net.proto2.python.public.proto_builder_test.Test',
         pool=pool)
     self.assertIs(proto_cls1.DESCRIPTOR, proto_cls2.DESCRIPTOR)
+
+  def testMakeLargeProtoClass(self):
+    """Test that large created protos don't use reserved field numbers."""
+    num_fields = 123456
+    fields = {
+        'foo%d' % i: descriptor_pb2.FieldDescriptorProto.TYPE_INT64
+        for i in range(num_fields)
+    }
+    proto_cls = proto_builder.MakeSimpleProtoClass(
+        fields,
+        full_name='net.proto2.python.public.proto_builder_test.LargeProtoTest')
+
+    reserved_field_numbers = set(
+        range(descriptor.FieldDescriptor.FIRST_RESERVED_FIELD_NUMBER,
+              descriptor.FieldDescriptor.LAST_RESERVED_FIELD_NUMBER + 1))
+    proto_field_numbers = set(proto_cls.DESCRIPTOR.fields_by_number)
+    self.assertFalse(reserved_field_numbers.intersection(proto_field_numbers))
 
 
 if __name__ == '__main__':

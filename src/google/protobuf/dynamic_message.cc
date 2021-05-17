@@ -355,7 +355,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
 
   if (type_info_->extensions_offset != -1) {
     new (OffsetToPointer(type_info_->extensions_offset))
-        ExtensionSet(GetArena());
+        ExtensionSet(GetArenaForAllocation());
   }
   for (int i = 0; i < descriptor->field_count(); i++) {
     const FieldDescriptor* field = descriptor->field(i);
@@ -364,13 +364,13 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
       continue;
     }
     switch (field->cpp_type()) {
-#define HANDLE_TYPE(CPPTYPE, TYPE)                         \
-  case FieldDescriptor::CPPTYPE_##CPPTYPE:                 \
-    if (!field->is_repeated()) {                           \
-      new (field_ptr) TYPE(field->default_value_##TYPE()); \
-    } else {                                               \
-      new (field_ptr) RepeatedField<TYPE>(GetArena());     \
-    }                                                      \
+#define HANDLE_TYPE(CPPTYPE, TYPE)                                  \
+  case FieldDescriptor::CPPTYPE_##CPPTYPE:                          \
+    if (!field->is_repeated()) {                                    \
+      new (field_ptr) TYPE(field->default_value_##TYPE());          \
+    } else {                                                        \
+      new (field_ptr) RepeatedField<TYPE>(GetArenaForAllocation()); \
+    }                                                               \
     break;
 
       HANDLE_TYPE(INT32, int32);
@@ -386,7 +386,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
         if (!field->is_repeated()) {
           new (field_ptr) int(field->default_value_enum()->number());
         } else {
-          new (field_ptr) RepeatedField<int>(GetArena());
+          new (field_ptr) RepeatedField<int>(GetArenaForAllocation());
         }
         break;
 
@@ -402,7 +402,8 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->UnsafeSetDefault(default_value);
             } else {
-              new (field_ptr) RepeatedPtrField<std::string>(GetArena());
+              new (field_ptr)
+                  RepeatedPtrField<std::string>(GetArenaForAllocation());
             }
             break;
         }
@@ -417,20 +418,30 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
             // when the constructor is called inside GetPrototype(), in which
             // case we have already locked the factory.
             if (lock_factory) {
-              if (GetArena() != nullptr) {
+              if (GetArenaForAllocation() != nullptr) {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()),
-                    GetArena());
+                    GetArenaForAllocation());
+                if (GetOwningArena() != nullptr) {
+                  // Needs to destroy the mutex member.
+                  GetOwningArena()->OwnDestructor(
+                      static_cast<DynamicMapField*>(field_ptr));
+                }
               } else {
                 new (field_ptr) DynamicMapField(
                     type_info_->factory->GetPrototype(field->message_type()));
               }
             } else {
-              if (GetArena() != nullptr) {
+              if (GetArenaForAllocation() != nullptr) {
                 new (field_ptr)
                     DynamicMapField(type_info_->factory->GetPrototypeNoLock(
                                         field->message_type()),
-                                    GetArena());
+                                    GetArenaForAllocation());
+                if (GetOwningArena() != nullptr) {
+                  // Needs to destroy the mutex member.
+                  GetOwningArena()->OwnDestructor(
+                      static_cast<DynamicMapField*>(field_ptr));
+                }
               } else {
                 new (field_ptr)
                     DynamicMapField(type_info_->factory->GetPrototypeNoLock(
@@ -438,7 +449,7 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               }
             }
           } else {
-            new (field_ptr) RepeatedPtrField<Message>(GetArena());
+            new (field_ptr) RepeatedPtrField<Message>(GetArenaForAllocation());
           }
         }
         break;

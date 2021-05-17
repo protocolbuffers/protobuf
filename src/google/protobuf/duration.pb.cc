@@ -19,7 +19,7 @@ PROTOBUF_PRAGMA_INIT_SEG
 PROTOBUF_NAMESPACE_OPEN
 constexpr Duration::Duration(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
-  : seconds_(PROTOBUF_LONGLONG(0))
+  : seconds_(int64_t{0})
   , nanos_(0){}
 struct DurationDefaultTypeInternal {
   constexpr DurationDefaultTypeInternal()
@@ -110,7 +110,7 @@ Duration::~Duration() {
 }
 
 void Duration::SharedDtor() {
-  GOOGLE_DCHECK(GetArena() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Duration::ArenaDtor(void* object) {

@@ -266,6 +266,39 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsAll) {
   TestUtil::ExpectClear(message2);
 }
 
+TEST(GeneratedMessageReflectionTest, SwapFieldsAllOnDifferentArena) {
+  Arena arena1, arena2;
+  auto* message1 = Arena::CreateMessage<unittest::TestAllTypes>(&arena1);
+  auto* message2 = Arena::CreateMessage<unittest::TestAllTypes>(&arena2);
+
+  TestUtil::SetAllFields(message2);
+
+  std::vector<const FieldDescriptor*> fields;
+  const Reflection* reflection = message1->GetReflection();
+  reflection->ListFields(*message2, &fields);
+  reflection->SwapFields(message1, message2, fields);
+
+  TestUtil::ExpectAllFieldsSet(*message1);
+  TestUtil::ExpectClear(*message2);
+}
+
+TEST(GeneratedMessageReflectionTest, SwapFieldsAllOnArenaHeap) {
+  Arena arena;
+  auto* message1 = Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  std::unique_ptr<unittest::TestAllTypes> message2(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
+
+  TestUtil::SetAllFields(message2.get());
+
+  std::vector<const FieldDescriptor*> fields;
+  const Reflection* reflection = message1->GetReflection();
+  reflection->ListFields(*message2, &fields);
+  reflection->SwapFields(message1, message2.get(), fields);
+
+  TestUtil::ExpectAllFieldsSet(*message1);
+  TestUtil::ExpectClear(*message2);
+}
+
 TEST(GeneratedMessageReflectionTest, SwapFieldsAllExtension) {
   unittest::TestAllExtensions message1;
   unittest::TestAllExtensions message2;

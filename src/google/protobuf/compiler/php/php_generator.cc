@@ -1894,8 +1894,8 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "}\n"
       "\n"
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, name, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
-      "  PHP_ME($c_name$, value, arginfo_void, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, name, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
+      "  PHP_ME($c_name$, value, arginfo_lookup, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)\n"
       "  ZEND_FE_END\n"
       "};\n"
       "\n"
@@ -1953,7 +1953,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "                                           \"$name$\");\n"
       "  zval ret;\n"
       "  Message_get(intern, f, &ret);\n"
-      "  RETURN_ZVAL(&ret, 1, 0);\n"
+      "  RETURN_COPY_VALUE(&ret);\n"
       "}\n"
       "\n"
       "static PHP_METHOD($c_name$, set$camel_name$) {\n"
@@ -1966,7 +1966,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "    return;\n"
       "  }\n"
       "  Message_set(intern, f, val);\n"
-      "  RETURN_ZVAL(getThis(), 1, 0);\n"
+      "  RETURN_COPY(getThis());\n"
       "}\n"
       "\n",
       "c_name", c_name,
@@ -2012,7 +2012,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
 
   printer->Print(
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
-      "  PHP_ME($c_name$, __construct, arginfo_void, ZEND_ACC_PUBLIC)\n",
+      "  PHP_ME($c_name$, __construct, arginfo_construct, ZEND_ACC_PUBLIC)\n",
       "c_name", c_name);
 
   for (int i = 0; i < message->field_count(); i++) {
@@ -2111,7 +2111,14 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
   printer.Print(
       "// This file is generated from the .proto files for the well-known\n"
-      "// types. Do not edit!\n");
+      "// types. Do not edit!\n\n");
+
+  printer.Print(
+      "ZEND_BEGIN_ARG_INFO_EX(arginfo_lookup, 0, 0, 1)\n"
+      "  ZEND_ARG_INFO(0, key)\n"
+      "ZEND_END_ARG_INFO()\n"
+      "\n"
+  );
 
   for (auto file : files) {
     printer.Print(

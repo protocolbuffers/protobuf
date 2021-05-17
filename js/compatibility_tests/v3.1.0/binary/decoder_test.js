@@ -224,7 +224,6 @@ describe('binaryDecoderTest', function() {
 
   /**
    * Verifies that misuse of the decoder class triggers assertions.
-   * @suppress {checkTypes|visibility}
    */
   it('testDecodeErrors', function() {
     // Reading a value past the end of the stream should trigger an assertion.

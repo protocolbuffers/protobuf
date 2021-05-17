@@ -801,6 +801,7 @@ objectivec_EXTRA_DIST=                                                       \
 php_EXTRA_DIST=                                                       \
   composer.json                                                       \
   php/README.md                                                       \
+  php/REFCOUNTING.md                                                  \
   php/composer.json                                                   \
   php/ext/google/protobuf/arena.c                                     \
   php/ext/google/protobuf/arena.h                                     \
@@ -824,7 +825,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/protobuf.h                                  \
   php/ext/google/protobuf/wkt.inc                                     \
   php/generate_descriptor_protos.sh                                   \
-  php/phpunit.xml                                                     \
+  php/generate_test_protos.sh                                         \
   php/prepare_c_extension.sh                                          \
   php/release.sh                                                      \
   php/src/GPBMetadata/Google/Protobuf/Any.php                         \
@@ -953,14 +954,12 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Value.php                                   \
   php/src/phpdoc.dist.xml                                             \
   php/tests/ArrayTest.php                                             \
-  php/tests/autoload.php                                              \
-  php/tests/bootstrap_phpunit.php                                     \
   php/tests/compatibility_test.sh                                     \
   php/tests/compile_extension.sh                                      \
   php/tests/DescriptorsTest.php                                       \
   php/tests/EncodeDecodeTest.php                                      \
+  php/tests/force_c_ext.php                                           \
   php/tests/gdb_test.sh                                               \
-  php/tests/generate_protos.sh                                        \
   php/tests/GeneratedClassTest.php                                    \
   php/tests/GeneratedPhpdocTest.php                                   \
   php/tests/GeneratedServiceTest.php                                  \
@@ -987,10 +986,8 @@ php_EXTRA_DIST=                                                       \
   php/tests/proto/test_service.proto                                  \
   php/tests/proto/test_service_namespace.proto                        \
   php/tests/proto/test_wrapper_type_setters.proto                     \
-  php/tests/test.sh                                                   \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
-  php/tests/undefined_test.php                                        \
   php/tests/valgrind.supp                                             \
   php/tests/WellKnownTest.php                                         \
   php/tests/WrapperTypeSettersTest.php

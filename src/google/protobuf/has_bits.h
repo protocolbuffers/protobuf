@@ -47,17 +47,17 @@ namespace internal {
 template <size_t doublewords>
 class HasBits {
  public:
-  constexpr HasBits() PROTOBUF_NDEBUG_INLINE : has_bits_{} {}
+  PROTOBUF_NDEBUG_INLINE constexpr HasBits() : has_bits_{} {}
 
-  void Clear() PROTOBUF_NDEBUG_INLINE {
+  PROTOBUF_NDEBUG_INLINE void Clear() {
     memset(has_bits_, 0, sizeof(has_bits_));
   }
 
-  uint32& operator[](int index) PROTOBUF_NDEBUG_INLINE {
+  PROTOBUF_NDEBUG_INLINE uint32& operator[](int index) {
     return has_bits_[index];
   }
 
-  const uint32& operator[](int index) const PROTOBUF_NDEBUG_INLINE {
+  PROTOBUF_NDEBUG_INLINE const uint32& operator[](int index) const {
     return has_bits_[index];
   }
 

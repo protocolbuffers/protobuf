@@ -220,9 +220,6 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 // Return the code that evaluates to the number when compiled.
 std::string Int32ToString(int number);
 
-// Return the code that evaluates to the number when compiled.
-std::string Int64ToString(const Options& options, int64_t number);
-
 // Get code that evaluates to the field's default value.
 std::string DefaultValue(const Options& options, const FieldDescriptor* field);
 

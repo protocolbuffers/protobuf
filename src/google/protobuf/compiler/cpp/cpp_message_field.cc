@@ -109,7 +109,8 @@ void MessageFieldGenerator::GenerateAccessorDeclarations(
     format(
         "$deprecated_attr$const $type$& ${1$$name$$}$() const { "
         "__builtin_trap(); }\n"
-        "$deprecated_attr$$type$* ${1$$release_name$$}$() { "
+        "PROTOBUF_FUTURE_MUST_USE_RESULT $deprecated_attr$$type$* "
+        "${1$$release_name$$}$() { "
         "__builtin_trap(); }\n"
         "$deprecated_attr$$type$* ${1$mutable_$name$$}$() { "
         "__builtin_trap(); }\n"
@@ -173,7 +174,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "$annotate_accessor$"
       // If we're not on an arena, free whatever we were holding before.
       // (If we are on arena, we can just forget the earlier pointer.)
-      "  if (GetArena() == nullptr) {\n"
+      "  if (GetArenaForAllocation() == nullptr) {\n"
       "    delete reinterpret_cast<::$proto_ns$::MessageLite*>($name$_);\n"
       "  }\n");
   if (implicit_weak_field_) {
@@ -198,7 +199,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "  $clear_hasbit$\n"
       "  $type$* temp = $casted_member$;\n"
       "  $name$_ = nullptr;\n"
-      "  if (GetArena() != nullptr) {\n"
+      "  if (GetArenaForAllocation() != nullptr) {\n"
       "    temp = ::$proto_ns$::internal::DuplicateIfNonNull(temp);\n"
       "  }\n"
       "  return temp;\n"
@@ -218,7 +219,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
       "$type_reference_function$"
       "  $set_hasbit$\n"
       "  if ($name$_ == nullptr) {\n"
-      "    auto* p = CreateMaybeMessage<$type$>(GetArena());\n");
+      "    auto* p = CreateMaybeMessage<$type$>(GetArenaForAllocation());\n");
   if (implicit_weak_field_) {
     format("    $name$_ = reinterpret_cast<::$proto_ns$::MessageLite*>(p);\n");
   } else {
@@ -239,7 +240,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline void $classname$::set_allocated_$name$($type$* $name$) {\n"
       "$annotate_accessor$"
-      "  ::$proto_ns$::Arena* message_arena = GetArena();\n");
+      "  ::$proto_ns$::Arena* message_arena = GetArenaForAllocation();\n");
   format("  if (message_arena == nullptr) {\n");
   if (IsCrossFileMessage(descriptor_)) {
     format(
@@ -255,12 +256,15 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
     // isn't defined in this file.
     format(
         "    ::$proto_ns$::Arena* submessage_arena =\n"
-        "      "
-        "reinterpret_cast<::$proto_ns$::MessageLite*>($name$)->GetArena();\n");
+        "        ::$proto_ns$::Arena::InternalHelper<\n"
+        "            ::$proto_ns$::MessageLite>::GetOwningArena(\n"
+        "                reinterpret_cast<::$proto_ns$::MessageLite*>("
+        "$name$));\n");
   } else {
     format(
         "    ::$proto_ns$::Arena* submessage_arena =\n"
-        "      ::$proto_ns$::Arena::GetArena($name$);\n");
+        "        ::$proto_ns$::Arena::InternalHelper<$type$>::GetOwningArena("
+        "$name$);\n");
   }
   format(
       "    if (message_arena != submessage_arena) {\n"
@@ -329,11 +333,12 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
         "    if ($type_default_instance_ptr$ == nullptr) {\n"
         "      msg->$name$_ = ::$proto_ns$::Arena::CreateMessage<\n"
         "          ::$proto_ns$::internal::ImplicitWeakMessage>(\n"
-        "              msg->GetArena());\n"
+        "              msg->GetArenaForAllocation());\n"
         "    } else {\n"
-        "      msg->$name$_ = reinterpret_cast<const "
-        "::$proto_ns$::MessageLite*>(\n"
-        "          $type_default_instance_ptr$)->New(msg->GetArena());\n"
+        "      msg->$name$_ = \n"
+        "          reinterpret_cast<const ::$proto_ns$::MessageLite*>(\n"
+        "              $type_default_instance_ptr$)->New(\n"
+        "                  msg->GetArenaForAllocation());\n"
         "    }\n"
         "  }\n"
         "  return msg->$name$_;\n"
@@ -358,7 +363,7 @@ void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // NULL. Thus on clear, we need to delete the object.
     format(
-        "if (GetArena() == nullptr && $name$_ != nullptr) {\n"
+        "if (GetArenaForAllocation() == nullptr && $name$_ != nullptr) {\n"
         "  delete $name$_;\n"
         "}\n"
         "$name$_ = nullptr;\n");
@@ -376,7 +381,7 @@ void MessageFieldGenerator::GenerateMessageClearingCode(
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // NULL. Thus on clear, we need to delete the object.
     format(
-        "if (GetArena() == nullptr && $name$_ != nullptr) {\n"
+        "if (GetArenaForAllocation() == nullptr && $name$_ != nullptr) {\n"
         "  delete $name$_;\n"
         "}\n"
         "$name$_ = nullptr;\n");
@@ -490,7 +495,7 @@ void MessageOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
   format(
       "void $classname$::set_allocated_$name$($type$* $name$) {\n"
       "$annotate_accessor$"
-      "  ::$proto_ns$::Arena* message_arena = GetArena();\n"
+      "  ::$proto_ns$::Arena* message_arena = GetArenaForAllocation();\n"
       "  clear_$oneof_name$();\n"
       "  if ($name$) {\n");
   if (descriptor_->file() != descriptor_->message_type()->file()) {
@@ -498,12 +503,15 @@ void MessageOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
     // isn't defined in this file.
     format(
         "    ::$proto_ns$::Arena* submessage_arena =\n"
-        "      "
-        "reinterpret_cast<::$proto_ns$::MessageLite*>($name$)->GetArena();\n");
+        "        ::$proto_ns$::Arena::InternalHelper<\n"
+        "            ::$proto_ns$::MessageLite>::GetOwningArena(\n"
+        "                reinterpret_cast<::$proto_ns$::MessageLite*>("
+        "$name$));\n");
   } else {
     format(
         "    ::$proto_ns$::Arena* submessage_arena =\n"
-        "      ::$proto_ns$::Arena::GetArena($name$);\n");
+        "      ::$proto_ns$::Arena::InternalHelper<"
+        "$type$>::GetOwningArena($name$);\n");
   }
   format(
       "    if (message_arena != submessage_arena) {\n"
@@ -527,7 +535,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  if (_internal_has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
       "      $type$* temp = $field_member$;\n"
-      "    if (GetArena() != nullptr) {\n"
+      "    if (GetArenaForAllocation() != nullptr) {\n"
       "      temp = ::$proto_ns$::internal::DuplicateIfNonNull(temp);\n"
       "    }\n"
       "    $field_member$ = nullptr;\n"
@@ -579,7 +587,8 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  if (!_internal_has_$name$()) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
-      "    $field_member$ = CreateMaybeMessage< $type$ >(GetArena());\n"
+      "    $field_member$ = CreateMaybeMessage< $type$ "
+      ">(GetArenaForAllocation());\n"
       "  }\n"
       "  return $field_member$;\n"
       "}\n"
@@ -596,7 +605,7 @@ void MessageOneofFieldGenerator::GenerateClearingCode(
 
   Formatter format(printer, variables_);
   format(
-      "if (GetArena() == nullptr) {\n"
+      "if (GetArenaForAllocation() == nullptr) {\n"
       "  delete $field_member$;\n"
       "}\n");
 }

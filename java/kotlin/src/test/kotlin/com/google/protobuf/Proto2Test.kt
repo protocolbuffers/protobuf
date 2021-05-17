@@ -448,34 +448,34 @@ class Proto2Test {
         this[UnittestProto.repeatedImportEnumExtension].add(ImportEnum.IMPORT_BAR)
         this[UnittestProto.repeatedStringPieceExtension].add("224")
         this[UnittestProto.repeatedCordExtension].add("225")
-        this[UnittestProto.repeatedInt32Extension].add(301)
-        this[UnittestProto.repeatedInt64Extension].add(302L)
-        this[UnittestProto.repeatedUint32Extension].add(303)
-        this[UnittestProto.repeatedUint64Extension].add(304L)
-        this[UnittestProto.repeatedSint32Extension].add(305)
-        this[UnittestProto.repeatedSint64Extension].add(306L)
-        this[UnittestProto.repeatedFixed32Extension].add(307)
-        this[UnittestProto.repeatedFixed64Extension].add(308L)
-        this[UnittestProto.repeatedSfixed32Extension].add(309)
-        this[UnittestProto.repeatedSfixed64Extension].add(310L)
-        this[UnittestProto.repeatedFloatExtension].add(311F)
-        this[UnittestProto.repeatedDoubleExtension].add(312.0)
-        this[UnittestProto.repeatedBoolExtension].add(false)
-        this[UnittestProto.repeatedStringExtension].add("315")
-        this[UnittestProto.repeatedBytesExtension].add(toBytes("316"))
-        this[UnittestProto.repeatedGroupExtension].add(repeatedGroupExtension { a = 317 })
-        this[UnittestProto.repeatedNestedMessageExtension]
-          .add(TestAllTypesKt.nestedMessage { bb = 318 })
-        this[UnittestProto.repeatedForeignMessageExtension].add(foreignMessage { c = 319 })
-        this[UnittestProto.repeatedImportMessageExtension]
-          .add(ImportMessage.newBuilder().setD(320).build())
-        this[UnittestProto.repeatedLazyMessageExtension]
-          .add(TestAllTypesKt.nestedMessage { bb = 327 })
-        this[UnittestProto.repeatedNestedEnumExtension].add(NestedEnum.BAZ)
-        this[UnittestProto.repeatedForeignEnumExtension].add(ForeignEnum.FOREIGN_BAZ)
-        this[UnittestProto.repeatedImportEnumExtension].add(ImportEnum.IMPORT_BAZ)
-        this[UnittestProto.repeatedStringPieceExtension].add("324")
-        this[UnittestProto.repeatedCordExtension].add("325")
+        this[UnittestProto.repeatedInt32Extension] += 301
+        this[UnittestProto.repeatedInt64Extension] += 302L
+        this[UnittestProto.repeatedUint32Extension] += 303
+        this[UnittestProto.repeatedUint64Extension] += 304L
+        this[UnittestProto.repeatedSint32Extension] += 305
+        this[UnittestProto.repeatedSint64Extension] += 306L
+        this[UnittestProto.repeatedFixed32Extension] += 307
+        this[UnittestProto.repeatedFixed64Extension] += 308L
+        this[UnittestProto.repeatedSfixed32Extension] += 309
+        this[UnittestProto.repeatedSfixed64Extension] += 310L
+        this[UnittestProto.repeatedFloatExtension] += 311F
+        this[UnittestProto.repeatedDoubleExtension] += 312.0
+        this[UnittestProto.repeatedBoolExtension] += false
+        this[UnittestProto.repeatedStringExtension] += "315"
+        this[UnittestProto.repeatedBytesExtension] += toBytes("316")
+        this[UnittestProto.repeatedGroupExtension] += repeatedGroupExtension { a = 317 }
+        this[UnittestProto.repeatedNestedMessageExtension] +=
+	  TestAllTypesKt.nestedMessage { bb = 318 }
+        this[UnittestProto.repeatedForeignMessageExtension] += foreignMessage { c = 319 }
+        this[UnittestProto.repeatedImportMessageExtension] +=
+          ImportMessage.newBuilder().setD(320).build()
+        this[UnittestProto.repeatedLazyMessageExtension] +=
+	  TestAllTypesKt.nestedMessage { bb = 327 }
+        this[UnittestProto.repeatedNestedEnumExtension] += NestedEnum.BAZ
+        this[UnittestProto.repeatedForeignEnumExtension] += ForeignEnum.FOREIGN_BAZ
+        this[UnittestProto.repeatedImportEnumExtension] += ImportEnum.IMPORT_BAZ
+        this[UnittestProto.repeatedStringPieceExtension] += "324"
+        this[UnittestProto.repeatedCordExtension] += "325"
         this[UnittestProto.defaultInt32Extension] = 401
         this[UnittestProto.defaultInt64Extension] = 402L
         this[UnittestProto.defaultUint32Extension] = 403
@@ -526,6 +526,95 @@ class Proto2Test {
       assertThat(this[UnittestProto.defaultInt32Extension]).isEqualTo(401)
       this[UnittestProto.oneofUint32Extension] = 601
       assertThat(this[UnittestProto.oneofUint32Extension]).isEqualTo(601)
+    }
+  }
+
+  @Test
+  fun testRepeatedExtensionGettersAndSetters() {
+    testAllExtensions {
+      this[UnittestProto.repeatedInt32Extension].addAll(listOf(1, 2))
+      assertThat(this[UnittestProto.repeatedInt32Extension]).isEqualTo(listOf(1, 2))
+      this[UnittestProto.repeatedInt32Extension] += listOf(3, 4)
+      assertThat(this[UnittestProto.repeatedInt32Extension]).isEqualTo(listOf(1, 2, 3, 4))
+      this[UnittestProto.repeatedInt32Extension][0] = 5
+      assertThat(this[UnittestProto.repeatedInt32Extension]).isEqualTo(listOf(5, 2, 3, 4))
+
+      this[UnittestProto.repeatedStringExtension].addAll(listOf("1", "2"))
+      assertThat(this[UnittestProto.repeatedStringExtension]).isEqualTo(listOf("1", "2"))
+      this[UnittestProto.repeatedStringExtension] += listOf("3", "4")
+      assertThat(this[UnittestProto.repeatedStringExtension]).isEqualTo(listOf("1", "2", "3", "4"))
+      this[UnittestProto.repeatedStringExtension][0] = "5"
+      assertThat(this[UnittestProto.repeatedStringExtension]).isEqualTo(listOf("5", "2", "3", "4"))
+
+      this[UnittestProto.repeatedGroupExtension].addAll(
+        listOf(
+          repeatedGroupExtension { a = 1 },
+          repeatedGroupExtension { a = 2 }
+        )
+      )
+      assertThat(this[UnittestProto.repeatedGroupExtension]).isEqualTo(
+        listOf(
+          repeatedGroupExtension { a = 1 },
+          repeatedGroupExtension { a = 2 }
+        )
+      )
+      this[UnittestProto.repeatedGroupExtension] +=
+        listOf(
+          repeatedGroupExtension { a = 3 },
+          repeatedGroupExtension { a = 4 }
+        )
+      assertThat(this[UnittestProto.repeatedGroupExtension]).isEqualTo(
+        listOf(
+          repeatedGroupExtension { a = 1 },
+          repeatedGroupExtension { a = 2 },
+          repeatedGroupExtension { a = 3 },
+          repeatedGroupExtension { a = 4 }
+        )
+      )
+      this[UnittestProto.repeatedGroupExtension][0] = repeatedGroupExtension { a = 5 }
+      assertThat(this[UnittestProto.repeatedGroupExtension]).isEqualTo(
+        listOf(
+          repeatedGroupExtension { a = 5 },
+          repeatedGroupExtension { a = 2 },
+          repeatedGroupExtension { a = 3 },
+          repeatedGroupExtension { a = 4 }
+        )
+      )
+
+      this[UnittestProto.repeatedNestedMessageExtension].addAll(
+        listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 })
+      )
+      assertThat(this[UnittestProto.repeatedNestedMessageExtension]).isEqualTo(
+        listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 })
+      )
+      this[UnittestProto.repeatedNestedMessageExtension] +=
+        listOf(nestedMessage { bb = 3 }, nestedMessage { bb = 4 })
+      assertThat(this[UnittestProto.repeatedNestedMessageExtension]).isEqualTo(
+        listOf(
+          nestedMessage { bb = 1 },
+          nestedMessage { bb = 2 },
+          nestedMessage { bb = 3 },
+          nestedMessage { bb = 4 }
+        )
+      )
+      this[UnittestProto.repeatedNestedMessageExtension][0] = nestedMessage { bb = 5 }
+      assertThat(this[UnittestProto.repeatedNestedMessageExtension]).isEqualTo(
+        listOf(
+          nestedMessage { bb = 5 },
+          nestedMessage { bb = 2 },
+          nestedMessage { bb = 3 },
+          nestedMessage { bb = 4 }
+        )
+      )
+
+      this[UnittestProto.repeatedNestedEnumExtension]
+        .addAll(listOf(NestedEnum.FOO, NestedEnum.BAR))
+      assertThat(this[UnittestProto.repeatedNestedEnumExtension])
+        .isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR))
+      this[UnittestProto.repeatedNestedEnumExtension] += listOf(NestedEnum.BAZ, NestedEnum.FOO)
+      assertThat(this[UnittestProto.repeatedNestedEnumExtension]).isEqualTo(
+        listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
+      )
     }
   }
 
