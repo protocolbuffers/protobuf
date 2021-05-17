@@ -167,11 +167,19 @@
 
 /* Configure whether fasttable is switched on or not. *************************/
 
-#if defined(__clang__) && __has_attribute(musttail)
+#ifdef __has_attribute
+#define UPB_HAS_ATTRIBUTE(x) __has_attribute(x)
+#else
+#define UPB_HAS_ATTRIBUTE(x) 0
+#endif
+
+#if UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_MUSTTAIL __attribute__((musttail))
 #else
 #define UPB_MUSTTAIL
 #endif
+
+#undef UPB_HAS_ATTRIBUTE
 
 /* This check is not fully robust: it does not require that we have "musttail"
  * support available. We need tail calls to avoid consuming arbitrary amounts
