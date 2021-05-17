@@ -201,8 +201,6 @@ static bool MessageEq(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m)
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    upb_msgval val1 = upb_msg_get(m1, f);
-    upb_msgval val2 = upb_msg_get(m2, f);
 
     if (upb_fielddef_haspresence(f)) {
       if (upb_msg_has(m1, f) != upb_msg_has(m2, f)) {
@@ -210,6 +208,9 @@ static bool MessageEq(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m)
       }
       if (!upb_msg_has(m1, f)) continue;
     }
+
+    upb_msgval val1 = upb_msg_get(m1, f);
+    upb_msgval val2 = upb_msg_get(m2, f);
 
     if (upb_fielddef_ismap(f)) {
       if (!MapEq(val1.map_val, val2.map_val, MapType_Get(f))) return false;
