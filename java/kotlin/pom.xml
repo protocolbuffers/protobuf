@@ -17,7 +17,8 @@
   </description>
 
   <properties>
-    <kotlin.version>1.4.31</kotlin.version>
+    <kotlin.version>1.5.0</kotlin.version>
+    <dokka.version>1.4.32</dokka.version>
   </properties>
 
   <dependencies>
@@ -204,6 +205,7 @@
               <sourceDirs>
                 <sourceDir>${generated.sources.dir}</sourceDir>
                 <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
+                <sourceDir>${project.basedir}/src/main/kotlin/com/google/protobuf</sourceDir>
               </sourceDirs>
             </configuration>
           </execution>
@@ -213,6 +215,7 @@
             <configuration>
               <sourceDirs>
                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
+                <sourceDir>${project.basedir}/src/main/kotlin/com/google/protobuf</sourceDir>
                 <sourceDir>${generated.testsources.dir}</sourceDir>
               </sourceDirs>
             </configuration>
@@ -234,7 +237,46 @@
           </instructions>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.jetbrains.dokka</groupId>
+        <artifactId>dokka-maven-plugin</artifactId>
+        <version>${dokka.version}</version>
+        <executions>
+            <execution>
+                <phase>pre-site</phase>
+                <goals>
+                    <goal>dokka</goal>
+                </goals>
+            </execution>
+        </executions>
+        <configuration>
+          <outputDir>gcode/kotlin</outputDir>
+          <sourceDirectories><dir>${project.basedir}/src/main/kotlin/com/google/protobuf</dir></sourceDirectories>
+
+          <externalDocumentationLinks>
+            <link>
+                <url>https://developers.google.com/protocol-buffers/docs/reference/java/</url>
+            </link>
+        </externalDocumentationLinks>
+
+          <dokkaPlugins>
+            <plugin>
+              <groupId>org.jetbrains.dokka</groupId>
+              <artifactId>gfm-plugin</artifactId>
+              <version>${dokka.version}</version>
+            </plugin>
+          </dokkaPlugins>
+        </configuration>
+    </plugin>
     </plugins>
   </build>
+  
+  <pluginRepositories>
+    <pluginRepository>
+      <id>jcenter</id>
+      <name>JCenter</name>
+      <url>https://jcenter.bintray.com/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
 </project>
