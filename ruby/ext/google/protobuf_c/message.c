@@ -794,8 +794,8 @@ static VALUE Message_CreateHash(const upb_msg *msg, const upb_msgdef *m) {
     VALUE msg_value;
     VALUE msg_key;
 
-    if (!is_proto2 &&
-        (upb_fielddef_issubmsg(field) && !upb_msg_has(msg, field))) {
+    if (!is_proto2 && upb_fielddef_issubmsg(field) &&
+        !upb_fielddef_isseq(field) && !upb_msg_has(msg, field)) {
       // TODO: Legacy behavior, remove when we fix the is_proto2 differences.
       msg_key = ID2SYM(rb_intern(upb_fielddef_name(field)));
       rb_hash_aset(hash, msg_key, Qnil);
