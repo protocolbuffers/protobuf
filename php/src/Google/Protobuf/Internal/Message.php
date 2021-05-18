@@ -240,10 +240,14 @@ class Message
         $field = $this->desc->getFieldByNumber($number);
         $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
         $oneof_name = $oneof->getName();
-        $oneof_field = $this->$oneof_name;
-        $oneof_field->setValue($value);
-        $oneof_field->setFieldName($field->getName());
-        $oneof_field->setNumber($number);
+        if ($value === null) {
+            $this->$oneof_name = new OneofField($oneof);
+        } else {
+            $oneof_field = $this->$oneof_name;
+            $oneof_field->setValue($value);
+            $oneof_field->setFieldName($field->getName());
+            $oneof_field->setNumber($number);
+        }
     }
 
     protected function whichOneof($oneof_name)

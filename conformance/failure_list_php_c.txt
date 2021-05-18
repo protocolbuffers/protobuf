@@ -1,4 +1,2 @@
 Recommended.Proto2.JsonInput.FieldNameExtension.Validator
 Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator
-Required.Proto3.JsonInput.OneofFieldNullSecond.JsonOutput
-Required.Proto3.JsonInput.OneofFieldNullSecond.ProtobufOutput
