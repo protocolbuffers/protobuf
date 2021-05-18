@@ -3,6 +3,10 @@
   * Fixed JSON parser to allow multiple values from the same oneof as long as
     all but one are null.
 
+  Ruby
+  * Fixed JSON parser to allow multiple values from the same oneof as long as
+    all but one are null.
+
 2021-05-07 version 3.17.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Protocol Compiler
