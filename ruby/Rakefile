@@ -110,7 +110,6 @@ genproto_output << "tests/test_ruby_package.rb"
 genproto_output << "tests/test_ruby_package_proto2.rb"
 genproto_output << "tests/basic_test.rb"
 genproto_output << "tests/basic_test_proto2.rb"
-genproto_output << "tests/multi_level_nesting_test.rb"
 genproto_output << "tests/wrappers.rb"
 
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
