@@ -41,32 +41,38 @@ namespace Google.Protobuf
     {
         public static void AssertReadingMessage<T>(MessageParser<T> parser, byte[] bytes, Action<T> assert) where T : IMessage<T>
         {
-            var parsedStream = parser.ParseFrom(bytes);
+            var parsedMsg = parser.ParseFrom(bytes);
+            assert(parsedMsg);
 
             // Load content as single segment
-            var parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
-            assert(parsedBuffer);
+            parsedMsg = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
+            assert(parsedMsg);
 
             // Load content as multiple segments
-            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
-            assert(parsedBuffer);
+            parsedMsg = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
+            assert(parsedMsg);
 
-            assert(parsedStream);
+            // Load content as ReadOnlySpan
+            parsedMsg = parser.ParseFrom(new ReadOnlySpan<byte>(bytes));
+            assert(parsedMsg);
         }
 
         public static void AssertReadingMessage(MessageParser parser, byte[] bytes, Action<IMessage> assert)
         {
-            var parsedStream = parser.ParseFrom(bytes);
+            var parsedMsg = parser.ParseFrom(bytes);
+            assert(parsedMsg);
 
             // Load content as single segment
-            var parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
-            assert(parsedBuffer);
+            parsedMsg = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
+            assert(parsedMsg);
 
             // Load content as multiple segments
-            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
-            assert(parsedBuffer);
+            parsedMsg = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
+            assert(parsedMsg);
 
-            assert(parsedStream);
+            // Load content as ReadOnlySpan
+            parsedMsg = parser.ParseFrom(new ReadOnlySpan<byte>(bytes));
+            assert(parsedMsg);
         }
 
         public static void AssertReadingMessageThrows<TMessage, TException>(MessageParser<TMessage> parser, byte[] bytes)
@@ -76,6 +82,8 @@ namespace Google.Protobuf
             Assert.Throws<TException>(() => parser.ParseFrom(bytes));
 
             Assert.Throws<TException>(() => parser.ParseFrom(new ReadOnlySequence<byte>(bytes)));
+
+            Assert.Throws<TException>(() => parser.ParseFrom(new ReadOnlySpan<byte>(bytes)));
         }
 
         public static void AssertRoundtrip<T>(MessageParser<T> parser, T message, Action<T> additionalAssert = null) where T : IMessage<T>
@@ -87,20 +95,24 @@ namespace Google.Protobuf
             message.WriteTo(bufferWriter);
             Assert.AreEqual(bytes, bufferWriter.WrittenSpan.ToArray(), "Both serialization approaches need to result in the same data.");
 
+            var parsedMsg = parser.ParseFrom(bytes);
+            Assert.AreEqual(message, parsedMsg);
+            additionalAssert?.Invoke(parsedMsg);
+
             // Load content as single segment
-            var parsedBuffer = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
-            Assert.AreEqual(message, parsedBuffer);
-            additionalAssert?.Invoke(parsedBuffer);
+            parsedMsg = parser.ParseFrom(new ReadOnlySequence<byte>(bytes));
+            Assert.AreEqual(message, parsedMsg);
+            additionalAssert?.Invoke(parsedMsg);
 
             // Load content as multiple segments
-            parsedBuffer = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
-            Assert.AreEqual(message, parsedBuffer);
-            additionalAssert?.Invoke(parsedBuffer);
+            parsedMsg = parser.ParseFrom(ReadOnlySequenceFactory.CreateWithContent(bytes));
+            Assert.AreEqual(message, parsedMsg);
+            additionalAssert?.Invoke(parsedMsg);
 
-            var parsedStream = parser.ParseFrom(bytes);
-
-            Assert.AreEqual(message, parsedStream);
-            additionalAssert?.Invoke(parsedStream);
+            // Load content as ReadOnlySpan
+            parsedMsg = parser.ParseFrom(new ReadOnlySpan<byte>(bytes));
+            Assert.AreEqual(message, parsedMsg);
+            additionalAssert?.Invoke(parsedMsg);
         }
 
         public static void AssertWritingMessage(IMessage message)

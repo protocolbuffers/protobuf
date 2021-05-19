@@ -1,26 +1,53 @@
 /* Amalgamated source file */
-#include <stdint.h>/*
-* This is where we define macros used across upb.
-*
-* All of these macros are undef'd in port_undef.inc to avoid leaking them to
-* users.
-*
-* The correct usage is:
-*
-*   #include "upb/foobar.h"
-*   #include "upb/baz.h"
-*
-*   // MUST be last included header.
-*   #include "upb/port_def.inc"
-*
-*   // Code for this file.
-*   // <...>
-*
-*   // Can be omitted for .c files, required for .h.
-*   #include "upb/port_undef.inc"
-*
-* This file is private and must not be included by users!
-*/
+/*
+ * Copyright (c) 2009-2021, Google LLC
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Google LLC nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL Google LLC BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/*
+ * This is where we define macros used across upb.
+ *
+ * All of these macros are undef'd in port_undef.inc to avoid leaking them to
+ * users.
+ *
+ * The correct usage is:
+ *
+ *   #include "upb/foobar.h"
+ *   #include "upb/baz.h"
+ *
+ *   // MUST be last included header.
+ *   #include "upb/port_def.inc"
+ *
+ *   // Code for this file.
+ *   // <...>
+ *
+ *   // Can be omitted for .c files, required for .h.
+ *   #include "upb/port_undef.inc"
+ *
+ * This file is private and must not be included by users!
+ */
 
 #if !((defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
       (defined(__cplusplus) && __cplusplus >= 201103L) ||           \
@@ -136,9 +163,40 @@
 #define UPB_LONGJMP(buf, val) longjmp(buf, val)
 #endif
 
+/* UPB_PTRADD(ptr, ofs): add pointer while avoiding "NULL + 0" UB */
+#define UPB_PTRADD(ptr, ofs) ((ofs) ? (ptr) + (ofs) : (ptr))
+
 /* Configure whether fasttable is switched on or not. *************************/
 
-#if defined(__x86_64__) && defined(__GNUC__)
+#if defined(__has_attribute)
+#define UPB_HAS_ATTRIBUTE(x) __has_attribute(x)
+#else
+#define UPB_HAS_ATTRIBUTE(x) 0
+#endif
+
+#if UPB_HAS_ATTRIBUTE(musttail)
+#define UPB_MUSTTAIL __attribute__((musttail))
+#else
+#define UPB_MUSTTAIL
+#endif
+
+#undef UPB_HAS_ATTRIBUTE
+
+/* This check is not fully robust: it does not require that we have "musttail"
+ * support available. We need tail calls to avoid consuming arbitrary amounts
+ * of stack space.
+ *
+ * GCC/Clang can mostly be trusted to generate tail calls as long as
+ * optimization is enabled, but, debug builds will not generate tail calls
+ * unless "musttail" is available.
+ *
+ * We should probably either:
+ *   1. require that the compiler supports musttail.
+ *   2. add some fallback code for when musttail isn't available (ie. return
+ *      instead of tail calling). This is safe and portable, but this comes at
+ *      a CPU cost.
+ */
+#if (defined(__x86_64__) || defined(__aarch64__)) && defined(__GNUC__)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
 #define UPB_FASTTABLE_SUPPORTED 0
@@ -149,7 +207,7 @@
  * for example for testing or benchmarking. */
 #if defined(UPB_ENABLE_FASTTABLE)
 #if !UPB_FASTTABLE_SUPPORTED
-#error fasttable is x86-64 + Clang/GCC only
+#error fasttable is x86-64/ARM64 only and requires GCC or Clang.
 #endif
 #define UPB_FASTTABLE 1
 /* Define UPB_TRY_ENABLE_FASTTABLE to use fasttable if possible.
@@ -193,55 +251,36 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
   ((void)(addr), (void)(size))
 #define UPB_UNPOISON_MEMORY_REGION(addr, size) \
   ((void)(addr), (void)(size))
-#endif 
+#endif
+
+/** upb/decode.h ************************************************************/
 /*
-** upb_decode: parsing into a upb_msg using a upb_msglayout.
-*/
+ * upb_decode: parsing into a upb_msg using a upb_msglayout.
+ */
 
 #ifndef UPB_DECODE_H_
 #define UPB_DECODE_H_
 
+
+/** upb/msg.h ************************************************************/
 /*
-** Our memory representation for parsing tables and messages themselves.
-** Functions in this file are used by generated code and possibly reflection.
-**
-** The definitions in this file are internal to upb.
-**/
+ * Public APIs for message operations that do not require descriptors.
+ * These functions can be used even in build that does not want to depend on
+ * reflection or descriptors.
+ *
+ * Descriptor-based reflection functionality lives in reflection.h.
+ */
 
 #ifndef UPB_MSG_H_
 #define UPB_MSG_H_
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 
+
+/** upb/upb.h ************************************************************/
 /*
-** upb_table
-**
-** This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
-** This file defines very fast int->upb_value (inttable) and string->upb_value
-** (strtable) hash tables.
-**
-** The table uses chained scatter with Brent's variation (inspired by the Lua
-** implementation of hash tables).  The hash function for strings is Austin
-** Appleby's "MurmurHash."
-**
-** The inttable uses uintptr_t as its key, which guarantees it can be used to
-** store pointers or integers of at least 32 bits (upb isn't really useful on
-** systems where sizeof(void*) < 4).
-**
-** The table must be homogeneous (all values of the same type).  In debug
-** mode, we check this on insert and lookup.
-*/
-
-#ifndef UPB_TABLE_H_
-#define UPB_TABLE_H_
-
-#include <stdint.h>
-#include <string.h>
-/*
-** This file contains shared definitions that are widely used across upb.
-*/
+ * This file contains shared definitions that are widely used across upb.
+ */
 
 #ifndef UPB_H_
 #define UPB_H_
@@ -399,7 +438,7 @@ typedef struct {
 upb_arena *upb_arena_init(void *mem, size_t n, upb_alloc *alloc);
 void upb_arena_free(upb_arena *a);
 bool upb_arena_addcleanup(upb_arena *a, void *ud, upb_cleanup_func *func);
-void upb_arena_fuse(upb_arena *a, upb_arena *b);
+bool upb_arena_fuse(upb_arena *a, upb_arena *b);
 void *_upb_arena_slowmalloc(upb_arena *a, size_t size);
 
 UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
@@ -578,6 +617,114 @@ UPB_INLINE int _upb_lg2ceilsize(int x) {
 
 #endif  /* UPB_H_ */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef void upb_msg;
+
+/* For users these are opaque. They can be obtained from upb_msgdef_layout()
+ * but users cannot access any of the members. */
+struct upb_msglayout;
+typedef struct upb_msglayout upb_msglayout;
+
+/* Adds unknown data (serialized protobuf data) to the given message.  The data
+ * is copied into the message instance. */
+void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
+                        upb_arena *arena);
+
+/* Returns a reference to the message's unknown data. */
+const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
+
+#endif /* UPB_MSG_INT_H_ */
+
+/* Must be last. */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+enum {
+  /* If set, strings will alias the input buffer instead of copying into the
+   * arena. */
+  UPB_DECODE_ALIAS = 1,
+};
+
+#define UPB_DECODE_MAXDEPTH(depth) ((depth) << 16)
+
+bool _upb_decode(const char *buf, size_t size, upb_msg *msg,
+                 const upb_msglayout *l, upb_arena *arena, int options);
+
+UPB_INLINE
+bool upb_decode(const char *buf, size_t size, upb_msg *msg,
+                const upb_msglayout *l, upb_arena *arena) {
+  return _upb_decode(buf, size, msg, l, arena, 0);
+}
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
+
+
+#endif  /* UPB_DECODE_H_ */
+
+/** upb/decode_internal.h ************************************************************/
+/*
+ * Internal implementation details of the decoder that are shared between
+ * decode.c and decode_fast.c.
+ */
+
+#ifndef UPB_DECODE_INT_H_
+#define UPB_DECODE_INT_H_
+
+#include <setjmp.h>
+
+
+/** upb/msg_internal.h ************************************************************//*
+** Our memory representation for parsing tables and messages themselves.
+** Functions in this file are used by generated code and possibly reflection.
+**
+** The definitions in this file are internal to upb.
+**/
+
+#ifndef UPB_MSG_INT_H_
+#define UPB_MSG_INT_H_
+
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+/** upb/table_internal.h ************************************************************/
+/*
+ * upb_table
+ *
+ * This header is INTERNAL-ONLY!  Its interfaces are not public or stable!
+ * This file defines very fast int->upb_value (inttable) and string->upb_value
+ * (strtable) hash tables.
+ *
+ * The table uses chained scatter with Brent's variation (inspired by the Lua
+ * implementation of hash tables).  The hash function for strings is Austin
+ * Appleby's "MurmurHash."
+ *
+ * The inttable uses uintptr_t as its key, which guarantees it can be used to
+ * store pointers or integers of at least 32 bits (upb isn't really useful on
+ * systems where sizeof(void*) < 4).
+ *
+ * The table must be homogeneous (all values of the same type).  In debug
+ * mode, we check this on insert and lookup.
+ */
+
+#ifndef UPB_TABLE_H_
+#define UPB_TABLE_H_
+
+#include <stdint.h>
+#include <string.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -586,45 +733,16 @@ extern "C" {
 
 /* upb_value ******************************************************************/
 
-/* A tagged union (stored untagged inside the table) so that we can check that
- * clients calling table accessors are correctly typed without having to have
- * an explosion of accessors. */
-typedef enum {
-  UPB_CTYPE_INT32    = 1,
-  UPB_CTYPE_INT64    = 2,
-  UPB_CTYPE_UINT32   = 3,
-  UPB_CTYPE_UINT64   = 4,
-  UPB_CTYPE_BOOL     = 5,
-  UPB_CTYPE_CSTR     = 6,
-  UPB_CTYPE_PTR      = 7,
-  UPB_CTYPE_CONSTPTR = 8,
-  UPB_CTYPE_FPTR     = 9,
-  UPB_CTYPE_FLOAT    = 10,
-  UPB_CTYPE_DOUBLE   = 11
-} upb_ctype_t;
-
 typedef struct {
   uint64_t val;
 } upb_value;
 
-/* Like strdup(), which isn't always available since it's not ANSI C. */
-char *upb_strdup(const char *s, upb_alloc *a);
 /* Variant that works with a length-delimited rather than NULL-delimited string,
  * as supported by strtable. */
-char *upb_strdup2(const char *s, size_t len, upb_alloc *a);
-
-UPB_INLINE char *upb_gstrdup(const char *s) {
-  return upb_strdup(s, &upb_alloc_global);
-}
+char *upb_strdup2(const char *s, size_t len, upb_arena *a);
 
 UPB_INLINE void _upb_value_setval(upb_value *v, uint64_t val) {
   v->val = val;
-}
-
-UPB_INLINE upb_value _upb_value_val(uint64_t val) {
-  upb_value ret;
-  _upb_value_setval(&ret, val);
-  return ret;
 }
 
 /* For each value ctype, define the following set of functions:
@@ -734,14 +852,7 @@ typedef struct {
   uint32_t mask;         /* Mask to turn hash value -> bucket. */
   uint32_t max_count;    /* Max count before we hit our load limit. */
   uint8_t size_lg2;      /* Size of the hashtable part is 2^size_lg2 entries. */
-
-  /* Hash table entries.
-   * Making this const isn't entirely accurate; what we really want is for it to
-   * have the same const-ness as the table it's inside.  But there's no way to
-   * declare that in C.  So we have to make it const so that we can statically
-   * initialize const hash tables.  Then we cast away const when we have to.
-   */
-  const upb_tabent *entries;
+  upb_tabent *entries;
 } upb_table;
 
 typedef struct {
@@ -755,8 +866,6 @@ typedef struct {
   size_t array_count;       /* Array part number of elements. */
 } upb_inttable;
 
-#define UPB_ARRAY_EMPTYENT -1
-
 UPB_INLINE size_t upb_table_size(const upb_table *t) {
   if (t->size_lg2 == 0)
     return 0;
@@ -769,48 +878,10 @@ UPB_INLINE bool upb_tabent_isempty(const upb_tabent *e) {
   return e->key == 0;
 }
 
-/* Used by some of the unit tests for generic hashing functionality. */
-uint32_t upb_murmur_hash2(const void * key, size_t len, uint32_t seed);
-
-UPB_INLINE uintptr_t upb_intkey(uintptr_t key) {
-  return key;
-}
-
-UPB_INLINE uint32_t upb_inthash(uintptr_t key) {
-  return (uint32_t)key;
-}
-
-static const upb_tabent *upb_getentry(const upb_table *t, uint32_t hash) {
-  return t->entries + (hash & t->mask);
-}
-
-UPB_INLINE bool upb_arrhas(upb_tabval key) {
-  return key.val != (uint64_t)-1;
-}
-
 /* Initialize and uninitialize a table, respectively.  If memory allocation
  * failed, false is returned that the table is uninitialized. */
-bool upb_inttable_init2(upb_inttable *table, upb_ctype_t ctype, upb_alloc *a);
-bool upb_strtable_init2(upb_strtable *table, upb_ctype_t ctype,
-                        size_t expected_size, upb_alloc *a);
-void upb_inttable_uninit2(upb_inttable *table, upb_alloc *a);
-void upb_strtable_uninit2(upb_strtable *table, upb_alloc *a);
-
-UPB_INLINE bool upb_inttable_init(upb_inttable *table, upb_ctype_t ctype) {
-  return upb_inttable_init2(table, ctype, &upb_alloc_global);
-}
-
-UPB_INLINE bool upb_strtable_init(upb_strtable *table, upb_ctype_t ctype) {
-  return upb_strtable_init2(table, ctype, 4, &upb_alloc_global);
-}
-
-UPB_INLINE void upb_inttable_uninit(upb_inttable *table) {
-  upb_inttable_uninit2(table, &upb_alloc_global);
-}
-
-UPB_INLINE void upb_strtable_uninit(upb_strtable *table) {
-  upb_strtable_uninit2(table, &upb_alloc_global);
-}
+bool upb_inttable_init(upb_inttable *table, upb_arena *a);
+bool upb_strtable_init(upb_strtable *table, size_t expected_size, upb_arena *a);
 
 /* Returns the number of values in the table. */
 size_t upb_inttable_count(const upb_inttable *t);
@@ -818,12 +889,6 @@ UPB_INLINE size_t upb_strtable_count(const upb_strtable *t) {
   return t->t.count;
 }
 
-void upb_inttable_packedsize(const upb_inttable *t, size_t *size);
-void upb_strtable_packedsize(const upb_strtable *t, size_t *size);
-upb_inttable *upb_inttable_pack(const upb_inttable *t, void *p, size_t *ofs,
-                                size_t size);
-upb_strtable *upb_strtable_pack(const upb_strtable *t, void *p, size_t *ofs,
-                                size_t size);
 void upb_strtable_clear(upb_strtable *t);
 
 /* Inserts the given key into the hashtable with the given value.  The key must
@@ -833,26 +898,10 @@ void upb_strtable_clear(upb_strtable *t);
  *
  * If a table resize was required but memory allocation failed, false is
  * returned and the table is unchanged. */
-bool upb_inttable_insert2(upb_inttable *t, uintptr_t key, upb_value val,
-                          upb_alloc *a);
-bool upb_strtable_insert3(upb_strtable *t, const char *key, size_t len,
-                          upb_value val, upb_alloc *a);
-
-UPB_INLINE bool upb_inttable_insert(upb_inttable *t, uintptr_t key,
-                                    upb_value val) {
-  return upb_inttable_insert2(t, key, val, &upb_alloc_global);
-}
-
-UPB_INLINE bool upb_strtable_insert2(upb_strtable *t, const char *key,
-                                     size_t len, upb_value val) {
-  return upb_strtable_insert3(t, key, len, val, &upb_alloc_global);
-}
-
-/* For NULL-terminated strings. */
-UPB_INLINE bool upb_strtable_insert(upb_strtable *t, const char *key,
-                                    upb_value val) {
-  return upb_strtable_insert2(t, key, strlen(key), val);
-}
+bool upb_inttable_insert(upb_inttable *t, uintptr_t key, upb_value val,
+                         upb_arena *a);
+bool upb_strtable_insert(upb_strtable *t, const char *key, size_t len,
+                         upb_value val, upb_arena *a);
 
 /* Looks up key in this table, returning "true" if the key was found.
  * If v is non-NULL, copies the value for this key into *v. */
@@ -869,74 +918,21 @@ UPB_INLINE bool upb_strtable_lookup(const upb_strtable *t, const char *key,
 /* Removes an item from the table.  Returns true if the remove was successful,
  * and stores the removed item in *val if non-NULL. */
 bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val);
-bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
-                          upb_value *val, upb_alloc *alloc);
-
-UPB_INLINE bool upb_strtable_remove2(upb_strtable *t, const char *key,
-                                     size_t len, upb_value *val) {
-  return upb_strtable_remove3(t, key, len, val, &upb_alloc_global);
-}
-
-/* For NULL-terminated strings. */
-UPB_INLINE bool upb_strtable_remove(upb_strtable *t, const char *key,
-                                    upb_value *v) {
-  return upb_strtable_remove2(t, key, strlen(key), v);
-}
+bool upb_strtable_remove(upb_strtable *t, const char *key, size_t len,
+                          upb_value *val);
 
 /* Updates an existing entry in an inttable.  If the entry does not exist,
  * returns false and does nothing.  Unlike insert/remove, this does not
  * invalidate iterators. */
 bool upb_inttable_replace(upb_inttable *t, uintptr_t key, upb_value val);
 
-/* Convenience routines for inttables with pointer keys. */
-bool upb_inttable_insertptr2(upb_inttable *t, const void *key, upb_value val,
-                             upb_alloc *a);
-bool upb_inttable_removeptr(upb_inttable *t, const void *key, upb_value *val);
-bool upb_inttable_lookupptr(
-    const upb_inttable *t, const void *key, upb_value *val);
-
-UPB_INLINE bool upb_inttable_insertptr(upb_inttable *t, const void *key,
-                                       upb_value val) {
-  return upb_inttable_insertptr2(t, key, val, &upb_alloc_global);
-}
-
 /* Optimizes the table for the current set of entries, for both memory use and
  * lookup time.  Client should call this after all entries have been inserted;
  * inserting more entries is legal, but will likely require a table resize. */
-void upb_inttable_compact2(upb_inttable *t, upb_alloc *a);
-
-UPB_INLINE void upb_inttable_compact(upb_inttable *t) {
-  upb_inttable_compact2(t, &upb_alloc_global);
-}
-
-/* A special-case inlinable version of the lookup routine for 32-bit
- * integers. */
-UPB_INLINE bool upb_inttable_lookup32(const upb_inttable *t, uint32_t key,
-                                      upb_value *v) {
-  *v = upb_value_int32(0);  /* Silence compiler warnings. */
-  if (key < t->array_size) {
-    upb_tabval arrval = t->array[key];
-    if (upb_arrhas(arrval)) {
-      _upb_value_setval(v, arrval.val);
-      return true;
-    } else {
-      return false;
-    }
-  } else {
-    const upb_tabent *e;
-    if (t->t.entries == NULL) return false;
-    for (e = upb_getentry(&t->t, upb_inthash(key)); true; e = e->next) {
-      if ((uint32_t)e->key == key) {
-        _upb_value_setval(v, e->val.val);
-        return true;
-      }
-      if (e->next == NULL) return false;
-    }
-  }
-}
+void upb_inttable_compact(upb_inttable *t, upb_arena *a);
 
 /* Exposed for testing only. */
-bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_alloc *a);
+bool upb_strtable_resize(upb_strtable *t, size_t size_lg2, upb_arena *a);
 
 /* Iterators ******************************************************************/
 
@@ -1032,10 +1028,6 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter *i1,
 extern "C" {
 #endif
 
-#define PTR_AT(msg, ofs, type) (type*)((const char*)msg + ofs)
-
-typedef void upb_msg;
-
 /** upb_msglayout *************************************************************/
 
 /* upb_msglayout represents the memory layout of a given upb_msgdef.  The
@@ -1070,7 +1062,7 @@ typedef struct {
   _upb_field_parser *field_parser;
 } _upb_fasttable_entry;
 
-typedef struct upb_msglayout {
+struct upb_msglayout {
   const struct upb_msglayout *const* submsgs;
   const upb_msglayout_field *fields;
   /* Must be aligned to sizeof(void*).  Doesn't include internal members like
@@ -1082,7 +1074,7 @@ typedef struct upb_msglayout {
   /* To constant-initialize the tables of variable length, we need a flexible
    * array member, and we need to compile in C99 mode. */
   _upb_fasttable_entry fasttable[];
-} upb_msglayout;
+};
 
 /** upb_msg *******************************************************************/
 
@@ -1137,21 +1129,18 @@ void _upb_msg_discardunknown_shallow(upb_msg *msg);
 bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
                          upb_arena *arena);
 
-/* Returns a reference to the message's unknown data. */
-const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
-
 /** Hasbit access *************************************************************/
 
 UPB_INLINE bool _upb_hasbit(const upb_msg *msg, size_t idx) {
-  return (*PTR_AT(msg, idx / 8, const char) & (1 << (idx % 8))) != 0;
+  return (*UPB_PTR_AT(msg, idx / 8, const char) & (1 << (idx % 8))) != 0;
 }
 
 UPB_INLINE void _upb_sethas(const upb_msg *msg, size_t idx) {
-  (*PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
+  (*UPB_PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
 }
 
 UPB_INLINE void _upb_clearhas(const upb_msg *msg, size_t idx) {
-  (*PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
+  (*UPB_PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
 }
 
 UPB_INLINE size_t _upb_msg_hasidx(const upb_msglayout_field *f) {
@@ -1177,11 +1166,11 @@ UPB_INLINE void _upb_clearhas_field(const upb_msg *msg,
 /** Oneof case access *********************************************************/
 
 UPB_INLINE uint32_t *_upb_oneofcase(upb_msg *msg, size_t case_ofs) {
-  return PTR_AT(msg, case_ofs, uint32_t);
+  return UPB_PTR_AT(msg, case_ofs, uint32_t);
 }
 
 UPB_INLINE uint32_t _upb_getoneofcase(const void *msg, size_t case_ofs) {
-  return *PTR_AT(msg, case_ofs, uint32_t);
+  return *UPB_PTR_AT(msg, case_ofs, uint32_t);
 }
 
 UPB_INLINE size_t _upb_oneofcase_ofs(const upb_msglayout_field *f) {
@@ -1200,7 +1189,7 @@ UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_msg *msg,
 }
 
 UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_msg *msg, size_t ofs) {
-  return *PTR_AT(msg, ofs, const upb_msg*) != NULL;
+  return *UPB_PTR_AT(msg, ofs, const upb_msg*) != NULL;
 }
 
 UPB_INLINE bool _upb_isrepeated(const upb_msglayout_field *field) {
@@ -1277,7 +1266,7 @@ UPB_INLINE bool _upb_array_resize(upb_array *arr, size_t size,
 
 UPB_INLINE const void *_upb_array_accessor(const void *msg, size_t ofs,
                                            size_t *size) {
-  const upb_array *arr = *PTR_AT(msg, ofs, const upb_array*);
+  const upb_array *arr = *UPB_PTR_AT(msg, ofs, const upb_array*);
   if (arr) {
     if (size) *size = arr->len;
     return _upb_array_constptr(arr);
@@ -1289,7 +1278,7 @@ UPB_INLINE const void *_upb_array_accessor(const void *msg, size_t ofs,
 
 UPB_INLINE void *_upb_array_mutable_accessor(void *msg, size_t ofs,
                                              size_t *size) {
-  upb_array *arr = *PTR_AT(msg, ofs, upb_array*);
+  upb_array *arr = *UPB_PTR_AT(msg, ofs, upb_array*);
   if (arr) {
     if (size) *size = arr->len;
     return _upb_array_ptr(arr);
@@ -1302,7 +1291,7 @@ UPB_INLINE void *_upb_array_mutable_accessor(void *msg, size_t ofs,
 UPB_INLINE void *_upb_array_resize_accessor2(void *msg, size_t ofs, size_t size,
                                              int elem_size_lg2,
                                              upb_arena *arena) {
-  upb_array **arr_ptr = PTR_AT(msg, ofs, upb_array *);
+  upb_array **arr_ptr = UPB_PTR_AT(msg, ofs, upb_array *);
   upb_array *arr = *arr_ptr;
   if (!arr || arr->size < size) {
     return _upb_array_resize_fallback(arr_ptr, size, elem_size_lg2, arena);
@@ -1315,7 +1304,7 @@ UPB_INLINE bool _upb_array_append_accessor2(void *msg, size_t ofs,
                                             int elem_size_lg2,
                                             const void *value,
                                             upb_arena *arena) {
-  upb_array **arr_ptr = PTR_AT(msg, ofs, upb_array *);
+  upb_array **arr_ptr = UPB_PTR_AT(msg, ofs, upb_array *);
   size_t elem_size = 1 << elem_size_lg2;
   upb_array *arr = *arr_ptr;
   void *ptr;
@@ -1323,7 +1312,7 @@ UPB_INLINE bool _upb_array_append_accessor2(void *msg, size_t ofs,
     return _upb_array_append_fallback(arr_ptr, value, elem_size_lg2, arena);
   }
   ptr = _upb_array_ptr(arr);
-  memcpy(PTR_AT(ptr, arr->len * elem_size, char), value, elem_size);
+  memcpy(UPB_PTR_AT(ptr, arr->len * elem_size, char), value, elem_size);
   arr->len++;
   return true;
 }
@@ -1470,20 +1459,19 @@ UPB_INLINE void* _upb_map_next(const upb_map *map, size_t *iter) {
 }
 
 UPB_INLINE bool _upb_map_set(upb_map *map, const void *key, size_t key_size,
-                             void *val, size_t val_size, upb_arena *arena) {
+                             void *val, size_t val_size, upb_arena *a) {
   upb_strview strkey = _upb_map_tokey(key, key_size);
   upb_value tabval = {0};
-  if (!_upb_map_tovalue(val, val_size, &tabval, arena)) return false;
-  upb_alloc *a = upb_arena_alloc(arena);
+  if (!_upb_map_tovalue(val, val_size, &tabval, a)) return false;
 
   /* TODO(haberman): add overwrite operation to minimize number of lookups. */
-  upb_strtable_remove3(&map->table, strkey.data, strkey.size, NULL, a);
-  return upb_strtable_insert3(&map->table, strkey.data, strkey.size, tabval, a);
+  upb_strtable_remove(&map->table, strkey.data, strkey.size, NULL);
+  return upb_strtable_insert(&map->table, strkey.data, strkey.size, tabval, a);
 }
 
 UPB_INLINE bool _upb_map_delete(upb_map *map, const void *key, size_t key_size) {
   upb_strview k = _upb_map_tokey(key, key_size);
-  return upb_strtable_remove3(&map->table, k.data, k.size, NULL, NULL);
+  return upb_strtable_remove(&map->table, k.data, k.size, NULL);
 }
 
 UPB_INLINE void _upb_map_clear(upb_map *map) {
@@ -1515,7 +1503,7 @@ UPB_INLINE void *_upb_msg_map_next(const upb_msg *msg, size_t ofs,
 UPB_INLINE bool _upb_msg_map_set(upb_msg *msg, size_t ofs, const void *key,
                                  size_t key_size, void *val, size_t val_size,
                                  upb_arena *arena) {
-  upb_map **map = PTR_AT(msg, ofs, upb_map *);
+  upb_map **map = UPB_PTR_AT(msg, ofs, upb_map *);
   if (!*map) {
     *map = _upb_map_new(arena, key_size, val_size);
   }
@@ -1548,8 +1536,7 @@ UPB_INLINE void _upb_msg_map_key(const void* msg, void* key, size_t size) {
 
 UPB_INLINE void _upb_msg_map_value(const void* msg, void* val, size_t size) {
   const upb_tabent *ent = (const upb_tabent*)msg;
-  upb_value v;
-  _upb_value_setval(&v, ent->val.val);
+  upb_value v = {ent->val.val};
   _upb_map_fromvalue(v, val, size);
 }
 
@@ -1612,55 +1599,14 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter *s, const upb_map *map,
   return true;
 }
 
-#undef PTR_AT
-
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
 
 
-#endif /* UPB_MSG_H_ */
+#endif /* UPB_MSG_INT_H_ */
 
-/* Must be last. */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-enum {
-  /* If set, strings will alias the input buffer instead of copying into the
-   * arena. */
-  UPB_DECODE_ALIAS = 1,
-};
-
-#define UPB_DECODE_MAXDEPTH(depth) ((depth) << 16)
-
-bool _upb_decode(const char *buf, size_t size, upb_msg *msg,
-                 const upb_msglayout *l, upb_arena *arena, int options);
-
-UPB_INLINE
-bool upb_decode(const char *buf, size_t size, upb_msg *msg,
-                const upb_msglayout *l, upb_arena *arena) {
-  return _upb_decode(buf, size, msg, l, arena, 0);
-}
-
-#ifdef __cplusplus
-}  /* extern "C" */
-#endif
-
-
-#endif  /* UPB_DECODE_H_ */
-/*
-** Internal implementation details of the decoder that are shared between
-** decode.c and decode_fast.c.
-*/
-
-#ifndef UPB_DECODE_INT_H_
-#define UPB_DECODE_INT_H_
-
-#include <setjmp.h>
-
-
+/** upb/upb_internal.h ************************************************************/
 #ifndef UPB_INT_H_
 #define UPB_INT_H_
 
@@ -1670,7 +1616,10 @@ typedef struct mem_block mem_block;
 
 struct upb_arena {
   _upb_arena_head head;
-  uint32_t *cleanups;
+  /* Stores cleanup metadata for this arena.
+   * - a pointer to the current cleanup counter.
+   * - a boolean indicating if there is an unowned initial block.  */
+  uintptr_t cleanup_metadata;
 
   /* Allocator to allocate arena blocks.  We are responsible for freeing these
    * when we are destroyed. */
@@ -1792,10 +1741,11 @@ bool decode_isdone(upb_decstate *d, const char **ptr) {
   }
 }
 
+#if UPB_FASTTABLE
 UPB_INLINE
 const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
                                     upb_msg *msg, intptr_t table,
-                                    uint64_t hasbits, uint32_t tag) {
+                                    uint64_t hasbits, uint64_t tag) {
   const upb_msglayout *table_p = decode_totablep(table);
   uint8_t mask = table;
   uint64_t data;
@@ -1803,8 +1753,10 @@ const char *fastdecode_tagdispatch(upb_decstate *d, const char *ptr,
   UPB_ASSUME((idx & 7) == 0);
   idx >>= 3;
   data = table_p->fasttable[idx].field_data ^ tag;
-  return table_p->fasttable[idx].field_parser(d, ptr, msg, table, hasbits, data);
+  UPB_MUSTTAIL return table_p->fasttable[idx].field_parser(d, ptr, msg, table,
+                                                           hasbits, data);
 }
+#endif
 
 UPB_INLINE uint32_t fastdecode_loadtag(const char* ptr) {
   uint16_t tag;
@@ -1837,9 +1789,11 @@ UPB_INLINE void decode_poplimit(upb_decstate *d, const char *ptr,
 
 
 #endif  /* UPB_DECODE_INT_H_ */
+
+/** upb/encode.h ************************************************************/
 /*
-** upb_encode: parsing into a upb_msg using a upb_msglayout.
-*/
+ * upb_encode: parsing into a upb_msg using a upb_msglayout.
+ */
 
 #ifndef UPB_ENCODE_H_
 #define UPB_ENCODE_H_
@@ -1880,6 +1834,8 @@ UPB_INLINE char *upb_encode(const void *msg, const upb_msglayout *l,
 #endif
 
 #endif  /* UPB_ENCODE_H_ */
+
+/** upb/decode_fast.h ************************************************************/
 // These are the specialized field parser functions for the fast parser.
 // Generated tables will refer to these by name.
 //
@@ -2005,7 +1961,8 @@ TAGBYTES(r)
 #undef UPB_PARSE_PARAMS
 
 #endif  /* UPB_DECODE_FAST_H_ */
-/* This file was generated by upbc (the upb compiler) from the input
+
+/** google/protobuf/descriptor.upb.h ************************************************************//* This file was generated by upbc (the upb compiler) from the input
  * file:
  *
  *     google/protobuf/descriptor.proto
@@ -3884,18 +3841,20 @@ UPB_INLINE void google_protobuf_GeneratedCodeInfo_Annotation_set_end(google_prot
 
 
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_ */
+
+/** upb/def.h ************************************************************/
 /*
-** Defs are upb's internal representation of the constructs that can appear
-** in a .proto file:
-**
-** - upb_msgdef: describes a "message" construct.
-** - upb_fielddef: describes a message field.
-** - upb_filedef: describes a .proto file and its defs.
-** - upb_enumdef: describes an enum.
-** - upb_oneofdef: describes a oneof.
-**
-** TODO: definitions of services.
-*/
+ * Defs are upb's internal representation of the constructs that can appear
+ * in a .proto file:
+ *
+ * - upb_msgdef: describes a "message" construct.
+ * - upb_fielddef: describes a message field.
+ * - upb_filedef: describes a .proto file and its defs.
+ * - upb_enumdef: describes an enum.
+ * - upb_oneofdef: describes a oneof.
+ *
+ * TODO: definitions of services.
+ */
 
 #ifndef UPB_DEF_H_
 #define UPB_DEF_H_
@@ -3991,9 +3950,6 @@ const upb_msgdef *upb_fielddef_msgsubdef(const upb_fielddef *f);
 const upb_enumdef *upb_fielddef_enumsubdef(const upb_fielddef *f);
 const upb_msglayout_field *upb_fielddef_layout(const upb_fielddef *f);
 
-/* Internal only. */
-uint32_t upb_fielddef_selectorbase(const upb_fielddef *f);
-
 /* upb_oneofdef ***************************************************************/
 
 typedef upb_inttable_iter upb_oneof_iter;
@@ -4077,10 +4033,6 @@ UPB_INLINE const upb_fielddef *upb_msgdef_ntofz(const upb_msgdef *m,
                                                 const char *name) {
   return upb_msgdef_ntof(m, name, strlen(name));
 }
-
-/* Internal-only. */
-size_t upb_msgdef_selectorcount(const upb_msgdef *m);
-uint32_t upb_msgdef_submsgfieldcount(const upb_msgdef *m);
 
 /* Lookup of either field or oneof by name.  Returns whether either was found.
  * If the return is true, then the found def will be set, and the non-found
@@ -4196,7 +4148,8 @@ bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init);
 #endif  /* __cplusplus */
 
 #endif /* UPB_DEF_H_ */
-/* This file was generated by upbc (the upb compiler) from the input
+
+/** google/protobuf/descriptor.upbdefs.h ************************************************************//* This file was generated by upbc (the upb compiler) from the input
  * file:
  *
  *     google/protobuf/descriptor.proto
@@ -4357,6 +4310,7 @@ UPB_INLINE const upb_msgdef *google_protobuf_GeneratedCodeInfo_Annotation_getmsg
 
 #endif  /* GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPBDEFS_H_ */
 
+/** upb/reflection.h ************************************************************/
 #ifndef UPB_REFLECTION_H_
 #define UPB_REFLECTION_H_
 
@@ -4438,16 +4392,8 @@ bool upb_msg_next(const upb_msg *msg, const upb_msgdef *m,
                   const upb_symtab *ext_pool, const upb_fielddef **f,
                   upb_msgval *val, size_t *iter);
 
-/* Adds unknown data (serialized protobuf data) to the given message.  The data
- * is copied into the message instance. */
-void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
-                        upb_arena *arena);
-
 /* Clears all unknown field data from this message and all submessages. */
 bool upb_msg_discardunknown(upb_msg *msg, const upb_msgdef *m, int maxdepth);
-
-/* Returns a reference to the message's unknown data. */
-const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
 
 /** upb_array *****************************************************************/
 
@@ -4530,6 +4476,7 @@ void upb_mapiter_setvalue(upb_map *map, size_t iter, upb_msgval value);
 
 #endif /* UPB_REFLECTION_H_ */
 
+/** upb/json_decode.h ************************************************************/
 #ifndef UPB_JSONDECODE_H_
 #define UPB_JSONDECODE_H_
 
@@ -4552,6 +4499,7 @@ bool upb_json_decode(const char *buf, size_t size, upb_msg *msg,
 
 #endif  /* UPB_JSONDECODE_H_ */
 
+/** upb/json_encode.h ************************************************************/
 #ifndef UPB_JSONENCODE_H_
 #define UPB_JSONENCODE_H_
 
@@ -4586,27 +4534,39 @@ size_t upb_json_encode(const upb_msg *msg, const upb_msgdef *m,
 #endif
 
 #endif  /* UPB_JSONENCODE_H_ */
+
+/** upb/port_undef.inc ************************************************************/
 /* See port_def.inc.  This should #undef all macros #defined there. */
 
-#undef UPB_MAPTYPE_STRING
 #undef UPB_SIZE
 #undef UPB_PTR_AT
 #undef UPB_READ_ONEOF
 #undef UPB_WRITE_ONEOF
+#undef UPB_MAPTYPE_STRING
 #undef UPB_INLINE
 #undef UPB_ALIGN_UP
 #undef UPB_ALIGN_DOWN
 #undef UPB_ALIGN_MALLOC
 #undef UPB_ALIGN_OF
+#undef UPB_LIKELY
+#undef UPB_UNLIKELY
 #undef UPB_FORCEINLINE
 #undef UPB_NOINLINE
 #undef UPB_NORETURN
+#undef UPB_PRINTF
 #undef UPB_MAX
 #undef UPB_MIN
 #undef UPB_UNUSED
 #undef UPB_ASSUME
 #undef UPB_ASSERT
 #undef UPB_UNREACHABLE
+#undef UPB_SETJMP
+#undef UPB_LONGJMP
+#undef UPB_PTRADD
+#undef UPB_MUSTTAIL
+#undef UPB_FASTTABLE_SUPPORTED
+#undef UPB_FASTTABLE
+#undef UPB_FASTTABLE_INIT
 #undef UPB_POISON_MEMORY_REGION
 #undef UPB_UNPOISON_MEMORY_REGION
 #undef UPB_ASAN

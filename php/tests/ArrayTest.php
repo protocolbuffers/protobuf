@@ -603,6 +603,17 @@ class ArrayTest extends TestBase
     }
 
     #########################################################
+    # Test incorrect types
+    #########################################################
+
+    public function testAppendNull()
+    {
+        $this->expectException(TypeError::class);
+        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
+        $arr[] = null;
+    }
+
+    #########################################################
     # Test equality
     #########################################################
 

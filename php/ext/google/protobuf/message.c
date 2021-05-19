@@ -149,6 +149,9 @@ static bool Message_set(Message *intern, const upb_fielddef *f, zval *val) {
   } else if (upb_fielddef_isseq(f)) {
     msgval.array_val = RepeatedField_GetUpbArray(val, TypeInfo_Get(f), arena);
     if (!msgval.array_val) return false;
+  } else if (upb_fielddef_issubmsg(f) && Z_TYPE_P(val) == IS_NULL) {
+    upb_msg_clearfield(intern->msg, f);
+    return true;
   } else {
     if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(f), arena)) return false;
   }
@@ -198,8 +201,6 @@ static bool MessageEq(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m)
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
     const upb_fielddef *f = upb_msg_iter_field(&i);
-    upb_msgval val1 = upb_msg_get(m1, f);
-    upb_msgval val2 = upb_msg_get(m2, f);
 
     if (upb_fielddef_haspresence(f)) {
       if (upb_msg_has(m1, f) != upb_msg_has(m2, f)) {
@@ -207,6 +208,9 @@ static bool MessageEq(const upb_msg *m1, const upb_msg *m2, const upb_msgdef *m)
       }
       if (!upb_msg_has(m1, f)) continue;
     }
+
+    upb_msgval val1 = upb_msg_get(m1, f);
+    upb_msgval val2 = upb_msg_get(m2, f);
 
     if (upb_fielddef_ismap(f)) {
       if (!MapEq(val1.map_val, val2.map_val, MapType_Get(f))) return false;
@@ -454,11 +458,6 @@ bool Message_GetUpbMessage(zval *val, const Descriptor *desc, upb_arena *arena,
     ZVAL_DEREF(val);
   }
 
-  if (Z_TYPE_P(val) == IS_NULL) {
-    *msg = NULL;
-    return true;
-  }
-
   if (Z_TYPE_P(val) == IS_OBJECT &&
       instanceof_function(Z_OBJCE_P(val), desc->class_entry)) {
     Message *intern = (Message*)Z_OBJ_P(val);
@@ -466,7 +465,8 @@ bool Message_GetUpbMessage(zval *val, const Descriptor *desc, upb_arena *arena,
     *msg = intern->msg;
     return true;
   } else {
-    zend_throw_exception_ex(NULL, 0, "Given value is not an instance of %s.",
+    zend_throw_exception_ex(zend_ce_type_error, 0,
+                            "Given value is not an instance of %s.",
                             ZSTR_VAL(desc->class_entry->name));
     return false;
   }
@@ -1051,7 +1051,10 @@ PHP_METHOD(Message, writeOneof) {
 
   f = upb_msgdef_itof(intern->desc->msgdef, field_num);
 
-  if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(f), arena)) {
+  if (upb_fielddef_issubmsg(f) && Z_TYPE_P(val) == IS_NULL) {
+    upb_msg_clearfield(intern->msg, f);
+    return;
+  } else if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(f), arena)) {
     return;
   }
 
