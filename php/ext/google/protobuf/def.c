@@ -52,6 +52,9 @@ static zend_object *CreateHandler_ReturnNull(zend_class_entry *class_type) {
   return NULL;  // Nobody should call this.
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_getByIndex, 0, 0, 1)
+  ZEND_ARG_INFO(0, index)
+ZEND_END_ARG_INFO()
 
 // -----------------------------------------------------------------------------
 // EnumValueDescriptor
@@ -115,12 +118,19 @@ static zend_function_entry EnumValueDescriptor_methods[] = {
 typedef struct {
   zend_object std;
   const upb_enumdef *enumdef;
+  void *cache_key;
 } EnumDescriptor;
 
 zend_class_entry *EnumDescriptor_class_entry;
 static zend_object_handlers EnumDescriptor_object_handlers;
 
-void EnumDescriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
+static void EnumDescriptor_destructor(zend_object* obj) {
+  EnumDescriptor *intern = (EnumDescriptor*)obj;
+  ObjCache_Delete(intern->cache_key);
+}
+
+// Caller owns a ref on the returned zval.
+static void EnumDescriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
   // To differentiate enums from classes, we pointer-tag the class entry.
   void* key = (void*)((uintptr_t)ce | 1);
   PBPHP_ASSERT(key != ce);
@@ -140,16 +150,14 @@ void EnumDescriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
     zend_object_std_init(&ret->std, EnumDescriptor_class_entry);
     ret->std.handlers = &EnumDescriptor_object_handlers;
     ret->enumdef = e;
+    ret->cache_key = key;
     ObjCache_Add(key, &ret->std);
-
-    // Prevent this from ever being collected (within a request).
-    GC_ADDREF(&ret->std);
-
     ZVAL_OBJ(val, &ret->std);
   }
 }
 
-void EnumDescriptor_FromEnumDef(zval *val, const upb_enumdef *m) {
+// Caller owns a ref on the returned zval.
+static void EnumDescriptor_FromEnumDef(zval *val, const upb_enumdef *m) {
   if (!m) {
     ZVAL_NULL(val);
   } else {
@@ -199,7 +207,7 @@ PHP_METHOD(EnumDescriptor, getValue) {
 
   EnumValueDescriptor_Make(&ret, upb_enum_iter_name(&iter),
                            upb_enum_iter_number(&iter));
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -220,13 +228,13 @@ PHP_METHOD(EnumDescriptor, getValueCount) {
  * the public and private descriptor.
  */
 PHP_METHOD(EnumDescriptor, getPublicDescriptor) {
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 static zend_function_entry EnumDescriptor_methods[] = {
   PHP_ME(EnumDescriptor, getPublicDescriptor, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(EnumDescriptor, getValueCount, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(EnumDescriptor, getValue, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(EnumDescriptor, getValue, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -242,6 +250,11 @@ typedef struct {
 zend_class_entry *OneofDescriptor_class_entry;
 static zend_object_handlers OneofDescriptor_object_handlers;
 
+static void OneofDescriptor_destructor(zend_object* obj) {
+  OneofDescriptor *intern = (OneofDescriptor*)obj;
+  ObjCache_Delete(intern->oneofdef);
+}
+
 static void OneofDescriptor_FromOneofDef(zval *val, const upb_oneofdef *o) {
   if (o == NULL) {
     ZVAL_NULL(val);
@@ -254,10 +267,6 @@ static void OneofDescriptor_FromOneofDef(zval *val, const upb_oneofdef *o) {
     ret->std.handlers = &OneofDescriptor_object_handlers;
     ret->oneofdef = o;
     ObjCache_Add(o, &ret->std);
-
-    // Prevent this from ever being collected (within a request).
-    GC_ADDREF(&ret->std);
-
     ZVAL_OBJ(val, &ret->std);
   }
 }
@@ -302,7 +311,7 @@ PHP_METHOD(OneofDescriptor, getField) {
   const upb_fielddef *field = upb_oneof_iter_field(&iter);
 
   FieldDescriptor_FromFieldDef(&ret, field);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -317,7 +326,7 @@ PHP_METHOD(OneofDescriptor, getFieldCount) {
 
 static zend_function_entry OneofDescriptor_methods[] = {
   PHP_ME(OneofDescriptor, getName,  arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(OneofDescriptor, getField, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(OneofDescriptor, getField, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   PHP_ME(OneofDescriptor, getFieldCount, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
@@ -334,6 +343,12 @@ typedef struct {
 zend_class_entry *FieldDescriptor_class_entry;
 static zend_object_handlers FieldDescriptor_object_handlers;
 
+static void FieldDescriptor_destructor(zend_object* obj) {
+  FieldDescriptor *intern = (FieldDescriptor*)obj;
+  ObjCache_Delete(intern->fielddef);
+}
+
+// Caller owns a ref on the returned zval.
 static void FieldDescriptor_FromFieldDef(zval *val, const upb_fielddef *f) {
   if (f == NULL) {
     ZVAL_NULL(val);
@@ -346,10 +361,6 @@ static void FieldDescriptor_FromFieldDef(zval *val, const upb_fielddef *f) {
     ret->std.handlers = &FieldDescriptor_object_handlers;
     ret->fielddef = f;
     ObjCache_Add(f, &ret->std);
-
-    // Prevent this from ever being collected (within a request).
-    GC_ADDREF(&ret->std);
-
     ZVAL_OBJ(val, &ret->std);
   }
 }
@@ -455,7 +466,7 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
   }
 
   EnumDescriptor_FromEnumDef(&ret, e);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -466,7 +477,6 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
 PHP_METHOD(FieldDescriptor, getMessageType) {
   FieldDescriptor *intern = (FieldDescriptor*)Z_OBJ_P(getThis());
   Descriptor* desc = Descriptor_GetFromFieldDef(intern->fielddef);
-  zval ret;
 
   if (!desc) {
     zend_throw_exception_ex(
@@ -475,8 +485,7 @@ PHP_METHOD(FieldDescriptor, getMessageType) {
     return;
   }
 
-  ZVAL_OBJ(&ret, &desc->std);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_OBJ_COPY(&desc->std);
 }
 
 static zend_function_entry FieldDescriptor_methods[] = {
@@ -502,78 +511,80 @@ static void Descriptor_destructor(zend_object* obj) {
   // collected before the end of the request.
 }
 
-// C Functions from def.h //////////////////////////////////////////////////////
+static zend_class_entry *Descriptor_GetGeneratedClass(const upb_msgdef *m) {
+  char *classname =
+      GetPhpClassname(upb_msgdef_file(m), upb_msgdef_fullname(m));
+  zend_string *str = zend_string_init(classname, strlen(classname), 0);
+  zend_class_entry *ce = zend_lookup_class(str);  // May autoload the class.
 
-// These are documented in the header file.
+  zend_string_release (str);
 
-void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
-  if (ce == NULL) {
+  if (!ce) {
+    zend_error(E_ERROR, "Couldn't load generated class %s", classname);
+  }
+
+  free(classname);
+  return ce;
+}
+
+void Descriptor_FromMessageDef(zval *val, const upb_msgdef *m) {
+  if (m == NULL) {
     ZVAL_NULL(val);
     return;
   }
 
-  if (!ObjCache_Get(ce, val)) {
-    const upb_msgdef *msgdef = NameMap_GetMessage(ce);
-    if (!msgdef) {
-      ZVAL_NULL(val);
-      return;
+  if (!ObjCache_Get(m, val)) {
+    zend_class_entry *ce = NULL;
+    if (!upb_msgdef_mapentry(m)) {  // Map entries don't have a class.
+      ce = Descriptor_GetGeneratedClass(m);
+      if (!ce) {
+        ZVAL_NULL(val);
+        return;
+      }
     }
     Descriptor* ret = emalloc(sizeof(Descriptor));
     zend_object_std_init(&ret->std, Descriptor_class_entry);
     ret->std.handlers = &Descriptor_object_handlers;
     ret->class_entry = ce;
-    ret->msgdef = msgdef;
-    ObjCache_Add(ce, &ret->std);
-
-    // Prevent this from ever being collected (within a request).
-    GC_ADDREF(&ret->std);
-
+    ret->msgdef = m;
+    ObjCache_Add(m, &ret->std);
+    Descriptors_Add(&ret->std);
     ZVAL_OBJ(val, &ret->std);
   }
 }
 
-Descriptor* Descriptor_GetFromClassEntry(zend_class_entry *ce) {
-  zval desc;
-  Descriptor_FromClassEntry(&desc, ce);
-  if (Z_TYPE_P(&desc) == IS_NULL) {
-    return NULL;
+static void Descriptor_FromClassEntry(zval *val, zend_class_entry *ce) {
+  if (ce) {
+    Descriptor_FromMessageDef(val, NameMap_GetMessage(ce));
   } else {
-    return (Descriptor*)Z_OBJ_P(&desc);
+    ZVAL_NULL(val);
   }
 }
 
-Descriptor* Descriptor_GetFromMessageDef(const upb_msgdef *m) {
-  if (m) {
-    if (upb_msgdef_mapentry(m)) {
-      // A bit of a hack, since map entries don't have classes.
-      Descriptor* ret = emalloc(sizeof(Descriptor));
-      zend_object_std_init(&ret->std, Descriptor_class_entry);
-      ret->std.handlers = &Descriptor_object_handlers;
-      ret->class_entry = NULL;
-      ret->msgdef = m;
-
-      // Prevent this from ever being collected (within a request).
-      GC_ADDREF(&ret->std);
-
-      return ret;
-    }
-
-    char *classname =
-        GetPhpClassname(upb_msgdef_file(m), upb_msgdef_fullname(m));
-    zend_string *str = zend_string_init(classname, strlen(classname), 0);
-    zend_class_entry *ce = zend_lookup_class(str);  // May autoload the class.
-
-    zend_string_release (str);
-
-    if (!ce) {
-      zend_error(E_ERROR, "Couldn't load generated class %s", classname);
-    }
-
-    free(classname);
-    return Descriptor_GetFromClassEntry(ce);
-  } else {
+static Descriptor* Descriptor_GetFromZval(zval *val) {
+  if (Z_TYPE_P(val) == IS_NULL) {
     return NULL;
+  } else {
+    zend_object* ret = Z_OBJ_P(val);
+    zval_ptr_dtor(val);
+    return (Descriptor*)ret;
   }
+}
+
+// C Functions from def.h //////////////////////////////////////////////////////
+
+// These are documented in the header file.
+
+Descriptor* Descriptor_GetFromClassEntry(zend_class_entry *ce) {
+  zval desc;
+  Descriptor_FromClassEntry(&desc, ce);
+  return Descriptor_GetFromZval(&desc);
+}
+
+Descriptor* Descriptor_GetFromMessageDef(const upb_msgdef *m) {
+  zval desc;
+  Descriptor_FromMessageDef(&desc, m);
+  return Descriptor_GetFromZval(&desc);
 }
 
 Descriptor* Descriptor_GetFromFieldDef(const upb_fielddef *f) {
@@ -588,7 +599,7 @@ Descriptor* Descriptor_GetFromFieldDef(const upb_fielddef *f) {
  * the public and private descriptor.
  */
 PHP_METHOD(Descriptor, getPublicDescriptor) {
-  RETURN_ZVAL(getThis(), 1, 0);
+  RETURN_COPY(getThis());
 }
 
 /*
@@ -623,15 +634,8 @@ PHP_METHOD(Descriptor, getField) {
     return;
   }
 
-  upb_msg_field_iter iter;
-  int i;
-  for(upb_msg_field_begin(&iter, intern->msgdef), i = 0;
-      !upb_msg_field_done(&iter) && i < index;
-      upb_msg_field_next(&iter), i++);
-  const upb_fielddef *field = upb_msg_iter_field(&iter);
-
-  FieldDescriptor_FromFieldDef(&ret, field);
-  RETURN_ZVAL(&ret, 1, 0);
+  FieldDescriptor_FromFieldDef(&ret, upb_msgdef_field(intern->msgdef, index));
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -674,7 +678,7 @@ PHP_METHOD(Descriptor, getOneofDecl) {
   const upb_oneofdef *oneof = upb_msg_iter_oneof(&iter);
 
   OneofDescriptor_FromOneofDef(&ret, oneof);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -702,9 +706,9 @@ PHP_METHOD(Descriptor, getClass) {
 static zend_function_entry Descriptor_methods[] = {
   PHP_ME(Descriptor, getClass, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getFullName, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getField, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getField, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getFieldCount, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(Descriptor, getOneofDecl, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(Descriptor, getOneofDecl, arginfo_getByIndex, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getOneofDeclCount, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getPublicDescriptor, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
@@ -781,7 +785,7 @@ upb_symtab *DescriptorPool_GetSymbolTable() {
 PHP_METHOD(DescriptorPool, getGeneratedPool) {
   zval ret;
   ZVAL_COPY(&ret, get_generated_pool());
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -810,7 +814,7 @@ PHP_METHOD(DescriptorPool, getDescriptorByClassName) {
   }
 
   Descriptor_FromClassEntry(&ret, ce);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -839,7 +843,7 @@ PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName) {
   }
 
   EnumDescriptor_FromClassEntry(&ret, ce);
-  RETURN_ZVAL(&ret, 1, 0);
+  RETURN_COPY_VALUE(&ret);
 }
 
 /*
@@ -863,9 +867,7 @@ PHP_METHOD(DescriptorPool, getDescriptorByProtoName) {
   m = upb_symtab_lookupmsg(intern->symtab, protoname);
 
   if (m) {
-    zval ret;
-    ZVAL_OBJ(&ret, &Descriptor_GetFromMessageDef(m)->std);
-    RETURN_ZVAL(&ret, 1, 0);
+    RETURN_OBJ_COPY(&Descriptor_GetFromMessageDef(m)->std);
   } else {
     RETURN_NULL();
   }
@@ -1003,6 +1005,10 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
   upb_arena_free(arena);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_lookupByName, 0, 0, 1)
+  ZEND_ARG_INFO(0, name)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_addgeneratedfile, 0, 0, 2)
   ZEND_ARG_INFO(0, data)
   ZEND_ARG_INFO(0, data_len)
@@ -1011,9 +1017,9 @@ ZEND_END_ARG_INFO()
 static zend_function_entry DescriptorPool_methods[] = {
   PHP_ME(DescriptorPool, getGeneratedPool, arginfo_void,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
-  PHP_ME(DescriptorPool, getDescriptorByClassName, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(DescriptorPool, getDescriptorByProtoName, arginfo_void, ZEND_ACC_PUBLIC)
-  PHP_ME(DescriptorPool, getEnumDescriptorByClassName, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, getDescriptorByClassName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, getDescriptorByProtoName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
+  PHP_ME(DescriptorPool, getEnumDescriptorByClassName, arginfo_lookupByName, ZEND_ACC_PUBLIC)
   PHP_ME(DescriptorPool, internalAddGeneratedFile, arginfo_addgeneratedfile, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
@@ -1036,9 +1042,7 @@ zend_class_entry *InternalDescriptorPool_class_entry;
  * instance.
  */
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool) {
-  zval ret;
-  ZVAL_COPY(&ret, get_generated_pool());
-  RETURN_ZVAL(&ret, 0, 1);
+  RETURN_COPY(get_generated_pool());
 }
 
 static zend_function_entry InternalDescriptorPool_methods[] = {
@@ -1072,6 +1076,7 @@ void Def_ModuleInit() {
   OneofDescriptor_class_entry->create_object = CreateHandler_ReturnNull;
   h = &OneofDescriptor_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = &OneofDescriptor_destructor;
 
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\EnumValueDescriptor",
                    EnumValueDescriptor_methods);
@@ -1081,7 +1086,6 @@ void Def_ModuleInit() {
   h = &EnumValueDescriptor_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
 
-
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\EnumDescriptor",
                    EnumDescriptor_methods);
   EnumDescriptor_class_entry = zend_register_internal_class(&tmp_ce);
@@ -1089,6 +1093,7 @@ void Def_ModuleInit() {
   EnumDescriptor_class_entry->create_object = CreateHandler_ReturnNull;
   h = &EnumDescriptor_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = &EnumDescriptor_destructor;
 
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\Descriptor",
                    Descriptor_methods);
@@ -1107,6 +1112,7 @@ void Def_ModuleInit() {
   FieldDescriptor_class_entry->create_object = CreateHandler_ReturnNull;
   h = &FieldDescriptor_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
+  h->dtor_obj = &FieldDescriptor_destructor;
 
   INIT_CLASS_ENTRY(tmp_ce, "Google\\Protobuf\\DescriptorPool",
                    DescriptorPool_methods);

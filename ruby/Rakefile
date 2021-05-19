@@ -18,6 +18,18 @@ well_known_protos = %w[
   google/protobuf/wrappers.proto
 ]
 
+test_protos = %w[
+  tests/basic_test.proto
+  tests/basic_test_proto2.proto
+  tests/generated_code.proto
+  tests/generated_code_proto2.proto
+  tests/multi_level_nesting_test.proto
+  tests/test_import.proto
+  tests/test_import_proto2.proto
+  tests/test_ruby_package.proto
+  tests/test_ruby_package_proto2.proto
+]
+
 # These are omitted for now because we don't support proto2.
 proto2_protos = %w[
   google/protobuf/descriptor.proto
@@ -41,6 +53,14 @@ unless ENV['IN_DOCKER'] == 'true'
     genproto_output << output_file
     file output_file => input_file do |file_task|
       sh "#{protoc_command} -I../src --ruby_out=lib #{input_file}"
+    end
+  end
+
+  test_protos.each do |proto_file|
+    output_file = proto_file.sub(/\.proto$/, "_pb.rb")
+    genproto_output << output_file
+    file output_file => proto_file do |file_task|
+      sh "#{protoc_command} -I../src -I. --ruby_out=. #{proto_file}"
     end
   end
 end
@@ -100,59 +120,6 @@ else
   end
 end
 
-
-# Proto for tests.
-genproto_output << "tests/generated_code.rb"
-genproto_output << "tests/generated_code_proto2.rb"
-genproto_output << "tests/test_import.rb"
-genproto_output << "tests/test_import_proto2.rb"
-genproto_output << "tests/test_ruby_package.rb"
-genproto_output << "tests/test_ruby_package_proto2.rb"
-genproto_output << "tests/basic_test.rb"
-genproto_output << "tests/basic_test_proto2.rb"
-genproto_output << "tests/multi_level_nesting_test.rb"
-genproto_output << "tests/wrappers.rb"
-
-file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
-  sh "#{protoc_command} --ruby_out=. tests/generated_code.proto"
-end
-
-file "tests/generated_code_proto2.rb" => "tests/generated_code_proto2.proto" do |file_task|
-  sh "#{protoc_command} --ruby_out=. tests/generated_code_proto2.proto"
-end
-
-file "tests/test_import.rb" => "tests/test_import.proto" do |file_task|
-  sh "#{protoc_command} --ruby_out=. tests/test_import.proto"
-end
-
-file "tests/test_import_proto2.rb" => "tests/test_import_proto2.proto" do |file_task|
-  sh "#{protoc_command} --ruby_out=. tests/test_import_proto2.proto"
-end
-
-file "tests/test_ruby_package.rb" => "tests/test_ruby_package.proto" do |file_task|
-  sh "#{protoc_command} --ruby_out=. tests/test_ruby_package.proto"
-end
-
-file "tests/test_ruby_package_proto2.rb" => "tests/test_ruby_package_proto2.proto" do |file_task|
-  sh "#{protoc_command} --ruby_out=. tests/test_ruby_package_proto2.proto"
-end
-
-file "tests/basic_test.rb" => "tests/basic_test.proto" do |file_task|
-  sh "#{protoc_command} --experimental_allow_proto3_optional -I../src -I. --ruby_out=. tests/basic_test.proto"
-end
-
-file "tests/basic_test_proto2.rb" => "tests/basic_test_proto2.proto" do |file_task|
-  sh "#{protoc_command} -I../src -I. --ruby_out=. tests/basic_test_proto2.proto"
-end
-
-file "tests/multi_level_nesting_test.rb" => "tests/multi_level_nesting_test.proto" do |file_task|
-  sh "#{protoc_command} -I../src -I. --ruby_out=. tests/multi_level_nesting_test.proto"
-end
-
-file "tests/wrappers.rb" => "../src/google/protobuf/wrappers.proto" do |file_task|
-  sh "#{protoc_command} -I../src -I. --ruby_out=tests ../src/google/protobuf/wrappers.proto"
-end
-
 task :genproto => genproto_output
 
 task :clean do
@@ -162,7 +129,7 @@ end
 Gem::PackageTask.new(spec) do |pkg|
 end
 
-Rake::TestTask.new(:test => :build) do |t|
+Rake::TestTask.new(:test => [:build, :genproto]) do |t|
   t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
 end
 
@@ -172,7 +139,7 @@ Rake::TestTask.new(:gc_test => :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => [:clean, :compile, :genproto]
+task :build => [:clean, :genproto, :compile]
 task :default => [:build]
 
 # vim:sw=2:et

@@ -24,6 +24,7 @@
   },
   "scripts": {
     "test_c": "./generate_test_protos.sh && ./tests/compile_extension.sh && php -dextension=ext/google/protobuf/modules/protobuf.so vendor/bin/phpunit --bootstrap tests/force_c_ext.php tests",
+    "test_valgrind": "./generate_test_protos.sh && ./tests/compile_extension.sh && ZEND_DONT_UNLOAD_MODULES=1 USE_ZEND_ALLOC=0 valgrind --leak-check=full --error-exitcode=1 php -dextension=ext/google/protobuf/modules/protobuf.so vendor/bin/phpunit --bootstrap tests/force_c_ext.php tests",
     "test": "./generate_test_protos.sh && vendor/bin/phpunit tests",
     "aggregate_metadata_test": "./generate_test_protos.sh --aggregate_metadata && vendor/bin/phpunit tests"
   }
