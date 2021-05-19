@@ -991,9 +991,7 @@ std::string FieldParseFunctionName(const FieldDescriptor* field,
       type_format = TypeFormat::kString;
       break;
 
-    case FieldDescriptor::TYPE_GROUP:
-    case FieldDescriptor::TYPE_MESSAGE:
-    case FieldDescriptor::TYPE_ENUM:
+    default:
       GOOGLE_LOG(DFATAL) << "Type not handled: " << field->DebugString();
       return "";
   }
