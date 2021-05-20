@@ -14,26 +14,22 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
+
+PROTOBUF_PRAGMA_INIT_SEG
 PROTOBUF_NAMESPACE_OPEN
-class FieldMaskDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<FieldMask> _instance;
-} _FieldMask_default_instance_;
+constexpr FieldMask::FieldMask(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : paths_(){}
+struct FieldMaskDefaultTypeInternal {
+  constexpr FieldMaskDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~FieldMaskDefaultTypeInternal() {}
+  union {
+    FieldMask _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT FieldMaskDefaultTypeInternal _FieldMask_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
-static void InitDefaultsscc_info_FieldMask_google_2fprotobuf_2ffield_5fmask_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &PROTOBUF_NAMESPACE_ID::_FieldMask_default_instance_;
-    new (ptr) PROTOBUF_NAMESPACE_ID::FieldMask();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  PROTOBUF_NAMESPACE_ID::FieldMask::InitAsDefaultInstance();
-}
-
-PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_FieldMask_google_2fprotobuf_2ffield_5fmask_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_FieldMask_google_2fprotobuf_2ffield_5fmask_2eproto}, {}};
-
 static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_google_2fprotobuf_2ffield_5fmask_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto = nullptr;
@@ -57,45 +53,34 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 const char descriptor_table_protodef_google_2fprotobuf_2ffield_5fmask_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n google/protobuf/field_mask.proto\022\017goog"
   "le.protobuf\"\032\n\tFieldMask\022\r\n\005paths\030\001 \003(\tB"
-  "\214\001\n\023com.google.protobufB\016FieldMaskProtoP"
-  "\001Z9google.golang.org/genproto/protobuf/f"
-  "ield_mask;field_mask\370\001\001\242\002\003GPB\252\002\036Google.P"
-  "rotobuf.WellKnownTypesb\006proto3"
+  "\205\001\n\023com.google.protobufB\016FieldMaskProtoP"
+  "\001Z2google.golang.org/protobuf/types/know"
+  "n/fieldmaskpb\370\001\001\242\002\003GPB\252\002\036Google.Protobuf"
+  ".WellKnownTypesb\006proto3"
   ;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_deps[1] = {
-};
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_sccs[1] = {
-  &scc_info_FieldMask_google_2fprotobuf_2ffield_5fmask_2eproto.base,
-};
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_once;
-static bool descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto = {
-  &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_initialized, descriptor_table_protodef_google_2fprotobuf_2ffield_5fmask_2eproto, "google/protobuf/field_mask.proto", 230,
-  &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_once, descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_sccs, descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_deps, 1, 0,
+  false, false, 223, descriptor_table_protodef_google_2fprotobuf_2ffield_5fmask_2eproto, "google/protobuf/field_mask.proto", 
+  &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_once, nullptr, 0, 1,
   schemas, file_default_instances, TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto::offsets,
-  file_level_metadata_google_2fprotobuf_2ffield_5fmask_2eproto, 1, file_level_enum_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto, file_level_service_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto,
+  file_level_metadata_google_2fprotobuf_2ffield_5fmask_2eproto, file_level_enum_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto, file_level_service_descriptors_google_2fprotobuf_2ffield_5fmask_2eproto,
 };
+PROTOBUF_ATTRIBUTE_WEAK const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable* descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_getter() {
+  return &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto;
+}
 
 // Force running AddDescriptors() at dynamic initialization time.
-static bool dynamic_init_dummy_google_2fprotobuf_2ffield_5fmask_2eproto = (static_cast<void>(::PROTOBUF_NAMESPACE_ID::internal::AddDescriptors(&descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto)), true);
+PROTOBUF_ATTRIBUTE_INIT_PRIORITY static ::PROTOBUF_NAMESPACE_ID::internal::AddDescriptorsRunner dynamic_init_dummy_google_2fprotobuf_2ffield_5fmask_2eproto(&descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto);
 PROTOBUF_NAMESPACE_OPEN
 
 // ===================================================================
 
-void FieldMask::InitAsDefaultInstance() {
-}
 class FieldMask::_Internal {
  public:
 };
 
-FieldMask::FieldMask()
-  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
-  SharedCtor();
-  // @@protoc_insertion_point(constructor:google.protobuf.FieldMask)
-}
 FieldMask::FieldMask(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-  _internal_metadata_(arena),
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena),
   paths_(arena) {
   SharedCtor();
   RegisterArenaDtor(arena);
@@ -103,23 +88,22 @@ FieldMask::FieldMask(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 }
 FieldMask::FieldMask(const FieldMask& from)
   : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _internal_metadata_(nullptr),
       paths_(from.paths_) {
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
 
 void FieldMask::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_FieldMask_google_2fprotobuf_2ffield_5fmask_2eproto.base);
 }
 
 FieldMask::~FieldMask() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldMask)
   SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 void FieldMask::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == nullptr);
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void FieldMask::ArenaDtor(void* object) {
@@ -131,11 +115,6 @@ void FieldMask::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
 void FieldMask::SetCachedSize(int size) const {
   _cached_size_.Set(size);
 }
-const FieldMask& FieldMask::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_FieldMask_google_2fprotobuf_2ffield_5fmask_2eproto.base);
-  return *internal_default_instance();
-}
-
 
 void FieldMask::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
@@ -144,16 +123,14 @@ void FieldMask::Clear() {
   (void) cached_has_bits;
 
   paths_.Clear();
-  _internal_metadata_.Clear();
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
 const char* FieldMask::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  ::PROTOBUF_NAMESPACE_ID::Arena* arena = GetArenaNoVirtual(); (void)arena;
   while (!ctx->Done(&ptr)) {
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
     switch (tag >> 3) {
       // repeated string paths = 1;
       case 1:
@@ -171,11 +148,14 @@ const char* FieldMask::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::
         continue;
       default: {
       handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
           ctx->SetLastTag(tag);
           goto success;
         }
-        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
         CHK_(ptr != nullptr);
         continue;
       }
@@ -207,7 +187,7 @@ failure:
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target, stream);
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
   }
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.FieldMask)
   return target;
@@ -256,7 +236,7 @@ void FieldMask::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
 void FieldMask::MergeFrom(const FieldMask& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -283,14 +263,15 @@ bool FieldMask::IsInitialized() const {
 
 void FieldMask::InternalSwap(FieldMask* other) {
   using std::swap;
-  _internal_metadata_.Swap(&other->_internal_metadata_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   paths_.InternalSwap(&other->paths_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldMask::GetMetadata() const {
-  return GetMetadataStatic();
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_getter, &descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_once,
+      file_level_metadata_google_2fprotobuf_2ffield_5fmask_2eproto[0]);
 }
-
 
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_CLOSE

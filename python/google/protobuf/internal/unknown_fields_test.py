@@ -39,6 +39,7 @@ try:
   import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+import sys
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -52,6 +53,12 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import wire_format
 from google.protobuf import descriptor
+
+try:
+  import tracemalloc  # pylint: disable=g-import-not-at-top
+except ImportError:
+  # Requires python 3.4+
+  pass
 
 
 @testing_refleaks.TestCase
@@ -311,6 +318,26 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
       len(unknown_fields)
     self.assertIn('UnknownFields does not exist.',
                   str(context.exception))
+
+  @unittest.skipIf((sys.version_info.major, sys.version_info.minor) < (3, 4),
+                   'tracemalloc requires python 3.4+')
+  def testUnknownFieldsNoMemoryLeak(self):
+    # Call to UnknownFields must not leak memory
+    nb_leaks = 1234
+
+    def leaking_function():
+      for _ in range(nb_leaks):
+        self.empty_message.UnknownFields()
+
+    tracemalloc.start()
+    snapshot1 = tracemalloc.take_snapshot()
+    leaking_function()
+    snapshot2 = tracemalloc.take_snapshot()
+    top_stats = snapshot2.compare_to(snapshot1, 'lineno')
+    tracemalloc.stop()
+    # There's no easy way to look for a precise leak source.
+    # Rely on a "marker" count value while checking allocated memory.
+    self.assertEqual([], [x for x in top_stats if x.count_diff == nb_leaks])
 
   def testSubUnknownFields(self):
     message = unittest_pb2.TestAllTypes()

@@ -23,7 +23,7 @@ sudo apt install -y g++-powerpc64le-linux-gnu
 protoc-artifacts/build-protoc.sh linux ppcle_64 protoc
 
 sudo apt install -y g++-s390x-linux-gnu
-protoc-artifacts/build-protoc.sh linux s390x protoc
+protoc-artifacts/build-protoc.sh linux s390_64 protoc
 
 # Use docker image to build linux artifacts.
 DOCKER_IMAGE_NAME=protobuf/protoc_$(sha1sum protoc-artifacts/Dockerfile | cut -f1 -d " ")

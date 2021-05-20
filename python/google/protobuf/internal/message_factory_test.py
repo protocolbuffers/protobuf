@@ -106,6 +106,23 @@ class MessageFactoryTest(unittest.TestCase):
         'google.protobuf.python.internal.Factory2Message'))
     self.assertTrue(cls is cls2)
 
+  def testCreatePrototypeOverride(self):
+    class MyMessageFactory(message_factory.MessageFactory):
+
+      def CreatePrototype(self, descriptor):
+        cls = super(MyMessageFactory, self).CreatePrototype(descriptor)
+        cls.additional_field = 'Some value'
+        return cls
+
+    db = descriptor_database.DescriptorDatabase()
+    pool = descriptor_pool.DescriptorPool(db)
+    db.Add(self.factory_test1_fd)
+    db.Add(self.factory_test2_fd)
+    factory = MyMessageFactory()
+    cls = factory.GetPrototype(pool.FindMessageTypeByName(
+        'google.protobuf.python.internal.Factory2Message'))
+    self.assertTrue(hasattr(cls, 'additional_field'))
+
   def testGetMessages(self):
     # performed twice because multiple calls with the same input must be allowed
     for _ in range(2):

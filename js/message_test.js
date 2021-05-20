@@ -118,6 +118,10 @@ goog.require('proto.jspb.test.ExtensionMessage');
 goog.require('proto.jspb.test.TestExtensionsMessage');
 
 goog.require('proto.jspb.test.TestAllowAliasEnum');
+// CommonJS-LoadFromFile: testlargenumbers_pb proto.jspb.test
+goog.require('proto.jspb.test.MessageWithLargeFieldNumbers');
+
+goog.require('proto.jspb.test.simple1');
 
 describe('Message test suite', function() {
   var stubs = new goog.testing.PropertyReplacer();
@@ -183,7 +187,6 @@ describe('Message test suite', function() {
           $jspbMessageInstance: foo
         },
         result);
-
   });
 
   it('testMissingFields', function() {
@@ -207,7 +210,6 @@ describe('Message test suite', function() {
           aFloatingPointField: undefined,
         },
         result);
-
   });
 
   it('testNestedComplexMessage', function() {
@@ -1075,4 +1077,35 @@ describe('Message test suite', function() {
     assertEquals(12, package2Message.getA());
   });
 
+
+  it('testMessageWithLargeFieldNumbers', function() {
+    var message = new proto.jspb.test.MessageWithLargeFieldNumbers;
+
+    message.setAString('string');
+    assertEquals('string', message.getAString());
+
+    message.setAString('');
+    assertEquals('', message.getAString());
+
+    message.setAString('new string');
+    assertEquals('new string', message.getAString());
+
+    message.setABoolean(true);
+    assertEquals(true, message.getABoolean());
+
+    message.setABoolean(false);
+    assertEquals(false, message.getABoolean());
+
+    message.setABoolean(true);
+    assertEquals(true, message.getABoolean());
+
+    message.setAInt(42);
+    assertEquals(42, message.getAInt());
+
+    message.setAInt(0);
+    assertEquals(0, message.getAInt());
+
+    message.setAInt(42);
+    assertEquals(42, message.getAInt());
+  });
 });

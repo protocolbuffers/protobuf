@@ -36,11 +36,13 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__
 
 #include <algorithm>
+#include <cstdint>
 #include <iterator>
 #include <map>
 #include <string>
 
 #include <google/protobuf/compiler/cpp/cpp_options.h>
+#include <google/protobuf/compiler/cpp/cpp_names.h>
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -57,7 +59,7 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-inline std::string ProtobufNamespace(const Options& options) {
+inline std::string ProtobufNamespace(const Options& /* options */) {
   return "PROTOBUF_NAMESPACE_ID";
 }
 
@@ -65,12 +67,12 @@ inline std::string MacroPrefix(const Options& options) {
   return options.opensource_runtime ? "GOOGLE_PROTOBUF" : "GOOGLE_PROTOBUF";
 }
 
-inline std::string DeprecatedAttribute(const Options& options,
+inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const FieldDescriptor* d) {
   return d->options().deprecated() ? "PROTOBUF_DEPRECATED " : "";
 }
 
-inline std::string DeprecatedAttribute(const Options& options,
+inline std::string DeprecatedAttribute(const Options& /* options */,
                                        const EnumValueDescriptor* d) {
   return d->options().deprecated() ? "PROTOBUF_DEPRECATED_ENUM " : "";
 }
@@ -82,6 +84,10 @@ extern const char kThinSeparator[];
 
 void SetCommonVars(const Options& options,
                    std::map<std::string, std::string>* variables);
+
+void SetUnknkownFieldsVariable(const Descriptor* descriptor,
+                               const Options& options,
+                               std::map<std::string, std::string>* variables);
 
 bool GetBootstrapBasename(const Options& options, const std::string& basename,
                           std::string* bootstrap_basename);
@@ -130,6 +136,14 @@ inline std::string ClassName(const EnumDescriptor* descriptor, bool qualified) {
                    : ClassName(descriptor);
 }
 
+// Returns the extension name prefixed with the class name if nested but without
+// the package name.
+std::string ExtensionName(const FieldDescriptor* d);
+
+std::string QualifiedExtensionName(const FieldDescriptor* d,
+                                   const Options& options);
+std::string QualifiedExtensionName(const FieldDescriptor* d);
+
 // Type name of default instance.
 std::string DefaultInstanceType(const Descriptor* descriptor,
                                 const Options& options);
@@ -172,9 +186,6 @@ std::string ResolveKeyword(const std::string& name);
 // anyway, so normally this just returns field->name().
 std::string FieldName(const FieldDescriptor* field);
 
-// Get the sanitized name that should be used for the given enum in C++ code.
-std::string EnumValueName(const EnumValueDescriptor* enum_value);
-
 // Returns an estimate of the compiler's alignment for the field.  This
 // can't guarantee to be correct because the generated code could be compiled on
 // different systems with different alignment rules.  The estimates below assume
@@ -197,9 +208,6 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
 std::string FieldMessageTypeName(const FieldDescriptor* field,
                                  const Options& options);
 
-// Strips ".proto" or ".protodevel" from the end of a filename.
-PROTOC_EXPORT std::string StripProto(const std::string& filename);
-
 // Get the C++ type name for a primitive type (e.g. "double", "::google::protobuf::int32", etc.).
 const char* PrimitiveTypeName(FieldDescriptor::CppType type);
 std::string PrimitiveTypeName(const Options& options,
@@ -211,9 +219,6 @@ const char* DeclaredTypeMethodName(FieldDescriptor::Type type);
 
 // Return the code that evaluates to the number when compiled.
 std::string Int32ToString(int number);
-
-// Return the code that evaluates to the number when compiled.
-std::string Int64ToString(const Options& options, int64 number);
 
 // Get code that evaluates to the field's default value.
 std::string DefaultValue(const Options& options, const FieldDescriptor* field);
@@ -310,8 +315,6 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
-bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
-
 // For a string field, returns the effective ctype.  If the actual ctype is
 // not supported, returns the default of STRING.
 FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
@@ -337,6 +340,16 @@ inline bool IsLazy(const FieldDescriptor* field, const Options& options) {
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          GetOptimizeFor(field->file(), options) != FileOptions::LITE_RUNTIME &&
          !options.opensource_runtime;
+}
+
+inline bool IsFieldUsed(const FieldDescriptor* /* field */, const Options& /* options */) {
+  return true;
+}
+
+// Returns true if "field" is stripped.
+inline bool IsFieldStripped(const FieldDescriptor* /*field*/,
+                            const Options& /*options*/) {
+  return false;
 }
 
 // Does the file contain any definitions that need extension_set.h?
@@ -392,14 +405,6 @@ inline bool IsProto2MessageSet(const Descriptor* descriptor,
          descriptor->full_name() == "google.protobuf.bridge.MessageSet";
 }
 
-inline bool IsProto2MessageSetFile(const FileDescriptor* file,
-                                   const Options& options) {
-  return !options.opensource_runtime &&
-         options.enforce_mode != EnforceOptimizeMode::kLiteRuntime &&
-         !options.lite_implicit_weak_fields &&
-         file->name() == "net/proto2/bridge/proto/message_set.proto";
-}
-
 inline bool IsMapEntryMessage(const Descriptor* descriptor) {
   return descriptor->options().map_entry();
 }
@@ -410,8 +415,24 @@ bool IsStringOrMessage(const FieldDescriptor* field);
 std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter);
 
-inline bool HasFieldPresence(const FileDescriptor* file) {
-  return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
+inline bool IsProto3(const FileDescriptor* file) {
+  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
+inline bool HasHasbit(const FieldDescriptor* field) {
+  // This predicate includes proto3 message fields only if they have "optional".
+  //   Foo submsg1 = 1;           // HasHasbit() == false
+  //   optional Foo submsg2 = 2;  // HasHasbit() == true
+  // This is slightly odd, as adding "optional" to a singular proto3 field does
+  // not change the semantics or API. However whenever any field in a message
+  // has a hasbit, it forces reflection to include hasbit offsets for *all*
+  // fields, even if almost all of them are set to -1 (no hasbit). So to avoid
+  // causing a sudden size regression for ~all proto3 messages, we give proto3
+  // message fields a hasbit only if "optional" is present. If the user is
+  // explicitly writing "optional", it is likely they are writing it on
+  // primitive fields also.
+  return (field->has_optional_keyword() || field->is_required()) &&
+         !field->options().weak();
 }
 
 // Returns true if 'enum' semantics are such that unknown values are preserved
@@ -420,25 +441,9 @@ inline bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
   return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
-inline bool SupportsArenas(const FileDescriptor* file) {
-  return file->options().cc_enable_arenas();
-}
-
-inline bool SupportsArenas(const Descriptor* desc) {
-  return SupportsArenas(desc->file());
-}
-
-inline bool SupportsArenas(const FieldDescriptor* field) {
-  return SupportsArenas(field->file());
-}
-
 inline bool IsCrossFileMessage(const FieldDescriptor* field) {
   return field->type() == FieldDescriptor::TYPE_MESSAGE &&
          field->message_type()->file() != field->file();
-}
-
-inline std::string MessageCreateFunction(const Descriptor* d) {
-  return SupportsArenas(d) ? "CreateMessage" : "Create";
 }
 
 inline std::string MakeDefaultName(const FieldDescriptor* field) {
@@ -475,16 +480,32 @@ inline std::string IncludeGuard(const FileDescriptor* file, bool pb_h,
   }
 }
 
+// Returns the OptimizeMode for this file, furthermore it updates a status
+// bool if has_opt_codesize_extension is non-null. If this status bool is true
+// it means this file contains an extension that itself is defined as
+// optimized_for = CODE_SIZE.
+FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
+                                        const Options& options,
+                                        bool* has_opt_codesize_extension);
 inline FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
                                                const Options& options) {
-  switch (options.enforce_mode) {
-    case EnforceOptimizeMode::kSpeed:
-      return FileOptions::SPEED;
-    case EnforceOptimizeMode::kLiteRuntime:
-      return FileOptions::LITE_RUNTIME;
-    case EnforceOptimizeMode::kNoEnforcement:
-    default:
-      return file->options().optimize_for();
+  return GetOptimizeFor(file, options, nullptr);
+}
+inline bool NeedsEagerDescriptorAssignment(const FileDescriptor* file,
+                                           const Options& options) {
+  bool has_opt_codesize_extension;
+  if (GetOptimizeFor(file, options, &has_opt_codesize_extension) ==
+          FileOptions::CODE_SIZE &&
+      has_opt_codesize_extension) {
+    // If this filedescriptor contains an extension from another file which
+    // is optimized_for = CODE_SIZE. We need to be careful in the ordering so
+    // we eagerly build the descriptors in the dependencies before building
+    // the descriptors of this file.
+    return true;
+  } else {
+    // If we have a generated code based parser we never need eager
+    // initialization of descriptors of our deps.
+    return false;
   }
 }
 
@@ -514,7 +535,6 @@ struct MessageAnalysis {
   bool contains_cord;
   bool contains_extension;
   bool contains_required;
-  bool constructor_requires_initialization;
 };
 
 // This class is used in FileGenerator, to ensure linear instead of
@@ -551,16 +571,6 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
   Options options_;
   std::map<const SCC*, MessageAnalysis> analysis_cache_;
 };
-
-inline std::string SccInfoSymbol(const SCC* scc, const Options& options) {
-  return UniqueName("scc_info_" + ClassName(scc->GetRepresentative()),
-                    scc->GetRepresentative(), options);
-}
-
-inline std::string SccInfoPtrSymbol(const SCC* scc, const Options& options) {
-  return UniqueName("scc_info_ptr_" + ClassName(scc->GetRepresentative()),
-                    scc->GetRepresentative(), options);
-}
 
 void ListAllFields(const Descriptor* d,
                    std::vector<const FieldDescriptor*>* fields);
@@ -700,8 +710,8 @@ class PROTOC_EXPORT Formatter {
     std::vector<int> path;
     descriptor->GetLocationPath(&path);
     GeneratedCodeInfo::Annotation annotation;
-    for (int i = 0; i < path.size(); ++i) {
-      annotation.add_path(path[i]);
+    for (int index: path) {
+      annotation.add_path(index);
     }
     annotation.set_source_file(descriptor->file()->name());
     return annotation.SerializeAsString();
@@ -733,21 +743,21 @@ class PROTOC_EXPORT NamespaceOpener {
   void ChangeTo(const std::string& name) {
     std::vector<std::string> new_stack_ =
         Split(name, "::", true);
-    int len = std::min(name_stack_.size(), new_stack_.size());
-    int common_idx = 0;
+    size_t len = std::min(name_stack_.size(), new_stack_.size());
+    size_t common_idx = 0;
     while (common_idx < len) {
       if (name_stack_[common_idx] != new_stack_[common_idx]) break;
       common_idx++;
     }
-    for (int i = name_stack_.size() - 1; i >= common_idx; i--) {
-      if (name_stack_[i] == "PROTOBUF_NAMESPACE_ID") {
+    for (auto it = name_stack_.crbegin(); it != name_stack_.crend() - common_idx; ++it) {
+      if (*it == "PROTOBUF_NAMESPACE_ID") {
         printer_->Print("PROTOBUF_NAMESPACE_CLOSE\n");
       } else {
-        printer_->Print("}  // namespace $ns$\n", "ns", name_stack_[i]);
+        printer_->Print("}  // namespace $ns$\n", "ns", *it);
       }
     }
     name_stack_.swap(new_stack_);
-    for (int i = common_idx; i < name_stack_.size(); i++) {
+    for (size_t i = common_idx; i < name_stack_.size(); ++i) {
       if (name_stack_[i] == "PROTOBUF_NAMESPACE_ID") {
         printer_->Print("PROTOBUF_NAMESPACE_OPEN\n");
       } else {
@@ -761,10 +771,10 @@ class PROTOC_EXPORT NamespaceOpener {
   std::vector<std::string> name_stack_;
 };
 
-enum Utf8CheckMode {
-  STRICT = 0,  // Parsing will fail if non UTF-8 data is in string fields.
-  VERIFY = 1,  // Only log an error but parsing will succeed.
-  NONE = 2,    // No UTF-8 check.
+enum class Utf8CheckMode {
+  kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
+  kVerify = 1,  // Only log an error but parsing will succeed.
+  kNone = 2,    // No UTF-8 check.
 };
 
 Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
@@ -843,16 +853,16 @@ struct OneOfRangeImpl {
   };
 
   Iterator begin() const { return {0, descriptor}; }
-  Iterator end() const { return {descriptor->oneof_decl_count(), descriptor}; }
+  Iterator end() const {
+    return {descriptor->real_oneof_decl_count(), descriptor};
+  }
 
   const Descriptor* descriptor;
 };
 
 inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 
-void GenerateParserLoop(const Descriptor* descriptor, int num_hasbits,
-                        const Options& options,
-                        MessageSCCAnalyzer* scc_analyzer, io::Printer* printer);
+PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
 }  // namespace cpp
 }  // namespace compiler

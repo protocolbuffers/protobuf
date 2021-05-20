@@ -55,11 +55,13 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
     return &rep_->elements[current_size_];
   }
   Rep* old_rep = rep_;
-  Arena* arena = GetArenaNoVirtual();
-  new_size = std::max(kMinRepeatedFieldAllocationSize,
+  Arena* arena = GetArena();
+  new_size = std::max(internal::kRepeatedFieldLowerClampLimit,
                       std::max(total_size_ * 2, new_size));
-  GOOGLE_CHECK_LE(new_size, (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
-                         sizeof(old_rep->elements[0]))
+  GOOGLE_CHECK_LE(
+      static_cast<int64>(new_size),
+      static_cast<int64>((std::numeric_limits<size_t>::max() - kRepHeaderSize) /
+                         sizeof(old_rep->elements[0])))
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
   if (arena == NULL) {
@@ -94,6 +96,15 @@ void RepeatedPtrFieldBase::Reserve(int new_size) {
   if (new_size > current_size_) {
     InternalExtend(new_size - current_size_);
   }
+}
+
+void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
+  if (!rep_ || rep_->allocated_size == total_size_) {
+    InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
+  }
+  ++rep_->allocated_size;
+  rep_->elements[current_size_++] = obj;
+  return obj;
 }
 
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
@@ -134,3 +145,5 @@ template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedPtrField<std::string>;
 
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

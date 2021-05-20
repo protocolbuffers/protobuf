@@ -64,23 +64,31 @@ namespace Benchmarks.Proto3 {
 
   }
   #region Messages
-  public sealed partial class GoogleMessage1 : pb::IMessage<GoogleMessage1> {
+  public sealed partial class GoogleMessage1 : pb::IMessage<GoogleMessage1>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<GoogleMessage1> _parser = new pb::MessageParser<GoogleMessage1>(() => new GoogleMessage1());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<GoogleMessage1> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Benchmarks.Proto3.BenchmarkMessage1Proto3Reflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public GoogleMessage1() {
       OnConstruction();
     }
@@ -88,6 +96,7 @@ namespace Benchmarks.Proto3 {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public GoogleMessage1(GoogleMessage1 other) : this() {
       field1_ = other.field1_;
       field9_ = other.field9_;
@@ -134,6 +143,7 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public GoogleMessage1 Clone() {
       return new GoogleMessage1(this);
     }
@@ -142,6 +152,7 @@ namespace Benchmarks.Proto3 {
     public const int Field1FieldNumber = 1;
     private string field1_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field1 {
       get { return field1_; }
       set {
@@ -153,6 +164,7 @@ namespace Benchmarks.Proto3 {
     public const int Field9FieldNumber = 9;
     private string field9_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field9 {
       get { return field9_; }
       set {
@@ -164,6 +176,7 @@ namespace Benchmarks.Proto3 {
     public const int Field18FieldNumber = 18;
     private string field18_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field18 {
       get { return field18_; }
       set {
@@ -175,6 +188,7 @@ namespace Benchmarks.Proto3 {
     public const int Field80FieldNumber = 80;
     private bool field80_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field80 {
       get { return field80_; }
       set {
@@ -186,6 +200,7 @@ namespace Benchmarks.Proto3 {
     public const int Field81FieldNumber = 81;
     private bool field81_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field81 {
       get { return field81_; }
       set {
@@ -197,6 +212,7 @@ namespace Benchmarks.Proto3 {
     public const int Field2FieldNumber = 2;
     private int field2_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field2 {
       get { return field2_; }
       set {
@@ -208,6 +224,7 @@ namespace Benchmarks.Proto3 {
     public const int Field3FieldNumber = 3;
     private int field3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field3 {
       get { return field3_; }
       set {
@@ -219,6 +236,7 @@ namespace Benchmarks.Proto3 {
     public const int Field280FieldNumber = 280;
     private int field280_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field280 {
       get { return field280_; }
       set {
@@ -230,6 +248,7 @@ namespace Benchmarks.Proto3 {
     public const int Field6FieldNumber = 6;
     private int field6_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field6 {
       get { return field6_; }
       set {
@@ -241,6 +260,7 @@ namespace Benchmarks.Proto3 {
     public const int Field22FieldNumber = 22;
     private long field22_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Field22 {
       get { return field22_; }
       set {
@@ -252,6 +272,7 @@ namespace Benchmarks.Proto3 {
     public const int Field4FieldNumber = 4;
     private string field4_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field4 {
       get { return field4_; }
       set {
@@ -265,6 +286,7 @@ namespace Benchmarks.Proto3 {
         = pb::FieldCodec.ForFixed64(42);
     private readonly pbc::RepeatedField<ulong> field5_ = new pbc::RepeatedField<ulong>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<ulong> Field5 {
       get { return field5_; }
     }
@@ -273,6 +295,7 @@ namespace Benchmarks.Proto3 {
     public const int Field59FieldNumber = 59;
     private bool field59_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field59 {
       get { return field59_; }
       set {
@@ -284,6 +307,7 @@ namespace Benchmarks.Proto3 {
     public const int Field7FieldNumber = 7;
     private string field7_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field7 {
       get { return field7_; }
       set {
@@ -295,6 +319,7 @@ namespace Benchmarks.Proto3 {
     public const int Field16FieldNumber = 16;
     private int field16_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field16 {
       get { return field16_; }
       set {
@@ -306,6 +331,7 @@ namespace Benchmarks.Proto3 {
     public const int Field130FieldNumber = 130;
     private int field130_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field130 {
       get { return field130_; }
       set {
@@ -317,6 +343,7 @@ namespace Benchmarks.Proto3 {
     public const int Field12FieldNumber = 12;
     private bool field12_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field12 {
       get { return field12_; }
       set {
@@ -328,6 +355,7 @@ namespace Benchmarks.Proto3 {
     public const int Field17FieldNumber = 17;
     private bool field17_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field17 {
       get { return field17_; }
       set {
@@ -339,6 +367,7 @@ namespace Benchmarks.Proto3 {
     public const int Field13FieldNumber = 13;
     private bool field13_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field13 {
       get { return field13_; }
       set {
@@ -350,6 +379,7 @@ namespace Benchmarks.Proto3 {
     public const int Field14FieldNumber = 14;
     private bool field14_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field14 {
       get { return field14_; }
       set {
@@ -361,6 +391,7 @@ namespace Benchmarks.Proto3 {
     public const int Field104FieldNumber = 104;
     private int field104_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field104 {
       get { return field104_; }
       set {
@@ -372,6 +403,7 @@ namespace Benchmarks.Proto3 {
     public const int Field100FieldNumber = 100;
     private int field100_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field100 {
       get { return field100_; }
       set {
@@ -383,6 +415,7 @@ namespace Benchmarks.Proto3 {
     public const int Field101FieldNumber = 101;
     private int field101_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field101 {
       get { return field101_; }
       set {
@@ -394,6 +427,7 @@ namespace Benchmarks.Proto3 {
     public const int Field102FieldNumber = 102;
     private string field102_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field102 {
       get { return field102_; }
       set {
@@ -405,6 +439,7 @@ namespace Benchmarks.Proto3 {
     public const int Field103FieldNumber = 103;
     private string field103_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field103 {
       get { return field103_; }
       set {
@@ -416,6 +451,7 @@ namespace Benchmarks.Proto3 {
     public const int Field29FieldNumber = 29;
     private int field29_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field29 {
       get { return field29_; }
       set {
@@ -427,6 +463,7 @@ namespace Benchmarks.Proto3 {
     public const int Field30FieldNumber = 30;
     private bool field30_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field30 {
       get { return field30_; }
       set {
@@ -438,6 +475,7 @@ namespace Benchmarks.Proto3 {
     public const int Field60FieldNumber = 60;
     private int field60_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field60 {
       get { return field60_; }
       set {
@@ -449,6 +487,7 @@ namespace Benchmarks.Proto3 {
     public const int Field271FieldNumber = 271;
     private int field271_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field271 {
       get { return field271_; }
       set {
@@ -460,6 +499,7 @@ namespace Benchmarks.Proto3 {
     public const int Field272FieldNumber = 272;
     private int field272_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field272 {
       get { return field272_; }
       set {
@@ -471,6 +511,7 @@ namespace Benchmarks.Proto3 {
     public const int Field150FieldNumber = 150;
     private int field150_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field150 {
       get { return field150_; }
       set {
@@ -482,6 +523,7 @@ namespace Benchmarks.Proto3 {
     public const int Field23FieldNumber = 23;
     private int field23_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field23 {
       get { return field23_; }
       set {
@@ -493,6 +535,7 @@ namespace Benchmarks.Proto3 {
     public const int Field24FieldNumber = 24;
     private bool field24_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field24 {
       get { return field24_; }
       set {
@@ -504,6 +547,7 @@ namespace Benchmarks.Proto3 {
     public const int Field25FieldNumber = 25;
     private int field25_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field25 {
       get { return field25_; }
       set {
@@ -515,6 +559,7 @@ namespace Benchmarks.Proto3 {
     public const int Field15FieldNumber = 15;
     private global::Benchmarks.Proto3.GoogleMessage1SubMessage field15_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Benchmarks.Proto3.GoogleMessage1SubMessage Field15 {
       get { return field15_; }
       set {
@@ -526,6 +571,7 @@ namespace Benchmarks.Proto3 {
     public const int Field78FieldNumber = 78;
     private bool field78_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field78 {
       get { return field78_; }
       set {
@@ -537,6 +583,7 @@ namespace Benchmarks.Proto3 {
     public const int Field67FieldNumber = 67;
     private int field67_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field67 {
       get { return field67_; }
       set {
@@ -548,6 +595,7 @@ namespace Benchmarks.Proto3 {
     public const int Field68FieldNumber = 68;
     private int field68_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field68 {
       get { return field68_; }
       set {
@@ -559,6 +607,7 @@ namespace Benchmarks.Proto3 {
     public const int Field128FieldNumber = 128;
     private int field128_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field128 {
       get { return field128_; }
       set {
@@ -570,6 +619,7 @@ namespace Benchmarks.Proto3 {
     public const int Field129FieldNumber = 129;
     private string field129_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field129 {
       get { return field129_; }
       set {
@@ -581,6 +631,7 @@ namespace Benchmarks.Proto3 {
     public const int Field131FieldNumber = 131;
     private int field131_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field131 {
       get { return field131_; }
       set {
@@ -589,11 +640,13 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as GoogleMessage1);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(GoogleMessage1 other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -646,6 +699,7 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       if (Field1.Length != 0) hash ^= Field1.GetHashCode();
@@ -696,12 +750,17 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Field1.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Field1);
@@ -866,9 +925,182 @@ namespace Benchmarks.Proto3 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Field1.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Field1);
+      }
+      if (Field2 != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Field2);
+      }
+      if (Field3 != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Field3);
+      }
+      if (Field4.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(Field4);
+      }
+      field5_.WriteTo(ref output, _repeated_field5_codec);
+      if (Field6 != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(Field6);
+      }
+      if (Field7.Length != 0) {
+        output.WriteRawTag(58);
+        output.WriteString(Field7);
+      }
+      if (Field9.Length != 0) {
+        output.WriteRawTag(74);
+        output.WriteString(Field9);
+      }
+      if (Field12 != false) {
+        output.WriteRawTag(96);
+        output.WriteBool(Field12);
+      }
+      if (Field13 != false) {
+        output.WriteRawTag(104);
+        output.WriteBool(Field13);
+      }
+      if (Field14 != false) {
+        output.WriteRawTag(112);
+        output.WriteBool(Field14);
+      }
+      if (field15_ != null) {
+        output.WriteRawTag(122);
+        output.WriteMessage(Field15);
+      }
+      if (Field16 != 0) {
+        output.WriteRawTag(128, 1);
+        output.WriteInt32(Field16);
+      }
+      if (Field17 != false) {
+        output.WriteRawTag(136, 1);
+        output.WriteBool(Field17);
+      }
+      if (Field18.Length != 0) {
+        output.WriteRawTag(146, 1);
+        output.WriteString(Field18);
+      }
+      if (Field22 != 0L) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt64(Field22);
+      }
+      if (Field23 != 0) {
+        output.WriteRawTag(184, 1);
+        output.WriteInt32(Field23);
+      }
+      if (Field24 != false) {
+        output.WriteRawTag(192, 1);
+        output.WriteBool(Field24);
+      }
+      if (Field25 != 0) {
+        output.WriteRawTag(200, 1);
+        output.WriteInt32(Field25);
+      }
+      if (Field29 != 0) {
+        output.WriteRawTag(232, 1);
+        output.WriteInt32(Field29);
+      }
+      if (Field30 != false) {
+        output.WriteRawTag(240, 1);
+        output.WriteBool(Field30);
+      }
+      if (Field59 != false) {
+        output.WriteRawTag(216, 3);
+        output.WriteBool(Field59);
+      }
+      if (Field60 != 0) {
+        output.WriteRawTag(224, 3);
+        output.WriteInt32(Field60);
+      }
+      if (Field67 != 0) {
+        output.WriteRawTag(152, 4);
+        output.WriteInt32(Field67);
+      }
+      if (Field68 != 0) {
+        output.WriteRawTag(160, 4);
+        output.WriteInt32(Field68);
+      }
+      if (Field78 != false) {
+        output.WriteRawTag(240, 4);
+        output.WriteBool(Field78);
+      }
+      if (Field80 != false) {
+        output.WriteRawTag(128, 5);
+        output.WriteBool(Field80);
+      }
+      if (Field81 != false) {
+        output.WriteRawTag(136, 5);
+        output.WriteBool(Field81);
+      }
+      if (Field100 != 0) {
+        output.WriteRawTag(160, 6);
+        output.WriteInt32(Field100);
+      }
+      if (Field101 != 0) {
+        output.WriteRawTag(168, 6);
+        output.WriteInt32(Field101);
+      }
+      if (Field102.Length != 0) {
+        output.WriteRawTag(178, 6);
+        output.WriteString(Field102);
+      }
+      if (Field103.Length != 0) {
+        output.WriteRawTag(186, 6);
+        output.WriteString(Field103);
+      }
+      if (Field104 != 0) {
+        output.WriteRawTag(192, 6);
+        output.WriteInt32(Field104);
+      }
+      if (Field128 != 0) {
+        output.WriteRawTag(128, 8);
+        output.WriteInt32(Field128);
+      }
+      if (Field129.Length != 0) {
+        output.WriteRawTag(138, 8);
+        output.WriteString(Field129);
+      }
+      if (Field130 != 0) {
+        output.WriteRawTag(144, 8);
+        output.WriteInt32(Field130);
+      }
+      if (Field131 != 0) {
+        output.WriteRawTag(152, 8);
+        output.WriteInt32(Field131);
+      }
+      if (Field150 != 0) {
+        output.WriteRawTag(176, 9);
+        output.WriteInt32(Field150);
+      }
+      if (Field271 != 0) {
+        output.WriteRawTag(248, 16);
+        output.WriteInt32(Field271);
+      }
+      if (Field272 != 0) {
+        output.WriteRawTag(128, 17);
+        output.WriteInt32(Field272);
+      }
+      if (Field280 != 0) {
+        output.WriteRawTag(192, 17);
+        output.WriteInt32(Field280);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       if (Field1.Length != 0) {
@@ -999,6 +1231,7 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(GoogleMessage1 other) {
       if (other == null) {
         return;
@@ -1131,7 +1364,11 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1308,27 +1545,219 @@ namespace Benchmarks.Proto3 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 10: {
+            Field1 = input.ReadString();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 34: {
+            Field4 = input.ReadString();
+            break;
+          }
+          case 42:
+          case 41: {
+            field5_.AddEntriesFrom(ref input, _repeated_field5_codec);
+            break;
+          }
+          case 48: {
+            Field6 = input.ReadInt32();
+            break;
+          }
+          case 58: {
+            Field7 = input.ReadString();
+            break;
+          }
+          case 74: {
+            Field9 = input.ReadString();
+            break;
+          }
+          case 96: {
+            Field12 = input.ReadBool();
+            break;
+          }
+          case 104: {
+            Field13 = input.ReadBool();
+            break;
+          }
+          case 112: {
+            Field14 = input.ReadBool();
+            break;
+          }
+          case 122: {
+            if (field15_ == null) {
+              Field15 = new global::Benchmarks.Proto3.GoogleMessage1SubMessage();
+            }
+            input.ReadMessage(Field15);
+            break;
+          }
+          case 128: {
+            Field16 = input.ReadInt32();
+            break;
+          }
+          case 136: {
+            Field17 = input.ReadBool();
+            break;
+          }
+          case 146: {
+            Field18 = input.ReadString();
+            break;
+          }
+          case 176: {
+            Field22 = input.ReadInt64();
+            break;
+          }
+          case 184: {
+            Field23 = input.ReadInt32();
+            break;
+          }
+          case 192: {
+            Field24 = input.ReadBool();
+            break;
+          }
+          case 200: {
+            Field25 = input.ReadInt32();
+            break;
+          }
+          case 232: {
+            Field29 = input.ReadInt32();
+            break;
+          }
+          case 240: {
+            Field30 = input.ReadBool();
+            break;
+          }
+          case 472: {
+            Field59 = input.ReadBool();
+            break;
+          }
+          case 480: {
+            Field60 = input.ReadInt32();
+            break;
+          }
+          case 536: {
+            Field67 = input.ReadInt32();
+            break;
+          }
+          case 544: {
+            Field68 = input.ReadInt32();
+            break;
+          }
+          case 624: {
+            Field78 = input.ReadBool();
+            break;
+          }
+          case 640: {
+            Field80 = input.ReadBool();
+            break;
+          }
+          case 648: {
+            Field81 = input.ReadBool();
+            break;
+          }
+          case 800: {
+            Field100 = input.ReadInt32();
+            break;
+          }
+          case 808: {
+            Field101 = input.ReadInt32();
+            break;
+          }
+          case 818: {
+            Field102 = input.ReadString();
+            break;
+          }
+          case 826: {
+            Field103 = input.ReadString();
+            break;
+          }
+          case 832: {
+            Field104 = input.ReadInt32();
+            break;
+          }
+          case 1024: {
+            Field128 = input.ReadInt32();
+            break;
+          }
+          case 1034: {
+            Field129 = input.ReadString();
+            break;
+          }
+          case 1040: {
+            Field130 = input.ReadInt32();
+            break;
+          }
+          case 1048: {
+            Field131 = input.ReadInt32();
+            break;
+          }
+          case 1200: {
+            Field150 = input.ReadInt32();
+            break;
+          }
+          case 2168: {
+            Field271 = input.ReadInt32();
+            break;
+          }
+          case 2176: {
+            Field272 = input.ReadInt32();
+            break;
+          }
+          case 2240: {
+            Field280 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 
-  public sealed partial class GoogleMessage1SubMessage : pb::IMessage<GoogleMessage1SubMessage> {
+  public sealed partial class GoogleMessage1SubMessage : pb::IMessage<GoogleMessage1SubMessage>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
     private static readonly pb::MessageParser<GoogleMessage1SubMessage> _parser = new pb::MessageParser<GoogleMessage1SubMessage>(() => new GoogleMessage1SubMessage());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pb::MessageParser<GoogleMessage1SubMessage> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Benchmarks.Proto3.BenchmarkMessage1Proto3Reflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public GoogleMessage1SubMessage() {
       OnConstruction();
     }
@@ -1336,6 +1765,7 @@ namespace Benchmarks.Proto3 {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public GoogleMessage1SubMessage(GoogleMessage1SubMessage other) : this() {
       field1_ = other.field1_;
       field2_ = other.field2_;
@@ -1361,6 +1791,7 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public GoogleMessage1SubMessage Clone() {
       return new GoogleMessage1SubMessage(this);
     }
@@ -1369,6 +1800,7 @@ namespace Benchmarks.Proto3 {
     public const int Field1FieldNumber = 1;
     private int field1_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field1 {
       get { return field1_; }
       set {
@@ -1380,6 +1812,7 @@ namespace Benchmarks.Proto3 {
     public const int Field2FieldNumber = 2;
     private int field2_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field2 {
       get { return field2_; }
       set {
@@ -1391,6 +1824,7 @@ namespace Benchmarks.Proto3 {
     public const int Field3FieldNumber = 3;
     private int field3_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field3 {
       get { return field3_; }
       set {
@@ -1402,6 +1836,7 @@ namespace Benchmarks.Proto3 {
     public const int Field15FieldNumber = 15;
     private string field15_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field15 {
       get { return field15_; }
       set {
@@ -1413,6 +1848,7 @@ namespace Benchmarks.Proto3 {
     public const int Field12FieldNumber = 12;
     private bool field12_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field12 {
       get { return field12_; }
       set {
@@ -1424,6 +1860,7 @@ namespace Benchmarks.Proto3 {
     public const int Field13FieldNumber = 13;
     private long field13_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Field13 {
       get { return field13_; }
       set {
@@ -1435,6 +1872,7 @@ namespace Benchmarks.Proto3 {
     public const int Field14FieldNumber = 14;
     private long field14_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Field14 {
       get { return field14_; }
       set {
@@ -1446,6 +1884,7 @@ namespace Benchmarks.Proto3 {
     public const int Field16FieldNumber = 16;
     private int field16_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field16 {
       get { return field16_; }
       set {
@@ -1457,6 +1896,7 @@ namespace Benchmarks.Proto3 {
     public const int Field19FieldNumber = 19;
     private int field19_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field19 {
       get { return field19_; }
       set {
@@ -1468,6 +1908,7 @@ namespace Benchmarks.Proto3 {
     public const int Field20FieldNumber = 20;
     private bool field20_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field20 {
       get { return field20_; }
       set {
@@ -1479,6 +1920,7 @@ namespace Benchmarks.Proto3 {
     public const int Field28FieldNumber = 28;
     private bool field28_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field28 {
       get { return field28_; }
       set {
@@ -1490,6 +1932,7 @@ namespace Benchmarks.Proto3 {
     public const int Field21FieldNumber = 21;
     private ulong field21_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong Field21 {
       get { return field21_; }
       set {
@@ -1501,6 +1944,7 @@ namespace Benchmarks.Proto3 {
     public const int Field22FieldNumber = 22;
     private int field22_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field22 {
       get { return field22_; }
       set {
@@ -1512,6 +1956,7 @@ namespace Benchmarks.Proto3 {
     public const int Field23FieldNumber = 23;
     private bool field23_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field23 {
       get { return field23_; }
       set {
@@ -1523,6 +1968,7 @@ namespace Benchmarks.Proto3 {
     public const int Field206FieldNumber = 206;
     private bool field206_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Field206 {
       get { return field206_; }
       set {
@@ -1534,6 +1980,7 @@ namespace Benchmarks.Proto3 {
     public const int Field203FieldNumber = 203;
     private uint field203_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public uint Field203 {
       get { return field203_; }
       set {
@@ -1545,6 +1992,7 @@ namespace Benchmarks.Proto3 {
     public const int Field204FieldNumber = 204;
     private int field204_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Field204 {
       get { return field204_; }
       set {
@@ -1556,6 +2004,7 @@ namespace Benchmarks.Proto3 {
     public const int Field205FieldNumber = 205;
     private string field205_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Field205 {
       get { return field205_; }
       set {
@@ -1567,6 +2016,7 @@ namespace Benchmarks.Proto3 {
     public const int Field207FieldNumber = 207;
     private ulong field207_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong Field207 {
       get { return field207_; }
       set {
@@ -1578,6 +2028,7 @@ namespace Benchmarks.Proto3 {
     public const int Field300FieldNumber = 300;
     private ulong field300_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong Field300 {
       get { return field300_; }
       set {
@@ -1586,11 +2037,13 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override bool Equals(object other) {
       return Equals(other as GoogleMessage1SubMessage);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Equals(GoogleMessage1SubMessage other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1622,6 +2075,7 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override int GetHashCode() {
       int hash = 1;
       if (Field1 != 0) hash ^= Field1.GetHashCode();
@@ -1651,12 +2105,17 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
       if (Field1 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Field1);
@@ -1740,9 +2199,101 @@ namespace Benchmarks.Proto3 {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
+    #endif
     }
 
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (Field1 != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Field1);
+      }
+      if (Field2 != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Field2);
+      }
+      if (Field3 != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Field3);
+      }
+      if (Field12 != false) {
+        output.WriteRawTag(96);
+        output.WriteBool(Field12);
+      }
+      if (Field13 != 0L) {
+        output.WriteRawTag(104);
+        output.WriteInt64(Field13);
+      }
+      if (Field14 != 0L) {
+        output.WriteRawTag(112);
+        output.WriteInt64(Field14);
+      }
+      if (Field15.Length != 0) {
+        output.WriteRawTag(122);
+        output.WriteString(Field15);
+      }
+      if (Field16 != 0) {
+        output.WriteRawTag(128, 1);
+        output.WriteInt32(Field16);
+      }
+      if (Field19 != 0) {
+        output.WriteRawTag(152, 1);
+        output.WriteInt32(Field19);
+      }
+      if (Field20 != false) {
+        output.WriteRawTag(160, 1);
+        output.WriteBool(Field20);
+      }
+      if (Field21 != 0UL) {
+        output.WriteRawTag(169, 1);
+        output.WriteFixed64(Field21);
+      }
+      if (Field22 != 0) {
+        output.WriteRawTag(176, 1);
+        output.WriteInt32(Field22);
+      }
+      if (Field23 != false) {
+        output.WriteRawTag(184, 1);
+        output.WriteBool(Field23);
+      }
+      if (Field28 != false) {
+        output.WriteRawTag(224, 1);
+        output.WriteBool(Field28);
+      }
+      if (Field203 != 0) {
+        output.WriteRawTag(221, 12);
+        output.WriteFixed32(Field203);
+      }
+      if (Field204 != 0) {
+        output.WriteRawTag(224, 12);
+        output.WriteInt32(Field204);
+      }
+      if (Field205.Length != 0) {
+        output.WriteRawTag(234, 12);
+        output.WriteString(Field205);
+      }
+      if (Field206 != false) {
+        output.WriteRawTag(240, 12);
+        output.WriteBool(Field206);
+      }
+      if (Field207 != 0UL) {
+        output.WriteRawTag(248, 12);
+        output.WriteUInt64(Field207);
+      }
+      if (Field300 != 0UL) {
+        output.WriteRawTag(224, 18);
+        output.WriteUInt64(Field300);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int CalculateSize() {
       int size = 0;
       if (Field1 != 0) {
@@ -1812,6 +2363,7 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(GoogleMessage1SubMessage other) {
       if (other == null) {
         return;
@@ -1880,7 +2432,11 @@ namespace Benchmarks.Proto3 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
         switch(tag) {
@@ -1969,7 +2525,103 @@ namespace Benchmarks.Proto3 {
           }
         }
       }
+    #endif
     }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Field1 = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Field2 = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Field3 = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            Field12 = input.ReadBool();
+            break;
+          }
+          case 104: {
+            Field13 = input.ReadInt64();
+            break;
+          }
+          case 112: {
+            Field14 = input.ReadInt64();
+            break;
+          }
+          case 122: {
+            Field15 = input.ReadString();
+            break;
+          }
+          case 128: {
+            Field16 = input.ReadInt32();
+            break;
+          }
+          case 152: {
+            Field19 = input.ReadInt32();
+            break;
+          }
+          case 160: {
+            Field20 = input.ReadBool();
+            break;
+          }
+          case 169: {
+            Field21 = input.ReadFixed64();
+            break;
+          }
+          case 176: {
+            Field22 = input.ReadInt32();
+            break;
+          }
+          case 184: {
+            Field23 = input.ReadBool();
+            break;
+          }
+          case 224: {
+            Field28 = input.ReadBool();
+            break;
+          }
+          case 1629: {
+            Field203 = input.ReadFixed32();
+            break;
+          }
+          case 1632: {
+            Field204 = input.ReadInt32();
+            break;
+          }
+          case 1642: {
+            Field205 = input.ReadString();
+            break;
+          }
+          case 1648: {
+            Field206 = input.ReadBool();
+            break;
+          }
+          case 1656: {
+            Field207 = input.ReadUInt64();
+            break;
+          }
+          case 2400: {
+            Field300 = input.ReadUInt64();
+            break;
+          }
+        }
+      }
+    }
+    #endif
 
   }
 

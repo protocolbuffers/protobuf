@@ -8,6 +8,8 @@ option csharp_namespace = "UnitTest.Issues.TestProtos";
 
 package unittest_issues;
 
+import "google/protobuf/struct.proto";
+
 // Issue 307: when generating doubly-nested types, any references
 // should be of the form A.Types.B.Types.C.
 message Issue307 {
@@ -137,4 +139,20 @@ message OneofMerging {
     string text = 1;
     Nested nested = 2;
   }
+}
+
+message NullValueOutsideStruct {
+  oneof value {
+    string string_value = 1;
+    google.protobuf.NullValue null_value = 2;
+  }
+}
+
+message NullValueNotInOneof {
+  google.protobuf.NullValue null_value = 2;
+}
+
+message MixedRegularAndOptional {
+  string regular_field = 1;
+  optional string optional_field = 2;
 }

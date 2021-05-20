@@ -5,7 +5,7 @@ conformance_protoc_inputs =                                    \
   $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto
 
 # proto2 input files, should be separated with proto3, as we
-# can't generate proto2 files for ruby, php and objc
+# can't generate proto2 files for php.
 conformance_proto2_protoc_inputs =                             \
   $(top_srcdir)/src/google/protobuf/test_messages_proto2.proto
 
@@ -261,7 +261,7 @@ if USE_EXTERNAL_PROTOC
 # Some implementations include pre-generated versions of well-known types.
 protoc_middleman: $(conformance_protoc_inputs) $(conformance_proto2_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:. $(conformance_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --objc_out=. --python_out=. --js_out=import_style=commonjs,binary:. $(conformance_proto2_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. --js_out=import_style=commonjs,binary:. $(conformance_proto2_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. --js_out=import_style=commonjs,binary:google-protobuf $(well_known_type_protoc_inputs)
 	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
@@ -273,7 +273,7 @@ else
 # building out-of-tree.
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(conformance_proto2_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_protoc_inputs) )
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --objc_out=. --python_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_proto2_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_proto2_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd/google-protobuf $(well_known_type_protoc_inputs) )
 	## @mkdir -p lite
 	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
@@ -333,7 +333,7 @@ conformance-php-c:
 
 # Targets for actually running tests.
 test_cpp: protoc_middleman conformance-test-runner conformance-cpp
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt ./conformance-cpp
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt --text_format_failure_list text_format_failure_list_cpp.txt ./conformance-cpp
 
 test_java: protoc_middleman conformance-test-runner conformance-java
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_java.txt --text_format_failure_list text_format_failure_list_java.txt ./conformance-java
@@ -347,22 +347,36 @@ test_csharp: protoc_middleman conformance-test-runner conformance-csharp
 test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby.txt --text_format_failure_list text_format_failure_list_ruby.txt ./conformance_ruby.rb
 
+test_jruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
+	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_jruby.txt --text_format_failure_list text_format_failure_list_jruby.txt ./conformance_ruby.rb
+
 test_php: protoc_middleman conformance-test-runner conformance-php $(other_language_protoc_outputs)
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_php.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php
 
 test_php_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
 
-test_php_c_32: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c_32.txt --text_format_failure_list text_format_failure_list_php.txt ./conformance-php-c
-
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
 test_python: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python.txt ./conformance_python.py
+	VERSION="$(shell python --version 2>&1)"; \
+	if [[ "$$VERSION"  == "Python 2.7"* ]]; then \
+	  echo "Using Python 2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python_2.7.txt ./conformance_python.py; \
+	else \
+	  echo "Using Python >2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt --text_format_failure_list text_format_failure_list_python.txt ./conformance_python.py; \
+	fi
 
 test_python_cpp: protoc_middleman conformance-test-runner
-	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt ./conformance_python.py
+	VERSION="$(shell python --version 2>&1)"; \
+	if [[ "$$VERSION"  == "Python 2.7"* ]]; then \
+	  echo "Using Python 2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp_2.7.txt ./conformance_python.py; \
+	else \
+	  echo "Using Python >2.7 failure list."; \
+	  ./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt --text_format_failure_list text_format_failure_list_python_cpp.txt ./conformance_python.py; \
+	fi
 
 test_nodejs: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	NODE_PATH=../js:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_js.txt ./conformance_nodejs.js

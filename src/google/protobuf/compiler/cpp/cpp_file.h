@@ -162,14 +162,6 @@ class FileGenerator {
   // generally a breaking change so we prefer the #undef approach.
   void GenerateMacroUndefs(io::Printer* printer);
 
-  bool IsSCCRepresentative(const Descriptor* d) {
-    return GetSCCRepresentative(d) == d;
-  }
-  const Descriptor* GetSCCRepresentative(const Descriptor* d) {
-    return GetSCC(d)->GetRepresentative();
-  }
-  const SCC* GetSCC(const Descriptor* d) { return scc_analyzer_.GetSCC(d); }
-
   bool IsDepWeak(const FileDescriptor* dep) const {
     if (weak_deps_.count(dep) != 0) {
       GOOGLE_CHECK(!options_.opensource_runtime);
@@ -179,7 +171,6 @@ class FileGenerator {
   }
 
   std::set<const FileDescriptor*> weak_deps_;
-  std::vector<const SCC*> sccs_;
 
   const FileDescriptor* file_;
   const Options options_;

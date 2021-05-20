@@ -33,6 +33,7 @@
 
 #include <google/protobuf/pyext/repeated_scalar_container.h>
 
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/stubs/common.h>
@@ -46,13 +47,13 @@
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
 #if PY_MAJOR_VERSION >= 3
-  #define PyInt_FromLong PyLong_FromLong
-  #if PY_VERSION_HEX < 0x03030000
-    #error "Python 3.0 - 3.2 are not supported."
-  #else
-  #define PyString_AsString(ob) \
-    (PyUnicode_Check(ob)? PyUnicode_AsUTF8(ob): PyBytes_AsString(ob))
-  #endif
+#define PyInt_FromLong PyLong_FromLong
+#if PY_VERSION_HEX < 0x03030000
+#error "Python 3.0 - 3.2 are not supported."
+#else
+#define PyString_AsString(ob) \
+  (PyUnicode_Check(ob) ? PyUnicode_AsUTF8(ob) : PyBytes_AsString(ob))
+#endif
 #endif
 
 namespace google {
@@ -61,13 +62,13 @@ namespace python {
 
 namespace repeated_scalar_container {
 
-static int InternalAssignRepeatedField(
-    RepeatedScalarContainer* self, PyObject* list) {
+static int InternalAssignRepeatedField(RepeatedScalarContainer* self,
+                                       PyObject* list) {
   Message* message = self->parent->message;
   message->GetReflection()->ClearField(message, self->parent_field_descriptor);
   for (Py_ssize_t i = 0; i < PyList_GET_SIZE(list); ++i) {
     PyObject* value = PyList_GET_ITEM(list, i);
-    if (ScopedPyObjectPtr(Append(self, value)) == NULL) {
+    if (ScopedPyObjectPtr(Append(self, value)) == nullptr) {
       return -1;
     }
   }
@@ -96,13 +97,12 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
     index = field_size + index;
   }
   if (index < 0 || index >= field_size) {
-    PyErr_Format(PyExc_IndexError,
-                 "list assignment index (%d) out of range",
+    PyErr_Format(PyExc_IndexError, "list assignment index (%d) out of range",
                  static_cast<int>(index));
     return -1;
   }
 
-  if (arg == NULL) {
+  if (arg == nullptr) {
     ScopedPyObjectPtr py_index(PyLong_FromLong(index));
     return cmessage::DeleteRepeatedField(self->parent, field_descriptor,
                                          py_index.get());
@@ -150,8 +150,8 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      if (!CheckAndSetString(
-          arg, message, field_descriptor, reflection, false, index)) {
+      if (!CheckAndSetString(arg, message, field_descriptor, reflection, false,
+                             index)) {
         return -1;
       }
       break;
@@ -165,12 +165,12 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
         const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();
         const EnumValueDescriptor* enum_value =
             enum_descriptor->FindValueByNumber(value);
-        if (enum_value != NULL) {
+        if (enum_value != nullptr) {
           reflection->SetRepeatedEnum(message, field_descriptor, index,
                                       enum_value);
         } else {
           ScopedPyObjectPtr s(PyObject_Str(arg));
-          if (s != NULL) {
+          if (s != nullptr) {
             PyErr_Format(PyExc_ValueError, "Unknown enum value: %s",
                          PyString_AsString(s.get()));
           }
@@ -180,9 +180,9 @@ static int AssignItem(PyObject* pself, Py_ssize_t index, PyObject* arg) {
       break;
     }
     default:
-      PyErr_Format(
-          PyExc_SystemError, "Adding value to a field of unknown type %d",
-          field_descriptor->cpp_type());
+      PyErr_Format(PyExc_SystemError,
+                   "Adding value to a field of unknown type %d",
+                   field_descriptor->cpp_type());
       return -1;
   }
   return 0;
@@ -201,60 +201,58 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
     index = field_size + index;
   }
   if (index < 0 || index >= field_size) {
-    PyErr_Format(PyExc_IndexError,
-                 "list index (%zd) out of range",
-                 index);
-    return NULL;
+    PyErr_Format(PyExc_IndexError, "list index (%zd) out of range", index);
+    return nullptr;
   }
 
-  PyObject* result = NULL;
+  PyObject* result = nullptr;
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      int32 value = reflection->GetRepeatedInt32(
-          *message, field_descriptor, index);
+      int32_t value =
+          reflection->GetRepeatedInt32(*message, field_descriptor, index);
       result = PyInt_FromLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      int64 value = reflection->GetRepeatedInt64(
-          *message, field_descriptor, index);
+      int64_t value =
+          reflection->GetRepeatedInt64(*message, field_descriptor, index);
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      uint32 value = reflection->GetRepeatedUInt32(
-          *message, field_descriptor, index);
+      uint32_t value =
+          reflection->GetRepeatedUInt32(*message, field_descriptor, index);
       result = PyLong_FromLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      uint64 value = reflection->GetRepeatedUInt64(
-          *message, field_descriptor, index);
+      uint64_t value =
+          reflection->GetRepeatedUInt64(*message, field_descriptor, index);
       result = PyLong_FromUnsignedLongLong(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
-      float value = reflection->GetRepeatedFloat(
-          *message, field_descriptor, index);
+      float value =
+          reflection->GetRepeatedFloat(*message, field_descriptor, index);
       result = PyFloat_FromDouble(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_DOUBLE: {
-      double value = reflection->GetRepeatedDouble(
-          *message, field_descriptor, index);
+      double value =
+          reflection->GetRepeatedDouble(*message, field_descriptor, index);
       result = PyFloat_FromDouble(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_BOOL: {
-      bool value = reflection->GetRepeatedBool(
-          *message, field_descriptor, index);
+      bool value =
+          reflection->GetRepeatedBool(*message, field_descriptor, index);
       result = PyBool_FromLong(value ? 1 : 0);
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
       const EnumValueDescriptor* enum_value =
-          message->GetReflection()->GetRepeatedEnum(
-              *message, field_descriptor, index);
+          message->GetReflection()->GetRepeatedEnum(*message, field_descriptor,
+                                                    index);
       result = PyInt_FromLong(enum_value->number());
       break;
     }
@@ -266,10 +264,9 @@ static PyObject* Item(PyObject* pself, Py_ssize_t index) {
       break;
     }
     default:
-      PyErr_Format(
-          PyExc_SystemError,
-          "Getting value from a repeated field of unknown type %d",
-          field_descriptor->cpp_type());
+      PyErr_Format(PyExc_SystemError,
+                   "Getting value from a repeated field of unknown type %d",
+                   field_descriptor->cpp_type());
   }
 
   return result;
@@ -287,23 +284,23 @@ static PyObject* Subscript(PyObject* pself, PyObject* slice) {
     from = to = PyInt_AsLong(slice);
   } else  // NOLINT
 #endif
-  if (PyLong_Check(slice)) {
+      if (PyLong_Check(slice)) {
     from = to = PyLong_AsLong(slice);
   } else if (PySlice_Check(slice)) {
     length = Len(pself);
 #if PY_MAJOR_VERSION >= 3
-    if (PySlice_GetIndicesEx(slice,
-                             length, &from, &to, &step, &slicelength) == -1) {
+    if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slicelength) ==
+        -1) {
 #else
-    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice),
-                             length, &from, &to, &step, &slicelength) == -1) {
+    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice), length,
+                             &from, &to, &step, &slicelength) == -1) {
 #endif
-      return NULL;
+      return nullptr;
     }
     return_list = true;
   } else {
     PyErr_SetString(PyExc_TypeError, "list indices must be integers");
-    return NULL;
+    return nullptr;
   }
 
   if (!return_list) {
@@ -311,8 +308,8 @@ static PyObject* Subscript(PyObject* pself, PyObject* slice) {
   }
 
   PyObject* list = PyList_New(0);
-  if (list == NULL) {
-    return NULL;
+  if (list == nullptr) {
+    return nullptr;
   }
   if (from <= to) {
     if (step < 0) {
@@ -348,73 +345,73 @@ PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
   const Reflection* reflection = message->GetReflection();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      GOOGLE_CHECK_GET_INT32(item, value, NULL);
+      GOOGLE_CHECK_GET_INT32(item, value, nullptr);
       reflection->AddInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      GOOGLE_CHECK_GET_INT64(item, value, NULL);
+      GOOGLE_CHECK_GET_INT64(item, value, nullptr);
       reflection->AddInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      GOOGLE_CHECK_GET_UINT32(item, value, NULL);
+      GOOGLE_CHECK_GET_UINT32(item, value, nullptr);
       reflection->AddUInt32(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      GOOGLE_CHECK_GET_UINT64(item, value, NULL);
+      GOOGLE_CHECK_GET_UINT64(item, value, nullptr);
       reflection->AddUInt64(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
-      GOOGLE_CHECK_GET_FLOAT(item, value, NULL);
+      GOOGLE_CHECK_GET_FLOAT(item, value, nullptr);
       reflection->AddFloat(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_DOUBLE: {
-      GOOGLE_CHECK_GET_DOUBLE(item, value, NULL);
+      GOOGLE_CHECK_GET_DOUBLE(item, value, nullptr);
       reflection->AddDouble(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_BOOL: {
-      GOOGLE_CHECK_GET_BOOL(item, value, NULL);
+      GOOGLE_CHECK_GET_BOOL(item, value, nullptr);
       reflection->AddBool(message, field_descriptor, value);
       break;
     }
     case FieldDescriptor::CPPTYPE_STRING: {
-      if (!CheckAndSetString(
-          item, message, field_descriptor, reflection, true, -1)) {
-        return NULL;
+      if (!CheckAndSetString(item, message, field_descriptor, reflection, true,
+                             -1)) {
+        return nullptr;
       }
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      GOOGLE_CHECK_GET_INT32(item, value, NULL);
+      GOOGLE_CHECK_GET_INT32(item, value, nullptr);
       if (reflection->SupportsUnknownEnumValues()) {
         reflection->AddEnumValue(message, field_descriptor, value);
       } else {
         const EnumDescriptor* enum_descriptor = field_descriptor->enum_type();
         const EnumValueDescriptor* enum_value =
             enum_descriptor->FindValueByNumber(value);
-        if (enum_value != NULL) {
+        if (enum_value != nullptr) {
           reflection->AddEnum(message, field_descriptor, enum_value);
         } else {
           ScopedPyObjectPtr s(PyObject_Str(item));
-          if (s != NULL) {
+          if (s != nullptr) {
             PyErr_Format(PyExc_ValueError, "Unknown enum value: %s",
                          PyString_AsString(s.get()));
           }
-          return NULL;
+          return nullptr;
         }
       }
       break;
     }
     default:
-      PyErr_Format(
-          PyExc_SystemError, "Adding value to a field of unknown type %d",
-          field_descriptor->cpp_type());
-      return NULL;
+      PyErr_Format(PyExc_SystemError,
+                   "Adding value to a field of unknown type %d",
+                   field_descriptor->cpp_type());
+      return nullptr;
   }
 
   Py_RETURN_NONE;
@@ -437,25 +434,24 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
 
   cmessage::AssureWritable(self->parent);
   Message* message = self->parent->message;
-  const FieldDescriptor* field_descriptor =
-      self->parent_field_descriptor;
+  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
 
 #if PY_MAJOR_VERSION < 3
   if (PyInt_Check(slice)) {
     from = to = PyInt_AsLong(slice);
   } else  // NOLINT
 #endif
-  if (PyLong_Check(slice)) {
+      if (PyLong_Check(slice)) {
     from = to = PyLong_AsLong(slice);
   } else if (PySlice_Check(slice)) {
     const Reflection* reflection = message->GetReflection();
     length = reflection->FieldSize(*message, field_descriptor);
 #if PY_MAJOR_VERSION >= 3
-    if (PySlice_GetIndicesEx(slice,
-                             length, &from, &to, &step, &slicelength) == -1) {
+    if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slicelength) ==
+        -1) {
 #else
-    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice),
-                             length, &from, &to, &step, &slicelength) == -1) {
+    if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice), length,
+                             &from, &to, &step, &slicelength) == -1) {
 #endif
       return -1;
     }
@@ -465,7 +461,7 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
     return -1;
   }
 
-  if (value == NULL) {
+  if (value == nullptr) {
     return cmessage::DeleteRepeatedField(self->parent, field_descriptor, slice);
   }
 
@@ -473,12 +469,12 @@ static int AssSubscript(PyObject* pself, PyObject* slice, PyObject* value) {
     return AssignItem(pself, from, value);
   }
 
-  ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
-  if (full_slice == NULL) {
+  ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
+  if (full_slice == nullptr) {
     return -1;
   }
   ScopedPyObjectPtr new_list(Subscript(pself, full_slice.get()));
-  if (new_list == NULL) {
+  if (new_list == nullptr) {
     return -1;
   }
   if (PySequence_SetSlice(new_list.get(), from, to, value) < 0) {
@@ -495,23 +491,23 @@ PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
   if (value == Py_None) {
     Py_RETURN_NONE;
   }
-  if ((Py_TYPE(value)->tp_as_sequence == NULL) && PyObject_Not(value)) {
+  if ((Py_TYPE(value)->tp_as_sequence == nullptr) && PyObject_Not(value)) {
     Py_RETURN_NONE;
   }
 
   ScopedPyObjectPtr iter(PyObject_GetIter(value));
-  if (iter == NULL) {
+  if (iter == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Value must be iterable");
-    return NULL;
+    return nullptr;
   }
   ScopedPyObjectPtr next;
-  while ((next.reset(PyIter_Next(iter.get()))) != NULL) {
-    if (ScopedPyObjectPtr(Append(self, next.get())) == NULL) {
-      return NULL;
+  while ((next.reset(PyIter_Next(iter.get()))) != nullptr) {
+    if (ScopedPyObjectPtr(Append(self, next.get())) == nullptr) {
+      return nullptr;
     }
   }
   if (PyErr_Occurred()) {
-    return NULL;
+    return nullptr;
   }
   Py_RETURN_NONE;
 }
@@ -523,16 +519,16 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
   Py_ssize_t index;
   PyObject* value;
   if (!PyArg_ParseTuple(args, "lO", &index, &value)) {
-    return NULL;
+    return nullptr;
   }
-  ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
+  ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
   ScopedPyObjectPtr new_list(Subscript(pself, full_slice.get()));
   if (PyList_Insert(new_list.get(), index, value) < 0) {
-    return NULL;
+    return nullptr;
   }
   int ret = InternalAssignRepeatedField(self, new_list.get());
   if (ret < 0) {
-    return NULL;
+    return nullptr;
   }
   Py_RETURN_NONE;
 }
@@ -548,10 +544,10 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
   }
   if (match_index == -1) {
     PyErr_SetString(PyExc_ValueError, "remove(x): x not in container");
-    return NULL;
+    return nullptr;
   }
-  if (AssignItem(pself, match_index, NULL) < 0) {
-    return NULL;
+  if (AssignItem(pself, match_index, nullptr) < 0) {
+    return nullptr;
   }
   Py_RETURN_NONE;
 }
@@ -570,9 +566,9 @@ static PyObject* RichCompare(PyObject* pself, PyObject* other, int opid) {
   // also a repeated scalar container, into Python lists so we can delegate
   // to the list's compare method.
 
-  ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
-  if (full_slice == NULL) {
-    return NULL;
+  ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
+  if (full_slice == nullptr) {
+    return nullptr;
   }
 
   ScopedPyObjectPtr other_list_deleter;
@@ -582,54 +578,72 @@ static PyObject* RichCompare(PyObject* pself, PyObject* other, int opid) {
   }
 
   ScopedPyObjectPtr list(Subscript(pself, full_slice.get()));
-  if (list == NULL) {
-    return NULL;
+  if (list == nullptr) {
+    return nullptr;
   }
   return PyObject_RichCompare(list.get(), other, opid);
 }
 
 PyObject* Reduce(PyObject* unused_self, PyObject* unused_other) {
-  PyErr_Format(
-      PickleError_class,
-      "can't pickle repeated message fields, convert to list first");
-  return NULL;
+  PyErr_Format(PickleError_class,
+               "can't pickle repeated message fields, convert to list first");
+  return nullptr;
 }
 
 static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   // Support the old sort_function argument for backwards
   // compatibility.
-  if (kwds != NULL) {
+  if (kwds != nullptr) {
     PyObject* sort_func = PyDict_GetItemString(kwds, "sort_function");
-    if (sort_func != NULL) {
+    if (sort_func != nullptr) {
       // Must set before deleting as sort_func is a borrowed reference
       // and kwds might be the only thing keeping it alive.
-      if (PyDict_SetItemString(kwds, "cmp", sort_func) == -1)
-        return NULL;
-      if (PyDict_DelItemString(kwds, "sort_function") == -1)
-        return NULL;
+      if (PyDict_SetItemString(kwds, "cmp", sort_func) == -1) return nullptr;
+      if (PyDict_DelItemString(kwds, "sort_function") == -1) return nullptr;
     }
   }
 
-  ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
-  if (full_slice == NULL) {
-    return NULL;
+  ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
+  if (full_slice == nullptr) {
+    return nullptr;
   }
   ScopedPyObjectPtr list(Subscript(pself, full_slice.get()));
-  if (list == NULL) {
-    return NULL;
+  if (list == nullptr) {
+    return nullptr;
   }
   ScopedPyObjectPtr m(PyObject_GetAttrString(list.get(), "sort"));
-  if (m == NULL) {
-    return NULL;
+  if (m == nullptr) {
+    return nullptr;
   }
   ScopedPyObjectPtr res(PyObject_Call(m.get(), args, kwds));
-  if (res == NULL) {
-    return NULL;
+  if (res == nullptr) {
+    return nullptr;
   }
   int ret = InternalAssignRepeatedField(
       reinterpret_cast<RepeatedScalarContainer*>(pself), list.get());
   if (ret < 0) {
-    return NULL;
+    return nullptr;
+  }
+  Py_RETURN_NONE;
+}
+
+static PyObject* Reverse(PyObject* pself) {
+  ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
+  if (full_slice == nullptr) {
+    return nullptr;
+  }
+  ScopedPyObjectPtr list(Subscript(pself, full_slice.get()));
+  if (list == nullptr) {
+    return nullptr;
+  }
+  ScopedPyObjectPtr res(PyObject_CallMethod(list.get(), "reverse", nullptr));
+  if (res == nullptr) {
+    return nullptr;
+  }
+  int ret = InternalAssignRepeatedField(
+      reinterpret_cast<RepeatedScalarContainer*>(pself), list.get());
+  if (ret < 0) {
+    return nullptr;
   }
   Py_RETURN_NONE;
 }
@@ -637,27 +651,27 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
 static PyObject* Pop(PyObject* pself, PyObject* args) {
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) {
-    return NULL;
+    return nullptr;
   }
   PyObject* item = Item(pself, index);
-  if (item == NULL) {
+  if (item == nullptr) {
     PyErr_Format(PyExc_IndexError, "list index (%zd) out of range", index);
-    return NULL;
+    return nullptr;
   }
-  if (AssignItem(pself, index, NULL) < 0) {
-    return NULL;
+  if (AssignItem(pself, index, nullptr) < 0) {
+    return nullptr;
   }
   return item;
 }
 
 static PyObject* ToStr(PyObject* pself) {
-  ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
-  if (full_slice == NULL) {
-    return NULL;
+  ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
+  if (full_slice == nullptr) {
+    return nullptr;
   }
   ScopedPyObjectPtr list(Subscript(pself, full_slice.get()));
-  if (list == NULL) {
-    return NULL;
+  if (list == nullptr) {
+    return nullptr;
   }
   return PyObject_Repr(list.get());
 }
@@ -670,13 +684,13 @@ static PyObject* MergeFrom(PyObject* pself, PyObject* arg) {
 RepeatedScalarContainer* NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
-    return NULL;
+    return nullptr;
   }
 
   RepeatedScalarContainer* self = reinterpret_cast<RepeatedScalarContainer*>(
       PyType_GenericAlloc(&RepeatedScalarContainer_Type, 0));
-  if (self == NULL) {
-    return NULL;
+  if (self == nullptr) {
+    return nullptr;
   }
 
   Py_INCREF(parent);
@@ -696,81 +710,85 @@ static void Dealloc(PyObject* pself) {
 }
 
 static PySequenceMethods SqMethods = {
-  Len,        /* sq_length */
-  0,          /* sq_concat */
-  0,          /* sq_repeat */
-  Item,       /* sq_item */
-  0,          /* sq_slice */
-  AssignItem  /* sq_ass_item */
+    Len,       /* sq_length */
+    nullptr,   /* sq_concat */
+    nullptr,   /* sq_repeat */
+    Item,      /* sq_item */
+    nullptr,   /* sq_slice */
+    AssignItem /* sq_ass_item */
 };
 
 static PyMappingMethods MpMethods = {
-  Len,               /* mp_length */
-  Subscript,      /* mp_subscript */
-  AssSubscript, /* mp_ass_subscript */
+    Len,          /* mp_length */
+    Subscript,    /* mp_subscript */
+    AssSubscript, /* mp_ass_subscript */
 };
 
 static PyMethodDef Methods[] = {
-  { "__deepcopy__", DeepCopy, METH_VARARGS,
-    "Makes a deep copy of the class." },
-  { "__reduce__", Reduce, METH_NOARGS,
-    "Outputs picklable representation of the repeated field." },
-  { "append", AppendMethod, METH_O,
-    "Appends an object to the repeated container." },
-  { "extend", ExtendMethod, METH_O,
-    "Appends objects to the repeated container." },
-  { "insert", Insert, METH_VARARGS,
-    "Inserts an object at the specified position in the container." },
-  { "pop", Pop, METH_VARARGS,
-    "Removes an object from the repeated container and returns it." },
-  { "remove", Remove, METH_O,
-    "Removes an object from the repeated container." },
-  { "sort", (PyCFunction)Sort, METH_VARARGS | METH_KEYWORDS,
-    "Sorts the repeated container."},
-  { "MergeFrom", (PyCFunction)MergeFrom, METH_O,
-    "Merges a repeated container into the current container." },
-  { NULL, NULL }
-};
+    {"__deepcopy__", DeepCopy, METH_VARARGS, "Makes a deep copy of the class."},
+    {"__reduce__", Reduce, METH_NOARGS,
+     "Outputs picklable representation of the repeated field."},
+    {"append", AppendMethod, METH_O,
+     "Appends an object to the repeated container."},
+    {"extend", ExtendMethod, METH_O,
+     "Appends objects to the repeated container."},
+    {"insert", Insert, METH_VARARGS,
+     "Inserts an object at the specified position in the container."},
+    {"pop", Pop, METH_VARARGS,
+     "Removes an object from the repeated container and returns it."},
+    {"remove", Remove, METH_O,
+     "Removes an object from the repeated container."},
+    {"sort", reinterpret_cast<PyCFunction>(Sort), METH_VARARGS | METH_KEYWORDS,
+     "Sorts the repeated container."},
+    {"reverse", reinterpret_cast<PyCFunction>(Reverse), METH_NOARGS,
+     "Reverses elements order of the repeated container."},
+    {"MergeFrom", static_cast<PyCFunction>(MergeFrom), METH_O,
+     "Merges a repeated container into the current container."},
+    {nullptr, nullptr}};
 
 }  // namespace repeated_scalar_container
 
 PyTypeObject RepeatedScalarContainer_Type = {
-  PyVarObject_HEAD_INIT(&PyType_Type, 0)
-  FULL_MODULE_NAME ".RepeatedScalarContainer",  // tp_name
-  sizeof(RepeatedScalarContainer),     // tp_basicsize
-  0,                                   //  tp_itemsize
-  repeated_scalar_container::Dealloc,  //  tp_dealloc
-  0,                                   //  tp_print
-  0,                                   //  tp_getattr
-  0,                                   //  tp_setattr
-  0,                                   //  tp_compare
-  repeated_scalar_container::ToStr,    //  tp_repr
-  0,                                   //  tp_as_number
-  &repeated_scalar_container::SqMethods,   //  tp_as_sequence
-  &repeated_scalar_container::MpMethods,   //  tp_as_mapping
-  PyObject_HashNotImplemented,         //  tp_hash
-  0,                                   //  tp_call
-  0,                                   //  tp_str
-  0,                                   //  tp_getattro
-  0,                                   //  tp_setattro
-  0,                                   //  tp_as_buffer
-  Py_TPFLAGS_DEFAULT,                  //  tp_flags
-  "A Repeated scalar container",       //  tp_doc
-  0,                                   //  tp_traverse
-  0,                                   //  tp_clear
-  repeated_scalar_container::RichCompare,  //  tp_richcompare
-  0,                                   //  tp_weaklistoffset
-  0,                                   //  tp_iter
-  0,                                   //  tp_iternext
-  repeated_scalar_container::Methods,      //  tp_methods
-  0,                                   //  tp_members
-  0,                                   //  tp_getset
-  0,                                   //  tp_base
-  0,                                   //  tp_dict
-  0,                                   //  tp_descr_get
-  0,                                   //  tp_descr_set
-  0,                                   //  tp_dictoffset
-  0,                                   //  tp_init
+    PyVarObject_HEAD_INIT(&PyType_Type, 0) FULL_MODULE_NAME
+    ".RepeatedScalarContainer",              // tp_name
+    sizeof(RepeatedScalarContainer),         // tp_basicsize
+    0,                                       //  tp_itemsize
+    repeated_scalar_container::Dealloc,      //  tp_dealloc
+#if PY_VERSION_HEX >= 0x03080000
+    0,                                       //  tp_vectorcall_offset
+#else
+    nullptr,                                 //  tp_print
+#endif
+    nullptr,                                 //  tp_getattr
+    nullptr,                                 //  tp_setattr
+    nullptr,                                 //  tp_compare
+    repeated_scalar_container::ToStr,        //  tp_repr
+    nullptr,                                 //  tp_as_number
+    &repeated_scalar_container::SqMethods,   //  tp_as_sequence
+    &repeated_scalar_container::MpMethods,   //  tp_as_mapping
+    PyObject_HashNotImplemented,             //  tp_hash
+    nullptr,                                 //  tp_call
+    nullptr,                                 //  tp_str
+    nullptr,                                 //  tp_getattro
+    nullptr,                                 //  tp_setattro
+    nullptr,                                 //  tp_as_buffer
+    Py_TPFLAGS_DEFAULT,                      //  tp_flags
+    "A Repeated scalar container",           //  tp_doc
+    nullptr,                                 //  tp_traverse
+    nullptr,                                 //  tp_clear
+    repeated_scalar_container::RichCompare,  //  tp_richcompare
+    0,                                       //  tp_weaklistoffset
+    nullptr,                                 //  tp_iter
+    nullptr,                                 //  tp_iternext
+    repeated_scalar_container::Methods,      //  tp_methods
+    nullptr,                                 //  tp_members
+    nullptr,                                 //  tp_getset
+    nullptr,                                 //  tp_base
+    nullptr,                                 //  tp_dict
+    nullptr,                                 //  tp_descr_get
+    nullptr,                                 //  tp_descr_set
+    0,                                       //  tp_dictoffset
+    nullptr,                                 //  tp_init
 };
 
 }  // namespace python

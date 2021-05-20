@@ -65,7 +65,7 @@ class PROTOBUF_EXPORT AnnotationCollector {
 
   // TODO(gerbens) I don't see why we need virtuals here. Just a vector of
   // range, payload pairs stored in a context should suffice.
-  virtual void AddAnnotationNew(Annotation& a) {}
+  virtual void AddAnnotationNew(Annotation& /* a */) {}
 
   virtual ~AnnotationCollector() {}
 };
@@ -194,8 +194,8 @@ class PROTOBUF_EXPORT Printer {
 
   ~Printer();
 
-  // Link a substitution variable emitted by the last call to Print to the object
-  // described by descriptor.
+  // Link a substitution variable emitted by the last call to Print to the
+  // object described by descriptor.
   template <typename SomeDescriptor>
   void Annotate(const char* varname, const SomeDescriptor* descriptor) {
     Annotate(varname, varname, descriptor);

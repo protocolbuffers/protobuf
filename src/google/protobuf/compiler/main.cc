@@ -28,10 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/java/java_generator.h>
+#include <google/protobuf/compiler/java/java_kotlin_generator.h>
 #include <google/protobuf/compiler/js/js_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/python/python_generator.h>
@@ -66,6 +65,11 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--java_out", "--java_opt", &java_generator,
                         "Generate Java source file.");
 
+  // Proto2 Kotlin
+  java::KotlinGenerator kt_generator;
+  cli.RegisterGenerator("--kotlin_out", "--kotlin_opt", &kt_generator,
+                        "Generate Kotlin file.");
+
 
   // Proto2 Python
   python::Generator py_generator;
@@ -87,10 +91,10 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--csharp_out", "--csharp_opt", &csharp_generator,
                         "Generate C# source file.");
 
-  // Objective C
+  // Objective-C
   objectivec::ObjectiveCGenerator objc_generator;
   cli.RegisterGenerator("--objc_out", "--objc_opt", &objc_generator,
-                        "Generate Objective C header and source.");
+                        "Generate Objective-C header and source.");
 
   // JavaScript
   js::Generator js_generator;

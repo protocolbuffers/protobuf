@@ -168,7 +168,7 @@ class GPBUtil
     public static function checkFloat(&$var)
     {
         if (is_float($var) || is_numeric($var)) {
-            $var = floatval($var);
+            $var = unpack("f", pack("f", $var))[1];
         } else {
             throw new \Exception("Expect float.");
         }
@@ -338,9 +338,9 @@ class GPBUtil
 
         $package = $file_proto->getPackage();
         if ($package === "") {
-            $fullname = "." . $message_name_without_package;
+            $fullname = $message_name_without_package;
         } else {
-            $fullname = "." . $package . "." . $message_name_without_package;
+            $fullname = $package . "." . $message_name_without_package;
         }
 
         $class_name_without_package =

@@ -34,6 +34,27 @@ message TestMessage {
   bar.TestInclude optional_included_message = 18;
   TestMessage recursive = 19;
 
+  // True optional
+  optional int32 true_optional_int32 = 201;
+  optional int64 true_optional_int64 = 202;
+  optional uint32 true_optional_uint32 = 203;
+  optional uint64 true_optional_uint64 = 204;
+  optional sint32 true_optional_sint32 = 205;
+  optional sint64 true_optional_sint64 = 206;
+  optional fixed32 true_optional_fixed32 = 207;
+  optional fixed64 true_optional_fixed64 = 208;
+  optional sfixed32 true_optional_sfixed32 = 209;
+  optional sfixed64 true_optional_sfixed64 = 210;
+  optional float true_optional_float = 211;
+  optional double true_optional_double = 212;
+  optional bool true_optional_bool = 213;
+  optional string true_optional_string = 214;
+  optional bytes true_optional_bytes = 215;
+
+  optional TestEnum true_optional_enum = 216;
+  optional Sub true_optional_message = 217;
+  optional bar.TestInclude true_optional_included_message = 218;
+
   // Repeated
   repeated    int32 repeated_int32    = 31;
   repeated    int64 repeated_int64    = 32;
@@ -126,6 +147,9 @@ message TestMessage {
   map<string, google.protobuf.Any> map_string_any = 122;
   map<string, google.protobuf.ListValue> map_string_list = 123;
   map<string, google.protobuf.Struct> map_string_struct = 124;
+
+  // deprecated field
+  int32 deprecated_optional_int32 = 125 [deprecated=true];
 }
 
 enum TestEnum {
@@ -197,6 +221,10 @@ message TestIncludeNamespaceMessage {
 message TestRandomFieldOrder {
   int64 tag13 = 150;
   string tag14 = 160;
+}
+
+message TestLargeFieldNumber {
+  int32 large_field_number = 536870911;
 }
 
 message TestReverseFieldOrder {

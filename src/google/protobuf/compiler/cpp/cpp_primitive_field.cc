@@ -33,6 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_primitive_field.h>
+
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
@@ -217,6 +218,12 @@ void PrimitiveFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   }
 }
 
+void PrimitiveFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("$name$_($default$)");
+}
+
 // ===================================================================
 
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
@@ -295,7 +302,7 @@ void RepeatedPrimitiveFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("::$proto_ns$::RepeatedField< $type$ > $name$_;\n");
-  if (descriptor_->is_packed() &&
+  if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
     format("mutable std::atomic<int> _$name$_cached_byte_size_;\n");
   }
@@ -403,13 +410,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (descriptor_->is_packed()) {
-    if (FixedSize(descriptor_->type()) > 0) {
-      format(
-          "if (this->_internal_$name$_size() > 0) {\n"
-          "  target = stream->WriteFixedPacked($number$, _internal_$name$(), "
-          "target);\n"
-          "}\n");
-    } else {
+    if (FixedSize(descriptor_->type()) == -1) {
       format(
           "{\n"
           "  int byte_size = "
@@ -418,6 +419,12 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
           "    target = stream->Write$declared_type$Packed(\n"
           "        $number$, _internal_$name$(), byte_size, target);\n"
           "  }\n"
+          "}\n");
+    } else {
+      format(
+          "if (this->_internal_$name$_size() > 0) {\n"
+          "  target = stream->WriteFixedPacked($number$, _internal_$name$(), "
+          "target);\n"
           "}\n");
     }
   } else {
@@ -454,11 +461,14 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
         "  total_size += $tag_size$ +\n"
         "    ::$proto_ns$::internal::WireFormatLite::Int32Size(\n"
         "        static_cast<$int32$>(data_size));\n"
-        "}\n"
-        "int cached_size = ::$proto_ns$::internal::ToCachedSize(data_size);\n"
-        "_$name$_cached_byte_size_.store(cached_size,\n"
-        "                                std::memory_order_relaxed);\n"
-        "total_size += data_size;\n");
+        "}\n");
+    if (FixedSize(descriptor_->type()) == -1) {
+      format(
+          "int cached_size = ::$proto_ns$::internal::ToCachedSize(data_size);\n"
+          "_$name$_cached_byte_size_.store(cached_size,\n"
+          "                                std::memory_order_relaxed);\n");
+    }
+    format("total_size += data_size;\n");
   } else {
     format(
         "total_size += $tag_size$ *\n"
@@ -468,6 +478,16 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
   }
   format.Outdent();
   format("}\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateConstinitInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  format("$name$_()");
+  if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
+    format("\n, _$name$_cached_byte_size_()");
+  }
 }
 
 }  // namespace cpp

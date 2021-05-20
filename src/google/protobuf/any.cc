@@ -41,24 +41,25 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-void AnyMetadata::PackFrom(const Message& message) {
-  PackFrom(message, kTypeGoogleApisComPrefix);
+bool AnyMetadata::PackFrom(const Message& message) {
+  return PackFrom(message, kTypeGoogleApisComPrefix);
 }
 
-void AnyMetadata::PackFrom(const Message& message,
-                           const std::string& type_url_prefix) {
-  type_url_->SetNoArena(
+bool AnyMetadata::PackFrom(const Message& message,
+                           StringPiece type_url_prefix) {
+  type_url_->Set(
       &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyString(),
-      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix));
-  message.SerializeToString(value_->MutableNoArena(
-      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited()));
+      GetTypeUrl(message.GetDescriptor()->full_name(), type_url_prefix),
+      nullptr);
+  return message.SerializeToString(
+      value_->Mutable(ArenaStringPtr::EmptyDefault{}, nullptr));
 }
 
 bool AnyMetadata::UnpackTo(Message* message) const {
   if (!InternalIs(message->GetDescriptor()->full_name())) {
     return false;
   }
-  return message->ParseFromString(value_->GetNoArena());
+  return message->ParseFromString(value_->Get());
 }
 
 bool GetAnyFieldDescriptors(const Message& message,
@@ -79,3 +80,5 @@ bool GetAnyFieldDescriptors(const Message& message,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

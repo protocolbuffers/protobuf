@@ -297,7 +297,7 @@ void ForkPipeRunner::SpawnTestProgram() {
 
     std::vector<const char *> argv;
     argv.push_back(executable.get());
-    for (int i = 0; i < executable_args_.size(); ++i) {
+    for (size_t i = 0; i < executable_args_.size(); ++i) {
       argv.push_back(executable_args_[i].c_str());
     }
     argv.push_back(nullptr);
@@ -307,7 +307,7 @@ void ForkPipeRunner::SpawnTestProgram() {
 }
 
 void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
-  if (write(fd, buf, len) != len) {
+  if (static_cast<size_t>(write(fd, buf, len)) != len) {
     GOOGLE_LOG(FATAL) << current_test_name_
                << ": error writing to test program: " << strerror(errno);
   }

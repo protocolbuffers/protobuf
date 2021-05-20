@@ -20,13 +20,11 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      */
-    protected $name = '';
-    private $has_name = false;
+    protected $name = null;
     /**
      * Generated from protobuf field <code>optional .google.protobuf.OneofOptions options = 2;</code>
      */
     protected $options = null;
-    private $has_options = false;
 
     /**
      * Constructor.
@@ -49,7 +47,17 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getName()
     {
-        return $this->name;
+        return isset($this->name) ? $this->name : '';
+    }
+
+    public function hasName()
+    {
+        return isset($this->name);
+    }
+
+    public function clearName()
+    {
+        unset($this->name);
     }
 
     /**
@@ -61,23 +69,27 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
-        $this->has_name = true;
 
         return $this;
     }
 
-    public function hasName()
-    {
-        return $this->has_name;
-    }
-
     /**
      * Generated from protobuf field <code>optional .google.protobuf.OneofOptions options = 2;</code>
-     * @return \Google\Protobuf\Internal\OneofOptions
+     * @return \Google\Protobuf\Internal\OneofOptions|null
      */
     public function getOptions()
     {
-        return $this->options;
+        return isset($this->options) ? $this->options : null;
+    }
+
+    public function hasOptions()
+    {
+        return isset($this->options);
+    }
+
+    public function clearOptions()
+    {
+        unset($this->options);
     }
 
     /**
@@ -89,14 +101,8 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\OneofOptions::class);
         $this->options = $var;
-        $this->has_options = true;
 
         return $this;
-    }
-
-    public function hasOptions()
-    {
-        return $this->has_options;
     }
 
 }

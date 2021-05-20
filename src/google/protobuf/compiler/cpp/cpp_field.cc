@@ -33,6 +33,8 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 #include <google/protobuf/compiler/cpp/cpp_field.h>
+
+#include <cstdint>
 #include <memory>
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
@@ -73,7 +75,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
   (*variables)["set_hasbit"] = "";
   (*variables)["clear_hasbit"] = "";
-  if (HasFieldPresence(descriptor->file())) {
+  if (HasHasbit(descriptor)) {
     (*variables)["set_hasbit_io"] =
         "_Internal::set_has_" + FieldName(descriptor) + "(&_has_bits_);";
   } else {
@@ -89,8 +91,9 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["}"] = "";
 }
 
-void FieldGenerator::SetHasBitIndex(int32 has_bit_index) {
-  if (!HasFieldPresence(descriptor_->file()) || has_bit_index == -1) {
+void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
+  if (!HasHasbit(descriptor_)) {
+    GOOGLE_CHECK_EQ(has_bit_index, -1);
     return;
   }
   variables_["set_hasbit"] = StrCat(
@@ -155,7 +158,7 @@ FieldGenerator* FieldGeneratorMap::MakeGenerator(
       default:
         return new RepeatedPrimitiveFieldGenerator(field, options);
     }
-  } else if (field->containing_oneof()) {
+  } else if (field->real_containing_oneof()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
         return new MessageOneofFieldGenerator(field, options, scc_analyzer);

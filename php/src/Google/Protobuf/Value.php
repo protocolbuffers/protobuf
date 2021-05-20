@@ -57,6 +57,11 @@ class Value extends \Google\Protobuf\Internal\Message
         return $this->readOneof(1);
     }
 
+    public function hasNullValue()
+    {
+        return $this->hasOneof(1);
+    }
+
     /**
      * Represents a null value.
      *
@@ -81,6 +86,11 @@ class Value extends \Google\Protobuf\Internal\Message
     public function getNumberValue()
     {
         return $this->readOneof(2);
+    }
+
+    public function hasNumberValue()
+    {
+        return $this->hasOneof(2);
     }
 
     /**
@@ -109,6 +119,11 @@ class Value extends \Google\Protobuf\Internal\Message
         return $this->readOneof(3);
     }
 
+    public function hasStringValue()
+    {
+        return $this->hasOneof(3);
+    }
+
     /**
      * Represents a string value.
      *
@@ -135,6 +150,11 @@ class Value extends \Google\Protobuf\Internal\Message
         return $this->readOneof(4);
     }
 
+    public function hasBoolValue()
+    {
+        return $this->hasOneof(4);
+    }
+
     /**
      * Represents a boolean value.
      *
@@ -154,11 +174,16 @@ class Value extends \Google\Protobuf\Internal\Message
      * Represents a structured value.
      *
      * Generated from protobuf field <code>.google.protobuf.Struct struct_value = 5;</code>
-     * @return \Google\Protobuf\Struct
+     * @return \Google\Protobuf\Struct|null
      */
     public function getStructValue()
     {
         return $this->readOneof(5);
+    }
+
+    public function hasStructValue()
+    {
+        return $this->hasOneof(5);
     }
 
     /**
@@ -180,11 +205,16 @@ class Value extends \Google\Protobuf\Internal\Message
      * Represents a repeated `Value`.
      *
      * Generated from protobuf field <code>.google.protobuf.ListValue list_value = 6;</code>
-     * @return \Google\Protobuf\ListValue
+     * @return \Google\Protobuf\ListValue|null
      */
     public function getListValue()
     {
         return $this->readOneof(6);
+    }
+
+    public function hasListValue()
+    {
+        return $this->hasOneof(6);
     }
 
     /**

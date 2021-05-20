@@ -33,9 +33,10 @@
 This file defines container classes which represent categories of protocol
 buffer field types which need extra maintenance. Currently these categories
 are:
-  - Repeated scalar fields - These are all repeated fields which aren't
+
+-   Repeated scalar fields - These are all repeated fields which aren't
     composite (e.g. they are of simple types like int32, string, etc).
-  - Repeated composite fields - Repeated fields which are composite. This
+-   Repeated composite fields - Repeated fields which are composite. This
     includes groups and nested messages.
 """
 
@@ -230,6 +231,9 @@ class BaseContainer(object):
       kwargs['cmp'] = kwargs.pop('sort_function')
     self._values.sort(*args, **kwargs)
 
+  def reverse(self):
+    self._values.reverse()
+
 
 collections_abc.MutableSequence.register(BaseContainer)
 
@@ -285,7 +289,6 @@ class RepeatedScalarFieldContainer(BaseContainer):
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this
-
     one. We do not check the types of the individual fields.
     """
     self._values.extend(other._values)
@@ -416,7 +419,6 @@ class RepeatedCompositeFieldContainer(BaseContainer):
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this
-
     one, copying each individual message.
     """
     self.extend(other._values)
@@ -630,7 +632,8 @@ class MessageMap(MutableMapping):
     return repr(self._values)
 
   def MergeFrom(self, other):
-    for key in other:
+    # pylint: disable=protected-access
+    for key in other._values:
       # According to documentation: "When parsing from the wire or when merging,
       # if there are duplicate map keys the last key seen is used".
       if key in self:

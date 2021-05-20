@@ -30,14 +30,18 @@
 
 package com.google.protobuf;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.MessageReflection.MergeTarget;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,6 +60,7 @@ public final class TextFormat {
   private TextFormat() {}
 
   private static final Logger logger = Logger.getLogger(TextFormat.class.getName());
+
 
   /**
    * Outputs a textual representation of the Protocol Message supplied into the parameter output.
@@ -137,7 +142,7 @@ public final class TextFormat {
   /**
    * Like {@code print()}, but writes directly to a {@code String} and returns it.
    *
-   * @deprecated Use {@link MessageOrBuilder#toString()}
+   * @deprecated Use {@code message.toString()}
    */
   @Deprecated
   public static String printToString(final MessageOrBuilder message) {
@@ -419,13 +424,95 @@ public final class TextFormat {
     private void printField(
         final FieldDescriptor field, final Object value, final TextGenerator generator)
         throws IOException {
-      if (field.isRepeated()) {
+      // Sort map field entries by key
+      if (field.isMapField()) {
+        List<MapEntryAdapter> adapters = new ArrayList<>();
+        for (Object entry : (List<?>) value) {
+          adapters.add(new MapEntryAdapter(entry, field));
+        }
+        Collections.sort(adapters);
+        for (MapEntryAdapter adapter : adapters) {
+          printSingleField(field, adapter.getEntry(), generator);
+        }
+      } else if (field.isRepeated()) {
         // Repeated field.  Print each element.
         for (Object element : (List<?>) value) {
           printSingleField(field, element, generator);
         }
       } else {
         printSingleField(field, value, generator);
+      }
+    }
+
+    /**
+     * An adapter class that can take a MapEntry or a MutableMapEntry and returns its key and entry.
+     * This class is created solely for the purpose of sorting map entries by its key and prevent
+     * duplicated logic by having a separate comparator for MapEntry and MutableMapEntry.
+     */
+    private static class MapEntryAdapter implements Comparable<MapEntryAdapter> {
+      private Object entry;
+
+      @SuppressWarnings({"rawtypes"})
+      private MapEntry mapEntry;
+
+
+      private final FieldDescriptor.JavaType fieldType;
+
+      public MapEntryAdapter(Object entry, FieldDescriptor fieldDescriptor) {
+        if (entry instanceof MapEntry) {
+          this.mapEntry = (MapEntry) entry;
+        } else {
+          this.entry = entry;
+        }
+        this.fieldType = extractFieldType(fieldDescriptor);
+      }
+
+      private static FieldDescriptor.JavaType extractFieldType(FieldDescriptor fieldDescriptor) {
+        return fieldDescriptor.getMessageType().getFields().get(0).getJavaType();
+      }
+
+      public Object getKey() {
+        if (mapEntry != null) {
+          return mapEntry.getKey();
+        }
+        return null;
+      }
+
+      public Object getEntry() {
+        if (mapEntry != null) {
+          return mapEntry;
+        }
+        return entry;
+      }
+
+      @Override
+      public int compareTo(MapEntryAdapter b) {
+        if (getKey() == null || b.getKey() == null) {
+          logger.info("Invalid key for map field.");
+          return -1;
+        }
+        switch (fieldType) {
+          case BOOLEAN:
+            return Boolean.compare((boolean) getKey(), (boolean) b.getKey());
+          case LONG:
+            return Long.compare((long) getKey(), (long) b.getKey());
+          case INT:
+            return Integer.compare((int) getKey(), (int) b.getKey());
+          case STRING:
+            String aString = (String) getKey();
+            String bString = (String) b.getKey();
+            if (aString == null && bString == null) {
+              return 0;
+            } else if (aString == null && bString != null) {
+              return -1;
+            } else if (aString != null && bString == null) {
+              return 1;
+            } else {
+              return aString.compareTo(bString);
+            }
+          default:
+            return 0;
+        }
       }
     }
 
@@ -641,9 +728,9 @@ public final class TextFormat {
           // Groups must be serialized with their original capitalization.
           generator.print(field.getMessageType().getName());
         } else {
-          generator.print(field.getName());
+            generator.print(field.getName());
+          }
         }
-      }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         generator.print(" {");
@@ -1577,7 +1664,7 @@ public final class TextFormat {
         throws IOException {
       // Read the entire input to a String then parse that.
 
-      // If StreamTokenizer were not quite so crippled, or if there were a kind
+      // If StreamTokenizer was not so limited, or if there were a kind
       // of Reader that could read in chunks that match some particular regex,
       // or if we wanted to write a custom Reader to tokenize our stream, then
       // we would not have to read to one big String.  Alas, none of these is
@@ -1708,6 +1795,12 @@ public final class TextFormat {
       final Descriptor type = target.getDescriptorForType();
       ExtensionRegistry.ExtensionInfo extension = null;
 
+      if ("google.protobuf.Any".equals(type.getFullName()) && tokenizer.tryConsume("[")) {
+        mergeAnyFieldValue(tokenizer, extensionRegistry, target, parseTreeBuilder, unknownFields,
+            type);
+        return;
+      }
+
       if (tokenizer.tryConsume("[")) {
         // An extension.
         final StringBuilder name = new StringBuilder(tokenizer.consumeIdentifier());
@@ -1719,16 +1812,16 @@ public final class TextFormat {
         extension = target.findExtensionByName(extensionRegistry, name.toString());
 
         if (extension == null) {
-          String message =
-              (tokenizer.getPreviousLine() + 1)
-                  + ":"
-                  + (tokenizer.getPreviousColumn() + 1)
-                  + ":\t"
-                  + type.getFullName()
-                  + ".["
-                  + name
-                  + "]";
-          unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
+            String message =
+                (tokenizer.getPreviousLine() + 1)
+                    + ":"
+                    + (tokenizer.getPreviousColumn() + 1)
+                    + ":\t"
+                    + type.getFullName()
+                    + ".["
+                    + name
+                    + "]";
+            unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
         } else {
           if (extension.descriptor.getContainingType() != type) {
             throw tokenizer.parseExceptionPreviousToken(
@@ -1928,9 +2021,13 @@ public final class TextFormat {
         // Try to parse human readable format of Any in the form: [type_url]: { ... }
         if (field.getMessageType().getFullName().equals("google.protobuf.Any")
             && tokenizer.tryConsume("[")) {
-          value =
-              consumeAnyFieldValue(
-                  tokenizer, extensionRegistry, field, parseTreeBuilder, unknownFields);
+          // Use Proto reflection here since depending on Any would intoduce a cyclic dependency
+          // (java_proto_library for any_java_proto depends on the protobuf_impl).
+          Message anyBuilder = DynamicMessage.getDefaultInstance(field.getMessageType());
+          MessageReflection.MergeTarget anyField = target.newMergeTargetForField(field, anyBuilder);
+          mergeAnyFieldValue(tokenizer, extensionRegistry, anyField, parseTreeBuilder,
+              unknownFields, field.getMessageType());
+          value = anyField.finish();
           tokenizer.consume(endToken);
         } else {
           Message defaultInstance = (extension == null) ? null : extension.defaultInstance;
@@ -2052,12 +2149,13 @@ public final class TextFormat {
       }
     }
 
-    private Object consumeAnyFieldValue(
+    private void mergeAnyFieldValue(
         final Tokenizer tokenizer,
         final ExtensionRegistry extensionRegistry,
-        final FieldDescriptor field,
+        MergeTarget target,
         final TextFormatParseInfoTree.Builder parseTreeBuilder,
-        List<UnknownField> unknownFields)
+        List<UnknownField> unknownFields,
+        Descriptor anyDescriptor)
         throws ParseException {
       // Try to parse human readable format of Any in the form: [type_url]: { ... }
       StringBuilder typeUrlBuilder = new StringBuilder();
@@ -2105,21 +2203,13 @@ public final class TextFormat {
         mergeField(tokenizer, extensionRegistry, contentTarget, parseTreeBuilder, unknownFields);
       }
 
-      // Serialize the content and put it back into an Any. Note that we can't depend on Any here
-      // because of a cyclic dependency (java_proto_library for any_java_proto depends on the
-      // protobuf_impl), so we need to construct the Any using proto reflection.
-      Descriptor anyDescriptor = field.getMessageType();
-      Message.Builder anyBuilder =
-          DynamicMessage.getDefaultInstance(anyDescriptor).newBuilderForType();
-      anyBuilder.setField(anyDescriptor.findFieldByName("type_url"), typeUrlBuilder.toString());
-      anyBuilder.setField(
+      target.setField(anyDescriptor.findFieldByName("type_url"), typeUrlBuilder.toString());
+      target.setField(
           anyDescriptor.findFieldByName("value"), contentBuilder.build().toByteString());
-
-      return anyBuilder.build();
     }
 
     /** Skips the next field including the field's name and value. */
-    private void skipField(Tokenizer tokenizer) throws ParseException {
+    private static void skipField(Tokenizer tokenizer) throws ParseException {
       if (tokenizer.tryConsume("[")) {
         // Extension name.
         do {
@@ -2151,7 +2241,7 @@ public final class TextFormat {
     /**
      * Skips the whole body of a message including the beginning delimiter and the ending delimiter.
      */
-    private void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
+    private static void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
       final String delimiter;
       if (tokenizer.tryConsume("<")) {
         delimiter = ">";
@@ -2166,7 +2256,7 @@ public final class TextFormat {
     }
 
     /** Skips a field value. */
-    private void skipFieldValue(Tokenizer tokenizer) throws ParseException {
+    private static void skipFieldValue(Tokenizer tokenizer) throws ParseException {
       if (tokenizer.tryConsumeString()) {
         while (tokenizer.tryConsumeString()) {}
         return;
@@ -2286,6 +2376,73 @@ public final class TextFormat {
                   code = code * 16 + digitValue(input.byteAt(i));
                 }
                 result[pos++] = (byte) code;
+                break;
+
+              case 'u':
+                // Unicode escape
+                ++i;
+                if (i + 3 < input.size()
+                    && isHex(input.byteAt(i))
+                    && isHex(input.byteAt(i + 1))
+                    && isHex(input.byteAt(i + 2))
+                    && isHex(input.byteAt(i + 3))) {
+                  char ch =
+                      (char)
+                          (digitValue(input.byteAt(i)) << 12
+                              | digitValue(input.byteAt(i + 1)) << 8
+                              | digitValue(input.byteAt(i + 2)) << 4
+                              | digitValue(input.byteAt(i + 3)));
+                  if (Character.isSurrogate(ch)) {
+                    throw new InvalidEscapeSequenceException(
+                        "Invalid escape sequence: '\\u' refers to a surrogate");
+                  }
+                  byte[] chUtf8 = Character.toString(ch).getBytes(UTF_8);
+                  System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
+                  pos += chUtf8.length;
+                  i += 3;
+                } else {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\u' with too few hex chars");
+                }
+                break;
+
+              case 'U':
+                // Unicode escape
+                ++i;
+                if (i + 7 >= input.size()) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U' with too few hex chars");
+                }
+                int codepoint = 0;
+                for (int offset = i; offset < i + 8; offset++) {
+                  byte b = input.byteAt(offset);
+                  if (!isHex(b)) {
+                    throw new InvalidEscapeSequenceException(
+                        "Invalid escape sequence: '\\U' with too few hex chars");
+                  }
+                  codepoint = (codepoint << 4) | digitValue(b);
+                }
+                if (!Character.isValidCodePoint(codepoint)) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U"
+                          + input.substring(i, i + 8).toStringUtf8()
+                          + "' is not a valid code point value");
+                }
+                Character.UnicodeBlock unicodeBlock = Character.UnicodeBlock.of(codepoint);
+                if (unicodeBlock.equals(Character.UnicodeBlock.LOW_SURROGATES)
+                    || unicodeBlock.equals(Character.UnicodeBlock.HIGH_SURROGATES)
+                    || unicodeBlock.equals(Character.UnicodeBlock.HIGH_PRIVATE_USE_SURROGATES)) {
+                  throw new InvalidEscapeSequenceException(
+                      "Invalid escape sequence: '\\U"
+                          + input.substring(i, i + 8).toStringUtf8()
+                          + "' refers to a surrogate code unit");
+                }
+                int[] codepoints = new int[1];
+                codepoints[0] = codepoint;
+                byte[] chUtf8 = new String(codepoints, 0, 1).getBytes(UTF_8);
+                System.arraycopy(chUtf8, 0, result, pos, chUtf8.length);
+                pos += chUtf8.length;
+                i += 7;
                 break;
 
               default:

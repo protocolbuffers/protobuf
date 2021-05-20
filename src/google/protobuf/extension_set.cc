@@ -180,20 +180,11 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* containing_type,
   Register(containing_type, number, info);
 }
 
-
 // ===================================================================
 // Constructors and basic methods.
 
 ExtensionSet::ExtensionSet(Arena* arena)
     : arena_(arena),
-      flat_capacity_(0),
-      flat_size_(0),
-      map_{flat_capacity_ == 0
-               ? NULL
-               : Arena::CreateArray<KeyValue>(arena_, flat_capacity_)} {}
-
-ExtensionSet::ExtensionSet()
-    : arena_(NULL),
       flat_capacity_(0),
       flat_size_(0),
       map_{flat_capacity_ == 0
@@ -625,7 +616,7 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
-  Arena* message_arena = message->GetArena();
+  Arena* message_arena = message->GetOwningArena();
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
     extension->type = type;
@@ -1063,11 +1054,8 @@ void ExtensionSet::InternalExtensionMergeFrom(
 }
 
 void ExtensionSet::Swap(ExtensionSet* x) {
-  if (GetArenaNoVirtual() == x->GetArenaNoVirtual()) {
-    using std::swap;
-    swap(flat_capacity_, x->flat_capacity_);
-    swap(flat_size_, x->flat_size_);
-    swap(map_, x->map_);
+  if (GetArena() == x->GetArena()) {
+    InternalSwap(x);
   } else {
     // TODO(cfallin, rohananil): We maybe able to optimize a case where we are
     // swapping from heap to arena-allocated extension set, by just Own()'ing
@@ -1081,6 +1069,14 @@ void ExtensionSet::Swap(ExtensionSet* x) {
   }
 }
 
+void ExtensionSet::InternalSwap(ExtensionSet* other) {
+  using std::swap;
+  swap(arena_, other->arena_);
+  swap(flat_capacity_, other->flat_capacity_);
+  swap(flat_size_, other->flat_size_);
+  swap(map_, other->map_);
+}
+
 void ExtensionSet::SwapExtension(ExtensionSet* other, int number) {
   if (this == other) return;
   Extension* this_ext = FindOrNull(number);
@@ -1091,7 +1087,7 @@ void ExtensionSet::SwapExtension(ExtensionSet* other, int number) {
   }
 
   if (this_ext != NULL && other_ext != NULL) {
-    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+    if (GetArena() == other->GetArena()) {
       using std::swap;
       swap(*this_ext, *other_ext);
     } else {
@@ -1112,7 +1108,7 @@ void ExtensionSet::SwapExtension(ExtensionSet* other, int number) {
   }
 
   if (this_ext == NULL) {
-    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+    if (GetArena() == other->GetArena()) {
       *Insert(number).first = *other_ext;
     } else {
       InternalExtensionMergeFrom(number, *other_ext);
@@ -1122,7 +1118,7 @@ void ExtensionSet::SwapExtension(ExtensionSet* other, int number) {
   }
 
   if (other_ext == NULL) {
-    if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
+    if (GetArena() == other->GetArena()) {
       *other->Insert(number).first = *this_ext;
     } else {
       other->InternalExtensionMergeFrom(number, *this_ext);
@@ -1196,27 +1192,28 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
   }
 }
 
-const char* ExtensionSet::ParseField(
-    uint64 tag, const char* ptr, const MessageLite* containing_type,
-    internal::InternalMetadataWithArenaLite* metadata,
-    internal::ParseContext* ctx) {
+const char* ExtensionSet::ParseField(uint64 tag, const char* ptr,
+                                     const MessageLite* containing_type,
+                                     internal::InternalMetadata* metadata,
+                                     internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(containing_type);
   int number = tag >> 3;
   bool was_packed_on_wire;
   ExtensionInfo extension;
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
-    return UnknownFieldParse(tag, metadata->mutable_unknown_fields(), ptr, ctx);
+    return UnknownFieldParse(
+        tag, metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
   }
-  return ParseFieldWithExtensionInfo(number, was_packed_on_wire, extension,
-                                     metadata, ptr, ctx);
+  return ParseFieldWithExtensionInfo<std::string>(
+      number, was_packed_on_wire, extension, metadata, ptr, ctx);
 }
 
 const char* ExtensionSet::ParseMessageSetItem(
     const char* ptr, const MessageLite* containing_type,
-    internal::InternalMetadataWithArenaLite* metadata,
-    internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl(ptr, containing_type, metadata, ctx);
+    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl<MessageLite, std::string>(ptr, containing_type,
+                                                           metadata, ctx);
 }
 
 bool ExtensionSet::ParseFieldWithExtensionInfo(int number,
@@ -1462,9 +1459,9 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
   return ParseMessageSetLite(input, &finder, &skipper);
 }
 
-uint8* ExtensionSet::_InternalSerialize(int start_field_number,
-                                        int end_field_number, uint8* target,
-                                        io::EpsCopyOutputStream* stream) const {
+uint8* ExtensionSet::_InternalSerializeImpl(
+    int start_field_number, int end_field_number, uint8* target,
+    io::EpsCopyOutputStream* stream) const {
   if (PROTOBUF_PREDICT_FALSE(is_large())) {
     const auto& end = map_.large->end();
     for (auto it = map_.large->lower_bound(start_field_number);
@@ -1869,29 +1866,30 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
     return;
   }
 
-  const auto old_flat_capacity = flat_capacity_;
-
+  auto new_flat_capacity = flat_capacity_;
   do {
-    flat_capacity_ = flat_capacity_ == 0 ? 1 : flat_capacity_ * 4;
-  } while (flat_capacity_ < minimum_new_capacity);
+    new_flat_capacity = new_flat_capacity == 0 ? 1 : new_flat_capacity * 4;
+  } while (new_flat_capacity < minimum_new_capacity);
 
   const KeyValue* begin = flat_begin();
   const KeyValue* end = flat_end();
-  if (flat_capacity_ > kMaximumFlatCapacity) {
-    // Switch to LargeMap
-    map_.large = Arena::Create<LargeMap>(arena_);
-    LargeMap::iterator hint = map_.large->begin();
+  AllocatedData new_map;
+  if (new_flat_capacity > kMaximumFlatCapacity) {
+    new_map.large = Arena::Create<LargeMap>(arena_);
+    LargeMap::iterator hint = new_map.large->begin();
     for (const KeyValue* it = begin; it != end; ++it) {
-      hint = map_.large->insert(hint, {it->first, it->second});
+      hint = new_map.large->insert(hint, {it->first, it->second});
     }
-    flat_size_ = 0;
   } else {
-    map_.flat = Arena::CreateArray<KeyValue>(arena_, flat_capacity_);
-    std::copy(begin, end, map_.flat);
+    new_map.flat = Arena::CreateArray<KeyValue>(arena_, new_flat_capacity);
+    std::copy(begin, end, new_map.flat);
   }
+
   if (arena_ == nullptr) {
-    DeleteFlatMap(begin, old_flat_capacity);
+    DeleteFlatMap(begin, flat_capacity_);
   }
+  flat_capacity_ = new_flat_capacity;
+  map_ = new_map;
 }
 
 // static
@@ -2144,3 +2142,5 @@ size_t ExtensionSet::MessageSetByteSize() const {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

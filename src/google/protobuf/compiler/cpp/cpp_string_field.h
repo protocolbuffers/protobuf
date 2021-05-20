@@ -63,18 +63,9 @@ class StringFieldGenerator : public FieldGenerator {
   void GenerateConstructorCode(io::Printer* printer) const;
   void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateDestructorCode(io::Printer* printer) const;
-  bool GenerateArenaDestructorCode(io::Printer* printer) const;
-  void GenerateDefaultInstanceAllocator(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
-  uint32 CalculateFieldTag() const;
-  bool IsInlined() const { return inlined_; }
-
-  bool MergeFromCodedStreamNeedsArena() const;
-
- protected:
-  const bool lite_;
-  bool inlined_;
+  void GenerateConstinitInitializer(io::Printer* printer) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringFieldGenerator);
@@ -95,7 +86,6 @@ class StringOneofFieldGenerator : public StringFieldGenerator {
   void GenerateMessageClearingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
-  void GenerateDestructorCode(io::Printer* printer) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOneofFieldGenerator);
@@ -118,6 +108,7 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
   void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
   void GenerateByteSize(io::Printer* printer) const;
+  void GenerateConstinitInitializer(io::Printer* printer) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedStringFieldGenerator);

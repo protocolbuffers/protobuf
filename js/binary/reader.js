@@ -41,6 +41,7 @@
  * using the typed jspb code generator, but if you bypass that you'll need
  * to keep things in sync by hand.
  *
+ * @suppress {missingRequire} TODO(b/152540451): this shouldn't be needed
  * @author aappleby@google.com (Austin Appleby)
  */
 
@@ -203,6 +204,15 @@ jspb.BinaryReader.prototype.getFieldNumber = function() {
  */
 jspb.BinaryReader.prototype.getWireType = function() {
   return this.nextWireType_;
+};
+
+
+/**
+ * @return {boolean} Whether the current wire type is a delimited field. Used to
+ * conditionally parse packed repeated fields.
+ */
+jspb.BinaryReader.prototype.isDelimited = function() {
+  return this.nextWireType_ == jspb.BinaryConstants.WireType.DELIMITED;
 };
 
 

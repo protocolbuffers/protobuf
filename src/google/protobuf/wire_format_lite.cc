@@ -479,7 +479,7 @@ void WireFormatLite::WriteString(int field_number, const std::string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kint32max);
+  GOOGLE_CHECK_LE(value.size(), static_cast<size_t>(kint32max));
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -488,14 +488,14 @@ void WireFormatLite::WriteStringMaybeAliased(int field_number,
                                              io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kint32max);
+  GOOGLE_CHECK_LE(value.size(), static_cast<size_t>(kint32max));
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 void WireFormatLite::WriteBytes(int field_number, const std::string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kint32max);
+  GOOGLE_CHECK_LE(value.size(), static_cast<size_t>(kint32max));
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -503,7 +503,7 @@ void WireFormatLite::WriteBytesMaybeAliased(int field_number,
                                             const std::string& value,
                                             io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kint32max);
+  GOOGLE_CHECK_LE(value.size(), static_cast<size_t>(kint32max));
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
@@ -547,7 +547,7 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   WriteSubMessageMaybeToArray(size, value, output);
 }
 
-PROTOBUF_ALWAYS_INLINE static bool ReadBytesToString(
+PROTOBUF_NDEBUG_INLINE static bool ReadBytesToString(
     io::CodedInputStream* input, std::string* value);
 inline static bool ReadBytesToString(io::CodedInputStream* input,
                                      std::string* value) {
@@ -603,7 +603,6 @@ bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
 // efficient SSE code.
 template <bool ZigZag, bool SignExtended, typename T>
 static size_t VarintSize(const T* data, const int n) {
-#if __cplusplus >= 201103L
   static_assert(sizeof(T) == 4, "This routine only works for 32 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert(
@@ -615,7 +614,6 @@ static size_t VarintSize(const T* data, const int n) {
       "Cannot SignExtended unsigned types");
   static_assert(!(SignExtended && ZigZag),
                 "Cannot SignExtended and ZigZag on the same type");
-#endif
   uint32 sum = n;
   uint32 msb_sum = 0;
   for (int i = 0; i < n; i++) {
@@ -640,12 +638,10 @@ static size_t VarintSize(const T* data, const int n) {
 
 template <bool ZigZag, typename T>
 static size_t VarintSize64(const T* data, const int n) {
-#if __cplusplus >= 201103L
   static_assert(sizeof(T) == 8, "This routine only works for 64 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert(!ZigZag || !std::is_unsigned<T>::value,
                 "Cannot ZigZag encode unsigned types");
-#endif
   uint64 sum = n;
   for (int i = 0; i < n; i++) {
     uint64 x = data[i];
@@ -780,3 +776,5 @@ size_t WireFormatLite::SInt64Size(const RepeatedField<int64>& value) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

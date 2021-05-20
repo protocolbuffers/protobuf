@@ -94,13 +94,12 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
   variables_["constant_name"] = FieldConstantName(descriptor_);
   variables_["field_type"] =
       StrCat(static_cast<int>(descriptor_->type()));
-  variables_["packed"] = descriptor_->options().packed() ? "true" : "false";
+  variables_["packed"] = descriptor_->is_packed() ? "true" : "false";
 
   std::string scope =
       IsScoped() ? ClassName(descriptor_->extension_scope(), false) + "::" : "";
   variables_["scope"] = scope;
-  std::string scoped_name = scope + ResolveKeyword(name);
-  variables_["scoped_name"] = scoped_name;
+  variables_["scoped_name"] = ExtensionName(descriptor_);
   variables_["number"] = StrCat(descriptor_->number());
 }
 
@@ -157,6 +156,11 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
         StringReplace(variables_["scoped_name"], "::", "_", true) + "_default";
     format("const std::string $1$($2$);\n", default_str,
            DefaultValue(options_, descriptor_));
+  } else if (descriptor_->message_type()) {
+    // We have to initialize the default instance for extensions at registration
+    // time.
+    default_str =
+        FieldMessageTypeName(descriptor_, options_) + "::default_instance()";
   } else {
     default_str = DefaultValue(options_, descriptor_);
   }
@@ -170,6 +174,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
   }
 
   format(
+      "PROTOBUF_ATTRIBUTE_INIT_PRIORITY "
       "::$proto_ns$::internal::ExtensionIdentifier< $extendee$,\n"
       "    ::$proto_ns$::internal::$type_traits$, $field_type$, $packed$ >\n"
       "  $scoped_name$($constant_name$, $1$);\n",

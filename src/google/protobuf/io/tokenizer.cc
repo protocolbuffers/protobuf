@@ -888,7 +888,8 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64 max_value,
       // token, but Tokenizer still think it's integer.
       return false;
     }
-    if (digit > max_value || result > (max_value - digit) / base) {
+    if (static_cast<uint64>(digit) > max_value ||
+        result > (max_value - digit) / base) {
       // Overflow.
       return false;
     }
@@ -918,7 +919,8 @@ double Tokenizer::ParseFloat(const std::string& text) {
     ++end;
   }
 
-  GOOGLE_LOG_IF(DFATAL, end - start != text.size() || *start == '-')
+  GOOGLE_LOG_IF(DFATAL,
+         static_cast<size_t>(end - start) != text.size() || *start == '-')
       << " Tokenizer::ParseFloat() passed text that could not have been"
          " tokenized as a float: "
       << CEscape(text);
@@ -940,14 +942,15 @@ static void AppendUTF8(uint32 code_point, std::string* output) {
     tmp = 0x00e08080 | ((code_point & 0xf000) << 4) |
           ((code_point & 0x0fc0) << 2) | (code_point & 0x003f);
     len = 3;
-  } else if (code_point <= 0x1fffff) {
+  } else if (code_point <= 0x10ffff) {
     tmp = 0xf0808080 | ((code_point & 0x1c0000) << 6) |
           ((code_point & 0x03f000) << 4) | ((code_point & 0x000fc0) << 2) |
           (code_point & 0x003f);
     len = 4;
   } else {
-    // UTF-16 is only defined for code points up to 0x10FFFF, and UTF-8 is
-    // normally only defined up to there as well.
+    // Unicode code points end at 0x10FFFF, so this is out-of-range.
+    // ConsumeString permits hex values up to 0x1FFFFF, and FetchUnicodePoint
+    // doesn't perform a range check.
     StringAppendF(output, "\\U%08x", code_point);
     return;
   }
@@ -1113,8 +1116,8 @@ void Tokenizer::ParseStringAppend(const std::string& text,
 
 template <typename CharacterClass>
 static bool AllInClass(const std::string& s) {
-  for (int i = 0; i < s.size(); ++i) {
-    if (!CharacterClass::InClass(s[i])) return false;
+  for (const char character : s) {
+    if (!CharacterClass::InClass(character)) return false;
   }
   return true;
 }

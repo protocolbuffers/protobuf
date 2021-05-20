@@ -135,7 +135,7 @@ $ make go
 
 
 ### PHP
-We have two version of php protobuf implemention: pure php, php with c extension. To run these version benchmark, you need to:
+We have two version of php protobuf implementation: pure php, php with c extension. To run these version benchmark, you need to:
 #### Pure PHP
 ```
 $ make php

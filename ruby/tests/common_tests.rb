@@ -115,14 +115,14 @@ module CommonTests
     m = proto_module::TestMessage.new(
       :optional_int32 => -42,
       :optional_enum => :A,
-      :optional_msg => proto_module::TestMessage2.new,
+      :optional_msg => proto_module::TestMessage2.new(foo: 0),
       :repeated_string => ["hello", "there", "world"])
-    expected = "<#{proto_module}::TestMessage: optional_int32: -42, optional_int64: 0, optional_uint32: 0, optional_uint64: 0, optional_bool: false, optional_float: 0.0, optional_double: 0.0, optional_string: \"\", optional_bytes: \"\", optional_msg: <#{proto_module}::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: [\"hello\", \"there\", \"world\"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>"
+    expected = "<#{proto_module}::TestMessage: optional_int32: -42, optional_msg: <#{proto_module}::TestMessage2: foo: 0>, optional_enum: :A, repeated_int32: [], repeated_int64: [], repeated_uint32: [], repeated_uint64: [], repeated_bool: [], repeated_float: [], repeated_double: [], repeated_string: [\"hello\", \"there\", \"world\"], repeated_bytes: [], repeated_msg: [], repeated_enum: []>"
     assert_equal expected, m.inspect
     assert_equal expected, m.to_s
 
     m = proto_module::OneofMessage.new(:b => -42)
-    expected = "<#{proto_module}::OneofMessage: a: \"\", b: -42, c: nil, d: :Default>"
+    expected = "<#{proto_module}::OneofMessage: b: -42>"
     assert_equal expected, m.inspect
     assert_equal expected, m.to_s
   end
@@ -428,12 +428,24 @@ module CommonTests
     assert m.length == 0
     assert m == {}
 
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
     assert_raise RangeError do
       m["asdf"] = 0x1_0000_0000
     end
+  end
+
+  def test_b_8385
+    m1 = Google::Protobuf::Map.new(:string, :string)
+    m2 = Google::Protobuf::Map.new(:string, :string)
+
+    assert_equal m1, m2
+
+    m1["counter"] = "a"
+    m2["counter"] = "aa"
+
+    assert_not_equal m1, m2
   end
 
   def test_map_ctor
@@ -492,7 +504,7 @@ module CommonTests
 
     m = Google::Protobuf::Map.new(:string, :int32)
     m["asdf"] = 1
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
     assert_raise Encoding::UndefinedConversionError do
@@ -505,7 +517,7 @@ module CommonTests
     m[bytestring] = 1
     # Allowed -- we will automatically convert to ASCII-8BIT.
     m["asdf"] = 1
-    assert_raise TypeError do
+    assert_raise Google::Protobuf::TypeError do
       m[1] = 1
     end
   end
@@ -547,6 +559,7 @@ module CommonTests
         "b" => proto_module::TestMessage.new(:optional_int32 => 84) })
 
     m2 = m.dup
+    assert m.to_h == m2.to_h
     assert m == m2
     assert m.object_id != m2.object_id
     assert m["a"].object_id == m2["a"].object_id
@@ -686,12 +699,13 @@ module CommonTests
     assert m.repeated_msg[0].object_id != m2.repeated_msg[0].object_id
   end
 
-  def test_eq
+  def test_message_eq
     m = proto_module::TestMessage.new(:optional_int32 => 42,
                                       :repeated_int32 => [1, 2, 3])
     m2 = proto_module::TestMessage.new(:optional_int32 => 43,
                                        :repeated_int32 => [1, 2, 3])
     assert m != m2
+    assert_not_equal proto_module::TestMessage.new, proto_module::TestMessage2.new
   end
 
   def test_enum_lookup
@@ -1103,16 +1117,6 @@ module CommonTests
     m = proto_module::TestMessage.new
 
     expected = {
-      optionalInt32: 0,
-      optionalInt64: "0",
-      optionalUint32: 0,
-      optionalUint64: "0",
-      optionalBool: false,
-      optionalFloat: 0,
-      optionalDouble: 0,
-      optionalString: "",
-      optionalBytes: "",
-      optionalEnum: "Default",
       repeatedInt32: [],
       repeatedInt64: [],
       repeatedUint32: [],
@@ -1137,17 +1141,7 @@ module CommonTests
     m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
 
     expected = {
-      optionalInt32: 0,
-      optionalInt64: "0",
-      optionalUint32: 0,
-      optionalUint64: "0",
-      optionalBool: false,
-      optionalFloat: 0,
-      optionalDouble: 0,
-      optionalString: "",
-      optionalBytes: "",
-      optionalMsg: {foo: 0},
-      optionalEnum: "Default",
+      optionalMsg: {},
       repeatedInt32: [],
       repeatedInt64: [],
       repeatedUint32: [],
@@ -1172,16 +1166,6 @@ module CommonTests
     m = proto_module::TestMessage.new(repeated_msg: [proto_module::TestMessage2.new])
 
     expected = {
-      optionalInt32: 0,
-      optionalInt64: "0",
-      optionalUint32: 0,
-      optionalUint64: "0",
-      optionalBool: false,
-      optionalFloat: 0,
-      optionalDouble: 0,
-      optionalString: "",
-      optionalBytes: "",
-      optionalEnum: "Default",
       repeatedInt32: [],
       repeatedInt64: [],
       repeatedUint32: [],
@@ -1191,7 +1175,7 @@ module CommonTests
       repeatedDouble: [],
       repeatedString: [],
       repeatedBytes: [],
-      repeatedMsg: [{foo: 0}],
+      repeatedMsg: [{}],
       repeatedEnum: []
     }
 
@@ -1256,13 +1240,45 @@ module CommonTests
     assert_equal json, struct.to_json
 
     assert_raise(RuntimeError, "Maximum recursion depth exceeded during encoding") do
-      proto_module::MyRepeatedStruct.encode(
-        proto_module::MyRepeatedStruct.new(structs: [proto_module::MyStruct.new(struct: struct)]))
+      struct = Google::Protobuf::Struct.new
+      struct.fields["foobar"] = Google::Protobuf::Value.new(struct_value: struct)
+      Google::Protobuf::Struct.encode(struct)
     end
   end
 
   def test_comparison_with_arbitrary_object
     assert proto_module::TestMessage.new != nil
+  end
+
+  def test_wrappers_set_to_default
+    run_asserts = ->(m) {
+      assert_equal 0.0, m.double.value
+      assert_equal 0.0, m.float.value
+      assert_equal 0, m.int32.value
+      assert_equal 0, m.int64.value
+      assert_equal 0, m.uint32.value
+      assert_equal 0, m.uint64.value
+      assert_equal false, m.bool.value
+      assert_equal '', m.string.value
+      assert_equal '', m.bytes.value
+    }
+
+    m = proto_module::Wrapper.new(
+      double: Google::Protobuf::DoubleValue.new(value: 0.0),
+      float: Google::Protobuf::FloatValue.new(value: 0.0),
+      int32: Google::Protobuf::Int32Value.new(value: 0),
+      int64: Google::Protobuf::Int64Value.new(value: 0),
+      uint32: Google::Protobuf::UInt32Value.new(value: 0),
+      uint64: Google::Protobuf::UInt64Value.new(value: 0),
+      bool: Google::Protobuf::BoolValue.new(value: false),
+      string: Google::Protobuf::StringValue.new(value: ""),
+      bytes: Google::Protobuf::BytesValue.new(value: ''),
+    )
+
+    run_asserts.call(m)
+    m2 = proto_module::Wrapper.decode(m.to_proto)
+    run_asserts.call(m2)
+    m3 = proto_module::Wrapper.decode_json(m.to_json)
   end
 
   def test_wrapper_getters
@@ -1692,11 +1708,17 @@ module CommonTests
     m.duration = Rational(3, 2)
     assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 500_000_000), m.duration
 
-    m.duration = BigDecimal.new("5")
+    m.duration = BigDecimal("5")
     assert_equal Google::Protobuf::Duration.new(seconds: 5, nanos: 0), m.duration
 
     m = proto_module::TimeMessage.new(duration: 1.1)
     assert_equal Google::Protobuf::Duration.new(seconds: 1, nanos: 100_000_000), m.duration
+
+    m = proto_module::TimeMessage.new(duration: 123.321)
+    assert_equal Google::Protobuf::Duration.new(seconds: 123, nanos: 321_000_000), m.duration
+
+    m = proto_module::TimeMessage.new(duration: -123.321)
+    assert_equal Google::Protobuf::Duration.new(seconds: -123, nanos: -321_000_000), m.duration
 
     assert_raise(Google::Protobuf::TypeError) { m.duration = '2' }
     assert_raise(Google::Protobuf::TypeError) { m.duration = proto_module::TimeMessage.new }
@@ -1708,7 +1730,7 @@ module CommonTests
     m.freeze
 
     frozen_error = assert_raise(FrozenErrorType) { m.optional_int32 = 20 }
-    assert_equal "can't modify frozen #{proto_module}::TestMessage", frozen_error.message
+    assert_match "can't modify frozen #{proto_module}::TestMessage", frozen_error.message
     assert_equal 10, m.optional_int32
     assert_equal true, m.frozen?
 
@@ -1754,5 +1776,26 @@ module CommonTests
     assert !m1.eql?(m2)
     assert m1.hash != m2.hash
     assert_nil h[m2]
+  end
+
+  def test_object_gc
+    m = proto_module::TestMessage.new(optional_msg: proto_module::TestMessage2.new)
+    m.optional_msg
+    GC.start(full_mark: true, immediate_sweep: true)
+    m.optional_msg.inspect
+  end
+
+  def test_object_gc_freeze
+    m = proto_module::TestMessage.new
+    m.repeated_float.freeze
+    GC.start(full_mark: true)
+
+    # Make sure we remember that the object is frozen.
+    # The wrapper object contains this information, so we need to ensure that
+    # the previous GC did not collect it.
+    assert m.repeated_float.frozen?
+
+    GC.start(full_mark: true, immediate_sweep: true)
+    assert m.repeated_float.frozen?
   end
 end

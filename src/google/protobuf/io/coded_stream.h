@@ -120,18 +120,24 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 // Assuming windows is always little-endian.
 #if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
 #define PROTOBUF_LITTLE_ENDIAN 1
 #endif
-#if _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
+#if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
 // If MSVC has "/RTCc" set, it will complain about truncating casts at
 // runtime.  This file contains some intentional truncating casts.
 #pragma runtime_checks("c", off)
 #endif
 #else
-#include <sys/param.h>  // __BYTE_ORDER
+#ifdef __APPLE__
+#include <machine/endian.h>  // __BYTE_ORDER
+#elif defined(__FreeBSD__)
+#include <sys/endian.h>  // __BYTE_ORDER
+#else
+#include <endian.h>  // __BYTE_ORDER
+#endif
 #if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||    \
      (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN)) && \
     !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
@@ -847,11 +853,11 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
   static constexpr int TagSize(uint32 tag) {
-    return (tag < (1 << 7))
-               ? 1
-               : (tag < (1 << 14))
-                     ? 2
-                     : (tag < (1 << 21)) ? 3 : (tag < (1 << 28)) ? 4 : 5;
+    return (tag < (1 << 7))    ? 1
+           : (tag < (1 << 14)) ? 2
+           : (tag < (1 << 21)) ? 3
+           : (tag < (1 << 28)) ? 4
+                               : 5;
   }
 
   PROTOBUF_ALWAYS_INLINE uint8* WriteTag(uint32 num, uint32 wt, uint8* ptr) {
@@ -900,23 +906,25 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   PROTOBUF_ALWAYS_INLINE static uint8* UnsafeVarint(T value, uint8* ptr) {
     static_assert(std::is_unsigned<T>::value,
                   "Varint serialization must be unsigned");
+    ptr[0] = static_cast<uint8>(value);
     if (value < 0x80) {
-      ptr[0] = static_cast<uint8>(value);
       return ptr + 1;
     }
-    ptr[0] = static_cast<uint8>(value | 0x80);
+    // Turn on continuation bit in the byte we just wrote.
+    ptr[0] |= static_cast<uint8>(0x80);
     value >>= 7;
+    ptr[1] = static_cast<uint8>(value);
     if (value < 0x80) {
-      ptr[1] = static_cast<uint8>(value);
       return ptr + 2;
     }
-    ptr++;
+    ptr += 2;
     do {
-      *ptr = static_cast<uint8>(value | 0x80);
+      // Turn on continuation bit in the byte we just wrote.
+      ptr[-1] |= static_cast<uint8>(0x80);
       value >>= 7;
+      *ptr = static_cast<uint8>(value);
       ++ptr;
-    } while (PROTOBUF_PREDICT_FALSE(value >= 0x80));
-    *ptr++ = static_cast<uint8>(value);
+    } while (value >= 0x80);
     return ptr;
   }
 
@@ -960,7 +968,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // buffers to ensure there is no error as of yet.
   uint8* FlushAndResetBuffer(uint8*);
 
-  // The following functions mimick the old CodedOutputStream behavior as close
+  // The following functions mimic the old CodedOutputStream behavior as close
   // as possible. They flush the current state to the stream, behave as
   // the old CodedOutputStream and then return to normal operation.
   bool Skip(int count, uint8** pp);
@@ -1145,6 +1153,9 @@ class PROTOBUF_EXPORT CodedOutputStream {
   void WriteVarint32(uint32 value);
   // Like WriteVarint32()  but writing directly to the target array.
   static uint8* WriteVarint32ToArray(uint32 value, uint8* target);
+  // Like WriteVarint32()  but writing directly to the target array, and with the
+  // less common-case paths being out of line rather than inlined.
+  static uint8* WriteVarint32ToArrayOutOfLine(uint32 value, uint8* target);
   // Write an unsigned integer with Varint encoding.
   void WriteVarint64(uint64 value);
   // Like WriteVarint64()  but writing directly to the target array.
@@ -1159,7 +1170,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // This is identical to WriteVarint32(), but optimized for writing tags.
   // In particular, if the input is a compile-time constant, this method
   // compiles down to a couple instructions.
-  // Always inline because otherwise the aformentioned optimization can't work,
+  // Always inline because otherwise the aforementioned optimization can't work,
   // but GCC by default doesn't want to inline this.
   void WriteTag(uint32 value);
   // Like WriteTag()  but writing directly to the target array.
@@ -1177,12 +1188,11 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Compile-time equivalent of VarintSize32().
   template <uint32 Value>
   struct StaticVarintSize32 {
-    static const size_t value =
-        (Value < (1 << 7))
-            ? 1
-            : (Value < (1 << 14))
-                  ? 2
-                  : (Value < (1 << 21)) ? 3 : (Value < (1 << 28)) ? 4 : 5;
+    static const size_t value = (Value < (1 << 7))    ? 1
+                                : (Value < (1 << 14)) ? 2
+                                : (Value < (1 << 21)) ? 3
+                                : (Value < (1 << 28)) ? 4
+                                                      : 5;
   };
 
   // Returns the total number of bytes written since this object was created.
@@ -1260,6 +1270,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
   static void SetDefaultSerializationDeterministic() {
     default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
+  // REQUIRES: value >= 0x80, and that (value & 7f) has been written to *target.
+  static uint8* WriteVarint32ToArrayOutOfLineHelper(uint32 value, uint8* target);
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
 };
 
@@ -1588,6 +1600,16 @@ inline bool CodedInputStream::Skip(int count) {
 inline uint8* CodedOutputStream::WriteVarint32ToArray(uint32 value,
                                                       uint8* target) {
   return EpsCopyOutputStream::UnsafeVarint(value, target);
+}
+
+inline uint8* CodedOutputStream::WriteVarint32ToArrayOutOfLine(uint32 value,
+                                                               uint8* target) {
+  target[0] = static_cast<uint8>(value);
+  if (value < 0x80) {
+    return target + 1;
+  } else {
+    return WriteVarint32ToArrayOutOfLineHelper(value, target);
+  }
 }
 
 inline uint8* CodedOutputStream::WriteVarint64ToArray(uint64 value,

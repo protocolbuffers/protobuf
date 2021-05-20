@@ -39,8 +39,11 @@
 #include <string>
 #include <vector>
 
+#include <google/protobuf/stubs/common.h>
+
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/any_test.pb.h>
 #include <google/protobuf/map_test_util.h>
 #include <google/protobuf/map_unittest.pb.h>
@@ -53,9 +56,6 @@
 #include <google/protobuf/util/message_differencer_unittest.pb.h>
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/util/message_differencer.h>
-
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -160,6 +160,29 @@ TEST(MessageDifferencerTest, MapFieldEqualityTest) {
 
   // Compare
   EXPECT_TRUE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Get map entries by index will sync map to repeated field
+  MapTestUtil::GetMapEntries(msg1, 0);
+  EXPECT_TRUE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare values not match
+  (*msg1.mutable_map_int32_int32())[1] = 2;
+  (*msg2.mutable_map_int32_int32())[1] = 3;
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare keys not match
+  msg1.Clear();
+  msg2.Clear();
+  (*msg1.mutable_map_string_string())["1"] = "";
+  (*msg2.mutable_map_string_string())["2"] = "";
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+
+  // Compare message values not match
+  msg1.Clear();
+  msg2.Clear();
+  (*msg1.mutable_map_int32_foreign_message())[1].set_c(1);
+  (*msg2.mutable_map_int32_foreign_message())[1].set_c(2);
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
 }
 
 TEST(MessageDifferencerTest, BasicPartialEqualityTest) {
@@ -1037,6 +1060,42 @@ TEST(MessageDifferencerTest,
   EXPECT_TRUE(differencer.CompareWithFields(msg1, msg2, fields1, fields2));
 }
 
+TEST(MessageDifferencerTest, RepeatedFieldTreatmentChangeListToSet) {
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+
+  msg1.add_rv(1);
+  msg1.add_rv(2);
+  msg2.add_rv(2);
+  msg2.add_rv(1);
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsList(
+      protobuf_unittest::TestDiffMessage::descriptor()->FindFieldByName("rv"));
+  differencer.TreatAsSet(
+      protobuf_unittest::TestDiffMessage::descriptor()->FindFieldByName("rv"));
+
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest, RepeatedFieldTreatmentChangeSetToList) {
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+
+  msg1.add_rv(1);
+  msg1.add_rv(2);
+  msg2.add_rv(2);
+  msg2.add_rv(1);
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsSet(
+      protobuf_unittest::TestDiffMessage::descriptor()->FindFieldByName("rv"));
+  differencer.TreatAsList(
+      protobuf_unittest::TestDiffMessage::descriptor()->FindFieldByName("rv"));
+
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+}
+
 TEST(MessageDifferencerTest, RepeatedFieldSmartListTest) {
   // Create the testing protos
   protobuf_unittest::TestDiffMessage msg1;
@@ -1205,7 +1264,7 @@ TEST(MessageDifferencerTest, RepeatedFieldSmartSetTest_PreviouslyMatch) {
   *msg2.add_rm() = elem1_2;
   *msg2.add_rm() = elem2_2;
 
-  string diff_report;
+  std::string diff_report;
   util::MessageDifferencer differencer;
   differencer.ReportDifferencesToString(&diff_report);
   differencer.set_repeated_field_comparison(
@@ -1758,6 +1817,43 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_IgnoredKeyFields) {
       "ignored: item[0].ra\n"
       "modified: item[0].b: \"hello\" -> \"world\"\n",
       output);
+}
+
+TEST(MessageDifferencerTest, PrintMapKeysTest) {
+  // Note that because map is unordered, the comparison
+  // output string for test evaluation cannot assume order of
+  // output of fields (IOW if two fields are deleted
+  // one cannot assume which deleted field log will be printed first).
+  // Test currently just has a single record per operation to address this.
+  // This should only be a limitation for EXPECT_EQ evaluation.
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  item->mutable_mp()->insert({{"key_a", 1}, {"key_b", 2}, {"key_c", 3}});
+  item = msg2.add_item();
+  item->mutable_mp()->insert({{"key_a", 1}, {"key_b", 3}, {"key_d", 4}});
+
+  util::MessageDifferencer differencer;
+  std::string diff;
+  differencer.ReportDifferencesToString(&diff);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "modified: item[0].mp[key_b]: 2 -> 3\n"
+      "added: item[0].mp[key_d]: 4\n"
+      "deleted: item[0].mp[key_c]: 3\n",
+      diff);
+
+  google::protobuf::Any any1, any2;
+  any1.PackFrom(msg1);
+  any2.PackFrom(msg2);
+  std::string diff_with_any;
+  differencer.ReportDifferencesToString(&diff_with_any);
+  EXPECT_FALSE(differencer.Compare(any1, any2));
+  EXPECT_EQ(
+      "modified: item[0].mp[key_b]: 2 -> 3\n"
+      "added: item[0].mp[key_d]: 4\n"
+      "deleted: item[0].mp[key_c]: 3\n",
+      diff_with_any);
 }
 
 static const char* const kIgnoredFields[] = {"rm.b", "rm.m.b"};
@@ -2385,7 +2481,7 @@ class ComparisonTest : public testing::Test {
 
   void field_as_set(const std::string& field) { set_field_ = field; }
 
-  void field_as_map(const string& field, const std::string& key) {
+  void field_as_map(const std::string& field, const std::string& key) {
     map_field_ = field;
     map_key_ = key;
   }
@@ -3198,25 +3294,29 @@ TEST_F(ComparisonTest, EquivalentIgnoresUnknown) {
 }
 
 TEST_F(ComparisonTest, MapTest) {
-  Map<string, std::string>& map1 = *map_proto1_.mutable_map_string_string();
+  Map<std::string, std::string>& map1 =
+      *map_proto1_.mutable_map_string_string();
   map1["key1"] = "1";
   map1["key2"] = "2";
   map1["key3"] = "3";
-  Map<string, std::string>& map2 = *map_proto2_.mutable_map_string_string();
+  Map<std::string, std::string>& map2 =
+      *map_proto2_.mutable_map_string_string();
   map2["key3"] = "0";
   map2["key2"] = "2";
   map2["key1"] = "1";
 
-  EXPECT_EQ("modified: map_string_string.value: \"3\" -> \"0\"\n",
+  EXPECT_EQ("modified: map_string_string[key3]: \"3\" -> \"0\"\n",
             Run(map_proto1_, map_proto2_));
 }
 
 TEST_F(ComparisonTest, MapIgnoreKeyTest) {
-  Map<string, std::string>& map1 = *map_proto1_.mutable_map_string_string();
+  Map<std::string, std::string>& map1 =
+      *map_proto1_.mutable_map_string_string();
   map1["key1"] = "1";
   map1["key2"] = "2";
   map1["key3"] = "3";
-  Map<string, std::string>& map2 = *map_proto2_.mutable_map_string_string();
+  Map<std::string, std::string>& map2 =
+      *map_proto2_.mutable_map_string_string();
   map2["key4"] = "2";
   map2["key5"] = "3";
   map2["key6"] = "1";
@@ -3258,7 +3358,7 @@ TEST_F(ComparisonTest, MapEntryPartialTest) {
   ASSERT_TRUE(parser.ParseFromString(
       "map_int32_foreign_message { key: 1 value { c: 2 }}", &map2));
   EXPECT_FALSE(differencer.Compare(map1, map2));
-  EXPECT_EQ("modified: map_int32_foreign_message.value.c: 1 -> 2\n", output);
+  EXPECT_EQ("modified: map_int32_foreign_message[1].c: 1 -> 2\n", output);
 
   ASSERT_TRUE(
       parser.ParseFromString("map_int32_foreign_message { key: 1 }", &map1));
@@ -3275,7 +3375,11 @@ TEST_F(ComparisonTest, MapEntryPartialEmptyKeyTest) {
 
   util::MessageDifferencer differencer;
   differencer.set_scope(util::MessageDifferencer::PARTIAL);
-  EXPECT_TRUE(differencer.Compare(map1, map2));
+  // TODO(jieluo): Remove the round trip
+  std::string serialized_value;
+  map1.SerializeToString(&serialized_value);
+  map1.ParseFromString(serialized_value);
+  EXPECT_FALSE(differencer.Compare(map1, map2));
 }
 
 TEST_F(ComparisonTest, MapEntryMissingEmptyFieldIsOkTest) {
@@ -3331,13 +3435,14 @@ TEST_F(ComparisonTest, MapEntryCustomMapKeyComparator) {
   // equal.  However, in value comparison, all fields of the message are taken
   // into consideration, so they are reported as different.
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ("modified: map_string_foreign_message.key: \"key1\" -> \"key2\"\n",
-            output);
+  EXPECT_EQ(
+      "modified: map_string_foreign_message[key1].key: \"key1\" -> \"key2\"\n",
+      output);
   differencer.IgnoreField(
       GetFieldDescriptor(msg1, "map_string_foreign_message.key"));
   output.clear();
   EXPECT_TRUE(differencer.Compare(msg1, msg2));
-  EXPECT_EQ("ignored: map_string_foreign_message.key\n", output);
+  EXPECT_EQ("ignored: map_string_foreign_message[key1].key\n", output);
 }
 
 class MatchingTest : public testing::Test {
@@ -3443,6 +3548,7 @@ TEST_F(MatchingTest, ReportMatchedForMovedFields) {
       "moved: item[1] -> item[0] : { a: 27 }\n",
       RunWithResult(&differencer, msg1, msg2, true));
 }
+
 
 TEST_F(MatchingTest, MatchesAppearInPostTraversalOrderForMovedFields) {
   protobuf_unittest::TestDiffMessage msg1, msg2;

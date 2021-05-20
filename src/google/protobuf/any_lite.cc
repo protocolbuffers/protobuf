@@ -53,16 +53,13 @@ const char kAnyFullTypeName[] = "google.protobuf.Any";
 const char kTypeGoogleApisComPrefix[] = "type.googleapis.com/";
 const char kTypeGoogleProdComPrefix[] = "type.googleprod.com/";
 
-AnyMetadata::AnyMetadata(UrlType* type_url, ValueType* value)
-    : type_url_(type_url), value_(value) {}
-
-void AnyMetadata::InternalPackFrom(const MessageLite& message,
+bool AnyMetadata::InternalPackFrom(const MessageLite& message,
                                    StringPiece type_url_prefix,
                                    StringPiece type_name) {
-  type_url_->SetNoArena(&::google::protobuf::internal::GetEmptyString(),
-                        GetTypeUrl(type_name, type_url_prefix));
-  message.SerializeToString(value_->MutableNoArena(
-      &::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+  type_url_->Set(&::google::protobuf::internal::GetEmptyString(),
+                 GetTypeUrl(type_name, type_url_prefix), nullptr);
+  return message.SerializeToString(
+      value_->Mutable(ArenaStringPtr::EmptyDefault{}, nullptr));
 }
 
 bool AnyMetadata::InternalUnpackTo(StringPiece type_name,
@@ -70,50 +67,30 @@ bool AnyMetadata::InternalUnpackTo(StringPiece type_name,
   if (!InternalIs(type_name)) {
     return false;
   }
-  return message->ParseFromString(value_->GetNoArena());
+  return message->ParseFromString(value_->Get());
 }
-
-namespace {
-
-// The type URL could be stored in either an ArenaStringPtr or a
-// StringPieceField, so we provide these helpers to get a string_view from
-// either type. We use a template function as a way to avoid depending on
-// StringPieceField.
-
-template <typename T>
-StringPiece Get(const T* ptr) {
-  return ptr->Get();
-}
-
-template <>
-// NOLINTNEXTLINE: clang-diagnostic-unused-function
-StringPiece Get(const ArenaStringPtr* ptr) {
-  return ptr->GetNoArena();
-}
-
-}  // namespace
 
 bool AnyMetadata::InternalIs(StringPiece type_name) const {
-  StringPiece type_url = Get(type_url_);
+  StringPiece type_url = type_url_->Get();
   return type_url.size() >= type_name.size() + 1 &&
          type_url[type_url.size() - type_name.size() - 1] == '/' &&
          HasSuffixString(type_url, type_name);
 }
 
-bool ParseAnyTypeUrl(const std::string& type_url, std::string* url_prefix,
+bool ParseAnyTypeUrl(StringPiece type_url, std::string* url_prefix,
                      std::string* full_type_name) {
-  size_t pos = type_url.find_last_of("/");
+  size_t pos = type_url.find_last_of('/');
   if (pos == std::string::npos || pos + 1 == type_url.size()) {
     return false;
   }
   if (url_prefix) {
-    *url_prefix = type_url.substr(0, pos + 1);
+    *url_prefix = std::string(type_url.substr(0, pos + 1));
   }
-  *full_type_name = type_url.substr(pos + 1);
+  *full_type_name = std::string(type_url.substr(pos + 1));
   return true;
 }
 
-bool ParseAnyTypeUrl(const std::string& type_url, std::string* full_type_name) {
+bool ParseAnyTypeUrl(StringPiece type_url, std::string* full_type_name) {
   return ParseAnyTypeUrl(type_url, nullptr, full_type_name);
 }
 

@@ -44,12 +44,12 @@
 // correctly and produces the interfaces we expect, which is why this test
 // is written this way.
 
-#include <google/protobuf/compiler/cpp/cpp_unittest.h>
-
+#include <cstdint>
+#include <limits>
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/unittest_no_arena.pb.h>
+#include <google/protobuf/compiler/cpp/cpp_unittest.h>
 #include <google/protobuf/stubs/strutil.h>
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
 // We exclude this large proto from cmake build because it's too large for
@@ -100,8 +100,8 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n",
-                                 filename, line, column, message);
+    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
+                              message);
   }
 };
 
@@ -205,10 +205,10 @@ TEST(GENERATED_MESSAGE_TEST_NAME, Trigraph) {
 TEST(GENERATED_MESSAGE_TEST_NAME, ExtremeSmallIntegerDefault) {
   const UNITTEST::TestExtremeDefaultValues& extreme_default =
       UNITTEST::TestExtremeDefaultValues::default_instance();
-  EXPECT_EQ(~0x7fffffff, kint32min);
-  EXPECT_EQ(PROTOBUF_LONGLONG(~0x7fffffffffffffff), kint64min);
-  EXPECT_EQ(kint32min, extreme_default.really_small_int32());
-  EXPECT_EQ(kint64min, extreme_default.really_small_int64());
+  EXPECT_EQ(std::numeric_limits<int32_t>::min(),
+            extreme_default.really_small_int32());
+  EXPECT_EQ(std::numeric_limits<int64_t>::min(),
+            extreme_default.really_small_int64());
 }
 
 TEST(GENERATED_MESSAGE_TEST_NAME, Accessors) {
@@ -371,7 +371,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ClearOneField) {
   UNITTEST::TestAllTypes message;
 
   TestUtil::SetAllFields(&message);
-  int64 original_value = message.optional_int64();
+  int64_t original_value = message.optional_int64();
 
   // Clear the field and make sure it shows up as cleared.
   message.clear_optional_int64();
@@ -401,69 +401,6 @@ TEST(GENERATED_MESSAGE_TEST_NAME, StringCharStarLength) {
   // Verify that we can use a char*,length to set a repeated string field.
   message.set_repeated_string(0, "wxyz", 2);
   EXPECT_EQ("wx", message.repeated_string(0));
-}
-
-TEST(GENERATED_MESSAGE_TEST_NAME, StringMove) {
-  // Verify that we trigger the move behavior on a scalar setter.
-  protobuf_unittest_no_arena::TestAllTypes message;
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.set_optional_string(std::move(tmp));
-    const char* new_data = message.optional_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.optional_string());
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_optional_string(std::move(tmp2));
-    new_data = message.optional_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.optional_string());
-  }
-
-  // Verify that we trigger the move behavior on a oneof setter.
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.set_oneof_string(std::move(tmp));
-    const char* new_data = message.oneof_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.oneof_string());
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_oneof_string(std::move(tmp2));
-    new_data = message.oneof_string().data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.oneof_string());
-  }
-
-  // Verify that we trigger the move behavior on a repeated setter.
-  {
-    std::string tmp(32, 'a');
-
-    const char* old_data = tmp.data();
-    message.add_repeated_string(std::move(tmp));
-    const char* new_data = message.repeated_string(0).data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'a'), message.repeated_string(0));
-
-    std::string tmp2(32, 'b');
-    old_data = tmp2.data();
-    message.set_repeated_string(0, std::move(tmp2));
-    new_data = message.repeated_string(0).data();
-
-    EXPECT_EQ(old_data, new_data);
-    EXPECT_EQ(std::string(32, 'b'), message.repeated_string(0));
-  }
 }
 
 
@@ -563,7 +500,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, ADLSwap) {
 
   // Note the address of one of the repeated fields, to verify it was swapped
   // rather than copied.
-  const int32* addr = &message1.repeated_int32().Get(0);
+  const int32_t* addr = &message1.repeated_int32().Get(0);
 
   using std::swap;
   swap(message1, message2);
@@ -713,7 +650,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, NonEmptyMergeFrom) {
 
   // This tests concatenating.
   message2.add_repeated_int32(message1.repeated_int32(1));
-  int32 i = message1.repeated_int32(0);
+  int32_t i = message1.repeated_int32(0);
   message1.clear_repeated_int32();
   message1.add_repeated_int32(i);
 
@@ -730,8 +667,8 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SerializationToArray) {
   TestUtil::SetAllFields(&message1);
   int size = message1.ByteSizeLong();
   data.resize(size);
-  uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
-  uint8* end = message1.SerializeWithCachedSizesToArray(start);
+  uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+  uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
   EXPECT_EQ(size, end - start);
   EXPECT_TRUE(message2.ParseFromString(data));
   TestUtil::ExpectAllFieldsSet(message2);
@@ -744,8 +681,9 @@ TEST(GENERATED_MESSAGE_TEST_NAME, PackedFieldsSerializationToArray) {
   TestUtil::SetPackedFields(&packed_message1);
   int packed_size = packed_message1.ByteSizeLong();
   packed_data.resize(packed_size);
-  uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&packed_data));
-  uint8* end = packed_message1.SerializeWithCachedSizesToArray(start);
+  uint8_t* start =
+      reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&packed_data));
+  uint8_t* end = packed_message1.SerializeWithCachedSizesToArray(start);
   EXPECT_EQ(packed_size, end - start);
   EXPECT_TRUE(packed_message2.ParseFromString(packed_data));
   TestUtil::ExpectPackedFieldsSet(packed_message2);
@@ -1683,6 +1621,26 @@ TEST_F(OneofTest, SetAllocatedString) {
   EXPECT_EQ(kHello, message.foo_string());
 }
 
+TEST_F(OneofTest, ArenaSetAllocatedString) {
+  // Check that set_allocated_foo() works for strings.
+  Arena arena;
+  UNITTEST::TestOneof2* message =
+      Arena::CreateMessage<UNITTEST::TestOneof2>(&arena);
+
+  EXPECT_FALSE(message->has_foo_string());
+  const std::string kHello("hello");
+  message->set_foo_string(kHello);
+  EXPECT_TRUE(message->has_foo_string());
+
+  message->set_allocated_foo_string(NULL);
+  EXPECT_FALSE(message->has_foo_string());
+  EXPECT_EQ("", message->foo_string());
+
+  message->set_allocated_foo_string(new std::string(kHello));
+  EXPECT_TRUE(message->has_foo_string());
+  EXPECT_EQ(kHello, message->foo_string());
+}
+
 
 TEST_F(OneofTest, SetMessage) {
   // Check that setting a message field works
@@ -1891,8 +1849,8 @@ std::string data;
 message1.set_foo_int(123);
 int size = message1.ByteSizeLong();
 data.resize(size);
-uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
-uint8* end = message1.SerializeWithCachedSizesToArray(start);
+uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
 EXPECT_EQ(size, end - start);
 EXPECT_TRUE(message2.ParseFromString(data));
 EXPECT_EQ(message2.foo_int(), 123);
@@ -1905,8 +1863,8 @@ EXPECT_EQ(message2.foo_int(), 123);
     message1.set_foo_string("foo");
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
-    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+    uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
     EXPECT_EQ(message2.foo_string(), "foo");
@@ -1920,8 +1878,8 @@ EXPECT_EQ(message2.foo_int(), 123);
     message1.set_foo_bytes("qux");
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
-    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+    uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
     EXPECT_EQ(message2.foo_bytes(), "qux");
@@ -1934,8 +1892,8 @@ EXPECT_EQ(message2.foo_int(), 123);
     message1.set_foo_enum(UNITTEST::TestOneof2::FOO);
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
-    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+    uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
     EXPECT_EQ(message2.foo_enum(), UNITTEST::TestOneof2::FOO);
@@ -1948,8 +1906,8 @@ EXPECT_EQ(message2.foo_int(), 123);
     message1.mutable_foo_message()->set_qux_int(234);
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
-    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+    uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
     EXPECT_EQ(message2.foo_message().qux_int(), 234);
@@ -1962,8 +1920,8 @@ EXPECT_EQ(message2.foo_int(), 123);
     message1.mutable_foogroup()->set_a(345);
     int size = message1.ByteSizeLong();
     data.resize(size);
-    uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
-    uint8* end = message1.SerializeWithCachedSizesToArray(start);
+    uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+    uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
     EXPECT_EQ(message2.foogroup().a(), 345);

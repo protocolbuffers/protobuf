@@ -87,6 +87,10 @@ class _ExtensionDict(object):
     if extension_handle.label == FieldDescriptor.LABEL_REPEATED:
       result = extension_handle._default_constructor(self._extended_message)
     elif extension_handle.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE:
+      message_type = extension_handle.message_type
+      if not hasattr(message_type, '_concrete_class'):
+        # pylint: disable=protected-access
+        self._extended_message._FACTORY.GetPrototype(message_type)
       assert getattr(extension_handle.message_type, '_concrete_class', None), (
           'Uninitialized concrete class found for field %r (message type %r)'
           % (extension_handle.full_name,
