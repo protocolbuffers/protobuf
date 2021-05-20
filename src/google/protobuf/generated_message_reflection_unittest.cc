@@ -353,6 +353,46 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsOneof) {
   TestUtil::ExpectOneofSet1(message2);
 }
 
+TEST(GeneratedMessageReflectionTest, UnsafeShallowSwapFieldsOneof) {
+  Arena arena;
+  auto* message1 = Arena::CreateMessage<unittest::TestOneof2>(&arena);
+  auto* message2 = Arena::CreateMessage<unittest::TestOneof2>(&arena);
+  TestUtil::SetOneof1(message1);
+
+  std::vector<const FieldDescriptor*> fields;
+  const Descriptor* descriptor = message1->GetDescriptor();
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    fields.push_back(descriptor->field(i));
+  }
+  GeneratedMessageReflectionTestHelper::UnsafeShallowSwapFields(
+      message1, message2, fields);
+
+  TestUtil::ExpectOneofClear(*message1);
+  TestUtil::ExpectOneofSet1(*message2);
+}
+
+TEST(GeneratedMessageReflectionTest,
+     UnsafeShallowSwapFieldsOneofExpectShallow) {
+  Arena arena;
+  auto* message1 = Arena::CreateMessage<unittest::TestOneof2>(&arena);
+  auto* message2 = Arena::CreateMessage<unittest::TestOneof2>(&arena);
+  TestUtil::SetOneof1(message1);
+  message1->mutable_foo_message()->set_qux_int(1000);
+  auto* kept_foo_ptr = message1->mutable_foo_message();
+
+  std::vector<const FieldDescriptor*> fields;
+  const Descriptor* descriptor = message1->GetDescriptor();
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    fields.push_back(descriptor->field(i));
+  }
+  GeneratedMessageReflectionTestHelper::UnsafeShallowSwapFields(
+      message1, message2, fields);
+
+  EXPECT_TRUE(message2->has_foo_message());
+  EXPECT_EQ(message2->foo_message().qux_int(), 1000);
+  EXPECT_EQ(kept_foo_ptr, message2->mutable_foo_message());
+}
+
 TEST(GeneratedMessageReflectionTest, RemoveLast) {
   unittest::TestAllTypes message;
   TestUtil::ReflectionTester reflection_tester(
