@@ -62,7 +62,9 @@
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>  // __BYTE_ORDER
 #else
+#if !defined(__QNX__)
 #include <endian.h>  // __BYTE_ORDER
+#endif
 #endif
 #if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||   \
      (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \
