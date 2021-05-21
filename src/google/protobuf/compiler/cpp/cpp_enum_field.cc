@@ -496,7 +496,7 @@ void RepeatedEnumFieldGenerator::GenerateConstinitInitializer(
   format("$name$_()");
   if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("\n, _$name$_cached_byte_size_()");
+    format("\n, _$name$_cached_byte_size_(0)");
   }
 }
 
