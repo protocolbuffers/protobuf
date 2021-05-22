@@ -63,6 +63,13 @@ module BasicTest
       end
     end
 
+    def test_issue_8559_crash
+      msg = TestMessage.new
+      msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
+      GC.start(full_mark: true, immediate_sweep: true)
+      TestMessage.encode(msg)
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?
