@@ -1012,6 +1012,11 @@ std::string FieldParseFunctionName(const FieldDescriptor* field,
         case Utf8CheckMode::kVerify:
           type_format = TypeFormat::kStringValidateOnly;
           break;
+        default:
+          GOOGLE_LOG(DFATAL)
+              << "Mode not handled: "
+              << static_cast<int>(GetUtf8CheckMode(field, options));
+          return "";
       }
       break;
 

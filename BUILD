@@ -135,6 +135,7 @@ cc_library(
         "src/google/protobuf/arena.cc",
         "src/google/protobuf/arenastring.cc",
         "src/google/protobuf/extension_set.cc",
+        "src/google/protobuf/field_access_listener.cc",
         "src/google/protobuf/generated_enum_util.cc",
         "src/google/protobuf/generated_message_table_driven_lite.cc",
         "src/google/protobuf/generated_message_util.cc",
