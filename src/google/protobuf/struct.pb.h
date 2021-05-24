@@ -124,7 +124,7 @@ public:
     return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "google.protobuf.Struct.FieldsEntry.key");
  }
   static bool ValidateValue(void*) { return true; }
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 };
 
@@ -202,10 +202,13 @@ class PROTOBUF_EXPORT Struct final :
   Struct* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<Struct>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Struct& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const Struct& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -225,11 +228,15 @@ class PROTOBUF_EXPORT Struct final :
     return "google.protobuf.Struct";
   }
   protected:
-  explicit Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -357,10 +364,13 @@ class PROTOBUF_EXPORT Value final :
   Value* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<Value>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Value& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const Value& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -380,11 +390,15 @@ class PROTOBUF_EXPORT Value final :
     return "google.protobuf.Value";
   }
   protected:
-  explicit Value(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -436,7 +450,7 @@ class PROTOBUF_EXPORT Value final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_string_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_string_value();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_string_value();
+  PROTOBUF_MUST_USE_RESULT std::string* release_string_value();
   void set_allocated_string_value(std::string* string_value);
   private:
   const std::string& _internal_string_value() const;
@@ -464,7 +478,7 @@ class PROTOBUF_EXPORT Value final :
   public:
   void clear_struct_value();
   const PROTOBUF_NAMESPACE_ID::Struct& struct_value() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::Struct* release_struct_value();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::Struct* release_struct_value();
   PROTOBUF_NAMESPACE_ID::Struct* mutable_struct_value();
   void set_allocated_struct_value(PROTOBUF_NAMESPACE_ID::Struct* struct_value);
   private:
@@ -482,7 +496,7 @@ class PROTOBUF_EXPORT Value final :
   public:
   void clear_list_value();
   const PROTOBUF_NAMESPACE_ID::ListValue& list_value() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ListValue* release_list_value();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ListValue* release_list_value();
   PROTOBUF_NAMESPACE_ID::ListValue* mutable_list_value();
   void set_allocated_list_value(PROTOBUF_NAMESPACE_ID::ListValue* list_value);
   private:
@@ -600,10 +614,13 @@ class PROTOBUF_EXPORT ListValue final :
   ListValue* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<ListValue>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const ListValue& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const ListValue& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -623,11 +640,15 @@ class PROTOBUF_EXPORT ListValue final :
     return "google.protobuf.ListValue";
   }
   protected:
-  explicit ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -747,8 +768,8 @@ inline void Value::_internal_set_null_value(PROTOBUF_NAMESPACE_ID::NullValue val
   kind_.null_value_ = value;
 }
 inline void Value::set_null_value(PROTOBUF_NAMESPACE_ID::NullValue value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.Value.null_value)
   _internal_set_null_value(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Value.null_value)
 }
 
 // double number_value = 2;
@@ -820,8 +841,9 @@ inline void Value::set_string_value(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
 inline std::string* Value::mutable_string_value() {
+  std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.string_value)
-  return _internal_mutable_string_value();
+  return _s;
 }
 inline const std::string& Value::_internal_string_value() const {
   if (_internal_has_string_value()) {
@@ -977,8 +999,9 @@ inline PROTOBUF_NAMESPACE_ID::Struct* Value::_internal_mutable_struct_value() {
   return kind_.struct_value_;
 }
 inline PROTOBUF_NAMESPACE_ID::Struct* Value::mutable_struct_value() {
+  PROTOBUF_NAMESPACE_ID::Struct* _msg = _internal_mutable_struct_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.struct_value)
-  return _internal_mutable_struct_value();
+  return _msg;
 }
 
 // .google.protobuf.ListValue list_value = 6;
@@ -1050,8 +1073,9 @@ inline PROTOBUF_NAMESPACE_ID::ListValue* Value::_internal_mutable_list_value() {
   return kind_.list_value_;
 }
 inline PROTOBUF_NAMESPACE_ID::ListValue* Value::mutable_list_value() {
+  PROTOBUF_NAMESPACE_ID::ListValue* _msg = _internal_mutable_list_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Value.list_value)
-  return _internal_mutable_list_value();
+  return _msg;
 }
 
 inline bool Value::has_kind() const {
@@ -1097,8 +1121,9 @@ inline PROTOBUF_NAMESPACE_ID::Value* ListValue::_internal_add_values() {
   return values_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::Value* ListValue::add_values() {
+  PROTOBUF_NAMESPACE_ID::Value* _add = _internal_add_values();
   // @@protoc_insertion_point(field_add:google.protobuf.ListValue.values)
-  return _internal_add_values();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::Value >&
 ListValue::values() const {

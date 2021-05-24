@@ -103,6 +103,15 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+class MessageReflectionFriend {
+ public:
+  static void UnsafeShallowSwapFields(
+      Message* lhs, Message* rhs,
+      const std::vector<const FieldDescriptor*>& fields) {
+    lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
+  }
+};
+
 static PyObject* kDESCRIPTOR;
 PyObject* EnumTypeWrapper_class;
 static PyObject* PythonMessage_class;
@@ -1280,7 +1289,7 @@ static CMessage* NewCMessage(CMessageClass* type) {
   if (self == nullptr) {
     return nullptr;
   }
-  self->message = prototype->New();
+  self->message = prototype->New(nullptr);  // Ensures no arena is used.
   self->parent = nullptr;  // This message owns its data.
   return self;
 }
@@ -1525,7 +1534,7 @@ static int InternalReparentFields(
   if (new_message == nullptr) {
     return -1;
   }
-  new_message->message = self->message->New();
+  new_message->message = self->message->New(nullptr);
   ScopedPyObjectPtr holder(reinterpret_cast<PyObject*>(new_message));
   new_message->child_submessages = new CMessage::SubMessagesMap();
   new_message->composite_fields = new CMessage::CompositeFieldsMap();
@@ -1555,7 +1564,9 @@ static int InternalReparentFields(
                                            to_release);
   }
 
-  self->message->GetReflection()->SwapFields(
+  GOOGLE_CHECK_EQ(self->message->GetArena(), new_message->message->GetArena());
+
+  MessageReflectionFriend::UnsafeShallowSwapFields(
       self->message, new_message->message,
       std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
                                           fields_to_swap.end()));
@@ -2689,7 +2700,7 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
 PyObject* ContainerBase::DeepCopy() {
   CMessage* new_parent =
       cmessage::NewEmptyMessage(this->parent->GetMessageClass());
-  new_parent->message = this->parent->message->New();
+  new_parent->message = this->parent->message->New(nullptr);
 
   // Copy the map field into the new message.
   this->parent->message->GetReflection()->SwapFields(

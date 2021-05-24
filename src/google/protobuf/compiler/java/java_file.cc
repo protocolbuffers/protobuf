@@ -686,7 +686,7 @@ void FileGenerator::GenerateKotlinSiblings(
   for (int i = 0; i < file_->message_type_count(); i++) {
     const Descriptor* descriptor = file_->message_type(i);
     MessageGenerator* generator = message_generators_[i].get();
-    auto open_file = [context](const string& filename) {
+    auto open_file = [context](const std::string& filename) {
       return std::unique_ptr<io::ZeroCopyOutputStream>(context->Open(filename));
     };
     std::string filename = package_dir + descriptor->name() + "Kt.kt";

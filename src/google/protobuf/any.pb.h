@@ -170,10 +170,13 @@ class PROTOBUF_EXPORT Any final :
   Any* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<Any>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Any& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const Any& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -193,11 +196,15 @@ class PROTOBUF_EXPORT Any final :
     return "google.protobuf.Any";
   }
   protected:
-  explicit Any(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Any(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -215,7 +222,7 @@ class PROTOBUF_EXPORT Any final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_type_url(ArgT0&& arg0, ArgT... args);
   std::string* mutable_type_url();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_type_url();
+  PROTOBUF_MUST_USE_RESULT std::string* release_type_url();
   void set_allocated_type_url(std::string* type_url);
   private:
   const std::string& _internal_type_url() const;
@@ -229,7 +236,7 @@ class PROTOBUF_EXPORT Any final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_value();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_value();
+  PROTOBUF_MUST_USE_RESULT std::string* release_value();
   void set_allocated_value(std::string* value);
   private:
   const std::string& _internal_value() const;
@@ -277,8 +284,9 @@ void Any::set_type_url(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
 inline std::string* Any::mutable_type_url() {
+  std::string* _s = _internal_mutable_type_url();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Any.type_url)
-  return _internal_mutable_type_url();
+  return _s;
 }
 inline const std::string& Any::_internal_type_url() const {
   return type_url_.Get();
@@ -322,8 +330,9 @@ void Any::set_value(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
 inline std::string* Any::mutable_value() {
+  std::string* _s = _internal_mutable_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.Any.value)
-  return _internal_mutable_value();
+  return _s;
 }
 inline const std::string& Any::_internal_value() const {
   return value_.Get();

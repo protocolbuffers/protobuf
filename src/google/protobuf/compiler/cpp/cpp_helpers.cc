@@ -245,9 +245,9 @@ void SetCommonVars(const Options& options,
   (*variables)["string"] = "std::string";
 }
 
-void SetUnknkownFieldsVariable(const Descriptor* descriptor,
-                               const Options& options,
-                               std::map<std::string, std::string>* variables) {
+void SetUnknownFieldsVariable(const Descriptor* descriptor,
+                              const Options& options,
+                              std::map<std::string, std::string>* variables) {
   std::string proto_ns = ProtobufNamespace(options);
   std::string unknown_fields_type;
   if (UseUnknownFieldSet(descriptor->file(), options)) {

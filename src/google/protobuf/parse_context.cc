@@ -234,18 +234,6 @@ const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
 }
 
 
-template <typename Tag, typename T>
-const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
-                                                  Tag expected_tag,
-                                                  RepeatedField<T>* out) {
-  do {
-    out->Add(UnalignedLoad<T>(ptr));
-    ptr += sizeof(T);
-    if (PROTOBUF_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
-  } while (UnalignedLoad<Tag>(ptr) == expected_tag&& ptr += sizeof(Tag));
-  return ptr;
-}
-
 template <int>
 void byteswap(void* p);
 template <>
@@ -257,44 +245,6 @@ void byteswap<4>(void* p) {
 template <>
 void byteswap<8>(void* p) {
   *static_cast<uint64*>(p) = bswap_64(*static_cast<uint64*>(p));
-}
-
-template <typename T>
-const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
-                                                RepeatedField<T>* out) {
-  int nbytes = buffer_end_ + kSlopBytes - ptr;
-  while (size > nbytes) {
-    int num = nbytes / sizeof(T);
-    int old_entries = out->size();
-    out->Reserve(old_entries + num);
-    int block_size = num * sizeof(T);
-    auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
-    std::memcpy(dst, ptr, block_size);
-#else
-    for (int i = 0; i < num; i++)
-      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
-#endif
-    size -= block_size;
-    if (limit_ <= kSlopBytes) return nullptr;
-    ptr = Next();
-    if (ptr == nullptr) return nullptr;
-    ptr += kSlopBytes - (nbytes - block_size);
-    nbytes = buffer_end_ + kSlopBytes - ptr;
-  }
-  int num = size / sizeof(T);
-  int old_entries = out->size();
-  out->Reserve(old_entries + num);
-  int block_size = num * sizeof(T);
-  auto dst = out->AddNAlreadyReserved(num);
-#ifdef PROTOBUF_LITTLE_ENDIAN
-  std::memcpy(dst, ptr, block_size);
-#else
-  for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
-#endif
-  ptr += block_size;
-  if (size != block_size) return nullptr;
-  return ptr;
 }
 
 const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {

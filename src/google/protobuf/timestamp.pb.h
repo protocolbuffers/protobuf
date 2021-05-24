@@ -137,10 +137,13 @@ class PROTOBUF_EXPORT Timestamp final :
   Timestamp* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<Timestamp>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Timestamp& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const Timestamp& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -160,11 +163,15 @@ class PROTOBUF_EXPORT Timestamp final :
     return "google.protobuf.Timestamp";
   }
   protected:
-  explicit Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 

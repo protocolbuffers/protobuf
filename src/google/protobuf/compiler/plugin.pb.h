@@ -190,10 +190,13 @@ class PROTOC_EXPORT Version final :
   Version* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<Version>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const Version& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const Version& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -213,11 +216,15 @@ class PROTOC_EXPORT Version final :
     return "google.protobuf.compiler.Version";
   }
   protected:
-  explicit Version(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit Version(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -241,7 +248,7 @@ class PROTOC_EXPORT Version final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_suffix(ArgT0&& arg0, ArgT... args);
   std::string* mutable_suffix();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_suffix();
+  PROTOBUF_MUST_USE_RESULT std::string* release_suffix();
   void set_allocated_suffix(std::string* suffix);
   private:
   const std::string& _internal_suffix() const;
@@ -384,10 +391,13 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   CodeGeneratorRequest* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<CodeGeneratorRequest>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorRequest& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const CodeGeneratorRequest& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -407,11 +417,15 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
     return "google.protobuf.compiler.CodeGeneratorRequest";
   }
   protected:
-  explicit CodeGeneratorRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit CodeGeneratorRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -477,7 +491,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_parameter(ArgT0&& arg0, ArgT... args);
   std::string* mutable_parameter();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_parameter();
+  PROTOBUF_MUST_USE_RESULT std::string* release_parameter();
   void set_allocated_parameter(std::string* parameter);
   private:
   const std::string& _internal_parameter() const;
@@ -492,7 +506,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   public:
   void clear_compiler_version();
   const PROTOBUF_NAMESPACE_ID::compiler::Version& compiler_version() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
   PROTOBUF_NAMESPACE_ID::compiler::Version* mutable_compiler_version();
   void set_allocated_compiler_version(PROTOBUF_NAMESPACE_ID::compiler::Version* compiler_version);
   private:
@@ -599,10 +613,13 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   CodeGeneratorResponse_File* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<CodeGeneratorResponse_File>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse_File& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const CodeGeneratorResponse_File& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -622,11 +639,15 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
     return "google.protobuf.compiler.CodeGeneratorResponse.File";
   }
   protected:
-  explicit CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -650,7 +671,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -668,7 +689,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_insertion_point(ArgT0&& arg0, ArgT... args);
   std::string* mutable_insertion_point();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_insertion_point();
+  PROTOBUF_MUST_USE_RESULT std::string* release_insertion_point();
   void set_allocated_insertion_point(std::string* insertion_point);
   private:
   const std::string& _internal_insertion_point() const;
@@ -686,7 +707,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_content(ArgT0&& arg0, ArgT... args);
   std::string* mutable_content();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_content();
+  PROTOBUF_MUST_USE_RESULT std::string* release_content();
   void set_allocated_content(std::string* content);
   private:
   const std::string& _internal_content() const;
@@ -701,7 +722,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   public:
   void clear_generated_code_info();
   const PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& generated_code_info() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* release_generated_code_info();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* release_generated_code_info();
   PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* mutable_generated_code_info();
   void set_allocated_generated_code_info(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info);
   private:
@@ -808,10 +829,13 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   CodeGeneratorResponse* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<CodeGeneratorResponse>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const CodeGeneratorResponse& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const CodeGeneratorResponse& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -831,11 +855,15 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
     return "google.protobuf.compiler.CodeGeneratorResponse";
   }
   protected:
-  explicit CodeGeneratorResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit CodeGeneratorResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -908,7 +936,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_error(ArgT0&& arg0, ArgT... args);
   std::string* mutable_error();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_error();
+  PROTOBUF_MUST_USE_RESULT std::string* release_error();
   void set_allocated_error(std::string* error);
   private:
   const std::string& _internal_error() const;
@@ -1062,8 +1090,9 @@ void Version::set_suffix(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
 }
 inline std::string* Version::mutable_suffix() {
+  std::string* _s = _internal_mutable_suffix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.Version.suffix)
-  return _internal_mutable_suffix();
+  return _s;
 }
 inline const std::string& Version::_internal_suffix() const {
   return suffix_.Get();
@@ -1110,8 +1139,9 @@ inline void CodeGeneratorRequest::clear_file_to_generate() {
   file_to_generate_.Clear();
 }
 inline std::string* CodeGeneratorRequest::add_file_to_generate() {
+  std::string* _s = _internal_add_file_to_generate();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
-  return _internal_add_file_to_generate();
+  return _s;
 }
 inline const std::string& CodeGeneratorRequest::_internal_file_to_generate(int index) const {
   return file_to_generate_.Get(index);
@@ -1125,12 +1155,12 @@ inline std::string* CodeGeneratorRequest::mutable_file_to_generate(int index) {
   return file_to_generate_.Mutable(index);
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, const std::string& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   file_to_generate_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, std::string&& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   file_to_generate_.Mutable(index)->assign(std::move(value));
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
 inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value) {
   GOOGLE_DCHECK(value != nullptr);
@@ -1197,8 +1227,9 @@ void CodeGeneratorRequest::set_parameter(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
 inline std::string* CodeGeneratorRequest::mutable_parameter() {
+  std::string* _s = _internal_mutable_parameter();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.parameter)
-  return _internal_mutable_parameter();
+  return _s;
 }
 inline const std::string& CodeGeneratorRequest::_internal_parameter() const {
   return parameter_.Get();
@@ -1257,8 +1288,9 @@ inline PROTOBUF_NAMESPACE_ID::FileDescriptorProto* CodeGeneratorRequest::_intern
   return proto_file_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::FileDescriptorProto* CodeGeneratorRequest::add_proto_file() {
+  PROTOBUF_NAMESPACE_ID::FileDescriptorProto* _add = _internal_add_proto_file();
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return _internal_add_proto_file();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::FileDescriptorProto >&
 CodeGeneratorRequest::proto_file() const {
@@ -1326,8 +1358,9 @@ inline PROTOBUF_NAMESPACE_ID::compiler::Version* CodeGeneratorRequest::_internal
   return compiler_version_;
 }
 inline PROTOBUF_NAMESPACE_ID::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
+  PROTOBUF_NAMESPACE_ID::compiler::Version* _msg = _internal_mutable_compiler_version();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
-  return _internal_mutable_compiler_version();
+  return _msg;
 }
 inline void CodeGeneratorRequest::set_allocated_compiler_version(PROTOBUF_NAMESPACE_ID::compiler::Version* compiler_version) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -1377,8 +1410,9 @@ void CodeGeneratorResponse_File::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
 inline std::string* CodeGeneratorResponse_File::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& CodeGeneratorResponse_File::_internal_name() const {
   return name_.Get();
@@ -1434,8 +1468,9 @@ void CodeGeneratorResponse_File::set_insertion_point(ArgT0&& arg0, ArgT... args)
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
 inline std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
+  std::string* _s = _internal_mutable_insertion_point();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
-  return _internal_mutable_insertion_point();
+  return _s;
 }
 inline const std::string& CodeGeneratorResponse_File::_internal_insertion_point() const {
   return insertion_point_.Get();
@@ -1491,8 +1526,9 @@ void CodeGeneratorResponse_File::set_content(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 inline std::string* CodeGeneratorResponse_File::mutable_content() {
+  std::string* _s = _internal_mutable_content();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.content)
-  return _internal_mutable_content();
+  return _s;
 }
 inline const std::string& CodeGeneratorResponse_File::_internal_content() const {
   return content_.Get();
@@ -1580,8 +1616,9 @@ inline PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* CodeGeneratorResponse_File::_in
   return generated_code_info_;
 }
 inline PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* CodeGeneratorResponse_File::mutable_generated_code_info() {
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* _msg = _internal_mutable_generated_code_info();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.generated_code_info)
-  return _internal_mutable_generated_code_info();
+  return _msg;
 }
 inline void CodeGeneratorResponse_File::set_allocated_generated_code_info(PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -1633,8 +1670,9 @@ void CodeGeneratorResponse::set_error(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
 inline std::string* CodeGeneratorResponse::mutable_error() {
+  std::string* _s = _internal_mutable_error();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.error)
-  return _internal_mutable_error();
+  return _s;
 }
 inline const std::string& CodeGeneratorResponse::_internal_error() const {
   return error_.Get();
@@ -1724,8 +1762,9 @@ inline PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* CodeGenerato
   return file_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* CodeGeneratorResponse::add_file() {
+  PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* _add = _internal_add_file();
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorResponse.file)
-  return _internal_add_file();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >&
 CodeGeneratorResponse::file() const {

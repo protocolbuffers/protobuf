@@ -350,6 +350,29 @@ std::string ClassNameResolver::GetKotlinExtensionsClassName(
                           descriptor->file(), true, true, true);
 }
 
+std::string ClassNameResolver::GetJavaMutableClassName(
+    const Descriptor* descriptor) {
+  return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, false),
+                              descriptor->file(), false);
+}
+
+std::string ClassNameResolver::GetJavaMutableClassName(
+    const EnumDescriptor* descriptor) {
+  return GetJavaClassFullName(ClassNameWithoutPackage(descriptor, false),
+                              descriptor->file(), false);
+}
+
+std::string ClassNameResolver::GetDowngradedFileClassName(
+    const FileDescriptor* file) {
+  return "Downgraded" + GetFileClassName(file, false);
+}
+
+std::string ClassNameResolver::GetDowngradedClassName(
+    const Descriptor* descriptor) {
+  return FileJavaPackage(descriptor->file()) + "." +
+         GetDowngradedFileClassName(descriptor->file()) + "." +
+         ClassNameWithoutPackage(descriptor, false);
+}
 
 }  // namespace java
 }  // namespace compiler
