@@ -1,9 +1,11 @@
 2021-05-07 version 3.17.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   PHP
+  * Fixed PHP memory leaks and arginfo errors. (#8614)
   * Fixed JSON parser to allow multiple values from the same oneof as long as
     all but one are null.
 
   Ruby
+  * Fixed memory bug: properly root repeated/map field when assigning. (#8639)
   * Fixed JSON parser to allow multiple values from the same oneof as long as
     all but one are null.
 

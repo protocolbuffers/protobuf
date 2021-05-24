@@ -44,7 +44,8 @@ VALUE RepeatedField_GetRubyWrapper(upb_array* msg, TypeInfo type_info,
 // Gets the underlying upb_array for this Ruby RepeatedField object, which must
 // have a type that matches |f|. If this is not a repeated field or the type
 // doesn't match, raises an exception.
-const upb_array* RepeatedField_GetUpbArray(VALUE value, const upb_fielddef* f);
+const upb_array* RepeatedField_GetUpbArray(VALUE value, const upb_fielddef* f,
+                                           upb_arena* arena);
 
 // Implements #inspect for this repeated field by appending its contents to |b|.
 void RepeatedField_Inspect(StringBuilder* b, const upb_array* array,
