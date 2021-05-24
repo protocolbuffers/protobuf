@@ -1139,7 +1139,7 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
     GOOGLE_CHECK(!options_.opensource_runtime);
     IncludeFile("net/proto2/public/weak_field_map.h", printer);
   }
-  if (HasLazyFields(file_, options_)) {
+  if (HasLazyFields(file_, options_, &scc_analyzer_)) {
     GOOGLE_CHECK(!options_.opensource_runtime);
     IncludeFile("net/proto2/public/lazy_field.h", printer);
   }

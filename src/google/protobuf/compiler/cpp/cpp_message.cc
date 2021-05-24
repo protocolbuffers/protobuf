@@ -168,14 +168,16 @@ bool IsPOD(const FieldDescriptor* field) {
 // Anything that is a POD or a "normal" message (represented by a pointer) can
 // be manipulated as raw bytes.
 bool CanBeManipulatedAsRawBytes(const FieldDescriptor* field,
-                                const Options& options) {
+                                const Options& options,
+                                MessageSCCAnalyzer* scc_analyzer) {
   bool ret = CanInitializeByZeroing(field);
 
   // Non-repeated, non-lazy message fields are simply raw pointers, so we can
   // swap them or use memset to initialize these in SharedCtor. We cannot use
   // this in Clear, as we need to potentially delete the existing value.
-  ret = ret || (!field->is_repeated() && !IsLazy(field, options) &&
-                field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE);
+  ret =
+      ret || (!field->is_repeated() && !IsLazy(field, options, scc_analyzer) &&
+              field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE);
   return ret;
 }
 
@@ -218,16 +220,18 @@ bool EmitFieldNonDefaultCondition(io::Printer* printer,
   // if non-zero (numeric) or non-empty (string).
   if (!field->is_repeated() && !field->containing_oneof()) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
-      format("if (!$prefix$$name$().empty()) {\n");
+      format("if (!$prefix$_internal_$name$().empty()) {\n");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Message fields still have has_$name$() methods.
-      format("if ($prefix$has_$name$()) {\n");
+      format("if ($prefix$_internal_has_$name$()) {\n");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE ||
                field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
       // Handle float comparison to prevent -Wfloat-equal warnings
-      format("if (!($prefix$$name$() <= 0 && $prefix$$name$() >= 0)) {\n");
+      format(
+          "if (!($prefix$_internal_$name$() <= 0 && $prefix$_internal_$name$() "
+          ">= 0)) {\n");
     } else {
-      format("if ($prefix$$name$() != 0) {\n");
+      format("if ($prefix$_internal_$name$() != 0) {\n");
     }
     format.Indent();
     return true;
@@ -313,7 +317,8 @@ bool ShouldSerializeInOrder(const Descriptor* descriptor,
 }
 
 bool TableDrivenParsingEnabled(const Descriptor* descriptor,
-                               const Options& options) {
+                               const Options& options,
+                               MessageSCCAnalyzer* scc_analyzer) {
   if (!options.table_driven_parsing) {
     return false;
   }
@@ -344,7 +349,7 @@ bool TableDrivenParsingEnabled(const Descriptor* descriptor,
     }
 
     // - There are no lazy fields (they require the non-lite library).
-    if (IsLazy(field, options)) {
+    if (IsLazy(field, options, scc_analyzer)) {
       return false;
     }
   }
@@ -579,6 +584,35 @@ MessageGenerator::MessageGenerator(
   variables_["annotate_reflection"] = "";
   variables_["annotate_bytesize"] = "";
 
+  if (options.inject_field_listener_events &&
+      descriptor->file()->options().optimize_for() !=
+          google::protobuf::FileOptions::LITE_RUNTIME) {
+    const std::string injector_template = StrCat(
+        "  {\n"
+        "    auto _listener_ = ::",
+        variables_["proto_ns"],
+        "::FieldAccessListener::GetListener();\n"
+        "    if (_listener_) ");
+
+    StrAppend(&variables_["annotate_serialize"], injector_template,
+                    "_listener_->OnSerializationAccess(this);\n"
+                    "  }\n");
+    StrAppend(&variables_["annotate_deserialize"], injector_template,
+                    " _listener_->OnDeserializationAccess(this);\n"
+                    "  }\n");
+    // TODO(danilak): Ideally annotate_reflection should not exist and we need
+    // to annotate all reflective calls on our own, however, as this is a cause
+    // for side effects, i.e. reading values dynamically, we want the users know
+    // that dynamic access can happen.
+    StrAppend(&variables_["annotate_reflection"], injector_template,
+                    "_listener_->OnReflectionAccess(default_instance()"
+                    ".GetMetadata().descriptor);\n"
+                    "  }\n");
+    StrAppend(&variables_["annotate_bytesize"], injector_template,
+                    "_listener_->OnByteSizeAccess(this);\n"
+                    "  }\n");
+  }
+
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
 
   // Compute optimized field order to be used for layout and initialization
@@ -595,7 +629,8 @@ MessageGenerator::MessageGenerator(
     }
   }
 
-  message_layout_helper_->OptimizeLayout(&optimized_order_, options_);
+  message_layout_helper_->OptimizeLayout(&optimized_order_, options_,
+                                         scc_analyzer_);
 
   // This message has hasbits iff one or more fields need one.
   for (auto field : optimized_order_) {
@@ -618,7 +653,8 @@ MessageGenerator::MessageGenerator(
     }
   }
 
-  table_driven_ = TableDrivenParsingEnabled(descriptor_, options_);
+  table_driven_ =
+      TableDrivenParsingEnabled(descriptor_, options_, scc_analyzer_);
   parse_function_generator_.reset(new ParseFunctionGenerator(
       descriptor_, max_has_bit_index_, has_bit_indices_, options_,
       scc_analyzer_, variables_));
@@ -794,7 +830,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
         "(_has_bits_[$has_array_index$] & 0x$has_mask$u) != 0;\n");
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
-        !IsLazy(field, options_)) {
+        !IsLazy(field, options_, scc_analyzer_)) {
       // We maintain the invariant that for a submessage x, has_x() returning
       // true implies that x_ is not null. By giving this information to the
       // compiler, we allow it to eliminate unnecessary null checks later on.
@@ -810,7 +846,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
         "}\n");
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // Message fields have a has_$name$() method.
-    if (IsLazy(field, options_)) {
+    if (IsLazy(field, options_, scc_analyzer_)) {
       format(
           "inline bool $classname$::_internal_has_$name$() const {\n"
           "  return !$name$_.IsCleared();\n"
@@ -1853,7 +1889,7 @@ int MessageGenerator::GenerateFieldMetadata(io::Printer* printer) {
     const FieldGenerator& generator = field_generators_.get(field);
     int type = CalcFieldNum(generator, field, options_);
 
-    if (IsLazy(field, options_)) {
+    if (IsLazy(field, options_, scc_analyzer_)) {
       type = internal::FieldMetadata::kSpecial;
       ptr = "reinterpret_cast<const void*>(::" + variables_["proto_ns"] +
             "::internal::LazyFieldSerializer";
@@ -2311,6 +2347,8 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
 
     if (!IsFieldUsed(field, options_)) {
       format(" | 0x80000000u, // unused\n");
+    } else if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
+      format(" | 0x1u, // eagerly verified lazy\n");
     } else {
       format(",\n");
     }
@@ -2486,7 +2524,7 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
       optimized_order_, [copy_constructor, this](const FieldDescriptor* field) {
         return (copy_constructor && IsPOD(field)) ||
                (!copy_constructor &&
-                CanBeManipulatedAsRawBytes(field, options_));
+                CanBeManipulatedAsRawBytes(field, options_, scc_analyzer_));
       });
 
   std::string pod_template;
@@ -2554,7 +2592,8 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     GOOGLE_DCHECK(!IsFieldStripped(field, options_));
     bool has_arena_constructor = field->is_repeated();
     if (!field->real_containing_oneof() &&
-        (IsLazy(field, options_) || IsStringPiece(field, options_))) {
+        (IsLazy(field, options_, scc_analyzer_) ||
+         IsStringPiece(field, options_))) {
       has_arena_constructor = true;
     }
     if (has_arena_constructor) {
@@ -2961,7 +3000,7 @@ void MessageGenerator::GenerateSwap(io::Printer* printer) {
     // If possible, we swap several fields at once, including padding.
     const RunMap runs =
         FindRuns(optimized_order_, [this](const FieldDescriptor* field) {
-          return CanBeManipulatedAsRawBytes(field, options_);
+          return CanBeManipulatedAsRawBytes(field, options_, scc_analyzer_);
         });
 
     for (int i = 0; i < optimized_order_.size(); ++i) {
@@ -4018,6 +4057,13 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
         }
       } else if (field->options().weak()) {
         continue;
+      } else if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
+        GOOGLE_CHECK(!field->real_containing_oneof());
+        format(
+            "if (_internal_has_$1$()) {\n"
+            "  if (!$1$().IsInitialized()) return false;\n"
+            "}\n",
+            FieldName(field));
       } else {
         GOOGLE_CHECK(!field->real_containing_oneof());
         format(

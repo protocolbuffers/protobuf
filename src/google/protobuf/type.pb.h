@@ -1581,9 +1581,15 @@ inline PROTOBUF_NAMESPACE_ID::SourceContext* Type::release_source_context() {
   
   PROTOBUF_NAMESPACE_ID::SourceContext* temp = source_context_;
   source_context_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::SourceContext* Type::unsafe_arena_release_source_context() {
@@ -2139,9 +2145,15 @@ inline PROTOBUF_NAMESPACE_ID::SourceContext* Enum::release_source_context() {
   
   PROTOBUF_NAMESPACE_ID::SourceContext* temp = source_context_;
   source_context_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::SourceContext* Enum::unsafe_arena_release_source_context() {
@@ -2399,9 +2411,15 @@ inline PROTOBUF_NAMESPACE_ID::Any* Option::release_value() {
   
   PROTOBUF_NAMESPACE_ID::Any* temp = value_;
   value_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::Any* Option::unsafe_arena_release_value() {

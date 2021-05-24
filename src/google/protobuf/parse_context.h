@@ -166,6 +166,10 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     return AppendStringFallback(ptr, size, s);
   }
+  // Implemented in arenastring.cc
+  PROTOBUF_MUST_USE_RESULT const char* ReadArenaString(const char* ptr,
+                                                       ArenaStringPtr* s,
+                                                       Arena* arena);
 
   template <typename Tag, typename T>
   PROTOBUF_MUST_USE_RESULT const char* ReadRepeatedFixed(const char* ptr,

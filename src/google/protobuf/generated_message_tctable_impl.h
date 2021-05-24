@@ -79,7 +79,7 @@ class TcParserBase {
       return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
     ptr += sizeof(TagType);
-    hasbits |= (1 << data.hasbit_idx());
+    hasbits |= (uint64_t{1} << data.hasbit_idx());
     auto& field = RefAt<FieldType*>(msg, data.offset());
     if (field == nullptr) {
       auto arena = ctx->data().arena;
@@ -110,6 +110,18 @@ class TcParserBase {
   static const char* RepeatedFixed(PROTOBUF_TC_PARAM_DECL);
   template <typename LayoutType, typename TagType>
   static const char* PackedFixed(PROTOBUF_TC_PARAM_DECL);
+
+  enum VarintDecode { kNoConversion = 0, kZigZag = 1 };
+  template <typename FieldType, typename TagType, VarintDecode zigzag>
+  static const char* RepeatedVarint(PROTOBUF_TC_PARAM_DECL);
+  template <typename FieldType, typename TagType, VarintDecode zigzag>
+  static const char* PackedVarint(PROTOBUF_TC_PARAM_DECL);
+
+  enum Utf8Type { kNoUtf8 = 0, kUtf8 = 1, kUtf8ValidateOnly = 2 };
+  template <typename TagType, Utf8Type utf8>
+  static const char* SingularString(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType, Utf8Type utf8>
+  static const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
 
  protected:
   template <typename T>
@@ -231,6 +243,9 @@ struct TcParser final : TcParserBase {
 
   template <typename LayoutType, typename TagType>
   static const char* SingularFixed(PROTOBUF_TC_PARAM_DECL);
+
+  template <typename FieldType, typename TagType, VarintDecode zigzag>
+  static const char* SingularVarint(PROTOBUF_TC_PARAM_DECL);
 };
 
 // Declare helper functions:

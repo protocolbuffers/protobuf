@@ -94,8 +94,8 @@ std::string MessageParseFunctionName(const FieldDescriptor* field,
   } else {
     name.append("Singular");
   }
-  name.append("ParseMessage<" + ClassName(field->message_type()) + ", " +
-              TagType(field) + ">");
+  name.append("ParseMessage<" + QualifiedClassName(field->message_type()) +
+              ", " + TagType(field) + ">");
   return name;
 }
 
@@ -198,7 +198,21 @@ TailCallTableInfo::TailCallTableInfo(const Descriptor* descriptor,
       case FieldDescriptor::TYPE_SFIXED32:
       case FieldDescriptor::TYPE_DOUBLE:
       case FieldDescriptor::TYPE_FLOAT:
+      case FieldDescriptor::TYPE_INT64:
+      case FieldDescriptor::TYPE_INT32:
+      case FieldDescriptor::TYPE_UINT64:
+      case FieldDescriptor::TYPE_UINT32:
+      case FieldDescriptor::TYPE_SINT64:
+      case FieldDescriptor::TYPE_SINT32:
+      case FieldDescriptor::TYPE_BOOL:
         name = FieldParseFunctionName(field, options, table_size_log2);
+        break;
+
+      case FieldDescriptor::TYPE_BYTES:
+        if (field->options().ctype() == FieldOptions::STRING &&
+            field->default_value_string().empty()) {
+          name = FieldParseFunctionName(field, options, table_size_log2);
+        }
         break;
 
       default:
@@ -263,10 +277,10 @@ void ParseFunctionGenerator::GenerateMethodDecls(io::Printer* printer) {
     if (tc_table_info_->use_generated_fallback) {
       format(
           "static const char* Tct_ParseFallback(\n"
-          "    ::google::protobuf::MessageLite *msg, const char *ptr,\n"
-          "    ::google::protobuf::internal::ParseContext *ctx,\n"
-          "    const ::google::protobuf::internal::TailCallParseTableBase *table,\n"
-          "    uint64_t hasbits, ::google::protobuf::internal::TcFieldData data);\n"
+          "    ::$proto_ns$::MessageLite *msg, const char *ptr,\n"
+          "    ::$proto_ns$::internal::ParseContext *ctx,\n"
+          "    const ::$proto_ns$::internal::TailCallParseTableBase *table,\n"
+          "    uint64_t hasbits, ::$proto_ns$::internal::TcFieldData data);\n"
           "inline const char* Tct_FallbackImpl(\n"
           "    const char* ptr, ::$proto_ns$::internal::ParseContext* ctx,\n"
           "    const void*, $uint64$ hasbits);\n");
@@ -646,7 +660,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
           } else {
             format("ptr = ctx->ParseMessage(&$1$_, ptr);\n", FieldName(field));
           }
-        } else if (IsLazy(field, options_)) {
+        } else if (IsLazy(field, options_, scc_analyzer_)) {
           if (field->real_containing_oneof()) {
             format(
                 "if (!_internal_has_$1$()) {\n"
@@ -988,7 +1002,17 @@ std::string FieldParseFunctionName(const FieldDescriptor* field,
       break;
 
     case FieldDescriptor::TYPE_STRING:
-      type_format = TypeFormat::kString;
+      switch (GetUtf8CheckMode(field, options)) {
+        case Utf8CheckMode::kNone:
+          type_format = TypeFormat::kBytes;
+          break;
+        case Utf8CheckMode::kStrict:
+          type_format = TypeFormat::kString;
+          break;
+        case Utf8CheckMode::kVerify:
+          type_format = TypeFormat::kStringValidateOnly;
+          break;
+      }
       break;
 
     default:
@@ -998,7 +1022,7 @@ std::string FieldParseFunctionName(const FieldDescriptor* field,
 
   return "::" + ProtobufNamespace(options) + "::internal::" +
          GetTailCallFieldHandlerName(card, type_format, table_size_log2,
-                                     TagSize(field->number()));
+                                     TagSize(field->number()), options);
 }
 
 }  // namespace
@@ -1006,7 +1030,8 @@ std::string FieldParseFunctionName(const FieldDescriptor* field,
 std::string GetTailCallFieldHandlerName(ParseCardinality card,
                                         TypeFormat type_format,
                                         int table_size_log2,
-                                        int tag_length_bytes) {
+                                        int tag_length_bytes,
+                                        const Options& options) {
   std::string name;
 
   switch (card) {
@@ -1056,6 +1081,20 @@ std::string GetTailCallFieldHandlerName(ParseCardinality card,
       name.append("Fixed");
       break;
 
+    case TypeFormat::kVar64:
+    case TypeFormat::kVar32:
+    case TypeFormat::kSInt64:
+    case TypeFormat::kSInt32:
+    case TypeFormat::kBool:
+      name.append("Varint");
+      break;
+
+    case TypeFormat::kBytes:
+    case TypeFormat::kString:
+    case TypeFormat::kStringValidateOnly:
+      name.append("String");
+      break;
+
     default:
       break;
   }
@@ -1067,35 +1106,59 @@ std::string GetTailCallFieldHandlerName(ParseCardinality card,
   switch (type_format) {
     case TypeFormat::kVar64:
     case TypeFormat::kFixed64:
-      name.append("uint64_t");
+      name.append("uint64_t, ");
       break;
 
     case TypeFormat::kSInt64:
-      name.append("int64_t");
+      name.append("int64_t, ");
       break;
 
     case TypeFormat::kVar32:
     case TypeFormat::kFixed32:
-      name.append("uint32_t");
+      name.append("uint32_t, ");
       break;
 
     case TypeFormat::kSInt32:
-      name.append("int32_t");
+      name.append("int32_t, ");
       break;
 
     case TypeFormat::kBool:
-      name.append("bool");
+      name.append("bool, ");
       break;
 
     default:
-      GOOGLE_LOG(FATAL) << static_cast<int>(type_format);
-      return "";
+      break;
   }
 
-  name.append(", ");
   name.append(CodedTagType(tag_length_bytes));
 
+  std::string tcpb =
+      StrCat(ProtobufNamespace(options), "::internal::TcParserBase");
+
   switch (type_format) {
+    case TypeFormat::kVar64:
+    case TypeFormat::kVar32:
+    case TypeFormat::kBool:
+      name.append(StrCat(", ::", tcpb, "::kNoConversion"));
+      break;
+
+    case TypeFormat::kSInt64:
+    case TypeFormat::kSInt32:
+      name.append(StrCat(", ::", tcpb, "::kZigZag"));
+      break;
+
+    case TypeFormat::kBytes:
+      name.append(StrCat(", ::", tcpb, "::kNoUtf8"));
+      break;
+
+    case TypeFormat::kString:
+      name.append(StrCat(", ::", tcpb, "::kUtf8"));
+      break;
+
+    case TypeFormat::kStringValidateOnly:
+      name.append(StrCat(", ::", tcpb, "::kUtf8ValidateOnly"));
+      break;
+
     default:
       break;
   }

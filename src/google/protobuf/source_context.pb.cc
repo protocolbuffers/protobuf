@@ -180,7 +180,7 @@ failure:
   (void) cached_has_bits;
 
   // string file_name = 1;
-  if (!this->file_name().empty()) {
+  if (!this->_internal_file_name().empty()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_file_name().data(), static_cast<int>(this->_internal_file_name().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
@@ -206,7 +206,7 @@ size_t SourceContext::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // string file_name = 1;
-  if (!this->file_name().empty()) {
+  if (!this->_internal_file_name().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_file_name());
@@ -240,7 +240,7 @@ void SourceContext::MergeFrom(const SourceContext& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (!from.file_name().empty()) {
+  if (!from._internal_file_name().empty()) {
     _internal_set_file_name(from._internal_file_name());
   }
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
