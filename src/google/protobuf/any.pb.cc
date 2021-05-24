@@ -215,7 +215,7 @@ failure:
   (void) cached_has_bits;
 
   // string type_url = 1;
-  if (!this->type_url().empty()) {
+  if (!this->_internal_type_url().empty()) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_type_url().data(), static_cast<int>(this->_internal_type_url().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
@@ -225,7 +225,7 @@ failure:
   }
 
   // bytes value = 2;
-  if (!this->value().empty()) {
+  if (!this->_internal_value().empty()) {
     target = stream->WriteBytesMaybeAliased(
         2, this->_internal_value(), target);
   }
@@ -247,14 +247,14 @@ size_t Any::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // string type_url = 1;
-  if (!this->type_url().empty()) {
+  if (!this->_internal_type_url().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_type_url());
   }
 
   // bytes value = 2;
-  if (!this->value().empty()) {
+  if (!this->_internal_value().empty()) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::BytesSize(
         this->_internal_value());
@@ -288,10 +288,10 @@ void Any::MergeFrom(const Any& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (!from.type_url().empty()) {
+  if (!from._internal_type_url().empty()) {
     _internal_set_type_url(from._internal_type_url());
   }
-  if (!from.value().empty()) {
+  if (!from._internal_value().empty()) {
     _internal_set_value(from._internal_value());
   }
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);

@@ -1564,12 +1564,17 @@ static int InternalReparentFields(
                                            to_release);
   }
 
-  GOOGLE_CHECK_EQ(self->message->GetArena(), new_message->message->GetArena());
-
-  MessageReflectionFriend::UnsafeShallowSwapFields(
-      self->message, new_message->message,
-      std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
-                                          fields_to_swap.end()));
+  if (self->message->GetArena() == new_message->message->GetArena()) {
+    MessageReflectionFriend::UnsafeShallowSwapFields(
+        self->message, new_message->message,
+        std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
+                                            fields_to_swap.end()));
+  } else {
+    self->message->GetReflection()->SwapFields(
+        self->message, new_message->message,
+        std::vector<const FieldDescriptor*>(fields_to_swap.begin(),
+                                            fields_to_swap.end()));
+  }
 
   // This might delete the Python message completely if all children were moved.
   Py_DECREF(self);

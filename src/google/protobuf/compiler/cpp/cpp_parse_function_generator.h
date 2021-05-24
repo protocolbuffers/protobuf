@@ -169,7 +169,8 @@ enum class TypeFormat {
 std::string GetTailCallFieldHandlerName(ParseCardinality card,
                                         TypeFormat type_format,
                                         int table_size_log2,
-                                        int tag_length_bytes);
+                                        int tag_length_bytes,
+                                        const Options& options);
 
 }  // namespace cpp
 }  // namespace compiler

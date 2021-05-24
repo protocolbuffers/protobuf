@@ -940,6 +940,14 @@ class EncodeDecodeTest extends TestBase
         $this->expectFields($to);
     }
 
+    public function testJsonEncodeNullSubMessage()
+    {
+        $from = new TestMessage();
+        $from->setOptionalMessage(null);
+        $data = $from->serializeToJsonString();
+        $this->assertEquals("{}", $data);
+    }
+
     public function testDecodeDuration()
     {
         $m = new Google\Protobuf\Duration();

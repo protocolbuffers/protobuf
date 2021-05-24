@@ -95,6 +95,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/empty.pb.h                                     \
   google/protobuf/extension_set.h                                \
   google/protobuf/extension_set_inl.h                            \
+  google/protobuf/field_access_listener.h                        \
   google/protobuf/field_mask.pb.h                                \
   google/protobuf/generated_enum_reflection.h                    \
   google/protobuf/generated_enum_util.h                          \
@@ -203,6 +204,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/arena.cc                                     \
   google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
+  google/protobuf/field_access_listener.cc                     \
   google/protobuf/generated_enum_util.cc                       \
   google/protobuf/generated_message_util.cc                    \
   google/protobuf/generated_message_table_driven_lite.h        \

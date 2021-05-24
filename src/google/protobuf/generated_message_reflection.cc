@@ -76,6 +76,17 @@ namespace protobuf {
 
 namespace {
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
+
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+Message* MaybeForceCopy(Arena* arena, Message* msg) {
+  if (arena != nullptr || msg == nullptr) return msg;
+
+  Message* copy = msg->New();
+  copy->MergeFrom(*msg);
+  delete msg;
+  return copy;
+}
+#endif  // PROTOBUF_FORCE_COPY_IN_RELEASE
 }  // anonymous namespace
 
 namespace internal {
@@ -512,13 +523,13 @@ void SwapFieldHelper::SwapMessage(const Reflection* r, Message* lhs,
 
   if (*lhs_sub != nullptr && *rhs_sub != nullptr) {
     (*lhs_sub)->GetReflection()->Swap(*lhs_sub, *rhs_sub);
-  } else if (*lhs_sub == nullptr) {
+  } else if (*lhs_sub == nullptr && r->HasBit(*rhs, field)) {
     *lhs_sub = (*rhs_sub)->New(lhs_arena);
     (*lhs_sub)->CopyFrom(**rhs_sub);
     r->ClearField(rhs, field);
     // Ensures has bit is unchanged after ClearField.
     r->SetBit(rhs, field);
-  } else {
+  } else if (*rhs_sub == nullptr && r->HasBit(*lhs, field)) {
     *rhs_sub = (*lhs_sub)->New(rhs_arena);
     (*rhs_sub)->CopyFrom(**lhs_sub);
     r->ClearField(lhs, field);
@@ -649,14 +660,14 @@ void Reflection::SwapOneofField(Message* message1, Message* message2,
   uint32 oneof_case1 = GetOneofCase(*message1, oneof_descriptor);
   uint32 oneof_case2 = GetOneofCase(*message2, oneof_descriptor);
 
-  int32 temp_int32;
-  int64 temp_int64;
-  uint32 temp_uint32;
-  uint64 temp_uint64;
-  float temp_float;
-  double temp_double;
-  bool temp_bool;
-  int temp_int;
+  int32 temp_int32 = 0;
+  int64 temp_int64 = 0;
+  uint32 temp_uint32 = 0;
+  uint64 temp_uint64 = 0;
+  float temp_float = 0;
+  double temp_double = 0;
+  bool temp_bool = false;
+  int temp_int = 0;
   Message* temp_message = nullptr;
   std::string temp_string;
 
@@ -1196,19 +1207,25 @@ Message* Reflection::ReleaseLast(Message* message,
   USAGE_CHECK_ALL(ReleaseLast, REPEATED, MESSAGE);
   CheckInvalidAccess(schema_, field);
 
+  Message* released;
   if (field->is_extension()) {
-    return static_cast<Message*>(
+    released = static_cast<Message*>(
         MutableExtensionSet(message)->ReleaseLast(field->number()));
   } else {
     if (IsMapFieldInApi(field)) {
-      return MutableRaw<MapFieldBase>(message, field)
-          ->MutableRepeatedField()
-          ->ReleaseLast<GenericTypeHandler<Message> >();
+      released = MutableRaw<MapFieldBase>(message, field)
+                     ->MutableRepeatedField()
+                     ->ReleaseLast<GenericTypeHandler<Message>>();
     } else {
-      return MutableRaw<RepeatedPtrFieldBase>(message, field)
-          ->ReleaseLast<GenericTypeHandler<Message> >();
+      released = MutableRaw<RepeatedPtrFieldBase>(message, field)
+                     ->ReleaseLast<GenericTypeHandler<Message>>();
     }
   }
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  return MaybeForceCopy(message->GetArenaForAllocation(), released);
+#else   // PROTOBUF_FORCE_COPY_IN_RELEASE
+  return released;
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
 }
 
 void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
@@ -1918,6 +1935,9 @@ Message* Reflection::ReleaseMessage(Message* message,
   CheckInvalidAccess(schema_, field);
 
   Message* released = UnsafeArenaReleaseMessage(message, field, factory);
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  released = MaybeForceCopy(message->GetArenaForAllocation(), released);
+#endif  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (message->GetArenaForAllocation() != nullptr && released != nullptr) {
     Message* copy_from_arena = released->New();
     copy_from_arena->CopyFrom(*released);
