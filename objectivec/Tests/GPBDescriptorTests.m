@@ -305,7 +305,7 @@
   GPBDescriptor *descriptor = [TestOneof2 descriptor];
 
   // All fields should be listed.
-  XCTAssertEqual(descriptor.fields.count, 21U);
+  XCTAssertEqual(descriptor.fields.count, 17U);
 
   // There are two oneofs in there.
   XCTAssertEqual(descriptor.oneofs.count, 2U);
@@ -330,7 +330,7 @@
 
   GPBOneofDescriptor *oneofBar = [descriptor oneofWithName:@"bar"];
   XCTAssertNotNil(oneofBar);
-  XCTAssertEqual(oneofBar.fields.count, 10U);
+  XCTAssertEqual(oneofBar.fields.count, 6U);
 
   // Pointer comparisons.
   XCTAssertEqual([oneofBar fieldWithNumber:TestOneof2_FieldNumber_BarString],
