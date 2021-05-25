@@ -99,7 +99,7 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
                      kValueFieldType>(arena),
         _internal_metadata_(arena) {}
   ~MapEntry() {
-    Message::_internal_metadata_.Delete<UnknownFieldSet>();
+    Message::_internal_metadata_.template Delete<UnknownFieldSet>();
     _internal_metadata_.Delete<UnknownFieldSet>();
   }
   typedef void InternalArenaConstructable_;
