@@ -889,7 +889,7 @@ endif
 no_warning_test.cc:
 	echo "// Generated from Makefile.am" > no_warning_test.cc
 	for FILE in $(nobase_include_HEADERS); do \
-	    echo "#include <$${FILE}>" >> no_warning_test.cc; \
+    echo "#include <$${FILE}>" >> no_warning_test.cc; \
 	done
 	echo "int main(int, char**) { return 0; }" >> no_warning_test.cc
 
