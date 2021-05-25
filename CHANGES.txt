@@ -1,3 +1,7 @@
+2021-05-25 version 3.17.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Kotlin
+  * Fix duplicate class error
+
 2021-05-07 version 3.17.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   PHP
   * Fixed PHP memory leaks and arginfo errors. (#8614)
