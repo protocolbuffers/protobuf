@@ -100,9 +100,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_enum_util.h                          \
   google/protobuf/generated_message_reflection.h                 \
   google/protobuf/generated_message_table_driven.h               \
-  google/protobuf/generated_message_tctable_decl.h               \
-  google/protobuf/generated_message_tctable_impl.h               \
-  google/protobuf/generated_message_tctable_impl.inc             \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/implicit_weak_message.h                        \
@@ -892,9 +889,7 @@ endif
 no_warning_test.cc:
 	echo "// Generated from Makefile.am" > no_warning_test.cc
 	for FILE in $(nobase_include_HEADERS); do \
-          if [[ $$FILE != *.inc ]]; then \
-	    echo "#include <$${FILE}>" >> no_warning_test.cc; \
-	  fi \
+	  echo "#include <$${FILE}>" >> no_warning_test.cc; \
 	done
 	echo "int main(int, char**) { return 0; }" >> no_warning_test.cc
 
