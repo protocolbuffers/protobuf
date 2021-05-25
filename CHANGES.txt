@@ -1,6 +1,6 @@
 2021-05-25 version 3.17.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Kotlin
-  * Fix duplicate class error
+  * Fix duplicate class error (#8653)
 
 2021-05-07 version 3.17.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   PHP
