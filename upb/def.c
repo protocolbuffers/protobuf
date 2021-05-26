@@ -1907,13 +1907,18 @@ static void build_filedef(
   const upb_strview* strs;
   size_t i, n;
 
-  count_types_in_file(file_proto, file);
+  file->symtab = ctx->symtab;
 
+  /* One pass to count and allocate. */
+  file->msg_count = 0;
+  file->enum_count = 0;
+  file->ext_count = 0;
+  count_types_in_file(file_proto, file);
   file->msgs = symtab_alloc(ctx, sizeof(*file->msgs) * file->msg_count);
   file->enums = symtab_alloc(ctx, sizeof(*file->enums) * file->enum_count);
   file->exts = symtab_alloc(ctx, sizeof(*file->exts) * file->ext_count);
 
-  /* We increment these as defs are added. */
+  /* In the second pass we increment these as defs are added. */
   file->msg_count = 0;
   file->enum_count = 0;
   file->ext_count = 0;
@@ -2042,41 +2047,43 @@ static void remove_filedef(upb_symtab *s, upb_filedef *file) {
 static const upb_filedef *_upb_symtab_addfile(
     upb_symtab *s, const google_protobuf_FileDescriptorProto *file_proto,
     const upb_msglayout **layouts, upb_status *status) {
-  upb_arena *file_arena = upb_arena_new();
-  upb_filedef *file;
   symtab_addctx ctx;
+  upb_strview name = google_protobuf_FileDescriptorProto_name(file_proto);
 
-  if (!file_arena) return NULL;
+  if (upb_strtable_lookup2(&s->files, name.data, name.size, NULL)) {
+    upb_status_seterrf(status, "duplicate file name (%.*s)",
+                       UPB_STRVIEW_ARGS(name));
+    return NULL;
+  }
 
-  file = upb_arena_malloc(file_arena, sizeof(*file));
-  if (!file) goto done;
-
-  ctx.file = file;
   ctx.symtab = s;
-  ctx.arena = file_arena;
   ctx.layouts = layouts;
   ctx.status = status;
+  ctx.file = NULL;
+  ctx.arena = upb_arena_new();
 
-  file->msg_count = 0;
-  file->enum_count = 0;
-  file->ext_count = 0;
-  file->symtab = s;
+  if (!ctx.arena) {
+    upb_status_setoom(status);
+    return NULL;
+  }
 
   if (UPB_UNLIKELY(UPB_SETJMP(ctx.err))) {
     UPB_ASSERT(!upb_ok(status));
-    remove_filedef(s, file);
-    file = NULL;
+    if (ctx.file) {
+      remove_filedef(s, ctx.file);
+      ctx.file = NULL;
+    }
   } else {
-    build_filedef(&ctx, file, file_proto);
-    upb_strtable_insert(&s->files, file->name, strlen(file->name),
-                        upb_value_constptr(file), ctx.arena);
+    ctx.file = symtab_alloc(&ctx, sizeof(*ctx.file));
+    build_filedef(&ctx, ctx.file, file_proto);
+    upb_strtable_insert(&s->files, name.data, name.size,
+                        upb_value_constptr(ctx.file), ctx.arena);
     UPB_ASSERT(upb_ok(status));
-    upb_arena_fuse(s->arena, file_arena);
+    upb_arena_fuse(s->arena, ctx.arena);
   }
 
-done:
-  upb_arena_free(file_arena);
-  return file;
+  upb_arena_free(ctx.arena);
+  return ctx.file;
 }
 
 const upb_filedef *upb_symtab_addfile(
