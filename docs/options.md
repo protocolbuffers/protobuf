@@ -276,3 +276,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Kratos API Errors
    * Website: https://go-kratos.dev
    * Extension: 1108
+
+1. Glitchdot (Currently Private)
+   * Website: https://go.glitchdot.com
+   * Extension: 1109
