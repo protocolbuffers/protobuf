@@ -4939,7 +4939,6 @@ const upb_oneofdef *upb_fielddef_realcontainingoneof(const upb_fielddef *f) {
 }
 
 upb_msgval upb_fielddef_default(const upb_fielddef *f) {
-  UPB_ASSERT(!upb_fielddef_issubmsg(f));
   upb_msgval ret;
   if (upb_fielddef_isstring(f)) {
     str_t *str = f->defaultval.str;
