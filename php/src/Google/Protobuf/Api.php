@@ -275,7 +275,7 @@ class Api extends \Google\Protobuf\Internal\Message
      */
     public function getSourceContext()
     {
-        return isset($this->source_context) ? $this->source_context : null;
+        return $this->source_context;
     }
 
     public function hasSourceContext()

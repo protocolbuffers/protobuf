@@ -648,32 +648,21 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
   std::string deprecation_trigger = (field->options().deprecated()) ? "@trigger_error('" +
       field->name() + " is deprecated.', E_USER_DEPRECATED);\n        " : "";
 
+  // Emit getter.
   if (oneof != NULL) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
         "    ^deprecation_trigger^return $this->readOneof(^number^);\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()),
         "deprecation_trigger", deprecation_trigger);
-  } else if (field->has_presence()) {
+  } else if (field->has_presence() && !field->message_type()) {
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
         "    ^deprecation_trigger^return isset($this->^name^) ? $this->^name^ : ^default_value^;\n"
-        "}\n\n"
-        "public function has^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^return isset($this->^name^);\n"
-        "}\n\n"
-        "public function clear^camel_name^()\n"
-        "{\n"
-        "    ^deprecation_trigger^unset($this->^name^);\n"
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
@@ -687,6 +676,32 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "}\n\n",
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "name", field->name(),
+        "deprecation_trigger", deprecation_trigger);
+  }
+
+  // Emit hazzers/clear.
+  if (oneof) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return $this->hasOneof(^number^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "number", IntToString(field->number()),
+        "deprecation_trigger", deprecation_trigger);
+  } else if (field->has_presence()) {
+    printer->Print(
+        "public function has^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^return isset($this->^name^);\n"
+        "}\n\n"
+        "public function clear^camel_name^()\n"
+        "{\n"
+        "    ^deprecation_trigger^unset($this->^name^);\n"
+        "}\n\n",
+        "camel_name", UnderscoresToCamelCase(field->name(), true),
+        "name", field->name(),
+        "default_value", DefaultForField(field),
         "deprecation_trigger", deprecation_trigger);
   }
 

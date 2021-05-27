@@ -472,6 +472,8 @@ class GeneratedClassTest extends TestBase
     {
         $m = new TestMessage();
 
+        $this->assertNull($m->getOptionalMessage());
+
         $sub_m = new Sub();
         $sub_m->setA(1);
         $m->setOptionalMessage($sub_m);
