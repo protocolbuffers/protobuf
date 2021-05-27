@@ -58,14 +58,14 @@ make clean && make -j8
 
 # build Java protobuf
 pushd java
-# TODO: avoid unnecessarily running all java tests.
-mvn package
+mvn package -B -Dmaven.test.skip=true
 popd
 
 pushd benchmarks
 
 # build and run C++ benchmark
-# TODO: avoid the magic with moving python_result.json
+# "make clean" deletes the contents of the tmp/ directory, so we move it elsewhere and then restore it once build is done.
+# TODO(jtattermusch): find a less clumsy way of protecting python_result.json contents
 mv tmp/python_result.json . && make clean && make -j8 cpp-benchmark && mv python_result.json tmp
 echo "benchmarking cpp..."
 env LD_PRELOAD="${repo_root}/gperftools/.libs/libtcmalloc.so" ./cpp-benchmark --benchmark_min_time=5.0 --benchmark_out_format=json --benchmark_out="tmp/cpp_result.json" $datasets
@@ -90,7 +90,14 @@ echo "benchmarking js..."
 # TODO(jtattermusch): add php-c-benchmark. Currently its build is broken.
 
 # upload results to bq
+# TODO(jtattermusch): the upload to bq is currently broken.
 make python_add_init
 env LD_LIBRARY_PATH="${repo_root}/src/.libs" python -m util.result_uploader \
 	-cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" -python="../tmp/python_result.json" -node="../tmp/node_result.json"
 popd
+
+# also persist the results in the build job log (for better debuggability)
+cat benchmarks/tmp/cpp_result.json
+cat benchmarks/tmp/java_result.json
+cat benchmarks/tmp/python_result.json
+cat benchmarks/tmp/node_result.json
