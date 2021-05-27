@@ -307,7 +307,17 @@ static void jsonenc_double(jsonenc *e, const char *fmt, double val) {
   } else if (val != val) {
     jsonenc_putstr(e, "\"NaN\"");
   } else {
+    char *p = e->ptr;
     jsonenc_printf(e, fmt, val);
+
+    /* printf() is dependent on locales; sadly there is no easy and portable way
+     * to avoid this. This little post-processing step will translate 1,2 -> 1.2
+     * since JSON needs the latter. Arguably a hack, but it is simple and the
+     * alternatives are far more complicated, platform-dependent, and/or larger
+     * in code size. */
+    for (char *end = e->ptr; p < end; p++) {
+      if (*p == ',') *p = '.';
+    }
   }
 }
 

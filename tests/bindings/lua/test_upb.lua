@@ -747,6 +747,17 @@ function test_json_emit_defaults()
   local json = upb.json_encode(msg, {upb.JSONENC_EMITDEFAULTS})
 end
 
+function test_json_locale()
+  local msg = test_messages_proto3.TestAllTypesProto3()
+  msg.optional_double = 1.1
+  local original_locale = os.setlocale(nil)
+  os.setlocale("C")
+  local json = upb.json_encode(msg)
+  os.setlocale("de_DE.utf8")
+  assert_equal(json, upb.json_encode(msg))
+  os.setlocale(original_locale)  -- Restore.
+end
+
 function test_encode_depth_limit()
   local msg = test_messages_proto3.TestAllTypesProto3()
   msg.recursive_message = msg
