@@ -44,7 +44,8 @@ VALUE Map_GetRubyWrapper(upb_map *map, upb_fieldtype_t key_type,
 // Gets the underlying upb_map for this Ruby map object, which must have
 // key/value type that match |field|. If this is not a map or the type doesn't
 // match, raises an exception.
-const upb_map *Map_GetUpbMap(VALUE val, const upb_fielddef *field);
+const upb_map *Map_GetUpbMap(VALUE val, const upb_fielddef *field,
+                             upb_arena *arena);
 
 // Implements #inspect for this map by appending its contents to |b|.
 void Map_Inspect(StringBuilder *b, const upb_map *map, upb_fieldtype_t key_type,

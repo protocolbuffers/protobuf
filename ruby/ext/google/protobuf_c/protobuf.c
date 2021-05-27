@@ -204,6 +204,16 @@ upb_arena *Arena_get(VALUE _arena) {
   return arena->arena;
 }
 
+void Arena_fuse(VALUE _arena, upb_arena *other) {
+  Arena *arena;
+  TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
+  if (!upb_arena_fuse(arena->arena, other)) {
+    rb_raise(rb_eRuntimeError,
+             "Unable to fuse arenas. This should never happen since Ruby does "
+             "not use initial blocks");
+  }
+}
+
 VALUE Arena_new() {
   return Arena_alloc(cArena);
 }
