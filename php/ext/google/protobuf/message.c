@@ -134,6 +134,10 @@ static void Message_get(Message *intern, const upb_fielddef *f, zval *rv) {
     RepeatedField_GetPhpWrapper(rv, msgval.array, TypeInfo_Get(f),
                                 &intern->arena);
   } else {
+    if (upb_fielddef_issubmsg(f) && !upb_msg_has(intern->msg, f)) {
+      ZVAL_NULL(rv);
+      return;
+    }
     upb_msgval msgval = upb_msg_get(intern->msg, f);
     Convert_UpbToPhp(msgval, rv, TypeInfo_Get(f), &intern->arena);
   }
@@ -280,7 +284,6 @@ static int Message_has_property(PROTO_VAL *obj, PROTO_STR *member,
  * Message_unset_property()
  *
  * Object handler for unsetting a property. Called when PHP code calls:
- * does any of:
  *
  *   unset($message->foobar);
  *
