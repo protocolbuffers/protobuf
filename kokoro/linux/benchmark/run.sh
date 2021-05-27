@@ -89,15 +89,16 @@ echo "benchmarking js..."
 
 # TODO(jtattermusch): add php-c-benchmark. Currently its build is broken.
 
-# upload results to bq
-# TODO(jtattermusch): the upload to bq is currently broken.
+# persist raw the results in the build job log (for better debuggability)
+cat tmp/cpp_result.json
+cat tmp/java_result.json
+cat tmp/python_result.json
+cat tmp/node_result.json
+
+# print the postprocessed results to the build job log
+# TODO(jtattermusch): re-enable uploading results to bigquery (it is currently broken)
 make python_add_init
-env LD_LIBRARY_PATH="${repo_root}/src/.libs" python -m util.result_uploader \
+env LD_LIBRARY_PATH="${repo_root}/src/.libs" python -m util.result_parser \
 	-cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" -python="../tmp/python_result.json" -node="../tmp/node_result.json"
 popd
 
-# also persist the results in the build job log (for better debuggability)
-cat benchmarks/tmp/cpp_result.json
-cat benchmarks/tmp/java_result.json
-cat benchmarks/tmp/python_result.json
-cat benchmarks/tmp/node_result.json
