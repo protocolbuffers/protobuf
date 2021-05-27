@@ -58,6 +58,7 @@ make clean && make -j8
 
 # build Java protobuf
 pushd java
+# TODO: avoid unnecessarily running all java tests.
 mvn package
 popd
 
@@ -86,18 +87,10 @@ make js-benchmark
 echo "benchmarking js..."
 ./js-benchmark $datasets  --json_output=$(pwd)/tmp/node_result.json
 
-# php only supports a subset of benchmark datasets
-make -j8 generate_proto3_data
-proto3_datasets=$(for file in $datasets; do echo $(pwd)/tmp/proto3_data/${file#$(pwd)}; done | xargs)
-echo $proto3_datasets
-
-# build and run php benchmark
-make -j8 php-c-benchmark
-echo "benchmarking php_c..."
-./php-c-benchmark $proto3_datasets --json --behavior_prefix="php_c" > tmp/php_c_result.json
+# TODO(jtattermusch): add php-c-benchmark. Currently its build is broken.
 
 # upload results to bq
 make python_add_init
-env LD_LIBRARY_PATH="${repo_root}/src/.libs" python -m util.result_uploader -php_c="../tmp/php_c_result.json"  \
-	-cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" -go="../tmp/go_result.txt" -python="../tmp/python_result.json" -node="../tmp/node_result.json"
+env LD_LIBRARY_PATH="${repo_root}/src/.libs" python -m util.result_uploader \
+	-cpp="../tmp/cpp_result.json" -java="../tmp/java_result.json" -python="../tmp/python_result.json" -node="../tmp/node_result.json"
 popd
