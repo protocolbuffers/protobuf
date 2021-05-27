@@ -1745,7 +1745,7 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
     TrimWhitespace(&proto_file);
     if (!proto_file.empty()) {
       std::map<std::string, std::string>::iterator existing_entry =
-          map_->find(string(proto_file));
+          map_->find(std::string(proto_file));
       if (existing_entry != map_->end()) {
         std::cerr << "warning: duplicate proto file reference, replacing "
                      "framework entry for '"
