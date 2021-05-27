@@ -717,6 +717,15 @@ function test_descriptor_error()
   assert_nil(symtab:lookup_msg("ABC"))
 end
 
+function test_duplicate_filename_error()
+  local symtab = upb.SymbolTable()
+  local file = descriptor.FileDescriptorProto()
+  file.name = "test.proto"
+  symtab:add_file(upb.encode(file))
+  -- Second add with the same filename fails.
+  assert_error(function () symtab:add_file(upb.encode(file)) end)
+end
+
 function test_encode_skipunknown()
   -- Test that upb.ENCODE_SKIPUNKNOWN does not encode unknown fields.
   local msg = test_messages_proto3.TestAllTypesProto3{
