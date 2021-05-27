@@ -94,9 +94,9 @@ class ImmutableExtensionGenerator : public ExtensionGenerator {
                                        Context* context);
   virtual ~ImmutableExtensionGenerator();
 
-  virtual void Generate(io::Printer* printer);
-  virtual int GenerateNonNestedInitializationCode(io::Printer* printer);
-  virtual int GenerateRegistrationCode(io::Printer* printer);
+  virtual void Generate(io::Printer* printer) override;
+  virtual int GenerateNonNestedInitializationCode(io::Printer* printer) override;
+  virtual int GenerateRegistrationCode(io::Printer* printer) override;
 
  protected:
   const FieldDescriptor* descriptor_;

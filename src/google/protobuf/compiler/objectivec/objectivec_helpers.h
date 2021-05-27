@@ -296,7 +296,7 @@ class PROTOC_EXPORT ImportWriter {
     ProtoFrameworkCollector(std::map<std::string, std::string>* inout_proto_file_to_framework_name)
         : map_(inout_proto_file_to_framework_name) {}
 
-    virtual bool ConsumeLine(const StringPiece& line, std::string* out_error);
+    virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override;
 
    private:
     std::map<std::string, std::string>* map_;

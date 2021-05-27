@@ -95,11 +95,11 @@ class ImmutablePrimitiveOneofFieldLiteGenerator
                                             Context* context);
   ~ImmutablePrimitiveOneofFieldLiteGenerator();
 
-  void GenerateMembers(io::Printer* printer) const;
-  void GenerateBuilderMembers(io::Printer* printer) const;
+  void GenerateMembers(io::Printer* printer) const override;
+  void GenerateBuilderMembers(io::Printer* printer) const override;
 
   void GenerateFieldInfo(io::Printer* printer,
-                         std::vector<uint16_t>* output) const;
+                         std::vector<uint16_t>* output) const override;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutablePrimitiveOneofFieldLiteGenerator);

@@ -80,7 +80,7 @@ class ImmutableServiceGenerator : public ServiceGenerator {
                             Context* context);
   virtual ~ImmutableServiceGenerator();
 
-  virtual void Generate(io::Printer* printer);
+  virtual void Generate(io::Printer* printer) override;
 
  private:
   // Generate the getDescriptorForType() method.
