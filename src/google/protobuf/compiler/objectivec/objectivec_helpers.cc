@@ -213,6 +213,10 @@ const char* const kReservedWordList[] = {
   // Not a keyword, but will break you
   "NULL",
 
+  // C88+ specs call for these to be macros, so depending on what they are
+  // defined to be it can lead to odd errors for some Xcode/SDK versions.
+  "stdin", "stdout", "stderr",
+
   // Objective-C Runtime typedefs
   // From <obc/runtime.h>
   "Category", "Ivar", "Method", "Protocol",
