@@ -132,11 +132,7 @@ UPB_INLINE bool _upb_hasbit(const upb_msg *msg, size_t idx) {
 }
 
 UPB_INLINE void _upb_sethas(const upb_msg *msg, size_t idx) {
-  if (UPB_LIKELY(idx < 32)) {
-    (*UPB_PTR_AT(msg, 0, uint32_t)) |= (1UL << idx);
-  } else {
-    (*UPB_PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
-  }
+  (*UPB_PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
 }
 
 UPB_INLINE void _upb_clearhas(const upb_msg *msg, size_t idx) {

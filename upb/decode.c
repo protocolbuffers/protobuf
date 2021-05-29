@@ -305,11 +305,12 @@ static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
 
   if (l == NULL) return &none;
 
-  size_t idx = (size_t)field_number - 1;  // 0 wraps to SIZE_MAX
+  size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
   if (idx < l->dense_below) {
     goto found;
   }
 
+  /* Resume scanning from last_field_index since fields are usually in order. */
   int last = *last_field_index;
   for (idx = last; idx < l->field_count; idx++) {
     if (l->fields[idx].number == field_number) {
@@ -332,7 +333,7 @@ static const upb_msglayout_field *upb_find_field(const upb_msglayout *l,
 }
 
 static upb_msg *decode_newsubmsg(upb_decstate *d,
-                                 const upb_msglayout *const *submsgs,
+                                 upb_msglayout const *const *submsgs,
                                  const upb_msglayout_field *field) {
   const upb_msglayout *subl = submsgs[field->submsg_index];
   return _upb_msg_new_inl(subl, &d->arena);
@@ -365,7 +366,7 @@ static const char *decode_readstr(upb_decstate *d, const char *ptr, int size,
 UPB_FORCEINLINE
 static const char *decode_tosubmsg(upb_decstate *d, const char *ptr,
                                    upb_msg *submsg, 
-                                   const upb_msglayout *const *submsgs,
+                                   upb_msglayout const *const *submsgs,
                                    const upb_msglayout_field *field, int size) {
   const upb_msglayout *subl = submsgs[field->submsg_index];
   int saved_delta = decode_pushlimit(d, ptr, size);
@@ -397,7 +398,7 @@ static const char *decode_group(upb_decstate *d, const char *ptr,
 UPB_FORCEINLINE
 static const char *decode_togroup(upb_decstate *d, const char *ptr,
                                   upb_msg *submsg,
-                                  const upb_msglayout *const *submsgs,
+                                  upb_msglayout const *const *submsgs,
                                   const upb_msglayout_field *field) {
   const upb_msglayout *subl = submsgs[field->submsg_index];
   return decode_group(d, ptr, submsg, subl, field->number);
@@ -405,7 +406,7 @@ static const char *decode_togroup(upb_decstate *d, const char *ptr,
 
 static const char *decode_toarray(upb_decstate *d, const char *ptr,
                                   upb_msg *msg,
-                                  const upb_msglayout *const *submsgs,
+                                  upb_msglayout const *const *submsgs,
                                   const upb_msglayout_field *field, wireval *val,
                                   int op) {
   upb_array **arrp = UPB_PTR_AT(msg, field->offset, void);
@@ -494,7 +495,7 @@ static const char *decode_toarray(upb_decstate *d, const char *ptr,
 }
 
 static const char *decode_tomap(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                const upb_msglayout *const *submsgs,
+                                upb_msglayout const *const *submsgs,
                                 const upb_msglayout_field *field, wireval *val) {
   upb_map **map_p = UPB_PTR_AT(msg, field->offset, upb_map *);
   upb_map *map = *map_p;
@@ -528,7 +529,7 @@ static const char *decode_tomap(upb_decstate *d, const char *ptr, upb_msg *msg,
 }
 
 static const char *decode_tomsg(upb_decstate *d, const char *ptr, upb_msg *msg,
-                                const upb_msglayout *const *submsgs,
+                                upb_msglayout const *const *submsgs,
                                 const upb_msglayout_field *field, wireval *val,
                                 int op) {
   void *mem = UPB_PTR_AT(msg, field->offset, void);
