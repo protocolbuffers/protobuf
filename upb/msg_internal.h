@@ -65,6 +65,7 @@ struct upb_msglayout {
   uint16_t size;
   uint16_t field_count;
   bool extendable;
+  uint8_t dense_below;
   uint8_t table_mask;
   /* To constant-initialize the tables of variable length, we need a flexible
    * array member, and we need to compile in C99 mode. */
@@ -131,7 +132,11 @@ UPB_INLINE bool _upb_hasbit(const upb_msg *msg, size_t idx) {
 }
 
 UPB_INLINE void _upb_sethas(const upb_msg *msg, size_t idx) {
-  (*UPB_PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
+  if (UPB_LIKELY(idx < 32)) {
+    (*UPB_PTR_AT(msg, 0, uint32_t)) |= (1UL << idx);
+  } else {
+    (*UPB_PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
+  }
 }
 
 UPB_INLINE void _upb_clearhas(const upb_msg *msg, size_t idx) {
