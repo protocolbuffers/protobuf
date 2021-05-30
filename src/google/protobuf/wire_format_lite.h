@@ -66,12 +66,11 @@
 // #pragma pop_macro("TYPE_BOOL")
 #undef TYPE_BOOL
 
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
 namespace internal {
-
-#include <google/protobuf/port_def.inc>
 
 // This class is for internal use by the protocol buffer library and by
 // protocol-compiler-generated message classes.  It must not be called
