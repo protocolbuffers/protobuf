@@ -1027,8 +1027,8 @@ static void assign_layout_indices(const upb_msgdef *m, upb_msglayout *l,
     upb_fielddef *f = (upb_fielddef*)upb_msgdef_itof(m, fields[i].number);
     UPB_ASSERT(f);
     f->layout_index = i;
-    if (i <= 254 && upb_fielddef_number(f) == i + 1) {
-      dense_below = upb_fielddef_number(f);
+    if (i < UINT8_MAX && upb_fielddef_number(f) == i + 1) {
+      dense_below = i + 1;
     }
   }
   l->dense_below = dense_below;
