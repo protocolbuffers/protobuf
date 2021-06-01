@@ -97,21 +97,44 @@ struct upb_msglayout {
   _upb_fasttable_entry fasttable[];
 };
 
+typedef struct {
+  upb_msglayout_field field;
+  const upb_msglayout *extendee;
+  const upb_msglayout *submsg;   /* NULL for non-submessage fields. */
+} upb_msglayout_ext;
+
 /** upb_msg *******************************************************************/
 
-/* Internal members of a upb_msg.  We can change this without breaking binary
- * compatibility.  We put these before the user's data.  The user's upb_msg*
- * points after the upb_msg_internal. */
+/* Internal members of a upb_msg that track unknown fields and/or extensions.
+ * We can change this without breaking binary compatibility.  We put these
+ * before the user's data.  The user's upb_msg* points after the
+ * upb_msg_internal. */
 
 typedef struct {
-  uint32_t len;
+  /* Total size of this structure, including the data that follows.
+   * Must be aligned to 8, which is alignof(upb_msg_ext) */
   uint32_t size;
-  /* Data follows. */
-} upb_msg_unknowndata;
 
-/* Used when a message is not extendable. */
+  /* Offsets relative to the beginning of this structure.
+   *
+   * Unknown data grows forward from the beginning to unknown_end.
+   * Extension data grows backward from size to ext_begin.
+   * When the two meet, we're out of data and have to realloc.
+   *
+   * If we imagine that the final member of this struct is:
+   *   char data[size - overhead];  // overhead = sizeof(upb_msg_internaldata)
+   * 
+   * Then we have:
+   *   unknown data: data[0 .. (unknown_end - overhead)]
+   *   extensions data: data[(ext_begin - overhead) .. (size - overhead)] */
+  uint32_t unknown_end;
+  uint32_t ext_begin;
+  /* Data follows, as if there were an array:
+   *   char data[size - sizeof(upb_msg_internaldata)]; */
+} upb_msg_internaldata;
+
 typedef struct {
-  upb_msg_unknowndata *unknown;
+  upb_msg_internaldata *internal;
 } upb_msg_internal;
 
 /* Maps upb_fieldtype_t -> memory size. */
@@ -149,6 +172,35 @@ void _upb_msg_discardunknown_shallow(upb_msg *msg);
  * is copied into the message instance. */
 bool _upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
                          upb_arena *arena);
+
+/** upb_msg_ext ***************************************************************/
+
+/* The internal representation of an extension is self-describing: it contains
+ * enough information that we can serialize it to binary format without needing
+ * to look it up in a registry. */
+typedef struct {
+  const upb_msglayout_ext *ext;
+  union {
+    upb_strview str;
+    void *ptr;
+    double dbl;
+    char scalar_data[8];
+  } data;
+} upb_msg_ext;
+
+/* Adds the given extension data to the given message. The returned extension will
+ * have its "ext" member initialized according to |ext|. */
+upb_msg_ext *_upb_msg_getorcreateext(upb_msg *msg, const upb_msglayout_ext *ext,
+                                     upb_arena *arena);
+
+/* Returns an array of extensions for this message. Note: the array is
+ * ordered in reverse relative to the order of creation. */
+const upb_msg_ext *_upb_msg_getexts(const upb_msg *msg, size_t *count);
+
+/* Returns an extension for the given field number, or NULL if no extension
+ * exists for this field number. */
+const upb_msg_ext *_upb_msg_getext(const upb_msg *msg,
+                                   const upb_msglayout_ext *ext);
 
 /** Hasbit access *************************************************************/
 
