@@ -846,18 +846,21 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
 void WriteField(const protobuf::FieldDescriptor* field,
                 absl::string_view offset, absl::string_view presence,
                 int submsg_index, Output& output) {
-
-  std::string label;
+  std::string mode;
   if (field->is_map()) {
-    label = "_UPB_LABEL_MAP";
-  } else if (field->is_packed()) {
-    label = "_UPB_LABEL_PACKED";
+    mode = "_UPB_MODE_MAP";
+  } else if (field->is_repeated()) {
+    mode = "_UPB_MODE_ARRAY";
   } else {
-    label = absl::StrCat(field->label());
+    mode = "_UPB_MODE_SCALAR";
+  }
+
+  if (field->is_packed()) {
+    absl::StrAppend(&mode, " | _UPB_MODE_IS_PACKED");
   }
 
   output("{$0, $1, $2, $3, $4, $5}", field->number(), offset, presence,
-         submsg_index, TableDescriptorType(field), label);
+         submsg_index, TableDescriptorType(field), mode);
 }
 
 // Writes a single field into a .upb.c source file.

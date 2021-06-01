@@ -1035,6 +1035,30 @@ static void assign_layout_indices(const upb_msgdef *m, upb_msglayout *l,
   l->dense_below = dense_below;
 }
 
+static void fill_fieldlayout(upb_msglayout_field *field, const upb_fielddef *f) {
+  field->number = upb_fielddef_number(f);
+  field->descriptortype = upb_fielddef_descriptortype(f);
+
+  if (field->descriptortype == UPB_DTYPE_STRING &&
+      f->file->syntax == UPB_SYNTAX_PROTO2) {
+    /* See TableDescriptorType() in upbc/generator.cc for details and
+     * rationale. */
+    field->descriptortype = UPB_DTYPE_BYTES;
+  }
+
+  if (upb_fielddef_ismap(f)) {
+    field->mode = _UPB_MODE_MAP;
+  } else if (upb_fielddef_isseq(f)) {
+    field->mode = _UPB_MODE_ARRAY;
+  } else {
+    field->mode = _UPB_MODE_SCALAR;
+  }
+
+  if (upb_fielddef_packed(f)) {
+    field->mode |= _UPB_MODE_IS_PACKED;
+  }
+}
+
 /* This function is the dynamic equivalent of message_layout.{cc,h} in upbc.
  * It computes a dynamic layout for all of the fields in |m|. */
 static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
@@ -1076,8 +1100,8 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
     const upb_fielddef *val = upb_msgdef_itof(m, 2);
     fields[0].number = 1;
     fields[1].number = 2;
-    fields[0].label = UPB_LABEL_OPTIONAL;
-    fields[1].label = UPB_LABEL_OPTIONAL;
+    fields[0].mode = _UPB_MODE_SCALAR;
+    fields[1].mode = _UPB_MODE_SCALAR;
     fields[0].presence = 0;
     fields[1].presence = 0;
     fields[0].descriptortype = upb_fielddef_descriptortype(key);
@@ -1113,22 +1137,7 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
     upb_fielddef* f = upb_msg_iter_field(&it);
     upb_msglayout_field *field = &fields[upb_fielddef_index(f)];
 
-    field->number = upb_fielddef_number(f);
-    field->descriptortype = upb_fielddef_descriptortype(f);
-    field->label = upb_fielddef_label(f);
-
-    if (field->descriptortype == UPB_DTYPE_STRING &&
-        f->file->syntax == UPB_SYNTAX_PROTO2) {
-      /* See TableDescriptorType() in upbc/generator.cc for details and
-       * rationale. */
-      field->descriptortype = UPB_DTYPE_BYTES;
-    }
-
-    if (upb_fielddef_ismap(f)) {
-      field->label = _UPB_LABEL_MAP;
-    } else if (upb_fielddef_packed(f)) {
-      field->label = _UPB_LABEL_PACKED;
-    }
+    fill_fieldlayout(field, f);
 
     if (upb_fielddef_issubmsg(f)) {
       const upb_msgdef *subm = upb_fielddef_msgsubdef(f);
