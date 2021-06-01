@@ -183,7 +183,7 @@ static void encode_fixedarray(upb_encstate *e, const upb_array *arr,
   }
 }
 
-static void encode_message(upb_encstate *e, const char *msg,
+static void encode_message(upb_encstate *e, const upb_msg *msg,
                            const upb_msglayout *m, size_t *size);
 
 static void encode_scalar(upb_encstate *e, const void *_field_mem,
@@ -275,10 +275,10 @@ static void encode_scalar(upb_encstate *e, const void *_field_mem,
   encode_tag(e, f->number, wire_type);
 }
 
-static void encode_array(upb_encstate *e, const char *field_mem,
+static void encode_array(upb_encstate *e, const upb_msg *msg,
                          const upb_msglayout *m, const upb_msglayout_field *f) {
-  const upb_array *arr = *(const upb_array**)field_mem;
-  bool packed = f->label == _UPB_LABEL_PACKED;
+  const upb_array *arr = *UPB_PTR_AT(msg, f->offset, upb_array*);
+  bool packed = f->mode & _UPB_MODE_IS_PACKED;
   size_t pre_len = e->limit - e->ptr;
 
   if (arr == NULL || arr->len == 0) {
@@ -394,9 +394,9 @@ static void encode_mapentry(upb_encstate *e, uint32_t number,
   encode_tag(e, number, UPB_WIRE_TYPE_DELIMITED);
 }
 
-static void encode_map(upb_encstate *e, const char *field_mem,
+static void encode_map(upb_encstate *e, const upb_msg *msg,
                        const upb_msglayout *m, const upb_msglayout_field *f) {
-  const upb_map *map = *(const upb_map**)field_mem;
+  const upb_map *map = *UPB_PTR_AT(msg, f->offset, const upb_map*);
   const upb_msglayout *layout = m->submsgs[f->submsg_index];
   UPB_ASSERT(layout->field_count == 2);
 
@@ -442,7 +442,7 @@ static void encode_scalarfield(upb_encstate *e, const char *msg,
   encode_scalar(e, msg + f->offset, m, f, skip_empty);
 }
 
-static void encode_message(upb_encstate *e, const char *msg,
+static void encode_message(upb_encstate *e, const upb_msg *msg,
                            const upb_msglayout *m, size_t *size) {
   size_t pre_len = e->limit - e->ptr;
   const upb_msglayout_field *f = &m->fields[m->field_count];
@@ -459,12 +459,18 @@ static void encode_message(upb_encstate *e, const char *msg,
 
   while (f != first) {
     f--;
-    if (_upb_isrepeated(f)) {
-      encode_array(e, msg + f->offset, m, f);
-    } else if (f->label == _UPB_LABEL_MAP) {
-      encode_map(e, msg + f->offset, m, f);
-    } else {
-      encode_scalarfield(e, msg, m, f);
+    switch (_upb_getmode(f)) {
+      case _UPB_MODE_ARRAY:
+        encode_array(e, msg, m, f);
+        break;
+      case _UPB_MODE_MAP:
+        encode_map(e, msg, m, f);
+        break;
+      case _UPB_MODE_SCALAR:
+        encode_scalarfield(e, msg, m, f);
+        break;
+      default:
+        UPB_UNREACHABLE();
     }
   }
 

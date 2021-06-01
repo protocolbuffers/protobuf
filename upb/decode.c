@@ -641,7 +641,7 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
       case UPB_WIRE_TYPE_DELIMITED: {
         int ndx = field->descriptortype;
         uint64_t size;
-        if (_upb_isrepeated(field)) ndx += 18;
+        if (_upb_getmode(field) == _UPB_MODE_ARRAY) ndx += 18;
         ptr = decode_varint64(d, ptr, &size);
         if (size >= INT32_MAX ||
             ptr - d->end + (int32_t)size > d->limit) {
@@ -665,17 +665,18 @@ static const char *decode_msg(upb_decstate *d, const char *ptr, upb_msg *msg,
 
     if (op >= 0) {
       /* Parse, using op for dispatch. */
-      switch (field->label) {
-        case UPB_LABEL_REPEATED:
-        case _UPB_LABEL_PACKED:
+      switch (_upb_getmode(field)) {
+        case _UPB_MODE_ARRAY:
           ptr = decode_toarray(d, ptr, msg, layout->submsgs, field, &val, op);
           break;
-        case _UPB_LABEL_MAP:
+        case _UPB_MODE_MAP:
           ptr = decode_tomap(d, ptr, msg, layout->submsgs, field, &val);
           break;
-        default:
+        case _UPB_MODE_SCALAR:
           ptr = decode_tomsg(d, ptr, msg, layout->submsgs, field, &val, op);
           break;
+        default:
+          UPB_UNREACHABLE();
       }
     } else {
     unknown:
