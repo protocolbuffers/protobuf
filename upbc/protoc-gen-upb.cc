@@ -868,6 +868,7 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
     std::string fields_array_ref = "NULL";
     std::string submsgs_array_ref = "NULL";
     uint8_t dense_below = 0;
+    int dense_below_max = std::numeric_limits<decltype(dense_below)>::max();
     MessageLayout layout(message);
     SubmsgArray submsg_array(message);
 
@@ -893,14 +894,14 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
       fields_array_ref = "&" + fields_array_name + "[0]";
       output("static const upb_msglayout_field $0[$1] = {\n",
              fields_array_name, field_number_order.size());
-      for (auto field : field_number_order) {
+      for (int i = 0; i < static_cast<int>(field_number_order.size()); i++) {
+        auto field = field_number_order[i];
         int submsg_index = 0;
         std::string presence = "0";
 
-        if (field->number() <=
-                std::numeric_limits<decltype(dense_below)>::max() &&
-            dense_below + 1 == field->number()) {
-          dense_below = field->number();
+        if (i < dense_below_max && field->number() == i + 1 &&
+            (i == 0 || field_number_order[i - 1]->number() == i)) {
+          dense_below = i + 1;
         }
 
         if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
