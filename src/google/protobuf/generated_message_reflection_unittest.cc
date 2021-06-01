@@ -200,6 +200,38 @@ TEST(GeneratedMessageReflectionTest, SwapWithBothSet) {
   EXPECT_EQ(532819, message2.optional_int32());
 }
 
+TEST(GeneratedMessageReflectionTest, SwapWithLhsCleared) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+
+  TestUtil::SetAllFields(&message1);
+
+  // For proto2 message, for message field, Clear only reset hasbits, but
+  // doesn't delete the underlying field.
+  message1.Clear();
+
+  const Reflection* reflection = message1.GetReflection();
+  reflection->Swap(&message1, &message2);
+
+  TestUtil::ExpectClear(message2);
+}
+
+TEST(GeneratedMessageReflectionTest, SwapWithRhsCleared) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+
+  TestUtil::SetAllFields(&message2);
+
+  // For proto2 message, for message field, Clear only reset hasbits, but
+  // doesn't delete the underlying field.
+  message2.Clear();
+
+  const Reflection* reflection = message1.GetReflection();
+  reflection->Swap(&message1, &message2);
+
+  TestUtil::ExpectClear(message1);
+}
+
 TEST(GeneratedMessageReflectionTest, SwapExtensions) {
   unittest::TestAllExtensions message1;
   unittest::TestAllExtensions message2;

@@ -189,13 +189,13 @@ failure:
   (void) cached_has_bits;
 
   // int64 seconds = 1;
-  if (this->seconds() != 0) {
+  if (this->_internal_seconds() != 0) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(1, this->_internal_seconds(), target);
   }
 
   // int32 nanos = 2;
-  if (this->nanos() != 0) {
+  if (this->_internal_nanos() != 0) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(2, this->_internal_nanos(), target);
   }
@@ -217,14 +217,14 @@ size_t Duration::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // int64 seconds = 1;
-  if (this->seconds() != 0) {
+  if (this->_internal_seconds() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
         this->_internal_seconds());
   }
 
   // int32 nanos = 2;
-  if (this->nanos() != 0) {
+  if (this->_internal_nanos() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
         this->_internal_nanos());
@@ -258,10 +258,10 @@ void Duration::MergeFrom(const Duration& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.seconds() != 0) {
+  if (from._internal_seconds() != 0) {
     _internal_set_seconds(from._internal_seconds());
   }
-  if (from.nanos() != 0) {
+  if (from._internal_nanos() != 0) {
     _internal_set_nanos(from._internal_nanos());
   }
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);

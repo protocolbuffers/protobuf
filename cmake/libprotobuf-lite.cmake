@@ -3,6 +3,7 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/arena.cc
   ${protobuf_source_dir}/src/google/protobuf/arenastring.cc
   ${protobuf_source_dir}/src/google/protobuf/extension_set.cc
+  ${protobuf_source_dir}/src/google/protobuf/field_access_listener.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_enum_util.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_util.cc

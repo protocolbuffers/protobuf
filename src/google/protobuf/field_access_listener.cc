@@ -28,60 +28,25 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: rennie@google.com (Jeffrey Rennie)
+#include <google/protobuf/field_access_listener.h>
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
-#define GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__
-
-#include <string>
+#include <google/protobuf/stubs/once.h>
 
 namespace google {
 namespace protobuf {
-namespace compiler {
-class AccessInfoMap;
 
-namespace cpp {
+internal::once_flag FieldAccessListener::register_once_ = {};
+FieldAccessListener* FieldAccessListener::field_listener_ = nullptr;
 
-enum class EnforceOptimizeMode {
-  kNoEnforcement,  // Use the runtime specified by the file specific options.
-  kSpeed,          // Full runtime with a generated code implementation.
-  kCodeSize,       // Full runtime with a reflective implementation.
-  kLiteRuntime,
-};
+FieldAccessListener* FieldAccessListener::GetListener() {
+  return field_listener_;
+}
 
-// Generator options (see generator.cc for a description of each):
-struct Options {
-  std::string dllexport_decl;
-  bool safe_boundary_check = false;
-  bool proto_h = false;
-  bool transitive_pb_h = true;
-  bool annotate_headers = false;
-  EnforceOptimizeMode enforce_mode = EnforceOptimizeMode::kNoEnforcement;
-  bool table_driven_parsing = false;
-  bool table_driven_serialization = false;
-  bool lite_implicit_weak_fields = false;
-  bool bootstrap = false;
-  bool opensource_runtime = false;
-  bool annotate_accessor = false;
-  bool unused_field_stripping = false;
-  std::string runtime_include_base;
-  int num_cc_files = 0;
-  std::string annotation_pragma_name;
-  std::string annotation_guard_name;
-  const AccessInfoMap* access_info_map = nullptr;
-  enum {
-    kTCTableNever,
-    kTCTableGuarded,
-    kTCTableAlways
-  } tctable_mode = kTCTableNever;
-  bool inject_field_listener_events = false;
-  bool eagerly_verified_lazy = false;
-  bool force_eagerly_verified_lazy = false;
-};
+void FieldAccessListener::RegisterListener(FieldAccessListener* listener) {
+  // TODO(danilak): Add a GOOGLE_DCHECK for message_injector_ to be nullptr and update
+  // tests.
+  internal::call_once(register_once_, [&] { field_listener_ = listener; });
+}
 
-}  // namespace cpp
-}  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_CPP_OPTIONS_H__

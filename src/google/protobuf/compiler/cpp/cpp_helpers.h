@@ -331,15 +331,28 @@ inline bool IsStringPiece(const FieldDescriptor* field,
          EffectiveStringCType(field, options) == FieldOptions::STRING_PIECE;
 }
 
+class MessageSCCAnalyzer;
+
 // Does the given FileDescriptor use lazy fields?
-bool HasLazyFields(const FileDescriptor* file, const Options& options);
+bool HasLazyFields(const FileDescriptor* file, const Options& options,
+                   MessageSCCAnalyzer* scc_analyzer);
 
 // Is the given field a supported lazy field?
-inline bool IsLazy(const FieldDescriptor* field, const Options& options) {
+bool IsLazy(const FieldDescriptor* field, const Options& options,
+            MessageSCCAnalyzer* scc_analyzer);
+
+inline bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
+                                 const Options& options) {
   return field->options().lazy() && !field->is_repeated() &&
          field->type() == FieldDescriptor::TYPE_MESSAGE &&
          GetOptimizeFor(field->file(), options) != FileOptions::LITE_RUNTIME &&
          !options.opensource_runtime;
+}
+
+inline bool IsEagerlyVerifiedLazy(const FieldDescriptor* field,
+                                  const Options& options,
+                                  MessageSCCAnalyzer* scc_analyzer) {
+  return IsLazy(field, options, scc_analyzer) && !field->options().lazy();
 }
 
 inline bool IsFieldUsed(const FieldDescriptor* /* field */,
@@ -527,8 +540,8 @@ bool HasWeakFields(const FileDescriptor* desc, const Options& options);
 // given field.
 inline static bool ShouldIgnoreRequiredFieldCheck(const FieldDescriptor* field,
                                                   const Options& options) {
-  // Do not check "required" for lazy fields.
-  return IsLazy(field, options);
+  // Do not check "required" for lazily verified lazy fields.
+  return IsLazilyVerifiedLazy(field, options);
 }
 
 struct MessageAnalysis {
@@ -536,6 +549,7 @@ struct MessageAnalysis {
   bool contains_cord;
   bool contains_extension;
   bool contains_required;
+  bool contains_weak;  // Implicit weak as well.
 };
 
 // This class is used in FileGenerator, to ensure linear instead of
@@ -551,6 +565,10 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
   bool HasRequiredFields(const Descriptor* descriptor) {
     MessageAnalysis result = GetSCCAnalysis(GetSCC(descriptor));
     return result.contains_required || result.contains_extension;
+  }
+  bool HasWeakField(const Descriptor* descriptor) {
+    MessageAnalysis result = GetSCCAnalysis(GetSCC(descriptor));
+    return result.contains_weak;
   }
   const SCC* GetSCC(const Descriptor* descriptor) {
     return analyzer_.GetSCC(descriptor);

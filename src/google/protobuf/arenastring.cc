@@ -256,6 +256,24 @@ void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
   }
 }
 
+const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
+                                                ArenaStringPtr* s,
+                                                Arena* arena) {
+  GOOGLE_DCHECK(arena != nullptr);
+
+  int size = ReadSize(&ptr);
+  if (!ptr) return nullptr;
+
+  auto str = Arena::Create<std::string>(arena);
+  ptr = ReadString(ptr, size, str);
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+
+  TaggedPtr<std::string> res;
+  res.Set(str);
+  s->UnsafeSetTaggedPointer(res);
+
+  return ptr;
+}
 
 }  // namespace internal
 }  // namespace protobuf

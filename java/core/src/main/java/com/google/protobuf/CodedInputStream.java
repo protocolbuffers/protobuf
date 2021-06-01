@@ -873,6 +873,9 @@ public abstract class CodedInputStream {
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
     }
 
@@ -889,6 +892,9 @@ public abstract class CodedInputStream {
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
       return result;
     }
@@ -1595,6 +1601,9 @@ public abstract class CodedInputStream {
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
     }
 
@@ -1611,6 +1620,9 @@ public abstract class CodedInputStream {
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
       return result;
     }
@@ -2392,6 +2404,9 @@ public abstract class CodedInputStream {
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
     }
 
@@ -2408,6 +2423,9 @@ public abstract class CodedInputStream {
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
       return result;
     }
@@ -3489,6 +3507,9 @@ public abstract class CodedInputStream {
       builder.mergeFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
     }
 
@@ -3505,6 +3526,9 @@ public abstract class CodedInputStream {
       T result = parser.parsePartialFrom(this, extensionRegistry);
       checkLastTagWas(0);
       --recursionDepth;
+      if (getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
       popLimit(oldLimit);
       return result;
     }
