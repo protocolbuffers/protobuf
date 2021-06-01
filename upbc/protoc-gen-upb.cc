@@ -867,6 +867,8 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
     std::string msgname = ToCIdent(message->full_name());
     std::string fields_array_ref = "NULL";
     std::string submsgs_array_ref = "NULL";
+    uint8_t dense_below = 0;
+    int dense_below_max = std::numeric_limits<decltype(dense_below)>::max();
     MessageLayout layout(message);
     SubmsgArray submsg_array(message);
 
@@ -892,9 +894,15 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
       fields_array_ref = "&" + fields_array_name + "[0]";
       output("static const upb_msglayout_field $0[$1] = {\n",
              fields_array_name, field_number_order.size());
-      for (auto field : field_number_order) {
+      for (int i = 0; i < static_cast<int>(field_number_order.size()); i++) {
+        auto field = field_number_order[i];
         int submsg_index = 0;
         std::string presence = "0";
+
+        if (i < dense_below_max && field->number() == i + 1 &&
+            (i == 0 || field_number_order[i - 1]->number() == i)) {
+          dense_below = i + 1;
+        }
 
         if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
           submsg_index = submsg_array.GetIndex(field);
@@ -951,9 +959,10 @@ void WriteSource(const protobuf::FileDescriptor* file, Output& output,
     output("const upb_msglayout $0 = {\n", MessageInit(message));
     output("  $0,\n", submsgs_array_ref);
     output("  $0,\n", fields_array_ref);
-    output("  $0, $1, $2, $3,\n", GetSizeInit(layout.message_size()),
+    output("  $0, $1, $2, $3, $4,\n", GetSizeInit(layout.message_size()),
            field_number_order.size(),
            "false",  // TODO: extendable
+           dense_below,
            table_mask
     );
     if (!table.empty()) {

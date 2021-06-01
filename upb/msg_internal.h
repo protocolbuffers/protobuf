@@ -65,6 +65,7 @@ struct upb_msglayout {
   uint16_t size;
   uint16_t field_count;
   bool extendable;
+  uint8_t dense_below;
   uint8_t table_mask;
   /* To constant-initialize the tables of variable length, we need a flexible
    * array member, and we need to compile in C99 mode. */

@@ -1018,14 +1018,21 @@ static int field_number_cmp(const void *p1, const void *p2) {
   return f1->number - f2->number;
 }
 
-static void assign_layout_indices(const upb_msgdef *m, upb_msglayout_field *fields) {
+static void assign_layout_indices(const upb_msgdef *m, upb_msglayout *l,
+                                  upb_msglayout_field *fields) {
   int i;
   int n = upb_msgdef_numfields(m);
+  int dense_below = 0;
   for (i = 0; i < n; i++) {
     upb_fielddef *f = (upb_fielddef*)upb_msgdef_itof(m, fields[i].number);
     UPB_ASSERT(f);
     f->layout_index = i;
+    if (i < UINT8_MAX && fields[i].number == i + 1 &&
+        (i == 0 || fields[i-1].number == i)) {
+      dense_below = i + 1;
+    }
   }
+  l->dense_below = dense_below;
 }
 
 /* This function is the dynamic equivalent of message_layout.{cc,h} in upbc.
@@ -1197,7 +1204,7 @@ static void make_layout(symtab_addctx *ctx, const upb_msgdef *m) {
 
   /* Sort fields by number. */
   qsort(fields, upb_msgdef_numfields(m), sizeof(*fields), field_number_cmp);
-  assign_layout_indices(m, fields);
+  assign_layout_indices(m, l, fields);
 }
 
 static char *strviewdup(symtab_addctx *ctx, upb_strview view) {
