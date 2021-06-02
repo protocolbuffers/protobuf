@@ -364,7 +364,8 @@ upb_extreg *upb_extreg_new(upb_arena *arena) {
 bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext *e, size_t count) {
   char buf[EXTREG_KEY_SIZE];
   const upb_msglayout_ext *start = e;
-  for (const upb_msglayout_ext *end = e + count; e < end; e++) {
+  const upb_msglayout_ext *end = e + count;
+  for (; e < end; e++) {
     extreg_key(buf, e->extendee, e->field.number);
     if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
                              upb_value_constptr(e), r->arena)) {
