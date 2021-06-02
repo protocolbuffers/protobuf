@@ -722,7 +722,8 @@ static bool decode_top(struct upb_decstate *d, const char *buf, void *msg,
 }
 
 bool _upb_decode(const char *buf, size_t size, void *msg,
-                 const upb_msglayout *l, upb_arena *arena, int options) {
+                 const upb_msglayout *l, const upb_extreg *extreg, int options,
+                 upb_arena *arena) {
   bool ok;
   upb_decstate state;
   unsigned depth = (unsigned)options >> 16;

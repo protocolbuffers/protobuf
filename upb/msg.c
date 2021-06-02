@@ -338,3 +338,60 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
   qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries), compar);
   return true;
 }
+
+/** upb_extreg ****************************************************************/
+
+struct upb_extreg {
+  upb_arena *arena;
+  upb_strtable exts;  /* Key is upb_msglayout* concatenated with fieldnum. */
+};
+
+#define EXTREG_KEY_SIZE (sizeof(upb_msglayout*) + sizeof(uint32_t))
+
+static void extreg_key(char *buf, const upb_msglayout *l, uint32_t fieldnum) {
+  memcpy(buf, &l, sizeof(l));
+  memcpy(buf + sizeof(l), &fieldnum, sizeof(fieldnum));
+}
+
+upb_extreg *upb_extreg_new(upb_arena *arena) {
+  upb_extreg *r = upb_arena_malloc(arena, sizeof(*r));
+  if (!r) return NULL;
+  r->arena = arena;
+  if (!upb_strtable_init(&r->exts, 8, arena)) return NULL;
+  return r;
+}
+
+bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext *e, size_t count) {
+  char buf[EXTREG_KEY_SIZE];
+  const upb_msglayout_ext *start = e;
+  const upb_msglayout_ext *end = e + count;
+  for (; e < end; e++) {
+    extreg_key(buf, e->extendee, e->field.number);
+    if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
+                             upb_value_constptr(e), r->arena)) {
+      goto failure;
+    }
+  }
+  return true;
+
+failure:
+  /* Back out the entries previously added. */
+  for (end = e, e = start; e < end; e++) {
+    extreg_key(buf, e->extendee, e->field.number);
+    upb_strtable_remove(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
+  }
+  return false;
+}
+
+const upb_msglayout_field *_upb_extreg_get(const upb_extreg *r,
+                                           const upb_msglayout *l,
+                                           uint32_t num) {
+  char buf[EXTREG_KEY_SIZE];
+  upb_value v;
+  extreg_key(buf, l, num);
+  if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, &v)) {
+    return upb_value_getconstptr(v);
+  } else {
+    return NULL;
+  }
+}

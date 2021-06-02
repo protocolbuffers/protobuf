@@ -59,6 +59,48 @@ void upb_msg_addunknown(upb_msg *msg, const char *data, size_t len,
 /* Returns a reference to the message's unknown data. */
 const char *upb_msg_getunknown(const upb_msg *msg, size_t *len);
 
+/** upb_extreg *******************************************************************/
+
+/* Extension registry: a dynamic data structure that stores a map of:
+ *   (upb_msglayout, number) -> extension info
+ *
+ * upb_decode() uses upb_extreg to look up extensions while parsing binary
+ * format.
+ *
+ * upb_extreg is part of the mini-table (msglayout) family of objects. Like all
+ * mini-table objects, it is suitable for reflection-less builds that do not
+ * want to expose names into the binary.
+ *
+ * Unlike most mini-table types, upb_extreg requires dynamic memory allocation
+ * and dynamic initialization:
+ * * If reflection is being used, then upb_symtab will construct an appropriate
+ *   upb_extreg automatically.
+ * * For a mini-table only build, the user must manually construct the
+ *   upb_extreg and populate it with all of the extensions the user cares about.
+ * * A third alternative is to manually unpack relevant extensions after the
+ *   main parse is complete, similar to how Any works. This is perhaps the
+ *   nicest solution from the perspective of reducing dependencies, avoiding
+ *   dynamic memory allocation, and avoiding the need to parse uninteresting
+ *   extensions.  The downsides are:
+ *     (1) parse errors are not caught during the main parse
+ *     (2) the CPU hit of parsing comes during access, which could cause an
+ *         undesirable stutter in application performance.
+ *
+ * Users cannot directly get or put into this map. Users can only add the
+ * extensions from a generated module and pass the extension registry to the
+ * binary decoder.
+ *
+ * A upb_symtab provides a upb_extreg, so any users who use reflection do not
+ * need to populate a upb_extreg directly.
+ */
+
+struct upb_extreg;
+typedef struct upb_extreg upb_extreg;
+
+/* Creates a upb_extreg in the given arena.  The arena must outlive any use of
+ * the extreg. */
+upb_extreg *upb_extreg_new(upb_arena *arena);
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

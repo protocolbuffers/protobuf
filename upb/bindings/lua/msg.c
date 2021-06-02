@@ -949,7 +949,7 @@ static int lupb_decode(lua_State *L) {
   buf = upb_arena_malloc(arena, len);
   memcpy(buf, pb, len);
 
-  ok = _upb_decode(buf, len, msg, layout, arena, UPB_DECODE_ALIAS);
+  ok = _upb_decode(buf, len, msg, layout, NULL, UPB_DECODE_ALIAS, arena);
 
   if (!ok) {
     lua_pushstring(L, "Error decoding protobuf.");
