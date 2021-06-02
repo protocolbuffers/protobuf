@@ -4,11 +4,10 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.17.1</version>
+    <version>3.17.2</version>
   </parent>
 
   <artifactId>protobuf-kotlin</artifactId>
-  <packaging>bundle</packaging>
 
   <name>Protocol Buffers [Core]</name>
   <description>
@@ -220,6 +219,7 @@
           </execution>
         </executions>
       </plugin>
+<<<<<<< HEAD
       <!-- OSGI bundle configuration -->
       <plugin>
         <groupId>org.apache.felix</groupId>
