@@ -508,9 +508,10 @@
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit) && !PROTOBUF_GNUC_MIN(3, 0)
+#if defined(__cpp_constinit) && !PROTOBUF_GNUC_MIN(3, 0) && !defined(_MSC_VER)
 // Our use of constinit does not yet work with GCC:
 // https://github.com/protocolbuffers/protobuf/issues/8310
+// Does not work yet with Visual Studio 2019 Update 16.10
 #define PROTOBUF_CONSTINIT constinit
 #elif __has_cpp_attribute(clang::require_constant_initialization)
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
