@@ -50,12 +50,13 @@ enum {
 #define UPB_DECODE_MAXDEPTH(depth) ((depth) << 16)
 
 bool _upb_decode(const char *buf, size_t size, upb_msg *msg,
-                 const upb_msglayout *l, upb_arena *arena, int options);
+                 const upb_msglayout *l, const upb_extreg *extreg, int options,
+                 upb_arena *arena);
 
 UPB_INLINE
 bool upb_decode(const char *buf, size_t size, upb_msg *msg,
                 const upb_msglayout *l, upb_arena *arena) {
-  return _upb_decode(buf, size, msg, l, arena, 0);
+  return _upb_decode(buf, size, msg, l, NULL, 0, arena);
 }
 
 #ifdef __cplusplus

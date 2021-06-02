@@ -103,6 +103,20 @@ typedef struct {
   const upb_msglayout *submsg;   /* NULL for non-submessage fields. */
 } upb_msglayout_ext;
 
+/** upb_extreg ****************************************************************/
+
+/* Adds the given extension info for message type |l| and field number |num|
+ * into the registry. Returns false if this message type and field number were
+ * already in the map, or if memory allocation fails. */
+bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext *e, size_t count);
+
+/* Looks up the extension (if any) defined for message type |l| and field
+ * number |num|.  If an extension was found, copies the field info into |*ext|
+ * and returns true. Otherwise returns false. */
+const upb_msglayout_field *_upb_extreg_get(const upb_extreg *r,
+                                           const upb_msglayout *l,
+                                           uint32_t num);
+
 /** upb_msg *******************************************************************/
 
 /* Internal members of a upb_msg that track unknown fields and/or extensions.

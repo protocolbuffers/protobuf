@@ -162,8 +162,8 @@ static void BM_Parse_Upb_FileDesc(benchmark::State& state) {
     }
     upb_benchmark_FileDescriptorProto* set =
         upb_benchmark_FileDescriptorProto_parse_ex(
-            descriptor.data, descriptor.size, arena,
-            Copy == Alias ? UPB_DECODE_ALIAS : 0);
+            descriptor.data, descriptor.size, NULL,
+            Copy == Alias ? UPB_DECODE_ALIAS : 0, arena);
     if (!set) {
       printf("Failed to parse.\n");
       exit(1);

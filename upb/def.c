@@ -2132,7 +2132,8 @@ bool _upb_symtab_loaddefinit(upb_symtab *s, const upb_def_init *init) {
   }
 
   file = google_protobuf_FileDescriptorProto_parse_ex(
-      init->descriptor.data, init->descriptor.size, arena, UPB_DECODE_ALIAS);
+      init->descriptor.data, init->descriptor.size, NULL, UPB_DECODE_ALIAS,
+      arena);
   s->bytes_loaded += init->descriptor.size;
 
   if (!file) {
