@@ -368,15 +368,18 @@ bool _upb_extreg_add(upb_extreg *r, const upb_msglayout_ext *e, size_t count) {
     extreg_key(buf, e->extendee, e->field.number);
     if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
                              upb_value_constptr(e), r->arena)) {
-      /* Back out the entries previously added. */
-      for (end = e, e = start; e < end; e++) {
-        extreg_key(buf, e->extendee, e->field.number);
-        upb_strtable_remove(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
-      }
-      return false;
+      goto failure;
     }
   }
   return true;
+
+failure:
+  /* Back out the entries previously added. */
+  for (end = e, e = start; e < end; e++) {
+    extreg_key(buf, e->extendee, e->field.number);
+    upb_strtable_remove(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
+  }
+  return false;
 }
 
 const upb_msglayout_field *_upb_extreg_get(const upb_extreg *r,
