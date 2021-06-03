@@ -82,7 +82,7 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3017001
+#define GOOGLE_PROTOBUF_VERSION 3017002
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
