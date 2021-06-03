@@ -93,12 +93,12 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>30.1-android</version>
+        <version>30.1.1-android</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava-testlib</artifactId>
-        <version>30.1-android</version>
+        <version>30.1.1-android</version>
         <scope>test</scope>
       </dependency>
       <dependency>
