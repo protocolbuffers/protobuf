@@ -44,8 +44,8 @@ var test10_pb = require('./test10_pb');
 
 describe('Strict test suite', function() {
   it('testImportedMessage', function() {
-    var simple1 = new test9_pb.jspb.exttest.strict.nine.Simple9()
-    var simple2 = new test9_pb.jspb.exttest.strict.nine.Simple9()
+    var simple1 = new test9_pb.Simple9();
+    var simple2 = new test9_pb.Simple9();
     assertObjectEquals(simple1.toObject(), simple2.toObject());
   });
 
@@ -55,8 +55,8 @@ describe('Strict test suite', function() {
 
   describe('with imports', function() {
     it('testImportedMessage', function() {
-      var simple1 = new test10_pb.jspb.exttest.strict.ten.Simple10()
-      var simple2 = new test10_pb.jspb.exttest.strict.ten.Simple10()
+      var simple1 = new test10_pb.Simple10();
+      var simple2 = new test10_pb.Simple10();
       assertObjectEquals(simple1.toObject(), simple2.toObject());
     });
 

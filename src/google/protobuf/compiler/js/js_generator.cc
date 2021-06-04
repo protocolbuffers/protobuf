@@ -2967,13 +2967,13 @@ void Generator::GenerateRepeatedMessageHelperMethods(
 
   printer->Annotate("addername", field);
   printer->Print(
-      "this, $index$$oneofgroup$, opt_value, $ctor$, opt_index);\n"
+      "this, $index$$oneofgroup$, opt_value, $wrapperclass$, opt_index);\n"
       "};\n"
       "\n"
       "\n",
       "index", JSFieldIndex(field), "oneofgroup",
-      (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""), "ctor",
-      GetMessagePath(options, field->message_type()));
+      (InRealOneof(field) ? (", " + JSOneofArray(options, field)) : ""), "wrapperclass",
+      SubmessageTypeRef(options, field));
 }
 
 void Generator::GenerateClassExtensionFieldInfo(const GeneratorOptions& options,
@@ -3647,8 +3647,7 @@ void Generator::GenerateFile(const GeneratorOptions& options,
     for (int i = 0; i < file->dependency_count(); i++) {
       const std::string& name = file->dependency(i)->name();
       printer->Print(
-          "var $alias$ = require('$file$');\n"
-          "goog.object.extend(proto, $alias$);\n",
+          "var $alias$ = require('$file$');\n",
           "alias", ModuleAlias(name), "file",
           GetRootPath(file->name(), name) + GetJSFilename(options, name));
     }
@@ -3687,12 +3686,10 @@ void Generator::GenerateFile(const GeneratorOptions& options,
   }
 
   // if provided is empty, do not export anything
-  if (options.import_style == GeneratorOptions::kImportCommonJs &&
+  if ((options.import_style == GeneratorOptions::kImportCommonJs ||
+       options.import_style == GeneratorOptions::kImportCommonJsStrict) &&
       !provided.empty()) {
     printer->Print("goog.object.extend(exports, $package$);\n", "package",
-                   GetNamespace(options, file));
-  } else if (options.import_style == GeneratorOptions::kImportCommonJsStrict) {
-    printer->Print("goog.object.extend(exports, proto);\n", "package",
                    GetNamespace(options, file));
   }
 
