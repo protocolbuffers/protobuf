@@ -17,7 +17,6 @@
 
   <properties>
     <kotlin.version>1.5.0</kotlin.version>
-    <dokka.version>1.4.32</dokka.version>
   </properties>
 
   <dependencies>
@@ -69,26 +68,6 @@
   </dependencies>
 
   <build>
-    <!-- Include core protos in the bundle as resources -->
-    <resources>
-      <resource>
-        <directory>${protobuf.source.dir}</directory>
-        <includes>
-          <include>google/protobuf/any.proto</include>
-          <include>google/protobuf/api.proto</include>
-          <include>google/protobuf/descriptor.proto</include>
-          <include>google/protobuf/duration.proto</include>
-          <include>google/protobuf/empty.proto</include>
-          <include>google/protobuf/field_mask.proto</include>
-          <include>google/protobuf/source_context.proto</include>
-          <include>google/protobuf/struct.proto</include>
-          <include>google/protobuf/timestamp.proto</include>
-          <include>google/protobuf/type.proto</include>
-          <include>google/protobuf/wrappers.proto</include>
-          <include>google/protobuf/compiler/plugin.proto</include>
-        </includes>
-      </resource>
-    </resources>
     <testResources>
       <testResource>
         <directory>${protobuf.source.dir}</directory>
@@ -219,46 +198,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.jetbrains.dokka</groupId>
-        <artifactId>dokka-maven-plugin</artifactId>
-        <version>${dokka.version}</version>
-        <executions>
-            <execution>
-                <phase>pre-site</phase>
-                <goals>
-                    <goal>dokka</goal>
-                </goals>
-            </execution>
-        </executions>
-        <configuration>
-          <outputDir>gcode/kotlin</outputDir>
-          <sourceDirectories><dir>${project.basedir}/src/main/kotlin/com/google/protobuf</dir></sourceDirectories>
-
-          <externalDocumentationLinks>
-            <link>
-                <url>https://developers.google.com/protocol-buffers/docs/reference/java/</url>
-            </link>
-        </externalDocumentationLinks>
-
-          <dokkaPlugins>
-            <plugin>
-              <groupId>org.jetbrains.dokka</groupId>
-              <artifactId>gfm-plugin</artifactId>
-              <version>${dokka.version}</version>
-            </plugin>
-          </dokkaPlugins>
-        </configuration>
-    </plugin>
     </plugins>
   </build>
-  
-  <pluginRepositories>
-    <pluginRepository>
-      <id>jcenter</id>
-      <name>JCenter</name>
-      <url>https://jcenter.bintray.com/</url>
-    </pluginRepository>
-  </pluginRepositories>
 
 </project>
