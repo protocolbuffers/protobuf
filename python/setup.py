@@ -18,7 +18,6 @@ from setuptools import setup, Extension, find_packages
 
 from distutils.command.build_py import build_py as _build_py
 from distutils.command.clean import clean as _clean
-from distutils.command.build_ext import build_ext as _build_ext
 from distutils.spawn import find_executable
 
 # Find the Protocol Compiler.
@@ -158,22 +157,6 @@ class build_py(_build_py):
             if not any(fnmatch.fnmatchcase(fil, pat=pat) for pat in exclude)]
 
 
-class build_ext(_build_ext):
-  def get_ext_filename(self, ext_name):
-      # since python3.5, python extensions' shared libraries use a suffix that corresponds to the value
-      # of sysconfig.get_config_var('EXT_SUFFIX') and contains info about the architecture the library targets.
-      # E.g. on x64 linux the suffix is ".cpython-XYZ-x86_64-linux-gnu.so"
-      # When crosscompiling python wheels, we need to be able to override this suffix
-      # so that the resulting file name matches the target architecture and we end up with a well-formed
-      # wheel.
-      filename = _build_ext.get_ext_filename(self, ext_name)
-      orig_ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
-      new_ext_suffix = os.getenv("PROTOCOL_BUFFERS_OVERRIDE_EXT_SUFFIX")
-      if new_ext_suffix and filename.endswith(orig_ext_suffix):
-        filename = filename[:-len(orig_ext_suffix)] + new_ext_suffix
-      return filename
-
-
 class test_conformance(_build_py):
   target = 'test_python'
   def run(self):
@@ -208,18 +191,6 @@ if __name__ == '__main__':
     test_conformance.target = 'test_python_cpp'
 
     extra_compile_args = []
-
-    message_extra_link_args = None
-    api_implementation_link_args = None
-    if "darwin" in sys.platform:
-      if sys.version_info[0] == 2:
-          message_init_symbol = 'init_message'
-          api_implementation_init_symbol = 'init_api_implementation'
-      else:
-          message_init_symbol = 'PyInit__message'
-          api_implementation_init_symbol = 'PyInit__api_implementation'
-      message_extra_link_args = ['-Wl,-exported_symbol,_%s' % message_init_symbol]
-      api_implementation_link_args = ['-Wl,-exported_symbol,_%s' % api_implementation_init_symbol]
 
     if sys.platform != 'win32':
         extra_compile_args.append('-Wno-write-strings')
@@ -271,7 +242,6 @@ if __name__ == '__main__':
             include_dirs=[".", "../src"],
             libraries=libraries,
             extra_objects=extra_objects,
-            extra_link_args=message_extra_link_args,
             library_dirs=['../src/.libs'],
             extra_compile_args=extra_compile_args,
         ),
@@ -279,7 +249,6 @@ if __name__ == '__main__':
             "google.protobuf.internal._api_implementation",
             glob.glob('google/protobuf/internal/api_implementation.cc'),
             extra_compile_args=extra_compile_args + ['-DPYTHON_PROTO2_CPP_IMPL_V2'],
-            extra_link_args=api_implementation_link_args,
         ),
     ])
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'cpp'
@@ -322,7 +291,6 @@ if __name__ == '__main__':
       cmdclass={
           'clean': clean,
           'build_py': build_py,
-          'build_ext': build_ext,
           'test_conformance': test_conformance,
       },
       install_requires=install_requires,

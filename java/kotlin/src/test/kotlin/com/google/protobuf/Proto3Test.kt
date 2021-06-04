@@ -1,18 +1,43 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 package com.google.protobuf.kotlin
 
 import com.google.common.truth.Truth.assertThat
-import evil_names_proto3.EvilNamesProto3OuterClass.EvilNamesProto3
-import evil_names_proto3.EvilNamesProto3OuterClass.HardKeywordsAllTypes
-import evil_names_proto3.EvilNamesProto3OuterClass.Class
-import evil_names_proto3.HardKeywordsAllTypesKt
-import evil_names_proto3.class_
-import evil_names_proto3.evilNamesProto3
-import evil_names_proto3.hardKeywordsAllTypes
-import multiple_files_proto3.MultipleFilesMessageA
-import multiple_files_proto3.MultipleFilesMessageB
-import multiple_files_proto3.multipleFilesMessageA
-import multiple_files_proto3.multipleFilesMessageB
-import proto3_unittest.UnittestProto3
+import com.google.protobuf.kotlin.generator.EvilNamesProto3OuterClass.Class
+import com.google.protobuf.kotlin.generator.EvilNamesProto3OuterClass.EvilNamesProto3
+import com.google.protobuf.kotlin.generator.EvilNamesProto3OuterClass.HardKeywordsAllTypesProto3
+import com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto3Kt
+import com.google.protobuf.kotlin.generator.class_
+import com.google.protobuf.kotlin.generator.evilNamesProto3
+import com.google.protobuf.kotlin.generator.hardKeywordsAllTypesProto3
 import proto3_unittest.TestAllTypesKt
 import proto3_unittest.TestAllTypesKt.nestedMessage
 import proto3_unittest.UnittestProto3.TestAllTypes
@@ -255,18 +280,18 @@ class Proto3Test {
 
   @Test
   fun testHardKeywordGettersAndSetters() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto3 {
       as_ = 1
       assertThat(as_).isEqualTo(1)
 
       in_ = "foo"
       assertThat(in_).isEqualTo("foo")
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
-      assertThat(break_).isEqualTo(HardKeywordsAllTypes.NestedEnum.FOO)
+      break_ = HardKeywordsAllTypesProto3.NestedEnum.FOO
+      assertThat(break_).isEqualTo(HardKeywordsAllTypesProto3.NestedEnum.FOO)
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
-      assertThat(do_).isEqualTo(HardKeywordsAllTypesKt.nestedMessage { while_ = 1 })
+      do_ = HardKeywordsAllTypesProto3Kt.nestedMessage { while_ = 1 }
+      assertThat(do_).isEqualTo(HardKeywordsAllTypesProto3Kt.nestedMessage { while_ = 1 })
 
       continue_[1] = 1
       assertThat(continue_[1]).isEqualTo(1)
@@ -277,34 +302,34 @@ class Proto3Test {
       for_ += "foo"
       assertThat(for_).isEqualTo(listOf("foo"))
 
-      fun_ += HardKeywordsAllTypes.NestedEnum.FOO
-      assertThat(fun_).isEqualTo(listOf(HardKeywordsAllTypes.NestedEnum.FOO))
+      fun_ += HardKeywordsAllTypesProto3.NestedEnum.FOO
+      assertThat(fun_).isEqualTo(listOf(HardKeywordsAllTypesProto3.NestedEnum.FOO))
 
-      if_ += HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
-      assertThat(if_).isEqualTo(listOf(HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }))
+      if_ += HardKeywordsAllTypesProto3Kt.nestedMessage { while_ = 1 }
+      assertThat(if_).isEqualTo(listOf(HardKeywordsAllTypesProto3Kt.nestedMessage { while_ = 1 }))
     }
   }
 
   @Test
   fun testHardKeywordHazzers() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto3 {
       as_ = 1
       assertThat(hasAs_()).isTrue()
 
       in_ = "foo"
       assertThat(hasIn_()).isTrue()
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
+      break_ = HardKeywordsAllTypesProto3.NestedEnum.FOO
       assertThat(hasBreak_()).isTrue()
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
+      do_ = HardKeywordsAllTypesProto3Kt.nestedMessage { while_ = 1 }
       assertThat(hasDo_()).isTrue()
     }
   }
 
   @Test
   fun testHardKeywordClears() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto3 {
       as_ = 1
       clearAs_()
       assertThat(hasAs_()).isFalse()
@@ -313,11 +338,11 @@ class Proto3Test {
       clearIn_()
       assertThat(hasIn_()).isFalse()
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
+      break_ = HardKeywordsAllTypesProto3.NestedEnum.FOO
       clearBreak_()
       assertThat(hasBreak_()).isFalse()
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
+      do_ = HardKeywordsAllTypesProto3Kt.nestedMessage { while_ = 1 }
       clearDo_()
       assertThat(hasDo_()).isFalse()
     }
@@ -326,15 +351,15 @@ class Proto3Test {
   @Test
   fun testMultipleFiles() {
     assertThat(
-      multipleFilesMessageA {}
+      com.google.protobuf.kotlin.generator.multipleFilesMessageA {}
     ).isEqualTo(
-      MultipleFilesMessageA.newBuilder().build()
+      com.google.protobuf.kotlin.generator.MultipleFilesMessageA.newBuilder().build()
     )
 
     assertThat(
-      multipleFilesMessageB {}
+      com.google.protobuf.kotlin.generator.multipleFilesMessageB {}
     ).isEqualTo(
-      MultipleFilesMessageB.newBuilder().build()
+      com.google.protobuf.kotlin.generator.MultipleFilesMessageB.newBuilder().build()
     )
   }
 }

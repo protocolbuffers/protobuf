@@ -285,6 +285,14 @@ void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::Swap(
 template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType>
+void MapField<Derived, Key, T, kKeyFieldType,
+              kValueFieldType>::UnsafeShallowSwap(MapFieldBase* other) {
+  InternalSwap(down_cast<MapField*>(other));
+}
+
+template <typename Derived, typename Key, typename T,
+          WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType>
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::InternalSwap(
     MapField* other) {
   MapFieldBase::InternalSwap(other);

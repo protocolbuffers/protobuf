@@ -1,3 +1,33 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 package com.google.protobuf.kotlin
 
 import com.google.common.truth.Truth.assertThat
@@ -16,13 +46,13 @@ import com.google.protobuf.UnittestLite.TestEmptyMessageLite
 import com.google.protobuf.UnittestLite.TestEmptyMessageWithExtensionsLite
 import com.google.protobuf.copy
 import com.google.protobuf.foreignMessageLite
-import evil_names_proto2.EvilNamesProto2OuterClass.EvilNamesProto2
-import evil_names_proto2.EvilNamesProto2OuterClass.HardKeywordsAllTypes
-import evil_names_proto2.EvilNamesProto2OuterClass.Interface
-import evil_names_proto2.HardKeywordsAllTypesKt
-import evil_names_proto2.evilNamesProto2
-import evil_names_proto2.hardKeywordsAllTypes
-import evil_names_proto2.interface_
+import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.EvilNamesProto2
+import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.HardKeywordsAllTypesProto2
+import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.Interface
+import com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2Kt
+import com.google.protobuf.kotlin.generator.evilNamesProto2
+import com.google.protobuf.kotlin.generator.hardKeywordsAllTypesProto2
+import com.google.protobuf.kotlin.generator.interface_
 import com.google.protobuf.optionalGroupExtensionLite
 import com.google.protobuf.repeatedGroupExtensionLite
 import com.google.protobuf.testAllExtensionsLite
@@ -452,37 +482,34 @@ class Proto2LiteTest {
         this[UnittestLite.repeatedImportEnumExtensionLite].add(ImportEnumLite.IMPORT_LITE_BAR)
         this[UnittestLite.repeatedStringPieceExtensionLite].add("224")
         this[UnittestLite.repeatedCordExtensionLite].add("225")
-        this[UnittestLite.repeatedInt32ExtensionLite].add(301)
-        this[UnittestLite.repeatedInt64ExtensionLite].add(302L)
-        this[UnittestLite.repeatedUint32ExtensionLite].add(303)
-        this[UnittestLite.repeatedUint64ExtensionLite].add(304L)
-        this[UnittestLite.repeatedSint32ExtensionLite].add(305)
-        this[UnittestLite.repeatedSint64ExtensionLite].add(306L)
-        this[UnittestLite.repeatedFixed32ExtensionLite].add(307)
-        this[UnittestLite.repeatedFixed64ExtensionLite].add(308L)
-        this[UnittestLite.repeatedSfixed32ExtensionLite].add(309)
-        this[UnittestLite.repeatedSfixed64ExtensionLite].add(310L)
-        this[UnittestLite.repeatedFloatExtensionLite].add(311F)
-        this[UnittestLite.repeatedDoubleExtensionLite].add(312.0)
-        this[UnittestLite.repeatedBoolExtensionLite].add(false)
-        this[UnittestLite.repeatedStringExtensionLite].add("315")
-        this[UnittestLite.repeatedBytesExtensionLite].add(toBytes("316"))
-        this[UnittestLite.repeatedGroupExtensionLite].add(repeatedGroupExtensionLite { a = 317 })
-        this[UnittestLite.repeatedNestedMessageExtensionLite].add(
+        this[UnittestLite.repeatedInt32ExtensionLite] += 301
+        this[UnittestLite.repeatedInt64ExtensionLite] += 302L
+        this[UnittestLite.repeatedUint32ExtensionLite] += 303
+        this[UnittestLite.repeatedUint64ExtensionLite] += 304L
+        this[UnittestLite.repeatedSint32ExtensionLite] += 305
+        this[UnittestLite.repeatedSint64ExtensionLite] += 306L
+        this[UnittestLite.repeatedFixed32ExtensionLite] += 307
+        this[UnittestLite.repeatedFixed64ExtensionLite] += 308L
+        this[UnittestLite.repeatedSfixed32ExtensionLite] += 309
+        this[UnittestLite.repeatedSfixed64ExtensionLite] += 310L
+        this[UnittestLite.repeatedFloatExtensionLite] += 311F
+        this[UnittestLite.repeatedDoubleExtensionLite] += 312.0
+        this[UnittestLite.repeatedBoolExtensionLite] += false
+        this[UnittestLite.repeatedStringExtensionLite] += "315"
+        this[UnittestLite.repeatedBytesExtensionLite] += toBytes("316")
+        this[UnittestLite.repeatedGroupExtensionLite] += repeatedGroupExtensionLite { a = 317 }
+        this[UnittestLite.repeatedNestedMessageExtensionLite] +=
           TestAllTypesLiteKt.nestedMessage { bb = 318 }
-	)
-        this[UnittestLite.repeatedForeignMessageExtensionLite].add(foreignMessageLite { c = 319 })
-        this[UnittestLite.repeatedImportMessageExtensionLite].add(
+        this[UnittestLite.repeatedForeignMessageExtensionLite] += foreignMessageLite { c = 319 }
+        this[UnittestLite.repeatedImportMessageExtensionLite] +=
           ImportMessageLite.newBuilder().setD(320).build()
-	)
-        this[UnittestLite.repeatedLazyMessageExtensionLite].add(
+        this[UnittestLite.repeatedLazyMessageExtensionLite] +=
           TestAllTypesLiteKt.nestedMessage { bb = 327 }
-	)
-        this[UnittestLite.repeatedNestedEnumExtensionLite].add(NestedEnum.BAZ)
-        this[UnittestLite.repeatedForeignEnumExtensionLite].add(ForeignEnumLite.FOREIGN_LITE_BAZ)
-        this[UnittestLite.repeatedImportEnumExtensionLite].add(ImportEnumLite.IMPORT_LITE_BAZ)
-        this[UnittestLite.repeatedStringPieceExtensionLite].add("324")
-        this[UnittestLite.repeatedCordExtensionLite].add("325")
+        this[UnittestLite.repeatedNestedEnumExtensionLite] += NestedEnum.BAZ
+        this[UnittestLite.repeatedForeignEnumExtensionLite] += ForeignEnumLite.FOREIGN_LITE_BAZ
+        this[UnittestLite.repeatedImportEnumExtensionLite] += ImportEnumLite.IMPORT_LITE_BAZ
+        this[UnittestLite.repeatedStringPieceExtensionLite] += "324"
+        this[UnittestLite.repeatedCordExtensionLite] += "325"
         this[UnittestLite.defaultInt32ExtensionLite] = 401
         this[UnittestLite.defaultInt64ExtensionLite] = 402L
         this[UnittestLite.defaultUint32ExtensionLite] = 403
@@ -542,14 +569,14 @@ class Proto2LiteTest {
     testAllExtensionsLite {
       this[UnittestLite.repeatedInt32ExtensionLite].addAll(listOf(1, 2))
       assertThat(this[UnittestLite.repeatedInt32ExtensionLite]).isEqualTo(listOf(1, 2))
-      this[UnittestLite.repeatedInt32ExtensionLite].addAll(listOf(3, 4))
+      this[UnittestLite.repeatedInt32ExtensionLite] += listOf(3, 4)
       assertThat(this[UnittestLite.repeatedInt32ExtensionLite]).isEqualTo(listOf(1, 2, 3, 4))
       this[UnittestLite.repeatedInt32ExtensionLite][0] = 5
       assertThat(this[UnittestLite.repeatedInt32ExtensionLite]).isEqualTo(listOf(5, 2, 3, 4))
 
       this[UnittestLite.repeatedStringExtensionLite].addAll(listOf("1", "2"))
       assertThat(this[UnittestLite.repeatedStringExtensionLite]).isEqualTo(listOf("1", "2"))
-      this[UnittestLite.repeatedStringExtensionLite].addAll(listOf("3", "4"))
+      this[UnittestLite.repeatedStringExtensionLite] += listOf("3", "4")
       assertThat(this[UnittestLite.repeatedStringExtensionLite])
         .isEqualTo(listOf("1", "2", "3", "4"))
       this[UnittestLite.repeatedStringExtensionLite][0] = "5"
@@ -568,12 +595,11 @@ class Proto2LiteTest {
           repeatedGroupExtensionLite { a = 2 }
         )
       )
-      this[UnittestLite.repeatedGroupExtensionLite].addAll(
+      this[UnittestLite.repeatedGroupExtensionLite] +=
         listOf(
           repeatedGroupExtensionLite { a = 3 },
           repeatedGroupExtensionLite { a = 4 }
         )
-      )
       assertThat(this[UnittestLite.repeatedGroupExtensionLite]).isEqualTo(
         listOf(
           repeatedGroupExtensionLite { a = 1 },
@@ -598,9 +624,8 @@ class Proto2LiteTest {
       assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite]).isEqualTo(
         listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 })
       )
-      this[UnittestLite.repeatedNestedMessageExtensionLite].addAll(
+      this[UnittestLite.repeatedNestedMessageExtensionLite] +=
         listOf(nestedMessage { bb = 3 }, nestedMessage { bb = 4 })
-      )
       assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite]).isEqualTo(
         listOf(
           nestedMessage { bb = 1 },
@@ -623,7 +648,7 @@ class Proto2LiteTest {
         .addAll(listOf(NestedEnum.FOO, NestedEnum.BAR))
       assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite])
         .isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR))
-      this[UnittestLite.repeatedNestedEnumExtensionLite].addAll(listOf(NestedEnum.BAZ, NestedEnum.FOO))
+      this[UnittestLite.repeatedNestedEnumExtensionLite] += listOf(NestedEnum.BAZ, NestedEnum.FOO)
       assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite]).isEqualTo(
         listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
       )
@@ -923,18 +948,18 @@ class Proto2LiteTest {
 
   @Test
   fun testHardKeywordGettersAndSetters() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto2 {
       as_ = 1
       assertThat(as_).isEqualTo(1)
 
       in_ = "foo"
       assertThat(in_).isEqualTo("foo")
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
-      assertThat(break_).isEqualTo(HardKeywordsAllTypes.NestedEnum.FOO)
+      break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
+      assertThat(break_).isEqualTo(HardKeywordsAllTypesProto2.NestedEnum.FOO)
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
-      assertThat(do_).isEqualTo(HardKeywordsAllTypesKt.nestedMessage { while_ = 1 })
+      do_ = HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }
+      assertThat(do_).isEqualTo(HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 })
 
       continue_[1] = 1
       assertThat(continue_[1]).isEqualTo(1)
@@ -945,34 +970,34 @@ class Proto2LiteTest {
       for_ += "foo"
       assertThat(for_).isEqualTo(listOf("foo"))
 
-      fun_ += HardKeywordsAllTypes.NestedEnum.FOO
-      assertThat(fun_).isEqualTo(listOf(HardKeywordsAllTypes.NestedEnum.FOO))
+      fun_ += HardKeywordsAllTypesProto2.NestedEnum.FOO
+      assertThat(fun_).isEqualTo(listOf(HardKeywordsAllTypesProto2.NestedEnum.FOO))
 
-      if_ += HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
-      assertThat(if_).isEqualTo(listOf(HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }))
+      if_ += HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }
+      assertThat(if_).isEqualTo(listOf(HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }))
     }
   }
 
   @Test
   fun testHardKeywordHazzers() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto2 {
       as_ = 1
       assertThat(hasAs_()).isTrue()
 
       in_ = "foo"
       assertThat(hasIn_()).isTrue()
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
+      break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
       assertThat(hasBreak_()).isTrue()
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
+      do_ = HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }
       assertThat(hasDo_()).isTrue()
     }
   }
 
   @Test
   fun testHardKeywordClears() {
-    hardKeywordsAllTypes {
+    hardKeywordsAllTypesProto2 {
       as_ = 1
       clearAs_()
       assertThat(hasAs_()).isFalse()
@@ -981,11 +1006,11 @@ class Proto2LiteTest {
       clearIn_()
       assertThat(hasIn_()).isFalse()
 
-      break_ = HardKeywordsAllTypes.NestedEnum.FOO
+      break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
       clearBreak_()
       assertThat(hasBreak_()).isFalse()
 
-      do_ = HardKeywordsAllTypesKt.nestedMessage { while_ = 1 }
+      do_ = HardKeywordsAllTypesProto2Kt.nestedMessage { while_ = 1 }
       clearDo_()
       assertThat(hasDo_()).isFalse()
     }

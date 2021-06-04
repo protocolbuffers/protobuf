@@ -52,7 +52,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto 
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
-extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto;
+PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto;
 PROTOBUF_NAMESPACE_OPEN
 class SourceContext;
 struct SourceContextDefaultTypeInternal;
@@ -137,10 +137,13 @@ class PROTOBUF_EXPORT SourceContext final :
   SourceContext* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<SourceContext>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const SourceContext& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const SourceContext& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -160,11 +163,15 @@ class PROTOBUF_EXPORT SourceContext final :
     return "google.protobuf.SourceContext";
   }
   protected:
-  explicit SourceContext(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit SourceContext(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -181,7 +188,7 @@ class PROTOBUF_EXPORT SourceContext final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_file_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_file_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_file_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_file_name();
   void set_allocated_file_name(std::string* file_name);
   private:
   const std::string& _internal_file_name() const;
@@ -227,8 +234,9 @@ void SourceContext::set_file_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
 inline std::string* SourceContext::mutable_file_name() {
+  std::string* _s = _internal_mutable_file_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceContext.file_name)
-  return _internal_mutable_file_name();
+  return _s;
 }
 inline const std::string& SourceContext::_internal_file_name() const {
   return file_name_.Get();

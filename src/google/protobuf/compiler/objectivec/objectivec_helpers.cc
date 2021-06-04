@@ -213,6 +213,10 @@ const char* const kReservedWordList[] = {
   // Not a keyword, but will break you
   "NULL",
 
+  // C88+ specs call for these to be macros, so depending on what they are
+  // defined to be it can lead to odd errors for some Xcode/SDK versions.
+  "stdin", "stdout", "stderr",
+
   // Objective-C Runtime typedefs
   // From <obc/runtime.h>
   "Category", "Ivar", "Method", "Protocol",
@@ -1741,7 +1745,7 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
     TrimWhitespace(&proto_file);
     if (!proto_file.empty()) {
       std::map<std::string, std::string>::iterator existing_entry =
-          map_->find(string(proto_file));
+          map_->find(std::string(proto_file));
       if (existing_entry != map_->end()) {
         std::cerr << "warning: duplicate proto file reference, replacing "
                      "framework entry for '"

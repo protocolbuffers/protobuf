@@ -61,6 +61,11 @@ void MapFieldBase::Swap(MapFieldBase* other) {
   InternalSwap(other);
 }
 
+void MapFieldBase::UnsafeShallowSwap(MapFieldBase* other) {
+  GOOGLE_DCHECK_EQ(arena_, other->arena_);
+  InternalSwap(other);
+}
+
 void MapFieldBase::InternalSwap(MapFieldBase* other) {
   std::swap(arena_, other->arena_);
   std::swap(repeated_field_, other->repeated_field_);

@@ -81,10 +81,13 @@ class Timestamp::_Internal {
  public:
 };
 
-Timestamp::Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+Timestamp::Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                         bool is_message_owned)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
   SharedCtor();
-  RegisterArenaDtor(arena);
+  if (!is_message_owned) {
+    RegisterArenaDtor(arena);
+  }
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
 Timestamp::Timestamp(const Timestamp& from)
@@ -96,7 +99,7 @@ Timestamp::Timestamp(const Timestamp& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Timestamp)
 }
 
-void Timestamp::SharedCtor() {
+inline void Timestamp::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&seconds_) - reinterpret_cast<char*>(this)),
     0, static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
@@ -105,11 +108,12 @@ void Timestamp::SharedCtor() {
 
 Timestamp::~Timestamp() {
   // @@protoc_insertion_point(destructor:google.protobuf.Timestamp)
+  if (GetArenaForAllocation() != nullptr) return;
   SharedDtor();
   _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
-void Timestamp::SharedDtor() {
+inline void Timestamp::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
@@ -185,13 +189,13 @@ failure:
   (void) cached_has_bits;
 
   // int64 seconds = 1;
-  if (this->seconds() != 0) {
+  if (this->_internal_seconds() != 0) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt64ToArray(1, this->_internal_seconds(), target);
   }
 
   // int32 nanos = 2;
-  if (this->nanos() != 0) {
+  if (this->_internal_nanos() != 0) {
     target = stream->EnsureSpace(target);
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteInt32ToArray(2, this->_internal_nanos(), target);
   }
@@ -213,14 +217,14 @@ size_t Timestamp::ByteSizeLong() const {
   (void) cached_has_bits;
 
   // int64 seconds = 1;
-  if (this->seconds() != 0) {
+  if (this->_internal_seconds() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int64Size(
         this->_internal_seconds());
   }
 
   // int32 nanos = 2;
-  if (this->nanos() != 0) {
+  if (this->_internal_nanos() != 0) {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::Int32Size(
         this->_internal_nanos());
@@ -235,41 +239,32 @@ size_t Timestamp::ByteSizeLong() const {
   return total_size;
 }
 
-void Timestamp::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Timestamp)
-  GOOGLE_DCHECK_NE(&from, this);
-  const Timestamp* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<Timestamp>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Timestamp)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Timestamp)
-    MergeFrom(*source);
-  }
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData Timestamp::_class_data_ = {
+    ::PROTOBUF_NAMESPACE_ID::Message::CopyWithSizeCheck,
+    Timestamp::MergeImpl
+};
+const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Timestamp::GetClassData() const { return &_class_data_; }
+
+void Timestamp::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to,
+                      const ::PROTOBUF_NAMESPACE_ID::Message&from) {
+  static_cast<Timestamp *>(to)->MergeFrom(
+      static_cast<const Timestamp &>(from));
 }
+
 
 void Timestamp::MergeFrom(const Timestamp& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
   GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.seconds() != 0) {
+  if (from._internal_seconds() != 0) {
     _internal_set_seconds(from._internal_seconds());
   }
-  if (from.nanos() != 0) {
+  if (from._internal_nanos() != 0) {
     _internal_set_nanos(from._internal_nanos());
   }
-}
-
-void Timestamp::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Timestamp)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
 void Timestamp::CopyFrom(const Timestamp& from) {

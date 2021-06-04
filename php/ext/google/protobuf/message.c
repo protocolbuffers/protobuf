@@ -153,6 +153,9 @@ static bool Message_set(Message *intern, const upb_fielddef *f, zval *val) {
   } else if (upb_fielddef_isseq(f)) {
     msgval.array_val = RepeatedField_GetUpbArray(val, TypeInfo_Get(f), arena);
     if (!msgval.array_val) return false;
+  } else if (upb_fielddef_issubmsg(f) && Z_TYPE_P(val) == IS_NULL) {
+    upb_msg_clearfield(intern->msg, f);
+    return true;
   } else {
     if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(f), arena)) return false;
   }
@@ -458,11 +461,6 @@ bool Message_GetUpbMessage(zval *val, const Descriptor *desc, upb_arena *arena,
     ZVAL_DEREF(val);
   }
 
-  if (Z_TYPE_P(val) == IS_NULL) {
-    *msg = NULL;
-    return true;
-  }
-
   if (Z_TYPE_P(val) == IS_OBJECT &&
       instanceof_function(Z_OBJCE_P(val), desc->class_entry)) {
     Message *intern = (Message*)Z_OBJ_P(val);
@@ -470,7 +468,8 @@ bool Message_GetUpbMessage(zval *val, const Descriptor *desc, upb_arena *arena,
     *msg = intern->msg;
     return true;
   } else {
-    zend_throw_exception_ex(NULL, 0, "Given value is not an instance of %s.",
+    zend_throw_exception_ex(zend_ce_type_error, 0,
+                            "Given value is not an instance of %s.",
                             ZSTR_VAL(desc->class_entry->name));
     return false;
   }
@@ -1055,7 +1054,10 @@ PHP_METHOD(Message, writeOneof) {
 
   f = upb_msgdef_itof(intern->desc->msgdef, field_num);
 
-  if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(f), arena)) {
+  if (upb_fielddef_issubmsg(f) && Z_TYPE_P(val) == IS_NULL) {
+    upb_msg_clearfield(intern->msg, f);
+    return;
+  } else if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(f), arena)) {
     return;
   }
 

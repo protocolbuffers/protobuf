@@ -786,13 +786,7 @@ class FileDescriptorTables {
   mutable internal::WrappedMutex unknown_enum_values_mu_;
 };
 
-DescriptorPool::Tables::Tables()
-    // Start some hash-map and hash-set objects with a small # of buckets
-    : known_bad_files_(3),
-      known_bad_symbols_(3),
-      extensions_loaded_from_db_(3),
-      symbols_by_name_(3),
-      files_by_name_(3) {
+DescriptorPool::Tables::Tables() {
   well_known_types_.insert({
       {"google.protobuf.DoubleValue", Descriptor::WELLKNOWNTYPE_DOUBLEVALUE},
       {"google.protobuf.FloatValue", Descriptor::WELLKNOWNTYPE_FLOATVALUE},
@@ -816,16 +810,8 @@ DescriptorPool::Tables::Tables()
 DescriptorPool::Tables::~Tables() { GOOGLE_DCHECK(checkpoints_.empty()); }
 
 FileDescriptorTables::FileDescriptorTables()
-    // Initialize all the hash tables to start out with a small # of buckets.
-    : symbols_by_parent_(3),
-      fields_by_lowercase_name_(3),
-      fields_by_lowercase_name_tmp_(new FieldsByNameMap()),
-      fields_by_camelcase_name_(3),
-      fields_by_camelcase_name_tmp_(new FieldsByNameMap()),
-      fields_by_number_(3),
-      enum_values_by_number_(3),
-      unknown_enum_values_by_number_(3),
-      locations_by_path_(3) {}
+    : fields_by_lowercase_name_tmp_(new FieldsByNameMap()),
+      fields_by_camelcase_name_tmp_(new FieldsByNameMap()) {}
 
 FileDescriptorTables::~FileDescriptorTables() {}
 

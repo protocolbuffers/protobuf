@@ -190,13 +190,13 @@ proto_gen = rule(
         "deps": attr.label_list(providers = ["proto"]),
         "includes": attr.string_list(),
         "protoc": attr.label(
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_single_file = True,
             mandatory = True,
         ),
         "plugin": attr.label(
-            cfg = "host",
+            cfg = "exec",
             allow_files = True,
             executable = True,
         ),
@@ -378,7 +378,7 @@ internal_gen_well_known_protos_java = rule(
         ),
         "_protoc": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "@com_google_protobuf//:protoc",
         ),
     },

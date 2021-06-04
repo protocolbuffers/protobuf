@@ -53,7 +53,7 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fdescriptor_2eproto {
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
   static const ::PROTOBUF_NAMESPACE_ID::uint32 offsets[];
 };
-extern PROTOBUF_EXPORT const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
+PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
 PROTOBUF_NAMESPACE_OPEN
 class DescriptorProto;
 struct DescriptorProtoDefaultTypeInternal;
@@ -408,10 +408,13 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   FileDescriptorSet* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<FileDescriptorSet>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const FileDescriptorSet& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const FileDescriptorSet& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -431,11 +434,15 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
     return "google.protobuf.FileDescriptorSet";
   }
   protected:
-  explicit FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit FileDescriptorSet(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -556,10 +563,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   FileDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<FileDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const FileDescriptorProto& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const FileDescriptorProto& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -579,11 +589,15 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     return "google.protobuf.FileDescriptorProto";
   }
   protected:
-  explicit FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit FileDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -755,7 +769,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -773,7 +787,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_package(ArgT0&& arg0, ArgT... args);
   std::string* mutable_package();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_package();
+  PROTOBUF_MUST_USE_RESULT std::string* release_package();
   void set_allocated_package(std::string* package);
   private:
   const std::string& _internal_package() const;
@@ -791,7 +805,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_syntax(ArgT0&& arg0, ArgT... args);
   std::string* mutable_syntax();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_syntax();
+  PROTOBUF_MUST_USE_RESULT std::string* release_syntax();
   void set_allocated_syntax(std::string* syntax);
   private:
   const std::string& _internal_syntax() const;
@@ -806,7 +820,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::FileOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::FileOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::FileOptions* release_options();
   PROTOBUF_NAMESPACE_ID::FileOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::FileOptions* options);
   private:
@@ -824,7 +838,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   public:
   void clear_source_code_info();
   const PROTOBUF_NAMESPACE_ID::SourceCodeInfo& source_code_info() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::SourceCodeInfo* release_source_code_info();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::SourceCodeInfo* release_source_code_info();
   PROTOBUF_NAMESPACE_ID::SourceCodeInfo* mutable_source_code_info();
   void set_allocated_source_code_info(PROTOBUF_NAMESPACE_ID::SourceCodeInfo* source_code_info);
   private:
@@ -939,10 +953,13 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   DescriptorProto_ExtensionRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<DescriptorProto_ExtensionRange>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ExtensionRange& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const DescriptorProto_ExtensionRange& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -962,11 +979,15 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
     return "google.protobuf.DescriptorProto.ExtensionRange";
   }
   protected:
-  explicit DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit DescriptorProto_ExtensionRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -986,7 +1007,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* release_options();
   PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* options);
   private:
@@ -1118,10 +1139,13 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   DescriptorProto_ReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<DescriptorProto_ReservedRange>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const DescriptorProto_ReservedRange& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const DescriptorProto_ReservedRange& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -1141,11 +1165,15 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
     return "google.protobuf.DescriptorProto.ReservedRange";
   }
   protected:
-  explicit DescriptorProto_ReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit DescriptorProto_ReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -1277,10 +1305,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   DescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<DescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const DescriptorProto& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const DescriptorProto& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -1300,11 +1331,15 @@ class PROTOBUF_EXPORT DescriptorProto final :
     return "google.protobuf.DescriptorProto";
   }
   protected:
-  explicit DescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit DescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -1487,7 +1522,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -1502,7 +1537,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::MessageOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::MessageOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::MessageOptions* release_options();
   PROTOBUF_NAMESPACE_ID::MessageOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::MessageOptions* options);
   private:
@@ -1615,10 +1650,13 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   ExtensionRangeOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<ExtensionRangeOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const ExtensionRangeOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const ExtensionRangeOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -1638,11 +1676,15 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
     return "google.protobuf.ExtensionRangeOptions";
   }
   protected:
-  explicit ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit ExtensionRangeOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -1766,10 +1808,13 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   FieldDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<FieldDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const FieldDescriptorProto& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const FieldDescriptorProto& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -1789,11 +1834,15 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
     return "google.protobuf.FieldDescriptorProto";
   }
   protected:
-  explicit FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit FieldDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -1918,7 +1967,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -1936,7 +1985,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_extendee(ArgT0&& arg0, ArgT... args);
   std::string* mutable_extendee();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_extendee();
+  PROTOBUF_MUST_USE_RESULT std::string* release_extendee();
   void set_allocated_extendee(std::string* extendee);
   private:
   const std::string& _internal_extendee() const;
@@ -1954,7 +2003,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_type_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_type_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_type_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_type_name();
   void set_allocated_type_name(std::string* type_name);
   private:
   const std::string& _internal_type_name() const;
@@ -1972,7 +2021,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_default_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_default_value();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_default_value();
+  PROTOBUF_MUST_USE_RESULT std::string* release_default_value();
   void set_allocated_default_value(std::string* default_value);
   private:
   const std::string& _internal_default_value() const;
@@ -1990,7 +2039,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_json_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_json_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_json_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_json_name();
   void set_allocated_json_name(std::string* json_name);
   private:
   const std::string& _internal_json_name() const;
@@ -2005,7 +2054,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::FieldOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::FieldOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::FieldOptions* release_options();
   PROTOBUF_NAMESPACE_ID::FieldOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::FieldOptions* options);
   private:
@@ -2184,10 +2233,13 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   OneofDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<OneofDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const OneofDescriptorProto& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const OneofDescriptorProto& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -2207,11 +2259,15 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
     return "google.protobuf.OneofDescriptorProto";
   }
   protected:
-  explicit OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit OneofDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -2233,7 +2289,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -2248,7 +2304,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::OneofOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::OneofOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::OneofOptions* release_options();
   PROTOBUF_NAMESPACE_ID::OneofOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::OneofOptions* options);
   private:
@@ -2353,10 +2409,13 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   EnumDescriptorProto_EnumReservedRange* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<EnumDescriptorProto_EnumReservedRange>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const EnumDescriptorProto_EnumReservedRange& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -2376,11 +2435,15 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
     return "google.protobuf.EnumDescriptorProto.EnumReservedRange";
   }
   protected:
-  explicit EnumDescriptorProto_EnumReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit EnumDescriptorProto_EnumReservedRange(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -2512,10 +2575,13 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   EnumDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<EnumDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const EnumDescriptorProto& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const EnumDescriptorProto& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -2535,11 +2601,15 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
     return "google.protobuf.EnumDescriptorProto";
   }
   protected:
-  explicit EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit EnumDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -2626,7 +2696,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -2641,7 +2711,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::EnumOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::EnumOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::EnumOptions* release_options();
   PROTOBUF_NAMESPACE_ID::EnumOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::EnumOptions* options);
   private:
@@ -2749,10 +2819,13 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   EnumValueDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<EnumValueDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const EnumValueDescriptorProto& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const EnumValueDescriptorProto& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -2772,11 +2845,15 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
     return "google.protobuf.EnumValueDescriptorProto";
   }
   protected:
-  explicit EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit EnumValueDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -2799,7 +2876,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -2814,7 +2891,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::EnumValueOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::EnumValueOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::EnumValueOptions* release_options();
   PROTOBUF_NAMESPACE_ID::EnumValueOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::EnumValueOptions* options);
   private:
@@ -2933,10 +3010,13 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   ServiceDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<ServiceDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const ServiceDescriptorProto& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const ServiceDescriptorProto& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -2956,11 +3036,15 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
     return "google.protobuf.ServiceDescriptorProto";
   }
   protected:
-  explicit ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit ServiceDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -3001,7 +3085,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -3016,7 +3100,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::ServiceOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ServiceOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::ServiceOptions* release_options();
   PROTOBUF_NAMESPACE_ID::ServiceOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::ServiceOptions* options);
   private:
@@ -3122,10 +3206,13 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   MethodDescriptorProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<MethodDescriptorProto>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const MethodDescriptorProto& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const MethodDescriptorProto& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -3145,11 +3232,15 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
     return "google.protobuf.MethodDescriptorProto";
   }
   protected:
-  explicit MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit MethodDescriptorProto(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -3175,7 +3266,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name();
   void set_allocated_name(std::string* name);
   private:
   const std::string& _internal_name() const;
@@ -3193,7 +3284,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_input_type(ArgT0&& arg0, ArgT... args);
   std::string* mutable_input_type();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_input_type();
+  PROTOBUF_MUST_USE_RESULT std::string* release_input_type();
   void set_allocated_input_type(std::string* input_type);
   private:
   const std::string& _internal_input_type() const;
@@ -3211,7 +3302,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_output_type(ArgT0&& arg0, ArgT... args);
   std::string* mutable_output_type();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_output_type();
+  PROTOBUF_MUST_USE_RESULT std::string* release_output_type();
   void set_allocated_output_type(std::string* output_type);
   private:
   const std::string& _internal_output_type() const;
@@ -3226,7 +3317,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   public:
   void clear_options();
   const PROTOBUF_NAMESPACE_ID::MethodOptions& options() const;
-  PROTOBUF_FUTURE_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::MethodOptions* release_options();
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NAMESPACE_ID::MethodOptions* release_options();
   PROTOBUF_NAMESPACE_ID::MethodOptions* mutable_options();
   void set_allocated_options(PROTOBUF_NAMESPACE_ID::MethodOptions* options);
   private:
@@ -3361,10 +3452,13 @@ class PROTOBUF_EXPORT FileOptions final :
   FileOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<FileOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const FileOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const FileOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -3384,11 +3478,15 @@ class PROTOBUF_EXPORT FileOptions final :
     return "google.protobuf.FileOptions";
   }
   protected:
-  explicit FileOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit FileOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -3479,7 +3577,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_java_package(ArgT0&& arg0, ArgT... args);
   std::string* mutable_java_package();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_java_package();
+  PROTOBUF_MUST_USE_RESULT std::string* release_java_package();
   void set_allocated_java_package(std::string* java_package);
   private:
   const std::string& _internal_java_package() const;
@@ -3497,7 +3595,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_java_outer_classname(ArgT0&& arg0, ArgT... args);
   std::string* mutable_java_outer_classname();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_java_outer_classname();
+  PROTOBUF_MUST_USE_RESULT std::string* release_java_outer_classname();
   void set_allocated_java_outer_classname(std::string* java_outer_classname);
   private:
   const std::string& _internal_java_outer_classname() const;
@@ -3515,7 +3613,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_go_package(ArgT0&& arg0, ArgT... args);
   std::string* mutable_go_package();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_go_package();
+  PROTOBUF_MUST_USE_RESULT std::string* release_go_package();
   void set_allocated_go_package(std::string* go_package);
   private:
   const std::string& _internal_go_package() const;
@@ -3533,7 +3631,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_objc_class_prefix(ArgT0&& arg0, ArgT... args);
   std::string* mutable_objc_class_prefix();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_objc_class_prefix();
+  PROTOBUF_MUST_USE_RESULT std::string* release_objc_class_prefix();
   void set_allocated_objc_class_prefix(std::string* objc_class_prefix);
   private:
   const std::string& _internal_objc_class_prefix() const;
@@ -3551,7 +3649,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_csharp_namespace(ArgT0&& arg0, ArgT... args);
   std::string* mutable_csharp_namespace();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_csharp_namespace();
+  PROTOBUF_MUST_USE_RESULT std::string* release_csharp_namespace();
   void set_allocated_csharp_namespace(std::string* csharp_namespace);
   private:
   const std::string& _internal_csharp_namespace() const;
@@ -3569,7 +3667,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_swift_prefix(ArgT0&& arg0, ArgT... args);
   std::string* mutable_swift_prefix();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_swift_prefix();
+  PROTOBUF_MUST_USE_RESULT std::string* release_swift_prefix();
   void set_allocated_swift_prefix(std::string* swift_prefix);
   private:
   const std::string& _internal_swift_prefix() const;
@@ -3587,7 +3685,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_class_prefix(ArgT0&& arg0, ArgT... args);
   std::string* mutable_php_class_prefix();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_php_class_prefix();
+  PROTOBUF_MUST_USE_RESULT std::string* release_php_class_prefix();
   void set_allocated_php_class_prefix(std::string* php_class_prefix);
   private:
   const std::string& _internal_php_class_prefix() const;
@@ -3605,7 +3703,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_namespace(ArgT0&& arg0, ArgT... args);
   std::string* mutable_php_namespace();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_php_namespace();
+  PROTOBUF_MUST_USE_RESULT std::string* release_php_namespace();
   void set_allocated_php_namespace(std::string* php_namespace);
   private:
   const std::string& _internal_php_namespace() const;
@@ -3623,7 +3721,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_metadata_namespace(ArgT0&& arg0, ArgT... args);
   std::string* mutable_php_metadata_namespace();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_php_metadata_namespace();
+  PROTOBUF_MUST_USE_RESULT std::string* release_php_metadata_namespace();
   void set_allocated_php_metadata_namespace(std::string* php_metadata_namespace);
   private:
   const std::string& _internal_php_metadata_namespace() const;
@@ -3641,7 +3739,7 @@ class PROTOBUF_EXPORT FileOptions final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_ruby_package(ArgT0&& arg0, ArgT... args);
   std::string* mutable_ruby_package();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_ruby_package();
+  PROTOBUF_MUST_USE_RESULT std::string* release_ruby_package();
   void set_allocated_ruby_package(std::string* ruby_package);
   private:
   const std::string& _internal_ruby_package() const;
@@ -3895,10 +3993,13 @@ class PROTOBUF_EXPORT MessageOptions final :
   MessageOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<MessageOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const MessageOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const MessageOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -3918,11 +4019,15 @@ class PROTOBUF_EXPORT MessageOptions final :
     return "google.protobuf.MessageOptions";
   }
   protected:
-  explicit MessageOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit MessageOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -4107,10 +4212,13 @@ class PROTOBUF_EXPORT FieldOptions final :
   FieldOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<FieldOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const FieldOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const FieldOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -4130,11 +4238,15 @@ class PROTOBUF_EXPORT FieldOptions final :
     return "google.protobuf.FieldOptions";
   }
   protected:
-  explicit FieldOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit FieldOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -4413,10 +4525,13 @@ class PROTOBUF_EXPORT OneofOptions final :
   OneofOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<OneofOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const OneofOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const OneofOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -4436,11 +4551,15 @@ class PROTOBUF_EXPORT OneofOptions final :
     return "google.protobuf.OneofOptions";
   }
   protected:
-  explicit OneofOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit OneofOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -4564,10 +4683,13 @@ class PROTOBUF_EXPORT EnumOptions final :
   EnumOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<EnumOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const EnumOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const EnumOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -4587,11 +4709,15 @@ class PROTOBUF_EXPORT EnumOptions final :
     return "google.protobuf.EnumOptions";
   }
   protected:
-  explicit EnumOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit EnumOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -4746,10 +4872,13 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   EnumValueOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<EnumValueOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const EnumValueOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const EnumValueOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -4769,11 +4898,15 @@ class PROTOBUF_EXPORT EnumValueOptions final :
     return "google.protobuf.EnumValueOptions";
   }
   protected:
-  explicit EnumValueOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit EnumValueOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -4913,10 +5046,13 @@ class PROTOBUF_EXPORT ServiceOptions final :
   ServiceOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<ServiceOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const ServiceOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const ServiceOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -4936,11 +5072,15 @@ class PROTOBUF_EXPORT ServiceOptions final :
     return "google.protobuf.ServiceOptions";
   }
   protected:
-  explicit ServiceOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit ServiceOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -5080,10 +5220,13 @@ class PROTOBUF_EXPORT MethodOptions final :
   MethodOptions* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<MethodOptions>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const MethodOptions& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const MethodOptions& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -5103,11 +5246,15 @@ class PROTOBUF_EXPORT MethodOptions final :
     return "google.protobuf.MethodOptions";
   }
   protected:
-  explicit MethodOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit MethodOptions(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -5294,10 +5441,13 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   UninterpretedOption_NamePart* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<UninterpretedOption_NamePart>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption_NamePart& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const UninterpretedOption_NamePart& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -5317,11 +5467,15 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
     return "google.protobuf.UninterpretedOption.NamePart";
   }
   protected:
-  explicit UninterpretedOption_NamePart(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit UninterpretedOption_NamePart(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -5343,7 +5497,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name_part(ArgT0&& arg0, ArgT... args);
   std::string* mutable_name_part();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_name_part();
+  PROTOBUF_MUST_USE_RESULT std::string* release_name_part();
   void set_allocated_name_part(std::string* name_part);
   private:
   const std::string& _internal_name_part() const;
@@ -5461,10 +5615,13 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   UninterpretedOption* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<UninterpretedOption>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const UninterpretedOption& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const UninterpretedOption& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -5484,11 +5641,15 @@ class PROTOBUF_EXPORT UninterpretedOption final :
     return "google.protobuf.UninterpretedOption";
   }
   protected:
-  explicit UninterpretedOption(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit UninterpretedOption(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -5535,7 +5696,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_identifier_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_identifier_value();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_identifier_value();
+  PROTOBUF_MUST_USE_RESULT std::string* release_identifier_value();
   void set_allocated_identifier_value(std::string* identifier_value);
   private:
   const std::string& _internal_identifier_value() const;
@@ -5553,7 +5714,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_string_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_string_value();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_string_value();
+  PROTOBUF_MUST_USE_RESULT std::string* release_string_value();
   void set_allocated_string_value(std::string* string_value);
   private:
   const std::string& _internal_string_value() const;
@@ -5571,7 +5732,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_aggregate_value(ArgT0&& arg0, ArgT... args);
   std::string* mutable_aggregate_value();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_aggregate_value();
+  PROTOBUF_MUST_USE_RESULT std::string* release_aggregate_value();
   void set_allocated_aggregate_value(std::string* aggregate_value);
   private:
   const std::string& _internal_aggregate_value() const;
@@ -5717,10 +5878,13 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   SourceCodeInfo_Location* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<SourceCodeInfo_Location>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo_Location& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const SourceCodeInfo_Location& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -5740,11 +5904,15 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
     return "google.protobuf.SourceCodeInfo.Location";
   }
   protected:
-  explicit SourceCodeInfo_Location(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit SourceCodeInfo_Location(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -5837,7 +6005,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_leading_comments(ArgT0&& arg0, ArgT... args);
   std::string* mutable_leading_comments();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_leading_comments();
+  PROTOBUF_MUST_USE_RESULT std::string* release_leading_comments();
   void set_allocated_leading_comments(std::string* leading_comments);
   private:
   const std::string& _internal_leading_comments() const;
@@ -5855,7 +6023,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_trailing_comments(ArgT0&& arg0, ArgT... args);
   std::string* mutable_trailing_comments();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_trailing_comments();
+  PROTOBUF_MUST_USE_RESULT std::string* release_trailing_comments();
   void set_allocated_trailing_comments(std::string* trailing_comments);
   private:
   const std::string& _internal_trailing_comments() const;
@@ -5962,10 +6130,13 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   SourceCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<SourceCodeInfo>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const SourceCodeInfo& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const SourceCodeInfo& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -5985,11 +6156,15 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
     return "google.protobuf.SourceCodeInfo";
   }
   protected:
-  explicit SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit SourceCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -6112,10 +6287,13 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   GeneratedCodeInfo_Annotation* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<GeneratedCodeInfo_Annotation>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo_Annotation& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const GeneratedCodeInfo_Annotation& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -6135,11 +6313,15 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
     return "google.protobuf.GeneratedCodeInfo.Annotation";
   }
   protected:
-  explicit GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -6185,7 +6367,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_source_file(ArgT0&& arg0, ArgT... args);
   std::string* mutable_source_file();
-  PROTOBUF_FUTURE_MUST_USE_RESULT std::string* release_source_file();
+  PROTOBUF_MUST_USE_RESULT std::string* release_source_file();
   void set_allocated_source_file(std::string* source_file);
   private:
   const std::string& _internal_source_file() const;
@@ -6316,10 +6498,13 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   GeneratedCodeInfo* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
     return CreateMaybeMessage<GeneratedCodeInfo>(arena);
   }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
   void CopyFrom(const GeneratedCodeInfo& from);
+  using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
   void MergeFrom(const GeneratedCodeInfo& from);
+  private:
+  static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message*to, const ::PROTOBUF_NAMESPACE_ID::Message&from);
+  public:
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
@@ -6339,11 +6524,15 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
     return "google.protobuf.GeneratedCodeInfo";
   }
   protected:
-  explicit GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit GeneratedCodeInfo(::PROTOBUF_NAMESPACE_ID::Arena* arena,
+                       bool is_message_owned = false);
   private:
   static void ArenaDtor(void* object);
   inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
+
+  static const ClassData _class_data_;
+  const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GetClassData() const final;
 
   ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
 
@@ -6426,8 +6615,9 @@ inline PROTOBUF_NAMESPACE_ID::FileDescriptorProto* FileDescriptorSet::_internal_
   return file_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::FileDescriptorProto* FileDescriptorSet::add_file() {
+  PROTOBUF_NAMESPACE_ID::FileDescriptorProto* _add = _internal_add_file();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorSet.file)
-  return _internal_add_file();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::FileDescriptorProto >&
 FileDescriptorSet::file() const {
@@ -6463,8 +6653,9 @@ void FileDescriptorProto::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.name)
 }
 inline std::string* FileDescriptorProto::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& FileDescriptorProto::_internal_name() const {
   return name_.Get();
@@ -6520,8 +6711,9 @@ void FileDescriptorProto::set_package(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.package)
 }
 inline std::string* FileDescriptorProto::mutable_package() {
+  std::string* _s = _internal_mutable_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.package)
-  return _internal_mutable_package();
+  return _s;
 }
 inline const std::string& FileDescriptorProto::_internal_package() const {
   return package_.Get();
@@ -6564,8 +6756,9 @@ inline void FileDescriptorProto::clear_dependency() {
   dependency_.Clear();
 }
 inline std::string* FileDescriptorProto::add_dependency() {
+  std::string* _s = _internal_add_dependency();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.FileDescriptorProto.dependency)
-  return _internal_add_dependency();
+  return _s;
 }
 inline const std::string& FileDescriptorProto::_internal_dependency(int index) const {
   return dependency_.Get(index);
@@ -6579,12 +6772,12 @@ inline std::string* FileDescriptorProto::mutable_dependency(int index) {
   return dependency_.Mutable(index);
 }
 inline void FileDescriptorProto::set_dependency(int index, const std::string& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
   dependency_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, std::string&& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
   dependency_.Mutable(index)->assign(std::move(value));
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, const char* value) {
   GOOGLE_DCHECK(value != nullptr);
@@ -6751,8 +6944,9 @@ inline PROTOBUF_NAMESPACE_ID::DescriptorProto* FileDescriptorProto::_internal_ad
   return message_type_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::DescriptorProto* FileDescriptorProto::add_message_type() {
+  PROTOBUF_NAMESPACE_ID::DescriptorProto* _add = _internal_add_message_type();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.message_type)
-  return _internal_add_message_type();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::DescriptorProto >&
 FileDescriptorProto::message_type() const {
@@ -6790,8 +6984,9 @@ inline PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* FileDescriptorProto::_interna
   return enum_type_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* FileDescriptorProto::add_enum_type() {
+  PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* _add = _internal_add_enum_type();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.enum_type)
-  return _internal_add_enum_type();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >&
 FileDescriptorProto::enum_type() const {
@@ -6829,8 +7024,9 @@ inline PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* FileDescriptorProto::_inte
   return service_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* FileDescriptorProto::add_service() {
+  PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* _add = _internal_add_service();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.service)
-  return _internal_add_service();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto >&
 FileDescriptorProto::service() const {
@@ -6868,8 +7064,9 @@ inline PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* FileDescriptorProto::_intern
   return extension_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* FileDescriptorProto::add_extension() {
+  PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _add = _internal_add_extension();
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.extension)
-  return _internal_add_extension();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
 FileDescriptorProto::extension() const {
@@ -6916,9 +7113,15 @@ inline PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::release_options(
   _has_bits_[0] &= ~0x00000008u;
   PROTOBUF_NAMESPACE_ID::FileOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::unsafe_arena_release_options() {
@@ -6937,8 +7140,9 @@ inline PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::_internal_mutabl
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::FileOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void FileDescriptorProto::set_allocated_options(PROTOBUF_NAMESPACE_ID::FileOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -6999,9 +7203,15 @@ inline PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::release_sourc
   _has_bits_[0] &= ~0x00000010u;
   PROTOBUF_NAMESPACE_ID::SourceCodeInfo* temp = source_code_info_;
   source_code_info_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::unsafe_arena_release_source_code_info() {
@@ -7020,8 +7230,9 @@ inline PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::_internal_mut
   return source_code_info_;
 }
 inline PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::mutable_source_code_info() {
+  PROTOBUF_NAMESPACE_ID::SourceCodeInfo* _msg = _internal_mutable_source_code_info();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.source_code_info)
-  return _internal_mutable_source_code_info();
+  return _msg;
 }
 inline void FileDescriptorProto::set_allocated_source_code_info(PROTOBUF_NAMESPACE_ID::SourceCodeInfo* source_code_info) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -7067,8 +7278,9 @@ void FileDescriptorProto::set_syntax(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.syntax)
 }
 inline std::string* FileDescriptorProto::mutable_syntax() {
+  std::string* _s = _internal_mutable_syntax();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.syntax)
-  return _internal_mutable_syntax();
+  return _s;
 }
 inline const std::string& FileDescriptorProto::_internal_syntax() const {
   return syntax_.Get();
@@ -7199,9 +7411,15 @@ inline PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* DescriptorProto_ExtensionRa
   _has_bits_[0] &= ~0x00000001u;
   PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* DescriptorProto_ExtensionRange::unsafe_arena_release_options() {
@@ -7220,8 +7438,9 @@ inline PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* DescriptorProto_ExtensionRa
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* DescriptorProto_ExtensionRange::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.ExtensionRange.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void DescriptorProto_ExtensionRange::set_allocated_options(PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -7331,8 +7550,9 @@ void DescriptorProto::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.name)
 }
 inline std::string* DescriptorProto::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& DescriptorProto::_internal_name() const {
   return name_.Get();
@@ -7394,8 +7614,9 @@ inline PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::_internal_a
   return field_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::add_field() {
+  PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _add = _internal_add_field();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.field)
-  return _internal_add_field();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
 DescriptorProto::field() const {
@@ -7433,8 +7654,9 @@ inline PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::_internal_a
   return extension_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* DescriptorProto::add_extension() {
+  PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* _add = _internal_add_extension();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension)
-  return _internal_add_extension();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
 DescriptorProto::extension() const {
@@ -7472,8 +7694,9 @@ inline PROTOBUF_NAMESPACE_ID::DescriptorProto* DescriptorProto::_internal_add_ne
   return nested_type_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::DescriptorProto* DescriptorProto::add_nested_type() {
+  PROTOBUF_NAMESPACE_ID::DescriptorProto* _add = _internal_add_nested_type();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.nested_type)
-  return _internal_add_nested_type();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::DescriptorProto >&
 DescriptorProto::nested_type() const {
@@ -7511,8 +7734,9 @@ inline PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* DescriptorProto::_internal_ad
   return enum_type_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* DescriptorProto::add_enum_type() {
+  PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* _add = _internal_add_enum_type();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.enum_type)
-  return _internal_add_enum_type();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >&
 DescriptorProto::enum_type() const {
@@ -7550,8 +7774,9 @@ inline PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* DescriptorProto::_
   return extension_range_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* DescriptorProto::add_extension_range() {
+  PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* _add = _internal_add_extension_range();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.extension_range)
-  return _internal_add_extension_range();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange >&
 DescriptorProto::extension_range() const {
@@ -7589,8 +7814,9 @@ inline PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* DescriptorProto::_internal_a
   return oneof_decl_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* DescriptorProto::add_oneof_decl() {
+  PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* _add = _internal_add_oneof_decl();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.oneof_decl)
-  return _internal_add_oneof_decl();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::OneofDescriptorProto >&
 DescriptorProto::oneof_decl() const {
@@ -7637,9 +7863,15 @@ inline PROTOBUF_NAMESPACE_ID::MessageOptions* DescriptorProto::release_options()
   _has_bits_[0] &= ~0x00000002u;
   PROTOBUF_NAMESPACE_ID::MessageOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::MessageOptions* DescriptorProto::unsafe_arena_release_options() {
@@ -7658,8 +7890,9 @@ inline PROTOBUF_NAMESPACE_ID::MessageOptions* DescriptorProto::_internal_mutable
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::MessageOptions* DescriptorProto::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::MessageOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void DescriptorProto::set_allocated_options(PROTOBUF_NAMESPACE_ID::MessageOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -7711,8 +7944,9 @@ inline PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* DescriptorProto::_i
   return reserved_range_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* DescriptorProto::add_reserved_range() {
+  PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* _add = _internal_add_reserved_range();
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_range)
-  return _internal_add_reserved_range();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange >&
 DescriptorProto::reserved_range() const {
@@ -7731,8 +7965,9 @@ inline void DescriptorProto::clear_reserved_name() {
   reserved_name_.Clear();
 }
 inline std::string* DescriptorProto::add_reserved_name() {
+  std::string* _s = _internal_add_reserved_name();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.DescriptorProto.reserved_name)
-  return _internal_add_reserved_name();
+  return _s;
 }
 inline const std::string& DescriptorProto::_internal_reserved_name(int index) const {
   return reserved_name_.Get(index);
@@ -7746,12 +7981,12 @@ inline std::string* DescriptorProto::mutable_reserved_name(int index) {
   return reserved_name_.Mutable(index);
 }
 inline void DescriptorProto::set_reserved_name(int index, const std::string& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
   reserved_name_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, std::string&& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
   reserved_name_.Mutable(index)->assign(std::move(value));
+  // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, const char* value) {
   GOOGLE_DCHECK(value != nullptr);
@@ -7828,8 +8063,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* ExtensionRangeOptions::_inter
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* ExtensionRangeOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 ExtensionRangeOptions::uninterpreted_option() const {
@@ -7865,8 +8101,9 @@ void FieldDescriptorProto::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.name)
 }
 inline std::string* FieldDescriptorProto::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_name() const {
   return name_.Get();
@@ -8008,8 +8245,9 @@ void FieldDescriptorProto::set_type_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.type_name)
 }
 inline std::string* FieldDescriptorProto::mutable_type_name() {
+  std::string* _s = _internal_mutable_type_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.type_name)
-  return _internal_mutable_type_name();
+  return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_type_name() const {
   return type_name_.Get();
@@ -8065,8 +8303,9 @@ void FieldDescriptorProto::set_extendee(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.extendee)
 }
 inline std::string* FieldDescriptorProto::mutable_extendee() {
+  std::string* _s = _internal_mutable_extendee();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.extendee)
-  return _internal_mutable_extendee();
+  return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_extendee() const {
   return extendee_.Get();
@@ -8122,8 +8361,9 @@ void FieldDescriptorProto::set_default_value(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.default_value)
 }
 inline std::string* FieldDescriptorProto::mutable_default_value() {
+  std::string* _s = _internal_mutable_default_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.default_value)
-  return _internal_mutable_default_value();
+  return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_default_value() const {
   return default_value_.Get();
@@ -8207,8 +8447,9 @@ void FieldDescriptorProto::set_json_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldDescriptorProto.json_name)
 }
 inline std::string* FieldDescriptorProto::mutable_json_name() {
+  std::string* _s = _internal_mutable_json_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.json_name)
-  return _internal_mutable_json_name();
+  return _s;
 }
 inline const std::string& FieldDescriptorProto::_internal_json_name() const {
   return json_name_.Get();
@@ -8279,9 +8520,15 @@ inline PROTOBUF_NAMESPACE_ID::FieldOptions* FieldDescriptorProto::release_option
   _has_bits_[0] &= ~0x00000020u;
   PROTOBUF_NAMESPACE_ID::FieldOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::FieldOptions* FieldDescriptorProto::unsafe_arena_release_options() {
@@ -8300,8 +8547,9 @@ inline PROTOBUF_NAMESPACE_ID::FieldOptions* FieldDescriptorProto::_internal_muta
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::FieldOptions* FieldDescriptorProto::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::FieldOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FieldDescriptorProto.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void FieldDescriptorProto::set_allocated_options(PROTOBUF_NAMESPACE_ID::FieldOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -8379,8 +8627,9 @@ void OneofDescriptorProto::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.OneofDescriptorProto.name)
 }
 inline std::string* OneofDescriptorProto::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.OneofDescriptorProto.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& OneofDescriptorProto::_internal_name() const {
   return name_.Get();
@@ -8451,9 +8700,15 @@ inline PROTOBUF_NAMESPACE_ID::OneofOptions* OneofDescriptorProto::release_option
   _has_bits_[0] &= ~0x00000002u;
   PROTOBUF_NAMESPACE_ID::OneofOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::OneofOptions* OneofDescriptorProto::unsafe_arena_release_options() {
@@ -8472,8 +8727,9 @@ inline PROTOBUF_NAMESPACE_ID::OneofOptions* OneofDescriptorProto::_internal_muta
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::OneofOptions* OneofDescriptorProto::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::OneofOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.OneofDescriptorProto.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void OneofDescriptorProto::set_allocated_options(PROTOBUF_NAMESPACE_ID::OneofOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -8583,8 +8839,9 @@ void EnumDescriptorProto::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.name)
 }
 inline std::string* EnumDescriptorProto::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& EnumDescriptorProto::_internal_name() const {
   return name_.Get();
@@ -8646,8 +8903,9 @@ inline PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* EnumDescriptorProto::_in
   return value_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* EnumDescriptorProto::add_value() {
+  PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* _add = _internal_add_value();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.value)
-  return _internal_add_value();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto >&
 EnumDescriptorProto::value() const {
@@ -8694,9 +8952,15 @@ inline PROTOBUF_NAMESPACE_ID::EnumOptions* EnumDescriptorProto::release_options(
   _has_bits_[0] &= ~0x00000002u;
   PROTOBUF_NAMESPACE_ID::EnumOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::EnumOptions* EnumDescriptorProto::unsafe_arena_release_options() {
@@ -8715,8 +8979,9 @@ inline PROTOBUF_NAMESPACE_ID::EnumOptions* EnumDescriptorProto::_internal_mutabl
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::EnumOptions* EnumDescriptorProto::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::EnumOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumDescriptorProto.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void EnumDescriptorProto::set_allocated_options(PROTOBUF_NAMESPACE_ID::EnumOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -8768,8 +9033,9 @@ inline PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* EnumDescrip
   return reserved_range_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* EnumDescriptorProto::add_reserved_range() {
+  PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* _add = _internal_add_reserved_range();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_range)
-  return _internal_add_reserved_range();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange >&
 EnumDescriptorProto::reserved_range() const {
@@ -8788,8 +9054,9 @@ inline void EnumDescriptorProto::clear_reserved_name() {
   reserved_name_.Clear();
 }
 inline std::string* EnumDescriptorProto::add_reserved_name() {
+  std::string* _s = _internal_add_reserved_name();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.EnumDescriptorProto.reserved_name)
-  return _internal_add_reserved_name();
+  return _s;
 }
 inline const std::string& EnumDescriptorProto::_internal_reserved_name(int index) const {
   return reserved_name_.Get(index);
@@ -8803,12 +9070,12 @@ inline std::string* EnumDescriptorProto::mutable_reserved_name(int index) {
   return reserved_name_.Mutable(index);
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, const std::string& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
   reserved_name_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, std::string&& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
   reserved_name_.Mutable(index)->assign(std::move(value));
+  // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, const char* value) {
   GOOGLE_DCHECK(value != nullptr);
@@ -8879,8 +9146,9 @@ void EnumValueDescriptorProto::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValueDescriptorProto.name)
 }
 inline std::string* EnumValueDescriptorProto::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueDescriptorProto.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& EnumValueDescriptorProto::_internal_name() const {
   return name_.Get();
@@ -8979,9 +9247,15 @@ inline PROTOBUF_NAMESPACE_ID::EnumValueOptions* EnumValueDescriptorProto::releas
   _has_bits_[0] &= ~0x00000002u;
   PROTOBUF_NAMESPACE_ID::EnumValueOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::EnumValueOptions* EnumValueDescriptorProto::unsafe_arena_release_options() {
@@ -9000,8 +9274,9 @@ inline PROTOBUF_NAMESPACE_ID::EnumValueOptions* EnumValueDescriptorProto::_inter
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::EnumValueOptions* EnumValueDescriptorProto::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::EnumValueOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.EnumValueDescriptorProto.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void EnumValueDescriptorProto::set_allocated_options(PROTOBUF_NAMESPACE_ID::EnumValueOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -9051,8 +9326,9 @@ void ServiceDescriptorProto::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.ServiceDescriptorProto.name)
 }
 inline std::string* ServiceDescriptorProto::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceDescriptorProto.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& ServiceDescriptorProto::_internal_name() const {
   return name_.Get();
@@ -9114,8 +9390,9 @@ inline PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* ServiceDescriptorProto::_in
   return method_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* ServiceDescriptorProto::add_method() {
+  PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* _add = _internal_add_method();
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceDescriptorProto.method)
-  return _internal_add_method();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::MethodDescriptorProto >&
 ServiceDescriptorProto::method() const {
@@ -9162,9 +9439,15 @@ inline PROTOBUF_NAMESPACE_ID::ServiceOptions* ServiceDescriptorProto::release_op
   _has_bits_[0] &= ~0x00000002u;
   PROTOBUF_NAMESPACE_ID::ServiceOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::ServiceOptions* ServiceDescriptorProto::unsafe_arena_release_options() {
@@ -9183,8 +9466,9 @@ inline PROTOBUF_NAMESPACE_ID::ServiceOptions* ServiceDescriptorProto::_internal_
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::ServiceOptions* ServiceDescriptorProto::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::ServiceOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.ServiceDescriptorProto.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void ServiceDescriptorProto::set_allocated_options(PROTOBUF_NAMESPACE_ID::ServiceOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -9234,8 +9518,9 @@ void MethodDescriptorProto::set_name(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.name)
 }
 inline std::string* MethodDescriptorProto::mutable_name() {
+  std::string* _s = _internal_mutable_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.name)
-  return _internal_mutable_name();
+  return _s;
 }
 inline const std::string& MethodDescriptorProto::_internal_name() const {
   return name_.Get();
@@ -9291,8 +9576,9 @@ void MethodDescriptorProto::set_input_type(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.input_type)
 }
 inline std::string* MethodDescriptorProto::mutable_input_type() {
+  std::string* _s = _internal_mutable_input_type();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.input_type)
-  return _internal_mutable_input_type();
+  return _s;
 }
 inline const std::string& MethodDescriptorProto::_internal_input_type() const {
   return input_type_.Get();
@@ -9348,8 +9634,9 @@ void MethodDescriptorProto::set_output_type(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.output_type)
 }
 inline std::string* MethodDescriptorProto::mutable_output_type() {
+  std::string* _s = _internal_mutable_output_type();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.output_type)
-  return _internal_mutable_output_type();
+  return _s;
 }
 inline const std::string& MethodDescriptorProto::_internal_output_type() const {
   return output_type_.Get();
@@ -9420,9 +9707,15 @@ inline PROTOBUF_NAMESPACE_ID::MethodOptions* MethodDescriptorProto::release_opti
   _has_bits_[0] &= ~0x00000008u;
   PROTOBUF_NAMESPACE_ID::MethodOptions* temp = options_;
   options_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
   if (GetArenaForAllocation() != nullptr) {
     temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
   }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   return temp;
 }
 inline PROTOBUF_NAMESPACE_ID::MethodOptions* MethodDescriptorProto::unsafe_arena_release_options() {
@@ -9441,8 +9734,9 @@ inline PROTOBUF_NAMESPACE_ID::MethodOptions* MethodDescriptorProto::_internal_mu
   return options_;
 }
 inline PROTOBUF_NAMESPACE_ID::MethodOptions* MethodDescriptorProto::mutable_options() {
+  PROTOBUF_NAMESPACE_ID::MethodOptions* _msg = _internal_mutable_options();
   // @@protoc_insertion_point(field_mutable:google.protobuf.MethodDescriptorProto.options)
-  return _internal_mutable_options();
+  return _msg;
 }
 inline void MethodDescriptorProto::set_allocated_options(PROTOBUF_NAMESPACE_ID::MethodOptions* options) {
   ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
@@ -9548,8 +9842,9 @@ void FileOptions::set_java_package(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_package)
 }
 inline std::string* FileOptions::mutable_java_package() {
+  std::string* _s = _internal_mutable_java_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.java_package)
-  return _internal_mutable_java_package();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_java_package() const {
   return java_package_.Get();
@@ -9605,8 +9900,9 @@ void FileOptions::set_java_outer_classname(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_outer_classname)
 }
 inline std::string* FileOptions::mutable_java_outer_classname() {
+  std::string* _s = _internal_mutable_java_outer_classname();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.java_outer_classname)
-  return _internal_mutable_java_outer_classname();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_java_outer_classname() const {
   return java_outer_classname_.Get();
@@ -9775,8 +10071,9 @@ void FileOptions::set_go_package(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.go_package)
 }
 inline std::string* FileOptions::mutable_go_package() {
+  std::string* _s = _internal_mutable_go_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.go_package)
-  return _internal_mutable_go_package();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_go_package() const {
   return go_package_.Get();
@@ -10000,8 +10297,9 @@ void FileOptions::set_objc_class_prefix(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.objc_class_prefix)
 }
 inline std::string* FileOptions::mutable_objc_class_prefix() {
+  std::string* _s = _internal_mutable_objc_class_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.objc_class_prefix)
-  return _internal_mutable_objc_class_prefix();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_objc_class_prefix() const {
   return objc_class_prefix_.Get();
@@ -10057,8 +10355,9 @@ void FileOptions::set_csharp_namespace(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.csharp_namespace)
 }
 inline std::string* FileOptions::mutable_csharp_namespace() {
+  std::string* _s = _internal_mutable_csharp_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.csharp_namespace)
-  return _internal_mutable_csharp_namespace();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_csharp_namespace() const {
   return csharp_namespace_.Get();
@@ -10114,8 +10413,9 @@ void FileOptions::set_swift_prefix(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.swift_prefix)
 }
 inline std::string* FileOptions::mutable_swift_prefix() {
+  std::string* _s = _internal_mutable_swift_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.swift_prefix)
-  return _internal_mutable_swift_prefix();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_swift_prefix() const {
   return swift_prefix_.Get();
@@ -10171,8 +10471,9 @@ void FileOptions::set_php_class_prefix(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_class_prefix)
 }
 inline std::string* FileOptions::mutable_php_class_prefix() {
+  std::string* _s = _internal_mutable_php_class_prefix();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_class_prefix)
-  return _internal_mutable_php_class_prefix();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_php_class_prefix() const {
   return php_class_prefix_.Get();
@@ -10228,8 +10529,9 @@ void FileOptions::set_php_namespace(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_namespace)
 }
 inline std::string* FileOptions::mutable_php_namespace() {
+  std::string* _s = _internal_mutable_php_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_namespace)
-  return _internal_mutable_php_namespace();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_php_namespace() const {
   return php_namespace_.Get();
@@ -10285,8 +10587,9 @@ void FileOptions::set_php_metadata_namespace(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_metadata_namespace)
 }
 inline std::string* FileOptions::mutable_php_metadata_namespace() {
+  std::string* _s = _internal_mutable_php_metadata_namespace();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_metadata_namespace)
-  return _internal_mutable_php_metadata_namespace();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_php_metadata_namespace() const {
   return php_metadata_namespace_.Get();
@@ -10342,8 +10645,9 @@ void FileOptions::set_ruby_package(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.ruby_package)
 }
 inline std::string* FileOptions::mutable_ruby_package() {
+  std::string* _s = _internal_mutable_ruby_package();
   // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.ruby_package)
-  return _internal_mutable_ruby_package();
+  return _s;
 }
 inline const std::string& FileOptions::_internal_ruby_package() const {
   return ruby_package_.Get();
@@ -10405,8 +10709,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* FileOptions::_internal_add_un
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* FileOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.FileOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 FileOptions::uninterpreted_option() const {
@@ -10560,8 +10865,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* MessageOptions::_internal_add
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* MessageOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.MessageOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 MessageOptions::uninterpreted_option() const {
@@ -10773,8 +11079,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* FieldOptions::_internal_add_u
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* FieldOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.FieldOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 FieldOptions::uninterpreted_option() const {
@@ -10816,8 +11123,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* OneofOptions::_internal_add_u
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* OneofOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.OneofOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 OneofOptions::uninterpreted_option() const {
@@ -10915,8 +11223,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumOptions::_internal_add_un
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 EnumOptions::uninterpreted_option() const {
@@ -10986,8 +11295,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumValueOptions::_internal_a
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* EnumValueOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.EnumValueOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 EnumValueOptions::uninterpreted_option() const {
@@ -11057,8 +11367,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* ServiceOptions::_internal_add
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* ServiceOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.ServiceOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 ServiceOptions::uninterpreted_option() const {
@@ -11157,8 +11468,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* MethodOptions::_internal_add_
   return uninterpreted_option_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption* MethodOptions::add_uninterpreted_option() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption* _add = _internal_add_uninterpreted_option();
   // @@protoc_insertion_point(field_add:google.protobuf.MethodOptions.uninterpreted_option)
-  return _internal_add_uninterpreted_option();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
 MethodOptions::uninterpreted_option() const {
@@ -11194,8 +11506,9 @@ void UninterpretedOption_NamePart::set_name_part(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.NamePart.name_part)
 }
 inline std::string* UninterpretedOption_NamePart::mutable_name_part() {
+  std::string* _s = _internal_mutable_name_part();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.NamePart.name_part)
-  return _internal_mutable_name_part();
+  return _s;
 }
 inline const std::string& UninterpretedOption_NamePart::_internal_name_part() const {
   return name_part_.Get();
@@ -11289,8 +11602,9 @@ inline PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* UninterpretedOption:
   return name_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* UninterpretedOption::add_name() {
+  PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* _add = _internal_add_name();
   // @@protoc_insertion_point(field_add:google.protobuf.UninterpretedOption.name)
-  return _internal_add_name();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart >&
 UninterpretedOption::name() const {
@@ -11322,8 +11636,9 @@ void UninterpretedOption::set_identifier_value(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.identifier_value)
 }
 inline std::string* UninterpretedOption::mutable_identifier_value() {
+  std::string* _s = _internal_mutable_identifier_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.identifier_value)
-  return _internal_mutable_identifier_value();
+  return _s;
 }
 inline const std::string& UninterpretedOption::_internal_identifier_value() const {
   return identifier_value_.Get();
@@ -11463,8 +11778,9 @@ void UninterpretedOption::set_string_value(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.string_value)
 }
 inline std::string* UninterpretedOption::mutable_string_value() {
+  std::string* _s = _internal_mutable_string_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.string_value)
-  return _internal_mutable_string_value();
+  return _s;
 }
 inline const std::string& UninterpretedOption::_internal_string_value() const {
   return string_value_.Get();
@@ -11520,8 +11836,9 @@ void UninterpretedOption::set_aggregate_value(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.aggregate_value)
 }
 inline std::string* UninterpretedOption::mutable_aggregate_value() {
+  std::string* _s = _internal_mutable_aggregate_value();
   // @@protoc_insertion_point(field_mutable:google.protobuf.UninterpretedOption.aggregate_value)
-  return _internal_mutable_aggregate_value();
+  return _s;
 }
 inline const std::string& UninterpretedOption::_internal_aggregate_value() const {
   return aggregate_value_.Get();
@@ -11675,8 +11992,9 @@ void SourceCodeInfo_Location::set_leading_comments(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_comments)
 }
 inline std::string* SourceCodeInfo_Location::mutable_leading_comments() {
+  std::string* _s = _internal_mutable_leading_comments();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.leading_comments)
-  return _internal_mutable_leading_comments();
+  return _s;
 }
 inline const std::string& SourceCodeInfo_Location::_internal_leading_comments() const {
   return leading_comments_.Get();
@@ -11732,8 +12050,9 @@ void SourceCodeInfo_Location::set_trailing_comments(ArgT0&& arg0, ArgT... args) 
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.trailing_comments)
 }
 inline std::string* SourceCodeInfo_Location::mutable_trailing_comments() {
+  std::string* _s = _internal_mutable_trailing_comments();
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceCodeInfo.Location.trailing_comments)
-  return _internal_mutable_trailing_comments();
+  return _s;
 }
 inline const std::string& SourceCodeInfo_Location::_internal_trailing_comments() const {
   return trailing_comments_.Get();
@@ -11776,8 +12095,9 @@ inline void SourceCodeInfo_Location::clear_leading_detached_comments() {
   leading_detached_comments_.Clear();
 }
 inline std::string* SourceCodeInfo_Location::add_leading_detached_comments() {
+  std::string* _s = _internal_add_leading_detached_comments();
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
-  return _internal_add_leading_detached_comments();
+  return _s;
 }
 inline const std::string& SourceCodeInfo_Location::_internal_leading_detached_comments(int index) const {
   return leading_detached_comments_.Get(index);
@@ -11791,12 +12111,12 @@ inline std::string* SourceCodeInfo_Location::mutable_leading_detached_comments(i
   return leading_detached_comments_.Mutable(index);
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const std::string& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   leading_detached_comments_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, std::string&& value) {
-  // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   leading_detached_comments_.Mutable(index)->assign(std::move(value));
+  // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value) {
   GOOGLE_DCHECK(value != nullptr);
@@ -11873,8 +12193,9 @@ inline PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* SourceCodeInfo::_internal
   return location_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* SourceCodeInfo::add_location() {
+  PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* _add = _internal_add_location();
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.location)
-  return _internal_add_location();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location >&
 SourceCodeInfo::location() const {
@@ -11957,8 +12278,9 @@ void GeneratedCodeInfo_Annotation::set_source_file(ArgT0&& arg0, ArgT... args) {
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
 }
 inline std::string* GeneratedCodeInfo_Annotation::mutable_source_file() {
+  std::string* _s = _internal_mutable_source_file();
   // @@protoc_insertion_point(field_mutable:google.protobuf.GeneratedCodeInfo.Annotation.source_file)
-  return _internal_mutable_source_file();
+  return _s;
 }
 inline const std::string& GeneratedCodeInfo_Annotation::_internal_source_file() const {
   return source_file_.Get();
@@ -12080,8 +12402,9 @@ inline PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::_
   return annotation_.Add();
 }
 inline PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* GeneratedCodeInfo::add_annotation() {
+  PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* _add = _internal_add_annotation();
   // @@protoc_insertion_point(field_add:google.protobuf.GeneratedCodeInfo.annotation)
-  return _internal_add_annotation();
+  return _add;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation >&
 GeneratedCodeInfo::annotation() const {

@@ -125,7 +125,7 @@ AC_LINK_IFELSE(
   [have_ld_version_script=yes; AC_MSG_RESULT(yes)],
   [have_ld_version_script=no; AC_MSG_RESULT(no)])
 LDFLAGS=$save_LDFLAGS
-AM_CONDITIONAL([HAVE_LD_VERSION_SCRIPT], [test "$have_ld_version_script" == "yes"])
+AM_CONDITIONAL([HAVE_LD_VERSION_SCRIPT], [test "$have_ld_version_script" = "yes"])
 
 # Checks for header files.
 AC_HEADER_STDC

@@ -93,7 +93,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return static_cast< $type$ >($name$_);\n"
       "}\n"
       "inline $type$ $classname$::$name$() const {\n"
-      "$annotate_accessor$"
+      "$annotate_get$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return _internal_$name$();\n"
       "}\n"
@@ -106,8 +106,8 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  $name$_ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
-      "$annotate_accessor$"
       "  _internal_set_$name$(value);\n"
+      "$annotate_set$"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n");
 }
@@ -183,7 +183,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return static_cast< $type$ >($default$);\n"
       "}\n"
       "inline $type$ $classname$::$name$() const {\n"
-      "$annotate_accessor$"
+      "$annotate_get$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return _internal_$name$();\n"
       "}\n"
@@ -199,9 +199,9 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  $field_member$ = value;\n"
       "}\n"
       "inline void $classname$::set_$name$($type$ value) {\n"
-      "$annotate_accessor$"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "  _internal_set_$name$(value);\n"
+      "$annotate_set$"
+      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n");
 }
 
@@ -268,17 +268,17 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return static_cast< $type$ >($name$_.Get(index));\n"
       "}\n"
       "inline $type$ $classname$::$name$(int index) const {\n"
-      "$annotate_accessor$"
+      "$annotate_get$"
       "  // @@protoc_insertion_point(field_get:$full_name$)\n"
       "  return _internal_$name$(index);\n"
       "}\n"
-      "inline void $classname$::set_$name$(int index, $type$ value) {\n"
-      "$annotate_accessor$");
+      "inline void $classname$::set_$name$(int index, $type$ value) {\n");
   if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(
       "  $name$_.Set(index, value);\n"
+      "$annotate_set$"
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
       "inline void $classname$::_internal_add_$name$($type$ value) {\n");
@@ -289,13 +289,13 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  $name$_.Add(value);\n"
       "}\n"
       "inline void $classname$::add_$name$($type$ value) {\n"
-      "$annotate_accessor$"
-      "  // @@protoc_insertion_point(field_add:$full_name$)\n"
       "  _internal_add_$name$(value);\n"
+      "$annotate_add$"
+      "  // @@protoc_insertion_point(field_add:$full_name$)\n"
       "}\n"
       "inline const ::$proto_ns$::RepeatedField<int>&\n"
       "$classname$::$name$() const {\n"
-      "$annotate_accessor$"
+      "$annotate_list$"
       "  // @@protoc_insertion_point(field_list:$full_name$)\n"
       "  return $name$_;\n"
       "}\n"
@@ -305,7 +305,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline ::$proto_ns$::RepeatedField<int>*\n"
       "$classname$::mutable_$name$() {\n"
-      "$annotate_accessor$"
+      "$annotate_mutable_list$"
       "  // @@protoc_insertion_point(field_mutable_list:$full_name$)\n"
       "  return _internal_mutable_$name$();\n"
       "}\n");
@@ -496,7 +496,7 @@ void RepeatedEnumFieldGenerator::GenerateConstinitInitializer(
   format("$name$_()");
   if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("\n, _$name$_cached_byte_size_()");
+    format("\n, _$name$_cached_byte_size_(0)");
   }
 }
 
