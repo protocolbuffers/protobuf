@@ -22,9 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- * Fixed PHP memory leaks and arginfo errors. (#8614)
- * Fixed JSON parser to allow multiple values from the same oneof as long as
-   all but one are null.
+ * No new changes in 3.17.2
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">

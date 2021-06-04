@@ -11,6 +11,14 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * Fixed parser to check that we are at a proper limit when a sub-message has
     finished parsing.
 
+2021-05-25 version 3.17.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Kotlin
+  * Fix duplicate class error (#8653)
+
+  PHP
+  * Fixed SEGV in sub-message getters for well-known types when message is unset
+    (#8670)
+
 2021-05-07 version 3.17.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   PHP
   * Fixed PHP memory leaks and arginfo errors. (#8614)
