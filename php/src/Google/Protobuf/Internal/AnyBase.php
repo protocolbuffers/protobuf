@@ -83,4 +83,27 @@ class AnyBase extends \Google\Protobuf\Internal\Message
         $type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualifed_name;
         return $this->type_url === $type_url;
     }
+
+    /**
+     * This method returns whether the type_url in any_message is known by pool
+     * and could be unpack
+     * @return bool
+     */
+    public function isKnownType()
+    {
+        // Get fully qualified name from type url.
+        $url_prifix_len = strlen(GPBUtil::TYPE_URL_PREFIX);
+        if (substr($this->type_url, 0, $url_prifix_len) !=
+            GPBUtil::TYPE_URL_PREFIX) {
+            return false;
+        }
+        $fully_qualifed_name =
+            substr($this->type_url, $url_prifix_len);
+
+        // Create message according to fully qualified name.
+        $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
+        $desc = $pool->getDescriptorByProtoName($fully_qualifed_name);
+
+        return !is_null($desc);
+    }
 }
