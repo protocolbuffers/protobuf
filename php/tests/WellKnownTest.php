@@ -84,6 +84,7 @@ class WellKnownTest extends TestBase {
         // Test is.
         $this->assertTrue($any->is(TestMessage::class));
         $this->assertFalse($any->is(Any::class));
+        $this->assertFalse($any->is(NotMessage::class));
     }
 
     public function testAnyUnpackInvalidTypeUrl()

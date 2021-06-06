@@ -79,6 +79,9 @@ class AnyBase extends \Google\Protobuf\Internal\Message
     {
         $pool = \Google\Protobuf\Internal\DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName($klass);
+        if (is_null($desc)) {
+            return false;
+        }
         $fully_qualifed_name = $desc->getFullName();
         $type_url = GPBUtil::TYPE_URL_PREFIX . $fully_qualifed_name;
         return $this->type_url === $type_url;
