@@ -84,6 +84,21 @@ class WellKnownTest extends TestBase {
         // Test is.
         $this->assertTrue($any->is(TestMessage::class));
         $this->assertFalse($any->is(Any::class));
+
+        // Test isKnownType
+        $any->setTypeUrl('type.googleapis.com/foo.TestMessage');
+        $this->assertTrue($any->isKnownType());
+
+        $any = new Any();
+        $this->assertFalse($any->isKnownType());
+
+        $any = new Any();
+        $any->setTypeUrl('type.googleapis.com/foo.TestMessageX');
+        $this->assertFalse($any->isKnownType());
+
+        $any = new Any();
+        $any->setTypeUrl('foo.TestMessage');
+        $this->assertFalse($any->isKnownType());
     }
 
     public function testAnyUnpackInvalidTypeUrl()
