@@ -46,7 +46,7 @@ namespace Google.Protobuf
     public class MessageParserTest
     {
         [Test]
-        public void JsonUnknownField_NotIgnored()
+        public void ParseJsonUnknownField_NotIgnored()
         {
             var parser = new MessageParser<TestAllTypes>(() => new TestAllTypes());
             string json = "{ \"unknownField\": 10, \"singleString\": \"x\" }";
@@ -58,7 +58,7 @@ namespace Google.Protobuf
         [TestCase("\"text\"")]
         [TestCase("[0, 1, 2]")]
         [TestCase("{ \"a\": { \"b\": 10 } }")]
-        public void UnknownField_Ignored(string value)
+        public void ParseJsonUnknownField_Ignored(string value)
         {
             var parser = new MessageParser<TestAllTypes>(() => new TestAllTypes()).WithDiscardUnknownFields(true);
             string json = "{ \"unknownField\": " + value + ", \"singleString\": \"x\" }";
