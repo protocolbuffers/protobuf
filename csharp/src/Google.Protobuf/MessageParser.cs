@@ -379,7 +379,16 @@ namespace Google.Protobuf
         public new T ParseJson(string json)
         {
             T message = factory();
-            JsonParser.Default.Merge(message, json);
+            JsonParser parser;
+            if (DiscardUnknownFields)
+            {
+                parser = new JsonParser(JsonParser.Settings.Default.WithIgnoreUnknownFields(true));
+            }
+            else
+            {
+                parser = JsonParser.Default;
+            }
+            parser.Merge(message, json);
             return message;
         }
 
