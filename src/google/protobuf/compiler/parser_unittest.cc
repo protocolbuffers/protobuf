@@ -88,7 +88,7 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, const std::string& element_name,
                 const Message* descriptor, ErrorLocation location,
-                const std::string& message) {
+                const std::string& message) override {
     int line, column;
     if (location == DescriptorPool::ErrorCollector::IMPORT) {
       source_locations_.FindImport(descriptor, element_name, &line, &column);
@@ -2588,7 +2588,7 @@ class SourceInfoTest : public ParserTest {
     return true;
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() override {
     EXPECT_TRUE(spans_.empty()) << "Forgot to call HasSpan() for:\n"
                                 << spans_.begin()->second->DebugString();
   }

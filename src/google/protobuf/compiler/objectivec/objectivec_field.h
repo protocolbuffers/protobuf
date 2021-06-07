@@ -112,12 +112,12 @@ class SingleFieldGenerator : public FieldGenerator {
   SingleFieldGenerator(const SingleFieldGenerator&) = delete;
   SingleFieldGenerator& operator=(const SingleFieldGenerator&) = delete;
 
-  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const;
-  virtual void GeneratePropertyDeclaration(io::Printer* printer) const;
+  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const override;
+  virtual void GeneratePropertyDeclaration(io::Printer* printer) const override;
 
-  virtual void GeneratePropertyImplementation(io::Printer* printer) const;
+  virtual void GeneratePropertyImplementation(io::Printer* printer) const override;
 
-  virtual bool RuntimeUsesHasBit(void) const;
+  virtual bool RuntimeUsesHasBit(void) const override;
 
  protected:
   SingleFieldGenerator(const FieldDescriptor* descriptor,
@@ -132,8 +132,8 @@ class ObjCObjFieldGenerator : public SingleFieldGenerator {
   ObjCObjFieldGenerator(const ObjCObjFieldGenerator&) = delete;
   ObjCObjFieldGenerator& operator=(const ObjCObjFieldGenerator&) = delete;
 
-  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const;
-  virtual void GeneratePropertyDeclaration(io::Printer* printer) const;
+  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const override;
+  virtual void GeneratePropertyDeclaration(io::Printer* printer) const override;
 
  protected:
   ObjCObjFieldGenerator(const FieldDescriptor* descriptor,
@@ -147,17 +147,17 @@ class RepeatedFieldGenerator : public ObjCObjFieldGenerator {
   RepeatedFieldGenerator(const RepeatedFieldGenerator&) = delete;
   RepeatedFieldGenerator& operator=(const RepeatedFieldGenerator&) = delete;
 
-  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const;
-  virtual void GeneratePropertyDeclaration(io::Printer* printer) const;
+  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const override;
+  virtual void GeneratePropertyDeclaration(io::Printer* printer) const override;
 
-  virtual void GeneratePropertyImplementation(io::Printer* printer) const;
+  virtual void GeneratePropertyImplementation(io::Printer* printer) const override;
 
-  virtual bool RuntimeUsesHasBit(void) const;
+  virtual bool RuntimeUsesHasBit(void) const override;
 
  protected:
   RepeatedFieldGenerator(const FieldDescriptor* descriptor,
                          const Options& options);
-  virtual void FinishInitialization(void);
+  virtual void FinishInitialization(void) override;
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.

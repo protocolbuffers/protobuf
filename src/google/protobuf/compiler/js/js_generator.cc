@@ -94,10 +94,6 @@ bool IsReserved(const std::string& ident) {
   return false;
 }
 
-bool StrEndsWith(StringPiece sp, StringPiece x) {
-  return sp.size() >= x.size() && sp.substr(sp.size() - x.size()) == x;
-}
-
 std::string GetSnakeFilename(const std::string& filename) {
   std::string snake_name = filename;
   ReplaceCharacters(&snake_name, "/", '_');

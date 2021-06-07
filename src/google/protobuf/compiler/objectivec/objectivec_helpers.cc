@@ -1051,7 +1051,7 @@ class ExpectedPrefixesCollector : public LineConsumer {
   ExpectedPrefixesCollector(std::map<std::string, std::string>* inout_package_to_prefix_map)
       : prefix_map_(inout_package_to_prefix_map) {}
 
-  virtual bool ConsumeLine(const StringPiece& line, std::string* out_error);
+  virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override;
 
  private:
   std::map<std::string, std::string>* prefix_map_;
