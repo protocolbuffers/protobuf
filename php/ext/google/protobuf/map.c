@@ -636,8 +636,13 @@ void Map_ModuleInit() {
                    MapField_methods);
 
   MapField_class_entry = zend_register_internal_class(&tmp_ce);
+#if PHP_VERSION_ID < 80000
   zend_class_implements(MapField_class_entry, 3, spl_ce_ArrayAccess,
                         zend_ce_aggregate, spl_ce_Countable);
+#else
+  zend_class_implements(MapField_class_entry, 3, zend_ce_arrayaccess,
+                        zend_ce_aggregate, zend_ce_countable);
+#endif
   MapField_class_entry->ce_flags |= ZEND_ACC_FINAL;
   MapField_class_entry->create_object = MapField_create;
 
