@@ -214,6 +214,13 @@ class PROTOBUF_EXPORT StringPiece {
       : ptr_(str.data()), length_(0) {
     length_ = CheckSize(str.size());
   }
+ 
+  StringPiece(  // NOLINT(runtime/explicit)
+      std::string_view str)
+      : ptr_(str.data()), length_(0) {
+    length_ = CheckSize(str.size());
+  }
+   
 
   StringPiece(const char* offset, size_type len)
       : ptr_(offset), length_(CheckSize(len)) {}
