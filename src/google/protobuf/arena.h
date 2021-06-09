@@ -442,7 +442,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
 
     static Arena* GetArenaForAllocationForNonMessageNonArenaConstructible(
-        const T* p, std::false_type /*has_get_arena*/) {
+        const T* /* p */, std::false_type /*has_get_arena*/) {
       return nullptr;
     }
 
