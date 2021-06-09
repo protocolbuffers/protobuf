@@ -148,6 +148,10 @@
 #include <limits>
 #include <string>
 
+#if defined(__cpp_lib_string_view)
+#include <string_view>
+#endif
+
 #include <google/protobuf/stubs/hash.h>
 
 #include <google/protobuf/port_def.inc>
@@ -214,6 +218,14 @@ class PROTOBUF_EXPORT StringPiece {
       : ptr_(str.data()), length_(0) {
     length_ = CheckSize(str.size());
   }
+
+#if defined(__cpp_lib_string_view)
+  StringPiece(  // NOLINT(runtime/explicit)
+      std::string_view str)
+      : ptr_(str.data()), length_(0) {
+    length_ = CheckSize(str.size());
+  }
+#endif
 
   StringPiece(const char* offset, size_type len)
       : ptr_(offset), length_(CheckSize(len)) {}
