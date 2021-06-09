@@ -1,11 +1,11 @@
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2021-06-04 version 3.17.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
   * Introduce FieldAccessListener.
   * Stop emitting boilerplate {Copy/Merge}From in each ProtoBuf class
   * Fixed some uninitialized variable warnings in generated_message_reflection.cc.
 
-  Kotlin:
-  * Add extension functions related to ByteString to c.g.protobuf.kotlin.
+  Kotlin
+  * Fix duplicate proto files error (#8699)
 
   Java
   * Fixed parser to check that we are at a proper limit when a sub-message has
