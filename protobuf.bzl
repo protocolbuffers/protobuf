@@ -190,13 +190,13 @@ proto_gen = rule(
         "deps": attr.label_list(providers = ["proto"]),
         "includes": attr.string_list(),
         "protoc": attr.label(
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             allow_single_file = True,
             mandatory = True,
         ),
         "plugin": attr.label(
-            cfg = "host",
+            cfg = "exec",
             allow_files = True,
             executable = True,
         ),
@@ -328,7 +328,12 @@ def _internal_gen_well_known_protos_java_impl(ctx):
     deps = [d[ProtoInfo] for d in ctx.attr.deps]
 
     srcjar = ctx.actions.declare_file("{}.srcjar".format(ctx.attr.name))
-    args.add("--java_out", srcjar)
+    if ctx.attr.javalite:
+        java_out = "lite:%s" % srcjar.path
+    else:
+        java_out = srcjar
+
+    args.add("--java_out", java_out)
 
     descriptors = depset(
         transitive = [dep.transitive_descriptor_sets for dep in deps],
@@ -368,9 +373,12 @@ internal_gen_well_known_protos_java = rule(
             mandatory = True,
             providers = [ProtoInfo],
         ),
+        "javalite": attr.bool(
+            default = False,
+        ),
         "_protoc": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = "@com_google_protobuf//:protoc",
         ),
     },

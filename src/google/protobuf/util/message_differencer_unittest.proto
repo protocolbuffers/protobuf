@@ -33,6 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // This file contains messages for testing repeated field comparison
+// LINT: ALLOW_GROUPS
 
 syntax = "proto2";
 
@@ -63,6 +64,7 @@ message TestDiffMessage {
     optional TestField m = 6;   // Test TreatAsMap when key is a message
     repeated TestField rm = 7;  // Test TreatAsMap when key is a repeated
                                 // message
+    map<string, int32> mp = 8;  // Test for map comparisons
   }
 
   optional int32 v = 13 [deprecated = true];
@@ -73,6 +75,5 @@ message TestDiffMessage {
   repeated TestField rm = 12 [deprecated = true];  // Test for combinations
   repeated google.protobuf.Any rany =
       16;  // Test for repeated Any type resolution
-
   extensions 100 to 199;
 }

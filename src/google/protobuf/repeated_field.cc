@@ -98,6 +98,15 @@ void RepeatedPtrFieldBase::Reserve(int new_size) {
   }
 }
 
+void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
+  if (!rep_ || rep_->allocated_size == total_size_) {
+    InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
+  }
+  ++rep_->allocated_size;
+  rep_->elements[current_size_++] = obj;
+  return obj;
+}
+
 void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   if (rep_ == NULL) return;
   // Close up a gap of "num" elements starting at offset "start".

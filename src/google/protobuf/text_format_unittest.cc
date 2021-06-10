@@ -1069,13 +1069,8 @@ static std::string RemoveRedundantZeros(std::string text) {
 TEST_F(TextFormatTest, PrintExotic) {
   unittest::TestAllTypes message;
 
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and
-  //   9223372036854775808 is outside the range of int64.  However, it is not
-  //   outside the range of uint64.  Confusingly, this means that everything
-  //   works if we make the literal unsigned, even though we are negating it.
-  message.add_repeated_int64(-PROTOBUF_ULONGLONG(9223372036854775808));
-  message.add_repeated_uint64(PROTOBUF_ULONGLONG(18446744073709551615));
+  message.add_repeated_int64(int64_t{-9223372036854775807} - 1);
+  message.add_repeated_uint64(uint64_t{18446744073709551615u});
   message.add_repeated_double(123.456);
   message.add_repeated_double(1.23e21);
   message.add_repeated_double(1.23e-18);
@@ -1240,32 +1235,19 @@ TEST_F(TextFormatTest, ParseExotic) {
 
   ASSERT_EQ(2, message.repeated_int32_size());
   EXPECT_EQ(-1, message.repeated_int32(0));
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and 2147483648 is
-  //   outside the range of int32.  However, it is not outside the range of
-  //   uint32.  Confusingly, this means that everything works if we make the
-  //   literal unsigned, even though we are negating it.
-  EXPECT_EQ(-2147483648u, message.repeated_int32(1));
+  EXPECT_EQ(-2147483648, message.repeated_int32(1));
 
   ASSERT_EQ(2, message.repeated_int64_size());
   EXPECT_EQ(-1, message.repeated_int64(0));
-  // Note:  In C, a negative integer literal is actually the unary negation
-  //   operator being applied to a positive integer literal, and
-  //   9223372036854775808 is outside the range of int64.  However, it is not
-  //   outside the range of uint64.  Confusingly, this means that everything
-  //   works if we make the literal unsigned, even though we are negating it.
-  EXPECT_EQ(-PROTOBUF_ULONGLONG(9223372036854775808),
-            message.repeated_int64(1));
+  EXPECT_EQ(int64_t{-9223372036854775807} - 1, message.repeated_int64(1));
 
   ASSERT_EQ(2, message.repeated_uint32_size());
   EXPECT_EQ(4294967295u, message.repeated_uint32(0));
   EXPECT_EQ(2147483648u, message.repeated_uint32(1));
 
   ASSERT_EQ(2, message.repeated_uint64_size());
-  EXPECT_EQ(PROTOBUF_ULONGLONG(18446744073709551615),
-            message.repeated_uint64(0));
-  EXPECT_EQ(PROTOBUF_ULONGLONG(9223372036854775808),
-            message.repeated_uint64(1));
+  EXPECT_EQ(uint64_t{18446744073709551615u}, message.repeated_uint64(0));
+  EXPECT_EQ(uint64_t{9223372036854775808u}, message.repeated_uint64(1));
 
   ASSERT_EQ(13, message.repeated_double_size());
   EXPECT_EQ(123.0, message.repeated_double(0));

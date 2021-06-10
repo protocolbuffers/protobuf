@@ -39,9 +39,8 @@ If you want, you can compile `protoc` from source instead.  To do this
 follow the instructions in [the top-level
 README](https://github.com/protocolbuffers/protobuf/blob/master/src/README.md).
 
-Once you have `protoc` compiled, you can run the tests by typing:
+Once you have `protoc` compiled, you can run the tests provided along with our project to examine whether it can run successfully. In order to do this, you should download the Protocol Buffer source code from the release page with the link above. Then extract the source code and navigate to the folder named `js` containing a `package.json` file and a series of test files. In this folder, you can run the commands below to run the tests automatically.
 
-    $ cd js
     $ npm install
     $ npm test
 
@@ -95,11 +94,8 @@ statements like:
 
     var message = proto.my.package.MyMessage();
 
-If unfamiliar with Closure or it's compiler, consider reviewing Closure documentation
-https://developers.google.com/closure/library/docs/tutorial
-https://developers.google.com/closure/library/docs/closurebuilder
-https://developers.google.com/closure/library/docs/depswriter
-At a high level, closurebuilder.py can walk dependencies, and compile your code, and all dependencies for Protobuf into a single .js file.  Using depsbuilder.py to generate a dependency file can also be considered for non-production dev environments.
+If unfamiliar with Closure or its compiler, consider reviewing
+[Closure documentation](https://developers.google.com/closure/library).
 
 CommonJS imports
 ----------------

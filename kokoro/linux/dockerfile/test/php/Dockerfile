@@ -55,6 +55,26 @@ RUN mv composer.phar /usr/local/bin/composer
 # Download php source code
 RUN git clone https://github.com/php/php-src
 
+# php 5.6
+RUN cd php-src \
+  && git checkout PHP-5.6.39 \
+  && ./buildconf --force
+RUN cd php-src \
+  && ./configure \
+  --enable-bcmath \
+  --enable-mbstring \
+  --with-gmp \
+  --with-openssl \
+  --with-zlib \
+  --prefix=/usr/local/php-5.6 \
+  && make \
+  && make install \
+  && make clean
+
+RUN wget -O phpunit https://phar.phpunit.de/phpunit-5.phar \
+  && chmod +x phpunit \
+  && mv phpunit /usr/local/php-5.6/bin
+
 # php 7.0
 RUN cd php-src \
   && git checkout PHP-7.0.33 \

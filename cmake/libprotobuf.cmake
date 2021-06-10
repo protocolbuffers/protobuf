@@ -65,6 +65,7 @@ set(libprotobuf_includes
   ${protobuf_source_dir}/src/google/protobuf/duration.pb.h
   ${protobuf_source_dir}/src/google/protobuf/dynamic_message.h
   ${protobuf_source_dir}/src/google/protobuf/empty.pb.h
+  ${protobuf_source_dir}/src/google/protobuf/field_access_listener.h
   ${protobuf_source_dir}/src/google/protobuf/field_mask.pb.h
   ${protobuf_source_dir}/src/google/protobuf/generated_message_reflection.h
   ${protobuf_source_dir}/src/google/protobuf/io/gzip_stream.h
@@ -106,7 +107,7 @@ set(libprotobuf_includes
   ${protobuf_source_dir}/src/google/protobuf/wrappers.pb.h
 )
 
-if (MSVC)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 set(libprotobuf_rc_files
   ${CMAKE_CURRENT_BINARY_DIR}/version.rc
 )

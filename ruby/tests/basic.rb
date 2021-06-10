@@ -31,6 +31,45 @@ module BasicTest
     end
     include CommonTests
 
+    def test_issue_8311_crash
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("inner.proto", :syntax => :proto3) do
+          add_message "Inner" do
+            # Removing either of these fixes the segfault.
+            optional :foo, :string, 1
+            optional :bar, :string, 2
+          end
+        end
+      end
+
+      Google::Protobuf::DescriptorPool.generated_pool.build do
+        add_file("outer.proto", :syntax => :proto3) do
+          add_message "Outer" do
+            repeated :inners, :message, 1, "Inner"
+          end
+        end
+      end
+
+      outer = ::Google::Protobuf::DescriptorPool.generated_pool.lookup("Outer").msgclass
+
+      outer.new(
+          inners: []
+      )['inners'].to_s
+
+      assert_raise Google::Protobuf::TypeError do
+        outer.new(
+            inners: [nil]
+        ).to_s
+      end
+    end
+
+    def test_issue_8559_crash
+      msg = TestMessage.new
+      msg.repeated_int32 = ::Google::Protobuf::RepeatedField.new(:int32, [1, 2, 3])
+      GC.start(full_mark: true, immediate_sweep: true)
+      TestMessage.encode(msg)
+    end
+
     def test_has_field
       m = TestSingularFields.new
       assert !m.has_singular_msg?
@@ -216,7 +255,7 @@ module BasicTest
         m.map_string_int32 = {}
       end
 
-      assert_raise TypeError do
+      assert_raise Google::Protobuf::TypeError do
         m = MapMessage.new(:map_string_int32 => { 1 => "I am not a number" })
       end
     end
@@ -447,6 +486,7 @@ module BasicTest
         :optional_int32=>0,
         :optional_int64=>0,
         :optional_msg=>nil,
+        :optional_msg2=>nil,
         :optional_string=>"foo",
         :optional_uint32=>0,
         :optional_uint64=>0,
@@ -484,9 +524,9 @@ module BasicTest
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = {mapStringInt32: {a: 1}, mapStringMsg: {}, mapStringEnum: {}}
       expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}, map_string_enum: {}}
-      assert_equal JSON.parse(MapMessage.encode_json(m), :symbolize_names => true), expected
+      assert_equal JSON.parse(MapMessage.encode_json(m, :emit_defaults=>true), :symbolize_names => true), expected
 
-      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
+      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true, :emit_defaults=>true)
       assert_equal JSON.parse(json, :symbolize_names => true), expected_preserve
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
@@ -496,12 +536,36 @@ module BasicTest
     def test_json_maps_emit_defaults_submsg
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
-      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new})
+      m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new(foo: 0)})
       expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}, mapStringEnum: {}}
 
       actual = MapMessage.encode_json(m, :emit_defaults => true)
 
       assert_equal JSON.parse(actual, :symbolize_names => true), expected
+    end
+
+    def test_json_emit_defaults_submsg
+      # TODO: Fix JSON in JRuby version.
+      return if RUBY_PLATFORM == "java"
+      m = TestSingularFields.new(singular_msg: proto_module::TestMessage2.new)
+
+      expected = {
+        singularInt32: 0,
+        singularInt64: "0",
+        singularUint32: 0,
+        singularUint64: "0",
+        singularBool: false,
+        singularFloat: 0,
+        singularDouble: 0,
+        singularString: "",
+        singularBytes: "",
+        singularMsg: {},
+        singularEnum: "Default",
+      }
+
+      actual = proto_module::TestMessage.encode_json(m, :emit_defaults => true)
+
+      assert_equal expected, JSON.parse(actual, :symbolize_names => true)
     end
 
     def test_respond_to

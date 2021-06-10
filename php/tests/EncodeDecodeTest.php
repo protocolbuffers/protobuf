@@ -14,6 +14,7 @@ use Foo\TestStringValue;
 use Foo\TestBytesValue;
 use Foo\TestAny;
 use Foo\TestEnum;
+use Foo\TestLargeFieldNumber;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
 use Foo\TestPackedMessage;
@@ -42,6 +43,21 @@ class EncodeDecodeTest extends TestBase
         $m = new TestMessage();
         $m->mergeFromJsonString("{\"optionalInt32\":1}");
         $this->assertEquals(1, $m->getOptionalInt32());
+    }
+
+    public function testDecodeJsonUnknown()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":1}");
+    }
+
+    public function testDecodeJsonIgnoreUnknown()
+    {
+        $m = new TestMessage();
+        $m->mergeFromJsonString("{\"unknown\":1}", true);
+        $this->assertEquals("{}", $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelBoolValue()
@@ -529,6 +545,15 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame("", $data);
     }
 
+    public function testLargeFieldNumber()
+    {
+        $m = new TestLargeFieldNumber(['large_field_number' => 5]);
+        $data = $m->serializeToString();
+        $m2 = new TestLargeFieldNumber();
+        $m2->mergeFromString($data);
+        $this->assertSame(5, $m2->getLargeFieldNumber());
+    }
+
     public function testDecodeInvalidInt32()
     {
         $this->expectException(Exception::class);
@@ -913,6 +938,14 @@ class EncodeDecodeTest extends TestBase
         $to = new TestMessage();
         $to->mergeFromJsonString($data);
         $this->expectFields($to);
+    }
+
+    public function testJsonEncodeNullSubMessage()
+    {
+        $from = new TestMessage();
+        $from->setOptionalMessage(null);
+        $data = $from->serializeToJsonString();
+        $this->assertEquals("{}", $data);
     }
 
     public function testDecodeDuration()

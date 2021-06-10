@@ -168,7 +168,7 @@ class GPBUtil
     public static function checkFloat(&$var)
     {
         if (is_float($var) || is_numeric($var)) {
-            $var = floatval($var);
+            $var = unpack("f", pack("f", $var))[1];
         } else {
             throw new \Exception("Expect float.");
         }

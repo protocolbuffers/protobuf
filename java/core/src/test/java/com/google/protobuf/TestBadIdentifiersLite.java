@@ -45,8 +45,10 @@ public final class TestBadIdentifiersLite extends TestCase {
 
   public void testCompilation() {
     // If this compiles, it means the generation was correct.
-    TestBadIdentifiersProto.Deprecated.newBuilder();
-    TestBadIdentifiersProto.Override.newBuilder();
+    TestBadIdentifiersProto.Deprecated.Builder builder1 =
+        TestBadIdentifiersProto.Deprecated.newBuilder();
+    TestBadIdentifiersProto.Override.Builder builder2 =
+        TestBadIdentifiersProto.Override.newBuilder();
   }
 
   public void testConflictingFieldNames() throws Exception {

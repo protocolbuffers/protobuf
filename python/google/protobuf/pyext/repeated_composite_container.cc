@@ -379,16 +379,19 @@ static void ReorderAttached(RepeatedCompositeContainer* self,
   const FieldDescriptor* descriptor = self->parent_field_descriptor;
   const Py_ssize_t length = Length(reinterpret_cast<PyObject*>(self));
 
-  // Since Python protobuf objects are never arena-allocated, adding and
-  // removing message pointers to the underlying array is just updating
-  // pointers.
-  for (Py_ssize_t i = 0; i < length; ++i)
-    reflection->ReleaseLast(message, descriptor);
-
+  // We need to rearrange things to match python's sort order.  Because there
+  // was already an O(n*log(n)) step in python and a bunch of reflection, we
+  // expect an O(n**2) step in C++ won't hurt too much.
   for (Py_ssize_t i = 0; i < length; ++i) {
-    CMessage* py_cmsg = reinterpret_cast<CMessage*>(
-        PyList_GET_ITEM(child_list, i));
-    reflection->AddAllocatedMessage(message, descriptor, py_cmsg->message);
+    Message* child_message =
+        reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i))->message;
+    for (Py_ssize_t j = i; j < length; ++j) {
+      if (child_message ==
+          &reflection->GetRepeatedMessage(*message, descriptor, j)) {
+        reflection->SwapElements(message, descriptor, i, j);
+        break;
+      }
+    }
   }
 }
 
@@ -567,7 +570,11 @@ PyTypeObject RepeatedCompositeContainer_Type = {
     sizeof(RepeatedCompositeContainer),         // tp_basicsize
     0,                                          //  tp_itemsize
     repeated_composite_container::Dealloc,      //  tp_dealloc
-    0,                                          //  tp_print, in Python >=3.8: Py_ssize_t tp_vectorcall_offset
+#if PY_VERSION_HEX >= 0x03080000
+    0,                                          //  tp_vectorcall_offset
+#else
+    nullptr,                                    //  tp_print
+#endif
     nullptr,                                    //  tp_getattr
     nullptr,                                    //  tp_setattr
     nullptr,                                    //  tp_compare

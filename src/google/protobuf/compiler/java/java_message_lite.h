@@ -50,12 +50,15 @@ class ImmutableMessageLiteGenerator : public MessageGenerator {
   ImmutableMessageLiteGenerator(const Descriptor* descriptor, Context* context);
   virtual ~ImmutableMessageLiteGenerator();
 
-  virtual void Generate(io::Printer* printer);
-  virtual void GenerateInterface(io::Printer* printer);
-  virtual void GenerateExtensionRegistrationCode(io::Printer* printer);
+  virtual void Generate(io::Printer* printer) override;
+  virtual void GenerateInterface(io::Printer* printer) override;
+  virtual void GenerateExtensionRegistrationCode(io::Printer* printer) override;
   virtual void GenerateStaticVariables(io::Printer* printer,
-                                       int* bytecode_estimate);
-  virtual int GenerateStaticVariableInitializers(io::Printer* printer);
+                                       int* bytecode_estimate) override;
+  virtual int GenerateStaticVariableInitializers(io::Printer* printer) override;
+  void GenerateKotlinDsl(io::Printer* printer) const override;
+  void GenerateKotlinMembers(io::Printer* printer) const override;
+  void GenerateTopLevelKotlinMembers(io::Printer* printer) const override;
 
  private:
   void GenerateParseFromMethods(io::Printer* printer);
@@ -66,6 +69,7 @@ class ImmutableMessageLiteGenerator : public MessageGenerator {
   void GenerateParser(io::Printer* printer);
   void GenerateConstructor(io::Printer* printer);
   void GenerateDynamicMethodNewBuildMessageInfo(io::Printer* printer);
+  void GenerateKotlinExtensions(io::Printer* printer) const;
 
   Context* context_;
   ClassNameResolver* name_resolver_;

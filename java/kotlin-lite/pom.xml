@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.google.protobuf</groupId>
+    <artifactId>protobuf-parent</artifactId>
+    <version>3.17.3</version>
+  </parent>
+
+  <artifactId>protobuf-kotlin-lite</artifactId>
+
+  <name>Protocol Buffers [Lite]</name>
+  <description>
+    Lite version of Protocol Buffers library. This version is optimized for code size, but does
+    not guarantee API/ABI stability.
+  </description>
+
+  <properties>
+    <kotlin.version>1.5.0</kotlin.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>protobuf-javalite</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymock</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.easymock</groupId>
+      <artifactId>easymockclassextension</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava-testlib</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.truth</groupId>
+      <artifactId>truth</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-test</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <testResources>
+      <testResource>
+        <directory>${protobuf.source.dir}</directory>
+        <includes>
+          <include>google/protobuf/testdata/golden_message_oneof_implemented</include>
+          <include>google/protobuf/testdata/golden_packed_fields_message</include>
+        </includes>
+      </testResource>
+    </testResources>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>copy-kotlin-source-files</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${generated.sources.dir}/com/google/protobuf</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/../kotlin/src/main/kotlin/com/google/protobuf</directory>
+                  <includes>
+                    <include>DslList.kt</include>
+                    <include>DslMap.kt</include>
+                    <include>DslProxy.kt</include>
+                    <include>ExtendableMessageLiteExtensions.kt</include>
+                    <include>ExtensionList.kt</include>
+                    <include>OnlyForUseByGeneratedProtoCode.kt</include>
+                    <include>ProtoDslMarker.kt</include>
+                    <include>UnmodifiableCollections.kt</include>
+                  </includes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>copy-test-source-files</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${generated.testsources.dir}/com/google/protobuf</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/../core/src/test/java/com/google/protobuf</directory>
+                  <includes>
+                    <include>TestUtilLite.java</include>
+                  </includes>
+                </resource>
+                <resource>
+                  <directory>${basedir}/../kotlin/src/test/kotlin/com/google/protobuf</directory>
+                  <excludes>
+                    <exclude>ExtendableMessageExtensionsTest.kt</exclude>
+                    <exclude>Proto2Test.kt</exclude>
+                    <exclude>ProtoUtil.java</exclude>
+                  </excludes>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Use Antrun plugin to generate sources with protoc -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <!-- Generate core protos -->
+          <execution>
+            <id>generate-sources</id>
+            <phase>generate-sources</phase>
+            <configuration>
+              <target>
+                <ant antfile="generate-sources-build.xml"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+
+          <!-- Generate the test protos -->
+          <execution>
+            <id>generate-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <configuration>
+              <target>
+                <ant antfile="generate-test-sources-build.xml"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+
+          <execution>
+            <id>process-lite-sources</id>
+            <phase>generate-test-sources</phase>
+            <configuration>
+              <target>
+                <ant antfile="process-lite-sources-build.xml"/>
+              </target>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-sources</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.sources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+
+          <execution>
+            <id>add-generated-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.testsources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <version>${kotlin.version}</version>
+        <extensions>true</extensions>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <goals> <goal>compile</goal> </goals>
+            <configuration>
+              <sourceDirs>
+                <sourceDir>${generated.sources.dir}</sourceDir>
+                <sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
+              </sourceDirs>
+            </configuration>
+          </execution>
+          <execution>
+            <id>test-compile</id>
+            <goals> <goal>test-compile</goal> </goals>
+            <configuration>
+              <sourceDirs>
+                <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
+                <sourceDir>${generated.testsources.dir}</sourceDir>
+              </sourceDirs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1176,6 +1176,54 @@ class OnlyWorksWithProto2RightNowTests(TextFormatBase):
         '  }\n'
         '}\n')
 
+  def testDuplicateMapKey(self):
+    message = map_unittest_pb2.TestMap()
+    text = (
+        'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 17179869184\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "first"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    c: 5\n'
+        '  }\n'
+        '}\n'
+        'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 321\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "second"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    d: 5\n'
+        '  }\n'
+        '}\n')
+    text_format.Parse(text, message)
+    self.CompareToGoldenText(
+        text_format.MessageToString(message), 'map_uint64_uint64 {\n'
+        '  key: 123\n'
+        '  value: 321\n'
+        '}\n'
+        'map_string_string {\n'
+        '  key: "abc"\n'
+        '  value: "second"\n'
+        '}\n'
+        'map_int32_foreign_message {\n'
+        '  key: 111\n'
+        '  value {\n'
+        '    d: 5\n'
+        '  }\n'
+        '}\n')
+
   # In cpp implementation, __str__ calls the cpp implementation of text format.
   def testPrintMapUsingCppImplementation(self):
     message = map_unittest_pb2.TestMap()
@@ -2347,6 +2395,13 @@ class OptionalColonMessageToStringTest(unittest.TestCase):
                 '  }\n'
                 '}\n')
     self.assertEqual(expected, output)
+
+  def testPrintShortFormatRepeatedFields(self):
+    message = unittest_pb2.TestAllTypes()
+    message.repeated_int32.append(1)
+    output = text_format.MessageToString(
+        message, use_short_repeated_primitives=True, force_colon=True)
+    self.assertEqual('repeated_int32: [1]\n', output)
 
 
 if __name__ == '__main__':

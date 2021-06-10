@@ -30,10 +30,6 @@ cp kokoro/release/python/linux/config.sh config.sh
 
 build_artifact_version() {
   MB_PYTHON_VERSION=$1
-
-  # Clean up env
-  rm -rf venv
-  sudo rm -rf $REPO_DIR
   cp -R $STAGE_DIR $REPO_DIR
 
   source multibuild/common_utils.sh
@@ -47,6 +43,20 @@ build_artifact_version() {
   build_wheel $REPO_DIR/python $PLAT
 
   mv wheelhouse/* $ARTIFACT_DIR
+
+  # Clean up env
+  rm -rf venv
+  sudo rm -rf $REPO_DIR
+}
+
+build_crosscompiled_aarch64_artifact_version() {
+  # crosscompilation is only supported with the dockcross manylinux2014 image
+  DOCKER_IMAGE=dockcross/manylinux2014-aarch64
+  PLAT=aarch64
+
+  # TODO(jtatermusch): currently when crosscompiling, "auditwheel repair" will be disabled
+  # since auditwheel doesn't work for crosscomiled wheels.
+  build_artifact_version $@
 }
 
 build_artifact_version 2.7
@@ -54,3 +64,8 @@ build_artifact_version 3.5
 build_artifact_version 3.6
 build_artifact_version 3.7
 build_artifact_version 3.8
+build_artifact_version 3.9
+
+build_crosscompiled_aarch64_artifact_version 3.7
+build_crosscompiled_aarch64_artifact_version 3.8
+build_crosscompiled_aarch64_artifact_version 3.9

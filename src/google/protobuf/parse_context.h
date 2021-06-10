@@ -166,6 +166,10 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     }
     return AppendStringFallback(ptr, size, s);
   }
+  // Implemented in arenastring.cc
+  PROTOBUF_MUST_USE_RESULT const char* ReadArenaString(const char* ptr,
+                                                       ArenaStringPtr* s,
+                                                       Arena* arena);
 
   template <typename Tag, typename T>
   PROTOBUF_MUST_USE_RESULT const char* ReadRepeatedFixed(const char* ptr,
@@ -348,7 +352,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     if (ptr - buffer_end_ > limit_) return nullptr;
     while (limit_ > kSlopBytes) {
       size_t chunk_size = buffer_end_ + kSlopBytes - ptr;
-      GOOGLE_DCHECK_GE(chunk_size, 0);
       append(ptr, chunk_size);
       ptr = Next();
       if (ptr == nullptr) return limit_end_;
@@ -377,6 +380,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   struct Data {
     const DescriptorPool* pool = nullptr;
     MessageFactory* factory = nullptr;
+    Arena* arena = nullptr;
   };
 
   template <typename... T>
@@ -401,7 +405,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   const char* ParseMessage(Message* msg, const char* ptr);
 
   template <typename T>
-  PROTOBUF_MUST_USE_RESULT PROTOBUF_ALWAYS_INLINE const char* ParseGroup(
+  PROTOBUF_MUST_USE_RESULT PROTOBUF_NDEBUG_INLINE const char* ParseGroup(
       T* msg, const char* ptr, uint32 tag) {
     if (--depth_ < 0) return nullptr;
     group_depth_++;
@@ -413,6 +417,17 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   }
 
  private:
+  // Out-of-line routine to save space in ParseContext::ParseMessage<T>
+  //   int old;
+  //   ptr = ReadSizeAndPushLimitAndDepth(ptr, &old)
+  // is equivalent to:
+  //   int size = ReadSize(&ptr);
+  //   if (!ptr) return nullptr;
+  //   int old = PushLimit(ptr, size);
+  //   if (--depth_ < 0) return nullptr;
+  PROTOBUF_MUST_USE_RESULT const char* ReadSizeAndPushLimitAndDepth(
+      const char* ptr, int* old_limit);
+
   // The context keeps an internal stack to keep track of the recursive
   // part of the parse state.
   // Current depth of the active parser, depth counts down.
@@ -640,14 +655,61 @@ inline int32 ReadVarintZigZag32(const char** p) {
 template <typename T>
 PROTOBUF_MUST_USE_RESULT const char* ParseContext::ParseMessage(
     T* msg, const char* ptr) {
-  int size = ReadSize(&ptr);
-  if (!ptr) return nullptr;
-  auto old = PushLimit(ptr, size);
-  if (--depth_ < 0) return nullptr;
-  ptr = msg->_InternalParse(ptr, this);
-  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+  int old;
+  ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
+  ptr = ptr ? msg->_InternalParse(ptr, this) : nullptr;
   depth_++;
   if (!PopLimit(old)) return nullptr;
+  return ptr;
+}
+
+template <typename Tag, typename T>
+const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr,
+                                                  Tag expected_tag,
+                                                  RepeatedField<T>* out) {
+  do {
+    out->Add(UnalignedLoad<T>(ptr));
+    ptr += sizeof(T);
+    if (PROTOBUF_PREDICT_FALSE(ptr >= limit_end_)) return ptr;
+  } while (UnalignedLoad<Tag>(ptr) == expected_tag && (ptr += sizeof(Tag)));
+  return ptr;
+}
+
+template <typename T>
+const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
+                                                RepeatedField<T>* out) {
+  int nbytes = buffer_end_ + kSlopBytes - ptr;
+  while (size > nbytes) {
+    int num = nbytes / sizeof(T);
+    int old_entries = out->size();
+    out->Reserve(old_entries + num);
+    int block_size = num * sizeof(T);
+    auto dst = out->AddNAlreadyReserved(num);
+#ifdef PROTOBUF_LITTLE_ENDIAN
+    std::memcpy(dst, ptr, block_size);
+#else
+    for (int i = 0; i < num; i++)
+      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+#endif
+    size -= block_size;
+    if (limit_ <= kSlopBytes) return nullptr;
+    ptr = Next();
+    if (ptr == nullptr) return nullptr;
+    ptr += kSlopBytes - (nbytes - block_size);
+    nbytes = buffer_end_ + kSlopBytes - ptr;
+  }
+  int num = size / sizeof(T);
+  int old_entries = out->size();
+  out->Reserve(old_entries + num);
+  int block_size = num * sizeof(T);
+  auto dst = out->AddNAlreadyReserved(num);
+#ifdef PROTOBUF_LITTLE_ENDIAN
+  std::memcpy(dst, ptr, block_size);
+#else
+  for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+#endif
+  ptr += block_size;
+  if (size != block_size) return nullptr;
   return ptr;
 }
 

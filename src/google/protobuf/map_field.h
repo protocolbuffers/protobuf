@@ -336,13 +336,7 @@ class PROTOBUF_EXPORT MapFieldBase {
         mutex_(GOOGLE_PROTOBUF_LINKER_INITIALIZED),
         state_(STATE_MODIFIED_MAP) {}
   explicit MapFieldBase(Arena* arena)
-      : arena_(arena), repeated_field_(NULL), state_(STATE_MODIFIED_MAP) {
-    // Mutex's destructor needs to be called explicitly to release resources
-    // acquired in its constructor.
-    if (arena) {
-      arena->OwnDestructor(&mutex_);
-    }
-  }
+      : arena_(arena), repeated_field_(nullptr), state_(STATE_MODIFIED_MAP) {}
   virtual ~MapFieldBase();
 
   // Returns reference to internal repeated field. Data written using
@@ -371,7 +365,8 @@ class PROTOBUF_EXPORT MapFieldBase {
   virtual void MapBegin(MapIterator* map_iter) const = 0;
   virtual void MapEnd(MapIterator* map_iter) const = 0;
   virtual void MergeFrom(const MapFieldBase& other) = 0;
-  virtual void Swap(MapFieldBase* other) = 0;
+  virtual void Swap(MapFieldBase* other);
+  virtual void UnsafeShallowSwap(MapFieldBase* other);
   // Sync Map with repeated field and returns the size of map.
   virtual int size() const = 0;
   virtual void Clear() = 0;
@@ -406,6 +401,8 @@ class PROTOBUF_EXPORT MapFieldBase {
 
   // Provides derived class the access to repeated field.
   void* MutableRepeatedPtrField() const;
+
+  void InternalSwap(MapFieldBase* other);
 
   // Support thread sanitizer (tsan) by making const / mutable races
   // more apparent.  If one thread calls MutableAccess() while another
@@ -446,6 +443,7 @@ class PROTOBUF_EXPORT MapFieldBase {
   friend class ContendedMapCleanTest;
   friend class GeneratedMessageReflection;
   friend class MapFieldAccessor;
+  friend class ::PROTOBUF_NAMESPACE_ID::Reflection;
   friend class ::PROTOBUF_NAMESPACE_ID::DynamicMessage;
 
   // Virtual helper methods for MapIterator. MapIterator doesn't have the
@@ -571,6 +569,8 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   void Clear() override;
   void MergeFrom(const MapFieldBase& other) override;
   void Swap(MapFieldBase* other) override;
+  void UnsafeShallowSwap(MapFieldBase* other) override;
+  void InternalSwap(MapField* other);
 
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is NULL.
@@ -652,6 +652,7 @@ class PROTOBUF_EXPORT DynamicMapField
   bool DeleteMapValue(const MapKey& map_key) override;
   void MergeFrom(const MapFieldBase& other) override;
   void Swap(MapFieldBase* other) override;
+  void UnsafeShallowSwap(MapFieldBase* other) override { Swap(other); }
 
   const Map<MapKey, MapValueRef>& GetMap() const override;
   Map<MapKey, MapValueRef>* MutableMap() override;
