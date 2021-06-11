@@ -144,6 +144,34 @@ bool ObjectiveCGenerator::GenerateAll(
       // of not being able to iterate through the properties using the Objective-C
       // runtime.
       generation_options.elide_message_metadata = true;
+    } else if (options[i].first == "use_package_as_prefix") {
+      // Controls how the symbols should be prefixed to avoid symbols
+      // collisions. The objc_class_prefix file option is always honored, this
+      // is just what to do if that isn't set. The available options are:
+      //   "no": Not prefixed (the existing mode).
+      //   "yes": Make a prefix out of the proto package.
+      std::string lower_value(options[i].second);
+      LowerString(&lower_value);
+      if (lower_value == "no") {
+        SetUseProtoPackageAsDefaultPrefix(false);
+      } else if (lower_value == "yes") {
+        SetUseProtoPackageAsDefaultPrefix(true);
+      } else {
+        *error = "error: Unknown use_package_as_prefix: " + options[i].second;
+        return false;
+      }
+    } else if (options[i].first == "proto_package_prefix_exceptions_path") {
+      // Path to find a file containing the list of proto package names that are
+      // exceptions when use_package_as_prefix is enabled. This can be used to
+      // migrate packages one at a time to use_package_as_prefix since there
+      // are likely code updates needed with each one.
+      //
+      // The format of the file is:
+      //   - An entry is a line of "proto.package.name".
+      //   - Comments start with "#".
+      //   - A comment can go on a line after a expected package/prefix pair.
+      //     (i.e. - "some.proto.package # comment")
+      SetProtoPackagePrefixExceptionList(options[i].second);
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
       return false;
