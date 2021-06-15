@@ -32,6 +32,7 @@
 
 #include <google/protobuf/stubs/stringprintf.h>
 
+#include <array>
 #include <cerrno>
 #include <string>
 
@@ -108,14 +109,13 @@ TEST(StringPrintfTest, Multibyte) {
 
   // Repeat with longer string, to make sure that the dynamically
   // allocated path in StringAppendV is handled correctly.
-  int n = 2048;
-  char* buf = new char[n+1];
-  memset(buf, ' ', n-3);
-  memcpy(buf + n - 3, kInvalidCodePoint, 4);
-  value =  StringPrintf("%.*s", n, buf);
+  const size_t n = 2048;
+  std::array<char, n+1> buf;
+  memset(&buf[0], ' ', n-3);
+  memcpy(&buf[0] + n - 3, kInvalidCodePoint, 4);
+  value =  StringPrintf("%.*s", n, &buf[0]);
   // See GRTEv2 vs. GRTEv3 comment above.
-  EXPECT_TRUE(value.empty() || value == buf);
-  delete[] buf;
+  EXPECT_TRUE(value.empty() || value == &buf[0]);
 
   setlocale(LC_CTYPE, old_locale.c_str());
 }
