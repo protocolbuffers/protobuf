@@ -1174,7 +1174,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   if (options_.table_driven_serialization) {
     format(
         "private:\n"
-        "const void* InternalGetTable() const;\n"
+        "const void* InternalGetTable() const override;\n"
         "public:\n"
         "\n");
   }
