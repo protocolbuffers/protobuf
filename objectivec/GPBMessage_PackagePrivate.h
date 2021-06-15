@@ -34,6 +34,8 @@
 
 #import "GPBMessage.h"
 
+#import "GPBUtilities_PackagePrivate.h"
+
 // TODO: Remove this import. Older generated code use the OSAtomic* apis,
 // so anyone that hasn't regenerated says building by having this. After
 // enough time has passed, this likely can be removed as folks should have
@@ -41,6 +43,134 @@
 #import <libkern/OSAtomic.h>
 
 #import "GPBBootstrap.h"
+
+#if defined(__LP64__) && __LP64__
+#define GPB_ASM_PTR " .quad "
+#define GPB_ASM_PTRSIZE " 8 "
+#define GPB_ASM_ONLY_LP64(x) x
+#define GPB_ALIGN_SIZE " 3 "
+#define GPB_DESCRIPTOR_METHOD_TYPE "@16@0:8"
+#else  // __LP64__
+#define GPB_ASM_PTR " .long "
+#define GPB_ASM_PTRSIZE " 4 "
+#define GPB_ASM_ONLY_LP64(x)
+#define GPB_ALIGN_SIZE " 2 "
+#define GPB_DESCRIPTOR_METHOD_TYPE "@8@0:4"
+#endif  // __LP64__
+
+#define GPB_MESSAGE_CLASS_NAME_RAW GPBMessage
+#define GPB_MESSAGE_CLASS_NAME GPBStringifySymbol(GPB_MESSAGE_CLASS_NAME_RAW)
+
+#if !__has_feature(objc_arc)
+#define GPB_CLASS_FLAGS " 0x00 "
+#define GPB_METACLASS_FLAGS " 0x01 "
+#else
+// 0x80 denotes that the class supports ARC.
+#define GPB_CLASS_FLAGS " 0x80 "
+#define GPB_METACLASS_FLAGS " 0x81 "
+#endif
+
+// This generates code equivalent to:
+// ```
+// @implementation _name_
+// + (GPBDescriptor *)descriptor {
+//      return _descriptorFunc_(self, _cmd);
+// }
+// @end
+// ```
+// We do this to avoid all of the @property metadata.
+// If we use `@dynamic` the compiler generates a lot of property data including
+// selectors and encoding strings. For large uses of protobufs, this can add
+// up to several megabytes of unused Objective-C metadata.
+// This inline class definition avoids the property data generation at the
+// cost of being a little ugly. This has been tested with both 32 and 64 bits
+// on intel and arm with Xcode 11.7 and Xcode 12.4.
+// We make cstring_literals be local definitions by starting them with "L".
+// https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_chapter/as_5.html#SEC48
+// This keeps our symbols tables smaller, and is what the linker expects.
+// The linker in Xcode 12+ seems to be a bit more lenient about it, but the
+// Xcode 11 linker requires it, and will give a cryptic "malformed method list"
+// assertion if they are global.
+#define GPB_MESSAGE_SUBCLASS_IMPL(name, descriptorFunc)                        \
+  __asm__(                                                                     \
+    ".section __TEXT, __objc_classname, cstring_literals \n"                   \
+    "L_OBJC_CLASS_NAME_" GPBStringifySymbol(name) ": "                         \
+    "    .asciz \"" GPBStringifySymbol(name) "\" \n"                           \
+                                                                               \
+    ".ifndef L_GBPDescriptorMethodName \n"                                     \
+    ".section __TEXT, __objc_methname, cstring_literals \n"                    \
+    "L_GBPDescriptorMethodName: .asciz \"descriptor\" \n"                      \
+    ".endif \n"                                                                \
+                                                                               \
+    ".ifndef L_GPBDescriptorMethodType \n"                                     \
+    ".section __TEXT, __objc_methtype, cstring_literals \n"                    \
+    "L_GPBDescriptorMethodType: .asciz \"" GPB_DESCRIPTOR_METHOD_TYPE "\" \n"  \
+    ".endif \n"                                                                \
+                                                                               \
+    ".section __DATA,__objc_const, regular \n"                                 \
+    ".p2align" GPB_ALIGN_SIZE "\n"                                             \
+    "__OBJC_$_CLASS_METHODS_" GPBStringifySymbol(name) ": \n"                  \
+    ".long 3 *" GPB_ASM_PTRSIZE "\n"                                           \
+    ".long 0x1 \n"                                                             \
+    GPB_ASM_PTR "L_GBPDescriptorMethodName \n"                                 \
+    GPB_ASM_PTR "L_GPBDescriptorMethodType \n"                                 \
+    GPB_ASM_PTR "_" #descriptorFunc " \n"                                      \
+                                                                               \
+    ".section __DATA,__objc_const, regular \n"                                 \
+    ".p2align" GPB_ALIGN_SIZE "\n"                                             \
+    "__OBJC_METACLASS_RO_$_" GPBStringifySymbol(name) ": \n"                   \
+    ".long" GPB_METACLASS_FLAGS "\n"                                           \
+    ".long 5 *" GPB_ASM_PTRSIZE "\n"                                           \
+    ".long 5 *" GPB_ASM_PTRSIZE "\n"                                           \
+    GPB_ASM_ONLY_LP64(".space 4 \n")                                           \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "L_OBJC_CLASS_NAME_" GPBStringifySymbol(name) " \n"            \
+    GPB_ASM_PTR "__OBJC_$_CLASS_METHODS_" GPBStringifySymbol(name) " \n"       \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "0 \n"                                                         \
+                                                                               \
+    ".section __DATA,__objc_const, regular \n"                                 \
+    ".p2align" GPB_ALIGN_SIZE "\n"                                             \
+    "__OBJC_CLASS_RO_$_" GPBStringifySymbol(name) ": \n"                       \
+    ".long" GPB_CLASS_FLAGS "\n"                                               \
+    ".long" GPB_ASM_PTRSIZE "\n"                                               \
+    ".long" GPB_ASM_PTRSIZE "\n"                                               \
+    GPB_ASM_ONLY_LP64(".long 0 \n")                                            \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "L_OBJC_CLASS_NAME_" GPBStringifySymbol(name) " \n"            \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "0 \n"                                                         \
+                                                                               \
+    ".globl _OBJC_METACLASS_$_" GPBStringifySymbol(name) "\n"                  \
+    ".section __DATA,__objc_data, regular \n"                                  \
+    ".p2align" GPB_ALIGN_SIZE "\n"                                             \
+    "_OBJC_METACLASS_$_" GPBStringifySymbol(name) ": \n"                       \
+    GPB_ASM_PTR "_OBJC_METACLASS_$_NSObject \n"                                \
+    GPB_ASM_PTR "_OBJC_METACLASS_$_" GPB_MESSAGE_CLASS_NAME " \n"              \
+    GPB_ASM_PTR "__objc_empty_cache \n"                                        \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "__OBJC_METACLASS_RO_$_" GPBStringifySymbol(name) " \n"        \
+                                                                               \
+    ".globl _OBJC_CLASS_$_" GPBStringifySymbol(name) "\n"                      \
+    ".section __DATA,__objc_data, regular \n"                                  \
+    ".p2align" GPB_ALIGN_SIZE "\n"                                             \
+    "_OBJC_CLASS_$_" GPBStringifySymbol(name) ": \n"                           \
+    GPB_ASM_PTR "_OBJC_METACLASS_$_" GPBStringifySymbol(name) " \n"            \
+    GPB_ASM_PTR "_OBJC_CLASS_$_" GPB_MESSAGE_CLASS_NAME " \n"                  \
+    GPB_ASM_PTR "__objc_empty_cache \n"                                        \
+    GPB_ASM_PTR "0 \n"                                                         \
+    GPB_ASM_PTR "__OBJC_CLASS_RO_$_" GPBStringifySymbol(name) " \n"            \
+                                                                               \
+    ".section __DATA, __objc_classlist, regular, no_dead_strip \n"             \
+    ".p2align" GPB_ALIGN_SIZE "\n"                                             \
+    "_OBJC_LABEL_CLASS_$" GPBStringifySymbol(name) ": \n"                      \
+    GPB_ASM_PTR "_OBJC_CLASS_$_" GPBStringifySymbol(name) " \n"                \
+  )
 
 typedef struct GPBMessage_Storage {
   uint32_t _has_storage_[0];

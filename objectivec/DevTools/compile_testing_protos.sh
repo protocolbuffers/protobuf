@@ -1,14 +1,33 @@
 #!/bin/bash -eu
 # Invoked by the Xcode projects to build the protos needed for the unittests.
 
-readonly OUTPUT_DIR="${PROJECT_DERIVED_FILE_DIR}/protos"
-
 # -----------------------------------------------------------------------------
 # Helper for bailing.
 die() {
   echo "Error: $1"
   exit 2
 }
+
+# -----------------------------------------------------------------------------
+# Parameters.
+if (( $# > 1 )); then
+  die "Script takes only one parameter: $#"
+fi
+
+if (( $# == 1 )); then
+  case "$1" in
+    "--elide_message_metadata")
+      readonly ELIDE_MESSAGE_METADATA_OPTION="--objc_opt=elide_message_metadata"
+      readonly OUTPUT_DIR="${PROJECT_DERIVED_FILE_DIR}/elided/protos"
+      ;;
+    *)
+      die "Unknown option: $1"
+      ;;
+  esac
+else
+  readonly ELIDE_MESSAGE_METADATA_OPTION=""
+  readonly OUTPUT_DIR="${PROJECT_DERIVED_FILE_DIR}/normal/protos"
+fi
 
 # -----------------------------------------------------------------------------
 # What to do.
@@ -157,6 +176,7 @@ compile_protos() {
     --proto_path=src/google/protobuf/          \
     --proto_path=src                           \
     --experimental_allow_proto3_optional       \
+    ${ELIDE_MESSAGE_METADATA_OPTION}           \
     "$@"
 }
 
