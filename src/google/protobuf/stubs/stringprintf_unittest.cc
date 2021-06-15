@@ -91,7 +91,9 @@ TEST(StringPrintfTest, Multibyte) {
   // out of memory while trying to determine destination buffer size.
   // see b/4194543.
 
-  char* old_locale = setlocale(LC_CTYPE, nullptr);
+  char* old_locale_c = setlocale(LC_CTYPE, nullptr);
+  ASSERT_TRUE(old_locale_c != nullptr);
+  std::string old_locale = old_locale_c;
   // Push locale with multibyte mode
   setlocale(LC_CTYPE, "en_US.utf8");
 
@@ -115,15 +117,17 @@ TEST(StringPrintfTest, Multibyte) {
   EXPECT_TRUE(value.empty() || value == buf);
   delete[] buf;
 
-  setlocale(LC_CTYPE, old_locale);
+  setlocale(LC_CTYPE, old_locale.c_str());
 }
 
 TEST(StringPrintfTest, NoMultibyte) {
   // No multibyte handling, but the string contains funny chars.
-  char* old_locale = setlocale(LC_CTYPE, nullptr);
+  char* old_locale_c = setlocale(LC_CTYPE, nullptr);
+  ASSERT_TRUE(old_locale_c != nullptr);
+  std::string old_locale = old_locale_c;
   setlocale(LC_CTYPE, "POSIX");
   std::string value = StringPrintf("%.*s", 3, "\375\067s");
-  setlocale(LC_CTYPE, old_locale);
+  setlocale(LC_CTYPE, old_locale.c_str());
   EXPECT_EQ("\375\067s", value);
 }
 
