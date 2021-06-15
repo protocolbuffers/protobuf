@@ -383,6 +383,9 @@
 #endif  // DEBUG
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 - (void)testCoding {
   GPBMessage *original = [self mergeResult];
   NSData *data =
@@ -417,6 +420,8 @@
   // Intentionally doing a pointer comparison.
   XCTAssertNotEqual(unarchivedObject, original);
 }
+
+#pragma clang diagnostic pop
 
 - (void)testObjectReset {
   // Tests a failure where clearing out defaults values caused an over release.
