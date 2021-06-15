@@ -267,6 +267,276 @@
                   Identifier = "GPBUInt64UInt64DictionaryTests">
                </Test>
                <Test
+                  Identifier = "MessageClassNameTests">
+               </Test>
+               <Test
+                  Identifier = "MessageMergeTests">
+               </Test>
+               <Test
+                  Identifier = "MessageRuntimeTests">
+               </Test>
+               <Test
+                  Identifier = "MessageSerializationTests">
+               </Test>
+               <Test
+                  Identifier = "MessageTests">
+               </Test>
+               <Test
+                  Identifier = "UnknownFieldSetTest">
+               </Test>
+               <Test
+                  Identifier = "UtilitiesTests">
+               </Test>
+               <Test
+                  Identifier = "WellKnownTypesTest">
+               </Test>
+               <Test
+                  Identifier = "WireFormatTests">
+               </Test>
+            </SkippedTests>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8B6C2ADF2682952200026204"
+               BuildableName = "UnitTestsElidedProperties.xctest"
+               BlueprintName = "UnitTestsElidedProperties"
+               ReferencedContainer = "container:ProtocolBuffers_OSX.xcodeproj">
+            </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "CodedInputStreamTests">
+               </Test>
+               <Test
+                  Identifier = "CodedOutputStreamTests">
+               </Test>
+               <Test
+                  Identifier = "ConcurrencyTests">
+               </Test>
+               <Test
+                  Identifier = "DescriptorTests">
+               </Test>
+               <Test
+                  Identifier = "GPBAutocreatedArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBAutocreatedDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolBoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolDoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolFloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolUInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBoolUInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBBridgeTests">
+               </Test>
+               <Test
+                  Identifier = "GPBDoubleArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBEnumArrayCustomTests">
+               </Test>
+               <Test
+                  Identifier = "GPBEnumArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBExtensionRegistryTest">
+               </Test>
+               <Test
+                  Identifier = "GPBFloatArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32BoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32DoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32EnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32EnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32FloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32Int32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32Int64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32ObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32UInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt32UInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64BoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64DoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64EnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64EnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64FloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64Int32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64Int64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64ObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64UInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBInt64UInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBObjectiveCPlusPlusTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringBoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringDoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringEnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringEnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringFloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringUInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBStringUInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBTestCase">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32BoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32DoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32EnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32EnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32FloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32Int32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32Int64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32ObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32UInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt32UInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64ArrayTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64BoolDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64DoubleDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64EnumDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64EnumDictionaryUnknownEnumTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64FloatDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64Int32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64Int64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64ObjectDictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64UInt32DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "GPBUInt64UInt64DictionaryTests">
+               </Test>
+               <Test
+                  Identifier = "MessageClassNameTests">
+               </Test>
+               <Test
                   Identifier = "MessageMergeTests">
                </Test>
                <Test
@@ -293,8 +563,6 @@
             </SkippedTests>
          </TestableReference>
       </Testables>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Release"
@@ -315,8 +583,6 @@
             ReferencedContainer = "container:ProtocolBuffers_OSX.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

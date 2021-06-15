@@ -22,6 +22,68 @@
 		8B4248B41A8BD96E00BC1EC6 /* GPBSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248B31A8BD96E00BC1EC6 /* GPBSwiftTests.swift */; };
 		8B4248E41A929C8900BC1EC6 /* GPBWellKnownTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248E21A929C8900BC1EC6 /* GPBWellKnownTypes.m */; };
 		8B4248E61A929C9900BC1EC6 /* GPBWellKnownTypesTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248E51A929C9900BC1EC6 /* GPBWellKnownTypesTest.m */; };
+		8B6C2B772682A55300026204 /* golden_message in Resources */ = {isa = PBXBuildFile; fileRef = 8B210CCD159383D60032D72D /* golden_message */; };
+		8B6C2B782682A55300026204 /* text_format_extensions_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F4F53F8B219CC5DF001EABF4 /* text_format_extensions_unittest_data.txt */; };
+		8B6C2B792682A55300026204 /* text_format_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */; };
+		8B6C2B7A2682A55300026204 /* golden_packed_fields_message in Resources */ = {isa = PBXBuildFile; fileRef = 8B210CCF159386920032D72D /* golden_packed_fields_message */; };
+		8B6C2B7B2682A55300026204 /* text_format_map_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */; };
+		8B6C2B7D2682A55300026204 /* GPBCodedInputStreamTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B69B0F94FDF800A0C422 /* GPBCodedInputStreamTests.m */; };
+		8B6C2B7E2682A55300026204 /* GPBCompileTest24.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE50E206C06880071091A /* GPBCompileTest24.m */; };
+		8B6C2B7F2682A55300026204 /* GPBCompileTest20.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CA206BF9170071091A /* GPBCompileTest20.m */; };
+		8B6C2B802682A55300026204 /* GPBArrayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F401DC341A8E5C6F00FCC765 /* GPBArrayTests.m */; };
+		8B6C2B812682A55300026204 /* GPBCompileTest10.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D1206BF9180071091A /* GPBCompileTest10.m */; };
+		8B6C2B822682A55300026204 /* GPBDictionaryTests+Int64.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D3D1AC06F31005A6198 /* GPBDictionaryTests+Int64.m */; };
+		8B6C2B832682A55300026204 /* GPBCompileTest22.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CF206BF9170071091A /* GPBCompileTest22.m */; };
+		8B6C2B842682A55300026204 /* GPBCompileTest08.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C2206BF9160071091A /* GPBCompileTest08.m */; };
+		8B6C2B852682A55300026204 /* GPBCompileTest17.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D2206BF9180071091A /* GPBCompileTest17.m */; };
+		8B6C2B862682A55300026204 /* GPBDictionaryTests+UInt64.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D401AC06F31005A6198 /* GPBDictionaryTests+UInt64.m */; };
+		8B6C2B872682A55300026204 /* GPBCodedOuputStreamTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B69D0F94FDF800A0C422 /* GPBCodedOuputStreamTests.m */; };
+		8B6C2B882682A55300026204 /* GPBCompileTest23.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CC206BF9170071091A /* GPBCompileTest23.m */; };
+		8B6C2B892682A55300026204 /* GPBMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6A30F94FDF800A0C422 /* GPBMessageTests.m */; };
+		8B6C2B8A2682A55300026204 /* GPBMessageTests+Serialization.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C801AAF62FC00531423 /* GPBMessageTests+Serialization.m */; };
+		8B6C2B8B2682A55300026204 /* GPBCompileTest19.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C7206BF9170071091A /* GPBCompileTest19.m */; };
+		8B6C2B8C2682A55300026204 /* GPBCompileTest06.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D7206BF9190071091A /* GPBCompileTest06.m */; };
+		8B6C2B8D2682A55300026204 /* GPBCompileTest12.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D5206BF9180071091A /* GPBCompileTest12.m */; };
+		8B6C2B8E2682A55300026204 /* GPBWellKnownTypesTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248E51A929C9900BC1EC6 /* GPBWellKnownTypesTest.m */; };
+		8B6C2B8F2682A55300026204 /* GPBCompileTest03.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D6206BF9190071091A /* GPBCompileTest03.m */; };
+		8B6C2B902682A55300026204 /* GPBCompileTest18.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D3206BF9180071091A /* GPBCompileTest18.m */; };
+		8B6C2B912682A55300026204 /* GPBCompileTest13.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C8206BF9170071091A /* GPBCompileTest13.m */; };
+		8B6C2B922682A55300026204 /* GPBCompileTest15.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CE206BF9170071091A /* GPBCompileTest15.m */; };
+		8B6C2B932682A55300026204 /* GPBCompileTest07.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C5206BF9170071091A /* GPBCompileTest07.m */; };
+		8B6C2B942682A55300026204 /* GPBDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D1E1AB88243005A6198 /* GPBDescriptorTests.m */; };
+		8B6C2B952682A55300026204 /* GPBCompileTest21.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CB206BF9170071091A /* GPBCompileTest21.m */; };
+		8B6C2B962682A55300026204 /* GPBCompileTest11.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D8206BF9190071091A /* GPBCompileTest11.m */; };
+		8B6C2B972682A55300026204 /* GPBUnittestProtos2.m in Sources */ = {isa = PBXBuildFile; fileRef = F4F8D8841D78A186002CE128 /* GPBUnittestProtos2.m */; };
+		8B6C2B982682A55300026204 /* GPBObjectiveCPlusPlusTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4B51B1B1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm */; };
+		8B6C2B992682A55300026204 /* GPBSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248B31A8BD96E00BC1EC6 /* GPBSwiftTests.swift */; };
+		8B6C2B9A2682A55300026204 /* GPBCompileTest25.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE50D206C06880071091A /* GPBCompileTest25.m */; };
+		8B6C2B9B2682A55300026204 /* GPBExtensionRegistryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F4584D801ECCB39E00803AB6 /* GPBExtensionRegistryTest.m */; };
+		8B6C2B9C2682A55300026204 /* GPBMessageTests+ClassNames.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BFF9D1B23AD593B00E63E32 /* GPBMessageTests+ClassNames.m */; };
+		8B6C2B9D2682A55300026204 /* GPBConcurrencyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5102DABB1891A052002037B6 /* GPBConcurrencyTests.m */; };
+		8B6C2B9E2682A55300026204 /* GPBMessageTests+Runtime.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C761AADF84900531423 /* GPBMessageTests+Runtime.m */; };
+		8B6C2B9F2682A55300026204 /* GPBCompileTest02.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C6206BF9170071091A /* GPBCompileTest02.m */; };
+		8B6C2BA02682A55300026204 /* GPBDictionaryTests+Int32.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D3C1AC06F31005A6198 /* GPBDictionaryTests+Int32.m */; };
+		8B6C2BA12682A55300026204 /* GPBCompileTest05.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C4206BF9160071091A /* GPBCompileTest05.m */; };
+		8B6C2BA22682A55300026204 /* GPBCompileTest14.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D4206BF9180071091A /* GPBCompileTest14.m */; };
+		8B6C2BA32682A55300026204 /* GPBTestUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6AC0F94FDF800A0C422 /* GPBTestUtilities.m */; };
+		8B6C2BA42682A55300026204 /* GPBCompileTest04.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C3206BF9160071091A /* GPBCompileTest04.m */; };
+		8B6C2BA52682A55300026204 /* GPBCompileTest16.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4D0206BF9180071091A /* GPBCompileTest16.m */; };
+		8B6C2BA62682A55300026204 /* GPBPerfTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F41C175C1833D3310064ED4D /* GPBPerfTests.m */; };
+		8B6C2BA72682A55300026204 /* GPBDictionaryTests+Bool.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D3B1AC06F31005A6198 /* GPBDictionaryTests+Bool.m */; };
+		8B6C2BA82682A55300026204 /* GPBMessageTests+Merge.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C841AAF6AC500531423 /* GPBMessageTests+Merge.m */; };
+		8B6C2BA92682A55300026204 /* GPBCompileTest01.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4CD206BF9170071091A /* GPBCompileTest01.m */; };
+		8B6C2BAA2682A55300026204 /* GPBUnknownFieldSetTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6B80F94FDF900A0C422 /* GPBUnknownFieldSetTest.m */; };
+		8B6C2BAB2682A55300026204 /* GPBDictionaryTests+String.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D3E1AC06F31005A6198 /* GPBDictionaryTests+String.m */; };
+		8B6C2BAC2682A55300026204 /* GPBDictionaryTests+UInt32.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D3F1AC06F31005A6198 /* GPBDictionaryTests+UInt32.m */; };
+		8B6C2BAD2682A55300026204 /* GPBCompileTest09.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE4C9206BF9170071091A /* GPBCompileTest09.m */; };
+		8B6C2BAE2682A55300026204 /* GPBUtilitiesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */; };
+		8B6C2BAF2682A55300026204 /* GPBDictionaryTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F4C4B9E51E1D97BB00D3B61D /* GPBDictionaryTests.m */; };
+		8B6C2BB02682A55300026204 /* GPBWireFormatTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7461B6BC0F94FDF900A0C422 /* GPBWireFormatTests.m */; };
+		8B6C2BB12682A55300026204 /* GPBUnittestProtos.m in Sources */ = {isa = PBXBuildFile; fileRef = 8BD3981E14BE59D70081D629 /* GPBUnittestProtos.m */; };
+		8B6C2BB22682A55300026204 /* GPBARCUnittestProtos.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B8B615C17DF7056002EE618 /* GPBARCUnittestProtos.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
+		8B6C2BB42682A55300026204 /* libProtocolBuffers.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7461B52E0F94FAF800A0C422 /* libProtocolBuffers.a */; };
+		8B6C2BB52682A55300026204 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8B9A5E9F1831913D00A9D33B /* UIKit.framework */; };
+		8B6C2BB62682A55300026204 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		8B79657B14992E3F002FFBFC /* GPBRootObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B79657914992E3E002FFBFC /* GPBRootObject.m */; };
 		8B8B615D17DF7056002EE618 /* GPBARCUnittestProtos.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B8B615C17DF7056002EE618 /* GPBARCUnittestProtos.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		8B96157414C8C38C00A2AC0B /* GPBDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B96157314C8C38C00A2AC0B /* GPBDescriptor.m */; };
@@ -99,6 +161,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		8B6C2B722682A55300026204 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7461B52D0F94FAF800A0C422;
+			remoteInfo = ProtocolBuffers;
+		};
+		8B6C2BCC2682A59300026204 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8B6C2BC42682A57600026204;
+			remoteInfo = "Compile Elided Unittest Protos";
+		};
 		8BBEA4BC147C729A00C4ADB7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
@@ -160,6 +236,8 @@
 		8B4248E51A929C9900BC1EC6 /* GPBWellKnownTypesTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBWellKnownTypesTest.m; sourceTree = "<group>"; };
 		8B4249481A92A02300BC1EC6 /* timestamp.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = timestamp.proto; path = ../src/google/protobuf/timestamp.proto; sourceTree = "<group>"; };
 		8B42494A1A92A0BA00BC1EC6 /* duration.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = duration.proto; path = ../src/google/protobuf/duration.proto; sourceTree = "<group>"; };
+		8B6C2B6E2682A53800026204 /* compile_testing_protos.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = compile_testing_protos.sh; sourceTree = "<group>"; };
+		8B6C2BBA2682A55300026204 /* UnitTestsElidedProperties.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnitTestsElidedProperties.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B79657814992E3E002FFBFC /* GPBRootObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBRootObject.h; sourceTree = "<group>"; };
 		8B79657914992E3E002FFBFC /* GPBRootObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBRootObject.m; sourceTree = "<group>"; };
 		8B7E6A7414893DBA00F8884A /* unittest_custom_options.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = unittest_custom_options.proto; path = ../../src/google/protobuf/unittest_custom_options.proto; sourceTree = "<group>"; };
@@ -285,6 +363,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8B6C2BB32682A55300026204 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B6C2BB42682A55300026204 /* libProtocolBuffers.a in Frameworks */,
+				8B6C2BB52682A55300026204 /* UIKit.framework in Frameworks */,
+				8B6C2BB62682A55300026204 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8BBEA4A3147C727100C4ADB7 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -328,6 +416,7 @@
 				7461B52E0F94FAF800A0C422 /* libProtocolBuffers.a */,
 				8BBEA4A6147C727100C4ADB7 /* UnitTests.xctest */,
 				F4487C6E1A9F8F8100531423 /* libTestSingleSourceBuild.a */,
+				8B6C2BBA2682A55300026204 /* UnitTestsElidedProperties.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -335,6 +424,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				8B6C2B6A2682A53800026204 /* DevTools */,
 				080E96DDFE201D6D7F000001 /* Core Source */,
 				7461B6940F94FDDD00A0C422 /* Tests */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
@@ -531,6 +621,14 @@
 			path = Tests;
 			sourceTree = "<group>";
 		};
+		8B6C2B6A2682A53800026204 /* DevTools */ = {
+			isa = PBXGroup;
+			children = (
+				8B6C2B6E2682A53800026204 /* compile_testing_protos.sh */,
+			);
+			path = DevTools;
+			sourceTree = "<group>";
+		};
 		8BCF334414ED727300BC5317 /* Support */ = {
 			isa = PBXGroup;
 			children = (
@@ -571,9 +669,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXLegacyTarget section */
+		8B6C2BC42682A57600026204 /* Compile Elided Unittest Protos */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "--elide_message_metadata";
+			buildConfigurationList = 8B6C2BC52682A57600026204 /* Build configuration list for PBXLegacyTarget "Compile Elided Unittest Protos" */;
+			buildPhases = (
+			);
+			buildToolPath = DevTools/compile_testing_protos.sh;
+			buildWorkingDirectory = "";
+			dependencies = (
+			);
+			name = "Compile Elided Unittest Protos";
+			passBuildSettingsInEnvironment = 1;
+			productName = "Compile Unittest Protos";
+		};
 		F45BBC0E1B0CDB50002D064D /* Compile Unittest Protos */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION)";
+			buildArgumentsString = "";
 			buildConfigurationList = F45BBC111B0CDB50002D064D /* Build configuration list for PBXLegacyTarget "Compile Unittest Protos" */;
 			buildPhases = (
 			);
@@ -604,6 +716,26 @@
 			productName = "ProtocolBuffers-iPhoneDevice";
 			productReference = 7461B52E0F94FAF800A0C422 /* libProtocolBuffers.a */;
 			productType = "com.apple.product-type.library.static";
+		};
+		8B6C2B702682A55300026204 /* UnitTestsElidedProperties */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8B6C2BB72682A55300026204 /* Build configuration list for PBXNativeTarget "UnitTestsElidedProperties" */;
+			buildPhases = (
+				8B6C2B752682A55300026204 /* Script: Check Runtime Stamps */,
+				8B6C2B762682A55300026204 /* Resources */,
+				8B6C2B7C2682A55300026204 /* Sources */,
+				8B6C2BB32682A55300026204 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8B6C2B712682A55300026204 /* PBXTargetDependency */,
+				8B6C2BCD2682A59300026204 /* PBXTargetDependency */,
+			);
+			name = UnitTestsElidedProperties;
+			productName = UnitTests;
+			productReference = 8B6C2BBA2682A55300026204 /* UnitTestsElidedProperties.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		8BBEA4A5147C727100C4ADB7 /* UnitTests */ = {
 			isa = PBXNativeTarget;
@@ -677,11 +809,25 @@
 				8BBEA4A5147C727100C4ADB7 /* UnitTests */,
 				F4487C551A9F8F8100531423 /* TestSingleSourceBuild */,
 				F45BBC0E1B0CDB50002D064D /* Compile Unittest Protos */,
+				8B6C2B702682A55300026204 /* UnitTestsElidedProperties */,
+				8B6C2BC42682A57600026204 /* Compile Elided Unittest Protos */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		8B6C2B762682A55300026204 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B6C2B772682A55300026204 /* golden_message in Resources */,
+				8B6C2B782682A55300026204 /* text_format_extensions_unittest_data.txt in Resources */,
+				8B6C2B792682A55300026204 /* text_format_unittest_data.txt in Resources */,
+				8B6C2B7A2682A55300026204 /* golden_packed_fields_message in Resources */,
+				8B6C2B7B2682A55300026204 /* text_format_map_unittest_data.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8BBEA4A1147C727100C4ADB7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -697,6 +843,21 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		8B6C2B752682A55300026204 /* Script: Check Runtime Stamps */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Script: Check Runtime Stamps";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\nexec \"${SOURCE_ROOT}/DevTools/check_version_stamps.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		F4B62A791AF91F7500AFCEDC /* Script: Check Runtime Stamps */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -743,6 +904,67 @@
 				F45C69CC16DFD08D0081955B /* GPBExtensionInternals.m in Sources */,
 				8B4248E41A929C8900BC1EC6 /* GPBWellKnownTypes.m in Sources */,
 				F47CF96923D903C600C7B24C /* GPBTimestamp.pbobjc.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B6C2B7C2682A55300026204 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8B6C2B7D2682A55300026204 /* GPBCodedInputStreamTests.m in Sources */,
+				8B6C2B7E2682A55300026204 /* GPBCompileTest24.m in Sources */,
+				8B6C2B7F2682A55300026204 /* GPBCompileTest20.m in Sources */,
+				8B6C2B802682A55300026204 /* GPBArrayTests.m in Sources */,
+				8B6C2B812682A55300026204 /* GPBCompileTest10.m in Sources */,
+				8B6C2B822682A55300026204 /* GPBDictionaryTests+Int64.m in Sources */,
+				8B6C2B832682A55300026204 /* GPBCompileTest22.m in Sources */,
+				8B6C2B842682A55300026204 /* GPBCompileTest08.m in Sources */,
+				8B6C2B852682A55300026204 /* GPBCompileTest17.m in Sources */,
+				8B6C2B862682A55300026204 /* GPBDictionaryTests+UInt64.m in Sources */,
+				8B6C2B872682A55300026204 /* GPBCodedOuputStreamTests.m in Sources */,
+				8B6C2B882682A55300026204 /* GPBCompileTest23.m in Sources */,
+				8B6C2B892682A55300026204 /* GPBMessageTests.m in Sources */,
+				8B6C2B8A2682A55300026204 /* GPBMessageTests+Serialization.m in Sources */,
+				8B6C2B8B2682A55300026204 /* GPBCompileTest19.m in Sources */,
+				8B6C2B8C2682A55300026204 /* GPBCompileTest06.m in Sources */,
+				8B6C2B8D2682A55300026204 /* GPBCompileTest12.m in Sources */,
+				8B6C2B8E2682A55300026204 /* GPBWellKnownTypesTest.m in Sources */,
+				8B6C2B8F2682A55300026204 /* GPBCompileTest03.m in Sources */,
+				8B6C2B902682A55300026204 /* GPBCompileTest18.m in Sources */,
+				8B6C2B912682A55300026204 /* GPBCompileTest13.m in Sources */,
+				8B6C2B922682A55300026204 /* GPBCompileTest15.m in Sources */,
+				8B6C2B932682A55300026204 /* GPBCompileTest07.m in Sources */,
+				8B6C2B942682A55300026204 /* GPBDescriptorTests.m in Sources */,
+				8B6C2B952682A55300026204 /* GPBCompileTest21.m in Sources */,
+				8B6C2B962682A55300026204 /* GPBCompileTest11.m in Sources */,
+				8B6C2B972682A55300026204 /* GPBUnittestProtos2.m in Sources */,
+				8B6C2B982682A55300026204 /* GPBObjectiveCPlusPlusTest.mm in Sources */,
+				8B6C2B992682A55300026204 /* GPBSwiftTests.swift in Sources */,
+				8B6C2B9A2682A55300026204 /* GPBCompileTest25.m in Sources */,
+				8B6C2B9B2682A55300026204 /* GPBExtensionRegistryTest.m in Sources */,
+				8B6C2B9C2682A55300026204 /* GPBMessageTests+ClassNames.m in Sources */,
+				8B6C2B9D2682A55300026204 /* GPBConcurrencyTests.m in Sources */,
+				8B6C2B9E2682A55300026204 /* GPBMessageTests+Runtime.m in Sources */,
+				8B6C2B9F2682A55300026204 /* GPBCompileTest02.m in Sources */,
+				8B6C2BA02682A55300026204 /* GPBDictionaryTests+Int32.m in Sources */,
+				8B6C2BA12682A55300026204 /* GPBCompileTest05.m in Sources */,
+				8B6C2BA22682A55300026204 /* GPBCompileTest14.m in Sources */,
+				8B6C2BA32682A55300026204 /* GPBTestUtilities.m in Sources */,
+				8B6C2BA42682A55300026204 /* GPBCompileTest04.m in Sources */,
+				8B6C2BA52682A55300026204 /* GPBCompileTest16.m in Sources */,
+				8B6C2BA62682A55300026204 /* GPBPerfTests.m in Sources */,
+				8B6C2BA72682A55300026204 /* GPBDictionaryTests+Bool.m in Sources */,
+				8B6C2BA82682A55300026204 /* GPBMessageTests+Merge.m in Sources */,
+				8B6C2BA92682A55300026204 /* GPBCompileTest01.m in Sources */,
+				8B6C2BAA2682A55300026204 /* GPBUnknownFieldSetTest.m in Sources */,
+				8B6C2BAB2682A55300026204 /* GPBDictionaryTests+String.m in Sources */,
+				8B6C2BAC2682A55300026204 /* GPBDictionaryTests+UInt32.m in Sources */,
+				8B6C2BAD2682A55300026204 /* GPBCompileTest09.m in Sources */,
+				8B6C2BAE2682A55300026204 /* GPBUtilitiesTests.m in Sources */,
+				8B6C2BAF2682A55300026204 /* GPBDictionaryTests.m in Sources */,
+				8B6C2BB02682A55300026204 /* GPBWireFormatTests.m in Sources */,
+				8B6C2BB12682A55300026204 /* GPBUnittestProtos.m in Sources */,
+				8B6C2BB22682A55300026204 /* GPBARCUnittestProtos.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -818,6 +1040,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		8B6C2B712682A55300026204 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7461B52D0F94FAF800A0C422 /* ProtocolBuffers */;
+			targetProxy = 8B6C2B722682A55300026204 /* PBXContainerItemProxy */;
+		};
+		8B6C2BCD2682A59300026204 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8B6C2BC42682A57600026204 /* Compile Elided Unittest Protos */;
+			targetProxy = 8B6C2BCC2682A59300026204 /* PBXContainerItemProxy */;
+		};
 		8BBEA4BD147C729A00C4ADB7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 7461B52D0F94FAF800A0C422 /* ProtocolBuffers */;
@@ -853,6 +1085,79 @@
 			};
 			name = Release;
 		};
+		8B6C2BB82682A55300026204 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(DEVELOPER_DIR)/usr/lib\"",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/elided/protos $(SRCROOT)";
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-documentation-unknown-command",
+					"-Wno-reserved-id-macro",
+					"-Wno-direct-ivar-access",
+				);
+			};
+			name = Debug;
+		};
+		8B6C2BB92682A55300026204 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(DEVELOPER_DIR)/usr/lib\"",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
+				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/elided/protos $(SRCROOT)";
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-documentation-unknown-command",
+					"-Wno-reserved-id-macro",
+					"-Wno-direct-ivar-access",
+				);
+			};
+			name = Release;
+		};
+		8B6C2BC62682A57600026204 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		8B6C2BC72682A57600026204 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
 		8BBEA4A7147C727100C4ADB7 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -874,7 +1179,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/normal/protos $(SRCROOT)";
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
@@ -904,7 +1209,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_VERSION = 4.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/protos $(SRCROOT)";
+				USER_HEADER_SEARCH_PATHS = "${PROJECT_DERIVED_FILE_DIR}/normal/protos $(SRCROOT)";
 				WARNING_CFLAGS = (
 					"$(inherited)",
 					"-Wno-documentation-unknown-command",
@@ -1077,14 +1382,12 @@
 		F45BBC0F1B0CDB50002D064D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 			};
 			name = Debug;
 		};
 		F45BBC101B0CDB50002D064D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = YES;
 			};
 			name = Release;
 		};
@@ -1096,6 +1399,24 @@
 			buildConfigurations = (
 				7461B52F0F94FAFA00A0C422 /* Debug */,
 				7461B5300F94FAFA00A0C422 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8B6C2BB72682A55300026204 /* Build configuration list for PBXNativeTarget "UnitTestsElidedProperties" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B6C2BB82682A55300026204 /* Debug */,
+				8B6C2BB92682A55300026204 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8B6C2BC52682A57600026204 /* Build configuration list for PBXLegacyTarget "Compile Elided Unittest Protos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8B6C2BC62682A57600026204 /* Debug */,
+				8B6C2BC72682A57600026204 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
