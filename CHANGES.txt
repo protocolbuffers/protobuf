@@ -277,7 +277,7 @@
     collection directly instead of using the other methods of the BaseContainer.
   * MessageFactory.CreateProtoype can be overridden to customize class creation.
   * Fix PyUnknownFields memory leak (#7928)
-  * Add macOS big sur compatibility (#8126)
+  * Add macOS Big Sur compatibility (#8126)
 
   JavaScript
   * Generate `getDescriptor` methods with `*` as their `this` type.
