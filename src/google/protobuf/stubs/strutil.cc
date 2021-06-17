@@ -2101,7 +2101,7 @@ int Base64EscapeInternal(const unsigned char *src, int szsrc,
   char *limit_dest = dest + szdest;
   const unsigned char *limit_src = src + szsrc;
 
-  // Three bytes of data encodes to four characters of cyphertext.
+  // Three bytes of data encodes to four characters of ciphertext.
   // So we can pump through three-byte chunks atomically.
   while (cur_src < limit_src - 3) {  // keep going as long as we have >= 32 bits
     uint32 in = BigEndian::Load32(cur_src) >> 8;
@@ -2128,7 +2128,7 @@ int Base64EscapeInternal(const unsigned char *src, int szsrc,
       break;
     case 1: {
       // One byte left: this encodes to two characters, and (optionally)
-      // two pad characters to round out the four-character cypherblock.
+      // two pad characters to round out the four-character cipherblock.
       if ((szdest -= 2) < 0) return 0;
       uint32 in = cur_src[0];
       cur_dest[0] = base64[in >> 2];
@@ -2145,7 +2145,7 @@ int Base64EscapeInternal(const unsigned char *src, int szsrc,
     }
     case 2: {
       // Two bytes left: this encodes to three characters, and (optionally)
-      // one pad character to round out the four-character cypherblock.
+      // one pad character to round out the four-character cipherblock.
       if ((szdest -= 3) < 0) return 0;
       uint32 in = BigEndian::Load16(cur_src);
       cur_dest[0] = base64[in >> 10];
