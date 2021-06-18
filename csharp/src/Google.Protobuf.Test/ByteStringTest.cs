@@ -211,6 +211,22 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void CreateCodedInput_FromArraySegment()
+        {
+            byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            ByteString bs = UnsafeByteOperations.UnsafeWrap(data.AsMemory(2, 3));
+            CodedInputStream codedInputStream = bs.CreateCodedInput();
+
+            byte[] bytes = codedInputStream.ReadRawBytes(3);
+
+            Assert.AreEqual(3, bytes.Length);
+            Assert.AreEqual(2, bytes[0]);
+            Assert.AreEqual(3, bytes[1]);
+            Assert.AreEqual(4, bytes[2]);
+            Assert.IsTrue(codedInputStream.IsAtEnd);
+        }
+
+        [Test]
         public void WriteToStream()
         {
             byte[] data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
