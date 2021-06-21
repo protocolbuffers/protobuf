@@ -3,8 +3,8 @@
 # Build file to set up and run tests
 set -ex
 
-# Install the latest Bazel version available
-use_bazel.sh latest
+# Install Bazel 4.0.0.
+use_bazel.sh 4.0.0
 bazel version
 
 # Print bazel testlogs to stdout when tests failed.
