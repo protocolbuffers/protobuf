@@ -26,13 +26,6 @@ http_archive(
     ],
 )
 
-http_archive(
-    name = "bazel_common",
-    sha256 = "d8c9586b24ce4a5513d972668f94b62eb7d705b92405d4bc102131f294751f1d",
-    strip_prefix = "bazel-common-413b433b91f26dbe39cdbc20f742ad6555dd1e27",
-    url = "https://github.com/google/bazel-common/archive/413b433b91f26dbe39cdbc20f742ad6555dd1e27.zip",
-)
-
 # Load common dependencies.
 load("//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
@@ -41,14 +34,6 @@ bind(
     name = "python_headers",
     actual = "//util/python:python_headers",
 )
-
-load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
-
-rules_jvm_external_deps()
-
-load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
-
-rules_jvm_external_setup()
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 maven_install(

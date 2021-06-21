@@ -1,7 +1,7 @@
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//:version.bzl", "VERSION")
+load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
 java_export(

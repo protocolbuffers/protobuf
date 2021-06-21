@@ -3,7 +3,7 @@ load("@rules_java//java:defs.bzl", "java_library", "java_proto_library", "java_l
 load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("//:internal.bzl", "conformance_test")
-load("//:version.bzl", "VERSION")
+load("//:protobuf_version.bzl", "PROTOBUF_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
 LITE_SRCS = [
@@ -100,7 +100,7 @@ LITE_SRCS = [
 # Should be used as `//java/lite`.
 java_export(
     name = "lite",
-    maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % VERSION,
+    maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % PROTOBUF_VERSION,
     pom_template = "//java/lite:pom_template.xml",
     srcs = LITE_SRCS + [
         "//:gen_well_known_protos_javalite"
@@ -120,7 +120,7 @@ java_library(
 
 java_export(
     name = "core",
-    maven_coordinates = "com.google.protobuf:protobuf-java:%s" % VERSION,
+    maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_VERSION,
     pom_template = "pom_template.xml",
     srcs = glob(
         [
