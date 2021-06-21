@@ -1,7 +1,9 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:defs.bzl", "java_library", "java_proto_library", "java_lite_proto_library")
+load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("//:internal.bzl", "conformance_test")
+load("//:version.bzl", "VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
 LITE_SRCS = [
@@ -96,13 +98,18 @@ LITE_SRCS = [
 ]
 
 # Should be used as `//java/lite`.
-java_library(
+java_export(
     name = "lite",
+    maven_coordinates = "com.google.protobuf:protobuf-javalite:%s" % VERSION,
+    pom_template = "//java/lite:pom_template.xml",
     srcs = LITE_SRCS + [
         "//:gen_well_known_protos_javalite"
     ],
     visibility = [
         "//java/lite:__pkg__",
+    ],
+    resources = [
+        "//:lite_well_known_protos",
     ],
 )
 
@@ -111,8 +118,10 @@ java_library(
     srcs = LITE_SRCS,
 )
 
-java_library(
+java_export(
     name = "core",
+    maven_coordinates = "com.google.protobuf:protobuf-java:%s" % VERSION,
+    pom_template = "pom_template.xml",
     srcs = glob(
         [
             "src/main/java/com/google/protobuf/*.java",
@@ -127,6 +136,9 @@ java_library(
     ],
     deps = [
         ":lite_runtime_only",
+    ],
+    resources = [
+        "//:well_known_protos",
     ],
 )
 
@@ -324,3 +336,4 @@ junit_tests(
         "//external:truth",
     ]
 )
+
