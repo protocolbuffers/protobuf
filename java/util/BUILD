@@ -6,7 +6,7 @@ load("//java/internal:testing.bzl", "junit_tests")
 
 java_export(
     name = "util",
-    maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % VERSION,
+    maven_coordinates = "com.google.protobuf:protobuf-java-util:%s" % PROTOBUF_VERSION,
     pom_template = "pom_template.xml",
     srcs = glob([
         "src/main/java/com/google/protobuf/util/*.java",
