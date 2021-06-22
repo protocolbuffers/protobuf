@@ -3758,7 +3758,7 @@ public final class TestUtil {
 
   /** @param filePath The path relative to {@link #getTestDataDir}. */
   public static String readTextFromFile(String filePath) {
-    return readBytesFromFile(filePath).toStringUtf8();
+    return readBytesFromFile(filePath).toStringUtf8().replace(System.getProperty("line.separator"), "\n");
   }
 
   private static File getTestDataDir() {
