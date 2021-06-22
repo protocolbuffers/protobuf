@@ -154,7 +154,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Bazel Build](https://bazel.build)
     * [rules_closure](https://github.com/bazelbuild/rules_closure) `js-closure`
     * [rules_go](https://github.com/bazelbuild/rules_go) `go`
-    * [rules_protobuf](https://github.com/pubref/rules_protobuf) `java` `c++` `c#` `go` `js-closure` `js-node` `python` `ruby`
+    * [rules_proto](https://github.com/stackb/rules_proto) `java` `c++` `c#` `go` `js-closure` `js-node` `python` `ruby`. Formerly https://github.com/pubref/rules_protobuf
 * [NetBeans IDE plugin](http://code.google.com/p/protobuf-netbeans-plugin/)
 * [Wireshark/Ethereal packet sniffer plugin](http://code.google.com/p/protobuf-wireshark/)
 * [Alternate encodings (JSON, XML, HTML) for Java protobufs](http://code.google.com/p/protobuf-java-format/)
