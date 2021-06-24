@@ -150,11 +150,11 @@ bool ObjectiveCGenerator::GenerateAll(
       // is just what to do if that isn't set. The available options are:
       //   "no": Not prefixed (the existing mode).
       //   "yes": Make a prefix out of the proto package.
-      std::string lower_value(options[i].second);
-      LowerString(&lower_value);
-      if (lower_value == "no") {
+      std::string upper_value(options[i].second);
+      UpperString(&upper_value);
+      if (upper_value == "NO") {
         SetUseProtoPackageAsDefaultPrefix(false);
-      } else if (lower_value == "yes") {
+      } else if (upper_value == "YES") {
         SetUseProtoPackageAsDefaultPrefix(true);
       } else {
         *error = "error: Unknown use_package_as_prefix: " + options[i].second;
