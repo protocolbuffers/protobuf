@@ -228,7 +228,7 @@ build_java_with_conformance_tests() {
   cd ../..
   cd java/core && $MVN test && $MVN install
   cd ../lite && $MVN test && $MVN install
-  cd ../util && $MVN package assembly:single
+  cd ../util && $MVN test && $MVN install && $MVN package assembly:single
   if [ "$version" == "jdk8" ]; then
     cd ../kotlin && $MVN test && $MVN install
     cd ../kotlin-lite && $MVN test && $MVN install
