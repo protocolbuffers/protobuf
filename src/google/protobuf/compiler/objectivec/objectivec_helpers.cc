@@ -523,8 +523,7 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   // camelcase each one and then join them with underscores, and add an
   // underscore at the end.
   std::string result;
-  const std::vector<std::string> segments =
-      Split(file->package(), ".", true /* skip_empty */);
+  const std::vector<std::string> segments = Split(file->package(), ".", true);
   for (const auto& segment : segments) {
     const std::string part = UnderscoresToCamelCase(segment, true);
     if (part.empty()) {
