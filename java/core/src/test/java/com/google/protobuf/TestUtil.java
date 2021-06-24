@@ -3771,7 +3771,8 @@ public final class TestUtil {
       throw new RuntimeException("Couldn't get canonical name of working directory.", e);
     }
     while (ancestor != null && ancestor.exists()) {
-      if (new File(ancestor, "src/google/protobuf").exists()) {
+      // Identify the true source root.
+      if (new File(ancestor, "src/google/protobuf/descriptor.cc").exists()) {
         return new File(ancestor, "src/google/protobuf/testdata");
       }
       ancestor = ancestor.getParentFile();
