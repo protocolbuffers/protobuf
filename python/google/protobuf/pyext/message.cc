@@ -1976,15 +1976,13 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   if (ptr == nullptr || ctx.BytesUntilLimit(ptr) < 0) {
     // Parse error or the parser overshoot the limit.
     PyErr_Format(DecodeError_class, "Error parsing message");
-    return NULL;
+    return nullptr;
   }
   // ctx has an explicit limit set (length of string_view), so we have to
   // check we ended at that limit.
   if (!ctx.EndedAtLimit()) {
-    // TODO(jieluo): Raise error and return NULL instead.
-    // b/27494216
-    PyErr_Warn(nullptr, "Unexpected end-group tag: Not all data was converted");
-    return PyInt_FromLong(data.len - ctx.BytesUntilLimit(ptr));
+    PyErr_Format(DecodeError_class, "Unexpected end-group tag: Not all data was converted");
+    return nullptr;
   }
   return PyInt_FromLong(data.len);
 }
