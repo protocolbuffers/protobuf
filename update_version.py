@@ -364,6 +364,13 @@ def UpdateRuby():
       '  s.version     = "%s"' % GetFullVersion(rc_suffix = '.rc.'),
       line))
 
+def UpdateBazel():
+  RewriteTextFile('protobuf_version.bzl',
+    lambda line : re.sub(
+     r"^PROTOBUF_VERSION = '.*'$",
+     "PROTOBUF_VERSION = '%s'" % GetFullVersion(),
+     line))
+
 
 UpdateConfigure()
 UpdateCsharp()
@@ -375,3 +382,4 @@ UpdateObjectiveC()
 UpdatePhp()
 UpdatePython()
 UpdateRuby()
+UpdateBazel()
