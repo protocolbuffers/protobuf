@@ -631,9 +631,6 @@ class _Parser(object):
     """Convert a JSON representation into message with FromJsonString."""
     # Duration, Timestamp, FieldMask have a FromJsonString method to do the
     # conversion. Users can also call the method directly.
-    if not isinstance(value, str):
-      raise ParseError(
-          'Value must be in a str which is {0}.'.format(value))
     try:
       message.FromJsonString(value)
     except ValueError as e:
@@ -654,14 +651,14 @@ class _Parser(object):
     elif isinstance(value, _INT_OR_FLOAT):
       message.number_value = value
     else:
-      raise ParseError('Value {0} has unexpected type {1}.'.format(
+      raise ParseError('Value {!r} has unexpected type {}.'.format(
           value, type(value)))
 
   def _ConvertListValueMessage(self, value, message):
     """Convert a JSON representation into ListValue message."""
     if not isinstance(value, list):
       raise ParseError(
-          'ListValue must be in [] which is {0}.'.format(value))
+          'ListValue must be in [] which is {!r}.'.format(value))
     message.ClearField('values')
     for item in value:
       self._ConvertValueMessage(item, message.values.add())
@@ -670,7 +667,7 @@ class _Parser(object):
     """Convert a JSON representation into Struct message."""
     if not isinstance(value, dict):
       raise ParseError(
-          'Struct must be in a dict which is {0}.'.format(value))
+          'Struct must be in a dict which is {!r}.'.format(value))
     # Clear will mark the struct as modified so it will be created even if
     # there are no values.
     message.Clear()

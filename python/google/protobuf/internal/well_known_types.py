@@ -52,6 +52,7 @@ except ImportError:
   # Won't work after python 3.8
   import collections as collections_abc
 
+from google.protobuf import json_format
 from google.protobuf.descriptor import FieldDescriptor
 
 _TIMESTAMPFOMAT = '%Y-%m-%dT%H:%M:%S'
@@ -143,6 +144,9 @@ class Timestamp(object):
     Raises:
       ValueError: On parsing problems.
     """
+    if not isinstance(value, str):
+      raise json_format.ParseError(
+          'Timestamp JSON value not a string: {!r}'.format(value))
     timezone_offset = value.find('Z')
     if timezone_offset == -1:
       timezone_offset = value.find('+')
@@ -303,6 +307,9 @@ class Duration(object):
     Raises:
       ValueError: On parsing problems.
     """
+    if not isinstance(value, str):
+      raise json_format.ParseError(
+          'Duration JSON value not a string: {!r}'.format(value))
     if len(value) < 1 or value[-1] != 's':
       raise ValueError(
           'Duration must end with letter "s": {0}.'.format(value))
@@ -428,6 +435,9 @@ class FieldMask(object):
 
   def FromJsonString(self, value):
     """Converts string to FieldMask according to proto3 JSON spec."""
+    if not isinstance(value, str):
+      raise json_format.ParseError(
+          'FieldMask JSON value not a string: {!r}'.format(value))
     self.Clear()
     if value:
       for path in value.split(','):

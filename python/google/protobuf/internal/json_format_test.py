@@ -1119,12 +1119,28 @@ class JsonFormatTest(JsonFormatBase):
         'Failed to parse value field: Struct must be in a dict which is 1234',
         json_format.Parse, text, message)
 
-  def testInvalidStringValue(self):
+  def testTimestampInvalidStringValue(self):
     message = json_format_proto3_pb2.TestTimestamp()
     text = '{"value": {"foo": 123}}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        r"Failed to parse value field: Value must be in a str which is \{'foo': 123\}",
+        r"Timestamp JSON value not a string: {'foo': 123}",
+        json_format.Parse, text, message)
+
+  def testDurationInvalidStringValue(self):
+    message = json_format_proto3_pb2.TestDuration()
+    text = '{"value": {"foo": 123}}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r"Duration JSON value not a string: {'foo': 123}",
+        json_format.Parse, text, message)
+
+  def testFieldMaskInvalidStringValue(self):
+    message = json_format_proto3_pb2.TestFieldMask()
+    text = '{"value": {"foo": 123}}'
+    self.assertRaisesRegexp(
+        json_format.ParseError,
+        r"FieldMask JSON value not a string: {'foo': 123}",
         json_format.Parse, text, message)
 
   def testInvalidAny(self):
@@ -1225,7 +1241,7 @@ class JsonFormatTest(JsonFormatBase):
   def testParseDictUnknownValueType(self):
     class UnknownClass(object):
 
-      def __str__(self):
+      def __repr__(self):
         return 'v'
     message = json_format_proto3_pb2.TestValue()
     self.assertRaisesRegexp(
