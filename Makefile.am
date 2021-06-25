@@ -280,6 +280,7 @@ java_EXTRA_DIST=                                                                
   java/core/generate-sources-build.xml                                             \
   java/core/generate-test-sources-build.xml                                        \
   java/core/pom.xml                                                                \
+  java/core/pom_template.xml                                                       \
   java/core/src/main/java/com/google/protobuf/AbstractMessage.java                 \
   java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java             \
   java/core/src/main/java/com/google/protobuf/AbstractParser.java                  \
@@ -567,6 +568,7 @@ java_EXTRA_DIST=                                                                
   java/lite/generate-test-sources-build.xml                                        \
   java/lite/lite.awk                                                               \
   java/lite/pom.xml                                                                \
+  java/lite/pom_template.xml                                                       \
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/lite/src/test/java/com/google/protobuf/Proto2MessageLiteInfoFactory.java    \
@@ -574,6 +576,7 @@ java_EXTRA_DIST=                                                                
   java/pom.xml                                                                     \
   java/util/BUILD                                                                  \
   java/util/pom.xml                                                                \
+  java/util/pom_template.xml                                                       \
   java/util/src/main/java/com/google/protobuf/util/Durations.java                  \
   java/util/src/main/java/com/google/protobuf/util/FieldMaskTree.java              \
   java/util/src/main/java/com/google/protobuf/util/FieldMaskUtil.java              \
