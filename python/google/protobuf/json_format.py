@@ -651,14 +651,14 @@ class _Parser(object):
     elif isinstance(value, _INT_OR_FLOAT):
       message.number_value = value
     else:
-      raise ParseError('Value {!r} has unexpected type {}.'.format(
+      raise ParseError('Value {0} has unexpected type {1}.'.format(
           value, type(value)))
 
   def _ConvertListValueMessage(self, value, message):
     """Convert a JSON representation into ListValue message."""
     if not isinstance(value, list):
       raise ParseError(
-          'ListValue must be in [] which is {!r}.'.format(value))
+          'ListValue must be in [] which is {0}.'.format(value))
     message.ClearField('values')
     for item in value:
       self._ConvertValueMessage(item, message.values.add())
@@ -667,7 +667,7 @@ class _Parser(object):
     """Convert a JSON representation into Struct message."""
     if not isinstance(value, dict):
       raise ParseError(
-          'Struct must be in a dict which is {!r}.'.format(value))
+          'Struct must be in a dict which is {0}.'.format(value))
     # Clear will mark the struct as modified so it will be created even if
     # there are no values.
     message.Clear()
