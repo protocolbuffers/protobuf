@@ -4,6 +4,7 @@ load("//:internal.bzl", "conformance_test")
 load("//java/internal:testing.bzl", "junit_tests")
 
 exports_files(["lite.awk"], visibility = ["//java/core:__pkg__"])
+exports_files(["pom_template.xml"], visibility = ["//java/core:__pkg__"])
 
 alias(
     name = "lite",
