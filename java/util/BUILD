@@ -20,6 +20,17 @@ java_export(
     ],
 )
 
+filegroup(
+    name = "release",
+    visibility = ["//java:__pkg__"],
+    srcs = [
+        ":util-pom",
+        ":util-maven-source",
+        ":util-docs",
+        ":util-project",
+    ]
+)
+
 proto_library(
     name = "test_protos",
     srcs = glob(["src/test/proto/**/*.proto"]),

@@ -142,6 +142,21 @@ java_export(
     ],
 )
 
+filegroup(
+    name = "release",
+    visibility = ["//java:__pkg__"],
+    srcs = [
+        ":core-pom",
+        ":core-maven-source",
+        ":core-docs",
+        ":core-project",
+        ":lite-pom",
+        ":lite-maven-source",
+        ":lite-docs",
+        ":lite-project",
+    ]
+)
+
 proto_lang_toolchain(
     name = "toolchain",
     command_line = "--java_out=$(OUT)",
