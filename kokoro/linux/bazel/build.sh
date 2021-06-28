@@ -25,7 +25,7 @@ git submodule update --init --recursive
 trap print_test_logs EXIT
 bazel test --copt=-Werror --host_copt=-Werror \
   //:build_files_updated_unittest \
-  //java/... \
+  //java:tests \
   //:protoc \
   //:protobuf \
   //:protobuf_python \
