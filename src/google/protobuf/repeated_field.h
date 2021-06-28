@@ -2740,9 +2740,14 @@ RepeatedPtrField<Element>::pointer_end() const {
 namespace internal {
 // A back inserter for RepeatedField objects.
 template <typename T>
-class RepeatedFieldBackInsertIterator
-    : public std::iterator<std::output_iterator_tag, T> {
+class RepeatedFieldBackInsertIterator {
  public:
+  using iterator_category = std::output_iterator_tag;
+  using value_type = T;
+  using pointer = void;
+  using reference = void;
+  using difference_type = std::ptrdiff_t;
+
   explicit RepeatedFieldBackInsertIterator(
       RepeatedField<T>* const mutable_field)
       : field_(mutable_field) {}
@@ -2762,9 +2767,14 @@ class RepeatedFieldBackInsertIterator
 
 // A back inserter for RepeatedPtrField objects.
 template <typename T>
-class RepeatedPtrFieldBackInsertIterator
-    : public std::iterator<std::output_iterator_tag, T> {
+class RepeatedPtrFieldBackInsertIterator {
  public:
+  using iterator_category = std::output_iterator_tag;
+  using value_type = T;
+  using pointer = void;
+  using reference = void;
+  using difference_type = std::ptrdiff_t;
+
   RepeatedPtrFieldBackInsertIterator(RepeatedPtrField<T>* const mutable_field)
       : field_(mutable_field) {}
   RepeatedPtrFieldBackInsertIterator<T>& operator=(const T& value) {
@@ -2793,9 +2803,14 @@ class RepeatedPtrFieldBackInsertIterator
 // A back inserter for RepeatedPtrFields that inserts by transferring ownership
 // of a pointer.
 template <typename T>
-class AllocatedRepeatedPtrFieldBackInsertIterator
-    : public std::iterator<std::output_iterator_tag, T> {
+class AllocatedRepeatedPtrFieldBackInsertIterator {
  public:
+  using iterator_category = std::output_iterator_tag;
+  using value_type = T;
+  using pointer = void;
+  using reference = void;
+  using difference_type = std::ptrdiff_t;
+
   explicit AllocatedRepeatedPtrFieldBackInsertIterator(
       RepeatedPtrField<T>* const mutable_field)
       : field_(mutable_field) {}
@@ -2817,9 +2832,14 @@ class AllocatedRepeatedPtrFieldBackInsertIterator
 // Almost identical to AllocatedRepeatedPtrFieldBackInsertIterator. This one
 // uses the UnsafeArenaAddAllocated instead.
 template <typename T>
-class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator
-    : public std::iterator<std::output_iterator_tag, T> {
+class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
  public:
+  using iterator_category = std::output_iterator_tag;
+  using value_type = T;
+  using pointer = void;
+  using reference = void;
+  using difference_type = std::ptrdiff_t;
+
   explicit UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator(
       RepeatedPtrField<T>* const mutable_field)
       : field_(mutable_field) {}
