@@ -11,6 +11,7 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/dynamic_message.cc
   ${protobuf_source_dir}/src/google/protobuf/empty.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/extension_set_heavy.cc
+  ${protobuf_source_dir}/src/google/protobuf/field_access_listener.cc
   ${protobuf_source_dir}/src/google/protobuf/field_mask.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_reflection.cc
   ${protobuf_source_dir}/src/google/protobuf/generated_message_table_driven.cc
