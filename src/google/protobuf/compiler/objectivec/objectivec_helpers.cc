@@ -1234,6 +1234,8 @@ bool ValidateObjCClassPrefix(
   // without any prefix at all (for legacy reasons).
 
   bool has_prefix = file->options().has_objc_class_prefix();
+  bool have_expected_prefix_file = !expected_prefixes_path.empty();
+
   const std::string prefix = file->options().objc_class_prefix();
   const std::string package = file->package();
 
@@ -1267,6 +1269,61 @@ bool ValidateObjCClassPrefix(
     return true;
   }
 
+  // When the prefix is non empty, check it against the expected entries.
+  if (!prefix.empty() && have_expected_prefix_file) {
+    // For a non empty prefix, look for any other package that uses the prefix.
+    std::string other_package_for_prefix;
+    for (std::map<std::string, std::string>::const_iterator i =
+             expected_package_prefixes.begin();
+         i != expected_package_prefixes.end(); ++i) {
+      if (i->second == prefix) {
+        other_package_for_prefix = i->first;
+        break;
+      }
+    }
+
+    // Check: Warning - If the file does not have a package, check whether the
+    // prefix was declared is being used by another package or not. This is
+    // a special case for empty packages.
+    if (package.empty()) {
+      // The file does not have a package and ...
+      if (other_package_for_prefix.empty()) {
+        // ... no other package has declared that prefix.
+        std::cerr
+             << "protoc:0: warning: File '" << file->name() << "' has no "
+             << "package. Consider adding a new package to the proto and adding '"
+             << "new.package = " << prefix << "' to the expected prefixes file ("
+             << expected_prefixes_path << ")." << std::endl;
+        std::cerr.flush();
+      } else {
+        // ... another package has declared the same prefix.
+        std::cerr
+             << "protoc:0: warning: File '" << file->name() << "' has no package "
+             << "and package '" << other_package_for_prefix << "' already uses '"
+             << prefix << "' as its prefix. Consider either adding a new package "
+             << "to the proto, or reusing one of the packages already using this "
+             << "prefix in the expected prefixes file ("
+             << expected_prefixes_path << ")." << std::endl;
+        std::cerr.flush();
+      }
+      return true;
+    }
+
+    // Check: Error - Make sure the prefix wasn't expected for a different
+    // package (overlap is allowed, but it has to be listed as an expected
+    // overlap).
+    if (!other_package_for_prefix.empty()) {
+      *out_error =
+          "error: Found 'option objc_class_prefix = \"" + prefix +
+          "\";' in '" + file->name() +
+          "'; that prefix is already used for 'package " +
+          other_package_for_prefix + ";'. It can only be reused by listing " +
+          "it in the expected file (" +
+          expected_prefixes_path + ").";
+      return false;  // Only report first usage of the prefix.
+    }
+  } // !prefix.empty()
+
   // Check: Warning - Make sure the prefix is is a reasonable value according
   // to Apple's rules (the checks above implicitly whitelist anything that
   // doesn't meet these rules).
@@ -1288,62 +1345,9 @@ bool ValidateObjCClassPrefix(
     std::cerr.flush();
   }
 
-  // Look for any other package that uses the same (non empty) prefix.
-  std::string other_package_for_prefix;
-  if (!prefix.empty()) {
-    for (std::map<std::string, std::string>::const_iterator i =
-             expected_package_prefixes.begin();
-         i != expected_package_prefixes.end(); ++i) {
-      if (i->second == prefix) {
-        other_package_for_prefix = i->first;
-        break;
-      }
-    }
-  }
-
-  // Check: Warning - If the file does not have a package, check whether the non
-  // empty prefix declared is being used by another package or not.
-  if (package.empty() && !prefix.empty()) {
-    // The file does not have a package and ...
-    if (other_package_for_prefix.empty()) {
-      // ... no other package has declared that prefix.
-      std::cerr
-           << "protoc:0: warning: File '" << file->name() << "' has no "
-           << "package. Consider adding a new package to the proto and adding '"
-           << "new.package = " << prefix << "' to the expected prefixes file ("
-           << expected_prefixes_path << ")." << std::endl;
-      std::cerr.flush();
-    } else {
-      // ... another package has declared the same prefix.
-      std::cerr
-           << "protoc:0: warning: File '" << file->name() << "' has no package "
-           << "and package '" << other_package_for_prefix << "' already uses '"
-           << prefix << "' as its prefix. Consider either adding a new package "
-           << "to the proto, or reusing one of the packages already using this "
-           << "prefix in the expected prefixes file ("
-           << expected_prefixes_path << ")." << std::endl;
-      std::cerr.flush();
-    }
-    return true;
-  }
-
-  // Check: Error - Make sure the prefix wasn't expected for a different
-  // package (overlap is allowed, but it has to be listed as an expected
-  // overlap).
-  if (!other_package_for_prefix.empty()) {
-    *out_error =
-        "error: Found 'option objc_class_prefix = \"" + prefix +
-        "\";' in '" + file->name() +
-        "'; that prefix is already used for 'package " +
-        other_package_for_prefix + ";'. It can only be reused by listing " +
-        "it in the expected file (" +
-        expected_prefixes_path + ").";
-    return false;  // Only report first usage of the prefix.
-  }
-
   // Check: Warning - If the given package/prefix pair wasn't expected, issue a
   // warning suggesting it gets added to the file.
-  if (!expected_package_prefixes.empty()) {
+  if (have_expected_prefix_file) {
     std::cerr
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
@@ -1360,6 +1364,12 @@ bool ValidateObjCClassPrefix(
 bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                std::string* out_error) {
+  // Allow a '-' as the path for the expected prefixes to completely disable
+  // even the most basic of checks.
+  if (generation_options.expected_prefixes_path == "-") {
+    return true;
+  }
+
   // Load the expected package prefixes, if available, to validate against.
   std::map<std::string, std::string> expected_package_prefixes;
   if (!LoadExpectedPackagePrefixes(generation_options,
