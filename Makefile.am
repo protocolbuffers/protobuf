@@ -128,6 +128,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
   csharp/src/Google.Protobuf.Test/LegacyGeneratedCodeTest.cs                 \
+  csharp/src/Google.Protobuf.Test/MessageParserTest.cs                       \
   csharp/src/Google.Protobuf.Test/MessageParsingHelpers.cs                   \
   csharp/src/Google.Protobuf.Test/Proto3OptionalTest.cs                      \
   csharp/src/Google.Protobuf.Test/ReadOnlySequenceFactory.cs                 \
