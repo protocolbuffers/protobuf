@@ -126,7 +126,7 @@ bool PrefixModeStorage::is_package_exempted(const std::string& package) {
   if (exceptions_.empty() && !exception_path_.empty()) {
     std::string error_str;
     SimpleLineCollector collector(&exceptions_);
-    if (ParseSimpleFile(exception_path_, &collector, &error_str)) {
+    if (!ParseSimpleFile(exception_path_, &collector, &error_str)) {
       if (error_str.empty()) {
         error_str = std::string("protoc:0: warning: Failed to parse")
            + std::string(" package prefix exceptions file: ")
