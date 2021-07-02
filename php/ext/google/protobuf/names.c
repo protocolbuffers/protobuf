@@ -77,7 +77,7 @@ const char *const kReservedNames[] = {
     "do",           "echo",       "else",       "elseif",       "empty",
     "enddeclare",   "endfor",     "endforeach", "endif",        "endswitch",
     "endwhile",     "eval",       "exit",       "extends",      "final",
-    "finally",      "fn"          "for",        "foreach",      "function",
+    "finally",      "fn",         "for",        "foreach",      "function",
     "if",           "implements", "include",    "include_once", "instanceof",
     "global",       "goto",       "insteadof",  "interface",    "isset",
     "list",         "match",      "namespace",  "new",          "or",
