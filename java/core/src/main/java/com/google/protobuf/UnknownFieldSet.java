@@ -759,6 +759,9 @@ public final class UnknownFieldSet implements MessageLite {
 
     @Override
     public boolean equals(final Object other) {
+      if (other == null) {
+        return null;
+      }
       if (this == other) {
         return true;
       }
