@@ -61,7 +61,7 @@ const char* const kReservedNames[] = {
     "print",        "private",    "protected",  "public",     "require",
     "require_once", "return",     "static",     "switch",     "throw",
     "trait",        "try",        "unset",      "use",        "var",
-    "while",        "xor",        "yield"       "int",        "float",
+    "while",        "xor",        "yield",      "int",        "float",
     "bool",         "string",     "true",       "false",      "null",
     "void",         "iterable"};
 const char* const kValidConstantNames[] = {
