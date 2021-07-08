@@ -313,12 +313,12 @@ No presence:
 
 ```
 m := GetProto()
-if (m.GetFoo() != 0) {
+if m.Foo != 0 {
   // "Clear" the field:
-  m.Foo = 0;
+  m.Foo = 0
 } else {
   // Default value: field may not have been present.
-  m.Foo = 1;
+  m.Foo = 1
 }
 ```
 
@@ -326,12 +326,12 @@ Explicit presence:
 
 ```
 m := GetProto()
-if (m.HasFoo()) {
+if m.Foo != nil {
   // Clear the field:
   m.Foo = nil
 } else {
   // Field is not present, so set it.
-  m.Foo = proto.Int32(1);
+  m.Foo = proto.Int32(1)
 }
 ```
 
