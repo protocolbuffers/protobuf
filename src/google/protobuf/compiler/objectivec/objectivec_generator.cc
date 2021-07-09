@@ -28,8 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <unordered_set>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_file.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
@@ -180,6 +182,25 @@ bool ObjectiveCGenerator::GenerateAll(
 
   // -----------------------------------------------------------------
 
+  // These are not official generation options and could be removed/changed in
+  // the future and doing that won't count as a breaking change.
+  bool headers_only = getenv("GPB_OBJC_HEADERS_ONLY") != NULL;
+  std::unordered_set<std::string> skip_impls;
+  if (getenv("GPB_OBJC_SKIP_IMPLS_FILE") != NULL) {
+    std::ifstream skip_file(getenv("GPB_OBJC_SKIP_IMPLS_FILE"));
+    if (skip_file.is_open()) {
+      std::string line;
+      while (std::getline(skip_file, line)) {
+        skip_impls.insert(line);
+      }
+    } else {
+      *error = "error: Failed to open GPB_OBJC_SKIP_IMPLS_FILE file";
+      return false;
+    }
+  }
+
+  // -----------------------------------------------------------------
+
   // Validate the objc prefix/package pairings.
   if (!ValidateObjCClassPrefixes(files, generation_options, error)) {
     // *error will have been filled in.
@@ -200,7 +221,7 @@ bool ObjectiveCGenerator::GenerateAll(
     }
 
     // Generate m file.
-    {
+    if (!headers_only && skip_impls.count(file->name()) == 0) {
       std::unique_ptr<io::ZeroCopyOutputStream> output(
           context->Open(filepath + ".pbobjc.m"));
       io::Printer printer(output.get(), '$');
