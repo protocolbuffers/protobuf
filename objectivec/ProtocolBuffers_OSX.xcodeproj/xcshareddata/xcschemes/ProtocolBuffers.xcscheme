@@ -54,17 +54,8 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
-      codeCoverageEnabled = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "7461B52D0F94FAF800A0C422"
-            BuildableName = "libProtocolBuffers.a"
-            BlueprintName = "ProtocolBuffers"
-            ReferencedContainer = "container:ProtocolBuffers_OSX.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
+      codeCoverageEnabled = "YES"
+      shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -81,22 +72,18 @@
                </Test>
             </SkippedTests>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "8B6C2ADF2682952200026204"
-               BuildableName = "UnitTestsElidedProperties.xctest"
-               BlueprintName = "UnitTestsElidedProperties"
-               ReferencedContainer = "container:ProtocolBuffers_OSX.xcodeproj">
-            </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "PerfTests">
-               </Test>
-            </SkippedTests>
-         </TestableReference>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "7461B52D0F94FAF800A0C422"
+            BuildableName = "libProtocolBuffers.a"
+            BlueprintName = "ProtocolBuffers"
+            ReferencedContainer = "container:ProtocolBuffers_OSX.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -117,6 +104,8 @@
             ReferencedContainer = "container:ProtocolBuffers_OSX.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
+      <AdditionalOptions>
+      </AdditionalOptions>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

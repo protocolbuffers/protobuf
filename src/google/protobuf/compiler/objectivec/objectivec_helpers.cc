@@ -178,7 +178,6 @@ Options::Options() {
     expected_prefixes_suppressions =
         Split(suppressions, ";", true);
   }
-  elide_message_metadata = false;
 }
 
 namespace {

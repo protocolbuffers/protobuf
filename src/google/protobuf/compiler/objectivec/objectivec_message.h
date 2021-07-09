@@ -89,7 +89,6 @@ class MessageGenerator {
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<MessageGenerator>> nested_message_generators_;
   std::vector<std::unique_ptr<OneofGenerator>> oneof_generators_;
-  bool elide_message_metadata_;
 };
 
 }  // namespace objectivec

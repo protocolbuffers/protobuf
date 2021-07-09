@@ -140,12 +140,6 @@ bool ObjectiveCGenerator::GenerateAll(
       // header search path since the generate #import will be more complete.
       generation_options.runtime_import_prefix =
           StripSuffixString(options[i].second, "/");
-    } else if (options[i].first == "elide_message_metadata") {
-      // Controls whether or not property metadata is generated for messages.
-      // Turning this on gives a significant size decrease for messages at the cost
-      // of not being able to iterate through the properties using the Objective-C
-      // runtime.
-      generation_options.elide_message_metadata = true;
     } else if (options[i].first == "use_package_as_prefix") {
       // Controls how the symbols should be prefixed to avoid symbols
       // collisions. The objc_class_prefix file option is always honored, this
