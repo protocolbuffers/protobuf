@@ -114,11 +114,11 @@ class PROTOBUF_EXPORT Any final :
   // implements Any -----------------------------------------------
 
   bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message) {
-    return _any_metadata_.PackFrom(message);
+    return _any_metadata_.PackFrom(GetArena(), message);
   }
   bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message,
                 ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url_prefix) {
-    return _any_metadata_.PackFrom(message, type_url_prefix);
+    return _any_metadata_.PackFrom(GetArena(), message, type_url_prefix);
   }
   bool UnpackTo(::PROTOBUF_NAMESPACE_ID::Message* message) const {
     return _any_metadata_.UnpackTo(message);
