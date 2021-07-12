@@ -109,9 +109,7 @@ namespace Google.Protobuf
         {
             ProtoPreconditions.CheckNotNull(message, "message");
             byte[] result = new byte[message.CalculateSize()];
-            CodedOutputStream output = new CodedOutputStream(result);
-            message.WriteTo(output);
-            output.CheckNoSpaceLeft();
+            message.WriteTo(result);
             return result;
         }
 
