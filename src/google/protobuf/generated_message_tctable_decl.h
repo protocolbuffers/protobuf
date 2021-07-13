@@ -67,14 +67,19 @@ typedef const char* (*TailCallParseFunc)(MessageLite* msg, const char* ptr,
                                          const TailCallParseTableBase* table,
                                          uint64_t hasbits, TcFieldData data);
 
+#if defined(_MSC_VER) && !defined(_WIN64)
+#pragma warning(push)
+// TailCallParseTableBase is intentionally overaligned on 32 bit targets.
+#pragma warning(disable : 4324)
+#endif
+
 // Base class for message-level table with info for the tail-call parser.
-struct TailCallParseTableBase {
+struct alignas(uint64_t) TailCallParseTableBase {
   // Common attributes for message layout:
   uint16_t has_bits_offset;
   uint16_t extension_offset;
   uint32_t extension_range_low;
   uint32_t extension_range_high;
-  uint32_t has_bits_required_mask;
   const MessageLite* default_instance;
 
   // Handler for fields which are not handled by table dispatch.
@@ -92,6 +97,10 @@ struct TailCallParseTableBase {
     return reinterpret_cast<const FieldEntry*>(this + 1);
   }
 };
+
+#if defined(_MSC_VER) && !defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 static_assert(sizeof(TailCallParseTableBase::FieldEntry) <= 16,
               "Field entry is too big.");

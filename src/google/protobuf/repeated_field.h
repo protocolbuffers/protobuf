@@ -1089,18 +1089,18 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // It is also useful in legacy code that uses temporary ownership to avoid
   // copies. Example:
   //   RepeatedPtrField<T> temp_field;
-  //   temp_field.AddAllocated(new T);
+  //   temp_field.UnsafeArenaAddAllocated(new T);
   //   ... // Do something with temp_field
-  //   temp_field.ExtractSubrange(0, temp_field.size(), nullptr);
+  //   temp_field.UnsafeArenaExtractSubrange(0, temp_field.size(), nullptr);
   // If you put temp_field on the arena this fails, because the ownership
   // transfers to the arena at the "AddAllocated" call and is not released
   // anymore causing a double delete. UnsafeArenaAddAllocated prevents this.
   void UnsafeArenaAddAllocated(Element* value);
 
-  // Remove the last element and return it.  Works only when operating on an
-  // arena. The returned pointer is to the original object in the arena, hence
-  // has the arena's lifetime.
-  // Requires:  current_size_ > 0
+  // Remove the last element and return it.  Unlike ReleaseLast, the returned
+  // pointer is always to the original object.  This may be in an arena, and
+  // therefore have the arena's lifetime.
+  // Requires: current_size_ > 0
   Element* UnsafeArenaReleaseLast();
 
   // Extract elements with indices in the range "[start .. start+num-1]".
@@ -1120,10 +1120,10 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // UnsafeArenaExtractSubrange().
   void ExtractSubrange(int start, int num, Element** elements);
 
-  // Identical to ExtractSubrange() described above, except that when this
-  // repeated field is on an arena, no object copies are performed. Instead, the
-  // raw object pointers are returned. Thus, if on an arena, the returned
-  // objects must not be freed, because they will not be heap-allocated objects.
+  // Identical to ExtractSubrange() described above, except that no object
+  // copies are ever performed. Instead, the raw object pointers are returned.
+  // Thus, if on an arena, the returned objects must not be freed, because they
+  // will not be heap-allocated objects.
   void UnsafeArenaExtractSubrange(int start, int num, Element** elements);
 
   // When elements are removed by calls to RemoveLast() or Clear(), they
@@ -1978,9 +1978,7 @@ void RepeatedPtrFieldBase::AddAllocatedSlowWithCopy(
     // Pass value_arena and my_arena to avoid duplicate virtual call (value) or
     // load (mine).
     typename TypeHandler::Type* value, Arena* value_arena, Arena* my_arena) {
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   GOOGLE_DCHECK(value_arena == nullptr || value_arena == my_arena);
-#endif  // PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   // Ensure that either the value is in the same arena, or if not, we do the
   // appropriate thing: Own() it (if it's on heap and we're in an arena) or copy
   // it to our arena/heap (otherwise).
@@ -2285,11 +2283,9 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
 
   if (num == 0) return;
 
-#ifdef PROTOBUF_MUST_USE_EXTRACT_RESULT
   GOOGLE_DCHECK_NE(elements, nullptr)
       << "Releasing elements without transferring ownership is an unsafe "
          "operation.  Use UnsafeArenaExtractSubrange.";
-#endif
   if (elements == nullptr) {
     CloseGap(start, num);
     return;
@@ -2906,9 +2902,9 @@ AllocatedRepeatedPtrFieldBackInserter(
 // This is slightly faster if that matters. It is also useful in legacy code
 // that uses temporary ownership to avoid copies. Example:
 //   RepeatedPtrField<T> temp_field;
-//   temp_field.AddAllocated(new T);
+//   temp_field.UnsafeArenaAddAllocated(new T);
 //   ... // Do something with temp_field
-//   temp_field.ExtractSubrange(0, temp_field.size(), nullptr);
+//   temp_field.UnsafeArenaExtractSubrange(0, temp_field.size(), nullptr);
 // If you put temp_field on the arena this fails, because the ownership
 // transfers to the arena at the "AddAllocated" call and is not released anymore
 // causing a double delete. Using UnsafeArenaAddAllocated prevents this.

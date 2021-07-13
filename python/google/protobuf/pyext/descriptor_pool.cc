@@ -615,6 +615,7 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
     return NULL;
   }
 
+
   return PyFileDescriptor_FromDescriptorWithSerializedPb(
       descriptor, serialized_pb);
 }

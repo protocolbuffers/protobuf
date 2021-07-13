@@ -91,6 +91,7 @@ class ReflectionTester;  // defined in test_util.h
 namespace internal {
 
 struct ArenaStringPtr;  // defined in arenastring.h
+class InlinedStringField;  // defined in inlined_string_field.h
 class LazyField;        // defined in lazy_field.h
 class EpsCopyInputStream;  // defined in parse_context.h
 
@@ -632,9 +633,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     CreateInArenaStorageInternal(ptr, arena,
                                  typename is_arena_constructable<T>::type(),
                                  std::forward<Args>(args)...);
-    RegisterDestructorInternal(
-        ptr, arena,
-        typename InternalHelper<T>::is_destructor_skippable::type());
+    if (arena != nullptr) {
+      RegisterDestructorInternal(
+          ptr, arena,
+          typename InternalHelper<T>::is_destructor_skippable::type());
+    }
   }
 
   template <typename T, typename... Args>
@@ -788,6 +791,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename Type>
   friend class internal::GenericTypeHandler;
   friend struct internal::ArenaStringPtr;  // For AllocateAligned.
+  friend class internal::InlinedStringField;  // For AllocateAligned.
   friend class internal::LazyField;        // For CreateMaybeMessage.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class MessageLite;

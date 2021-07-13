@@ -136,14 +136,14 @@ std::pair<void*, SerialArena::CleanupNode*>
 SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, const AllocationPolicy* policy) {
   AllocateNewBlock(n + kCleanupSize, policy);
-  return AllocateAlignedWithCleanup(n, policy);
+  return AllocateFromExistingWithCleanupFallback(n);
 }
 
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedFallback(size_t n,
                                            const AllocationPolicy* policy) {
   AllocateNewBlock(n, policy);
-  return AllocateAligned(n, policy);
+  return AllocateFromExisting(n);
 }
 
 void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {

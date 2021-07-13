@@ -103,7 +103,13 @@ FileInputStream::CopyingFileInputStream::CopyingFileInputStream(
       close_on_delete_(false),
       is_closed_(false),
       errno_(0),
-      previous_seek_failed_(false) {}
+      previous_seek_failed_(false) {
+#ifndef _MSC_VER
+  int flags = fcntl(file_, F_GETFL);
+  flags &= ~O_NONBLOCK;
+  fcntl(file_, F_SETFL, flags);
+#endif
+}
 
 FileInputStream::CopyingFileInputStream::~CopyingFileInputStream() {
   if (close_on_delete_) {

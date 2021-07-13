@@ -145,6 +145,10 @@ struct ReflectionSchema {
     }
   }
 
+  bool IsFieldInlined(const FieldDescriptor* field) const {
+    return Inlined(offsets_[field->index()], field->type());
+  }
+
   uint32 GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
     return static_cast<uint32>(oneof_case_offset_) +
            static_cast<uint32>(static_cast<size_t>(oneof_descriptor->index()) *
@@ -164,6 +168,21 @@ struct ReflectionSchema {
   uint32 HasBitsOffset() const {
     GOOGLE_DCHECK(HasHasbits());
     return static_cast<uint32>(has_bits_offset_);
+  }
+
+  bool HasInlinedString() const { return inlined_string_donated_offset_ != -1; }
+
+  // Bit index within the bit array of _inlined_string_donated_.  Bit order is
+  // low-to-high.
+  uint32 InlinedStringIndex(const FieldDescriptor* field) const {
+    GOOGLE_DCHECK(HasInlinedString());
+    return inlined_string_indices_[field->index()];
+  }
+
+  // Byte offset of the _inlined_string_donated_ array.
+  uint32 InlinedStringDonatedOffset() const {
+    GOOGLE_DCHECK(HasInlinedString());
+    return static_cast<uint32>(inlined_string_donated_offset_);
   }
 
   // The offset of the InternalMetadataWithArena member.
@@ -240,14 +259,28 @@ struct ReflectionSchema {
   int oneof_case_offset_;
   int object_size_;
   int weak_field_map_offset_;
+  const uint32* inlined_string_indices_;
+  int inlined_string_donated_offset_;
 
   // We tag offset values to provide additional data about fields (such as
-  // "unused" or "lazy").
+  // "unused" or "lazy" or "inlined").
   static uint32 OffsetValue(uint32 v, FieldDescriptor::Type type) {
-    if (type == FieldDescriptor::TYPE_MESSAGE) {
+    if (type == FieldDescriptor::TYPE_MESSAGE ||
+        type == FieldDescriptor::TYPE_STRING ||
+        type == FieldDescriptor::TYPE_BYTES) {
       return v & 0x7FFFFFFEu;
     }
     return v & 0x7FFFFFFFu;
+  }
+
+  static bool Inlined(uint32 v, FieldDescriptor::Type type) {
+    if (type == FieldDescriptor::TYPE_STRING ||
+        type == FieldDescriptor::TYPE_BYTES) {
+      return (v & 1u) != 0u;
+    } else {
+      // Non string/byte fields are not inlined.
+      return false;
+    }
   }
 };
 
@@ -260,6 +293,7 @@ struct ReflectionSchema {
 struct MigrationSchema {
   int32 offsets_index;
   int32 has_bit_indices_index;
+  int32 inlined_string_indices_index;
   int object_size;
 };
 

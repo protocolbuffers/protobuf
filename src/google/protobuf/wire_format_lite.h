@@ -674,6 +674,13 @@ class PROTOBUF_EXPORT WireFormatLite {
   static inline size_t SInt32Size(int32 value);
   static inline size_t SInt64Size(int64 value);
   static inline size_t EnumSize(int value);
+  static inline size_t Int32SizePlusOne(int32 value);
+  static inline size_t Int64SizePlusOne(int64 value);
+  static inline size_t UInt32SizePlusOne(uint32 value);
+  static inline size_t UInt64SizePlusOne(uint64 value);
+  static inline size_t SInt32SizePlusOne(int32 value);
+  static inline size_t SInt64SizePlusOne(int64 value);
+  static inline size_t EnumSizePlusOne(int value);
 
   static size_t Int32Size(const RepeatedField<int32>& value);
   static size_t Int64Size(const RepeatedField<int64>& value);
@@ -1743,6 +1750,27 @@ inline size_t WireFormatLite::SInt64Size(int64 value) {
 }
 inline size_t WireFormatLite::EnumSize(int value) {
   return io::CodedOutputStream::VarintSize32SignExtended(value);
+}
+inline size_t WireFormatLite::Int32SizePlusOne(int32 value) {
+  return io::CodedOutputStream::VarintSize32SignExtendedPlusOne(value);
+}
+inline size_t WireFormatLite::Int64SizePlusOne(int64 value) {
+  return io::CodedOutputStream::VarintSize64PlusOne(static_cast<uint64>(value));
+}
+inline size_t WireFormatLite::UInt32SizePlusOne(uint32 value) {
+  return io::CodedOutputStream::VarintSize32PlusOne(value);
+}
+inline size_t WireFormatLite::UInt64SizePlusOne(uint64 value) {
+  return io::CodedOutputStream::VarintSize64PlusOne(value);
+}
+inline size_t WireFormatLite::SInt32SizePlusOne(int32 value) {
+  return io::CodedOutputStream::VarintSize32PlusOne(ZigZagEncode32(value));
+}
+inline size_t WireFormatLite::SInt64SizePlusOne(int64 value) {
+  return io::CodedOutputStream::VarintSize64PlusOne(ZigZagEncode64(value));
+}
+inline size_t WireFormatLite::EnumSizePlusOne(int value) {
+  return io::CodedOutputStream::VarintSize32SignExtendedPlusOne(value);
 }
 
 inline size_t WireFormatLite::StringSize(const std::string& value) {

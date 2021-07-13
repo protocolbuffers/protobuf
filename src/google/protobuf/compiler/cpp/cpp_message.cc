@@ -295,15 +295,6 @@ bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
   return true;
 }
 
-bool ShouldMarkClearAsFinal(const Descriptor* descriptor,
-                            const Options& options) {
-  static std::set<std::string> exclusions{
-  };
-
-  const std::string name = ClassName(descriptor, true);
-  return exclusions.find(name) == exclusions.end() ||
-         options.opensource_runtime;
-}
 
 // Returns true to make the message serialize in order, decided by the following
 // factors in the order of precedence.
@@ -553,6 +544,19 @@ bool ColdChunkSkipper::OnEndChunk(int chunk, io::Printer* printer) {
   return true;
 }
 
+void MaySetAnnotationVariable(const Options& options,
+                              StringPiece annotation_name,
+                              StringPiece injector_template_prefix,
+                              StringPiece injector_template_suffix,
+                              std::map<std::string, std::string>* variables) {
+  if (options.field_listener_options.forbidden_field_listener_events.count(
+          std::string(annotation_name)))
+    return;
+  (*variables)[StrCat("annotate_", annotation_name)] = strings::Substitute(
+      StrCat(injector_template_prefix, injector_template_suffix),
+      (*variables)["classtype"]);
+}
+
 }  // anonymous namespace
 
 // ===================================================================
@@ -567,6 +571,7 @@ MessageGenerator::MessageGenerator(
       options_(options),
       field_generators_(descriptor, options, scc_analyzer),
       max_has_bit_index_(0),
+      max_inlined_string_index_(0),
       num_weak_fields_(0),
       scc_analyzer_(scc_analyzer),
       variables_(vars) {
@@ -584,33 +589,23 @@ MessageGenerator::MessageGenerator(
   variables_["annotate_reflection"] = "";
   variables_["annotate_bytesize"] = "";
 
-  if (options.inject_field_listener_events &&
+  if (options.field_listener_options.inject_field_listener_events &&
       descriptor->file()->options().optimize_for() !=
           google::protobuf::FileOptions::LITE_RUNTIME) {
-    const std::string injector_template = StrCat(
-        "  {\n"
-        "    auto _listener_ = ::",
-        variables_["proto_ns"],
-        "::FieldAccessListener::GetListener();\n"
-        "    if (_listener_) ");
+    const std::string injector_template = "  _tracker_.";
 
-    StrAppend(&variables_["annotate_serialize"], injector_template,
-                    "_listener_->OnSerializationAccess(this);\n"
-                    "  }\n");
-    StrAppend(&variables_["annotate_deserialize"], injector_template,
-                    " _listener_->OnDeserializationAccess(this);\n"
-                    "  }\n");
+    MaySetAnnotationVariable(options, "serialize", injector_template,
+                             "OnSerialize(this);\n", &variables_);
+    MaySetAnnotationVariable(options, "deserialize", injector_template,
+                             "OnDeserialize(this);\n", &variables_);
     // TODO(danilak): Ideally annotate_reflection should not exist and we need
     // to annotate all reflective calls on our own, however, as this is a cause
     // for side effects, i.e. reading values dynamically, we want the users know
     // that dynamic access can happen.
-    StrAppend(&variables_["annotate_reflection"], injector_template,
-                    "_listener_->OnReflectionAccess(default_instance()"
-                    ".GetMetadata().descriptor);\n"
-                    "  }\n");
-    StrAppend(&variables_["annotate_bytesize"], injector_template,
-                    "_listener_->OnByteSizeAccess(this);\n"
-                    "  }\n");
+    MaySetAnnotationVariable(options, "reflection", injector_template,
+                             "OnGetMetadata();\n", &variables_);
+    MaySetAnnotationVariable(options, "bytesize", injector_template,
+                             "OnByteSize(this);\n", &variables_);
   }
 
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
@@ -640,10 +635,20 @@ MessageGenerator::MessageGenerator(
       }
       has_bit_indices_[field->index()] = max_has_bit_index_++;
     }
+    if (IsStringInlined(field, options_)) {
+      if (inlined_string_indices_.empty()) {
+        inlined_string_indices_.resize(descriptor_->field_count(), kNoHasbit);
+      }
+      inlined_string_indices_[field->index()] = max_inlined_string_index_++;
+    }
   }
 
   if (!has_bit_indices_.empty()) {
     field_generators_.SetHasBitIndices(has_bit_indices_);
+  }
+
+  if (!inlined_string_indices_.empty()) {
+    field_generators_.SetInlinedStringIndices(inlined_string_indices_);
   }
 
   num_required_fields_ = 0;
@@ -656,14 +661,18 @@ MessageGenerator::MessageGenerator(
   table_driven_ =
       TableDrivenParsingEnabled(descriptor_, options_, scc_analyzer_);
   parse_function_generator_.reset(new ParseFunctionGenerator(
-      descriptor_, max_has_bit_index_, has_bit_indices_, options_,
-      scc_analyzer_, variables_));
+      descriptor_, max_has_bit_index_, has_bit_indices_,
+      inlined_string_indices_, options_, scc_analyzer_, variables_));
 }
 
 MessageGenerator::~MessageGenerator() = default;
 
 size_t MessageGenerator::HasBitsSize() const {
   return (max_has_bit_index_ + 31) / 32;
+}
+
+size_t MessageGenerator::InlinedStringDonatedSize() const {
+  return (max_inlined_string_index_ + 31) / 32;
 }
 
 int MessageGenerator::HasBitIndex(const FieldDescriptor* field) const {
@@ -690,8 +699,8 @@ void MessageGenerator::AddGenerators(
     enum_generators_.push_back(enum_generators->back().get());
   }
   for (int i = 0; i < descriptor_->extension_count(); i++) {
-    extension_generators->emplace_back(
-        new ExtensionGenerator(descriptor_->extension(i), options_));
+    extension_generators->emplace_back(new ExtensionGenerator(
+        descriptor_->extension(i), options_, scc_analyzer_));
     extension_generators_.push_back(extension_generators->back().get());
   }
 }
@@ -1213,7 +1222,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "  return default_instance().GetMetadata().descriptor;\n"
         "}\n"
         "static const ::$proto_ns$::Reflection* GetReflection() {\n"
-        "$annotate_reflection$"
         "  return default_instance().GetMetadata().reflection;\n"
         "}\n");
   }
@@ -1386,11 +1394,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "void MergeFrom(const $classname$& from);\n");
     }
 
-    format.Set("clear_final",
-               ShouldMarkClearAsFinal(descriptor_, options_) ? "final" : "");
-
     format(
-        "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear()$ clear_final$;\n"
+        "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;\n"
         "bool IsInitialized() const final;\n"
         "\n"
         "size_t ByteSizeLong() const final;\n");
@@ -1407,6 +1412,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     if (!UseUnknownFieldSet(descriptor_->file(), options_)) {
       format("void DiscardUnknownFields()$ full_final$;\n");
     }
+  }
+
+  if (options_.field_listener_options.inject_field_listener_events) {
+    format("static constexpr int _kInternalFieldNumber = $1$;\n",
+           descriptor_->field_count());
   }
 
   format(
@@ -1560,6 +1570,21 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format(
         "::$proto_ns$::internal::ExtensionSet _extensions_;\n"
         "\n");
+  }
+
+  if (options_.field_listener_options.inject_field_listener_events &&
+      descriptor_->file()->options().optimize_for() !=
+          google::protobuf::FileOptions::LITE_RUNTIME) {
+    format("static ::$proto_ns$::AccessListener<$1$> _tracker_;\n",
+           ClassName(descriptor_));
+  }
+
+  // Generate _inlined_string_donated_ for inlined string type.
+  // TODO(congliu): To avoid affecting the locality of `_has_bits_`, should this
+  // be below or above `_has_bits_`?
+  if (!inlined_string_indices_.empty()) {
+    format("::$proto_ns$::internal::HasBits<$1$> _inlined_string_donated_;\n",
+           InlinedStringDonatedSize());
   }
 
   format(
@@ -1731,8 +1756,17 @@ void MessageGenerator::GenerateSchema(io::Printer* printer, int offset,
   has_offset = !has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)
                    ? offset + has_offset
                    : -1;
+  int inlined_string_indices_offset;
+  if (inlined_string_indices_.empty()) {
+    inlined_string_indices_offset = -1;
+  } else {
+    GOOGLE_DCHECK_NE(has_offset, -1);
+    GOOGLE_DCHECK(!IsMapEntryMessage(descriptor_));
+    inlined_string_indices_offset = has_offset + has_bit_indices_.size();
+  }
 
-  format("{ $1$, $2$, sizeof($classtype$)},\n", offset, has_offset);
+  format("{ $1$, $2$, $3$, sizeof($classtype$)},\n", offset, has_offset,
+         inlined_string_indices_offset);
 }
 
 namespace {
@@ -1746,7 +1780,9 @@ uint32_t CalcFieldNum(const FieldGenerator& generator,
   if (type == FieldDescriptor::TYPE_STRING ||
       type == FieldDescriptor::TYPE_BYTES) {
     // string field
-    if (IsCord(field, options)) {
+    if (generator.IsInlined()) {
+      type = internal::FieldMetadata::kInlinedType;
+    } else if (IsCord(field, options)) {
       type = internal::FieldMetadata::kCordType;
     } else if (IsStringPiece(field, options)) {
       type = internal::FieldMetadata::kStringPieceType;
@@ -1956,13 +1992,24 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         "  MergeFromInternal(other);\n"
         "}\n");
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format(
-          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-          "  return ::$proto_ns$::internal::AssignDescriptors(\n"
-          "      &$desc_table$_getter, &$desc_table$_once,\n"
-          "      $file_level_metadata$[$1$]);\n"
-          "}\n",
-          index_in_file_messages_);
+      if (!descriptor_->options().map_entry()) {
+        format(
+            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+            "$annotate_reflection$"
+            "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+            "      &$desc_table$_getter, &$desc_table$_once,\n"
+            "      $file_level_metadata$[$1$]);\n"
+            "}\n",
+            index_in_file_messages_);
+      } else {
+        format(
+            "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+            "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+            "      &$desc_table$_getter, &$desc_table$_once,\n"
+            "      $file_level_metadata$[$1$]);\n"
+            "}\n",
+            index_in_file_messages_);
+      }
     }
     return;
   }
@@ -2083,6 +2130,8 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     format("\n");
   }
 
+  GenerateVerify(printer);
+
   GenerateSwap(printer);
   format("\n");
 
@@ -2095,13 +2144,24 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         index_in_file_messages_);
   }
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format(
-        "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
-        "  return ::$proto_ns$::internal::AssignDescriptors(\n"
-        "      &$desc_table$_getter, &$desc_table$_once,\n"
-        "      $file_level_metadata$[$1$]);\n"
-        "}\n",
-        index_in_file_messages_);
+    if (!descriptor_->options().map_entry()) {
+      format(
+          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+          "$annotate_reflection$"
+          "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+          "      &$desc_table$_getter, &$desc_table$_once,\n"
+          "      $file_level_metadata$[$1$]);\n"
+          "}\n",
+          index_in_file_messages_);
+    } else {
+      format(
+          "::$proto_ns$::Metadata $classname$::GetMetadata() const {\n"
+          "  return ::$proto_ns$::internal::AssignDescriptors(\n"
+          "      &$desc_table$_getter, &$desc_table$_once,\n"
+          "      $file_level_metadata$[$1$]);\n"
+          "}\n",
+          index_in_file_messages_);
+    }
   } else {
     format(
         "std::string $classname$::GetTypeName() const {\n"
@@ -2110,6 +2170,14 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         "\n");
   }
 
+  if (options_.field_listener_options.inject_field_listener_events &&
+      descriptor_->file()->options().optimize_for() !=
+          google::protobuf::FileOptions::LITE_RUNTIME) {
+    format(
+        "::$proto_ns$::AccessListener<$classtype$> "
+        "$1$::_tracker_(&FullMessageName);\n",
+        ClassName(descriptor_));
+  }
 }
 
 size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
@@ -2148,9 +2216,13 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
     }
 
     processing_type = static_cast<unsigned>(field->type());
+    const FieldGenerator& generator = field_generators_.get(field);
     if (field->type() == FieldDescriptor::TYPE_STRING) {
       switch (EffectiveStringCType(field, options_)) {
         case FieldOptions::STRING:
+          if (generator.IsInlined()) {
+            processing_type = internal::TYPE_STRING_INLINED;
+          }
           break;
         case FieldOptions::CORD:
           processing_type = internal::TYPE_STRING_CORD;
@@ -2162,6 +2234,9 @@ size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
     } else if (field->type() == FieldDescriptor::TYPE_BYTES) {
       switch (EffectiveStringCType(field, options_)) {
         case FieldOptions::STRING:
+          if (generator.IsInlined()) {
+            processing_type = internal::TYPE_BYTES_INLINED;
+          }
           break;
         case FieldOptions::CORD:
           processing_type = internal::TYPE_BYTES_CORD;
@@ -2326,7 +2401,12 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   } else {
     format("~0u,  // no _weak_field_map_\n");
   }
-  const int kNumGenericOffsets = 5;  // the number of fixed offsets above
+  if (!inlined_string_indices_.empty()) {
+    format("PROTOBUF_FIELD_OFFSET($classtype$, _inlined_string_donated_),\n");
+  } else {
+    format("~0u,  // no _inlined_string_donated_\n");
+  }
+  const int kNumGenericOffsets = 6;  // the number of fixed offsets above
   const size_t offsets = kNumGenericOffsets + descriptor_->field_count() +
                          descriptor_->real_oneof_decl_count();
   size_t entries = offsets;
@@ -2345,10 +2425,18 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
       format("PROTOBUF_FIELD_OFFSET($classtype$, $1$_)", FieldName(field));
     }
 
+    // Some information about a field is in the pdproto profile. The profile is
+    // only available at compile time. So we embed such information in the
+    // offset of the field, so that the information is available when reflective
+    // accessing the field at run time.
+    //
+    // Embed whether the field is used to the MSB of the offset.
     if (!IsFieldUsed(field, options_)) {
       format(" | 0x80000000u, // unused\n");
     } else if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
       format(" | 0x1u, // eagerly verified lazy\n");
+    } else if (IsStringInlined(field, options_)) {
+      format(" | 0x1u, // inlined\n");
     } else {
       format(",\n");
     }
@@ -2371,6 +2459,15 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     for (int i = 0; i < has_bit_indices_.size(); i++) {
       const std::string index =
           has_bit_indices_[i] >= 0 ? StrCat(has_bit_indices_[i]) : "~0u";
+      format("$1$,\n", index);
+    }
+  }
+  if (!inlined_string_indices_.empty()) {
+    entries += inlined_string_indices_.size();
+    for (int inlined_string_indice : inlined_string_indices_) {
+      const std::string index = inlined_string_indice >= 0
+                                    ? StrCat(inlined_string_indice)
+                                    : "~0u";
       format("$1$,\n", index);
     }
   }
@@ -2593,7 +2690,8 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     bool has_arena_constructor = field->is_repeated();
     if (!field->real_containing_oneof() &&
         (IsLazy(field, options_, scc_analyzer_) ||
-         IsStringPiece(field, options_))) {
+         IsStringPiece(field, options_) ||
+         (IsString(field, options_) && IsStringInlined(field, options_)))) {
       has_arena_constructor = true;
     }
     if (has_arena_constructor) {
@@ -2620,14 +2718,25 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
   format(
       "$classname$::$classname$(::$proto_ns$::Arena* arena,\n"
       "                         bool is_message_owned)\n"
-      "  : $1$ {\n"
+      "  : $1$ {\n",
+      initializer_with_arena);
+
+  if (!inlined_string_indices_.empty()) {
+    // Donate inline string fields.
+    format("  if (arena != nullptr) {\n");
+    for (size_t i = 0; i < InlinedStringDonatedSize(); ++i) {
+      format("    _inlined_string_donated_[$1$] = ~0u;\n", i);
+    }
+    format("  }\n");
+  }
+
+  format(
       "  SharedCtor();\n"
       "  if (!is_message_owned) {\n"
       "    RegisterArenaDtor(arena);\n"
       "  }\n"
       "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
-      "}\n",
-      initializer_with_arena);
+      "}\n");
 
   std::map<std::string, std::string> vars;
   SetUnknownFieldsVariable(descriptor_, options_, &vars);
@@ -2651,6 +2760,9 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
     format.Indent();
     format.Indent();
     format.Indent();
+
+    // Do not copy inlined_string_donated_, because this is not an arena
+    // constructor.
 
     if (!has_bit_indices_.empty()) {
       format(",\n_has_bits_(from._has_bits_)");
@@ -2915,6 +3027,8 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
   if (num_weak_fields_) {
     format("_weak_field_map_.ClearAll();\n");
   }
+
+  // We don't clear donated status.
 
   if (!has_bit_indices_.empty()) {
     // Step 5: Everything else.
@@ -3299,6 +3413,9 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* printer) {
 
   format.Outdent();
   format("}\n");
+}
+
+void MessageGenerator::GenerateVerify(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateSerializeOneofFields(
@@ -3987,17 +4104,15 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
     format("total_size += _weak_field_map_.ByteSizeLong();\n");
   }
 
-  format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
   if (UseUnknownFieldSet(descriptor_->file(), options_)) {
     // We go out of our way to put the computation of the uncommon path of
     // unknown fields in tail position. This allows for better code generation
     // of this function for simple protos.
     format(
-        "  return ::$proto_ns$::internal::ComputeUnknownFieldsSize(\n"
-        "      _internal_metadata_, total_size, &_cached_size_);\n");
+        "return MaybeComputeUnknownFieldsSize(total_size, &_cached_size_);\n");
   } else {
+    format("if (PROTOBUF_PREDICT_FALSE($have_unknown_fields$)) {\n");
     format("  total_size += $unknown_fields$.size();\n");
-  }
   format("}\n");
 
   // We update _cached_size_ even though this is a const method.  Because
@@ -4012,6 +4127,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
       "int cached_size = ::$proto_ns$::internal::ToCachedSize(total_size);\n"
       "SetCachedSize(cached_size);\n"
       "return total_size;\n");
+  }
 
   format.Outdent();
   format("}\n");

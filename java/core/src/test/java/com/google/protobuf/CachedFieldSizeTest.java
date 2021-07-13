@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-import static org.junit.Assert.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import proto3_unittest.UnittestProto3;
@@ -59,7 +59,7 @@ public final class CachedFieldSizeTest {
     byte[] data3 = message.getProto3Child().toByteArray();
 
     // Make sure the serialized data is correct.
-    assertEquals(message.getProto2Child(), TestPackedTypes.parseFrom(data2));
-    assertEquals(message.getProto3Child(), UnittestProto3.TestPackedTypes.parseFrom(data3));
+    assertThat(TestPackedTypes.parseFrom(data2)).isEqualTo(message.getProto2Child());
+    assertThat(UnittestProto3.TestPackedTypes.parseFrom(data3)).isEqualTo(message.getProto3Child());
   }
 }

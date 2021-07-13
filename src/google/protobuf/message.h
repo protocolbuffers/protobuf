@@ -155,6 +155,7 @@ namespace internal {
 struct DescriptorTable;
 class MapFieldBase;
 class SwapFieldHelper;
+class CachedSize;
 }
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -388,6 +389,10 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   inline explicit Message(Arena* arena, bool is_message_owned = false)
       : MessageLite(arena, is_message_owned) {}
+  size_t ComputeUnknownFieldsSize(size_t total_size,
+                                  internal::CachedSize* cached_size) const;
+  size_t MaybeComputeUnknownFieldsSize(size_t total_size,
+                                       internal::CachedSize* cached_size) const;
 
 
  protected:
@@ -502,6 +507,12 @@ class PROTOBUF_EXPORT Reflection final {
   // pointer to the caller.  Caller takes ownership of the returned pointer.
   PROTOBUF_MUST_USE_RESULT Message* ReleaseLast(
       Message* message, const FieldDescriptor* field) const;
+
+  // Similar to ReleaseLast() without internal safety and ownershp checks. This
+  // method should only be used when the objects are on the same arena or paired
+  // with a call to `UnsafeArenaAddAllocatedMessage`.
+  Message* UnsafeArenaReleaseLast(Message* message,
+                                  const FieldDescriptor* field) const;
 
   // Swap the complete contents of two messages.
   void Swap(Message* message1, Message* message2) const;
@@ -764,6 +775,13 @@ class PROTOBUF_EXPORT Reflection final {
   // specified by 'field' passing ownership to the message.
   void AddAllocatedMessage(Message* message, const FieldDescriptor* field,
                            Message* new_entry) const;
+
+  // Similar to AddAllocatedMessage() without internal safety and ownership
+  // checks. This method should only be used when the objects are on the same
+  // arena or paired with a call to `UnsafeArenaReleaseLast`.
+  void UnsafeArenaAddAllocatedMessage(Message* message,
+                                      const FieldDescriptor* field,
+                                      Message* new_entry) const;
 
 
   // Get a RepeatedFieldRef object that can be used to read the underlying
@@ -1118,12 +1136,20 @@ class PROTOBUF_EXPORT Reflection final {
 
   internal::InternalMetadata* MutableInternalMetadata(Message* message) const;
 
+  inline bool IsInlined(const FieldDescriptor* field) const;
+
   inline bool HasBit(const Message& message,
                      const FieldDescriptor* field) const;
   inline void SetBit(Message* message, const FieldDescriptor* field) const;
   inline void ClearBit(Message* message, const FieldDescriptor* field) const;
   inline void SwapBit(Message* message1, Message* message2,
                       const FieldDescriptor* field) const;
+
+  inline const uint32* GetInlinedStringDonatedArray(
+      const Message& message) const;
+  inline uint32* MutableInlinedStringDonatedArray(Message* message) const;
+  inline bool IsInlinedStringDonated(const Message& message,
+                                     const FieldDescriptor* field) const;
 
   // Shallow-swap fields listed in fields vector of two messages. It is the
   // caller's responsibility to make sure shallow swap is safe.

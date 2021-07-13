@@ -3779,6 +3779,7 @@ public final class TestUtil {
     if (testBinaryName != null && testBinaryName.endsWith(".exe")) {
       srcRootCheck = srcRootCheck + "/descriptor.cc";
     }
+
     while (ancestor != null && ancestor.exists()) {
       // Identify the true source root.
       if (new File(ancestor, srcRootCheck).exists()) {

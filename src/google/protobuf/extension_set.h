@@ -99,11 +99,17 @@ typedef bool EnumValidityFuncWithArg(const void* arg, int number);
 // Information about a registered extension.
 struct ExtensionInfo {
   inline ExtensionInfo() {}
-  inline ExtensionInfo(FieldType type_param, bool isrepeated, bool ispacked)
-      : type(type_param),
+  inline ExtensionInfo(const MessageLite* extendee, int param_number,
+                       FieldType type_param, bool isrepeated, bool ispacked)
+      : message(extendee),
+        number(param_number),
+        type(type_param),
         is_repeated(isrepeated),
         is_packed(ispacked),
         descriptor(NULL) {}
+
+  const MessageLite* message;
+  int number;
 
   FieldType type;
   bool is_repeated;
@@ -143,15 +149,15 @@ class PROTOBUF_EXPORT ExtensionFinder {
 // files which have been compiled into the binary.
 class PROTOBUF_EXPORT GeneratedExtensionFinder : public ExtensionFinder {
  public:
-  GeneratedExtensionFinder(const MessageLite* containing_type)
-      : containing_type_(containing_type) {}
+  explicit GeneratedExtensionFinder(const MessageLite* extendee)
+      : extendee_(extendee) {}
   ~GeneratedExtensionFinder() override {}
 
   // Returns true and fills in *output if found, otherwise returns false.
   bool Find(int number, ExtensionInfo* output) override;
 
  private:
-  const MessageLite* containing_type_;
+  const MessageLite* extendee_;
 };
 
 // A FieldSkipper used for parsing MessageSet.
@@ -182,24 +188,22 @@ class PROTOBUF_EXPORT ExtensionSet {
   // to look up extensions for parsed field numbers.  Note that dynamic parsing
   // does not use ParseField(); only protocol-compiler-generated parsing
   // methods do.
-  static void RegisterExtension(const MessageLite* containing_type, int number,
+  static void RegisterExtension(const MessageLite* extendee, int number,
                                 FieldType type, bool is_repeated,
                                 bool is_packed);
-  static void RegisterEnumExtension(const MessageLite* containing_type,
-                                    int number, FieldType type,
-                                    bool is_repeated, bool is_packed,
-                                    EnumValidityFunc* is_valid);
-  static void RegisterMessageExtension(const MessageLite* containing_type,
-                                       int number, FieldType type,
-                                       bool is_repeated, bool is_packed,
+  static void RegisterEnumExtension(const MessageLite* extendee, int number,
+                                    FieldType type, bool is_repeated,
+                                    bool is_packed, EnumValidityFunc* is_valid);
+  static void RegisterMessageExtension(const MessageLite* extendee, int number,
+                                       FieldType type, bool is_repeated,
+                                       bool is_packed,
                                        const MessageLite* prototype);
 
   // =================================================================
 
   // Add all fields which are currently present to the given vector.  This
   // is useful to implement Reflection::ListFields().
-  void AppendToList(const Descriptor* containing_type,
-                    const DescriptorPool* pool,
+  void AppendToList(const Descriptor* extendee, const DescriptorPool* pool,
                     std::vector<const FieldDescriptor*>* output) const;
 
   // =================================================================
@@ -352,10 +356,13 @@ class PROTOBUF_EXPORT ExtensionSet {
                           MessageFactory* factory);
   void AddAllocatedMessage(const FieldDescriptor* descriptor,
                            MessageLite* new_entry);
+  void UnsafeArenaAddAllocatedMessage(const FieldDescriptor* descriptor,
+                                      MessageLite* new_entry);
 #undef desc
 
   void RemoveLast(int number);
   PROTOBUF_MUST_USE_RESULT MessageLite* ReleaseLast(int number);
+  MessageLite* UnsafeArenaReleaseLast(int number);
   void SwapElements(int number, int index1, int index2);
 
   // -----------------------------------------------------------------
@@ -382,42 +389,40 @@ class PROTOBUF_EXPORT ExtensionSet {
                   FieldSkipper* field_skipper);
 
   // Specific versions for lite or full messages (constructs the appropriate
-  // FieldSkipper automatically).  |containing_type| is the default
+  // FieldSkipper automatically).  |extendee| is the default
   // instance for the containing message; it is used only to look up the
   // extension by number.  See RegisterExtension(), above.  Unlike the other
   // methods of ExtensionSet, this only works for generated message types --
   // it looks up extensions registered using RegisterExtension().
   bool ParseField(uint32 tag, io::CodedInputStream* input,
-                  const MessageLite* containing_type);
+                  const MessageLite* extendee);
   bool ParseField(uint32 tag, io::CodedInputStream* input,
-                  const Message* containing_type,
-                  UnknownFieldSet* unknown_fields);
+                  const Message* extendee, UnknownFieldSet* unknown_fields);
   bool ParseField(uint32 tag, io::CodedInputStream* input,
-                  const MessageLite* containing_type,
+                  const MessageLite* extendee,
                   io::CodedOutputStream* unknown_fields);
 
   // Lite parser
   const char* ParseField(uint64 tag, const char* ptr,
-                         const MessageLite* containing_type,
+                         const MessageLite* extendee,
                          internal::InternalMetadata* metadata,
                          internal::ParseContext* ctx);
   // Full parser
-  const char* ParseField(uint64 tag, const char* ptr,
-                         const Message* containing_type,
+  const char* ParseField(uint64 tag, const char* ptr, const Message* extendee,
                          internal::InternalMetadata* metadata,
                          internal::ParseContext* ctx);
   template <typename Msg>
-  const char* ParseMessageSet(const char* ptr, const Msg* containing_type,
+  const char* ParseMessageSet(const char* ptr, const Msg* extendee,
                               InternalMetadata* metadata,
                               internal::ParseContext* ctx) {
     struct MessageSetItem {
       const char* _InternalParse(const char* ptr, ParseContext* ctx) {
-        return me->ParseMessageSetItem(ptr, containing_type, metadata, ctx);
+        return me->ParseMessageSetItem(ptr, extendee, metadata, ctx);
       }
       ExtensionSet* me;
-      const Msg* containing_type;
+      const Msg* extendee;
       InternalMetadata* metadata;
-    } item{this, containing_type, metadata};
+    } item{this, extendee, metadata};
     while (!ctx->Done(&ptr)) {
       uint32 tag;
       ptr = ReadTag(ptr, &tag);
@@ -430,7 +435,7 @@ class PROTOBUF_EXPORT ExtensionSet {
           ctx->SetLastTag(tag);
           return ptr;
         }
-        ptr = ParseField(tag, ptr, containing_type, metadata, ctx);
+        ptr = ParseField(tag, ptr, extendee, metadata, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       }
     }
@@ -448,11 +453,9 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Specific versions for lite or full messages (constructs the appropriate
   // FieldSkipper automatically).
-  bool ParseMessageSet(io::CodedInputStream* input,
-                       const MessageLite* containing_type,
+  bool ParseMessageSet(io::CodedInputStream* input, const MessageLite* extendee,
                        std::string* unknown_fields);
-  bool ParseMessageSet(io::CodedInputStream* input,
-                       const Message* containing_type,
+  bool ParseMessageSet(io::CodedInputStream* input, const Message* extendee,
                        UnknownFieldSet* unknown_fields);
 
   // Write all extension fields with field numbers in the range
@@ -679,7 +682,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // If flat_capacity_ > kMaximumFlatCapacity, converts to LargeMap.
   void GrowCapacity(size_t minimum_new_capacity);
   static constexpr uint16 kMaximumFlatCapacity = 256;
-  bool is_large() const { return flat_capacity_ > kMaximumFlatCapacity; }
+  bool is_large() const { return static_cast<int16>(flat_size_) < 0; }
 
   // Removes a key from the ExtensionSet.
   void Erase(int key);
@@ -772,36 +775,33 @@ class PROTOBUF_EXPORT ExtensionSet {
                            ExtensionFinder* extension_finder,
                            MessageSetFieldSkipper* field_skipper);
 
-  bool FindExtension(int wire_type, uint32 field,
-                     const MessageLite* containing_type,
+  bool FindExtension(int wire_type, uint32 field, const MessageLite* extendee,
                      const internal::ParseContext* /*ctx*/,
                      ExtensionInfo* extension, bool* was_packed_on_wire) {
-    GeneratedExtensionFinder finder(containing_type);
+    GeneratedExtensionFinder finder(extendee);
     return FindExtensionInfoFromFieldNumber(wire_type, field, &finder,
                                             extension, was_packed_on_wire);
   }
   inline bool FindExtension(int wire_type, uint32 field,
-                            const Message* containing_type,
+                            const Message* extendee,
                             const internal::ParseContext* ctx,
                             ExtensionInfo* extension, bool* was_packed_on_wire);
   // Used for MessageSet only
   const char* ParseFieldMaybeLazily(uint64 tag, const char* ptr,
-                                    const MessageLite* containing_type,
+                                    const MessageLite* extendee,
                                     internal::InternalMetadata* metadata,
                                     internal::ParseContext* ctx) {
     // Lite MessageSet doesn't implement lazy.
-    return ParseField(tag, ptr, containing_type, metadata, ctx);
+    return ParseField(tag, ptr, extendee, metadata, ctx);
   }
   const char* ParseFieldMaybeLazily(uint64 tag, const char* ptr,
-                                    const Message* containing_type,
+                                    const Message* extendee,
                                     internal::InternalMetadata* metadata,
                                     internal::ParseContext* ctx);
-  const char* ParseMessageSetItem(const char* ptr,
-                                  const MessageLite* containing_type,
+  const char* ParseMessageSetItem(const char* ptr, const MessageLite* extendee,
                                   internal::InternalMetadata* metadata,
                                   internal::ParseContext* ctx);
-  const char* ParseMessageSetItem(const char* ptr,
-                                  const Message* containing_type,
+  const char* ParseMessageSetItem(const char* ptr, const Message* extendee,
                                   internal::InternalMetadata* metadata,
                                   internal::ParseContext* ctx);
 
@@ -813,8 +813,7 @@ class PROTOBUF_EXPORT ExtensionSet {
                                           const char* ptr,
                                           internal::ParseContext* ctx);
   template <typename Msg, typename T>
-  const char* ParseMessageSetItemTmpl(const char* ptr,
-                                      const Msg* containing_type,
+  const char* ParseMessageSetItemTmpl(const char* ptr, const Msg* extendee,
                                       internal::InternalMetadata* metadata,
                                       internal::ParseContext* ctx);
 
@@ -851,7 +850,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // map_.flat is an allocated array of flat_capacity_ elements.
   // [map_.flat, map_.flat + flat_size_) is the currently-in-use prefix.
   uint16 flat_capacity_;
-  uint16 flat_size_;
+  uint16 flat_size_;  // negative int16(flat_size_) indicates is_large()
   union AllocatedData {
     KeyValue* flat;
 

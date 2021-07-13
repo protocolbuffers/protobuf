@@ -175,6 +175,7 @@ int PluginMain(int argc, char* argv[], const CodeGenerator* generator) {
     return 1;
   }
 
+
   std::string error_msg;
   CodeGeneratorResponse response;
 

@@ -287,6 +287,13 @@ void ExtensionSet::AddAllocatedMessage(const FieldDescriptor* descriptor,
   extension->repeated_message_value->AddAllocated(new_entry);
 }
 
+void ExtensionSet::UnsafeArenaAddAllocatedMessage(
+    const FieldDescriptor* descriptor, MessageLite* new_entry) {
+  Extension* extension = MaybeNewRepeatedExtension(descriptor);
+
+  extension->repeated_message_value->UnsafeArenaAddAllocated(new_entry);
+}
+
 static bool ValidateEnumUsingDescriptor(const void* arg, int number) {
   return reinterpret_cast<const EnumDescriptor*>(arg)->FindValueByNumber(
              number) != NULL;
