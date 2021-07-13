@@ -40,7 +40,7 @@ import com.google.protobuf.MessageLite
  */
 class ExtensionList<E, M : MessageLite> @OnlyForUseByGeneratedProtoCode constructor(
   val extension: ExtensionLite<M, List<E>>,
-  @JvmField private val delegate: List<E>
+  private val delegate: List<E>
 ) : List<E> by delegate {
   override fun iterator(): Iterator<E> = UnmodifiableIterator(delegate.iterator())
 
