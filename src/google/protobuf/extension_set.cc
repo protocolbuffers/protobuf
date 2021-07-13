@@ -35,8 +35,9 @@
 #include <google/protobuf/extension_set.h>
 
 #include <tuple>
-#include <unordered_map>
+#include <unordered_set>
 #include <utility>
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/extension_set_inl.h>
 #include <google/protobuf/parse_context.h>
@@ -84,39 +85,53 @@ inline bool is_packable(WireFormatLite::WireType type) {
 }
 
 // Registry stuff.
-struct ExtensionHasher {
-  std::size_t operator()(const std::pair<const MessageLite*, int>& p) const {
-    return std::hash<const MessageLite*>{}(p.first) ^
-           std::hash<int>{}(p.second);
+
+// Note that we cannot use hetererogeneous lookup for std containers since we
+// need to support C++11.
+struct ExtensionEq {
+  bool operator()(const ExtensionInfo& lhs, const ExtensionInfo& rhs) const {
+    return lhs.message == rhs.message && lhs.number == rhs.number;
   }
 };
 
-typedef std::unordered_map<std::pair<const MessageLite*, int>, ExtensionInfo,
-                           ExtensionHasher>
-    ExtensionRegistry;
+struct ExtensionHasher {
+  std::size_t operator()(const ExtensionInfo& info) const {
+    return std::hash<const MessageLite*>{}(info.message) ^
+           std::hash<int>{}(info.number);
+  }
+};
+
+using ExtensionRegistry =
+    std::unordered_set<ExtensionInfo, ExtensionHasher, ExtensionEq>;
 
 static const ExtensionRegistry* global_registry = nullptr;
 
 // This function is only called at startup, so there is no need for thread-
 // safety.
-void Register(const MessageLite* containing_type, int number,
-              ExtensionInfo info) {
+void Register(const ExtensionInfo& info) {
   static auto local_static_registry = OnShutdownDelete(new ExtensionRegistry);
   global_registry = local_static_registry;
-  if (!InsertIfNotPresent(local_static_registry,
-                               std::make_pair(containing_type, number), info)) {
+  if (!InsertIfNotPresent(local_static_registry, info)) {
     GOOGLE_LOG(FATAL) << "Multiple extension registrations for type \""
-               << containing_type->GetTypeName() << "\", field number "
-               << number << ".";
+               << info.message->GetTypeName() << "\", field number "
+               << info.number << ".";
   }
 }
 
-const ExtensionInfo* FindRegisteredExtension(const MessageLite* containing_type,
+const ExtensionInfo* FindRegisteredExtension(const MessageLite* extendee,
                                              int number) {
-  return global_registry == nullptr
-             ? nullptr
-             : FindOrNull(*global_registry,
-                               std::make_pair(containing_type, number));
+  if (!global_registry) return nullptr;
+
+  ExtensionInfo info;
+  info.message = extendee;
+  info.number = number;
+
+  auto it = global_registry->find(info);
+  if (it == global_registry->end()) {
+    return nullptr;
+  } else {
+    return &*it;
+  }
 }
 
 }  // namespace
@@ -124,8 +139,7 @@ const ExtensionInfo* FindRegisteredExtension(const MessageLite* containing_type,
 ExtensionFinder::~ExtensionFinder() {}
 
 bool GeneratedExtensionFinder::Find(int number, ExtensionInfo* output) {
-  const ExtensionInfo* extension =
-      FindRegisteredExtension(containing_type_, number);
+  const ExtensionInfo* extension = FindRegisteredExtension(extendee_, number);
   if (extension == NULL) {
     return false;
   } else {
@@ -134,14 +148,14 @@ bool GeneratedExtensionFinder::Find(int number, ExtensionInfo* output) {
   }
 }
 
-void ExtensionSet::RegisterExtension(const MessageLite* containing_type,
-                                     int number, FieldType type,
-                                     bool is_repeated, bool is_packed) {
+void ExtensionSet::RegisterExtension(const MessageLite* extendee, int number,
+                                     FieldType type, bool is_repeated,
+                                     bool is_packed) {
   GOOGLE_CHECK_NE(type, WireFormatLite::TYPE_ENUM);
   GOOGLE_CHECK_NE(type, WireFormatLite::TYPE_MESSAGE);
   GOOGLE_CHECK_NE(type, WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(type, is_repeated, is_packed);
-  Register(containing_type, number, info);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
+  Register(info);
 }
 
 static bool CallNoArgValidityFunc(const void* arg, int number) {
@@ -157,27 +171,27 @@ static bool CallNoArgValidityFunc(const void* arg, int number) {
   return ((EnumValidityFunc*)arg)(number);
 }
 
-void ExtensionSet::RegisterEnumExtension(const MessageLite* containing_type,
+void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
                                          int number, FieldType type,
                                          bool is_repeated, bool is_packed,
                                          EnumValidityFunc* is_valid) {
   GOOGLE_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
-  ExtensionInfo info(type, is_repeated, is_packed);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
   info.enum_validity_check.func = CallNoArgValidityFunc;
   // See comment in CallNoArgValidityFunc() about why we use a c-style cast.
   info.enum_validity_check.arg = (void*)is_valid;
-  Register(containing_type, number, info);
+  Register(info);
 }
 
-void ExtensionSet::RegisterMessageExtension(const MessageLite* containing_type,
+void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
                                             int number, FieldType type,
                                             bool is_repeated, bool is_packed,
                                             const MessageLite* prototype) {
   GOOGLE_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
         type == WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(type, is_repeated, is_packed);
+  ExtensionInfo info(extendee, number, type, is_repeated, is_packed);
   info.message_info = {prototype};
-  Register(containing_type, number, info);
+  Register(info);
 }
 
 // ===================================================================
@@ -220,7 +234,7 @@ void ExtensionSet::DeleteFlatMap(const ExtensionSet::KeyValue* flat,
 }
 
 // Defined in extension_set_heavy.cc.
-// void ExtensionSet::AppendToList(const Descriptor* containing_type,
+// void ExtensionSet::AppendToList(const Descriptor* extendee,
 //                                 const DescriptorPool* pool,
 //                                 vector<const FieldDescriptor*>* output) const
 
@@ -616,10 +630,8 @@ void ExtensionSet::SetAllocatedMessage(int number, FieldType type,
     ClearExtension(number);
     return;
   }
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   GOOGLE_DCHECK(message->GetOwningArena() == nullptr ||
          message->GetOwningArena() == arena_);
-#endif  // PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   Arena* message_arena = message->GetOwningArena();
   Extension* extension;
   if (MaybeNewExtension(number, descriptor, &extension)) {
@@ -834,6 +846,14 @@ MessageLite* ExtensionSet::ReleaseLast(int number) {
   GOOGLE_DCHECK(extension->is_repeated);
   GOOGLE_DCHECK(cpp_type(extension->type) == WireFormatLite::CPPTYPE_MESSAGE);
   return extension->repeated_message_value->ReleaseLast();
+}
+
+MessageLite* ExtensionSet::UnsafeArenaReleaseLast(int number) {
+  Extension* extension = FindOrNull(number);
+  GOOGLE_CHECK(extension != nullptr) << "Index out-of-bounds (field is empty).";
+  GOOGLE_DCHECK(extension->is_repeated);
+  GOOGLE_DCHECK(cpp_type(extension->type) == WireFormatLite::CPPTYPE_MESSAGE);
+  return extension->repeated_message_value->UnsafeArenaReleaseLast();
 }
 
 void ExtensionSet::SwapElements(int number, int index1, int index2) {
@@ -1208,10 +1228,10 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
 }
 
 const char* ExtensionSet::ParseField(uint64 tag, const char* ptr,
-                                     const MessageLite* containing_type,
+                                     const MessageLite* extendee,
                                      internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
-  GeneratedExtensionFinder finder(containing_type);
+  GeneratedExtensionFinder finder(extendee);
   int number = tag >> 3;
   bool was_packed_on_wire;
   ExtensionInfo extension;
@@ -1225,9 +1245,9 @@ const char* ExtensionSet::ParseField(uint64 tag, const char* ptr,
 }
 
 const char* ExtensionSet::ParseMessageSetItem(
-    const char* ptr, const MessageLite* containing_type,
+    const char* ptr, const MessageLite* extendee,
     internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl<MessageLite, std::string>(ptr, containing_type,
+  return ParseMessageSetItemTmpl<MessageLite, std::string>(ptr, extendee,
                                                            metadata, ctx);
 }
 
@@ -1405,17 +1425,17 @@ bool ExtensionSet::ParseFieldWithExtensionInfo(int number,
 }
 
 bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
-                              const MessageLite* containing_type) {
+                              const MessageLite* extendee) {
   FieldSkipper skipper;
-  GeneratedExtensionFinder finder(containing_type);
+  GeneratedExtensionFinder finder(extendee);
   return ParseField(tag, input, &finder, &skipper);
 }
 
 bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
-                              const MessageLite* containing_type,
+                              const MessageLite* extendee,
                               io::CodedOutputStream* unknown_fields) {
   CodedOutputStreamFieldSkipper skipper(unknown_fields);
-  GeneratedExtensionFinder finder(containing_type);
+  GeneratedExtensionFinder finder(extendee);
   return ParseField(tag, input, &finder, &skipper);
 }
 
@@ -1465,12 +1485,12 @@ bool ExtensionSet::ParseMessageSetItemLite(io::CodedInputStream* input,
 }
 
 bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
-                                   const MessageLite* containing_type,
+                                   const MessageLite* extendee,
                                    std::string* unknown_fields) {
   io::StringOutputStream zcis(unknown_fields);
   io::CodedOutputStream output(&zcis);
   CodedOutputStreamFieldSkipper skipper(&output);
-  GeneratedExtensionFinder finder(containing_type);
+  GeneratedExtensionFinder finder(extendee);
   return ParseMessageSetLite(input, &finder, &skipper);
 }
 
@@ -1807,16 +1827,15 @@ bool ExtensionSet::Extension::IsInitialized() const {
 void ExtensionSet::LazyMessageExtension::UnusedKeyMethod() {}
 
 const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
-  if (PROTOBUF_PREDICT_FALSE(is_large())) {
+  if (flat_size_ == 0) {
+    return nullptr;
+  } else if (PROTOBUF_PREDICT_TRUE(!is_large())) {
+    auto it = std::lower_bound(flat_begin(), flat_end() - 1, key,
+                               KeyValue::FirstComparator());
+    return it->first == key ? &it->second : nullptr;
+  } else {
     return FindOrNullInLargeMap(key);
   }
-  const KeyValue* end = flat_end();
-  const KeyValue* it =
-      std::lower_bound(flat_begin(), end, key, KeyValue::FirstComparator());
-  if (it != end && it->first == key) {
-    return &it->second;
-  }
-  return NULL;
 }
 
 const ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(
@@ -1830,25 +1849,14 @@ const ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(
 }
 
 ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) {
-  if (PROTOBUF_PREDICT_FALSE(is_large())) {
-    return FindOrNullInLargeMap(key);
-  }
-  KeyValue* end = flat_end();
-  KeyValue* it =
-      std::lower_bound(flat_begin(), end, key, KeyValue::FirstComparator());
-  if (it != end && it->first == key) {
-    return &it->second;
-  }
-  return NULL;
+  const auto* const_this = this;
+  return const_cast<ExtensionSet::Extension*>(const_this->FindOrNull(key));
 }
 
 ExtensionSet::Extension* ExtensionSet::FindOrNullInLargeMap(int key) {
-  assert(is_large());
-  LargeMap::iterator it = map_.large->find(key);
-  if (it != map_.large->end()) {
-    return &it->second;
-  }
-  return NULL;
+  const auto* const_this = this;
+  return const_cast<ExtensionSet::Extension*>(
+      const_this->FindOrNullInLargeMap(key));
 }
 
 std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(int key) {
@@ -1895,6 +1903,8 @@ void ExtensionSet::GrowCapacity(size_t minimum_new_capacity) {
     for (const KeyValue* it = begin; it != end; ++it) {
       hint = new_map.large->insert(hint, {it->first, it->second});
     }
+    flat_size_ = static_cast<uint16>(-1);
+    GOOGLE_DCHECK(is_large());
   } else {
     new_map.flat = Arena::CreateArray<KeyValue>(arena_, new_flat_capacity);
     std::copy(begin, end, new_map.flat);

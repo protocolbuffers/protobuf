@@ -43,6 +43,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/stubs/mutex.h>
@@ -61,6 +62,7 @@ using google::protobuf::internal::DescriptorTable;
 using google::protobuf::internal::ExtensionSet;
 using google::protobuf::internal::GenericTypeHandler;
 using google::protobuf::internal::GetEmptyString;
+using google::protobuf::internal::InlinedStringField;
 using google::protobuf::internal::InternalMetadata;
 using google::protobuf::internal::LazyField;
 using google::protobuf::internal::MapFieldBase;
@@ -256,6 +258,10 @@ bool Reflection::IsEagerlyVerifiedLazyField(
           schema_.IsEagerlyVerifiedLazyField(field));
 }
 
+bool Reflection::IsInlined(const FieldDescriptor* field) const {
+  return schema_.IsFieldInlined(field);
+}
+
 size_t Reflection::SpaceUsedLong(const Message& message) const {
   // object_size_ already includes the in-memory representation of each field
   // in the message, so we only need to account for additional memory used by
@@ -332,6 +338,13 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
+              if (IsInlined(field)) {
+                const std::string* ptr =
+                    &GetField<InlinedStringField>(message, field).GetNoArena();
+                total_size += StringSpaceUsedExcludingSelfLong(*ptr);
+                break;
+              }
+
               const std::string* ptr =
                   GetField<ArenaStringPtr>(message, field).GetPointer();
 
@@ -595,6 +608,35 @@ void Reflection::SwapField(Message* message1, Message* message2,
         break;
 
       case FieldDescriptor::CPPTYPE_STRING:
+        if (IsInlined(field)) {
+          Arena* arena1 = message1->GetArenaForAllocation();
+          Arena* arena2 = message2->GetArenaForAllocation();
+          auto* string1 = MutableRaw<InlinedStringField>(message1, field);
+          auto* string2 = MutableRaw<InlinedStringField>(message2, field);
+          const uint32 index = schema_.InlinedStringIndex(field);
+          uint32* donating_states_1 =
+              &MutableInlinedStringDonatedArray(message1)[index / 32];
+          uint32* donating_states_2 =
+              &MutableInlinedStringDonatedArray(message2)[index / 32];
+          const uint32 mask = ~(static_cast<uint32>(1) << (index % 32));
+          if (arena1 == arena2) {
+            string1->Swap(string2, /*default_value=*/nullptr, arena1,
+                          IsInlinedStringDonated(*message1, field),
+                          IsInlinedStringDonated(*message2, field),
+                          /*donating_states=*/donating_states_1,
+                          donating_states_2, mask);
+          } else {
+            const std::string temp = string1->Get();
+            string1->Set(nullptr, string2->Get(), arena1,
+                         IsInlinedStringDonated(*message1, field),
+                         donating_states_1, mask);
+            string2->Set(nullptr, temp, arena2,
+                         IsInlinedStringDonated(*message2, field),
+                         donating_states_2, mask);
+          }
+          break;
+        }
+
         internal::SwapFieldHelper::SwapStringField<false>(this, message1,
                                                           message2, field);
         break;
@@ -1086,6 +1128,12 @@ void Reflection::ClearField(Message* message,
           switch (field->options().ctype()) {
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
+              if (IsInlined(field)) {
+                // Currently, string with default value can't be inlined. So we
+                // don't have to handle default value here.
+                MutableRaw<InlinedStringField>(message, field)->ClearToEmpty();
+                break;
+              }
               const std::string* default_ptr =
                   DefaultRaw<ArenaStringPtr>(field).GetPointer();
               MutableRaw<ArenaStringPtr>(message, field)
@@ -1226,6 +1274,26 @@ Message* Reflection::ReleaseLast(Message* message,
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
   return released;
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+}
+
+Message* Reflection::UnsafeArenaReleaseLast(
+    Message* message, const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(UnsafeArenaReleaseLast, REPEATED, MESSAGE);
+  CheckInvalidAccess(schema_, field);
+
+  if (field->is_extension()) {
+    return static_cast<Message*>(
+        MutableExtensionSet(message)->UnsafeArenaReleaseLast(field->number()));
+  } else {
+    if (IsMapFieldInApi(field)) {
+      return MutableRaw<MapFieldBase>(message, field)
+          ->MutableRepeatedField()
+          ->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
+    } else {
+      return MutableRaw<RepeatedPtrFieldBase>(message, field)
+          ->UnsafeArenaReleaseLast<GenericTypeHandler<Message>>();
+    }
+  }
 }
 
 void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
@@ -1451,6 +1519,10 @@ std::string Reflection::GetString(const Message& message,
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
+        if (IsInlined(field)) {
+          return GetField<InlinedStringField>(message, field).GetNoArena();
+        }
+
         if (auto* value =
                 GetField<ArenaStringPtr>(message, field).GetPointer()) {
           return *value;
@@ -1475,6 +1547,10 @@ const std::string& Reflection::GetStringReference(const Message& message,
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
+        if (IsInlined(field)) {
+          return GetField<InlinedStringField>(message, field).GetNoArena();
+        }
+
         if (auto* value =
                 GetField<ArenaStringPtr>(message, field).GetPointer()) {
           return *value;
@@ -1496,6 +1572,17 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
+        if (IsInlined(field)) {
+          const uint32 index = schema_.InlinedStringIndex(field);
+          uint32* states =
+              &MutableInlinedStringDonatedArray(message)[index / 32];
+          uint32 mask = ~(static_cast<uint32>(1) << (index % 32));
+          MutableField<InlinedStringField>(message, field)
+              ->Set(nullptr, value, message->GetArenaForAllocation(),
+                    IsInlinedStringDonated(*message, field), states, mask);
+          break;
+        }
+
         // Oneof string fields are never set as a default instance.
         // We just need to pass some arbitrary default string to make it work.
         // This allows us to not have the real default accessible from
@@ -1868,10 +1955,8 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
 
 void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
                                      const FieldDescriptor* field) const {
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
-  GOOGLE_DCHECK(sub_message->GetOwningArena() == nullptr ||
+  GOOGLE_DCHECK(sub_message == nullptr || sub_message->GetOwningArena() == nullptr ||
          sub_message->GetOwningArena() == message->GetArenaForAllocation());
-#endif  // PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   CheckInvalidAccess(schema_, field);
 
   // If message and sub-message are in different memory ownership domains
@@ -2048,6 +2133,27 @@ void Reflection::AddAllocatedMessage(Message* message,
       repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
     }
     repeated->AddAllocated<GenericTypeHandler<Message> >(new_entry);
+  }
+}
+
+void Reflection::UnsafeArenaAddAllocatedMessage(Message* message,
+                                                const FieldDescriptor* field,
+                                                Message* new_entry) const {
+  USAGE_CHECK_ALL(UnsafeArenaAddAllocatedMessage, REPEATED, MESSAGE);
+  CheckInvalidAccess(schema_, field);
+
+  if (field->is_extension()) {
+    MutableExtensionSet(message)->UnsafeArenaAddAllocatedMessage(field,
+                                                                 new_entry);
+  } else {
+    RepeatedPtrFieldBase* repeated = nullptr;
+    if (IsMapFieldInApi(field)) {
+      repeated =
+          MutableRaw<MapFieldBase>(message, field)->MutableRepeatedField();
+    } else {
+      repeated = MutableRaw<RepeatedPtrFieldBase>(message, field);
+    }
+    repeated->UnsafeArenaAddAllocated<GenericTypeHandler<Message>>(new_entry);
   }
 }
 
@@ -2276,6 +2382,26 @@ InternalMetadata* Reflection::MutableInternalMetadata(Message* message) const {
                                               schema_.GetMetadataOffset());
 }
 
+const uint32* Reflection::GetInlinedStringDonatedArray(
+    const Message& message) const {
+  GOOGLE_DCHECK(schema_.HasInlinedString());
+  return &GetConstRefAtOffset<uint32>(message,
+                                      schema_.InlinedStringDonatedOffset());
+}
+
+uint32* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
+  GOOGLE_DCHECK(schema_.HasHasbits());
+  return GetPointerAtOffset<uint32>(message,
+                                    schema_.InlinedStringDonatedOffset());
+}
+
+// Simple accessors for manipulating _inlined_string_donated_;
+bool Reflection::IsInlinedStringDonated(const Message& message,
+                                        const FieldDescriptor* field) const {
+  return IsIndexInHasBitSet(GetInlinedStringDonatedArray(message),
+                            schema_.InlinedStringIndex(field));
+}
+
 // Simple accessors for manipulating has_bits_.
 bool Reflection::HasBit(const Message& message,
                         const FieldDescriptor* field) const {
@@ -2307,6 +2433,12 @@ bool Reflection::HasBit(const Message& message,
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
           default: {
+            if (IsInlined(field)) {
+              return !GetField<InlinedStringField>(message, field)
+                          .GetNoArena()
+                          .empty();
+            }
+
             return GetField<ArenaStringPtr>(message, field).Get().size() > 0;
           }
         }
@@ -2594,9 +2726,9 @@ ReflectionSchema MigrationToReflectionSchema(
     MigrationSchema migration_schema) {
   ReflectionSchema result;
   result.default_instance_ = *default_instance;
-  // First 6 offsets are offsets to the special fields. The following offsets
+  // First 7 offsets are offsets to the special fields. The following offsets
   // are the proto fields.
-  result.offsets_ = offsets + migration_schema.offsets_index + 5;
+  result.offsets_ = offsets + migration_schema.offsets_index + 6;
   result.has_bit_indices_ = offsets + migration_schema.has_bit_indices_index;
   result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];
   result.metadata_offset_ = offsets[migration_schema.offsets_index + 1];
@@ -2604,6 +2736,10 @@ ReflectionSchema MigrationToReflectionSchema(
   result.oneof_case_offset_ = offsets[migration_schema.offsets_index + 3];
   result.object_size_ = migration_schema.object_size;
   result.weak_field_map_offset_ = offsets[migration_schema.offsets_index + 4];
+  result.inlined_string_donated_offset_ =
+      offsets[migration_schema.offsets_index + 5];
+  result.inlined_string_indices_ =
+      offsets + migration_schema.inlined_string_indices_index;
   return result;
 }
 

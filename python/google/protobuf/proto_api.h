@@ -78,6 +78,18 @@ struct PyProto_API {
   // With the current implementation, only empty messages are in this case.
   virtual Message* GetMutableMessagePointer(PyObject* msg) const = 0;
 
+  // If the passed object is a Python Message Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const Descriptor* MessageDescriptor_AsDescriptor(
+      PyObject* desc) const = 0;
+
+  // If the passed object is a Python Enum Descriptor, returns its internal
+  // pointer.
+  // Otherwise, returns NULL with an exception set.
+  virtual const EnumDescriptor* EnumDescriptor_AsDescriptor(
+      PyObject* enum_desc) const = 0;
+
   // Expose the underlying DescriptorPool and MessageFactory to enable C++ code
   // to create Python-compatible message.
   virtual const DescriptorPool* GetDefaultDescriptorPool() const = 0;

@@ -698,21 +698,18 @@ class Map {
         p = FindHelper(k);
       }
       const size_type b = p.second;  // bucket number
-      Node* node;
       // If K is not key_type, make the conversion to key_type explicit.
       using TypeToInit = typename std::conditional<
           std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
           key_type>::type;
-      if (alloc_.arena() == nullptr) {
-        node = new Node{value_type(static_cast<TypeToInit>(std::forward<K>(k))),
-                        nullptr};
-      } else {
-        node = Alloc<Node>(1);
-        Arena::CreateInArenaStorage(
-            const_cast<Key*>(&node->kv.first), alloc_.arena(),
-            static_cast<TypeToInit>(std::forward<K>(k)));
-        Arena::CreateInArenaStorage(&node->kv.second, alloc_.arena());
-      }
+      Node* node = Alloc<Node>(1);
+      // Even when arena is nullptr, CreateInArenaStorage is still used to
+      // ensure the arena of submessage will be consistent. Otherwise,
+      // submessage may have its own arena when message-owned arena is enabled.
+      Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
+                                  alloc_.arena(),
+                                  static_cast<TypeToInit>(std::forward<K>(k)));
+      Arena::CreateInArenaStorage(&node->kv.second, alloc_.arena());
 
       iterator result = InsertUnique(b, node);
       ++num_elements_;

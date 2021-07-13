@@ -1052,6 +1052,9 @@ int DeleteRepeatedField(
     }
   }
 
+  Arena* arena = Arena::InternalHelper<Message>::GetArenaForAllocation(message);
+  GOOGLE_DCHECK_EQ(arena, nullptr)
+      << "python protobuf is expected to be allocated from heap";
   // Remove items, starting from the end.
   for (; length > to; length--) {
     if (field_descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -1060,7 +1063,18 @@ int DeleteRepeatedField(
     }
     // It seems that RemoveLast() is less efficient for sub-messages, and
     // the memory is not completely released. Prefer ReleaseLast().
-    Message* sub_message = reflection->ReleaseLast(message, field_descriptor);
+    //
+    // To work around a debug hardening (PROTOBUF_FORCE_COPY_IN_RELEASE),
+    // explicitly use UnsafeArenaReleaseLast. To not break rare use cases where
+    // arena is used, we fallback to ReleaseLast (but GOOGLE_DCHECK to find/fix it).
+    //
+    // Note that arena is likely null and GOOGLE_DCHECK and ReleaesLast might be
+    // redundant. The current approach takes extra cautious path not to disrupt
+    // production.
+    Message* sub_message =
+        (arena == nullptr)
+            ? reflection->UnsafeArenaReleaseLast(message, field_descriptor)
+            : reflection->ReleaseLast(message, field_descriptor);
     // If there is a live weak reference to an item being removed, we "Release"
     // it, and it takes ownership of the message.
     if (CMessage* released = self->MaybeReleaseSubMessage(sub_message)) {
@@ -2286,7 +2300,17 @@ CMessage* InternalGetSubMessage(
   Py_INCREF(self);
   cmsg->parent = self;
   cmsg->parent_field_descriptor = field_descriptor;
-  cmsg->read_only = !reflection->HasField(*self->message, field_descriptor);
+  if (reflection->HasField(*self->message, field_descriptor)) {
+    // Force triggering MutableMessage to set the lazy message 'Dirty'
+    if (field_descriptor->options().lazy()) {
+      reflection->MutableMessage(self->message, field_descriptor,
+                                 factory->message_factory);
+    }
+    cmsg->read_only = false;
+  } else {
+    cmsg->read_only = true;
+  }
+  // cmsg->read_only = !reflection->HasField(*self->message, field_descriptor);
   cmsg->message = const_cast<Message*>(&sub_message);
   return cmsg;
 }

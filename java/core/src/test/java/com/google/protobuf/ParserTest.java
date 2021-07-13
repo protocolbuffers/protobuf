@@ -30,6 +30,9 @@
 
 package com.google.protobuf;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import protobuf_unittest.UnittestOptimizeFor;
 import protobuf_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import protobuf_unittest.UnittestOptimizeFor.TestRequiredOptimizedForSize;
@@ -44,17 +47,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
-import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
-/**
- * Unit test for {@link Parser}.
- *
- * @author liujisi@google.com (Pherl Liu)
- */
-public class ParserTest extends TestCase {
+/** Unit test for {@link Parser}. */
+@RunWith(JUnit4.class)
+public class ParserTest {
+
+  @Test
   public void testGeneratedMessageParserSingleton() throws Exception {
     for (int i = 0; i < 10; i++) {
-      assertEquals(TestAllTypes.parser(), TestUtil.getAllSet().getParserForType());
+      assertThat(TestUtil.getAllSet().getParserForType()).isEqualTo(TestAllTypes.parser());
     }
   }
 
@@ -95,9 +99,9 @@ public class ParserTest extends TestCase {
 
   private void assertMessageEquals(MessageLite expected, MessageLite actual) throws Exception {
     if (expected instanceof Message) {
-      assertEquals(expected, actual);
+      assertThat(actual).isEqualTo(expected);
     } else {
-      assertEquals(expected.toByteString(), actual.toByteString());
+      assertThat(actual.toByteString()).isEqualTo(expected.toByteString());
     }
   }
 
@@ -107,11 +111,13 @@ public class ParserTest extends TestCase {
     return result;
   }
 
+  @Test
   public void testNormalMessage() throws Exception {
     assertRoundTripEquals(TestUtil.getAllSet());
   }
 
 
+  @Test
   public void testParsePartial() throws Exception {
     assertParsePartial(TestRequired.parser(), TestRequired.newBuilder().setA(1).buildPartial());
   }
@@ -122,15 +128,16 @@ public class ParserTest extends TestCase {
 
     // parsePartialFrom should pass.
     byte[] data = partialMessage.toByteArray();
-    assertEquals(partialMessage, parser.parsePartialFrom(data));
-    assertEquals(partialMessage, parser.parsePartialFrom(partialMessage.toByteString()));
-    assertEquals(partialMessage, parser.parsePartialFrom(new ByteArrayInputStream(data)));
-    assertEquals(partialMessage, parser.parsePartialFrom(CodedInputStream.newInstance(data)));
+    assertThat(parser.parsePartialFrom(data)).isEqualTo(partialMessage);
+    assertThat(parser.parsePartialFrom(partialMessage.toByteString())).isEqualTo(partialMessage);
+    assertThat(parser.parsePartialFrom(new ByteArrayInputStream(data))).isEqualTo(partialMessage);
+    assertThat(parser.parsePartialFrom(CodedInputStream.newInstance(data)))
+        .isEqualTo(partialMessage);
 
     // parseFrom(ByteArray)
     try {
       parser.parseFrom(partialMessage.toByteArray());
-      fail(errorString);
+      assertWithMessage(errorString).fail();
     } catch (InvalidProtocolBufferException e) {
       // pass.
     }
@@ -138,7 +145,7 @@ public class ParserTest extends TestCase {
     // parseFrom(ByteString)
     try {
       parser.parseFrom(partialMessage.toByteString());
-      fail(errorString);
+      assertWithMessage(errorString).fail();
     } catch (InvalidProtocolBufferException e) {
       // pass.
     }
@@ -146,7 +153,7 @@ public class ParserTest extends TestCase {
     // parseFrom(InputStream)
     try {
       parser.parseFrom(new ByteArrayInputStream(partialMessage.toByteArray()));
-      fail(errorString);
+      assertWithMessage(errorString).fail();
     } catch (IOException e) {
       // pass.
     }
@@ -154,21 +161,24 @@ public class ParserTest extends TestCase {
     // parseFrom(CodedInputStream)
     try {
       parser.parseFrom(CodedInputStream.newInstance(partialMessage.toByteArray()));
-      fail(errorString);
+      assertWithMessage(errorString).fail();
     } catch (IOException e) {
       // pass.
     }
   }
 
+  @Test
   public void testParseExtensions() throws Exception {
     assertRoundTripEquals(TestUtil.getAllExtensionsSet(), TestUtil.getExtensionRegistry());
   }
 
+  @Test
   public void testParsePacked() throws Exception {
     assertRoundTripEquals(TestUtil.getPackedSet());
     assertRoundTripEquals(TestUtil.getPackedExtensionsSet(), TestUtil.getExtensionRegistry());
   }
 
+  @Test
   public void testParseDelimitedTo() throws Exception {
     // Write normal Message.
     TestAllTypes normalMessage = TestUtil.getAllSet();
@@ -181,14 +191,16 @@ public class ParserTest extends TestCase {
     assertMessageEquals(normalMessage, normalMessage.getParserForType().parseDelimitedFrom(input));
   }
 
+  @Test
   public void testParseUnknownFields() throws Exception {
     // All fields will be treated as unknown fields in emptyMessage.
     TestEmptyMessage emptyMessage =
         TestEmptyMessage.parser().parseFrom(TestUtil.getAllSet().toByteString());
-    assertEquals(TestUtil.getAllSet().toByteString(), emptyMessage.toByteString());
+    assertThat(emptyMessage.toByteString()).isEqualTo(TestUtil.getAllSet().toByteString());
   }
 
 
+  @Test
   public void testOptimizeForSize() throws Exception {
     TestOptimizedForSize.Builder builder = TestOptimizedForSize.newBuilder();
     builder.setI(12).setMsg(ForeignMessage.newBuilder().setC(34).build());
@@ -206,11 +218,12 @@ public class ParserTest extends TestCase {
 
   /** Helper method for {@link #testParsingMerge()}. */
   private void assertMessageMerged(TestAllTypes allTypes) throws Exception {
-    assertEquals(3, allTypes.getOptionalInt32());
-    assertEquals(2, allTypes.getOptionalInt64());
-    assertEquals("hello", allTypes.getOptionalString());
+    assertThat(allTypes.getOptionalInt32()).isEqualTo(3);
+    assertThat(allTypes.getOptionalInt64()).isEqualTo(2);
+    assertThat(allTypes.getOptionalString()).isEqualTo("hello");
   }
 
+  @Test
   public void testParsingMerge() throws Exception {
     // Build messages.
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -273,11 +286,12 @@ public class ParserTest extends TestCase {
     assertMessageMerged(parsingMerge.getExtension(TestParsingMerge.optionalExt));
 
     // Repeated fields should not be merged.
-    assertEquals(3, parsingMerge.getRepeatedAllTypesCount());
-    assertEquals(3, parsingMerge.getRepeatedGroupCount());
-    assertEquals(3, parsingMerge.getExtensionCount(TestParsingMerge.repeatedExt));
+    assertThat(parsingMerge.getRepeatedAllTypesCount()).isEqualTo(3);
+    assertThat(parsingMerge.getRepeatedGroupCount()).isEqualTo(3);
+    assertThat(parsingMerge.getExtensionCount(TestParsingMerge.repeatedExt)).isEqualTo(3);
   }
 
+  @Test
   public void testParseDelimitedFrom_firstByteInterrupted_preservesCause() {
     try {
       TestAllTypes.parseDelimitedFrom(
@@ -287,12 +301,13 @@ public class ParserTest extends TestCase {
               throw new InterruptedIOException();
             }
           });
-      fail("Expected InterruptedIOException");
+      assertWithMessage("Expected InterruptedIOException").fail();
     } catch (Exception e) {
-      assertEquals(InterruptedIOException.class, e.getClass());
+      assertThat(e.getClass()).isEqualTo(InterruptedIOException.class);
     }
   }
 
+  @Test
   public void testParseDelimitedFrom_secondByteInterrupted_preservesCause() {
     try {
       TestAllTypes.parseDelimitedFrom(
@@ -311,9 +326,9 @@ public class ParserTest extends TestCase {
               }
             }
           });
-      fail("Expected InterruptedIOException");
+      assertWithMessage("Expected InterruptedIOException").fail();
     } catch (Exception e) {
-      assertEquals(InterruptedIOException.class, e.getClass());
+      assertThat(e.getClass()).isEqualTo(InterruptedIOException.class);
     }
   }
 }

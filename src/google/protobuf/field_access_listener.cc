@@ -29,24 +29,3 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/field_access_listener.h>
-
-#include <google/protobuf/stubs/once.h>
-
-namespace google {
-namespace protobuf {
-
-internal::once_flag FieldAccessListener::register_once_ = {};
-FieldAccessListener* FieldAccessListener::field_listener_ = nullptr;
-
-FieldAccessListener* FieldAccessListener::GetListener() {
-  return field_listener_;
-}
-
-void FieldAccessListener::RegisterListener(FieldAccessListener* listener) {
-  // TODO(danilak): Add a GOOGLE_DCHECK for message_injector_ to be nullptr and update
-  // tests.
-  internal::call_once(register_once_, [&] { field_listener_ = listener; });
-}
-
-}  // namespace protobuf
-}  // namespace google

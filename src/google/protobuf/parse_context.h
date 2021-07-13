@@ -40,6 +40,7 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/implicit_weak_message.h>
+#include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
@@ -590,7 +591,7 @@ inline const char* ParseBigVarint(const char* p, uint64* out) {
   auto pnew = p;
   auto tmp = DecodeTwoBytes(&pnew);
   uint64 res = tmp >> 1;
-  if (PROTOBUF_PREDICT_TRUE(std::int16_t(tmp) >= 0)) {
+  if (PROTOBUF_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
     *out = res;
     return pnew;
   }
@@ -598,7 +599,7 @@ inline const char* ParseBigVarint(const char* p, uint64* out) {
     pnew = p + 2 * i;
     tmp = DecodeTwoBytes(&pnew);
     res += (static_cast<std::uint64_t>(tmp) - 2) << (14 * i - 1);
-    if (PROTOBUF_PREDICT_TRUE(std::int16_t(tmp) >= 0)) {
+    if (PROTOBUF_PREDICT_TRUE(static_cast<std::int16_t>(tmp) >= 0)) {
       *out = res;
       return pnew;
     }

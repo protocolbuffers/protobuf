@@ -254,6 +254,10 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_BYTES>
     : PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {};
 
 
+template <>
+struct PrimitiveTypeHelper<FieldMetadata::kInlinedType>
+    : PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {};
+
 // We want to serialize to both CodedOutputStream and directly into byte arrays
 // without duplicating the code. In fact we might want extra output channels in
 // the future.
@@ -412,6 +416,15 @@ struct SingularFieldHelper<WireFormatLite::TYPE_MESSAGE> {
   }
 };
 
+template <>
+struct SingularFieldHelper<FieldMetadata::kInlinedType> {
+  template <typename O>
+  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
+    WriteTagTo(md.tag, output);
+    SerializeTo<FieldMetadata::kInlinedType>(&Get<std::string>(field), output);
+  }
+};
+
 template <int type>
 struct RepeatedFieldHelper {
   template <typename O>
@@ -484,6 +497,10 @@ struct RepeatedFieldHelper<WireFormatLite::TYPE_MESSAGE> {
 };
 
 
+template <>
+struct RepeatedFieldHelper<FieldMetadata::kInlinedType>
+    : RepeatedFieldHelper<WireFormatLite::TYPE_STRING> {};
+
 template <int type>
 struct PackedFieldHelper {
   template <typename O>
@@ -519,6 +536,9 @@ struct PackedFieldHelper<WireFormatLite::TYPE_GROUP>
 template <>
 struct PackedFieldHelper<WireFormatLite::TYPE_MESSAGE>
     : PackedFieldHelper<WireFormatLite::TYPE_STRING> {};
+template <>
+struct PackedFieldHelper<FieldMetadata::kInlinedType>
+    : PackedFieldHelper<WireFormatLite::TYPE_STRING> {};
 
 template <int type>
 struct OneOfFieldHelper {
@@ -528,6 +548,15 @@ struct OneOfFieldHelper {
   }
 };
 
+
+template <>
+struct OneOfFieldHelper<FieldMetadata::kInlinedType> {
+  template <typename O>
+  static void Serialize(const void* field, const FieldMetadata& md, O* output) {
+    SingularFieldHelper<FieldMetadata::kInlinedType>::Serialize(
+        Get<const std::string*>(field), md, output);
+  }
+};
 
 void SerializeNotImplemented(int field) {
   GOOGLE_LOG(FATAL) << "Not implemented field number " << field;
@@ -568,6 +597,11 @@ bool IsNull<WireFormatLite::TYPE_MESSAGE>(const void* ptr) {
   return Get<const MessageLite*>(ptr) == NULL;
 }
 
+
+template <>
+bool IsNull<FieldMetadata::kInlinedType>(const void* ptr) {
+  return static_cast<const std::string*>(ptr)->empty();
+}
 
 #define SERIALIZERS_FOR_TYPE(type)                                            \
   case SERIALIZE_TABLE_OP(type, FieldMetadata::kPresence):                    \
@@ -616,6 +650,7 @@ void SerializeInternal(const uint8* base,
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SFIXED64);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT32);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT64);
+      SERIALIZERS_FOR_TYPE(FieldMetadata::kInlinedType);
 
       // Special cases
       case FieldMetadata::kSpecial:
@@ -660,6 +695,7 @@ uint8* SerializeInternalToArray(const uint8* base,
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SFIXED64);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT32);
       SERIALIZERS_FOR_TYPE(WireFormatLite::TYPE_SINT64);
+      SERIALIZERS_FOR_TYPE(FieldMetadata::kInlinedType);
       // Special cases
       case FieldMetadata::kSpecial: {
         io::ArrayOutputStream array_stream(array_output.ptr, INT_MAX);
@@ -721,9 +757,7 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
   GOOGLE_DCHECK(Arena::InternalHelper<MessageLite>::GetOwningArena(submessage) ==
          submessage_arena);
   GOOGLE_DCHECK(message_arena != submessage_arena);
-#ifdef PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   GOOGLE_DCHECK_EQ(submessage_arena, nullptr);
-#endif  // PROTOBUF_INTERNAL_USE_MUST_USE_RESULT
   if (message_arena != NULL && submessage_arena == NULL) {
     message_arena->Own(submessage);
     return submessage;

@@ -375,7 +375,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getOptions()
     {
-        return isset($this->options) ? $this->options : null;
+        return $this->options;
     }
 
     public function hasOptions()
@@ -412,7 +412,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function getSourceCodeInfo()
     {
-        return isset($this->source_code_info) ? $this->source_code_info : null;
+        return $this->source_code_info;
     }
 
     public function hasSourceCodeInfo()

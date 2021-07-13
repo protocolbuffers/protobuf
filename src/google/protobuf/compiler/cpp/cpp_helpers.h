@@ -315,6 +315,8 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
+bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
+
 // For a string field, returns the effective ctype.  If the actual ctype is
 // not supported, returns the default of STRING.
 FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
@@ -323,6 +325,11 @@ FieldOptions::CType EffectiveStringCType(const FieldDescriptor* field,
 inline bool IsCord(const FieldDescriptor* field, const Options& options) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          EffectiveStringCType(field, options) == FieldOptions::CORD;
+}
+
+inline bool IsString(const FieldDescriptor* field, const Options& options) {
+  return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+         EffectiveStringCType(field, options) == FieldOptions::STRING;
 }
 
 inline bool IsStringPiece(const FieldDescriptor* field,
@@ -531,6 +538,19 @@ inline std::vector<const Descriptor*> FlattenMessagesInFile(
   std::vector<const Descriptor*> result;
   FlattenMessagesInFile(file, &result);
   return result;
+}
+
+template <typename F>
+void ForEachMessage(const Descriptor* descriptor, F&& func) {
+  for (int i = 0; i < descriptor->nested_type_count(); i++)
+    ForEachMessage(descriptor->nested_type(i), std::forward<F&&>(func));
+  func(descriptor);
+}
+
+template <typename F>
+void ForEachMessage(const FileDescriptor* descriptor, F&& func) {
+  for (int i = 0; i < descriptor->message_type_count(); i++)
+    ForEachMessage(descriptor->message_type(i), std::forward<F&&>(func));
 }
 
 bool HasWeakFields(const Descriptor* desc, const Options& options);
@@ -884,8 +904,12 @@ inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 
 PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
-inline bool EnableMessageOwnedArena(const Descriptor* desc) { return false; }
+bool EnableMessageOwnedArena(const Descriptor* desc);
 
+bool ShouldVerify(const Descriptor* descriptor, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer);
+bool ShouldVerify(const FileDescriptor* file, const Options& options,
+                  MessageSCCAnalyzer* scc_analyzer);
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

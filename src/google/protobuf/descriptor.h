@@ -121,7 +121,7 @@ class Reflection;
 // Defined in descriptor.cc
 class DescriptorBuilder;
 class FileDescriptorTables;
-struct Symbol;
+class Symbol;
 
 // Defined in unknown_field_set.h.
 class UnknownField;
@@ -182,15 +182,37 @@ struct DebugStringOptions {
 // which is needed when a pool has lazily_build_dependencies_ set.
 // Must be instantiated as mutable in a descriptor.
 namespace internal {
+
+// Data required to do lazy initialization.
+struct PROTOBUF_EXPORT LazyInitData {
+#ifndef SWIG
+  internal::once_flag once;
+#endif
+  struct Field {
+    const std::string* type_name;
+    const std::string* default_value_enum_name;
+  };
+  struct Descriptor {
+    const std::string* name;
+    const FileDescriptor* file;
+  };
+  struct File {
+    const std::string** dependencies_names;
+  };
+  union {
+    Field field;
+    Descriptor descriptor;
+    File file;
+  };
+};
+
 class PROTOBUF_EXPORT LazyDescriptor {
  public:
   // Init function to be called at init time of a descriptor containing
   // a LazyDescriptor.
   void Init() {
     descriptor_ = nullptr;
-    name_ = nullptr;
     once_ = nullptr;
-    file_ = nullptr;
   }
 
   // Sets the value of the descriptor if it is known during the descriptor
@@ -220,10 +242,22 @@ class PROTOBUF_EXPORT LazyDescriptor {
   void Once();
 
   const Descriptor* descriptor_;
-  const std::string* name_;
-  internal::once_flag* once_;
-  const FileDescriptor* file_;
+  LazyInitData* once_;
 };
+
+class PROTOBUF_EXPORT SymbolBase {
+ private:
+  friend class google::protobuf::Symbol;
+  uint8_t symbol_type_;
+};
+
+// Some types have more than one SymbolBase because they have multiple
+// identities in the table. We can't have duplicate direct bases, so we use this
+// intermediate base to do so.
+// See BuildEnumValue for details.
+template <int N>
+class PROTOBUF_EXPORT SymbolBaseN : public SymbolBase {};
+
 }  // namespace internal
 
 // Describes a type of protocol message, or a particular group within a
@@ -231,7 +265,7 @@ class PROTOBUF_EXPORT LazyDescriptor {
 // Message::GetDescriptor().  Generated message classes also have a
 // static method called descriptor() which returns the type's descriptor.
 // Use DescriptorPool to construct your own descriptors.
-class PROTOBUF_EXPORT Descriptor {
+class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
  public:
   typedef DescriptorProto Proto;
 
@@ -500,6 +534,7 @@ class PROTOBUF_EXPORT Descriptor {
   const FieldDescriptor* map_value() const;
 
  private:
+  friend class Symbol;
   typedef MessageOptions OptionsType;
 
   // Allows tests to test CopyTo(proto, true).
@@ -524,6 +559,14 @@ class PROTOBUF_EXPORT Descriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
+  // True if this is a placeholder for an unknown type.
+  bool is_placeholder_ : 1;
+  // True if this is a placeholder and the type name wasn't fully-qualified.
+  bool is_unqualified_placeholder_ : 1;
+  // Well known type.  Stored as char to conserve space.
+  char well_known_type_;
+  int field_count_;
+
   const std::string* name_;
   const std::string* full_name_;
   const FileDescriptor* file_;
@@ -540,7 +583,6 @@ class PROTOBUF_EXPORT Descriptor {
   ReservedRange* reserved_ranges_;
   const std::string** reserved_names_;
 
-  int field_count_;
   int oneof_decl_count_;
   int real_oneof_decl_count_;
   int nested_type_count_;
@@ -549,13 +591,6 @@ class PROTOBUF_EXPORT Descriptor {
   int extension_count_;
   int reserved_range_count_;
   int reserved_name_count_;
-
-  // True if this is a placeholder for an unknown type.
-  bool is_placeholder_;
-  // True if this is a placeholder and the type name wasn't fully-qualified.
-  bool is_unqualified_placeholder_;
-  // Well known type.  Stored as char to conserve space.
-  char well_known_type_;
 
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<Descriptor>() and AllocateArray<Descriptor>() in descriptor.cc
@@ -584,7 +619,7 @@ class PROTOBUF_EXPORT Descriptor {
 // - Given a DescriptorPool, call DescriptorPool::FindExtensionByNumber() or
 //   DescriptorPool::FindExtensionByPrintableName().
 // Use DescriptorPool to construct your own descriptors.
-class PROTOBUF_EXPORT FieldDescriptor {
+class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
  public:
   typedef FieldDescriptorProto Proto;
 
@@ -835,6 +870,7 @@ class PROTOBUF_EXPORT FieldDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef FieldOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -864,6 +900,18 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // Returns true if this is a map message type.
   bool is_map_message_type() const;
 
+  bool has_default_value_;
+  bool proto3_optional_;
+  // Whether the user has specified the json_name field option in the .proto
+  // file.
+  bool has_json_name_;
+  bool is_extension_;
+
+  // Actually a `Type`, but stored as uint8_t to save space.
+  mutable uint8_t type_;
+  // Actually a `Label` but stored as uint8_t to save space.
+  uint8_t label_;
+
   const std::string* name_;
   const std::string* full_name_;
   const std::string* lowercase_name_;
@@ -872,17 +920,10 @@ class PROTOBUF_EXPORT FieldDescriptor {
   // Otherwise, it has the same value as camelcase_name_.
   const std::string* json_name_;
   const FileDescriptor* file_;
-  internal::once_flag* type_once_;
+
+  internal::LazyInitData* type_once_;
   static void TypeOnceInit(const FieldDescriptor* to_init);
   void InternalTypeOnceInit() const;
-  mutable Type type_;
-  Label label_;
-  bool has_default_value_;
-  bool proto3_optional_;
-  // Whether the user has specified the json_name field option in the .proto
-  // file.
-  bool has_json_name_;
-  bool is_extension_;
   int number_;
   int index_in_oneof_;
   const Descriptor* containing_type_;
@@ -891,8 +932,6 @@ class PROTOBUF_EXPORT FieldDescriptor {
   mutable const Descriptor* message_type_;
   mutable const EnumDescriptor* enum_type_;
   const FieldOptions* options_;
-  const std::string* type_name_;
-  const std::string* default_value_enum_name_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<FieldDescriptor>() and AllocateArray<FieldDescriptor>() in
   // descriptor.cc and update them to initialize the field.
@@ -930,7 +969,7 @@ class PROTOBUF_EXPORT FieldDescriptor {
 
 
 // Describes a oneof defined in a message type.
-class PROTOBUF_EXPORT OneofDescriptor {
+class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
  public:
   typedef OneofDescriptorProto Proto;
 
@@ -974,6 +1013,7 @@ class PROTOBUF_EXPORT OneofDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef OneofOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -988,10 +1028,11 @@ class PROTOBUF_EXPORT OneofDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
+  int field_count_;
+
   const std::string* name_;
   const std::string* full_name_;
   const Descriptor* containing_type_;
-  int field_count_;
   const FieldDescriptor** fields_;
   const OneofOptions* options_;
 
@@ -1009,7 +1050,7 @@ class PROTOBUF_EXPORT OneofDescriptor {
 // Describes an enum type defined in a .proto file.  To get the EnumDescriptor
 // for a generated enum type, call TypeName_descriptor().  Use DescriptorPool
 // to construct your own descriptors.
-class PROTOBUF_EXPORT EnumDescriptor {
+class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
  public:
   typedef EnumDescriptorProto Proto;
 
@@ -1101,6 +1142,7 @@ class PROTOBUF_EXPORT EnumDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef EnumOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1126,18 +1168,18 @@ class PROTOBUF_EXPORT EnumDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
-  const std::string* name_;
-  const std::string* full_name_;
-  const FileDescriptor* file_;
-  const Descriptor* containing_type_;
-  const EnumOptions* options_;
-
   // True if this is a placeholder for an unknown type.
   bool is_placeholder_;
   // True if this is a placeholder and the type name wasn't fully-qualified.
   bool is_unqualified_placeholder_;
 
   int value_count_;
+
+  const std::string* name_;
+  const std::string* full_name_;
+  const FileDescriptor* file_;
+  const Descriptor* containing_type_;
+  const EnumOptions* options_;
   EnumValueDescriptor* values_;
 
   int reserved_range_count_;
@@ -1166,7 +1208,8 @@ class PROTOBUF_EXPORT EnumDescriptor {
 // for its type, then use EnumDescriptor::FindValueByName() or
 // EnumDescriptor::FindValueByNumber().  Use DescriptorPool to construct
 // your own descriptors.
-class PROTOBUF_EXPORT EnumValueDescriptor {
+class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
+                                            private internal::SymbolBaseN<1> {
  public:
   typedef EnumValueDescriptorProto Proto;
 
@@ -1209,6 +1252,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef EnumValueOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1223,9 +1267,9 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
+  int number_;
   const std::string* name_;
   const std::string* full_name_;
-  int number_;
   const EnumDescriptor* type_;
   const EnumValueOptions* options_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
@@ -1244,7 +1288,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor {
 
 // Describes an RPC service. Use DescriptorPool to construct your own
 // descriptors.
-class PROTOBUF_EXPORT ServiceDescriptor {
+class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
  public:
   typedef ServiceDescriptorProto Proto;
 
@@ -1289,6 +1333,7 @@ class PROTOBUF_EXPORT ServiceDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef ServiceOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1326,7 +1371,7 @@ class PROTOBUF_EXPORT ServiceDescriptor {
 // a service, first get its ServiceDescriptor, then call
 // ServiceDescriptor::FindMethodByName().  Use DescriptorPool to construct your
 // own descriptors.
-class PROTOBUF_EXPORT MethodDescriptor {
+class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
  public:
   typedef MethodDescriptorProto Proto;
 
@@ -1375,6 +1420,7 @@ class PROTOBUF_EXPORT MethodDescriptor {
   bool GetSourceLocation(SourceLocation* out_location) const;
 
  private:
+  friend class Symbol;
   typedef MethodOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
@@ -1389,14 +1435,14 @@ class PROTOBUF_EXPORT MethodDescriptor {
   // to this descriptor from the file root.
   void GetLocationPath(std::vector<int>* output) const;
 
+  bool client_streaming_;
+  bool server_streaming_;
   const std::string* name_;
   const std::string* full_name_;
   const ServiceDescriptor* service_;
   mutable internal::LazyDescriptor input_type_;
   mutable internal::LazyDescriptor output_type_;
   const MethodOptions* options_;
-  bool client_streaming_;
-  bool server_streaming_;
   // IMPORTANT:  If you add a new field, make sure to search for all instances
   // of Allocate<MethodDescriptor>() and AllocateArray<MethodDescriptor>() in
   // descriptor.cc and update them to initialize the field.
@@ -1554,7 +1600,7 @@ class PROTOBUF_EXPORT FileDescriptor {
   const std::string* name_;
   const std::string* package_;
   const DescriptorPool* pool_;
-  internal::once_flag* dependencies_once_;
+  internal::LazyInitData* dependencies_once_;
   static void DependenciesOnceInit(const FileDescriptor* to_init);
   void InternalDependenciesOnceInit() const;
 
@@ -1565,17 +1611,18 @@ class PROTOBUF_EXPORT FileDescriptor {
   int message_type_count_;
   int enum_type_count_;
   int service_count_;
-  int extension_count_;
-  Syntax syntax_;
-  bool is_placeholder_;
 
+  bool is_placeholder_;
   // Indicates the FileDescriptor is completed building. Used to verify
   // that type accessor functions that can possibly build a dependent file
   // aren't called during the process of building the file.
   bool finished_building_;
+  // Actually a `Syntax` but stored as uint8_t to save space.
+  uint8_t syntax_;
+  // This one is here to fill the padding.
+  int extension_count_;
 
   mutable const FileDescriptor** dependencies_;
-  const std::string** dependencies_names_;
   int* public_dependencies_;
   int* weak_dependencies_;
   Descriptor* message_types_;
@@ -2033,7 +2080,6 @@ PROTOBUF_DEFINE_STRING_ACCESSOR(FieldDescriptor, camelcase_name)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, file, const FileDescriptor*)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, is_extension, bool)
-PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, label, FieldDescriptor::Label)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, containing_type, const Descriptor*)
 PROTOBUF_DEFINE_ACCESSOR(FieldDescriptor, containing_oneof,
                          const OneofDescriptor*)
@@ -2164,11 +2210,15 @@ inline const std::string& EnumDescriptor::reserved_name(int index) const {
   return *reserved_names_[index];
 }
 
+inline FieldDescriptor::Label FieldDescriptor::label() const {
+  return static_cast<Label>(label_);
+}
+
 inline FieldDescriptor::Type FieldDescriptor::type() const {
   if (type_once_) {
-    internal::call_once(*type_once_, &FieldDescriptor::TypeOnceInit, this);
+    internal::call_once(type_once_->once, &FieldDescriptor::TypeOnceInit, this);
   }
-  return type_;
+  return static_cast<Type>(type_);
 }
 
 inline bool FieldDescriptor::is_required() const {
@@ -2309,7 +2359,9 @@ inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
   return dependency(weak_dependencies_[index]);
 }
 
-inline FileDescriptor::Syntax FileDescriptor::syntax() const { return syntax_; }
+inline FileDescriptor::Syntax FileDescriptor::syntax() const {
+  return static_cast<Syntax>(syntax_);
+}
 
 // Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because fields_ is actually an array
 // of pointers rather than the usual array of objects.

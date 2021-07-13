@@ -73,7 +73,9 @@ enum ProcessingTypes {
   TYPE_STRING_STRING_PIECE = 20,
   TYPE_BYTES_CORD = 21,
   TYPE_BYTES_STRING_PIECE = 22,
-  TYPE_MAP = 23,
+  TYPE_STRING_INLINED = 23,
+  TYPE_BYTES_INLINED = 24,
+  TYPE_MAP = 25,
 };
 
 static_assert(TYPE_MAP < kRepeatedMask, "Invalid enum");
@@ -104,7 +106,8 @@ struct PROTOBUF_EXPORT FieldMetadata {
   enum {
     kCordType = 19,
     kStringPieceType = 20,
-    kNumTypes = 20,
+    kInlinedType = 21,
+    kNumTypes = 21,
     kSpecial = kNumTypes * kNumTypeClasses,
   };
 

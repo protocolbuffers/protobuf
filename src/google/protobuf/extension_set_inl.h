@@ -203,8 +203,8 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 
 template <typename Msg, typename T>
 const char* ExtensionSet::ParseMessageSetItemTmpl(
-    const char* ptr, const Msg* containing_type,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
+    const char* ptr, const Msg* extendee, internal::InternalMetadata* metadata,
+    internal::ParseContext* ctx) {
   std::string payload;
   uint32 type_id = 0;
   bool payload_read = false;
@@ -218,7 +218,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
       if (payload_read) {
         ExtensionInfo extension;
         bool was_packed_on_wire;
-        if (!FindExtension(2, type_id, containing_type, ctx, &extension,
+        if (!FindExtension(2, type_id, extendee, ctx, &extension,
                            &was_packed_on_wire)) {
           WriteLengthDelimited(type_id, payload,
                                metadata->mutable_unknown_fields<T>());
@@ -246,7 +246,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
     } else if (tag == WireFormatLite::kMessageSetMessageTag) {
       if (type_id != 0) {
         ptr = ParseFieldMaybeLazily(static_cast<uint64>(type_id) * 8 + 2, ptr,
-                                    containing_type, metadata, ctx);
+                                    extendee, metadata, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
         type_id = 0;
       } else {
@@ -262,7 +262,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
         ctx->SetLastTag(tag);
         return ptr;
       }
-      ptr = ParseField(tag, ptr, containing_type, metadata, ctx);
+      ptr = ParseField(tag, ptr, extendee, metadata, ctx);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     }
   }

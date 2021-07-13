@@ -80,8 +80,7 @@ if _api_version < 0:  # Still unspecified?
       # and Python 3 default to `_api_version = 2` (C++ implementation V2).
       pass
 
-_default_implementation_type = (
-    'python' if _api_version <= 0 else 'cpp')
+_default_implementation_type = ('python' if _api_version <= 0 else 'cpp')
 
 # This environment variable can be used to switch to a certain implementation
 # of the Python API, overriding the compile-time constants in the

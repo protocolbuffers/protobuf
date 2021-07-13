@@ -154,6 +154,11 @@ class PROTOBUF_EXPORT SerialArena {
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) {
       return AllocateAlignedFallback(n, policy);
     }
+    return AllocateFromExisting(n);
+  }
+
+ private:
+  void* AllocateFromExisting(size_t n) {
     void* ret = ptr_;
     ptr_ += n;
 #ifdef ADDRESS_SANITIZER
@@ -162,17 +167,13 @@ class PROTOBUF_EXPORT SerialArena {
     return ret;
   }
 
+ public:
   // Allocate space if the current region provides enough space.
   bool MaybeAllocateAligned(size_t n, void** out) {
     GOOGLE_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
     GOOGLE_DCHECK_GE(limit_, ptr_);
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) return false;
-    void* ret = ptr_;
-    ptr_ += n;
-#ifdef ADDRESS_SANITIZER
-    ASAN_UNPOISON_MEMORY_REGION(ret, n);
-#endif  // ADDRESS_SANITIZER
-    *out = ret;
+    *out = AllocateFromExisting(n);
     return true;
   }
 
@@ -181,6 +182,12 @@ class PROTOBUF_EXPORT SerialArena {
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n + kCleanupSize))) {
       return AllocateAlignedWithCleanupFallback(n, policy);
     }
+    return AllocateFromExistingWithCleanupFallback(n);
+  }
+
+ private:
+  std::pair<void*, CleanupNode*> AllocateFromExistingWithCleanupFallback(
+      size_t n) {
     void* ret = ptr_;
     ptr_ += n;
     limit_ -= kCleanupSize;
@@ -191,6 +198,7 @@ class PROTOBUF_EXPORT SerialArena {
     return CreatePair(ret, reinterpret_cast<CleanupNode*>(limit_));
   }
 
+ public:
   void AddCleanup(void* elem, void (*cleanup)(void*),
                   const AllocationPolicy* policy) {
     auto res = AllocateAlignedWithCleanup(0, policy);

@@ -1185,6 +1185,11 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // If negative, 10 bytes.  Otherwise, same as VarintSize32().
   static size_t VarintSize32SignExtended(int32 value);
 
+  // Same as above, plus one.  The additional one comes at no compute cost.
+  static size_t VarintSize32PlusOne(uint32 value);
+  static size_t VarintSize64PlusOne(uint64 value);
+  static size_t VarintSize32SignExtendedPlusOne(int32 value);
+
   // Compile-time equivalent of VarintSize32().
   template <uint32 Value>
   struct StaticVarintSize32 {
@@ -1685,6 +1690,12 @@ inline size_t CodedOutputStream::VarintSize32(uint32 value) {
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
+inline size_t CodedOutputStream::VarintSize32PlusOne(uint32 value) {
+  // Same as above, but one more.
+  uint32 log2value = Bits::Log2FloorNonZero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
+}
+
 inline size_t CodedOutputStream::VarintSize64(uint64 value) {
   // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
   // Use an explicit multiplication to implement the divide of
@@ -1695,12 +1706,18 @@ inline size_t CodedOutputStream::VarintSize64(uint64 value) {
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
+inline size_t CodedOutputStream::VarintSize64PlusOne(uint64 value) {
+  // Same as above, but one more.
+  uint32 log2value = Bits::Log2FloorNonZero64(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
+}
+
 inline size_t CodedOutputStream::VarintSize32SignExtended(int32 value) {
-  if (value < 0) {
-    return 10;  // TODO(kenton):  Make this a symbolic constant.
-  } else {
-    return VarintSize32(static_cast<uint32>(value));
-  }
+  return VarintSize64(static_cast<uint64>(int64{value}));
+}
+
+inline size_t CodedOutputStream::VarintSize32SignExtendedPlusOne(int32 value) {
+  return VarintSize64PlusOne(static_cast<uint64>(int64{value}));
 }
 
 inline void CodedOutputStream::WriteString(const std::string& str) {

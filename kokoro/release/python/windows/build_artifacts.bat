@@ -62,6 +62,8 @@ SET PYTHON_VERSION=3.7
 SET PYTHON_ARCH=64
 CALL build_single_artifact.bat || goto :error
 
+powershell -File kokoro/release/python/windows/install_python_interpreters.ps1
+
 SET PYTHON=C:\python38_32bit
 SET PYTHON_VERSION=3.8
 SET PYTHON_ARCH=32

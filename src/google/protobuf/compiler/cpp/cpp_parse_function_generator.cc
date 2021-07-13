@@ -30,7 +30,9 @@
 
 #include <google/protobuf/compiler/cpp/cpp_parse_function_generator.h>
 
+#include <algorithm>
 #include <limits>
+#include <string>
 
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/wire_format.h>
@@ -62,16 +64,6 @@ std::vector<const FieldDescriptor*> GetOrderedFields(
 
 bool HasInternalAccessors(const FieldOptions::CType ctype) {
   return ctype == FieldOptions::STRING || ctype == FieldOptions::CORD;
-}
-
-bool IsTcTableEnabled(const Options& options) {
-  return options.tctable_mode == Options::kTCTableAlways;
-}
-bool IsTcTableGuarded(const Options& options) {
-  return options.tctable_mode == Options::kTCTableGuarded;
-}
-bool IsTcTableDisabled(const Options& options) {
-  return options.tctable_mode == Options::kTCTableNever;
 }
 
 int TagSize(uint32_t field_number) {
@@ -139,9 +131,9 @@ TailCallTableInfo::TailCallTableInfo(const Descriptor* descriptor,
     // Anything difficult slow path:
     if (field->is_map()) continue;
     if (field->real_containing_oneof()) continue;
-    if (field->options().lazy()) continue;
     if (field->options().weak()) continue;
     if (IsImplicitWeakField(field, options, scc_analyzer)) continue;
+    if (IsLazy(field, options, scc_analyzer)) continue;
 
     // The largest tag that can be read by the tailcall parser is two bytes
     // when varint-coded. This allows 14 bits for the numeric tag value:
@@ -230,16 +222,6 @@ TailCallTableInfo::TailCallTableInfo(const Descriptor* descriptor,
     fast_path_fields[idx].field = field;
   }
 
-  // Construct a mask of has-bits for required fields numbered <= 32.
-  has_hasbits_required_mask = 0;
-  for (auto field : FieldRange(descriptor)) {
-    if (field->is_required()) {
-      int idx = has_bit_indices[field->index()];
-      if (idx >= 32) continue;
-      has_hasbits_required_mask |= 1u << idx;
-    }
-  }
-
   // If there are no fallback fields, and at most one extension range, the
   // parser can use a generic fallback function. Otherwise, a message-specific
   // fallback routine is needed.
@@ -249,15 +231,17 @@ TailCallTableInfo::TailCallTableInfo(const Descriptor* descriptor,
 
 ParseFunctionGenerator::ParseFunctionGenerator(
     const Descriptor* descriptor, int max_has_bit_index,
-    const std::vector<int>& has_bit_indices, const Options& options,
+    const std::vector<int>& has_bit_indices,
+    const std::vector<int>& inlined_string_indices, const Options& options,
     MessageSCCAnalyzer* scc_analyzer,
     const std::map<std::string, std::string>& vars)
     : descriptor_(descriptor),
       scc_analyzer_(scc_analyzer),
       options_(options),
       variables_(vars),
+      inlined_string_indices_(inlined_string_indices),
       num_hasbits_(max_has_bit_index) {
-  if (IsTcTableGuarded(options_) || IsTcTableEnabled(options_)) {
+  if (should_generate_tctable()) {
     tc_table_info_.reset(new TailCallTableInfo(descriptor_, options_,
                                                has_bit_indices, scc_analyzer));
   }
@@ -268,28 +252,28 @@ ParseFunctionGenerator::ParseFunctionGenerator(
 
 void ParseFunctionGenerator::GenerateMethodDecls(io::Printer* printer) {
   Formatter format(printer, variables_);
-  if (IsTcTableGuarded(options_)) {
-    format.Outdent();
-    format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
-    format.Indent();
-  }
-  if (IsTcTableGuarded(options_) || IsTcTableEnabled(options_)) {
-    if (tc_table_info_->use_generated_fallback) {
-      format(
-          "static const char* Tct_ParseFallback(\n"
-          "    ::$proto_ns$::MessageLite *msg, const char *ptr,\n"
-          "    ::$proto_ns$::internal::ParseContext *ctx,\n"
-          "    const ::$proto_ns$::internal::TailCallParseTableBase *table,\n"
-          "    uint64_t hasbits, ::$proto_ns$::internal::TcFieldData data);\n"
-          "inline const char* Tct_FallbackImpl(\n"
-          "    const char* ptr, ::$proto_ns$::internal::ParseContext* ctx,\n"
-          "    const void*, $uint64$ hasbits);\n");
+  if (should_generate_tctable() && tc_table_info_->use_generated_fallback) {
+    if (should_generate_guarded_tctable()) {
+      format.Outdent();
+      format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
+      format.Indent();
     }
-  }
-  if (IsTcTableGuarded(options_)) {
-    format.Outdent();
-    format("#endif\n");
-    format.Indent();
+    format(
+        "private:\n"
+        "static const char* Tct_ParseFallback(\n"
+        "    ::$proto_ns$::MessageLite *msg, const char *ptr,\n"
+        "    ::$proto_ns$::internal::ParseContext *ctx,\n"
+        "    const ::$proto_ns$::internal::TailCallParseTableBase *table,\n"
+        "    uint64_t hasbits, ::$proto_ns$::internal::TcFieldData data);\n"
+        "inline const char* Tct_FallbackImpl(\n"
+        "    const char* ptr, ::$proto_ns$::internal::ParseContext* ctx,\n"
+        "    const void*, $uint64$ hasbits);\n"
+        "public:\n");
+    if (should_generate_guarded_tctable()) {
+      format.Outdent();
+      format("#endif\n");
+      format.Indent();
+    }
   }
   format(
       "const char* _InternalParse(const char* ptr, "
@@ -309,35 +293,46 @@ void ParseFunctionGenerator::GenerateMethodImpls(io::Printer* printer) {
         "}\n");
     return;
   }
-  if (IsTcTableGuarded(options_)) {
+  if (!should_generate_tctable()) {
+    GenerateLoopingParseFunction(format);
+    return;
+  }
+  if (should_generate_guarded_tctable()) {
     format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n\n");
   }
-  if (IsTcTableGuarded(options_) || IsTcTableEnabled(options_)) {
-    format(
-        "const char* $classname$::_InternalParse(\n"
-        "    const char* ptr, ::$proto_ns$::internal::ParseContext* ctx) {\n"
-        "  return ::$proto_ns$::internal::TcParser<$1$>::ParseLoop(\n"
-        "      this, ptr, ctx, &_table_.header);\n"
-        "}\n"
-        "\n",
-        tc_table_info_->table_size_log2);
-    if (tc_table_info_->use_generated_fallback) {
-      GenerateTailcallFallbackFunction(format);
-    }
+  format(
+      "const char* $classname$::_InternalParse(\n"
+      "    const char* ptr, ::$proto_ns$::internal::ParseContext* ctx) {\n"
+      "$annotate_deserialize$"
+      "  ptr = ::$proto_ns$::internal::TcParser<$1$>::ParseLoop(\n"
+      "      this, ptr, ctx, &_table_.header);\n",
+      tc_table_info_->table_size_log2);
+  format(
+      "  return ptr;\n"
+      "}\n\n");
+  if (tc_table_info_->use_generated_fallback) {
+    GenerateTailcallFallbackFunction(format);
   }
-  if (IsTcTableGuarded(options_)) {
+  if (should_generate_guarded_tctable()) {
     format("\n#else  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n\n");
-  }
-  if (IsTcTableGuarded(options_) || IsTcTableDisabled(options_)) {
     GenerateLoopingParseFunction(format);
-  }
-  if (IsTcTableGuarded(options_)) {
     format("\n#endif  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
   }
 }
 
+bool ParseFunctionGenerator::should_generate_tctable() const {
+  if (options_.tctable_mode == Options::kTCTableNever) {
+    return false;
+  }
+  if (descriptor_->options().message_set_wire_format()) {
+    return false;
+  }
+  return true;
+}
+
 void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
     Formatter& format) {
+  GOOGLE_CHECK(should_generate_tctable());
   format(
       "const char* $classname$::Tct_ParseFallback(PROTOBUF_TC_PARAM_DECL) {\n"
       "  return static_cast<$classname$*>(msg)->Tct_FallbackImpl(ptr, ctx, "
@@ -370,22 +365,20 @@ void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
 }
 
 void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
-  if (descriptor_->options().message_set_wire_format()) {
+  if (!should_generate_tctable()) {
     return;
   }
   Formatter format(printer, variables_);
-  if (IsTcTableGuarded(options_)) {
+  if (should_generate_guarded_tctable()) {
     format.Outdent();
     format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
     format.Indent();
   }
-  if (IsTcTableGuarded(options_) || IsTcTableEnabled(options_)) {
-    format(
-        "static const ::$proto_ns$::internal::TailCallParseTable<$1$>\n"
-        "    _table_;\n",
-        tc_table_info_->table_size_log2);
-  }
-  if (IsTcTableGuarded(options_)) {
+  format(
+      "static const ::$proto_ns$::internal::TailCallParseTable<$1$>\n"
+      "    _table_;\n",
+      tc_table_info_->table_size_log2);
+  if (should_generate_guarded_tctable()) {
     format.Outdent();
     format("#endif  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
     format.Indent();
@@ -393,17 +386,15 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
 }
 
 void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* printer) {
-  if (descriptor_->options().message_set_wire_format()) {
+  if (!should_generate_tctable()) {
     return;
   }
   Formatter format(printer, variables_);
-  if (IsTcTableGuarded(options_)) {
+  if (should_generate_guarded_tctable()) {
     format("#ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
   }
-  if (IsTcTableGuarded(options_) || IsTcTableEnabled(options_)) {
-    GenerateTailCallTable(format);
-  }
-  if (IsTcTableGuarded(options_)) {
+  GenerateTailCallTable(format);
+  if (should_generate_guarded_tctable()) {
     format("#endif  // PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED\n");
   }
 }
@@ -451,6 +442,7 @@ void ParseFunctionGenerator::GenerateLoopingParseFunction(Formatter& format) {
 }
 
 void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
+  GOOGLE_CHECK(should_generate_tctable());
   // All entries without a fast-path parsing function need a fallback.
   std::string fallback;
   if (tc_table_info_->use_generated_fallback) {
@@ -493,10 +485,8 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
     format("0, 0, 0,  // no _extensions_\n");
   }
   format(
-      "$1$,  // has_bits_required_mask\n"
-      "&$2$._instance,\n"
-      "$3$  // fallback\n",
-      tc_table_info_->has_hasbits_required_mask,
+      "&$1$._instance,\n"
+      "$2$  // fallback\n",
       DefaultInstanceName(descriptor_, options_), fallback);
   format.Outdent();
   format("}, {\n");
@@ -534,15 +524,29 @@ void ParseFunctionGenerator::GenerateArenaString(Formatter& format,
                 "::internal::GetEmptyStringAlreadyInited()"
           : QualifiedClassName(field->containing_type(), options_) +
                 "::" + MakeDefaultName(field) + ".get()";
+  std::string params_for_inline_string;
+  if (IsStringInlined(field, options_)) {
+    GOOGLE_DCHECK(!inlined_string_indices_.empty());
+    int inlined_string_index = inlined_string_indices_[field->index()];
+    GOOGLE_DCHECK_GE(inlined_string_index, 0);
+    params_for_inline_string = StrCat(
+        ", _internal_", FieldName(field),
+        "_donated()"
+        ", &_inlined_string_donated_[",
+        inlined_string_index / 32,
+        "]"
+        ", ~0x",
+        strings::Hex(1u << (inlined_string_index % 32), strings::ZERO_PAD_8), "u");
+  }
   format(
       "if (arena != nullptr) {\n"
-      "  ptr = ctx->ReadArenaString(ptr, &$1$_, arena);\n"
+      "  ptr = ctx->ReadArenaString(ptr, &$1$_, arena$2$);\n"
       "} else {\n"
       "  ptr = ::$proto_ns$::internal::InlineGreedyStringParser("
-      "$1$_.MutableNoArenaNoDefault(&$2$), ptr, ctx);\n"
+      "$1$_.MutableNoArenaNoDefault(&$3$), ptr, ctx);\n"
       "}\n"
       "const std::string* str = &$1$_.Get(); (void)str;\n",
-      FieldName(field), default_string);
+      FieldName(field), params_for_inline_string, default_string);
 }
 
 void ParseFunctionGenerator::GenerateStrings(Formatter& format,

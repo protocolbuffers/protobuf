@@ -264,3 +264,13 @@ message UnknownToTestAllTypes {
   optional bool optional_bool = 1006;
   repeated int32 repeated_int32 = 1011;
 }
+
+message NullHypothesisProto2 {
+}
+
+message EnumOnlyProto2 {
+  enum Bool {
+    kFalse = 0;
+    kTrue = 1;
+  }
+}
