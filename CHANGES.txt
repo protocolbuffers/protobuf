@@ -1,3 +1,18 @@
+Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  C++
+  * Better Smaller ByteSizeLong
+  * Introduce event filters for inject_field_listener_events
+  * Reduce memory usage of DescriptorPool
+  * For lazy fields copy serialized form when allowed.
+  * Re-introduce the InlinedStringField class
+  * v2 access listener
+  * Reduce padding in the proto's ExtensionRegistry map.
+  * GetExtension performance optimizations
+
+  Java
+  * Optimized FieldDescriptor.valueOf() to avoid array copying.
+  * removing deprecated TimeUtil class.
+
 2021-06-04 version 3.17.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   C++
   * Introduce FieldAccessListener.
