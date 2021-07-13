@@ -1409,7 +1409,7 @@ void ImmutableMessageGenerator::GenerateKotlinDsl(io::Printer* printer) const {
       "@com.google.protobuf.kotlin.ProtoDslMarker\n");
   printer->Print(
       "class Dsl private constructor(\n"
-      "  @kotlin.jvm.JvmField private val _builder: $message$.Builder\n"
+      "  private val _builder: $message$.Builder\n"
       ") {\n"
       "  companion object {\n"
       "    @kotlin.jvm.JvmSynthetic\n"
