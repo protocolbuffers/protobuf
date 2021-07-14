@@ -2190,6 +2190,13 @@ static VALUE OneofBuilderContext_optional(int argc, VALUE* argv, VALUE _self) {
 
   rb_scan_args(argc, argv, "32", &name, &type, &number, &type_class, &options);
 
+  // Allow passing (name, type, number, options) or
+  // (name, type, number, type_class, options)
+  if (argc == 4 && RB_TYPE_P(type_class, T_HASH)) {
+    options = type_class;
+    type_class = Qnil;
+  }
+
   msgdef_add_field(self->message_builder, UPB_LABEL_OPTIONAL, name, type,
                    number, type_class, options, self->oneof_index, false);
 
