@@ -86,4 +86,7 @@ message TestUnknown {
 
 message TestJsonName {
   int32 value = 1 [json_name = "CustomJsonName"];
+  oneof jsonname_oneof {
+    string name = 2 [json_name = "OneOfCustomJsonName"];
+  }
 }
