@@ -207,7 +207,6 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/arena.cc                                     \
   google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
-  google/protobuf/field_access_listener.cc                     \
   google/protobuf/generated_enum_util.cc                       \
   google/protobuf/generated_message_util.cc                    \
   google/protobuf/generated_message_table_driven_lite.h        \
@@ -242,6 +241,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/dynamic_message.cc                           \
   google/protobuf/empty.pb.cc                                  \
   google/protobuf/extension_set_heavy.cc                       \
+  google/protobuf/field_access_listener.cc                     \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_reflection.cc              \
   google/protobuf/generated_message_table_driven_lite.h        \
