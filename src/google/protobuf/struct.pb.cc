@@ -201,7 +201,7 @@ Struct::Struct(const Struct& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Struct)
 }
 
-inline void Struct::SharedCtor() {
+void Struct::SharedCtor() {
 }
 
 Struct::~Struct() {
@@ -499,7 +499,7 @@ Value::Value(const Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Value)
 }
 
-inline void Value::SharedCtor() {
+void Value::SharedCtor() {
 clear_has_kind();
 }
 
@@ -866,7 +866,7 @@ ListValue::ListValue(const ListValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ListValue)
 }
 
-inline void ListValue::SharedCtor() {
+void ListValue::SharedCtor() {
 }
 
 ListValue::~ListValue() {

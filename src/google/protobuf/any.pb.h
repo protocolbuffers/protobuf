@@ -129,12 +129,12 @@ class PROTOBUF_EXPORT Any final :
       const ::PROTOBUF_NAMESPACE_ID::FieldDescriptor** value_field);
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool PackFrom(const T& message) {
-    return _any_metadata_.PackFrom<T>(message);
+    return _any_metadata_.PackFrom<T>(GetArena(), message);
   }
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool PackFrom(const T& message,
                 ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url_prefix) {
-    return _any_metadata_.PackFrom<T>(message, type_url_prefix);}
+    return _any_metadata_.PackFrom<T>(GetArena(), message, type_url_prefix);}
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool UnpackTo(T* message) const {
     return _any_metadata_.UnpackTo<T>(message);
