@@ -372,10 +372,10 @@ No presence:
 ```python
 m = example.Msg()
 if m.foo != 0:
-  // "Clear" the field:
+  # "Clear" the field:
   m.foo = 0
 else:
-  // Default value: field may not have been present.
+  # Default value: field may not have been present.
   m.foo = 1
 ```
 
@@ -384,10 +384,10 @@ Explicit presence:
 ```python
 m = example.Msg()
 if m.HasField('foo'):
-  // Clear the field:
+  # Clear the field:
   m.ClearField('foo')
 else:
-  // Field is not present, so set it.
+  # Field is not present, so set it.
   m.foo = 1
 ```
 
@@ -398,10 +398,10 @@ No presence:
 ```ruby
 m = Msg.new
 if m.foo != 0
-  // "Clear" the field:
+  # "Clear" the field:
   m.foo = 0
 else
-  // Default value: field may not have been present.
+  # Default value: field may not have been present.
   m.foo = 1
 end
 ```
@@ -411,10 +411,10 @@ Explicit presence:
 ```ruby
 m = Msg.new
 if m.has_foo?
-  // Clear the field:
+  # Clear the field:
   m.clear_foo
 else
-  // Field is not present, so set it.
+  # Field is not present, so set it.
   m.foo = 1
 end
 ```
