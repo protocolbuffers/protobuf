@@ -938,7 +938,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   template <typename Iter,
             typename = typename std::enable_if<std::is_constructible<
-                Element, decltype(*std::declval<Iter>())>::value>::type>
+                Element, typename std::iterator_traits<Iter>::value_type>::value>::type>
   RepeatedPtrField(Iter begin, Iter end);
 
   ~RepeatedPtrField();
