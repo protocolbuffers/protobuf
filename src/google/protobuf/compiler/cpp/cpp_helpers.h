@@ -356,7 +356,7 @@ inline bool IsEagerlyVerifiedLazy(const FieldDescriptor* field,
 }
 
 inline bool IsFieldUsed(const FieldDescriptor* /* field */,
-                        const Options& options) {
+                        const Options& /* options */) {
   return true;
 }
 
@@ -884,7 +884,7 @@ inline OneOfRangeImpl OneOfRange(const Descriptor* desc) { return {desc}; }
 
 PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
-inline bool EnableMessageOwnedArena(const Descriptor* desc) { return false; }
+inline bool EnableMessageOwnedArena(const Descriptor* /* desc */ ) { return false; }
 
 }  // namespace cpp
 }  // namespace compiler
