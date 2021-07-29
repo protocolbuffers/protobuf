@@ -1310,7 +1310,7 @@ def _AddMergeFromMethod(cls):
   CPPTYPE_MESSAGE = _FieldDescriptor.CPPTYPE_MESSAGE
 
   def MergeFrom(self, msg):
-    if not isinstance(msg, cls):
+    if not cls.__name__ == msg.__class__.__name__:
       raise TypeError(
           'Parameter to MergeFrom() must be instance of same class: '
           'expected %s got %s.' % (cls.__name__, msg.__class__.__name__))
