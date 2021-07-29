@@ -2381,7 +2381,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
 void MessageGenerator::GenerateSharedConstructorCode(io::Printer* printer) {
   Formatter format(printer, variables_);
 
-  format("inline void $classname$::SharedCtor() {\n");
+  format("void $classname$::SharedCtor() {\n");
 
   std::vector<bool> processed(optimized_order_.size(), false);
   GenerateConstructorBody(printer, processed, false);
