@@ -41,7 +41,7 @@
 
 #include "message.h"
 #include "protobuf.h"
-#include "third_party/wyhash/wyhash.h"
+#include "third_party/ask2patch/wyhash/wyhash.h"
 
 static upb_strview Convert_StringData(VALUE str, upb_arena *arena) {
   upb_strview ret;

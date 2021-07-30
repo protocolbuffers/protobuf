@@ -35,7 +35,7 @@
 #include "map.h"
 #include "protobuf.h"
 #include "repeated_field.h"
-#include "third_party/wyhash/wyhash.h"
+#include "third_party/ask2patch/wyhash/wyhash.h"
 
 static VALUE cParseError = Qnil;
 static ID descriptor_instancevar_interned;

@@ -1709,7 +1709,7 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter *s, upb_descriptortype_t key_type,
 
 #include <string.h>
 
-#include "third_party/wyhash/wyhash.h"
+#include "third_party/ask2patch/wyhash/wyhash.h"
 
 /* Must be last. */
 
